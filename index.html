@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -49,30 +49,45 @@
       position: relative;
     }
 
-    /* Logo Styling */
+    /* Language Switcher Dropdown Top Right */
+    .lang-switcher-container {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+    }
+
+    .lang-select {
+      background: #f3f4f6;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #4b5563;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Circular Logo Styling */
     .logo-container {
-      margin-bottom: 1.2rem;
+      margin-top: 10px;
+      margin-bottom: 1.5rem;
     }
 
     .logo-img {
-      max-width: 140px;
-      height: auto;
-      border-radius: 8px;
-      object-fit: contain;
-      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.08);
+      width: 110px;
+      height: 110px;
+      border-radius: 50%; /* গোলাকার করার জন্য */
+      object-fit: cover;
+      box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.15);
+      border: 3px solid #ffffff;
     }
 
     .shop-title {
       font-size: 1.4rem;
       color: var(--primary-dark);
       font-weight: 700;
-      margin-top: 10px;
-    }
-
-    .subtitle {
-      font-size: 0.85rem;
-      color: #6b7280;
-      margin-bottom: 1.8rem;
+      margin-top: 12px;
     }
 
     /* Form Design */
@@ -169,7 +184,15 @@
 
   <div class="login-card">
     
-    <!-- লোগো সেকশন (সরাসরি ইমেজের ডাটা সহ আপডেট করা হলো) -->
+    <!-- Language Switcher Option -->
+    <div class="lang-switcher-container">
+      <select class="lang-select" id="langSelect" onchange="changeLanguage(this.value)">
+        <option value="en" selected>🌐 EN</option>
+        <option value="bn">🌐 BN</option>
+      </select>
+    </div>
+
+    <!-- Circular Logo Section -->
     <div class="logo-container">
       <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" 
            onerror="this.onerror=null; this.src='https://i.ibb.co/6803Y30/Screenshot-1.jpg';" 
@@ -178,11 +201,9 @@
       <h2 class="shop-title">Mousumi Computer</h2>
     </div>
 
-    <p class="subtitle">এডমিন প্যানেলে প্রবেশ করতে তথ্য দিন</p>
-
     <form>
       <div class="form-group">
-        <label for="username">ইউজারনেম বা ইমেইল</label>
+        <label for="username" id="label-username">Username or Email</label>
         <div class="input-wrapper">
           <i class="fa-solid fa-user"></i>
           <input type="text" id="username" placeholder="user@email.com" required>
@@ -190,7 +211,7 @@
       </div>
 
       <div class="form-group">
-        <label for="password">পাসওয়ার্ড</label>
+        <label for="password" id="label-password">Password</label>
         <div class="input-wrapper">
           <i class="fa-solid fa-lock"></i>
           <input type="password" id="password" placeholder="••••••••" required>
@@ -198,16 +219,43 @@
       </div>
 
       <div class="form-actions">
-        <label style="cursor: pointer;"><input type="checkbox"> মনে রাখুন</label>
-        <a href="#" class="forgot-link">পাসওয়ার্ড ভুলে গেছেন?</a>
+        <label style="cursor: pointer;"><input type="checkbox"> <span id="label-remember">Remember me</span></label>
+        <a href="#" class="forgot-link" id="label-forgot">Forgot Password?</a>
       </div>
 
-      <!-- রি-পজিশন করা বাটন -->
+      <!-- Login Button -->
       <button type="submit" class="btn-submit">
-        <i class="fa-solid fa-right-to-bracket"></i> লগইন করুন
+        <i class="fa-solid fa-right-to-bracket"></i> <span id="label-btn">Log In</span>
       </button>
     </form>
   </div>
+
+  <script>
+    const translations = {
+      en: {
+        username: "Username or Email",
+        password: "Password",
+        remember: "Remember me",
+        forgot: "Forgot Password?",
+        btn: "Log In"
+      },
+      bn: {
+        username: "ইউজারনেম বা ইমেইল",
+        password: "পাসওয়ার্ড",
+        remember: "মনে রাখুন",
+        forgot: "পাসওয়ার্ড ভুলে গেছেন?",
+        btn: "লগইন করুন"
+      }
+    };
+
+    function changeLanguage(lang) {
+      document.getElementById('label-username').innerText = translations[lang].username;
+      document.getElementById('label-password').innerText = translations[lang].password;
+      document.getElementById('label-remember').innerText = translations[lang].remember;
+      document.getElementById('label-forgot').innerText = translations[lang].forgot;
+      document.getElementById('label-btn').innerText = translations[lang].btn;
+    }
+  </script>
 
 </body>
 </html>
