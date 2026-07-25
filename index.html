@@ -7,15 +7,16 @@
   
   <!-- FontAwesome Icons & Google Fonts -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --primary-color: #00a8efff;
-      --primary-dark: #0d233a;
+      --primary-color: #00a8ef;
+      --primary-dark: #0b1a2c;
+      --sidebar-width: 260px;
       --bg-color: #f4f6f9;
       --card-bg: #ffffff;
-      --text-color: #333333;
+      --text-color: #1f2937;
       --border-color: #e5e7eb;
       --border-radius: 12px;
       --green: #10b981;
@@ -26,7 +27,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     /* LOADING SCREEN */
@@ -62,7 +63,7 @@
 
     /* LOGIN SECTION */
     #login-section {
-      background: linear-gradient(135deg, #0d233a 0%, #00a8ef 100%);
+      background: linear-gradient(135deg, #0b1a2c 0%, #00a8ef 100%);
       display: none;
       flex-direction: column;
       justify-content: center;
@@ -138,41 +139,106 @@
       width: 100%;
     }
 
-    .dashboard-layout { display: flex; min-height: 100vh; }
+    .dashboard-layout { display: flex; min-height: 100vh; position: relative; overflow-x: hidden; }
+
+    /* SIDEBAR (TOGGLE SUPPORTED) */
     .sidebar {
-      width: 250px;
+      width: var(--sidebar-width);
       background-color: var(--primary-dark);
       color: #ffffff;
       display: flex;
       flex-direction: column;
-      padding: 20px;
+      padding: 20px 16px;
+      transition: all 0.3s ease-in-out;
+      z-index: 100;
     }
 
+    .sidebar.collapsed {
+      margin-left: calc(-1 * var(--sidebar-width));
+    }
+
+    /* MODERN BRAND LOGO DESIGN */
     .brand-logo {
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 30px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding: 10px 12px;
+      margin-bottom: 25px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      backdrop-filter: blur(10px);
     }
-    .brand-logo img { width: 40px; height: 40px; border-radius: 50%; }
+    
+    .brand-logo-img-wrapper {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      padding: 2px;
+      background: linear-gradient(135deg, #00a8ef, #10b981);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-logo img {
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #fff;
+    }
+
+    .brand-text h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+      letter-spacing: 0.3px;
+    }
+
+    .brand-text span {
+      font-size: 0.72rem;
+      color: #00a8ef;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
 
     .menu-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
     .menu-item a {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 12px 15px;
-      color: #a0aec0;
+      padding: 12px 16px;
+      color: #94a3b8;
       text-decoration: none;
-      border-radius: 8px;
+      border-radius: 10px;
       font-weight: 500;
+      font-size: 0.95rem;
       cursor: pointer;
+      transition: all 0.2s;
     }
-    .menu-item.active a { background-color: #00a8ef; color: #ffffff; }
 
-    .main-wrapper { flex: 1; display: flex; flex-direction: column; }
+    .menu-item a:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+    }
+
+    .menu-item.active a {
+      background: linear-gradient(135deg, #00a8ef 0%, #0088e8 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(0, 168, 239, 0.3);
+    }
+
+    .main-wrapper { 
+      flex: 1; 
+      display: flex; 
+      flex-direction: column; 
+      min-width: 0;
+      transition: all 0.3s ease-in-out;
+    }
 
     /* TOP NAVBAR */
     .top-navbar {
@@ -185,6 +251,34 @@
       position: relative;
     }
 
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    /* 3-LINE MENU TOGGLE BUTTON */
+    .menu-toggle-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #f3f4f6;
+      border: 1px solid var(--border-color);
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .menu-toggle-btn:hover {
+      background: #00a8ef;
+      color: #ffffff;
+      border-color: #00a8ef;
+    }
+
     .navbar-right {
       display: flex;
       align-items: center;
@@ -194,7 +288,7 @@
     .lang-btn {
       background: #f3f4f6;
       border: 1px solid var(--border-color);
-      padding: 6px 14px;
+      padding: 7px 16px;
       border-radius: 20px;
       font-weight: 600;
       cursor: pointer;
@@ -202,6 +296,7 @@
       align-items: center;
       gap: 6px;
       color: var(--text-color);
+      font-size: 0.9rem;
     }
 
     /* DROPDOWN CONTAINER */
@@ -508,11 +603,17 @@
   <!-- 2. DASHBOARD SECTION -->
   <div id="dashboard-section">
     <div class="dashboard-layout">
-      <!-- Sidebar (My Profile Removed) -->
-      <div class="sidebar">
+      <!-- SIDEBAR -->
+      <div class="sidebar" id="sidebar">
+        <!-- Modern Header Design -->
         <div class="brand-logo">
-          <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" alt="Logo" />
-          <h3>Mousumi Computer</h3>
+          <div class="brand-logo-img-wrapper">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" alt="Logo" />
+          </div>
+          <div class="brand-text">
+            <h3>Mousumi</h3>
+            <span>Computer</span>
+          </div>
         </div>
 
         <ul class="menu-list">
@@ -523,10 +624,16 @@
         </ul>
       </div>
 
-      <!-- Main Content Area -->
+      <!-- MAIN CONTENT WRAPPER -->
       <div class="main-wrapper">
         <div class="top-navbar">
-          <h2 id="top-title">Admin Dashboard</h2>
+          <div class="navbar-left">
+            <!-- 3-LINE MENU TOGGLE BUTTON -->
+            <button class="menu-toggle-btn" id="sidebarToggle" title="Toggle Sidebar">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <h2 id="top-title" style="font-size: 1.35rem; font-weight: 700;">Admin Dashboard</h2>
+          </div>
           
           <div class="navbar-right">
             <!-- Language Switcher Button -->
@@ -720,6 +827,9 @@
     const errorMsg = document.getElementById('errorMsg');
     const logoutBtn = document.getElementById('logoutBtn');
 
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+
     const profileTrigger = document.getElementById('profileTrigger');
     const profileDropdown = document.getElementById('profileDropdown');
 
@@ -741,6 +851,11 @@
     const fullProfileForm = document.getElementById('fullProfileForm');
 
     const adminEmail = "mousumicomputer.org@gmail.com";
+
+    /* SIDEBAR TOGGLE FUNCTIONALITY */
+    sidebarToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
+    });
 
     /* DROPDOWN TOGGLE */
     profileTrigger.addEventListener('click', (e) => {
