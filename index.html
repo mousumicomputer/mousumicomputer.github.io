@@ -137,6 +137,26 @@
       outline: none;
     }
 
+    .forgot-link-container {
+      text-align: right;
+      margin-top: -5px;
+      margin-bottom: 15px;
+    }
+
+    .forgot-link {
+      background: none;
+      border: none;
+      color: var(--red);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .forgot-link:hover {
+      color: #b91c1c;
+    }
+
     .btn-submit {
       width: 100%;
       padding: 0.85rem;
@@ -159,6 +179,13 @@
 
     .error-msg {
       color: var(--red);
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .success-msg {
+      color: var(--green);
       font-size: 0.85rem;
       margin-bottom: 1rem;
       display: none;
@@ -346,11 +373,12 @@
         <h2 class="shop-title">Mousumi Computer</h2>
       </div>
 
-      <p class="error-msg" id="errorMsg">ইউজারনেম বা পাসওয়ার্ড ভুল হয়েছে!</p>
+      <p class="error-msg" id="errorMsg">ইউজারনেম বা পাসওয়ার্ড ভুল হয়েছে!</p>
+      <p class="success-msg" id="successMsg"></p>
 
       <form id="loginForm">
         <div class="form-group">
-          <label>Username</label>
+          <label>Username / Email</label>
           <div class="input-wrapper">
             <i class="fa-solid fa-user"></i>
             <input type="text" id="username" placeholder="admin" required>
@@ -363,6 +391,11 @@
             <i class="fa-solid fa-lock"></i>
             <input type="password" id="password" placeholder="••••••••" required>
           </div>
+        </div>
+
+        <!-- Forgot Password Button -->
+        <div class="forgot-link-container">
+          <button type="button" class="forgot-link" id="forgotBtn"><i class="fa-solid fa-key"></i> Forgot Password?</button>
         </div>
 
         <button type="submit" class="btn-submit" id="loginBtn">
@@ -420,7 +453,7 @@
           <div class="form-card">
             <h3>📝 নতুন হিসাব এন্ট্রি করুন</h3>
             <form class="entry-form" id="transactionForm">
-              <input type="text" id="desc" placeholder="কাজের বিবরণ (যেমন: টাইপিং/কাগজ ক্রয়)" required>
+              <input type="text" id="desc" placeholder="কাজের বিবরণ (যেমন: টাইপিং/কাগজ ক্রয়)" required>
               <input type="number" id="amount" placeholder="টাকা (৳)" required>
               <select id="type">
                 <option value="income">জমা (Cash In)</option>
@@ -452,7 +485,7 @@
   <!-- FIREBASE AUTHENTICATION & AUTO-LOGOUT MODULE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     // Your Firebase Configuration
     const firebaseConfig = {
@@ -474,7 +507,11 @@
     const loginSection = document.getElementById('login-section');
     const dashboardSection = document.getElementById('dashboard-section');
     const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
     const logoutBtn = document.getElementById('logoutBtn');
+    const forgotBtn = document.getElementById('forgotBtn');
+
+    const adminEmail = "mousumicomputer.org@gmail.com";
 
     /* --- AUTO LOGOUT LOGIC (5 MINUTES INACTIVITY) --- */
     let inactivityTimer;
@@ -484,13 +521,13 @@
       clearTimeout(inactivityTimer);
       if (auth.currentUser) {
         inactivityTimer = setTimeout(() => {
-          alert('আপনি দীর্ঘক্ষণ কোনো কাজ করেননি! নিরাপত্তার স্বার্থে সেশন শেষ করা হয়েছে।');
+          alert('আপনি দীর্ঘক্ষণ কোনো কাজ করেননি! নিরাপত্তার স্বার্থে সেশন শেষ করা হয়েছে।');
           signOut(auth);
         }, INACTIVITY_LIMIT);
       }
     }
 
-    // মাউস নাড়াচাড়া, ক্লিক বা কিবোর্ডে চাপ দিলে টাইমার রিসেট হবে
+    // মাউস নাড়াচাড়া, ক্লিক বা কিবোর্ডে চাপ দিলে টাইমার রিসেট হবে
     window.onload = resetInactivityTimer;
     document.onmousemove = resetInactivityTimer;
     document.onkeypress = resetInactivityTimer;
@@ -518,10 +555,11 @@
       const passwordInput = document.getElementById('password').value;
 
       errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
 
       let email = usernameInput;
       if (!usernameInput.includes('@')) {
-        email = usernameInput + "@mousumi.com";
+        email = adminEmail;
       }
 
       loader.style.display = 'flex';
@@ -532,9 +570,29 @@
         })
         .catch((error) => {
           loader.style.display = 'none';
-          errorMsg.innerText = "ভুল ইউজারনেম অথবা পাসওয়ার্ড!";
+          errorMsg.innerText = "ভুল ইউজারনেম অথবা পাসওয়ার্ড!";
           errorMsg.style.display = 'block';
         });
+    });
+
+    // Password Reset Logic
+    forgotBtn.addEventListener('click', () => {
+      if (confirm("আপনার ইমেইল (" + adminEmail + ")-এ পাসওয়ার্ড রিসেট লিংক পাঠাতে চান?")) {
+        loader.style.display = 'flex';
+        errorMsg.style.display = 'none';
+
+        sendPasswordResetEmail(auth, adminEmail)
+          .then(() => {
+            loader.style.display = 'none';
+            successMsg.innerText = "পাসওয়ার্ড রিসেট লিংক আপনার " + adminEmail + " ইমেইলে পাঠানো হয়েছে! জিমেইল ইনবক্স চেক করুন।";
+            successMsg.style.display = 'block';
+          })
+          .catch((error) => {
+            loader.style.display = 'none';
+            errorMsg.innerText = "ইমেইল পাঠাতে সমস্যা হয়েছে: " + error.message;
+            errorMsg.style.display = 'block';
+          });
+      }
     });
 
     // Logout Logic
