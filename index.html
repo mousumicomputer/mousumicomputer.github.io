@@ -7,7 +7,7 @@
   
   <!-- FontAwesome Icons & Google Fonts -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&amp;display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -258,6 +258,7 @@
       flex-direction: column;
     }
 
+    /* TOP NAVBAR UPDATE */
     .top-navbar {
       background-color: #ffffff;
       padding: 15px 30px;
@@ -265,6 +266,21 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid var(--border-color);
+    }
+
+    .user-profile-avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid var(--primary-color);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .user-profile-avatar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 8px rgba(33, 118, 255, 0.4);
     }
 
     .btn-logout {
@@ -355,6 +371,94 @@
     .badge-income { color: var(--green); font-weight: 600; background: #ecfdf5; padding: 4px 8px; border-radius: 4px; }
     .badge-expense { color: var(--red); font-weight: 600; background: #fef2f2; padding: 4px 8px; border-radius: 4px; }
     .btn-delete { color: var(--red); background: none; border: none; cursor: pointer; }
+
+    /* PROFILE MODAL STYLES */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      position: relative;
+    }
+
+    .modal-card h3 {
+      margin-bottom: 15px;
+      color: var(--primary-dark);
+      font-size: 1.2rem;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px; right: 20px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #888;
+    }
+
+    .profile-preview-container {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .profile-preview-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 10px;
+      border: 2px solid var(--primary-color);
+    }
+
+    .modal-group {
+      margin-bottom: 12px;
+      text-align: left;
+    }
+
+    .modal-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: #555;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+
+    .modal-group input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .btn-save-profile {
+      width: 100%;
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    .btn-save-profile:hover {
+      background-color: #1a65e0;
+    }
   </style>
 </head>
 <body>
@@ -369,7 +473,7 @@
   <div id="login-section">
     <div class="login-card">
       <div class="logo-container">
-        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" alt="Logo" class="logo-img">
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" alt="Logo" class="logo-img" />
         <h2 class="shop-title">Mousumi Computer</h2>
       </div>
 
@@ -381,7 +485,7 @@
           <label>Username / Email</label>
           <div class="input-wrapper">
             <i class="fa-solid fa-user"></i>
-            <input type="text" id="username" placeholder="admin" required>
+            <input type="text" id="username" placeholder="admin" required="required" />
           </div>
         </div>
 
@@ -389,7 +493,7 @@
           <label>Password</label>
           <div class="input-wrapper">
             <i class="fa-solid fa-lock"></i>
-            <input type="password" id="password" placeholder="••••••••" required>
+            <input type="password" id="password" placeholder="••••••••" required="required" />
           </div>
         </div>
 
@@ -411,7 +515,7 @@
       <!-- Sidebar -->
       <div class="sidebar">
         <div class="brand-logo">
-          <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" alt="Logo">
+          <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" alt="Logo" />
           <h3>Mousumi Computer</h3>
         </div>
 
@@ -429,7 +533,8 @@
         <div class="top-navbar">
           <h2>অ্যাডমিন প্যানেল</h2>
           <div style="display:flex; align-items:center; gap:15px;">
-            <span><i class="fa-solid fa-circle-user"></i> প্রনব কুমার</span>
+            <!-- Profile Picture Avatar Button -->
+            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Profile" id="profileAvatarBtn" class="user-profile-avatar" title="প্রোফাইল সেটিংস পরিবর্তন করতে ক্লিক করুন" />
             <button class="btn-logout" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> লগআউট</button>
           </div>
         </div>
@@ -453,8 +558,8 @@
           <div class="form-card">
             <h3>📝 নতুন হিসাব এন্ট্রি করুন</h3>
             <form class="entry-form" id="transactionForm">
-              <input type="text" id="desc" placeholder="কাজের বিবরণ (যেমন: টাইপিং/কাগজ ক্রয়)" required>
-              <input type="number" id="amount" placeholder="টাকা (৳)" required>
+              <input type="text" id="desc" placeholder="কাজের বিবরণ (যেমন: টাইপিং/কাগজ ক্রয়)" required="required" />
+              <input type="number" id="amount" placeholder="টাকা (৳)" required="required" />
               <select id="type">
                 <option value="income">জমা (Cash In)</option>
                 <option value="expense">খরচ (Cash Out)</option>
@@ -482,10 +587,41 @@
     </div>
   </div>
 
+  <!-- 3. PROFILE MODAL (POPUP) -->
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal-card">
+      <span class="close-modal" id="closeProfileModal">&times;</span>
+      <h3>👤 প্রোফাইল সেটিংস</h3>
+
+      <div class="profile-preview-container">
+        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="modalProfileImg" class="profile-preview-img" alt="Profile Preview">
+      </div>
+
+      <form id="profileForm">
+        <div class="modal-group">
+          <label>প্রোফাইল ছবি আপলোড করুন</label>
+          <input type="file" id="profileImgInput" accept="image/*" />
+        </div>
+
+        <div class="modal-group">
+          <label>আপনার নাম (Name)</label>
+          <input type="text" id="profileNameInput" placeholder="প্রনব কুমার" />
+        </div>
+
+        <div class="modal-group">
+          <label>নতুন পাসওয়ার্ড (নতুন পাসওয়ার্ড না দিতে চাইলে ফাঁকা রাখুন)</label>
+          <input type="password" id="profilePassInput" placeholder="নতুন পাসওয়ার্ড" />
+        </div>
+
+        <button type="submit" class="btn-save-profile">আপডেট সেভ করুন</button>
+      </form>
+    </div>
+  </div>
+
   <!-- FIREBASE AUTHENTICATION & AUTO-LOGOUT MODULE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updateProfile, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     // Your Firebase Configuration
     const firebaseConfig = {
@@ -501,6 +637,7 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    auth.useDeviceLanguage();
 
     const loader = document.getElementById('loader');
     const loginForm = document.getElementById('loginForm');
@@ -511,11 +648,21 @@
     const logoutBtn = document.getElementById('logoutBtn');
     const forgotBtn = document.getElementById('forgotBtn');
 
+    // Profile elements
+    const profileAvatarBtn = document.getElementById('profileAvatarBtn');
+    const profileModal = document.getElementById('profileModal');
+    const closeProfileModal = document.getElementById('closeProfileModal');
+    const modalProfileImg = document.getElementById('modalProfileImg');
+    const profileNameInput = document.getElementById('profileNameInput');
+    const profileImgInput = document.getElementById('profileImgInput');
+    const profilePassInput = document.getElementById('profilePassInput');
+    const profileForm = document.getElementById('profileForm');
+
     const adminEmail = "mousumicomputer.org@gmail.com";
 
-    /* --- AUTO LOGOUT LOGIC (5 MINUTES INACTIVITY) --- */
+    /* AUTO LOGOUT LOGIC (5 MINUTES INACTIVITY) */
     let inactivityTimer;
-    const INACTIVITY_LIMIT = 5 * 60 * 1000; // ৫ মিনিট (মিলিসেকেন্ডে)
+    const INACTIVITY_LIMIT = 5 * 60 * 1000;
 
     function resetInactivityTimer() {
       clearTimeout(inactivityTimer);
@@ -527,24 +674,40 @@
       }
     }
 
-    // মাউস নাড়াচাড়া, ক্লিক বা কিবোর্ডে চাপ দিলে টাইমার রিসেট হবে
     window.onload = resetInactivityTimer;
     document.onmousemove = resetInactivityTimer;
     document.onkeypress = resetInactivityTimer;
     document.onclick = resetInactivityTimer;
     document.onscroll = resetInactivityTimer;
 
-    /* --- AUTHENTICATION STATE CHANGE --- */
+    /* LOAD LOCAL STORAGE IMAGE IF EXISTS */
+    function loadSavedProfile() {
+      const savedPhoto = localStorage.getItem('mc_admin_photo');
+      if (savedPhoto) {
+        profileAvatarBtn.src = savedPhoto;
+        modalProfileImg.src = savedPhoto;
+      } else if (auth.currentUser && auth.currentUser.photoURL) {
+        profileAvatarBtn.src = auth.currentUser.photoURL;
+        modalProfileImg.src = auth.currentUser.photoURL;
+      }
+    }
+
+    /* AUTHENTICATION STATE CHANGE */
     onAuthStateChanged(auth, (user) => {
       loader.style.display = 'none';
       if (user) {
         loginSection.style.display = 'none';
         dashboardSection.style.display = 'block';
-        resetInactivityTimer(); // টাইমার অন করা হলো
+        
+        // Populate Profile Info
+        profileNameInput.value = user.displayName || "";
+        loadSavedProfile();
+
+        resetInactivityTimer();
       } else {
         dashboardSection.style.display = 'none';
         loginSection.style.display = 'flex';
-        clearTimeout(inactivityTimer); // টাইমার অফ করা হলো
+        clearTimeout(inactivityTimer);
       }
     });
 
@@ -565,9 +728,7 @@
       loader.style.display = 'flex';
 
       signInWithEmailAndPassword(auth, email, passwordInput)
-        .then((userCredential) => {
-          // Success handled by onAuthStateChanged
-        })
+        .then(() => {})
         .catch((error) => {
           loader.style.display = 'none';
           errorMsg.innerText = "ভুল ইউজারনেম অথবা পাসওয়ার্ড!";
@@ -599,6 +760,72 @@
     logoutBtn.addEventListener('click', () => {
       loader.style.display = 'flex';
       signOut(auth);
+    });
+
+    /* PROFILE MODAL LOGIC */
+    profileAvatarBtn.addEventListener('click', () => {
+      profileModal.style.display = 'flex';
+    });
+
+    closeProfileModal.addEventListener('click', () => {
+      profileModal.style.display = 'none';
+    });
+
+    // Preview Uploaded Image
+    profileImgInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          modalProfileImg.src = evt.target.result;
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Save Profile Changes
+    profileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const currentUser = auth.currentUser;
+      if (!currentUser) return;
+
+      loader.style.display = 'flex';
+
+      try {
+        const newName = profileNameInput.value.trim();
+        const newPassword = profilePassInput.value.trim();
+        const file = profileImgInput.files[0];
+
+        // 1. Image Base64 Save
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = async function(evt) {
+            const base64Image = evt.target.result;
+            localStorage.setItem('mc_admin_photo', base64Image);
+            profileAvatarBtn.src = base64Image;
+          };
+          reader.readAsDataURL(file);
+        }
+
+        // 2. Update Display Name
+        if (newName !== currentUser.displayName) {
+          await updateProfile(currentUser, { displayName: newName });
+        }
+
+        // 3. Update Password
+        if (newPassword !== "") {
+          await updatePassword(currentUser, newPassword);
+        }
+
+        loader.style.display = 'none';
+        alert('প্রোফাইল সফলভাবে আপডেট করা হয়েছে!');
+        profileModal.style.display = 'none';
+        profilePassInput.value = '';
+
+      } catch (err) {
+        loader.style.display = 'none';
+        alert('আপডেট করতে সমস্যা হয়েছে: ' + err.message);
+      }
     });
   </script>
 
