@@ -266,33 +266,144 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid var(--border-color);
+      position: relative;
+    }
+
+    .profile-dropdown-wrapper {
+      position: relative;
+    }
+
+    .user-profile-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
     }
 
     .user-profile-avatar {
-      width: 45px;
-      height: 45px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
       object-fit: cover;
-      cursor: pointer;
       border: 2px solid var(--primary-color);
-      transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    .user-profile-avatar:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 8px rgba(33, 118, 255, 0.4);
+    .user-profile-trigger i {
+      color: #6b7280;
+      font-size: 0.8rem;
     }
 
-    .btn-logout {
-      background: #fee2e2;
-      color: var(--red);
-      border: none;
-      padding: 8px 15px;
-      border-radius: 6px;
+    /* PROFILE DROPDOWN MENU (MATCHING YOUR IMAGE) */
+    .profile-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 55px;
+      right: 0;
+      width: 260px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--border-color);
+      z-index: 1000;
+      overflow: hidden;
+    }
+
+    .profile-dropdown-menu.show {
+      display: block;
+    }
+
+    .dropdown-header {
+      background: linear-gradient(135deg, #2176ff, #0284c7);
+      padding: 15px;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .dropdown-header img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+      object-fit: cover;
+    }
+
+    .dropdown-header-info h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .dropdown-header-info p {
+      font-size: 0.75rem;
+      opacity: 0.9;
+    }
+
+    .dropdown-section-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #9ca3af;
+      padding: 12px 15px 5px 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .dropdown-items-list {
+      list-style: none;
+      padding: 0 10px;
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      color: #4b5563;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      border-radius: 8px;
       cursor: pointer;
-      font-weight: 600;
+      transition: background 0.2s;
     }
 
+    .dropdown-item:hover {
+      background: #f3f4f6;
+      color: var(--primary-color);
+    }
+
+    .dropdown-item i {
+      width: 20px;
+      text-align: center;
+      color: var(--primary-color);
+    }
+
+    .dropdown-logout-container {
+      padding: 12px;
+    }
+
+    .btn-dropdown-logout {
+      width: 100%;
+      background: var(--red);
+      color: #ffffff;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+
+    .btn-dropdown-logout:hover {
+      background: #dc2626;
+    }
+
+    /* DASHBOARD CONTENT */
     .dashboard-container {
       padding: 30px;
     }
@@ -372,7 +483,7 @@
     .badge-expense { color: var(--red); font-weight: 600; background: #fef2f2; padding: 4px 8px; border-radius: 4px; }
     .btn-delete { color: var(--red); background: none; border: none; cursor: pointer; }
 
-    /* PROFILE MODAL STYLES */
+    /* MODALS */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -397,7 +508,7 @@
     .modal-card h3 {
       margin-bottom: 15px;
       color: var(--primary-dark);
-      font-size: 1.2rem;
+      font-size: 1.1rem;
     }
 
     .close-modal {
@@ -454,10 +565,6 @@
       cursor: pointer;
       font-weight: 600;
       margin-top: 10px;
-    }
-
-    .btn-save-profile:hover {
-      background-color: #1a65e0;
     }
   </style>
 </head>
@@ -532,10 +639,34 @@
       <div class="main-wrapper">
         <div class="top-navbar">
           <h2>অ্যাডমিন প্যানেল</h2>
-          <div style="display:flex; align-items:center; gap:15px;">
-            <!-- Profile Picture Avatar Button -->
-            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Profile" id="profileAvatarBtn" class="user-profile-avatar" title="প্রোফাইল সেটিংস পরিবর্তন করতে ক্লিক করুন" />
-            <button class="btn-logout" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> লগআউট</button>
+          
+          <!-- PROFILE DROPDOWN WRAPPER -->
+          <div class="profile-dropdown-wrapper">
+            <div class="user-profile-trigger" id="profileTrigger">
+              <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Profile" id="navAvatar" class="user-profile-avatar" />
+              <i class="fa-solid fa-chevron-down"></i>
+            </div>
+
+            <!-- DROPDOWN MENU -->
+            <div class="profile-dropdown-menu" id="profileDropdown">
+              <div class="dropdown-header">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="dropdownHeaderImg" alt="Profile" />
+                <div class="dropdown-header-info">
+                  <h4 id="dropdownName">প্রনব কুমার</h4>
+                  <p>Admin</p>
+                </div>
+              </div>
+
+              <div class="dropdown-section-title">Activity</div>
+              <ul class="dropdown-items-list">
+                <li class="dropdown-item" id="openChangePassBtn"><i class="fa-solid fa-lock"></i> Change Password</li>
+                <li class="dropdown-item" id="openMyProfileBtn"><i class="fa-solid fa-user"></i> My Profile</li>
+              </ul>
+
+              <div class="dropdown-logout-container">
+                <button class="btn-dropdown-logout" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -587,11 +718,11 @@
     </div>
   </div>
 
-  <!-- 3. PROFILE MODAL (POPUP) -->
-  <div class="modal-overlay" id="profileModal">
+  <!-- MY PROFILE MODAL -->
+  <div class="modal-overlay" id="myProfileModal">
     <div class="modal-card">
-      <span class="close-modal" id="closeProfileModal">&times;</span>
-      <h3>👤 প্রোফাইল সেটিংস</h3>
+      <span class="close-modal" id="closeMyProfileModal">&times;</span>
+      <h3>👤 My Profile</h3>
 
       <div class="profile-preview-container">
         <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="modalProfileImg" class="profile-preview-img" alt="Profile Preview">
@@ -608,17 +739,29 @@
           <input type="text" id="profileNameInput" placeholder="প্রনব কুমার" />
         </div>
 
-        <div class="modal-group">
-          <label>নতুন পাসওয়ার্ড (নতুন পাসওয়ার্ড না দিতে চাইলে ফাঁকা রাখুন)</label>
-          <input type="password" id="profilePassInput" placeholder="নতুন পাসওয়ার্ড" />
-        </div>
-
-        <button type="submit" class="btn-save-profile">আপডেট সেভ করুন</button>
+        <button type="submit" class="btn-save-profile">সেভ করুন</button>
       </form>
     </div>
   </div>
 
-  <!-- FIREBASE AUTHENTICATION & AUTO-LOGOUT MODULE -->
+  <!-- CHANGE PASSWORD MODAL -->
+  <div class="modal-overlay" id="changePassModal">
+    <div class="modal-card">
+      <span class="close-modal" id="closeChangePassModal">&times;</span>
+      <h3>🔒 Change Password</h3>
+
+      <form id="passForm">
+        <div class="modal-group">
+          <label>নতুন পাসওয়ার্ড লিখুন</label>
+          <input type="password" id="newPassInput" placeholder="••••••••" required />
+        </div>
+
+        <button type="submit" class="btn-save-profile">পাসওয়ার্ড পরিবর্তন করুন</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- FIREBASE AUTHENTICATION & DROPDOWN SCRIPT -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updateProfile, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -648,17 +791,43 @@
     const logoutBtn = document.getElementById('logoutBtn');
     const forgotBtn = document.getElementById('forgotBtn');
 
-    // Profile elements
-    const profileAvatarBtn = document.getElementById('profileAvatarBtn');
-    const profileModal = document.getElementById('profileModal');
-    const closeProfileModal = document.getElementById('closeProfileModal');
+    // Profile Dropdown & Modals
+    const profileTrigger = document.getElementById('profileTrigger');
+    const profileDropdown = document.getElementById('profileDropdown');
+    const navAvatar = document.getElementById('navAvatar');
+    const dropdownHeaderImg = document.getElementById('dropdownHeaderImg');
+    const dropdownName = document.getElementById('dropdownName');
+
+    const openMyProfileBtn = document.getElementById('openMyProfileBtn');
+    const myProfileModal = document.getElementById('myProfileModal');
+    const closeMyProfileModal = document.getElementById('closeMyProfileModal');
+
+    const openChangePassBtn = document.getElementById('openChangePassBtn');
+    const changePassModal = document.getElementById('changePassModal');
+    const closeChangePassModal = document.getElementById('closeChangePassModal');
+
     const modalProfileImg = document.getElementById('modalProfileImg');
     const profileNameInput = document.getElementById('profileNameInput');
     const profileImgInput = document.getElementById('profileImgInput');
-    const profilePassInput = document.getElementById('profilePassInput');
     const profileForm = document.getElementById('profileForm');
+    const passForm = document.getElementById('passForm');
+    const newPassInput = document.getElementById('newPassInput');
 
     const adminEmail = "mousumicomputer.org@gmail.com";
+
+    /* DROPDOWN TOGGLE LOGIC */
+    profileTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.toggle('show');
+    });
+
+    document.addEventListener('click', () => {
+      profileDropdown.classList.remove('show');
+    });
+
+    profileDropdown.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
 
     /* AUTO LOGOUT LOGIC (5 MINUTES INACTIVITY) */
     let inactivityTimer;
@@ -680,15 +849,20 @@
     document.onclick = resetInactivityTimer;
     document.onscroll = resetInactivityTimer;
 
-    /* LOAD LOCAL STORAGE IMAGE IF EXISTS */
+    /* LOAD SAVED PROFILE DATA */
     function loadSavedProfile() {
       const savedPhoto = localStorage.getItem('mc_admin_photo');
+      const savedName = localStorage.getItem('mc_admin_name') || (auth.currentUser ? auth.currentUser.displayName : "প্রনব কুমার");
+
       if (savedPhoto) {
-        profileAvatarBtn.src = savedPhoto;
+        navAvatar.src = savedPhoto;
+        dropdownHeaderImg.src = savedPhoto;
         modalProfileImg.src = savedPhoto;
-      } else if (auth.currentUser && auth.currentUser.photoURL) {
-        profileAvatarBtn.src = auth.currentUser.photoURL;
-        modalProfileImg.src = auth.currentUser.photoURL;
+      }
+      
+      if (savedName) {
+        dropdownName.innerText = savedName;
+        profileNameInput.value = savedName;
       }
     }
 
@@ -699,10 +873,7 @@
         loginSection.style.display = 'none';
         dashboardSection.style.display = 'block';
         
-        // Populate Profile Info
-        profileNameInput.value = user.displayName || "";
         loadSavedProfile();
-
         resetInactivityTimer();
       } else {
         dashboardSection.style.display = 'none';
@@ -762,16 +933,26 @@
       signOut(auth);
     });
 
-    /* PROFILE MODAL LOGIC */
-    profileAvatarBtn.addEventListener('click', () => {
-      profileModal.style.display = 'flex';
+    /* MODALS OPEN/CLOSE */
+    openMyProfileBtn.addEventListener('click', () => {
+      profileDropdown.classList.remove('show');
+      myProfileModal.style.display = 'flex';
     });
 
-    closeProfileModal.addEventListener('click', () => {
-      profileModal.style.display = 'none';
+    closeMyProfileModal.addEventListener('click', () => {
+      myProfileModal.style.display = 'none';
     });
 
-    // Preview Uploaded Image
+    openChangePassBtn.addEventListener('click', () => {
+      profileDropdown.classList.remove('show');
+      changePassModal.style.display = 'flex';
+    });
+
+    closeChangePassModal.addEventListener('click', () => {
+      changePassModal.style.display = 'none';
+    });
+
+    // Preview Profile Image
     profileImgInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -783,48 +964,63 @@
       }
     });
 
-    // Save Profile Changes
+    // Save My Profile Changes
     profileForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const currentUser = auth.currentUser;
-      if (!currentUser) return;
-
       loader.style.display = 'flex';
 
       try {
         const newName = profileNameInput.value.trim();
-        const newPassword = profilePassInput.value.trim();
         const file = profileImgInput.files[0];
 
-        // 1. Image Base64 Save
+        if (newName) {
+          localStorage.setItem('mc_admin_name', newName);
+          dropdownName.innerText = newName;
+          if (currentUser) await updateProfile(currentUser, { displayName: newName });
+        }
+
         if (file) {
           const reader = new FileReader();
-          reader.onload = async function(evt) {
+          reader.onload = function(evt) {
             const base64Image = evt.target.result;
             localStorage.setItem('mc_admin_photo', base64Image);
-            profileAvatarBtn.src = base64Image;
+            navAvatar.src = base64Image;
+            dropdownHeaderImg.src = base64Image;
           };
           reader.readAsDataURL(file);
         }
 
-        // 2. Update Display Name
-        if (newName !== currentUser.displayName) {
-          await updateProfile(currentUser, { displayName: newName });
-        }
-
-        // 3. Update Password
-        if (newPassword !== "") {
-          await updatePassword(currentUser, newPassword);
-        }
-
         loader.style.display = 'none';
-        alert('প্রোফাইল সফলভাবে আপডেট করা হয়েছে!');
-        profileModal.style.display = 'none';
-        profilePassInput.value = '';
+        alert('প্রোফাইল সফলভাবে আপডেট হয়েছে!');
+        myProfileModal.style.display = 'none';
 
       } catch (err) {
         loader.style.display = 'none';
-        alert('আপডেট করতে সমস্যা হয়েছে: ' + err.message);
+        alert('ত্রুটি: ' + err.message);
+      }
+    });
+
+    // Save Password Change
+    passForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const currentUser = auth.currentUser;
+      const newPass = newPassInput.value.trim();
+
+      if (!newPass) return;
+      loader.style.display = 'flex';
+
+      try {
+        if (currentUser) {
+          await updatePassword(currentUser, newPass);
+          loader.style.display = 'none';
+          alert('পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে!');
+          changePassModal.style.display = 'none';
+          newPassInput.value = '';
+        }
+      } catch (err) {
+        loader.style.display = 'none';
+        alert('পাসওয়ার্ড পরিবর্তন করতে সমস্যা হয়েছে: ' + err.message + '\n(টিপস: নতুন পাসওয়ার্ড দেওয়ার জন্য সম্প্রতি লগইন করা থাকতে হয়)');
       }
     });
   </script>
