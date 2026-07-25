@@ -449,7 +449,7 @@
     </div>
   </div>
 
-  <!-- FIREBASE AUTHENTICATION MODULE -->
+  <!-- FIREBASE AUTHENTICATION & AUTO-LOGOUT MODULE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -476,15 +476,38 @@
     const errorMsg = document.getElementById('errorMsg');
     const logoutBtn = document.getElementById('logoutBtn');
 
-    // Smooth State Change Fix
+    /* --- AUTO LOGOUT LOGIC (5 MINUTES INACTIVITY) --- */
+    let inactivityTimer;
+    const INACTIVITY_LIMIT = 5 * 60 * 1000; // ৫ মিনিট (মিলিসেকেন্ডে)
+
+    function resetInactivityTimer() {
+      clearTimeout(inactivityTimer);
+      if (auth.currentUser) {
+        inactivityTimer = setTimeout(() => {
+          alert('আপনি দীর্ঘক্ষণ কোনো কাজ করেননি! নিরাপত্তার স্বার্থে সেশন শেষ করা হয়েছে।');
+          signOut(auth);
+        }, INACTIVITY_LIMIT);
+      }
+    }
+
+    // মাউস নাড়াচাড়া, ক্লিক বা কিবোর্ডে চাপ দিলে টাইমার রিসেট হবে
+    window.onload = resetInactivityTimer;
+    document.onmousemove = resetInactivityTimer;
+    document.onkeypress = resetInactivityTimer;
+    document.onclick = resetInactivityTimer;
+    document.onscroll = resetInactivityTimer;
+
+    /* --- AUTHENTICATION STATE CHANGE --- */
     onAuthStateChanged(auth, (user) => {
-      loader.style.display = 'none'; // Hide Loader
+      loader.style.display = 'none';
       if (user) {
         loginSection.style.display = 'none';
         dashboardSection.style.display = 'block';
+        resetInactivityTimer(); // টাইমার অন করা হলো
       } else {
         dashboardSection.style.display = 'none';
         loginSection.style.display = 'flex';
+        clearTimeout(inactivityTimer); // টাইমার অফ করা হলো
       }
     });
 
@@ -501,11 +524,11 @@
         email = usernameInput + "@mousumi.com";
       }
 
-      loader.style.display = 'flex'; // Show Loader during login
+      loader.style.display = 'flex';
 
       signInWithEmailAndPassword(auth, email, passwordInput)
         .then((userCredential) => {
-          // Success
+          // Success handled by onAuthStateChanged
         })
         .catch((error) => {
           loader.style.display = 'none';
