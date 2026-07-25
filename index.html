@@ -31,6 +31,7 @@
     body {
       background: linear-gradient(135deg, #0d233a 0%, #2176ff 100%);
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
@@ -151,7 +152,7 @@
       text-decoration: underline;
     }
 
-    /* Modern Login Button */
+    /* Login Button */
     .btn-submit {
       width: 100%;
       padding: 0.85rem;
@@ -168,7 +169,6 @@
       gap: 8px;
       box-shadow: 0 4px 12px rgba(33, 118, 255, 0.3);
       transition: all 0.2s ease;
-      margin-bottom: 1.5rem;
     }
 
     .btn-submit:hover {
@@ -176,51 +176,23 @@
       transform: translateY(-1px);
     }
 
-    /* --- Swipe/Slide to Return Feature --- */
-    .swipe-container {
-      position: relative;
-      background: #eef2f7;
-      border-radius: 30px;
-      padding: 4px;
-      height: 48px;
-      display: flex;
-      align-items: center;
-      overflow: hidden;
-      user-select: none;
-      border: 1px solid #e2e8f0;
-    }
-
-    .swipe-text {
-      position: absolute;
-      width: 100%;
+    /* Back to Website Link (WordPress Style) */
+    .back-to-site {
+      margin-top: 20px;
       text-align: center;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: #64748b;
-      pointer-events: none;
-      padding-left: 20px;
     }
 
-    .swipe-handle {
-      width: 40px;
-      height: 40px;
-      background: var(--primary-dark);
-      color: #fff;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: grab;
-      position: absolute;
-      left: 4px;
-      z-index: 2;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      transition: background 0.2s;
+    .back-to-site a {
+      color: rgba(255, 255, 255, 0.85);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
     }
 
-    .swipe-handle:active {
-      cursor: grabbing;
-      background: var(--primary-color);
+    .back-to-site a:hover {
+      color: #ffffff;
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -273,14 +245,11 @@
       </button>
     </form>
 
-    <!-- Swipe to Return Section -->
-    <div class="swipe-container" id="swipeContainer">
-      <div class="swipe-text" id="swipeText">Slide to return website ➔</div>
-      <div class="swipe-handle" id="swipeHandle">
-        <i class="fa-solid fa-angles-right"></i>
-      </div>
-    </div>
+  </div>
 
+  <!-- WordPress Style Go to Website Link -->
+  <div class="back-to-site">
+    <a href="https://mousumicomputer.blogspot.com" id="label-back">← Go to MOUSUMI COMPUTER</a>
   </div>
 
   <script>
@@ -292,7 +261,7 @@
         remember: "Remember me",
         forgot: "Forgot Password?",
         btn: "Log In",
-        swipe: "Slide to return website ➔"
+        back: "← Go to MOUSUMI COMPUTER"
       },
       bn: {
         username: "ইউজারনেম বা ইমেইল",
@@ -300,7 +269,7 @@
         remember: "মনে রাখুন",
         forgot: "পাসওয়ার্ড ভুলে গেছেন?",
         btn: "লগইন করুন",
-        swipe: "ওয়েবসাইটে ফিরতে স্লাইড করুন ➔"
+        back: "← মৌসুমী কম্পিউটারে ফিরে যান"
       }
     };
 
@@ -310,56 +279,8 @@
       document.getElementById('label-remember').innerText = translations[lang].remember;
       document.getElementById('label-forgot').innerText = translations[lang].forgot;
       document.getElementById('label-btn').innerText = translations[lang].btn;
-      document.getElementById('swipeText').innerText = translations[lang].swipe;
+      document.getElementById('label-back').innerText = translations[lang].back;
     }
-
-    /* Swipe / Slide Logic */
-    const container = document.getElementById('swipeContainer');
-    const handle = document.getElementById('swipeHandle');
-    let isDragging = false;
-    let startX = 0;
-
-    function startDrag(e) {
-      isDragging = true;
-      startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-    }
-
-    function onDrag(e) {
-      if (!isDragging) return;
-      const currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-      let deltaX = currentX - startX;
-      const maxSlide = container.clientWidth - handle.clientWidth - 8;
-
-      if (deltaX < 0) deltaX = 0;
-      if (deltaX > maxSlide) deltaX = maxSlide;
-
-      handle.style.left = (deltaX + 4) + 'px';
-
-      // If slided 85% or more -> Redirect
-      if (deltaX >= maxSlide * 0.85) {
-        isDragging = false;
-        handle.style.left = maxSlide + 'px';
-        // Your Website Link Here
-        window.location.href = "https://mousumicomputer.blogspot.com"; 
-      }
-    }
-
-    function stopDrag() {
-      if (!isDragging) return;
-      isDragging = false;
-      // Reset position if not completed
-      handle.style.transition = 'left 0.3s ease';
-      handle.style.left = '4px';
-      setTimeout(() => handle.style.transition = '', 300);
-    }
-
-    handle.addEventListener('mousedown', startDrag);
-    window.addEventListener('mousemove', onDrag);
-    window.addEventListener('mouseup', stopDrag);
-
-    handle.addEventListener('touchstart', startDrag);
-    window.addEventListener('touchmove', onDrag);
-    window.addEventListener('touchend', stopDrag);
   </script>
 
 </body>
