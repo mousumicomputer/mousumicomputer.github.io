@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Store Admin Login</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
+      background-color: #f0f0f1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #3c434a;
+    }
+    .logo-container { margin-bottom: 25px; text-align: center; }
+    .logo-container i { font-size: 80px; color: #50575e; }
+    .login-card {
+      background: #ffffff;
+      padding: 26px 24px 34px;
+      width: 320px;
+      border: 1px solid #c3c4c7;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 14px;
+      color: #2c3338;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="password"] {
+      width: 100%;
+      padding: 6px 8px;
+      font-size: 16px;
+      border: 1px solid #8c8f94;
+      border-radius: 4px;
+      outline: none;
+    }
+    .form-group input:focus {
+      border-color: #2271b1;
+      box-shadow: 0 0 0 1px #2271b1;
+    }
+    .remember-btn-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+    }
+    .remember-me { font-size: 13px; color: #50575e; }
+    .btn-submit {
+      background: #2271b1;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      font-size: 14px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-submit:hover { background: #135e96; }
+    .footer-links {
+      margin-top: 25px;
+      text-align: left;
+      width: 320px;
+      font-size: 13px;
+    }
+    .footer-links a { color: #50575e; text-decoration: none; display: block; margin-bottom: 10px; }
+    .footer-links a:hover { color: #2271b1; }
+  </style>
+</head>
+<body>
+
+  <!-- লোগো -->
+  <div class="logo-container">
+    <i class="fa-brands fa-wordpress"></i>
+  </div>
+
+  <!-- লগইন বক্স -->
+  <div class="login-card">
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="username">Username or Email Address</label>
+        <input type="text" id="username" required>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required>
+      </div>
+
+      <div class="remember-btn-row">
+        <label class="remember-me">
+          <input type="checkbox"> Remember Me
+        </label>
+        <button type="submit" class="btn-submit">Log In</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- নিচের লিংক -->
+  <div class="footer-links">
+    <a href="#">Lost your password?</a>
+    <a href="#">← Go to MOUSUMI COMPUTER</a>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var user = document.getElementById('username').value;
+      var pass = document.getElementById('password').value;
+
+      // উদাহরণস্বরূপ পিন বা পাসওয়ার্ড
+      if(user === "admin" && pass === "1234") {
+        alert("লগইন সফল হয়েছে! এখন আপনার হিসাব খাতায় নিয়ে যাওয়া হচ্ছে...");
+        // আপনার হিসাব পাতার বা গুগল শীটের লিংক এখানে বসাবেন
+        window.location.href = "https://your-accounting-dashboard-link.com"; 
+      } else {
+        alert("❌ ইউজারনাম বা পাসওয়ার্ড ভুল হয়েছে!");
+      }
+    });
+  </script>
+
+</body>
+</html>
