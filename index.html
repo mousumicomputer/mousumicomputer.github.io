@@ -11,7 +11,7 @@
 
   <style>
     :root {
-      --primary-color: #2176ff;
+      --primary-color: #00a8efff;
       --primary-dark: #0d233a;
       --bg-color: #f4f6f9;
       --card-bg: #ffffff;
@@ -19,7 +19,7 @@
       --border-color: #e5e7eb;
       --border-radius: 12px;
       --green: #10b981;
-      --red: #ef4444;
+      --red: #e11d48;
     }
 
     * {
@@ -50,7 +50,7 @@
       width: 50px;
       height: 50px;
       border-radius: 50%;
-      border-left-color: var(--primary-color);
+      border-left-color: #00a8ef;
       animation: spin 1s linear infinite;
       margin-bottom: 15px;
     }
@@ -62,7 +62,7 @@
 
     /* LOGIN SECTION */
     #login-section {
-      background: linear-gradient(135deg, #0d233a 0%, #2176ff 100%);
+      background: linear-gradient(135deg, #0d233a 0%, #00a8ef 100%);
       display: none;
       flex-direction: column;
       justify-content: center;
@@ -111,13 +111,10 @@
       outline: none;
     }
 
-    .forgot-link-container { text-align: right; margin-top: -5px; margin-bottom: 15px; }
-    .forgot-link { background: none; border: none; color: var(--red); font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: underline; }
-
     .btn-submit {
       width: 100%;
       padding: 0.85rem;
-      background-color: var(--primary-color);
+      background-color: #00a8ef;
       color: #ffffff;
       border: none;
       border-radius: 8px;
@@ -130,11 +127,9 @@
       gap: 8px;
     }
 
-    .error-msg, .success-msg { font-size: 0.85rem; margin-bottom: 1rem; display: none; }
-    .error-msg { color: var(--red); }
-    .success-msg { color: var(--green); }
+    .error-msg { color: var(--red); font-size: 0.85rem; margin-bottom: 1rem; display: none; }
 
-    /* DASHBOARD SECTION */
+    /* DASHBOARD LAYOUT */
     #dashboard-section {
       display: none;
       background-color: var(--bg-color);
@@ -175,7 +170,7 @@
       font-weight: 500;
       cursor: pointer;
     }
-    .menu-item.active a { background-color: var(--primary-color); color: #ffffff; }
+    .menu-item.active a { background-color: #00a8ef; color: #ffffff; }
 
     .main-wrapper { flex: 1; display: flex; flex-direction: column; }
 
@@ -199,7 +194,7 @@
     .lang-btn {
       background: #f3f4f6;
       border: 1px solid var(--border-color);
-      padding: 6px 12px;
+      padding: 6px 14px;
       border-radius: 20px;
       font-weight: 600;
       cursor: pointer;
@@ -209,14 +204,14 @@
       color: var(--text-color);
     }
 
+    /* DROPDOWN CONTAINER */
     .profile-dropdown-wrapper { position: relative; }
     .user-profile-trigger {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       cursor: pointer;
-      padding: 5px;
-      border-radius: 30px;
+      padding: 4px;
     }
 
     .user-profile-avatar {
@@ -224,84 +219,116 @@
       height: 42px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid var(--primary-color);
+      border: 2px solid #00a8ef;
     }
 
-    /* DROPDOWN MENU */
+    /* EXACT IMAGE MATCHING POPUP CARD */
     .profile-dropdown-menu {
       display: none;
       position: absolute;
       top: 55px;
       right: 0;
-      width: 260px;
+      width: 280px;
       background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-      border: 1px solid var(--border-color);
-      z-index: 999;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+      border: 1px solid #e5e7eb;
+      z-index: 9999;
       overflow: hidden;
     }
 
     .profile-dropdown-menu.active { display: block; }
 
+    /* BLUE GRADIENT HEADER LIKE IMAGE */
     .dropdown-header {
-      background: linear-gradient(135deg, #0ea5e9, #2176ff);
-      padding: 16px;
+      background: linear-gradient(135deg, #00bdff 0%, #0088e8 100%);
+      padding: 18px 16px;
       color: #ffffff;
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    .dropdown-header img { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #ffffff; object-fit: cover; }
-    .dropdown-header-info h4 { font-size: 0.95rem; font-weight: 700; }
-    .dropdown-header-info p { font-size: 0.75rem; opacity: 0.9; }
+    .dropdown-header img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+      object-fit: cover;
+    }
+
+    .dropdown-header-info h4 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .dropdown-header-info p {
+      font-size: 0.8rem;
+      opacity: 0.9;
+      font-weight: 400;
+    }
 
     .dropdown-section-title {
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       font-weight: 700;
       color: #9ca3af;
-      padding: 10px 15px 4px 15px;
-      text-transform: uppercase;
+      padding: 14px 18px 6px 18px;
+      letter-spacing: 0.5px;
     }
 
     .dropdown-items-list { list-style: none; padding: 0 10px; }
     .dropdown-item {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       padding: 10px 12px;
       color: #4b5563;
-      text-decoration: none;
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       font-weight: 600;
       border-radius: 8px;
       cursor: pointer;
+      transition: background 0.2s;
     }
 
-    .dropdown-item:hover { background: #f3f4f6; color: var(--primary-color); }
-    .dropdown-logout-container { padding: 10px; }
+    .dropdown-item i {
+      width: 24px;
+      height: 24px;
+      background: #eff6ff;
+      color: #3b82f6;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+    }
+
+    .dropdown-item:hover { background: #f3f4f6; color: #0088e8; }
+
+    /* LOGOUT BUTTON LIKE IMAGE */
+    .dropdown-logout-container { padding: 14px 16px 16px 16px; }
 
     .btn-dropdown-logout {
       width: 100%;
-      background: #ef4444;
+      background: #e11d48;
       color: #ffffff;
       border: none;
-      padding: 10px;
-      border-radius: 8px;
-      font-weight: 600;
+      padding: 11px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.92rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.25);
     }
 
-    /* VIEW PANELS (Dashboard / Profile) */
+    /* VIEW PANELS */
     .view-panel { display: none; padding: 30px; }
     .view-panel.active { display: block; }
 
-    /* DASHBOARD CONTENT */
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -314,7 +341,7 @@
     .card .amount { font-size: 1.6rem; font-weight: 700; }
     .card.income .amount { color: var(--green); }
     .card.expense .amount { color: var(--red); }
-    .card.balance .amount { color: var(--primary-color); }
+    .card.balance .amount { color: #00a8ef; }
 
     .form-card, .table-card {
       background: #ffffff;
@@ -337,7 +364,7 @@
     }
 
     .btn-add {
-      background-color: var(--primary-color);
+      background-color: #00a8ef;
       color: #ffffff;
       border: none;
       padding: 10px 20px;
@@ -351,7 +378,6 @@
 
     .badge-income { color: var(--green); font-weight: 600; background: #ecfdf5; padding: 4px 8px; border-radius: 4px; }
     .badge-expense { color: var(--red); font-weight: 600; background: #fef2f2; padding: 4px 8px; border-radius: 4px; }
-    .btn-delete { color: var(--red); background: none; border: none; cursor: pointer; }
 
     /* FULL SCREEN PROFILE STYLES */
     .profile-page-card {
@@ -377,7 +403,7 @@
       height: 100px;
       border-radius: 50%;
       object-fit: cover;
-      border: 3px solid var(--primary-color);
+      border: 3px solid #00a8ef;
     }
 
     .profile-upload-btn {
@@ -456,7 +482,6 @@
       </div>
 
       <p class="error-msg" id="errorMsg">Invalid Username or Password!</p>
-      <p class="success-msg" id="successMsg"></p>
 
       <form id="loginForm">
         <div class="form-group">
@@ -473,10 +498,6 @@
             <i class="fa-solid fa-lock"></i>
             <input type="password" id="password" placeholder="••••••••" required />
           </div>
-        </div>
-
-        <div class="forgot-link-container">
-          <button type="button" class="forgot-link" id="forgotBtn"><i class="fa-solid fa-key"></i> <span id="txt-forgot">Forgot Password?</span></button>
         </div>
 
         <button type="submit" class="btn-submit">
@@ -520,25 +541,52 @@
             <div class="profile-dropdown-wrapper">
               <div class="user-profile-trigger" id="profileTrigger">
                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Profile" id="navAvatar" class="user-profile-avatar" />
-                <i class="fa-solid fa-chevron-down"></i>
+                <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: #6b7280;"></i>
               </div>
 
+              <!-- EXACT MATCH POPUP DROPDOWN MENU -->
               <div class="profile-dropdown-menu" id="profileDropdown">
+                <!-- Header -->
                 <div class="dropdown-header">
                   <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="dropdownHeaderImg" alt="Profile" />
                   <div class="dropdown-header-info">
-                    <h4 id="dropdownName">Rabbi Hosen</h4>
+                    <h4 id="dropdownName">Rupali Khanam</h4>
                     <p id="dropdownRole">Accounts Officer</p>
                   </div>
                 </div>
 
-                <div class="dropdown-section-title" id="txt-activity">ACTIVITY</div>
+                <!-- Activity Section -->
+                <div class="dropdown-section-title" id="txt-act-head">ACTIVITY</div>
                 <ul class="dropdown-items-list">
-                  <li class="dropdown-item" onclick="switchPanel('profile')"><i class="fa-solid fa-circle-user"></i> <span id="drop-prof">My Profile</span></li>
+                  <li class="dropdown-item" onclick="switchPanel('profile')">
+                    <i class="fa-solid fa-lock"></i>
+                    <span id="drop-pass">Change Password</span>
+                  </li>
+                  <li class="dropdown-item" onclick="switchPanel('profile')">
+                    <i class="fa-regular fa-user"></i>
+                    <span id="drop-prof">My Profile</span>
+                  </li>
                 </ul>
 
+                <!-- My Account Section -->
+                <div class="dropdown-section-title" id="txt-acc-head">MY ACCOUNT</div>
+                <ul class="dropdown-items-list">
+                  <li class="dropdown-item">
+                    <i class="fa-regular fa-bell"></i>
+                    <span id="drop-notif">Notifications</span>
+                  </li>
+                  <li class="dropdown-item">
+                    <i class="fa-regular fa-clipboard"></i>
+                    <span id="drop-tasks">Tasks</span>
+                  </li>
+                </ul>
+
+                <!-- Logout -->
                 <div class="dropdown-logout-container">
-                  <button class="btn-dropdown-logout" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> <span id="drop-logout">Logout</span></button>
+                  <button class="btn-dropdown-logout" id="logoutBtn">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span id="drop-logout">Logout</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -568,8 +616,8 @@
               <input type="text" id="desc" placeholder="Description (e.g. Typing / Paper)" required />
               <input type="number" id="amount" placeholder="Amount (৳)" required />
               <select id="type">
-                <option value="income" id="opt-income">Cash In (Income)</option>
-                <option value="expense" id="opt-expense">Cash Out (Expense)</option>
+                <option value="income">Cash In (Income)</option>
+                <option value="expense">Cash Out (Expense)</option>
               </select>
               <button type="submit" class="btn-add" id="btn-save">+ Save</button>
             </form>
@@ -597,7 +645,7 @@
             <div class="profile-header-banner">
               <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="fullProfileImg" class="profile-big-avatar" alt="Profile Avatar" />
               <div>
-                <h2 id="fullProfileNameDisplay">Rabbi Hosen</h2>
+                <h2 id="fullProfileNameDisplay">Rupali Khanam</h2>
                 <p style="color: #6b7280; margin-bottom: 8px;" id="fullProfileRoleDisplay">Accounts Officer</p>
                 <div class="profile-upload-btn">
                   <button class="btn-secondary"><i class="fa-solid fa-camera"></i> <span id="txt-change-photo">Change Photo</span></button>
@@ -611,7 +659,7 @@
               <div class="profile-form-grid">
                 <div class="field-group">
                   <label id="lbl-full-name">Full Name</label>
-                  <input type="text" id="profFullName" placeholder="Rabbi Hosen" required />
+                  <input type="text" id="profFullName" placeholder="Rupali Khanam" required />
                 </div>
 
                 <div class="field-group">
@@ -652,7 +700,7 @@
   <!-- FIREBASE & JS SCRIPT -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updateProfile, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA1PhRiTkICNCd8sA4he3ZxKjHtIzM0d5E",
@@ -673,9 +721,7 @@
     const loginSection = document.getElementById('login-section');
     const dashboardSection = document.getElementById('dashboard-section');
     const errorMsg = document.getElementById('errorMsg');
-    const successMsg = document.getElementById('successMsg');
     const logoutBtn = document.getElementById('logoutBtn');
-    const forgotBtn = document.getElementById('forgotBtn');
 
     const profileTrigger = document.getElementById('profileTrigger');
     const profileDropdown = document.getElementById('profileDropdown');
@@ -711,7 +757,7 @@
       }
     });
 
-    /* PANEL SWITCHING (Dashboard vs Profile) */
+    /* PANEL SWITCHING */
     window.switchPanel = function(panelName) {
       profileDropdown.classList.remove('active');
       document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
@@ -731,7 +777,7 @@
     /* LOAD PROFILE DATA */
     function loadSavedProfile() {
       const savedPhoto = localStorage.getItem('mc_admin_photo');
-      const savedName = localStorage.getItem('mc_admin_name') || "Rabbi Hosen";
+      const savedName = localStorage.getItem('mc_admin_name') || "Rupali Khanam";
       const savedRole = localStorage.getItem('mc_admin_role') || "Accounts Officer";
       const savedPhone = localStorage.getItem('mc_admin_phone') || "";
 
@@ -844,7 +890,7 @@
     });
 
     /* MULTI-LANGUAGE TRANSLATION SYSTEM */
-    window.currentLang = 'en'; // Default English
+    window.currentLang = 'en'; 
 
     window.toggleLanguage = function() {
       currentLang = currentLang === 'en' ? 'bn' : 'en';
@@ -858,16 +904,21 @@
       document.getElementById('top-title').innerText = document.getElementById('profile-view').classList.contains('active') ? 
         (isEn ? 'My Profile Settings' : 'প্রোফাইল সেটিং') : (isEn ? 'Admin Dashboard' : 'অ্যাডমিন ড্যাশবোর্ড');
 
-      // Sidebar Links
+      // Sidebar
       document.getElementById('nav-dash').innerText = isEn ? 'Dashboard' : 'ড্যাশবোর্ড';
       document.getElementById('nav-prof').innerText = isEn ? 'My Profile' : 'মাই প্রোফাইল';
       document.getElementById('nav-accounts').innerText = isEn ? 'Accounts' : 'হিসাব-নিকাশ';
       document.getElementById('nav-due').innerText = isEn ? 'Due Ledger' : 'বাকির খাতা';
       document.getElementById('nav-inventory').innerText = isEn ? 'Inventory' : 'ইনভেন্টরি';
 
-      // Dropdown
-      document.getElementById('txt-activity').innerText = isEn ? 'ACTIVITY' : 'কার্যক্রম';
+      // Dropdown (As per Image)
+      document.getElementById('txt-act-head').innerText = isEn ? 'ACTIVITY' : 'কার্যক্রম';
+      document.getElementById('drop-pass').innerText = isEn ? 'Change Password' : 'পাসওয়ার্ড পরিবর্তন';
       document.getElementById('drop-prof').innerText = isEn ? 'My Profile' : 'মাই প্রোফাইল';
+      
+      document.getElementById('txt-acc-head').innerText = isEn ? 'MY ACCOUNT' : 'আমার অ্যাকাউন্ট';
+      document.getElementById('drop-notif').innerText = isEn ? 'Notifications' : 'নোটিফিকেশন';
+      document.getElementById('drop-tasks').innerText = isEn ? 'Tasks' : 'টাস্ক তালিকা';
       document.getElementById('drop-logout').innerText = isEn ? 'Logout' : 'লগআউট';
 
       // Dashboard View
@@ -897,7 +948,7 @@
     }
   </script>
 
-  <!-- LOCALSTORAGE DASHBOARD TRANSACTIONS -->
+  <!-- LOCALSTORAGE TRANSACTIONS -->
   <script>
     let transactions = JSON.parse(localStorage.getItem('mc_transactions')) || [];
 
@@ -923,7 +974,7 @@
           <td>${item.desc}</td>
           <td><span class="${item.type === 'income' ? 'badge-income' : 'badge-expense'}">${badgeText}</span></td>
           <td>৳ ${item.amount}</td>
-          <td><button class="btn-delete" onclick="deleteItem(${index})"><i class="fa-solid fa-trash"></i></button></td>
+          <td><button style="color:#e11d48; background:none; border:none; cursor:pointer;" onclick="deleteItem(${index})"><i class="fa-solid fa-trash"></i></button></td>
         `;
         list.appendChild(row);
       });
