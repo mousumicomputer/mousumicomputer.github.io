@@ -1,24 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Login - Mousumi Computer</title>
+  <title>Admin Dashboard - Mousumi Computer</title>
   
-  <!-- FontAwesome Icons -->
+  <!-- FontAwesome Icons & Google Fonts -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
       --primary-color: #2176ff;
       --primary-dark: #0d233a;
-      --bg-color: #f2f4f7;
+      --bg-color: #f4f6f9;
       --card-bg: #ffffff;
       --text-color: #333333;
       --border-color: #e5e7eb;
-      --border-radius: 12px;
+      --green: #10b981;
+      --red: #ef4444;
     }
 
     * {
@@ -29,258 +29,378 @@
     }
 
     body {
-      background: linear-gradient(135deg, #0d233a 0%, #2176ff 100%);
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Styling */
+    .sidebar {
+      width: 250px;
+      background-color: var(--primary-dark);
+      color: #ffffff;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
       padding: 20px;
+      transition: all 0.3s;
     }
 
-    /* Container Card */
-    .login-card {
-      background-color: var(--card-bg);
-      padding: 2.5rem 2rem;
-      border-radius: var(--border-radius);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
-      position: relative;
-    }
-
-    /* Language Switcher Dropdown Top Right */
-    .lang-switcher-container {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-    }
-
-    .lang-select {
-      background: #f3f4f6;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #4b5563;
-      outline: none;
-      cursor: pointer;
-    }
-
-    /* Circular Logo Styling */
-    .logo-container {
-      margin-top: 10px;
-      margin-bottom: 1.5rem;
-    }
-
-    .logo-img {
-      width: 110px;
-      height: 110px;
-      border-radius: 50%;
-      object-fit: cover;
-      box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.15);
-      border: 3px solid #ffffff;
-    }
-
-    .shop-title {
-      font-size: 1.4rem;
-      color: var(--primary-dark);
-      font-weight: 700;
-      margin-top: 12px;
-    }
-
-    /* Form Design */
-    .form-group {
-      text-align: left;
-      margin-bottom: 1.2rem;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #4b5563;
-      margin-bottom: 0.4rem;
-    }
-
-    .input-wrapper {
-      position: relative;
+    .brand-logo {
       display: flex;
       align-items: center;
+      gap: 12px;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
-    .input-wrapper i {
-      position: absolute;
-      left: 12px;
-      color: #9ca3af;
-      font-size: 1rem;
+    .brand-logo img {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      object-fit: cover;
     }
 
-    .form-group input {
-      width: 100%;
-      padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-      border: 1px solid var(--border-color);
+    .brand-logo h3 {
+      font-size: 1.1rem;
+      color: #ffffff;
+    }
+
+    .menu-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .menu-item a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 15px;
+      color: #a0aec0;
+      text-decoration: none;
       border-radius: 8px;
-      font-size: 0.95rem;
-      outline: none;
-      transition: all 0.2s ease-in-out;
+      font-weight: 500;
+      transition: 0.2s;
     }
 
-    .form-group input:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(33, 118, 255, 0.15);
+    .menu-item.active a, .menu-item a:hover {
+      background-color: var(--primary-color);
+      color: #ffffff;
     }
 
-    .form-actions {
+    /* Main Content Area */
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Bar */
+    .top-navbar {
+      background-color: #ffffff;
+      padding: 15px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .btn-logout {
+      background: #fee2e2;
+      color: var(--red);
+      border: none;
+      padding: 8px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-logout:hover {
+      background: var(--red);
+      color: #fff;
+    }
+
+    /* Dashboard Container */
+    .dashboard-container {
+      padding: 30px;
+    }
+
+    /* Summary Cards */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+      border: 1px solid var(--border-color);
+    }
+
+    .card h4 {
       font-size: 0.85rem;
-      color: #4b5563;
+      color: #6b7280;
+      margin-bottom: 8px;
     }
 
-    .forgot-link {
-      color: var(--primary-color);
-      text-decoration: none;
-      font-weight: 500;
+    .card .amount {
+      font-size: 1.6rem;
+      font-weight: 700;
     }
 
-    .forgot-link:hover {
-      text-decoration: underline;
+    .card.income .amount { color: var(--green); }
+    .card.expense .amount { color: var(--red); }
+    .card.balance .amount { color: var(--primary-color); }
+
+    /* Entry Form */
+    .form-card {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 30px;
     }
 
-    /* Login Button */
-    .btn-submit {
-      width: 100%;
-      padding: 0.85rem;
+    .form-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      color: var(--primary-dark);
+    }
+
+    .entry-form {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 15px;
+    }
+
+    .entry-form input, .entry-form select {
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.95rem;
+    }
+
+    .btn-add {
       background-color: var(--primary-color);
       color: #ffffff;
       border: none;
+      padding: 10px 20px;
       border-radius: 8px;
-      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 4px 12px rgba(33, 118, 255, 0.3);
-      transition: all 0.2s ease;
     }
 
-    .btn-submit:hover {
+    .btn-add:hover {
       background-color: #1a65e0;
-      transform: translateY(-1px);
     }
 
-    /* Back to Website Link (WordPress Style) */
-    .back-to-site {
-      margin-top: 20px;
-      text-align: center;
+    /* Transactions Table */
+    .table-card {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
     }
 
-    .back-to-site a {
-      color: rgba(255, 255, 255, 0.85);
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: color 0.2s;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
     }
 
-    .back-to-site a:hover {
-      color: #ffffff;
-      text-decoration: underline;
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.95rem;
+    }
+
+    th {
+      background-color: #f9fafb;
+      color: #4b5563;
+    }
+
+    .badge-income {
+      color: var(--green);
+      font-weight: 600;
+      background: #ecfdf5;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .badge-expense {
+      color: var(--red);
+      font-weight: 600;
+      background: #fef2f2;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .btn-delete {
+      color: var(--red);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
     }
   </style>
 </head>
 <body>
 
-  <div class="login-card">
-    
-    <!-- Language Switcher Option -->
-    <div class="lang-switcher-container">
-      <select class="lang-select" id="langSelect" onchange="changeLanguage(this.value)">
-        <option value="en" selected>🌐 EN</option>
-        <option value="bn">🌐 BN</option>
-      </select>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="brand-logo">
+      <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" alt="MC Logo">
+      <h3>Mousumi Computer</h3>
     </div>
 
-    <!-- Circular Logo Section -->
-    <div class="logo-container">
-      <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" 
-           onerror="this.onerror=null; this.src='https://i.ibb.co/6803Y30/Screenshot-1.jpg';" 
-           alt="Mousumi Computer Logo" 
-           class="logo-img">
-      <h2 class="shop-title">Mousumi Computer</h2>
-    </div>
-
-    <form>
-      <div class="form-group">
-        <label for="username" id="label-username">Username or Email</label>
-        <div class="input-wrapper">
-          <i class="fa-solid fa-user"></i>
-          <input type="text" id="username" placeholder="user@email.com" required>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="password" id="label-password">Password</label>
-        <div class="input-wrapper">
-          <i class="fa-solid fa-lock"></i>
-          <input type="password" id="password" placeholder="••••••••" required>
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <label style="cursor: pointer;"><input type="checkbox"> <span id="label-remember">Remember me</span></label>
-        <a href="#" class="forgot-link" id="label-forgot">Forgot Password?</a>
-      </div>
-
-      <!-- Login Button -->
-      <button type="submit" class="btn-submit">
-        <i class="fa-solid fa-right-to-bracket"></i> <span id="label-btn">Log In</span>
-      </button>
-    </form>
-
+    <ul class="menu-list">
+      <li class="menu-item active"><a href="#"><i class="fa-solid fa-chart-line"></i> ড্যাশবোর্ড</a></li>
+      <li class="menu-item"><a href="#"><i class="fa-solid fa-wallet"></i> হিসাব-নিকাশ</a></li>
+      <li class="menu-item"><a href="#"><i class="fa-solid fa-book-bookmark"></i> বাকির খাতা</a></li>
+      <li class="menu-item"><a href="#"><i class="fa-solid fa-boxes-stacked"></i> ইনভেন্টরি</a></li>
+      <li class="menu-item"><a href="#"><i class="fa-solid fa-gear"></i> সেটিং</a></li>
+    </ul>
   </div>
 
-  <!-- WordPress Style Go to Website Link -->
-  <div class="back-to-site">
-    <a href="https://mousumicomputer.blogspot.com" id="label-back">← Go to MOUSUMI COMPUTER</a>
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    
+    <!-- Top Navbar -->
+    <div class="top-navbar">
+      <h2>অ্যাডমিন প্যানেল</h2>
+      <div class="user-profile">
+        <span><i class="fa-solid fa-circle-user"></i> প্রনব কুমার</span>
+        <button class="btn-logout" onclick="alert('লগআউট সফল হয়েছে')"><i class="fa-solid fa-right-from-bracket"></i> লগআউট</button>
+      </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-container">
+      
+      <!-- Cards -->
+      <div class="cards-grid">
+        <div class="card income">
+          <h4>📊 আজ মোট বিক্রি (জমা)</h4>
+          <div class="amount" id="totalIncome">৳ 0</div>
+        </div>
+        <div class="card expense">
+          <h4>💸 আজ মোট খরচ</h4>
+          <div class="amount" id="totalExpense">৳ 0</div>
+        </div>
+        <div class="card balance">
+          <h4>💰 অবশিষ্ট ক্যাশ ব্যালেন্স</h4>
+          <div class="amount" id="netBalance">৳ 0</div>
+        </div>
+      </div>
+
+      <!-- Quick Entry Form -->
+      <div class="form-card">
+        <h3>📝 নতুন হিসাব এন্ট্রি করুন</h3>
+        <form class="entry-form" id="transactionForm">
+          <input type="text" id="desc" placeholder="কাজের বিবরণ (যেমন: টাইপিং/কাগজ ক্রয়)" required>
+          <input type="number" id="amount" placeholder="টাকা (৳)" required>
+          <select id="type">
+            <option value="income">জমা (Cash In)</option>
+            <option value="expense">খরচ (Cash Out)</option>
+          </select>
+          <button type="submit" class="btn-add">+ সেভ করুন</button>
+        </form>
+      </div>
+
+      <!-- Transactions List -->
+      <div class="table-card">
+        <h3>📜 আজকের লেনদেনের তালিকা</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>বিবরণ</th>
+              <th>ধরন</th>
+              <th>পরিমাণ</th>
+              <th>মুছুন</th>
+            </tr>
+          </thead>
+          <tbody id="transactionList">
+            <!-- ডাইনামিক ডেটা আসবে -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
   </div>
 
   <script>
-    /* Language Toggle Logic */
-    const translations = {
-      en: {
-        username: "Username or Email",
-        password: "Password",
-        remember: "Remember me",
-        forgot: "Forgot Password?",
-        btn: "Log In",
-        back: "← Go to MOUSUMI COMPUTER"
-      },
-      bn: {
-        username: "ইউজারনেম বা ইমেইল",
-        password: "পাসওয়ার্ড",
-        remember: "মনে রাখুন",
-        forgot: "পাসওয়ার্ড ভুলে গেছেন?",
-        btn: "লগইন করুন",
-        back: "← মৌসুমী কম্পিউটারে ফিরে যান"
-      }
-    };
+    // LocalStorage Script for persistent offline entry
+    let transactions = JSON.parse(localStorage.getItem('mc_transactions')) || [];
 
-    function changeLanguage(lang) {
-      document.getElementById('label-username').innerText = translations[lang].username;
-      document.getElementById('label-password').innerText = translations[lang].password;
-      document.getElementById('label-remember').innerText = translations[lang].remember;
-      document.getElementById('label-forgot').innerText = translations[lang].forgot;
-      document.getElementById('label-btn').innerText = translations[lang].btn;
-      document.getElementById('label-back').innerText = translations[lang].back;
+    const form = document.getElementById('transactionForm');
+    const descInput = document.getElementById('desc');
+    const amountInput = document.getElementById('amount');
+    const typeInput = document.getElementById('type');
+    const list = document.getElementById('transactionList');
+
+    function updateUI() {
+      list.innerHTML = '';
+      let income = 0;
+      let expense = 0;
+
+      transactions.forEach((item, index) => {
+        const row = document.createElement('tr');
+        if (item.type === 'income') income += Number(item.amount);
+        else expense += Number(item.amount);
+
+        row.innerHTML = `
+          <td>${item.desc}</td>
+          <td><span class="${item.type === 'income' ? 'badge-income' : 'badge-expense'}">${item.type === 'income' ? 'জমা' : 'খরচ'}</span></td>
+          <td>৳ ${item.amount}</td>
+          <td><button class="btn-delete" onclick="deleteItem(${index})"><i class="fa-solid fa-trash"></i></button></td>
+        `;
+        list.appendChild(row);
+      });
+
+      document.getElementById('totalIncome').innerText = `৳ ${income}`;
+      document.getElementById('totalExpense').innerText = `৳ ${expense}`;
+      document.getElementById('netBalance').innerText = `৳ ${income - expense}`;
+
+      localStorage.setItem('mc_transactions', JSON.stringify(transactions));
     }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      transactions.push({
+        desc: descInput.value,
+        amount: amountInput.value,
+        type: typeInput.value
+      });
+      descInput.value = '';
+      amountInput.value = '';
+      updateUI();
+    });
+
+    function deleteItem(index) {
+      transactions.splice(index, 1);
+      updateUI();
+    }
+
+    // Initial Load
+    updateUI();
   </script>
 
 </body>
