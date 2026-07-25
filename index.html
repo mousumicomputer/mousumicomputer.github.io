@@ -222,7 +222,7 @@
       border: 2px solid #00a8ef;
     }
 
-    /* EXACT IMAGE MATCHING POPUP CARD */
+    /* POPUP DROPDOWN MENU */
     .profile-dropdown-menu {
       display: none;
       position: absolute;
@@ -239,7 +239,6 @@
 
     .profile-dropdown-menu.active { display: block; }
 
-    /* BLUE GRADIENT HEADER LIKE IMAGE */
     .dropdown-header {
       background: linear-gradient(135deg, #00bdff 0%, #0088e8 100%);
       padding: 18px 16px;
@@ -305,7 +304,6 @@
 
     .dropdown-item:hover { background: #f3f4f6; color: #0088e8; }
 
-    /* LOGOUT BUTTON LIKE IMAGE */
     .dropdown-logout-container { padding: 14px 16px 16px 16px; }
 
     .btn-dropdown-logout {
@@ -379,7 +377,7 @@
     .badge-income { color: var(--green); font-weight: 600; background: #ecfdf5; padding: 4px 8px; border-radius: 4px; }
     .badge-expense { color: var(--red); font-weight: 600; background: #fef2f2; padding: 4px 8px; border-radius: 4px; }
 
-    /* FULL SCREEN PROFILE STYLES */
+    /* PROFILE PAGE */
     .profile-page-card {
       background: #ffffff;
       border-radius: 12px;
@@ -510,7 +508,7 @@
   <!-- 2. DASHBOARD SECTION -->
   <div id="dashboard-section">
     <div class="dashboard-layout">
-      <!-- Sidebar -->
+      <!-- Sidebar (My Profile Removed) -->
       <div class="sidebar">
         <div class="brand-logo">
           <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" alt="Logo" />
@@ -519,7 +517,6 @@
 
         <ul class="menu-list">
           <li class="menu-item active" id="menu-dash"><a onclick="switchPanel('dashboard')"><i class="fa-solid fa-chart-line"></i> <span id="nav-dash">Dashboard</span></a></li>
-          <li class="menu-item" id="menu-profile"><a onclick="switchPanel('profile')"><i class="fa-solid fa-user-gear"></i> <span id="nav-prof">My Profile</span></a></li>
           <li class="menu-item"><a href="#"><i class="fa-solid fa-wallet"></i> <span id="nav-accounts">Accounts</span></a></li>
           <li class="menu-item"><a href="#"><i class="fa-solid fa-book-bookmark"></i> <span id="nav-due">Due Ledger</span></a></li>
           <li class="menu-item"><a href="#"><i class="fa-solid fa-boxes-stacked"></i> <span id="nav-inventory">Inventory</span></a></li>
@@ -544,14 +541,14 @@
                 <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: #6b7280;"></i>
               </div>
 
-              <!-- EXACT MATCH POPUP DROPDOWN MENU -->
+              <!-- POPUP DROPDOWN MENU -->
               <div class="profile-dropdown-menu" id="profileDropdown">
                 <!-- Header -->
                 <div class="dropdown-header">
                   <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="dropdownHeaderImg" alt="Profile" />
                   <div class="dropdown-header-info">
-                    <h4 id="dropdownName">Rupali Khanam</h4>
-                    <p id="dropdownRole">Accounts Officer</p>
+                    <h4 id="dropdownName">Rabbi Hosen</h4>
+                    <p id="dropdownRole">Admin</p>
                   </div>
                 </div>
 
@@ -645,8 +642,8 @@
             <div class="profile-header-banner">
               <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="fullProfileImg" class="profile-big-avatar" alt="Profile Avatar" />
               <div>
-                <h2 id="fullProfileNameDisplay">Rupali Khanam</h2>
-                <p style="color: #6b7280; margin-bottom: 8px;" id="fullProfileRoleDisplay">Accounts Officer</p>
+                <h2 id="fullProfileNameDisplay">Rabbi Hosen</h2>
+                <p style="color: #6b7280; margin-bottom: 8px;" id="fullProfileRoleDisplay">Admin</p>
                 <div class="profile-upload-btn">
                   <button class="btn-secondary"><i class="fa-solid fa-camera"></i> <span id="txt-change-photo">Change Photo</span></button>
                   <input type="file" id="fullProfileImgInput" accept="image/*" />
@@ -659,12 +656,12 @@
               <div class="profile-form-grid">
                 <div class="field-group">
                   <label id="lbl-full-name">Full Name</label>
-                  <input type="text" id="profFullName" placeholder="Rupali Khanam" required />
+                  <input type="text" id="profFullName" placeholder="Rabbi Hosen" required />
                 </div>
 
                 <div class="field-group">
                   <label id="lbl-designation">Role / Designation</label>
-                  <input type="text" id="profRole" placeholder="Accounts Officer" />
+                  <input type="text" id="profRole" placeholder="Admin" />
                 </div>
 
                 <div class="field-group">
@@ -765,7 +762,6 @@
 
       if (panelName === 'profile') {
         document.getElementById('profile-view').classList.add('active');
-        document.getElementById('menu-profile').classList.add('active');
         document.getElementById('top-title').innerText = currentLang === 'en' ? 'My Profile Settings' : 'প্রোফাইল সেটিং';
       } else {
         document.getElementById('dashboard-view').classList.add('active');
@@ -777,8 +773,8 @@
     /* LOAD PROFILE DATA */
     function loadSavedProfile() {
       const savedPhoto = localStorage.getItem('mc_admin_photo');
-      const savedName = localStorage.getItem('mc_admin_name') || "Rupali Khanam";
-      const savedRole = localStorage.getItem('mc_admin_role') || "Accounts Officer";
+      const savedName = localStorage.getItem('mc_admin_name') || "Rabbi Hosen";
+      const savedRole = localStorage.getItem('mc_admin_role') || "Admin";
       const savedPhone = localStorage.getItem('mc_admin_phone') || "";
 
       if (savedPhoto) {
@@ -906,12 +902,11 @@
 
       // Sidebar
       document.getElementById('nav-dash').innerText = isEn ? 'Dashboard' : 'ড্যাশবোর্ড';
-      document.getElementById('nav-prof').innerText = isEn ? 'My Profile' : 'মাই প্রোফাইল';
       document.getElementById('nav-accounts').innerText = isEn ? 'Accounts' : 'হিসাব-নিকাশ';
       document.getElementById('nav-due').innerText = isEn ? 'Due Ledger' : 'বাকির খাতা';
       document.getElementById('nav-inventory').innerText = isEn ? 'Inventory' : 'ইনভেন্টরি';
 
-      // Dropdown (As per Image)
+      // Dropdown
       document.getElementById('txt-act-head').innerText = isEn ? 'ACTIVITY' : 'কার্যক্রম';
       document.getElementById('drop-pass').innerText = isEn ? 'Change Password' : 'পাসওয়ার্ড পরিবর্তন';
       document.getElementById('drop-prof').innerText = isEn ? 'My Profile' : 'মাই প্রোফাইল';
