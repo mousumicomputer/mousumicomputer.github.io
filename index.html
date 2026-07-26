@@ -172,7 +172,6 @@
       width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0;
     }
 
-    /* ITEM BRAND COLORS */
     .dot-bkash { background-color: #e2136e; }
     .dot-nagad { background-color: #f7931e; }
     .dot-rocket { background-color: #8c3494; }
@@ -264,7 +263,7 @@
   <!-- LOADER -->
   <div id="loader">
     <div class="spinner"></div>
-    <p id="txt-loading">Please wait...</p>
+    <p id="txt-loading">Connecting Realtime Server...</p>
   </div>
 
   <!-- LOGIN SECTION -->
@@ -434,58 +433,19 @@
                 <i class="fa-solid fa-user-lock"></i>
               </div>
               <div class="closing-card-body">
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-bkash"></i> বিকাশ/৫৮৪</span>
-                  <input type="number" class="closing-inp inp-personal" value="13161.57" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-nagad"></i> নগদ/৫৮৪</span>
-                  <input type="number" class="closing-inp inp-personal" value="850.24" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-rocket"></i> রকেট/৫৮৪</span>
-                  <input type="number" class="closing-inp inp-personal" value="778.79" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-upay"></i> উপায়/৫৮৪</span>
-                  <input type="number" class="closing-inp inp-personal" value="3.72" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-tap"></i> ট্যাপ/৫৮৪</span>
-                  <input type="number" class="closing-inp inp-personal" value="5656.24" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-tap"></i> ট্যাপ/৮৩০</span>
-                  <input type="number" class="closing-inp inp-personal" value="0.00" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-tali"></i> টালিখাতা</span>
-                  <input type="number" class="closing-inp inp-personal" value="35.43" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-bank"></i> ডাচ বাংলা ব্যাংক</span>
-                  <input type="number" class="closing-inp inp-personal" value="45.55" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-bank"></i> ট্রাস্ট মানি/৭৭৪</span>
-                  <input type="number" class="closing-inp inp-personal" value="1089.44" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-bank"></i> ট্রাস্ট মানি/৩৭২৫</span>
-                  <input type="number" class="closing-inp inp-personal" value="86.00" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-bank"></i> প্রাইম ব্যাংক</span>
-                  <input type="number" class="closing-inp inp-personal" value="0.00" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-bank"></i> ইউসিবি ব্যাংক</span>
-                  <input type="number" class="closing-inp inp-personal" value="0.00" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-bank"></i> ব্রাক ব্যাংক</span>
-                  <input type="number" class="closing-inp inp-personal" value="458.00" step="any">
-                </div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-bkash"></i> বিকাশ/৫৮৪</span><input type="number" id="p_bkash584" class="closing-inp inp-personal" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-nagad"></i> নগদ/৫৮৪</span><input type="number" id="p_nagad584" class="closing-inp inp-personal" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-rocket"></i> রকেট/৫৮৪</span><input type="number" id="p_rocket584" class="closing-inp inp-personal" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-upay"></i> উপায়/৫৮৪</span><input type="number" id="p_upay584" class="closing-inp inp-personal" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-tap"></i> ট্যাপ/৫৮৪</span><input type="number" id="p_tap584" class="closing-inp inp-personal" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-tap"></i> ট্যাপ/৮৩০</span><input type="number" id="p_tap830" class="closing-inp inp-personal" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-tali"></i> টালিখাতা</span><input type="number" id="p_talikhata" class="closing-inp inp-personal" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-bank"></i> ডাচ বাংলা ব্যাংক</span><input type="number" id="p_dutch" class="closing-inp inp-personal" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-bank"></i> ট্রাস্ট মানি/৭৭৪</span><input type="number" id="p_trust774" class="closing-inp inp-personal" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-bank"></i> ট্রাস্ট মানি/৩৭২৫</span><input type="number" id="p_trust3725" class="closing-inp inp-personal" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-bank"></i> প্রাইম ব্যাংক</span><input type="number" id="p_prime" class="closing-inp inp-personal" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-bank"></i> ইউসিবি ব্যাংক</span><input type="number" id="p_ucb" class="closing-inp inp-personal" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-bank"></i> ব্রাক ব্যাংক</span><input type="number" id="p_brac" class="closing-inp inp-personal" value="0" step="any"></div>
               </div>
               <div class="closing-card-footer">
                 <span id="lbl-sub-personal">মোট পার্সোনাল:</span>
@@ -500,34 +460,13 @@
                 <i class="fa-solid fa-briefcase"></i>
               </div>
               <div class="closing-card-body">
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-bkash"></i> বিকাশ/৫৫২</span>
-                  <input type="number" class="closing-inp inp-agent" value="4731.76" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-nagad"></i> নগদ/৫০১</span>
-                  <input type="number" class="closing-inp inp-agent" value="484.77" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-nagad"></i> নগদ/৯২৬</span>
-                  <input type="number" class="closing-inp inp-agent" value="0.00" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-rocket"></i> রকেট/৫৫২৪</span>
-                  <input type="number" class="closing-inp inp-agent" value="30.65" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-upay"></i> উপায়/৫৫২</span>
-                  <input type="number" class="closing-inp inp-agent" value="243.34" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-tap"></i> ট্যাপ/৫৫২</span>
-                  <input type="number" class="closing-inp inp-agent" value="389.35" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-bkash"></i> বিকাশ মার্চেন্ট</span>
-                  <input type="number" class="closing-inp inp-agent" value="0.00" step="any">
-                </div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-bkash"></i> বিকাশ/৫৫২</span><input type="number" id="a_bkash552" class="closing-inp inp-agent" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-nagad"></i> নগদ/৫০১</span><input type="number" id="a_nagad501" class="closing-inp inp-agent" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-nagad"></i> নগদ/৯২৬</span><input type="number" id="a_nagad926" class="closing-inp inp-agent" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-rocket"></i> রকেট/৫৫২৪</span><input type="number" id="a_rocket5524" class="closing-inp inp-agent" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-upay"></i> উপায়/৫৫২</span><input type="number" id="a_upay552" class="closing-inp inp-agent" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-tap"></i> ট্যাপ/৫৫২</span><input type="number" id="a_tap552" class="closing-inp inp-agent" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-bkash"></i> বিকাশ মার্চেন্ট</span><input type="number" id="a_merchant" class="closing-inp inp-agent" value="0" step="any"></div>
               </div>
               <div class="closing-card-footer">
                 <span id="lbl-sub-agent">মোট এজেন্ট:</span>
@@ -542,34 +481,13 @@
                 <i class="fa-solid fa-mobile-screen"></i>
               </div>
               <div class="closing-card-body">
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-gp"></i> গ্রামীণ/৪৩৯</span>
-                  <input type="number" class="closing-inp inp-load" value="875.01" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-gp"></i> গ্রামীণ/৭৬০</span>
-                  <input type="number" class="closing-inp inp-load" value="4682.33" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-robi"></i> রবি/৫৮৫</span>
-                  <input type="number" class="closing-inp inp-load" value="252.36" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-airtel"></i> এয়ারটেল/৬১৮</span>
-                  <input type="number" class="closing-inp inp-load" value="2025.00" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-bl"></i> বাংলালিংক/৭২৫</span>
-                  <input type="number" class="closing-inp inp-load" value="2034.41" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-teletalk"></i> টেলিটক</span>
-                  <input type="number" class="closing-inp inp-load" value="0.00" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-nagad"></i> ইজি রিচার্জ</span>
-                  <input type="number" class="closing-inp inp-load" value="0.00" step="any">
-                </div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-gp"></i> গ্রামীণ/৪৩৯</span><input type="number" id="l_gp439" class="closing-inp inp-load" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-gp"></i> গ্রামীণ/৭৬০</span><input type="number" id="l_gp760" class="closing-inp inp-load" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-robi"></i> রবি/৫৮৫</span><input type="number" id="l_robi585" class="closing-inp inp-load" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-airtel"></i> এয়ারটেল/৬১৮</span><input type="number" id="l_airtel618" class="closing-inp inp-load" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-bl"></i> বাংলালিংক/৭২৫</span><input type="number" id="l_bl725" class="closing-inp inp-load" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-teletalk"></i> টেলিটক</span><input type="number" id="l_teletalk" class="closing-inp inp-load" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-nagad"></i> ইজি রিচার্জ</span><input type="number" id="l_easy" class="closing-inp inp-load" value="0" step="any"></div>
               </div>
               <div class="closing-card-footer">
                 <span id="lbl-sub-load">মোট লোড:</span>
@@ -584,30 +502,12 @@
                 <i class="fa-solid fa-sim-card"></i>
               </div>
               <div class="closing-card-body">
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-gp"></i> গ্রামীণ</span>
-                  <input type="number" class="closing-inp inp-offer" value="2261.00" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-robi"></i> রবি</span>
-                  <input type="number" class="closing-inp inp-offer" value="0.00" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-airtel"></i> এয়ারটেল</span>
-                  <input type="number" class="closing-inp inp-offer" value="0.00" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-bl"></i> বাংলালিংক</span>
-                  <input type="number" class="closing-inp inp-offer" value="1408.00" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-teletalk"></i> টেলিটক</span>
-                  <input type="number" class="closing-inp inp-offer" value="0.00" step="any">
-                </div>
-                <div class="closing-item">
-                  <span class="item-badge"><i class="badge-dot dot-bkash"></i> টেলি পে</span>
-                  <input type="number" class="closing-inp inp-offer" value="0.00" step="any">
-                </div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-gp"></i> গ্রামীণ</span><input type="number" id="o_gp" class="closing-inp inp-offer" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-robi"></i> রবি</span><input type="number" id="o_robi" class="closing-inp inp-offer" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-airtel"></i> এয়ারটেল</span><input type="number" id="o_airtel" class="closing-inp inp-offer" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-bl"></i> বাংলালিংক</span><input type="number" id="o_bl" class="closing-inp inp-offer" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-teletalk"></i> টেলিটক</span><input type="number" id="o_teletalk" class="closing-inp inp-offer" value="0" step="any"></div>
+                <div class="closing-item"><span class="item-badge"><i class="badge-dot dot-bkash"></i> টেলি পে</span><input type="number" id="o_telepay" class="closing-inp inp-offer" value="0" step="any"></div>
               </div>
               <div class="closing-card-footer">
                 <span id="lbl-sub-offer">মোট অফার:</span>
@@ -673,14 +573,16 @@
     </div>
   </div>
 
-  <!-- FIREBASE & JS SCRIPT -->
+  <!-- FIREBASE REALTIME DATABASE SCRIPT -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA1PhRiTkICNCd8sA4he3ZxKjHtIzM0d5E",
       authDomain: "mousumi-computer.firebaseapp.com",
+      databaseURL: "https://mousumi-computer-default-rtdb.firebaseio.com",
       projectId: "mousumi-computer",
       storageBucket: "mousumi-computer.firebasestorage.app",
       messagingSenderId: "104820462623",
@@ -690,6 +592,7 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getDatabase(app);
     auth.useDeviceLanguage();
 
     const loader = document.getElementById('loader');
@@ -707,11 +610,12 @@
     const profileDropdown = document.getElementById('profileDropdown');
 
     const adminEmail = "mousumicomputer.org@gmail.com";
+    const closingDateInput = document.getElementById('closingDateInput');
 
-    // Set Current Date Default
-    document.getElementById('closingDateInput').valueAsDate = new Date();
+    // Default Date
+    closingDateInput.valueAsDate = new Date();
 
-    /* LIVE AUTO CALCULATION FOR DAILY CLOSING */
+    /* LIVE AUTO CALCULATION */
     function calculateClosingTotals() {
       const getSum = (selector) => {
         let total = 0;
@@ -727,13 +631,11 @@
       const offerTot = getSum('.inp-offer');
       const grandTot = personalTot + agentTot + loadTot + offerTot;
 
-      // Update Sub-totals
       document.getElementById('subPersonalTotal').innerText = `৳ ${personalTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
       document.getElementById('subAgentTotal').innerText = `৳ ${agentTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
       document.getElementById('subLoadTotal').innerText = `৳ ${loadTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
       document.getElementById('subOfferTotal').innerText = `৳ ${offerTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
 
-      // Update Top Cards
       document.getElementById('sumPersonal').innerText = `৳ ${personalTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
       document.getElementById('sumAgent').innerText = `৳ ${agentTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
       document.getElementById('sumLoad').innerText = `৳ ${loadTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
@@ -741,183 +643,47 @@
       document.getElementById('sumGrand').innerText = `৳ ${grandTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
     }
 
-    // Attach Input Event Listeners
     document.querySelectorAll('.closing-inp').forEach(inp => {
       inp.addEventListener('input', calculateClosingTotals);
     });
 
-    // Initial Calculation
-    calculateClosingTotals();
+    /* REALTIME DATABASE LOAD & SYNC */
+    function attachRealtimeSync(dateStr) {
+      const closingRef = ref(db, 'closings/' + dateStr);
+      onValue(closingRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          document.querySelectorAll('.closing-inp').forEach(inp => {
+            if (data[inp.id] !== undefined) {
+              inp.value = data[inp.id];
+            }
+          });
+        } else {
+          document.querySelectorAll('.closing-inp').forEach(inp => inp.value = 0);
+        }
+        calculateClosingTotals();
+      });
+    }
 
-    /* MULTI-LANGUAGE SYSTEM */
-    window.currentLang = 'en';
+    // Date Change Event
+    closingDateInput.addEventListener('change', (e) => {
+      attachRealtimeSync(e.target.value);
+    });
 
-    const translations = {
-      en: {
-        loading: "Please wait...",
-        usernameLabel: "Username / Email",
-        passwordLabel: "Password",
-        forgotPass: "Forgot Password?",
-        loginBtn: "Login",
-        langText: "বাংলা",
-        navDash: "Daily Closing",
-        navAccounts: "Accounts",
-        navDue: "Due Ledger",
-        navInventory: "Inventory",
-        topDashTitle: "Daily Closing Balance Sheet",
-        topProfTitle: "My Profile Settings",
-        lblSumPersonal: "🔴 Personal Total",
-        lblSumAgent: "🟡 Agent Total",
-        lblSumLoad: "🔵 Load SIM Total",
-        lblSumOffer: "🟣 Offer SIM Total",
-        lblSumGrand: "💰 Grand Total Balance",
-        lblSelectDate: "📅 Select Closing Date:",
-        btnSaveClosing: "Save Daily Closing",
-        headPersonal: "Personal Accounts",
-        headAgent: "Agent Accounts",
-        headLoad: "Flexiload SIMs",
-        headOffer: "Offer SIMs",
-        lblSubPersonal: "Personal Total:",
-        lblSubAgent: "Agent Total:",
-        lblSubLoad: "Load Total:",
-        lblSubOffer: "Offer Total:",
-        dropPass: "Change Password",
-        dropProf: "My Profile",
-        dropLogout: "Logout",
-        msgSaved: "Daily Closing Data Saved Successfully!"
-      },
-      bn: {
-        loading: "অনুগ্ৰহ করে অপেক্ষা করুন...",
-        usernameLabel: "ইউজারনেম / ইমেইল",
-        passwordLabel: "পাসওয়ার্ড",
-        forgotPass: "পাসওয়ার্ড ভুলে গেছেন?",
-        loginBtn: "লগইন",
-        langText: "English",
-        navDash: "দৈনিক ক্লোজিং",
-        navAccounts: "হিসাব-নিকাশ",
-        navDue: "বকেয়া খাতা",
-        navInventory: "ইনভেন্টরি",
-        topDashTitle: "দৈনিক ক্লোজিং ব্যালেন্স শিট",
-        topProfTitle: "মাই প্রোফাইল সেটিং",
-        lblSumPersonal: "🔴 পার্সোনাল মোট",
-        lblSumAgent: "🟡 এজেন্ট মোট",
-        lblSumLoad: "🔵 লোড সিম মোট",
-        lblSumOffer: "🟣 অফার সিম মোট",
-        lblSumGrand: "💰 সর্বমোট ক্যাশ ব্যালেন্স",
-        lblSelectDate: "📅 ক্লোজিং তারিখ সিলেক্ট করুন:",
-        btnSaveClosing: "দৈনিক ক্লোজিং সেভ করুন",
-        headPersonal: "পার্সোনাল অ্যাকাউন্ট",
-        headAgent: "এজেন্ট অ্যাকাউন্ট",
-        headLoad: "ফ্লেক্সিলোড সিমসমূহ",
-        headOffer: "অফার সিমসমূহ",
-        lblSubPersonal: "মোট পার্সোনাল:",
-        lblSubAgent: "মোট এজেন্ট:",
-        lblSubLoad: "মোট লোড:",
-        lblSubOffer: "মোট অফার:",
-        dropPass: "পাসওয়ার্ড পরিবর্তন",
-        dropProf: "মাই প্রোফাইল",
-        dropLogout: "লগআউট",
-        msgSaved: "দৈনিক ক্লোজিং ব্যালেন্স তথ্য সফলভাবে সেভ করা হয়েছে!"
-      }
-    };
-
-    window.toggleLanguage = function() {
-      currentLang = currentLang === 'en' ? 'bn' : 'en';
-      const t = translations[currentLang];
-
-      document.querySelectorAll('.lang-text-label').forEach(el => el.innerText = t.langText);
-      document.getElementById('txt-loading').innerText = t.loading;
-      document.getElementById('lbl-username').innerText = t.usernameLabel;
-      document.getElementById('lbl-password').innerText = t.passwordLabel;
-      document.getElementById('btn-forgot-pass').innerText = t.forgotPass;
-      document.getElementById('txt-login-btn').innerText = t.loginBtn;
-
-      document.getElementById('nav-dash').innerText = t.navDash;
-      document.getElementById('nav-accounts').innerText = t.navAccounts;
-      document.getElementById('nav-due').innerText = t.navDue;
-      document.getElementById('nav-inventory').innerText = t.navInventory;
-
-      document.getElementById('top-title').innerText = document.getElementById('profile-view').classList.contains('active') ? t.topProfTitle : t.topDashTitle;
-
-      document.getElementById('lbl-sum-personal').innerText = t.lblSumPersonal;
-      document.getElementById('lbl-sum-agent').innerText = t.lblSumAgent;
-      document.getElementById('lbl-sum-load').innerText = t.lblSumLoad;
-      document.getElementById('lbl-sum-offer').innerText = t.lblSumOffer;
-      document.getElementById('lbl-sum-grand').innerText = t.lblSumGrand;
-
-      document.getElementById('lbl-select-date').innerText = t.lblSelectDate;
-      document.getElementById('txt-save-closing').innerText = t.btnSaveClosing;
-
-      document.getElementById('head-personal').innerText = t.headPersonal;
-      document.getElementById('head-agent').innerText = t.headAgent;
-      document.getElementById('head-load').innerText = t.headLoad;
-      document.getElementById('head-offer').innerText = t.headOffer;
-
-      document.getElementById('lbl-sub-personal').innerText = t.lblSubPersonal;
-      document.getElementById('lbl-sub-agent').innerText = t.lblSubAgent;
-      document.getElementById('lbl-sub-load').innerText = t.lblSubLoad;
-      document.getElementById('lbl-sub-offer').innerText = t.lblSubOffer;
-
-      document.getElementById('drop-pass').innerText = t.dropPass;
-      document.getElementById('drop-prof').innerText = t.dropProf;
-      document.getElementById('drop-logout').innerText = t.dropLogout;
-    };
-
-    /* SAVE CLOSING BUTTON */
+    // Save Closing To Realtime DB
     document.getElementById('btnSaveClosing').addEventListener('click', () => {
-      alert(translations[currentLang].msgSaved);
+      const selectedDate = closingDateInput.value;
+      if (!selectedDate) return alert("Please select a date!");
+
+      const closingData = {};
+      document.querySelectorAll('.closing-inp').forEach(inp => {
+        closingData[inp.id] = parseFloat(inp.value) || 0;
+      });
+
+      set(ref(db, 'closings/' + selectedDate), closingData)
+        .then(() => alert("✅ Realtime Closing Saved Successfully Across All Devices!"))
+        .catch((err) => alert("Error: " + err.message));
     });
-
-    /* FORGOT PASSWORD HANDLER */
-    btnForgotPass.addEventListener('click', (e) => {
-      e.preventDefault();
-      const usernameInput = document.getElementById('username').value.trim();
-      let email = usernameInput.includes('@') ? usernameInput : adminEmail;
-
-      if (!usernameInput) {
-        errorMsg.innerText = "Please enter Username or Email first!";
-        errorMsg.style.display = 'block';
-        return;
-      }
-
-      loader.style.display = 'flex';
-      sendPasswordResetEmail(auth, email)
-        .then(() => {
-          loader.style.display = 'none';
-          successMsg.style.display = 'block';
-        })
-        .catch((err) => {
-          loader.style.display = 'none';
-          errorMsg.innerText = err.message;
-          errorMsg.style.display = 'block';
-        });
-    });
-
-    /* TOGGLE SIDEBAR & DROPDOWN */
-    sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
-    profileTrigger.addEventListener('click', (e) => {
-      e.stopPropagation();
-      profileDropdown.classList.toggle('active');
-    });
-    document.addEventListener('click', (e) => {
-      if (!profileDropdown.contains(e.target)) profileDropdown.classList.remove('active');
-    });
-
-    /* PANEL SWITCHING */
-    window.switchPanel = function(panelName) {
-      profileDropdown.classList.remove('active');
-      document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-
-      if (panelName === 'profile') {
-        document.getElementById('profile-view').classList.add('active');
-        document.getElementById('top-title').innerText = translations[currentLang].topProfTitle;
-      } else {
-        document.getElementById('dashboard-view').classList.add('active');
-        document.getElementById('menu-dash').classList.add('active');
-        document.getElementById('top-title').innerText = translations[currentLang].topDashTitle;
-      }
-    };
 
     /* AUTH OBSERVER */
     onAuthStateChanged(auth, (user) => {
@@ -925,6 +691,7 @@
       if (user) {
         loginSection.style.display = 'none';
         dashboardSection.style.display = 'block';
+        attachRealtimeSync(closingDateInput.value);
       } else {
         dashboardSection.style.display = 'none';
         loginSection.style.display = 'flex';
@@ -951,6 +718,26 @@
       loader.style.display = 'flex';
       signOut(auth);
     });
+
+    /* TOGGLES & UI SWITCH */
+    sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+    profileTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.toggle('active');
+    });
+    document.addEventListener('click', (e) => {
+      if (!profileDropdown.contains(e.target)) profileDropdown.classList.remove('active');
+    });
+
+    window.switchPanel = function(panelName) {
+      profileDropdown.classList.remove('active');
+      document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+      if (panelName === 'profile') {
+        document.getElementById('profile-view').classList.add('active');
+      } else {
+        document.getElementById('dashboard-view').classList.add('active');
+      }
+    };
   </script>
 </body>
 </html>
