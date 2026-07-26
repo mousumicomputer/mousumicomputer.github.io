@@ -21,592 +21,254 @@
       --border-radius: 12px;
       --green: #10b981;
       --red: #e11d48;
+      --purple: #8b5cf6;
+      --orange: #f97316;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
 
-    /* LOADING SCREEN */
+    /* LOADER */
     #loader {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--primary-dark);
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 99999;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--primary-dark); color: #fff; display: flex;
+      flex-direction: column; justify-content: center; align-items: center; z-index: 99999;
     }
-
     .spinner {
-      border: 4px solid rgba(255,255,255,0.1);
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      border-left-color: #00a8ef;
-      animation: spin 1s linear infinite;
-      margin-bottom: 15px;
+      border: 4px solid rgba(255,255,255,0.1); width: 50px; height: 50px;
+      border-radius: 50%; border-left-color: #00a8ef; animation: spin 1s linear infinite; margin-bottom: 15px;
     }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* LOGIN SECTION */
+    /* LOGIN */
     #login-section {
       background: linear-gradient(135deg, #0b1a2c 0%, #00a8ef 100%);
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-      position: relative;
+      display: none; flex-direction: column; justify-content: center; align-items: center;
+      min-height: 100vh; padding: 20px; position: relative;
     }
-
     .login-card {
-      background-color: var(--card-bg);
-      padding: 2.5rem 2rem;
-      border-radius: var(--border-radius);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
-      position: relative;
+      background-color: var(--card-bg); padding: 2.5rem 2rem; border-radius: var(--border-radius);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); width: 100%; max-width: 400px; text-align: center;
     }
-
-    .logo-container { margin-bottom: 1.5rem; }
-    .logo-img {
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid #ffffff;
-      box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
-    }
-
-    .shop-title {
-      font-size: 1.4rem;
-      color: var(--primary-dark);
-      font-weight: 700;
-      margin-top: 10px;
-    }
-
+    .logo-img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0px 4px 10px rgba(0,0,0,0.15); }
+    .shop-title { font-size: 1.4rem; color: var(--primary-dark); font-weight: 700; margin-top: 10px; }
     .form-group { text-align: left; margin-bottom: 1.2rem; }
     .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem; }
     .input-wrapper { position: relative; display: flex; align-items: center; }
     .input-wrapper i { position: absolute; left: 12px; color: #9ca3af; }
-    .form-group input {
-      width: 100%;
-      padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 0.95rem;
-      outline: none;
-    }
-
-    /* FORGOT PASSWORD LINK */
-    .forgot-pass-wrapper {
-      text-align: right;
-      margin-top: -8px;
-      margin-bottom: 1.2rem;
-    }
-    .forgot-pass-link {
-      color: #00a8ef;
-      font-size: 0.82rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    .forgot-pass-link:hover {
-      color: #0088e8;
-      text-decoration: underline;
-    }
-
-    .btn-submit {
-      width: 100%;
-      padding: 0.85rem;
-      background-color: #00a8ef;
-      color: #ffffff;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-    }
-
+    .form-group input { width: 100%; padding: 0.75rem 0.75rem 0.75rem 2.5rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; outline: none; }
+    .forgot-pass-wrapper { text-align: right; margin-top: -8px; margin-bottom: 1.2rem; }
+    .forgot-pass-link { color: #00a8ef; font-size: 0.82rem; font-weight: 600; text-decoration: none; }
+    .btn-submit { width: 100%; padding: 0.85rem; background-color: #00a8ef; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
     .error-msg { color: var(--red); font-size: 0.85rem; margin-bottom: 1rem; display: none; }
     .success-msg { color: var(--green); font-size: 0.85rem; margin-bottom: 1rem; display: none; }
+    .login-lang-btn { position: absolute; top: 20px; right: 20px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
 
-    /* LANGUAGE SWITCHER BUTTON ON LOGIN PAGE */
-    .login-lang-btn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      color: #ffffff;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.2s;
-    }
-    .login-lang-btn:hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
-
-    /* DASHBOARD LAYOUT */
-    #dashboard-section {
-      display: none;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      min-height: 100vh;
-      width: 100%;
-    }
-
+    /* DASHBOARD */
+    #dashboard-section { display: none; background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; width: 100%; }
     .dashboard-layout { display: flex; min-height: 100vh; position: relative; overflow-x: hidden; }
 
     /* SIDEBAR */
-    .sidebar {
-      width: var(--sidebar-width);
-      background-color: var(--primary-dark);
-      color: #ffffff;
-      display: flex;
-      flex-direction: column;
-      padding: 20px 16px;
-      transition: all 0.3s ease-in-out;
-      z-index: 100;
-    }
-
-    .sidebar.collapsed {
-      margin-left: calc(-1 * var(--sidebar-width));
-    }
-
-    .brand-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 12px;
-      margin-bottom: 25px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 14px;
-      backdrop-filter: blur(10px);
-    }
-    
-    .brand-logo-img-wrapper {
-      position: relative;
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      padding: 2px;
-      background: linear-gradient(135deg, #00a8ef, #10b981);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .brand-logo img {
-      width: 100%;
-      height: 100%;
-      border-radius: 10px;
-      object-fit: cover;
-      background: #fff;
-    }
-
-    .brand-text h3 {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #ffffff;
-      line-height: 1.2;
-      letter-spacing: 0.3px;
-    }
-
-    .brand-text span {
-      font-size: 0.72rem;
-      color: #00a8ef;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
+    .sidebar { width: var(--sidebar-width); background-color: var(--primary-dark); color: #fff; display: flex; flex-direction: column; padding: 20px 16px; transition: all 0.3s ease-in-out; z-index: 100; }
+    .sidebar.collapsed { margin-left: calc(-1 * var(--sidebar-width)); }
+    .brand-logo { display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin-bottom: 25px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; }
+    .brand-logo-img-wrapper { width: 44px; height: 44px; border-radius: 12px; padding: 2px; background: linear-gradient(135deg, #00a8ef, #10b981); display: flex; align-items: center; justify-content: center; }
+    .brand-logo img { width: 100%; height: 100%; border-radius: 10px; object-fit: cover; background: #fff; }
+    .brand-text h3 { font-size: 1.05rem; font-weight: 700; color: #fff; }
+    .brand-text span { font-size: 0.72rem; color: #00a8ef; font-weight: 600; text-transform: uppercase; }
     .menu-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-    .menu-item a {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      color: #94a3b8;
-      text-decoration: none;
-      border-radius: 10px;
-      font-weight: 500;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
+    .menu-item a { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #94a3b8; text-decoration: none; border-radius: 10px; font-weight: 500; font-size: 0.95rem; cursor: pointer; }
+    .menu-item.active a { background: linear-gradient(135deg, #00a8ef 0%, #0088e8 100%); color: #fff; box-shadow: 0 4px 15px rgba(0, 168, 239, 0.3); }
 
-    .menu-item a:hover {
-      background-color: rgba(255, 255, 255, 0.05);
-      color: #ffffff;
-    }
+    .main-wrapper { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .top-navbar { background-color: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+    .navbar-left { display: flex; align-items: center; gap: 18px; }
+    .menu-toggle-btn { width: 40px; height: 40px; border-radius: 10px; background: #f3f4f6; border: 1px solid var(--border-color); color: var(--primary-dark); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; }
+    .navbar-right { display: flex; align-items: center; gap: 15px; }
+    .lang-btn { background: #f3f4f6; border: 1px solid var(--border-color); padding: 7px 16px; border-radius: 20px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
 
-    .menu-item.active a {
-      background: linear-gradient(135deg, #00a8ef 0%, #0088e8 100%);
-      color: #ffffff;
-      box-shadow: 0 4px 15px rgba(0, 168, 239, 0.3);
-    }
-
-    .main-wrapper { 
-      flex: 1; 
-      display: flex; 
-      flex-direction: column; 
-      min-width: 0;
-      transition: all 0.3s ease-in-out;
-    }
-
-    /* TOP NAVBAR */
-    .top-navbar {
-      background-color: #ffffff;
-      padding: 15px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border-color);
-      position: relative;
-    }
-
-    .navbar-left {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-    }
-
-    .menu-toggle-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: #f3f4f6;
-      border: 1px solid var(--border-color);
-      color: var(--primary-dark);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .menu-toggle-btn:hover {
-      background: #00a8ef;
-      color: #ffffff;
-      border-color: #00a8ef;
-    }
-
-    .navbar-right {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .lang-btn {
-      background: #f3f4f6;
-      border: 1px solid var(--border-color);
-      padding: 7px 16px;
-      border-radius: 20px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--text-color);
-      font-size: 0.9rem;
-    }
-
-    /* DROPDOWN CONTAINER */
+    /* DROPDOWN */
     .profile-dropdown-wrapper { position: relative; }
-    .user-profile-trigger {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      padding: 4px;
-    }
-
-    .user-profile-avatar {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #00a8ef;
-    }
-
-    .profile-dropdown-menu {
-      display: none;
-      position: absolute;
-      top: 55px;
-      right: 0;
-      width: 280px;
-      background: #ffffff;
-      border-radius: 14px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
-      border: 1px solid #e5e7eb;
-      z-index: 9999;
-      overflow: hidden;
-    }
-
+    .user-profile-trigger { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px; }
+    .user-profile-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid #00a8ef; }
+    .profile-dropdown-menu { display: none; position: absolute; top: 55px; right: 0; width: 280px; background: #fff; border-radius: 14px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18); border: 1px solid #e5e7eb; z-index: 9999; overflow: hidden; }
     .profile-dropdown-menu.active { display: block; }
-
-    .dropdown-header {
-      background: linear-gradient(135deg, #00bdff 0%, #0088e8 100%);
-      padding: 18px 16px;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .dropdown-header img {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      border: 2px solid #ffffff;
-      object-fit: cover;
-    }
-
-    .dropdown-header-info h4 {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-bottom: 2px;
-    }
-
-    .dropdown-header-info p {
-      font-size: 0.8rem;
-      opacity: 0.9;
-      font-weight: 400;
-    }
-
-    .dropdown-section-title {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #9ca3af;
-      padding: 14px 18px 6px 18px;
-      letter-spacing: 0.5px;
-    }
-
+    .dropdown-header { background: linear-gradient(135deg, #00bdff 0%, #0088e8 100%); padding: 18px 16px; color: #fff; display: flex; align-items: center; gap: 12px; }
+    .dropdown-header img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #fff; object-fit: cover; }
+    .dropdown-section-title { font-size: 0.72rem; font-weight: 700; color: #9ca3af; padding: 14px 18px 6px 18px; }
     .dropdown-items-list { list-style: none; padding: 0 10px; }
-    .dropdown-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 12px;
-      color: #4b5563;
-      font-size: 0.9rem;
-      font-weight: 600;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .dropdown-item i {
-      width: 24px;
-      height: 24px;
-      background: #eff6ff;
-      color: #3b82f6;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.85rem;
-    }
-
+    .dropdown-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: #4b5563; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; }
     .dropdown-item:hover { background: #f3f4f6; color: #0088e8; }
-
     .dropdown-logout-container { padding: 14px 16px 16px 16px; }
-
-    .btn-dropdown-logout {
-      width: 100%;
-      background: #e11d48;
-      color: #ffffff;
-      border: none;
-      padding: 11px;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 0.92rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.25);
-    }
+    .btn-dropdown-logout { width: 100%; background: #e11d48; color: #fff; border: none; padding: 11px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
     /* VIEW PANELS */
     .view-panel { display: none; padding: 30px; }
     .view-panel.active { display: block; }
 
-    .cards-grid {
+    /* DAILY CLOSING CARDS & GRID */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+    .card { background: #fff; padding: 18px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+    .card h4 { font-size: 0.85rem; color: #6b7280; margin-bottom: 6px; }
+    .card .amount { font-size: 1.45rem; font-weight: 700; }
+    
+    .card.personal .amount { color: #e11d48; }
+    .card.agent .amount { color: #f59e0b; }
+    .card.load .amount { color: #00a8ef; }
+    .card.offer .amount { color: #8b5cf6; }
+    .card.grand .amount { color: #10b981; }
+
+    /* CLOSING SHEET GRID */
+    .closing-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 20px;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
     }
 
-    .card { background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); }
-    .card h4 { font-size: 0.85rem; color: #6b7280; margin-bottom: 8px; }
-    .card .amount { font-size: 1.6rem; font-weight: 700; }
-    .card.income .amount { color: var(--green); }
-    .card.expense .amount { color: var(--red); }
-    .card.balance .amount { color: #00a8ef; }
-
-    .form-card, .table-card {
+    .closing-card {
       background: #ffffff;
-      padding: 20px;
-      border-radius: 12px;
+      border-radius: var(--border-radius);
       border: 1px solid var(--border-color);
-      margin-bottom: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      overflow: hidden;
     }
 
-    .entry-form {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr auto;
-      gap: 15px;
-    }
-
-    .entry-form input, .entry-form select {
-      padding: 10px 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-    }
-
-    .btn-add {
-      background-color: #00a8ef;
+    .closing-card-header {
+      padding: 14px 18px;
       color: #ffffff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
+    .bg-personal { background: linear-gradient(135deg, #e11d48, #be123c); }
+    .bg-agent { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .bg-load { background: linear-gradient(135deg, #00a8ef, #0284c7); }
+    .bg-offer { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
 
-    /* PROFILE PAGE */
-    .profile-page-card {
-      background: #ffffff;
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-      padding: 30px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
+    .closing-card-body { padding: 15px; }
 
-    .profile-header-banner {
+    .closing-item {
       display: flex;
       align-items: center;
-      gap: 20px;
-      padding-bottom: 25px;
-      border-bottom: 1px solid var(--border-color);
-      margin-bottom: 25px;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 10px;
     }
 
-    .profile-big-avatar {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid #00a8ef;
-    }
-
-    .profile-upload-btn {
-      margin-top: 10px;
-      position: relative;
-      overflow: hidden;
-      display: inline-block;
-    }
-
-    .profile-upload-btn input[type=file] {
-      position: absolute;
-      left: 0; top: 0; opacity: 0;
-      width: 100%; height: 100%;
-      cursor: pointer;
-    }
-
-    .btn-secondary {
-      background: #f3f4f6;
-      border: 1px solid var(--border-color);
-      padding: 8px 15px;
-      border-radius: 6px;
+    .item-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       font-size: 0.85rem;
       font-weight: 600;
-      cursor: pointer;
-    }
-
-    .profile-form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 25px;
-    }
-
-    .full-width { grid-column: span 2; }
-
-    .field-group label {
-      display: block;
-      font-size: 0.88rem;
-      font-weight: 600;
       color: #374151;
-      margin-bottom: 6px;
+      width: 55%;
     }
 
-    .field-group input {
-      width: 100%;
-      padding: 10px 12px;
+    .badge-dot {
+      width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+    }
+
+    /* ITEM BRAND COLORS */
+    .dot-bkash { background-color: #e2136e; }
+    .dot-nagad { background-color: #f7931e; }
+    .dot-rocket { background-color: #8c3494; }
+    .dot-upay { background-color: #fff100; border: 1px solid #ccc; }
+    .dot-tap { background-color: #00a651; }
+    .dot-tali { background-color: #ed1c24; }
+    .dot-bank { background-color: #2563eb; }
+    .dot-gp { background-color: #00a8ef; }
+    .dot-robi { background-color: #e11d48; }
+    .dot-airtel { background-color: #ff0000; }
+    .dot-bl { background-color: #f59e0b; }
+    .dot-teletalk { background-color: #10b981; }
+
+    .closing-item input {
+      width: 45%;
+      padding: 7px 10px;
       border: 1px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 0.95rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      text-align: right;
+      font-weight: 600;
+      outline: none;
     }
 
-    .section-divider {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--primary-dark);
-      margin: 25px 0 15px 0;
-      padding-bottom: 8px;
-      border-bottom: 2px solid var(--bg-color);
+    .closing-item input:focus {
+      border-color: #00a8ef;
+      box-shadow: 0 0 0 2px rgba(0,168,239,0.15);
     }
+
+    .closing-card-footer {
+      padding: 12px 18px;
+      background: #f9fafb;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #1f2937;
+    }
+
+    .date-filter-bar {
+      background: #ffffff;
+      padding: 15px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .date-input-wrapper { display: flex; align-items: center; gap: 10px; }
+    .date-input-wrapper input { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; }
+
+    .btn-save-closing {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    /* PROFILE VIEW */
+    .profile-page-card { background: #fff; border-radius: 12px; border: 1px solid var(--border-color); padding: 30px; max-width: 900px; margin: 0 auto; }
+    .profile-header-banner { display: flex; align-items: center; gap: 20px; padding-bottom: 25px; border-bottom: 1px solid var(--border-color); margin-bottom: 25px; }
+    .profile-big-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #00a8ef; }
+    .profile-upload-btn { margin-top: 10px; position: relative; overflow: hidden; display: inline-block; }
+    .profile-upload-btn input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+    .btn-secondary { background: #f3f4f6; border: 1px solid var(--border-color); padding: 8px 15px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+    .profile-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+    .full-width { grid-column: span 2; }
+    .field-group label { display: block; font-size: 0.88rem; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    .field-group input { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; }
+    .section-divider { font-size: 1.05rem; font-weight: 700; color: var(--primary-dark); margin: 25px 0 15px 0; padding-bottom: 8px; border-bottom: 2px solid var(--bg-color); }
   </style>
 </head>
 <body>
 
-  <!-- LOADING SCREEN -->
+  <!-- LOADER -->
   <div id="loader">
     <div class="spinner"></div>
     <p id="txt-loading">Please wait...</p>
   </div>
 
-  <!-- 1. LOGIN SECTION -->
+  <!-- LOGIN SECTION -->
   <div id="login-section">
-    <!-- Language Switcher Button for Login -->
     <button class="login-lang-btn" onclick="toggleLanguage()">
       <i class="fa-solid fa-globe"></i> <span class="lang-text-label">বাংলা</span>
     </button>
@@ -637,7 +299,6 @@
           </div>
         </div>
 
-        <!-- Forgot Password Link -->
         <div class="forgot-pass-wrapper">
           <a href="#" class="forgot-pass-link" id="btn-forgot-pass">Forgot Password?</a>
         </div>
@@ -649,7 +310,7 @@
     </div>
   </div>
 
-  <!-- 2. DASHBOARD SECTION -->
+  <!-- DASHBOARD SECTION -->
   <div id="dashboard-section">
     <div class="dashboard-layout">
       <!-- SIDEBAR -->
@@ -665,43 +326,40 @@
         </div>
 
         <ul class="menu-list">
-          <li class="menu-item active" id="menu-dash"><a onclick="switchPanel('dashboard')"><i class="fa-solid fa-chart-line"></i> <span id="nav-dash">Dashboard</span></a></li>
+          <li class="menu-item active" id="menu-dash"><a onclick="switchPanel('dashboard')"><i class="fa-solid fa-calculator"></i> <span id="nav-dash">Daily Closing</span></a></li>
           <li class="menu-item"><a href="#"><i class="fa-solid fa-wallet"></i> <span id="nav-accounts">Accounts</span></a></li>
           <li class="menu-item"><a href="#"><i class="fa-solid fa-book-bookmark"></i> <span id="nav-due">Due Ledger</span></a></li>
           <li class="menu-item"><a href="#"><i class="fa-solid fa-boxes-stacked"></i> <span id="nav-inventory">Inventory</span></a></li>
         </ul>
       </div>
 
-      <!-- MAIN CONTENT WRAPPER -->
+      <!-- MAIN CONTENT -->
       <div class="main-wrapper">
         <div class="top-navbar">
           <div class="navbar-left">
             <button class="menu-toggle-btn" id="sidebarToggle" title="Toggle Sidebar">
               <i class="fa-solid fa-bars"></i>
             </button>
-            <h2 id="top-title" style="font-size: 1.35rem; font-weight: 700;">Admin Dashboard</h2>
+            <h2 id="top-title" style="font-size: 1.35rem; font-weight: 700;">Daily Closing Balance Sheet</h2>
           </div>
           
           <div class="navbar-right">
-            <!-- Language Switcher Button -->
             <button class="lang-btn" onclick="toggleLanguage()">
               <i class="fa-solid fa-globe"></i> <span class="lang-text-label">বাংলা</span>
             </button>
 
-            <!-- Profile Dropdown Trigger -->
             <div class="profile-dropdown-wrapper">
               <div class="user-profile-trigger" id="profileTrigger">
                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Profile" id="navAvatar" class="user-profile-avatar" />
                 <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: #6b7280;"></i>
               </div>
 
-              <!-- POPUP DROPDOWN MENU -->
               <div class="profile-dropdown-menu" id="profileDropdown">
                 <div class="dropdown-header">
                   <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="dropdownHeaderImg" alt="Profile" />
-                  <div class="dropdown-header-info">
+                  <div>
                     <h4 id="dropdownName">Rabbi Hosen</h4>
-                    <p id="dropdownRole">Admin</p>
+                    <p id="dropdownRole" style="font-size: 0.8rem; opacity: 0.9;">Admin</p>
                   </div>
                 </div>
 
@@ -717,18 +375,6 @@
                   </li>
                 </ul>
 
-                <div class="dropdown-section-title" id="txt-acc-head">MY ACCOUNT</div>
-                <ul class="dropdown-items-list">
-                  <li class="dropdown-item">
-                    <i class="fa-regular fa-bell"></i>
-                    <span id="drop-notif">Notifications</span>
-                  </li>
-                  <li class="dropdown-item">
-                    <i class="fa-regular fa-clipboard"></i>
-                    <span id="drop-tasks">Tasks</span>
-                  </li>
-                </ul>
-
                 <div class="dropdown-logout-container">
                   <button class="btn-dropdown-logout" id="logoutBtn">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -740,57 +386,243 @@
           </div>
         </div>
 
-        <!-- VIEW 1: DASHBOARD PANEL -->
+        <!-- VIEW 1: DAILY CLOSING DASHBOARD -->
         <div class="view-panel active" id="dashboard-view">
+          
+          <!-- OVERVIEW CARDS -->
           <div class="cards-grid">
-            <div class="card income">
-              <h4 id="lbl-total-income">📊 Today's Total Sales</h4>
-              <div class="amount" id="totalIncome">৳ 0</div>
+            <div class="card personal">
+              <h4 id="lbl-sum-personal">🔴 Personal Total</h4>
+              <div class="amount" id="sumPersonal">৳ 0.00</div>
             </div>
-            <div class="card expense">
-              <h4 id="lbl-total-expense">💸 Today's Total Expense</h4>
-              <div class="amount" id="totalExpense">৳ 0</div>
+            <div class="card agent">
+              <h4 id="lbl-sum-agent">🟡 Agent Total</h4>
+              <div class="amount" id="sumAgent">৳ 0.00</div>
             </div>
-            <div class="card balance">
-              <h4 id="lbl-net-balance">💰 Cash Balance</h4>
-              <div class="amount" id="netBalance">৳ 0</div>
+            <div class="card load">
+              <h4 id="lbl-sum-load">🔵 Load SIM Total</h4>
+              <div class="amount" id="sumLoad">৳ 0.00</div>
+            </div>
+            <div class="card offer">
+              <h4 id="lbl-sum-offer">🟣 Offer SIM Total</h4>
+              <div class="amount" id="sumOffer">৳ 0.00</div>
+            </div>
+            <div class="card grand">
+              <h4 id="lbl-sum-grand">💰 Grand Total Balance</h4>
+              <div class="amount" id="sumGrand">৳ 0.00</div>
             </div>
           </div>
 
-          <div class="form-card">
-            <h3 id="lbl-add-entry">📝 Add New Transaction</h3>
-            <form class="entry-form" id="transactionForm">
-              <input type="text" id="desc" placeholder="Description (e.g. Typing / Paper)" required />
-              <input type="number" id="amount" placeholder="Amount (৳)" required />
-              <select id="type">
-                <option value="income" id="opt-income">Cash In (Income)</option>
-                <option value="expense" id="opt-expense">Cash Out (Expense)</option>
-              </select>
-              <button type="submit" class="btn-add" id="btn-save">+ Save</button>
-            </form>
+          <!-- DATE FILTER & SAVE BAR -->
+          <div class="date-filter-bar">
+            <div class="date-input-wrapper">
+              <label style="font-weight: 700; color: #374151;" id="lbl-select-date">📅 Select Closing Date:</label>
+              <input type="date" id="closingDateInput" />
+            </div>
+            <button class="btn-save-closing" id="btnSaveClosing">
+              <i class="fa-solid fa-floppy-disk"></i> <span id="txt-save-closing">Save Daily Closing</span>
+            </button>
           </div>
 
-          <div class="table-card">
-            <h3 id="lbl-transaction-list">📜 Today's Transaction List</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th id="th-desc">Description</th>
-                  <th id="th-type">Type</th>
-                  <th id="th-amount">Amount</th>
-                  <th id="th-action">Action</th>
-                </tr>
-              </thead>
-              <tbody id="transactionList"></tbody>
-            </table>
+          <!-- 4 COLUMNS CLOSING FORM GRID -->
+          <div class="closing-grid">
+
+            <!-- COLUMN 1: PERSONAL -->
+            <div class="closing-card">
+              <div class="closing-card-header bg-personal">
+                <span id="head-personal">পার্সোনাল (Personal)</span>
+                <i class="fa-solid fa-user-lock"></i>
+              </div>
+              <div class="closing-card-body">
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-bkash"></i> বিকাশ/৫৮৪</span>
+                  <input type="number" class="closing-inp inp-personal" value="13161.57" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-nagad"></i> নগদ/৫৮৪</span>
+                  <input type="number" class="closing-inp inp-personal" value="850.24" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-rocket"></i> রকেট/৫৮৪</span>
+                  <input type="number" class="closing-inp inp-personal" value="778.79" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-upay"></i> উপায়/৫৮৪</span>
+                  <input type="number" class="closing-inp inp-personal" value="3.72" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-tap"></i> ট্যাপ/৫৮৪</span>
+                  <input type="number" class="closing-inp inp-personal" value="5656.24" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-tap"></i> ট্যাপ/৮৩০</span>
+                  <input type="number" class="closing-inp inp-personal" value="0.00" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-tali"></i> টালিখাতা</span>
+                  <input type="number" class="closing-inp inp-personal" value="35.43" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-bank"></i> ডাচ বাংলা ব্যাংক</span>
+                  <input type="number" class="closing-inp inp-personal" value="45.55" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-bank"></i> ট্রাস্ট মানি/৭৭৪</span>
+                  <input type="number" class="closing-inp inp-personal" value="1089.44" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-bank"></i> ট্রাস্ট মানি/৩৭২৫</span>
+                  <input type="number" class="closing-inp inp-personal" value="86.00" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-bank"></i> প্রাইম ব্যাংক</span>
+                  <input type="number" class="closing-inp inp-personal" value="0.00" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-bank"></i> ইউসিবি ব্যাংক</span>
+                  <input type="number" class="closing-inp inp-personal" value="0.00" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-bank"></i> ব্রাক ব্যাংক</span>
+                  <input type="number" class="closing-inp inp-personal" value="458.00" step="any">
+                </div>
+              </div>
+              <div class="closing-card-footer">
+                <span id="lbl-sub-personal">মোট পার্সোনাল:</span>
+                <span id="subPersonalTotal">৳ 0.00</span>
+              </div>
+            </div>
+
+            <!-- COLUMN 2: AGENT -->
+            <div class="closing-card">
+              <div class="closing-card-header bg-agent">
+                <span id="head-agent">এজেন্ট (Agent)</span>
+                <i class="fa-solid fa-briefcase"></i>
+              </div>
+              <div class="closing-card-body">
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-bkash"></i> বিকাশ/৫৫২</span>
+                  <input type="number" class="closing-inp inp-agent" value="4731.76" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-nagad"></i> নগদ/৫০১</span>
+                  <input type="number" class="closing-inp inp-agent" value="484.77" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-nagad"></i> নগদ/৯২৬</span>
+                  <input type="number" class="closing-inp inp-agent" value="0.00" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-rocket"></i> রকেট/৫৫২৪</span>
+                  <input type="number" class="closing-inp inp-agent" value="30.65" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-upay"></i> উপায়/৫৫২</span>
+                  <input type="number" class="closing-inp inp-agent" value="243.34" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-tap"></i> ট্যাপ/৫৫২</span>
+                  <input type="number" class="closing-inp inp-agent" value="389.35" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-bkash"></i> বিকাশ মার্চেন্ট</span>
+                  <input type="number" class="closing-inp inp-agent" value="0.00" step="any">
+                </div>
+              </div>
+              <div class="closing-card-footer">
+                <span id="lbl-sub-agent">মোট এজেন্ট:</span>
+                <span id="subAgentTotal">৳ 0.00</span>
+              </div>
+            </div>
+
+            <!-- COLUMN 3: LOAD -->
+            <div class="closing-card">
+              <div class="closing-card-header bg-load">
+                <span id="head-load">লোড (Flexiload)</span>
+                <i class="fa-solid fa-mobile-screen"></i>
+              </div>
+              <div class="closing-card-body">
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-gp"></i> গ্রামীণ/৪৩৯</span>
+                  <input type="number" class="closing-inp inp-load" value="875.01" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-gp"></i> গ্রামীণ/৭৬০</span>
+                  <input type="number" class="closing-inp inp-load" value="4682.33" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-robi"></i> রবি/৫৮৫</span>
+                  <input type="number" class="closing-inp inp-load" value="252.36" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-airtel"></i> এয়ারটেল/৬১৮</span>
+                  <input type="number" class="closing-inp inp-load" value="2025.00" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-bl"></i> বাংলালিংক/৭২৫</span>
+                  <input type="number" class="closing-inp inp-load" value="2034.41" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-teletalk"></i> টেলিটক</span>
+                  <input type="number" class="closing-inp inp-load" value="0.00" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-nagad"></i> ইজি রিচার্জ</span>
+                  <input type="number" class="closing-inp inp-load" value="0.00" step="any">
+                </div>
+              </div>
+              <div class="closing-card-footer">
+                <span id="lbl-sub-load">মোট লোড:</span>
+                <span id="subLoadTotal">৳ 0.00</span>
+              </div>
+            </div>
+
+            <!-- COLUMN 4: OFFER SIM -->
+            <div class="closing-card">
+              <div class="closing-card-header bg-offer">
+                <span id="head-offer">অফার সিম (Offer SIM)</span>
+                <i class="fa-solid fa-sim-card"></i>
+              </div>
+              <div class="closing-card-body">
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-gp"></i> গ্রামীণ</span>
+                  <input type="number" class="closing-inp inp-offer" value="2261.00" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-robi"></i> রবি</span>
+                  <input type="number" class="closing-inp inp-offer" value="0.00" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-airtel"></i> এয়ারটেল</span>
+                  <input type="number" class="closing-inp inp-offer" value="0.00" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-bl"></i> বাংলালিংক</span>
+                  <input type="number" class="closing-inp inp-offer" value="1408.00" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-teletalk"></i> টেলিটক</span>
+                  <input type="number" class="closing-inp inp-offer" value="0.00" step="any">
+                </div>
+                <div class="closing-item">
+                  <span class="item-badge"><i class="badge-dot dot-bkash"></i> টেলি পে</span>
+                  <input type="number" class="closing-inp inp-offer" value="0.00" step="any">
+                </div>
+              </div>
+              <div class="closing-card-footer">
+                <span id="lbl-sub-offer">মোট অফার:</span>
+                <span id="subOfferTotal">৳ 0.00</span>
+              </div>
+            </div>
+
           </div>
         </div>
 
-        <!-- VIEW 2: FULL PAGE PROFILE PANEL -->
+        <!-- VIEW 2: PROFILE PANEL -->
         <div class="view-panel" id="profile-view">
           <div class="profile-page-card">
             <div class="profile-header-banner">
-              <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="fullProfileImg" class="profile-big-avatar" alt="Profile Avatar" />
+              <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="fullProfileImg" class="profile-big-avatar" alt="Avatar" />
               <div>
                 <h2 id="fullProfileNameDisplay">Rabbi Hosen</h2>
                 <p style="color: #6b7280; margin-bottom: 8px;" id="fullProfileRoleDisplay">Admin</p>
@@ -808,17 +640,14 @@
                   <label id="lbl-full-name">Full Name</label>
                   <input type="text" id="profFullName" placeholder="Rabbi Hosen" required />
                 </div>
-
                 <div class="field-group">
                   <label id="lbl-designation">Role / Designation</label>
                   <input type="text" id="profRole" placeholder="Admin" />
                 </div>
-
                 <div class="field-group">
                   <label id="lbl-email">Email Address</label>
                   <input type="email" id="profEmail" placeholder="mousumicomputer.org@gmail.com" readonly style="background: #f9fafb;" />
                 </div>
-
                 <div class="field-group">
                   <label id="lbl-phone">Phone Number</label>
                   <input type="text" id="profPhone" placeholder="+880 1700-000000" />
@@ -833,7 +662,7 @@
                 </div>
               </div>
 
-              <button type="submit" class="btn-add" style="width: auto; padding: 12px 30px;" id="btn-save-profile">
+              <button type="submit" class="btn-submit" style="width: auto; padding: 12px 30px;" id="btn-save-profile">
                 <i class="fa-solid fa-floppy-disk"></i> <span id="txt-save-changes">Save Profile Changes</span>
               </button>
             </form>
@@ -874,30 +703,53 @@
 
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
-
     const profileTrigger = document.getElementById('profileTrigger');
     const profileDropdown = document.getElementById('profileDropdown');
 
-    const navAvatar = document.getElementById('navAvatar');
-    const dropdownHeaderImg = document.getElementById('dropdownHeaderImg');
-    const dropdownName = document.getElementById('dropdownName');
-    const dropdownRole = document.getElementById('dropdownRole');
-
-    const fullProfileImg = document.getElementById('fullProfileImg');
-    const fullProfileNameDisplay = document.getElementById('fullProfileNameDisplay');
-    const fullProfileRoleDisplay = document.getElementById('fullProfileRoleDisplay');
-
-    const profFullName = document.getElementById('profFullName');
-    const profRole = document.getElementById('profRole');
-    const profEmail = document.getElementById('profEmail');
-    const profPhone = document.getElementById('profPhone');
-    const profNewPass = document.getElementById('profNewPass');
-    const fullProfileImgInput = document.getElementById('fullProfileImgInput');
-    const fullProfileForm = document.getElementById('fullProfileForm');
-
     const adminEmail = "mousumicomputer.org@gmail.com";
 
-    /* MULTI-LANGUAGE SYSTEM (Default: English) */
+    // Set Current Date Default
+    document.getElementById('closingDateInput').valueAsDate = new Date();
+
+    /* LIVE AUTO CALCULATION FOR DAILY CLOSING */
+    function calculateClosingTotals() {
+      const getSum = (selector) => {
+        let total = 0;
+        document.querySelectorAll(selector).forEach(inp => {
+          total += parseFloat(inp.value) || 0;
+        });
+        return total;
+      };
+
+      const personalTot = getSum('.inp-personal');
+      const agentTot = getSum('.inp-agent');
+      const loadTot = getSum('.inp-load');
+      const offerTot = getSum('.inp-offer');
+      const grandTot = personalTot + agentTot + loadTot + offerTot;
+
+      // Update Sub-totals
+      document.getElementById('subPersonalTotal').innerText = `৳ ${personalTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+      document.getElementById('subAgentTotal').innerText = `৳ ${agentTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+      document.getElementById('subLoadTotal').innerText = `৳ ${loadTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+      document.getElementById('subOfferTotal').innerText = `৳ ${offerTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+
+      // Update Top Cards
+      document.getElementById('sumPersonal').innerText = `৳ ${personalTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+      document.getElementById('sumAgent').innerText = `৳ ${agentTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+      document.getElementById('sumLoad').innerText = `৳ ${loadTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+      document.getElementById('sumOffer').innerText = `৳ ${offerTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+      document.getElementById('sumGrand').innerText = `৳ ${grandTot.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+    }
+
+    // Attach Input Event Listeners
+    document.querySelectorAll('.closing-inp').forEach(inp => {
+      inp.addEventListener('input', calculateClosingTotals);
+    });
+
+    // Initial Calculation
+    calculateClosingTotals();
+
+    /* MULTI-LANGUAGE SYSTEM */
     window.currentLang = 'en';
 
     const translations = {
@@ -908,43 +760,31 @@
         forgotPass: "Forgot Password?",
         loginBtn: "Login",
         langText: "বাংলা",
-        navDash: "Dashboard",
+        navDash: "Daily Closing",
         navAccounts: "Accounts",
         navDue: "Due Ledger",
         navInventory: "Inventory",
-        topDashTitle: "Admin Dashboard",
+        topDashTitle: "Daily Closing Balance Sheet",
         topProfTitle: "My Profile Settings",
-        totalIncome: "📊 Today's Total Sales",
-        totalExpense: "💸 Today's Total Expense",
-        netBalance: "💰 Cash Balance",
-        addEntry: "📝 Add New Transaction",
-        optIncome: "Cash In (Income)",
-        optExpense: "Cash Out (Expense)",
-        btnSave: "+ Save",
-        transList: "📜 Today's Transaction List",
-        thDesc: "Description",
-        thType: "Type",
-        thAmount: "Amount",
-        thAction: "Action",
-        actHead: "ACTIVITY",
+        lblSumPersonal: "🔴 Personal Total",
+        lblSumAgent: "🟡 Agent Total",
+        lblSumLoad: "🔵 Load SIM Total",
+        lblSumOffer: "🟣 Offer SIM Total",
+        lblSumGrand: "💰 Grand Total Balance",
+        lblSelectDate: "📅 Select Closing Date:",
+        btnSaveClosing: "Save Daily Closing",
+        headPersonal: "Personal Accounts",
+        headAgent: "Agent Accounts",
+        headLoad: "Flexiload SIMs",
+        headOffer: "Offer SIMs",
+        lblSubPersonal: "Personal Total:",
+        lblSubAgent: "Agent Total:",
+        lblSubLoad: "Load Total:",
+        lblSubOffer: "Offer Total:",
         dropPass: "Change Password",
         dropProf: "My Profile",
-        accHead: "MY ACCOUNT",
-        dropNotif: "Notifications",
-        dropTasks: "Tasks",
         dropLogout: "Logout",
-        changePhoto: "Change Photo",
-        personalInfo: "Personal & Account Information",
-        lblFullName: "Full Name",
-        lblDesignation: "Role / Designation",
-        lblEmail: "Email Address",
-        lblPhone: "Phone Number",
-        securityInfo: "Security Settings",
-        lblNewPass: "New Password (Leave blank to keep unchanged)",
-        saveChanges: "Save Profile Changes",
-        errInvalid: "Invalid Username or Password!",
-        errEnterEmail: "Please enter your Email or Username first to reset password!",
-        msgResetSent: "Password reset email sent successfully!"
+        msgSaved: "Daily Closing Data Saved Successfully!"
       },
       bn: {
         loading: "অনুগ্ৰহ করে অপেক্ষা করুন...",
@@ -953,43 +793,31 @@
         forgotPass: "পাসওয়ার্ড ভুলে গেছেন?",
         loginBtn: "লগইন",
         langText: "English",
-        navDash: "ড্যাশবোর্ড",
+        navDash: "দৈনিক ক্লোজিং",
         navAccounts: "হিসাব-নিকাশ",
         navDue: "বকেয়া খাতা",
         navInventory: "ইনভেন্টরি",
-        topDashTitle: "অ্যাডমিন ড্যাশবোর্ড",
-        topProfTitle: "প্রোফাইল সেটিং",
-        totalIncome: "📊 আজকের মোট বিক্রি",
-        totalExpense: "💸 আজকের মোট খরচ",
-        netBalance: "💰 ক্যাশ ব্যালেন্স",
-        addEntry: "📝 নতুন এন্ট্রি যোগ করুন",
-        optIncome: "ক্যাশ ইন (জমা)",
-        optExpense: "ক্যাশ আউট (খরচ)",
-        btnSave: "+ সেভ করুন",
-        transList: "📜 আজকের লেনদেন তালিকা",
-        thDesc: "বিবরণ",
-        thType: "ধরন",
-        thAmount: "পরিমাণ",
-        thAction: "অ্যাকশন",
-        actHead: "অ্যাক্টিভিটি",
+        topDashTitle: "দৈনিক ক্লোজিং ব্যালেন্স শিট",
+        topProfTitle: "মাই প্রোফাইল সেটিং",
+        lblSumPersonal: "🔴 পার্সোনাল মোট",
+        lblSumAgent: "🟡 এজেন্ট মোট",
+        lblSumLoad: "🔵 লোড সিম মোট",
+        lblSumOffer: "🟣 অফার সিম মোট",
+        lblSumGrand: "💰 সর্বমোট ক্যাশ ব্যালেন্স",
+        lblSelectDate: "📅 ক্লোজিং তারিখ সিলেক্ট করুন:",
+        btnSaveClosing: "দৈনিক ক্লোজিং সেভ করুন",
+        headPersonal: "পার্সোনাল অ্যাকাউন্ট",
+        headAgent: "এজেন্ট অ্যাকাউন্ট",
+        headLoad: "ফ্লেক্সিলোড সিমসমূহ",
+        headOffer: "অফার সিমসমূহ",
+        lblSubPersonal: "মোট পার্সোনাল:",
+        lblSubAgent: "মোট এজেন্ট:",
+        lblSubLoad: "মোট লোড:",
+        lblSubOffer: "মোট অফার:",
         dropPass: "পাসওয়ার্ড পরিবর্তন",
         dropProf: "মাই প্রোফাইল",
-        accHead: "মাই অ্যাকাউন্ট",
-        dropNotif: "নোটিফিকেশন",
-        dropTasks: "টাস্ক তালিকা",
         dropLogout: "লগআউট",
-        changePhoto: "ছবি পরিবর্তন",
-        personalInfo: "ব্যক্তিগত ও অ্যাকাউন্ট তথ্য",
-        lblFullName: "পূর্ণ নাম",
-        lblDesignation: "পদবী / রোল",
-        lblEmail: "ইমেইল অ্যাড্রেস",
-        lblPhone: "ফোন নম্বর",
-        securityInfo: "সিকিউরিটি সেটিংস",
-        lblNewPass: "নতুন পাসওয়ার্ড (পরিবর্তন না করতে চাইলে ফাঁকা রাখুন)",
-        saveChanges: "তথ্য সেভ করুন",
-        errInvalid: "ভুল ইউজারনেম অথবা পাসওয়ার্ড!",
-        errEnterEmail: "পাসওয়ার্ড রিসেট করতে প্রথমে আপনার ইমেইল বা ইউজারনেম লিখুন!",
-        msgResetSent: "পাসওয়ার্ড রিসেট ইমেইল সফলভাবে পাঠানো হয়েছে!"
+        msgSaved: "দৈনিক ক্লোজিং ব্যালেন্স তথ্য সফলভাবে সেভ করা হয়েছে!"
       }
     };
 
@@ -1011,51 +839,43 @@
 
       document.getElementById('top-title').innerText = document.getElementById('profile-view').classList.contains('active') ? t.topProfTitle : t.topDashTitle;
 
-      document.getElementById('lbl-total-income').innerText = t.totalIncome;
-      document.getElementById('lbl-total-expense').innerText = t.totalExpense;
-      document.getElementById('lbl-net-balance').innerText = t.netBalance;
+      document.getElementById('lbl-sum-personal').innerText = t.lblSumPersonal;
+      document.getElementById('lbl-sum-agent').innerText = t.lblSumAgent;
+      document.getElementById('lbl-sum-load').innerText = t.lblSumLoad;
+      document.getElementById('lbl-sum-offer').innerText = t.lblSumOffer;
+      document.getElementById('lbl-sum-grand').innerText = t.lblSumGrand;
 
-      document.getElementById('lbl-add-entry').innerText = t.addEntry;
-      document.getElementById('opt-income').innerText = t.optIncome;
-      document.getElementById('opt-expense').innerText = t.optExpense;
-      document.getElementById('btn-save').innerText = t.btnSave;
+      document.getElementById('lbl-select-date').innerText = t.lblSelectDate;
+      document.getElementById('txt-save-closing').innerText = t.btnSaveClosing;
 
-      document.getElementById('lbl-transaction-list').innerText = t.transList;
-      document.getElementById('th-desc').innerText = t.thDesc;
-      document.getElementById('th-type').innerText = t.thType;
-      document.getElementById('th-amount').innerText = t.thAmount;
-      document.getElementById('th-action').innerText = t.thAction;
+      document.getElementById('head-personal').innerText = t.headPersonal;
+      document.getElementById('head-agent').innerText = t.headAgent;
+      document.getElementById('head-load').innerText = t.headLoad;
+      document.getElementById('head-offer').innerText = t.headOffer;
 
-      document.getElementById('txt-act-head').innerText = t.actHead;
+      document.getElementById('lbl-sub-personal').innerText = t.lblSubPersonal;
+      document.getElementById('lbl-sub-agent').innerText = t.lblSubAgent;
+      document.getElementById('lbl-sub-load').innerText = t.lblSubLoad;
+      document.getElementById('lbl-sub-offer').innerText = t.lblSubOffer;
+
       document.getElementById('drop-pass').innerText = t.dropPass;
       document.getElementById('drop-prof').innerText = t.dropProf;
-      document.getElementById('txt-acc-head').innerText = t.accHead;
-      document.getElementById('drop-notif').innerText = t.dropNotif;
-      document.getElementById('drop-tasks').innerText = t.dropTasks;
       document.getElementById('drop-logout').innerText = t.dropLogout;
-
-      document.getElementById('txt-change-photo').innerText = t.changePhoto;
-      document.getElementById('txt-personal-info').innerText = t.personalInfo;
-      document.getElementById('lbl-full-name').innerText = t.lblFullName;
-      document.getElementById('lbl-designation').innerText = t.lblDesignation;
-      document.getElementById('lbl-email').innerText = t.lblEmail;
-      document.getElementById('lbl-phone').innerText = t.lblPhone;
-      document.getElementById('txt-security-info').innerText = t.securityInfo;
-      document.getElementById('lbl-new-password').innerText = t.lblNewPass;
-      document.getElementById('txt-save-changes').innerText = t.saveChanges;
     };
+
+    /* SAVE CLOSING BUTTON */
+    document.getElementById('btnSaveClosing').addEventListener('click', () => {
+      alert(translations[currentLang].msgSaved);
+    });
 
     /* FORGOT PASSWORD HANDLER */
     btnForgotPass.addEventListener('click', (e) => {
       e.preventDefault();
       const usernameInput = document.getElementById('username').value.trim();
-      errorMsg.style.display = 'none';
-      successMsg.style.display = 'none';
-
       let email = usernameInput.includes('@') ? usernameInput : adminEmail;
 
       if (!usernameInput) {
-        errorMsg.innerText = translations[currentLang].errEnterEmail;
+        errorMsg.innerText = "Please enter Username or Email first!";
         errorMsg.style.display = 'block';
         return;
       }
@@ -1064,7 +884,6 @@
       sendPasswordResetEmail(auth, email)
         .then(() => {
           loader.style.display = 'none';
-          successMsg.innerText = translations[currentLang].msgResetSent;
           successMsg.style.display = 'block';
         })
         .catch((err) => {
@@ -1074,21 +893,14 @@
         });
     });
 
-    /* SIDEBAR TOGGLE FUNCTIONALITY */
-    sidebarToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('collapsed');
-    });
-
-    /* DROPDOWN TOGGLE */
+    /* TOGGLE SIDEBAR & DROPDOWN */
+    sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
     profileTrigger.addEventListener('click', (e) => {
       e.stopPropagation();
       profileDropdown.classList.toggle('active');
     });
-
     document.addEventListener('click', (e) => {
-      if (!profileDropdown.contains(e.target)) {
-        profileDropdown.classList.remove('active');
-      }
+      if (!profileDropdown.contains(e.target)) profileDropdown.classList.remove('active');
     });
 
     /* PANEL SWITCHING */
@@ -1107,38 +919,12 @@
       }
     };
 
-    /* LOAD PROFILE DATA */
-    function loadSavedProfile() {
-      const savedPhoto = localStorage.getItem('mc_admin_photo');
-      const savedName = localStorage.getItem('mc_admin_name') || "Rabbi Hosen";
-      const savedRole = localStorage.getItem('mc_admin_role') || "Admin";
-      const savedPhone = localStorage.getItem('mc_admin_phone') || "";
-
-      if (savedPhoto) {
-        navAvatar.src = savedPhoto;
-        dropdownHeaderImg.src = savedPhoto;
-        fullProfileImg.src = savedPhoto;
-      }
-      
-      dropdownName.innerText = savedName;
-      fullProfileNameDisplay.innerText = savedName;
-      profFullName.value = savedName;
-
-      dropdownRole.innerText = savedRole;
-      fullProfileRoleDisplay.innerText = savedRole;
-      profRole.value = savedRole;
-
-      profEmail.value = auth.currentUser ? auth.currentUser.email : adminEmail;
-      profPhone.value = savedPhone;
-    }
-
     /* AUTH OBSERVER */
     onAuthStateChanged(auth, (user) => {
       loader.style.display = 'none';
       if (user) {
         loginSection.style.display = 'none';
         dashboardSection.style.display = 'block';
-        loadSavedProfile();
       } else {
         dashboardSection.style.display = 'none';
         loginSection.style.display = 'flex';
@@ -1150,17 +936,12 @@
       e.preventDefault();
       const usernameInput = document.getElementById('username').value.trim();
       const passwordInput = document.getElementById('password').value;
-
-      errorMsg.style.display = 'none';
-      successMsg.style.display = 'none';
-
       let email = usernameInput.includes('@') ? usernameInput : adminEmail;
-      loader.style.display = 'flex';
 
+      loader.style.display = 'flex';
       signInWithEmailAndPassword(auth, email, passwordInput)
         .catch(() => {
           loader.style.display = 'none';
-          errorMsg.innerText = translations[currentLang].errInvalid;
           errorMsg.style.display = 'block';
         });
     });
@@ -1169,59 +950,6 @@
     logoutBtn.addEventListener('click', () => {
       loader.style.display = 'flex';
       signOut(auth);
-    });
-
-    /* PROFILE IMAGE PREVIEW */
-    fullProfileImgInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-          fullProfileImg.src = evt.target.result;
-        }
-        reader.readAsDataURL(file);
-      }
-    });
-
-    /* SAVE PROFILE FORM */
-    fullProfileForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      loader.style.display = 'flex';
-
-      try {
-        const newName = profFullName.value.trim();
-        const newRole = profRole.value.trim();
-        const newPhone = profPhone.value.trim();
-        const newPass = profNewPass.value.trim();
-        const file = fullProfileImgInput.files[0];
-
-        localStorage.setItem('mc_admin_name', newName);
-        localStorage.setItem('mc_admin_role', newRole);
-        localStorage.setItem('mc_admin_phone', newPhone);
-
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = async function(evt) {
-            localStorage.setItem('mc_admin_photo', evt.target.result);
-            loadSavedProfile();
-          };
-          reader.readAsDataURL(file);
-        } else {
-          loadSavedProfile();
-        }
-
-        if (newPass && auth.currentUser) {
-          await updatePassword(auth.currentUser, newPass);
-          profNewPass.value = '';
-        }
-
-        loader.style.display = 'none';
-        alert(currentLang === 'en' ? 'Profile details updated successfully!' : 'প্রোফাইল তথ্য সফলভাবে আপডেট করা হয়েছে!');
-
-      } catch (err) {
-        loader.style.display = 'none';
-        alert('Error: ' + err.message);
-      }
     });
   </script>
 </body>
