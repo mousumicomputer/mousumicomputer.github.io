@@ -75,12 +75,8 @@
     .menu-item a.active, .menu-item a:hover { background: #00a8ef; color: #fff; }
 
     .main-wrapper { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-    .top-navbar { background-color: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+    .top-navbar { background-color: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); position: relative; }
     .navbar-right { display: flex; align-items: center; gap: 15px; }
-
-    .user-profile-btn { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 4px 8px; border-radius: 20px; border: 1px solid var(--border-color); }
-    .user-profile-btn img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-    .user-profile-btn span { font-size: 0.85rem; font-weight: 600; }
 
     .sync-badge {
       display: inline-flex; align-items: center; gap: 6px; background: #ecfdf5; color: #059669;
@@ -88,11 +84,38 @@
     }
     .sync-badge.saving { background: #fffbebf1; color: #d97706; border-color: #fde68a; }
 
-    .btn-logout { background: var(--red); color: #fff; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+    /* USER PROFILE MENU IN TOPBAR */
+    .user-profile { position: relative; cursor: pointer; }
+    .profile-info { display: flex; align-items: center; gap: 10px; padding: 4px 8px; border-radius: 20px; border: 1px solid var(--border-color); background: #f9fafb; }
+    .profile-info img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-color); }
+    .profile-info span { font-size: 0.85rem; font-weight: 600; }
 
-    /* VIEWS */
-    .view-panel { padding: 25px; display: none; }
-    .view-panel.active { display: block; }
+    .profile-dropdown {
+      position: absolute; top: 115%; right: 0; width: 280px; background: #fff;
+      border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      display: none; flex-direction: column; padding: 15px; z-index: 1000;
+    }
+    .profile-dropdown.active { display: flex; }
+    .profile-dropdown-header { text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 12px; }
+    .profile-dropdown-header img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; border: 2px solid var(--primary-color); }
+    .profile-dropdown-header h4 { font-size: 0.95rem; font-weight: 700; color: var(--text-color); }
+    .profile-dropdown-header p { font-size: 0.75rem; color: #6b7280; }
+
+    .dropdown-btn { width: 100%; padding: 8px 12px; margin-top: 6px; background: #f3f4f6; border: none; border-radius: 6px; text-align: left; font-size: 0.85rem; font-weight: 600; color: #374151; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .dropdown-btn:hover { background: #e5e7eb; }
+    .dropdown-btn.logout { background: #ffe4e6; color: var(--red); }
+    .dropdown-btn.logout:hover { background: #fecdd3; }
+
+    /* MODAL FOR PROFILE EDIT */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5);
+      display: none; justify-content: center; align-items: center; z-index: 9999;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box { background: #fff; border-radius: 12px; width: 90%; max-width: 450px; padding: 25px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+    .modal-header h3 { font-size: 1.1rem; font-weight: 700; }
+    .close-modal { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #9ca3af; }
 
     /* SUMMARY CARDS */
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
@@ -107,6 +130,7 @@
     .card.grand .amount { color: var(--green); }
 
     /* DATE BAR & ACTIONS */
+    .view-panel { padding: 25px; }
     .date-filter-bar {
       background: #ffffff; padding: 15px 20px; border-radius: 12px; border: 1px solid var(--border-color);
       margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
@@ -134,11 +158,6 @@
     .closing-item input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(0,168,239,0.15); }
 
     .closing-card-footer { padding: 12px 16px; background: #f9fafb; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; font-weight: 700; font-size: 0.95rem; }
-
-    /* PROFILE VIEW STYLE */
-    .profile-card { background: #fff; padding: 30px; border-radius: 12px; max-width: 600px; border: 1px solid var(--border-color); margin: 0 auto; }
-    .profile-header-info { text-align: center; margin-bottom: 25px; }
-    .profile-header-info img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary-color); margin-bottom: 10px; }
 
     /* PRINT LAYOUT */
     #print-section { display: none; }
@@ -205,29 +224,45 @@
           </div>
         </div>
         <ul class="menu-list">
-          <li class="menu-item"><a href="#" id="menu-closing" class="active"><i class="fa-solid fa-calculator"></i> Daily Closing</a></li>
-          <li class="menu-item"><a href="#" id="menu-profile"><i class="fa-solid fa-user-gear"></i> Profile Settings</a></li>
+          <li class="menu-item"><a href="#" class="active"><i class="fa-solid fa-calculator"></i> Daily Closing</a></li>
         </ul>
       </div>
 
       <!-- MAIN WRAPPER -->
       <div class="main-wrapper">
         <div class="top-navbar">
-          <h2 id="pageTitle" style="font-size:1.25rem; font-weight:700;">Daily Closing Balance Sheet</h2>
+          <h2 style="font-size:1.25rem; font-weight:700;">Daily Closing Balance Sheet</h2>
           <div class="navbar-right">
             <div class="sync-badge" id="syncBadge">
               <i class="fa-solid fa-bolt"></i> Live Real-time
             </div>
-            <div class="user-profile-btn" id="topProfileBtn">
-              <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" id="navAvatar" alt="User" />
-              <span>Admin</span>
+
+            <!-- USER PROFILE DROPDOWN MENU -->
+            <div class="user-profile" id="userProfileMenu">
+              <div class="profile-info">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" id="topAvatar" alt="User" />
+                <span id="topUsername">Admin</span>
+                <i class="fa-solid fa-chevron-down" style="font-size:0.75rem; color:#6b7280;"></i>
+              </div>
+
+              <!-- DROPDOWN CONTENT -->
+              <div class="profile-dropdown" id="profileDropdown">
+                <div class="profile-dropdown-header">
+                  <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" id="dropdownAvatar" alt="User" />
+                  <h4 id="dropdownName">Mousumi Computer</h4>
+                  <p id="dropdownEmail">mousumicomputer.org@gmail.com</p>
+                </div>
+                <button class="dropdown-btn" id="btnEditProfile"><i class="fa-solid fa-user-pen"></i> Edit Profile</button>
+                <button class="dropdown-btn" id="btnChangePass"><i class="fa-solid fa-key"></i> Change Password</button>
+                <button class="dropdown-btn logout" id="logoutBtn"><i class="fa-solid fa-power-off"></i> Logout</button>
+              </div>
             </div>
-            <button class="btn-logout" id="logoutBtn"><i class="fa-solid fa-power-off"></i> Logout</button>
+
           </div>
         </div>
 
-        <!-- VIEW 1: DAILY CLOSING -->
-        <div class="view-panel active" id="view-closing">
+        <!-- VIEW: DAILY CLOSING -->
+        <div class="view-panel">
           <!-- TOP SUMMARY CARDS -->
           <div class="cards-grid">
             <div class="card personal"><h4>🔴 Personal Total</h4><div class="amount" id="sumPersonal">৳ 0.00</div></div>
@@ -319,27 +354,45 @@
           </div>
         </div>
 
-        <!-- VIEW 2: PROFILE SETTINGS -->
-        <div class="view-panel" id="view-profile">
-          <div class="profile-card">
-            <div class="profile-header-info">
-              <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" id="profileBigImg" alt="Profile" />
-              <h3>Admin Profile</h3>
-              <p id="profileEmailDisplay" style="color:#6b7280; font-size:0.9rem;">mousumicomputer.org@gmail.com</p>
-            </div>
-
-            <form id="updateProfileForm">
-              <h4 style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:8px;">Change Password</h4>
-              <div class="form-group">
-                <label>New Password</label>
-                <input type="password" id="newPasswordInput" style="padding:10px; border:1px solid var(--border-color); border-radius:8px; width:100%;" placeholder="Enter new password" required />
-              </div>
-              <button type="submit" class="btn-submit" style="margin-top:10px;"><i class="fa-solid fa-key"></i> Update Password</button>
-            </form>
-          </div>
-        </div>
-
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL 1: EDIT PROFILE -->
+  <div class="modal-overlay" id="editProfileModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Edit Profile</h3>
+        <button class="close-modal" id="closeEditModal">&times;</button>
+      </div>
+      <form id="editProfileForm">
+        <div class="form-group">
+          <label>Display Name</label>
+          <input type="text" id="editNameInput" placeholder="Enter name" required />
+        </div>
+        <div class="form-group">
+          <label>Profile Image URL</label>
+          <input type="text" id="editAvatarInput" placeholder="https://example.com/photo.jpg" required />
+        </div>
+        <button type="submit" class="btn-submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: CHANGE PASSWORD -->
+  <div class="modal-overlay" id="changePassModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Change Password</h3>
+        <button class="close-modal" id="closePassModal">&times;</button>
+      </div>
+      <form id="changePassForm">
+        <div class="form-group">
+          <label>New Password</label>
+          <input type="password" id="newPassInput" placeholder="Enter new password" required />
+        </div>
+        <button type="submit" class="btn-submit">Update Password</button>
+      </form>
     </div>
   </div>
 
@@ -417,33 +470,77 @@
     let currentClosingRef = null;
     let autoSaveTimer = null;
 
-    // View Navigation Logic
-    const menuClosing = document.getElementById('menu-closing');
-    const menuProfile = document.getElementById('menu-profile');
-    const topProfileBtn = document.getElementById('topProfileBtn');
-    const viewClosing = document.getElementById('view-closing');
-    const viewProfile = document.getElementById('view-profile');
-    const pageTitle = document.getElementById('pageTitle');
+    // PROFILE DROPDOWN TOGGLE
+    const userProfileMenu = document.getElementById('userProfileMenu');
+    const profileDropdown = document.getElementById('profileDropdown');
 
-    function switchView(view) {
-      if (view === 'closing') {
-        viewClosing.classList.add('active');
-        viewProfile.classList.remove('active');
-        menuClosing.classList.add('active');
-        menuProfile.classList.remove('active');
-        pageTitle.innerText = "Daily Closing Balance Sheet";
-      } else {
-        viewProfile.classList.add('active');
-        viewClosing.classList.remove('active');
-        menuProfile.classList.add('active');
-        menuClosing.classList.remove('active');
-        pageTitle.innerText = "Profile & Account Settings";
+    userProfileMenu.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.toggle('active');
+    });
+
+    document.addEventListener('click', () => {
+      profileDropdown.classList.remove('active');
+    });
+
+    // MODAL HANDLERS
+    const editProfileModal = document.getElementById('editProfileModal');
+    const changePassModal = document.getElementById('changePassModal');
+
+    document.getElementById('btnEditProfile').addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.remove('active');
+      document.getElementById('editNameInput').value = document.getElementById('dropdownName').innerText;
+      document.getElementById('editAvatarInput').value = document.getElementById('topAvatar').src;
+      editProfileModal.classList.add('active');
+    });
+
+    document.getElementById('btnChangePass').addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.remove('active');
+      changePassModal.classList.add('active');
+    });
+
+    document.getElementById('closeEditModal').addEventListener('click', () => editProfileModal.classList.remove('active'));
+    document.getElementById('closePassModal').addEventListener('click', () => changePassModal.classList.remove('active'));
+
+    // EDIT PROFILE SUBMIT
+    document.getElementById('editProfileForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newName = document.getElementById('editNameInput').value;
+      const newAvatar = document.getElementById('editAvatarInput').value;
+
+      document.getElementById('topUsername').innerText = newName;
+      document.getElementById('dropdownName').innerText = newName;
+      document.getElementById('topAvatar').src = newAvatar;
+      document.getElementById('dropdownAvatar').src = newAvatar;
+      document.getElementById('sidebarLogo').src = newAvatar;
+
+      editProfileModal.classList.remove('active');
+      alert('✅ প্রোফাইল সফলভাবে আপডেট করা হয়েছে!');
+    });
+
+    // CHANGE PASSWORD SUBMIT
+    document.getElementById('changePassForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newPass = document.getElementById('newPassInput').value;
+      const user = auth.currentUser;
+
+      if (user && newPass) {
+        loader.style.display = 'flex';
+        updatePassword(user, newPass)
+          .then(() => {
+            loader.style.display = 'none';
+            changePassModal.classList.remove('active');
+            alert('✅ পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে!');
+            document.getElementById('newPassInput').value = '';
+          })
+          .catch(err => {
+            loader.style.display = 'none';
+            alert('❌ পাসওয়ার্ড পরিবর্তন করতে সমস্যা হয়েছে: ' + err.message);
+          });
       }
-    }
-
-    menuClosing.addEventListener('click', (e) => { e.preventDefault(); switchView('closing'); });
-    menuProfile.addEventListener('click', (e) => { e.preventDefault(); switchView('profile'); });
-    topProfileBtn.addEventListener('click', () => switchView('profile'));
+    });
 
     // Format Currency
     const fmt = (num) => `৳ ${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -479,7 +576,7 @@
       return g;
     }
 
-    // Save Data to Firebase
+    // Save Data to Firebase Realtime Database
     function saveToFirebase() {
       const selectedDate = closingDateInput.value;
       if (!selectedDate) return;
@@ -559,34 +656,13 @@
       window.print();
     });
 
-    // UPDATE PASSWORD
-    document.getElementById('updateProfileForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const newPass = document.getElementById('newPasswordInput').value;
-      const user = auth.currentUser;
-
-      if (user && newPass) {
-        loader.style.display = 'flex';
-        updatePassword(user, newPass)
-          .then(() => {
-            loader.style.display = 'none';
-            alert('✅ পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে!');
-            document.getElementById('newPasswordInput').value = '';
-          })
-          .catch(err => {
-            loader.style.display = 'none';
-            alert('❌ পাসওয়ার্ড পরিবর্তন ব্যর্থ হয়েছে: ' + err.message);
-          });
-      }
-    });
-
     // AUTH OBSERVER
     onAuthStateChanged(auth, (user) => {
       loader.style.display = 'none';
       if (user) {
         loginSection.style.display = 'none';
         dashboardSection.style.display = 'block';
-        document.getElementById('profileEmailDisplay').innerText = user.email || adminEmail;
+        document.getElementById('dropdownEmail').innerText = user.email || adminEmail;
         attachRealtimeSync(closingDateInput.value);
       } else {
         dashboardSection.style.display = 'none';
