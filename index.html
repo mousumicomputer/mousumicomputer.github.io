@@ -70,6 +70,7 @@
       align-items: center;
       min-height: 100vh;
       padding: 20px;
+      position: relative;
     }
 
     .login-card {
@@ -80,6 +81,7 @@
       width: 100%;
       max-width: 400px;
       text-align: center;
+      position: relative;
     }
 
     .logo-container { margin-bottom: 1.5rem; }
@@ -112,6 +114,24 @@
       outline: none;
     }
 
+    /* FORGOT PASSWORD LINK */
+    .forgot-pass-wrapper {
+      text-align: right;
+      margin-top: -8px;
+      margin-bottom: 1.2rem;
+    }
+    .forgot-pass-link {
+      color: #00a8ef;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .forgot-pass-link:hover {
+      color: #0088e8;
+      text-decoration: underline;
+    }
+
     .btn-submit {
       width: 100%;
       padding: 0.85rem;
@@ -129,6 +149,30 @@
     }
 
     .error-msg { color: var(--red); font-size: 0.85rem; margin-bottom: 1rem; display: none; }
+    .success-msg { color: var(--green); font-size: 0.85rem; margin-bottom: 1rem; display: none; }
+
+    /* LANGUAGE SWITCHER BUTTON ON LOGIN PAGE */
+    .login-lang-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .login-lang-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
 
     /* DASHBOARD LAYOUT */
     #dashboard-section {
@@ -141,7 +185,7 @@
 
     .dashboard-layout { display: flex; min-height: 100vh; position: relative; overflow-x: hidden; }
 
-    /* SIDEBAR (TOGGLE SUPPORTED) */
+    /* SIDEBAR */
     .sidebar {
       width: var(--sidebar-width);
       background-color: var(--primary-dark);
@@ -157,7 +201,6 @@
       margin-left: calc(-1 * var(--sidebar-width));
     }
 
-    /* MODERN BRAND LOGO DESIGN */
     .brand-logo {
       display: flex;
       align-items: center;
@@ -257,7 +300,6 @@
       gap: 18px;
     }
 
-    /* 3-LINE MENU TOGGLE BUTTON */
     .menu-toggle-btn {
       width: 40px;
       height: 40px;
@@ -317,7 +359,6 @@
       border: 2px solid #00a8ef;
     }
 
-    /* POPUP DROPDOWN MENU */
     .profile-dropdown-menu {
       display: none;
       position: absolute;
@@ -469,9 +510,6 @@
     table { width: 100%; border-collapse: collapse; margin-top: 15px; }
     th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
 
-    .badge-income { color: var(--green); font-weight: 600; background: #ecfdf5; padding: 4px 8px; border-radius: 4px; }
-    .badge-expense { color: var(--red); font-weight: 600; background: #fef2f2; padding: 4px 8px; border-radius: 4px; }
-
     /* PROFILE PAGE */
     .profile-page-card {
       background: #ffffff;
@@ -568,6 +606,11 @@
 
   <!-- 1. LOGIN SECTION -->
   <div id="login-section">
+    <!-- Language Switcher Button for Login -->
+    <button class="login-lang-btn" onclick="toggleLanguage()">
+      <i class="fa-solid fa-globe"></i> <span class="lang-text-label">বাংলা</span>
+    </button>
+
     <div class="login-card">
       <div class="logo-container">
         <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" alt="Logo" class="logo-img" />
@@ -575,6 +618,7 @@
       </div>
 
       <p class="error-msg" id="errorMsg">Invalid Username or Password!</p>
+      <p class="success-msg" id="successMsg">Password reset email sent successfully!</p>
 
       <form id="loginForm">
         <div class="form-group">
@@ -593,6 +637,11 @@
           </div>
         </div>
 
+        <!-- Forgot Password Link -->
+        <div class="forgot-pass-wrapper">
+          <a href="#" class="forgot-pass-link" id="btn-forgot-pass">Forgot Password?</a>
+        </div>
+
         <button type="submit" class="btn-submit">
           <i class="fa-solid fa-right-to-bracket"></i> <span id="txt-login-btn">Login</span>
         </button>
@@ -605,7 +654,6 @@
     <div class="dashboard-layout">
       <!-- SIDEBAR -->
       <div class="sidebar" id="sidebar">
-        <!-- Modern Header Design -->
         <div class="brand-logo">
           <div class="brand-logo-img-wrapper">
             <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" alt="Logo" />
@@ -628,7 +676,6 @@
       <div class="main-wrapper">
         <div class="top-navbar">
           <div class="navbar-left">
-            <!-- 3-LINE MENU TOGGLE BUTTON -->
             <button class="menu-toggle-btn" id="sidebarToggle" title="Toggle Sidebar">
               <i class="fa-solid fa-bars"></i>
             </button>
@@ -637,8 +684,8 @@
           
           <div class="navbar-right">
             <!-- Language Switcher Button -->
-            <button class="lang-btn" id="langToggleBtn" onclick="toggleLanguage()">
-              <i class="fa-solid fa-globe"></i> <span id="lang-text">বাংলা</span>
+            <button class="lang-btn" onclick="toggleLanguage()">
+              <i class="fa-solid fa-globe"></i> <span class="lang-text-label">বাংলা</span>
             </button>
 
             <!-- Profile Dropdown Trigger -->
@@ -650,7 +697,6 @@
 
               <!-- POPUP DROPDOWN MENU -->
               <div class="profile-dropdown-menu" id="profileDropdown">
-                <!-- Header -->
                 <div class="dropdown-header">
                   <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="dropdownHeaderImg" alt="Profile" />
                   <div class="dropdown-header-info">
@@ -659,7 +705,6 @@
                   </div>
                 </div>
 
-                <!-- Activity Section -->
                 <div class="dropdown-section-title" id="txt-act-head">ACTIVITY</div>
                 <ul class="dropdown-items-list">
                   <li class="dropdown-item" onclick="switchPanel('profile')">
@@ -672,7 +717,6 @@
                   </li>
                 </ul>
 
-                <!-- My Account Section -->
                 <div class="dropdown-section-title" id="txt-acc-head">MY ACCOUNT</div>
                 <ul class="dropdown-items-list">
                   <li class="dropdown-item">
@@ -685,7 +729,6 @@
                   </li>
                 </ul>
 
-                <!-- Logout -->
                 <div class="dropdown-logout-container">
                   <button class="btn-dropdown-logout" id="logoutBtn">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -720,8 +763,8 @@
               <input type="text" id="desc" placeholder="Description (e.g. Typing / Paper)" required />
               <input type="number" id="amount" placeholder="Amount (৳)" required />
               <select id="type">
-                <option value="income">Cash In (Income)</option>
-                <option value="expense">Cash Out (Expense)</option>
+                <option value="income" id="opt-income">Cash In (Income)</option>
+                <option value="expense" id="opt-expense">Cash Out (Expense)</option>
               </select>
               <button type="submit" class="btn-add" id="btn-save">+ Save</button>
             </form>
@@ -804,7 +847,7 @@
   <!-- FIREBASE & JS SCRIPT -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA1PhRiTkICNCd8sA4he3ZxKjHtIzM0d5E",
@@ -825,6 +868,8 @@
     const loginSection = document.getElementById('login-section');
     const dashboardSection = document.getElementById('dashboard-section');
     const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+    const btnForgotPass = document.getElementById('btn-forgot-pass');
     const logoutBtn = document.getElementById('logoutBtn');
 
     const sidebar = document.getElementById('sidebar');
@@ -852,6 +897,183 @@
 
     const adminEmail = "mousumicomputer.org@gmail.com";
 
+    /* MULTI-LANGUAGE SYSTEM (Default: English) */
+    window.currentLang = 'en';
+
+    const translations = {
+      en: {
+        loading: "Please wait...",
+        usernameLabel: "Username / Email",
+        passwordLabel: "Password",
+        forgotPass: "Forgot Password?",
+        loginBtn: "Login",
+        langText: "বাংলা",
+        navDash: "Dashboard",
+        navAccounts: "Accounts",
+        navDue: "Due Ledger",
+        navInventory: "Inventory",
+        topDashTitle: "Admin Dashboard",
+        topProfTitle: "My Profile Settings",
+        totalIncome: "📊 Today's Total Sales",
+        totalExpense: "💸 Today's Total Expense",
+        netBalance: "💰 Cash Balance",
+        addEntry: "📝 Add New Transaction",
+        optIncome: "Cash In (Income)",
+        optExpense: "Cash Out (Expense)",
+        btnSave: "+ Save",
+        transList: "📜 Today's Transaction List",
+        thDesc: "Description",
+        thType: "Type",
+        thAmount: "Amount",
+        thAction: "Action",
+        actHead: "ACTIVITY",
+        dropPass: "Change Password",
+        dropProf: "My Profile",
+        accHead: "MY ACCOUNT",
+        dropNotif: "Notifications",
+        dropTasks: "Tasks",
+        dropLogout: "Logout",
+        changePhoto: "Change Photo",
+        personalInfo: "Personal & Account Information",
+        lblFullName: "Full Name",
+        lblDesignation: "Role / Designation",
+        lblEmail: "Email Address",
+        lblPhone: "Phone Number",
+        securityInfo: "Security Settings",
+        lblNewPass: "New Password (Leave blank to keep unchanged)",
+        saveChanges: "Save Profile Changes",
+        errInvalid: "Invalid Username or Password!",
+        errEnterEmail: "Please enter your Email or Username first to reset password!",
+        msgResetSent: "Password reset email sent successfully!"
+      },
+      bn: {
+        loading: "অনুগ্ৰহ করে অপেক্ষা করুন...",
+        usernameLabel: "ইউজারনেম / ইমেইল",
+        passwordLabel: "পাসওয়ার্ড",
+        forgotPass: "পাসওয়ার্ড ভুলে গেছেন?",
+        loginBtn: "লগইন",
+        langText: "English",
+        navDash: "ড্যাশবোর্ড",
+        navAccounts: "হিসাব-নিকাশ",
+        navDue: "বকেয়া খাতা",
+        navInventory: "ইনভেন্টরি",
+        topDashTitle: "অ্যাডমিন ড্যাশবোর্ড",
+        topProfTitle: "প্রোফাইল সেটিং",
+        totalIncome: "📊 আজকের মোট বিক্রি",
+        totalExpense: "💸 আজকের মোট খরচ",
+        netBalance: "💰 ক্যাশ ব্যালেন্স",
+        addEntry: "📝 নতুন এন্ট্রি যোগ করুন",
+        optIncome: "ক্যাশ ইন (জমা)",
+        optExpense: "ক্যাশ আউট (খরচ)",
+        btnSave: "+ সেভ করুন",
+        transList: "📜 আজকের লেনদেন তালিকা",
+        thDesc: "বিবরণ",
+        thType: "ধরন",
+        thAmount: "পরিমাণ",
+        thAction: "অ্যাকশন",
+        actHead: "অ্যাক্টিভিটি",
+        dropPass: "পাসওয়ার্ড পরিবর্তন",
+        dropProf: "মাই প্রোফাইল",
+        accHead: "মাই অ্যাকাউন্ট",
+        dropNotif: "নোটিফিকেশন",
+        dropTasks: "টাস্ক তালিকা",
+        dropLogout: "লগআউট",
+        changePhoto: "ছবি পরিবর্তন",
+        personalInfo: "ব্যক্তিগত ও অ্যাকাউন্ট তথ্য",
+        lblFullName: "পূর্ণ নাম",
+        lblDesignation: "পদবী / রোল",
+        lblEmail: "ইমেইল অ্যাড্রেস",
+        lblPhone: "ফোন নম্বর",
+        securityInfo: "সিকিউরিটি সেটিংস",
+        lblNewPass: "নতুন পাসওয়ার্ড (পরিবর্তন না করতে চাইলে ফাঁকা রাখুন)",
+        saveChanges: "তথ্য সেভ করুন",
+        errInvalid: "ভুল ইউজারনেম অথবা পাসওয়ার্ড!",
+        errEnterEmail: "পাসওয়ার্ড রিসেট করতে প্রথমে আপনার ইমেইল বা ইউজারনেম লিখুন!",
+        msgResetSent: "পাসওয়ার্ড রিসেট ইমেইল সফলভাবে পাঠানো হয়েছে!"
+      }
+    };
+
+    window.toggleLanguage = function() {
+      currentLang = currentLang === 'en' ? 'bn' : 'en';
+      const t = translations[currentLang];
+
+      document.querySelectorAll('.lang-text-label').forEach(el => el.innerText = t.langText);
+      document.getElementById('txt-loading').innerText = t.loading;
+      document.getElementById('lbl-username').innerText = t.usernameLabel;
+      document.getElementById('lbl-password').innerText = t.passwordLabel;
+      document.getElementById('btn-forgot-pass').innerText = t.forgotPass;
+      document.getElementById('txt-login-btn').innerText = t.loginBtn;
+
+      document.getElementById('nav-dash').innerText = t.navDash;
+      document.getElementById('nav-accounts').innerText = t.navAccounts;
+      document.getElementById('nav-due').innerText = t.navDue;
+      document.getElementById('nav-inventory').innerText = t.navInventory;
+
+      document.getElementById('top-title').innerText = document.getElementById('profile-view').classList.contains('active') ? t.topProfTitle : t.topDashTitle;
+
+      document.getElementById('lbl-total-income').innerText = t.totalIncome;
+      document.getElementById('lbl-total-expense').innerText = t.totalExpense;
+      document.getElementById('lbl-net-balance').innerText = t.netBalance;
+
+      document.getElementById('lbl-add-entry').innerText = t.addEntry;
+      document.getElementById('opt-income').innerText = t.optIncome;
+      document.getElementById('opt-expense').innerText = t.optExpense;
+      document.getElementById('btn-save').innerText = t.btnSave;
+
+      document.getElementById('lbl-transaction-list').innerText = t.transList;
+      document.getElementById('th-desc').innerText = t.thDesc;
+      document.getElementById('th-type').innerText = t.thType;
+      document.getElementById('th-amount').innerText = t.thAmount;
+      document.getElementById('th-action').innerText = t.thAction;
+
+      document.getElementById('txt-act-head').innerText = t.actHead;
+      document.getElementById('drop-pass').innerText = t.dropPass;
+      document.getElementById('drop-prof').innerText = t.dropProf;
+      document.getElementById('txt-acc-head').innerText = t.accHead;
+      document.getElementById('drop-notif').innerText = t.dropNotif;
+      document.getElementById('drop-tasks').innerText = t.dropTasks;
+      document.getElementById('drop-logout').innerText = t.dropLogout;
+
+      document.getElementById('txt-change-photo').innerText = t.changePhoto;
+      document.getElementById('txt-personal-info').innerText = t.personalInfo;
+      document.getElementById('lbl-full-name').innerText = t.lblFullName;
+      document.getElementById('lbl-designation').innerText = t.lblDesignation;
+      document.getElementById('lbl-email').innerText = t.lblEmail;
+      document.getElementById('lbl-phone').innerText = t.lblPhone;
+      document.getElementById('txt-security-info').innerText = t.securityInfo;
+      document.getElementById('lbl-new-password').innerText = t.lblNewPass;
+      document.getElementById('txt-save-changes').innerText = t.saveChanges;
+    };
+
+    /* FORGOT PASSWORD HANDLER */
+    btnForgotPass.addEventListener('click', (e) => {
+      e.preventDefault();
+      const usernameInput = document.getElementById('username').value.trim();
+      errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
+
+      let email = usernameInput.includes('@') ? usernameInput : adminEmail;
+
+      if (!usernameInput) {
+        errorMsg.innerText = translations[currentLang].errEnterEmail;
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      loader.style.display = 'flex';
+      sendPasswordResetEmail(auth, email)
+        .then(() => {
+          loader.style.display = 'none';
+          successMsg.innerText = translations[currentLang].msgResetSent;
+          successMsg.style.display = 'block';
+        })
+        .catch((err) => {
+          loader.style.display = 'none';
+          errorMsg.innerText = err.message;
+          errorMsg.style.display = 'block';
+        });
+    });
+
     /* SIDEBAR TOGGLE FUNCTIONALITY */
     sidebarToggle.addEventListener('click', () => {
       sidebar.classList.toggle('collapsed');
@@ -877,11 +1099,11 @@
 
       if (panelName === 'profile') {
         document.getElementById('profile-view').classList.add('active');
-        document.getElementById('top-title').innerText = currentLang === 'en' ? 'My Profile Settings' : 'প্রোফাইল সেটিং';
+        document.getElementById('top-title').innerText = translations[currentLang].topProfTitle;
       } else {
         document.getElementById('dashboard-view').classList.add('active');
         document.getElementById('menu-dash').classList.add('active');
-        document.getElementById('top-title').innerText = currentLang === 'en' ? 'Admin Dashboard' : 'অ্যাডমিন ড্যাশবোর্ড';
+        document.getElementById('top-title').innerText = translations[currentLang].topDashTitle;
       }
     };
 
@@ -930,13 +1152,15 @@
       const passwordInput = document.getElementById('password').value;
 
       errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
+
       let email = usernameInput.includes('@') ? usernameInput : adminEmail;
       loader.style.display = 'flex';
 
       signInWithEmailAndPassword(auth, email, passwordInput)
         .catch(() => {
           loader.style.display = 'none';
-          errorMsg.innerText = currentLang === 'en' ? "Invalid Username or Password!" : "ভুল ইউজারনেম অথবা পাসওয়ার্ড!";
+          errorMsg.innerText = translations[currentLang].errInvalid;
           errorMsg.style.display = 'block';
         });
     });
@@ -999,121 +1223,6 @@
         alert('Error: ' + err.message);
       }
     });
-
-    /* MULTI-LANGUAGE TRANSLATION SYSTEM */
-    window.currentLang = 'en'; 
-
-    window.toggleLanguage = function() {
-      currentLang = currentLang === 'en' ? 'bn' : 'en';
-      applyTranslations();
-    };
-
-    function applyTranslations() {
-      const isEn = currentLang === 'en';
-      
-      document.getElementById('lang-text').innerText = isEn ? 'বাংলা' : 'English';
-      document.getElementById('top-title').innerText = document.getElementById('profile-view').classList.contains('active') ? 
-        (isEn ? 'My Profile Settings' : 'প্রোফাইল সেটিং') : (isEn ? 'Admin Dashboard' : 'অ্যাডমিন ড্যাশবোর্ড');
-
-      // Sidebar
-      document.getElementById('nav-dash').innerText = isEn ? 'Dashboard' : 'ড্যাশবোর্ড';
-      document.getElementById('nav-accounts').innerText = isEn ? 'Accounts' : 'হিসাব-নিকাশ';
-      document.getElementById('nav-due').innerText = isEn ? 'Due Ledger' : 'বাকির খাতা';
-      document.getElementById('nav-inventory').innerText = isEn ? 'Inventory' : 'ইনভেন্টরি';
-
-      // Dropdown
-      document.getElementById('txt-act-head').innerText = isEn ? 'ACTIVITY' : 'কার্যক্রম';
-      document.getElementById('drop-pass').innerText = isEn ? 'Change Password' : 'পাসওয়ার্ড পরিবর্তন';
-      document.getElementById('drop-prof').innerText = isEn ? 'My Profile' : 'মাই প্রোফাইল';
-      
-      document.getElementById('txt-acc-head').innerText = isEn ? 'MY ACCOUNT' : 'আমার অ্যাকাউন্ট';
-      document.getElementById('drop-notif').innerText = isEn ? 'Notifications' : 'নোটিফিকেশন';
-      document.getElementById('drop-tasks').innerText = isEn ? 'Tasks' : 'টাস্ক তালিকা';
-      document.getElementById('drop-logout').innerText = isEn ? 'Logout' : 'লগআউট';
-
-      // Dashboard View
-      document.getElementById('lbl-total-income').innerText = isEn ? "📊 Today's Total Sales" : '📊 আজ মোট বিক্রি (জমা)';
-      document.getElementById('lbl-total-expense').innerText = isEn ? "💸 Today's Total Expense" : '💸 আজ মোট খরচ';
-      document.getElementById('lbl-net-balance').innerText = isEn ? '💰 Cash Balance' : '💰 অবশিষ্ট ক্যাশ ব্যালেন্স';
-      document.getElementById('lbl-add-entry').innerText = isEn ? '📝 Add New Transaction' : '📝 নতুন হিসাব এন্ট্রি করুন';
-      document.getElementById('lbl-transaction-list').innerText = isEn ? "📜 Today's Transaction List" : '📜 আজকের লেনদেনের তালিকা';
-      document.getElementById('btn-save').innerText = isEn ? '+ Save' : '+ সেভ করুন';
-
-      // Table Headers
-      document.getElementById('th-desc').innerText = isEn ? 'Description' : 'বিবরণ';
-      document.getElementById('th-type').innerText = isEn ? 'Type' : 'ধরন';
-      document.getElementById('th-amount').innerText = isEn ? 'Amount' : 'পরিমাণ';
-      document.getElementById('th-action').innerText = isEn ? 'Action' : 'মুছুন';
-
-      // Profile View
-      document.getElementById('txt-change-photo').innerText = isEn ? 'Change Photo' : 'ছবি পরিবর্তন করুন';
-      document.getElementById('txt-personal-info').innerText = isEn ? 'Personal & Account Information' : 'ব্যক্তিগত ও অ্যাকাউন্ট তথ্য';
-      document.getElementById('txt-security-info').innerText = isEn ? 'Security Settings' : 'নিরাপত্তা সেটিং';
-      document.getElementById('lbl-full-name').innerText = isEn ? 'Full Name' : 'পূর্ণ নাম';
-      document.getElementById('lbl-designation').innerText = isEn ? 'Role / Designation' : 'পদবি (Designation)';
-      document.getElementById('lbl-email').innerText = isEn ? 'Email Address' : 'ইমেইল অ্যাড্রেস';
-      document.getElementById('lbl-phone').innerText = isEn ? 'Phone Number' : 'মোবাইল নম্বর';
-      document.getElementById('lbl-new-password').innerText = isEn ? 'New Password (Leave blank to keep unchanged)' : 'নতুন পাসওয়ার্ড (পরিবর্তন না করতে চাইলে ফাঁকা রাখুন)';
-      document.getElementById('txt-save-changes').innerText = isEn ? 'Save Profile Changes' : 'পরিবর্তনগুলো সেভ করুন';
-    }
-  </script>
-
-  <!-- LOCALSTORAGE TRANSACTIONS -->
-  <script>
-    let transactions = JSON.parse(localStorage.getItem('mc_transactions')) || [];
-
-    const transForm = document.getElementById('transactionForm');
-    const descInput = document.getElementById('desc');
-    const amountInput = document.getElementById('amount');
-    const typeInput = document.getElementById('type');
-    const list = document.getElementById('transactionList');
-
-    function updateUI() {
-      list.innerHTML = '';
-      let income = 0;
-      let expense = 0;
-
-      transactions.forEach((item, index) => {
-        const row = document.createElement('tr');
-        if (item.type === 'income') income += Number(item.amount);
-        else expense += Number(item.amount);
-
-        const badgeText = item.type === 'income' ? (currentLang === 'en' ? 'Cash In' : 'জমা') : (currentLang === 'en' ? 'Cash Out' : 'খরচ');
-
-        row.innerHTML = `
-          <td>${item.desc}</td>
-          <td><span class="${item.type === 'income' ? 'badge-income' : 'badge-expense'}">${badgeText}</span></td>
-          <td>৳ ${item.amount}</td>
-          <td><button style="color:#e11d48; background:none; border:none; cursor:pointer;" onclick="deleteItem(${index})"><i class="fa-solid fa-trash"></i></button></td>
-        `;
-        list.appendChild(row);
-      });
-
-      document.getElementById('totalIncome').innerText = `৳ ${income}`;
-      document.getElementById('totalExpense').innerText = `৳ ${expense}`;
-      document.getElementById('netBalance').innerText = `৳ ${income - expense}`;
-
-      localStorage.setItem('mc_transactions', JSON.stringify(transactions));
-    }
-
-    transForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      transactions.push({
-        desc: descInput.value,
-        amount: amountInput.value,
-        type: typeInput.value
-      });
-      descInput.value = '';
-      amountInput.value = '';
-      updateUI();
-    });
-
-    window.deleteItem = function(index) {
-      transactions.splice(index, 1);
-      updateUI();
-    }
-
-    updateUI();
   </script>
 </body>
 </html>
