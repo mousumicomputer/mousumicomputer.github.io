@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,55 +27,89 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
 
-    /* LOADER */
+    /* LOADING SCREEN */
     #loader {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: var(--primary-dark); color: #fff; display: flex;
       flex-direction: column; justify-content: center; align-items: center; z-index: 99999;
     }
+
     .spinner {
       border: 4px solid rgba(255,255,255,0.1); width: 50px; height: 50px;
       border-radius: 50%; border-left-color: #00a8ef; animation: spin 1s linear infinite; margin-bottom: 15px;
     }
+
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* LOGIN */
+    /* LOGIN SECTION */
     #login-section {
       background: linear-gradient(135deg, #0b1a2c 0%, #00a8ef 100%);
       display: none; flex-direction: column; justify-content: center; align-items: center;
-      min-height: 100vh; padding: 20px;
+      min-height: 100vh; padding: 20px; position: relative;
     }
+
     .login-card {
       background-color: var(--card-bg); padding: 2.5rem 2rem; border-radius: var(--border-radius);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); width: 100%; max-width: 400px; text-align: center;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); width: 100%; max-width: 400px; text-align: center; position: relative;
     }
-    .logo-img { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-    .shop-title { font-size: 1.35rem; color: var(--primary-dark); font-weight: 700; margin-top: 10px; }
+
+    .logo-container { margin-bottom: 1.5rem; }
+    .logo-img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: 0px 4px 10px rgba(0,0,0,0.15); }
+    .shop-title { font-size: 1.4rem; color: var(--primary-dark); font-weight: 700; margin-top: 10px; }
+
     .form-group { text-align: left; margin-bottom: 1.2rem; }
     .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem; }
     .input-wrapper { position: relative; display: flex; align-items: center; }
     .input-wrapper i { position: absolute; left: 12px; color: #9ca3af; }
     .form-group input { width: 100%; padding: 0.75rem 0.75rem 0.75rem 2.5rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; outline: none; }
-    .btn-submit { width: 100%; padding: 0.85rem; background-color: #00a8ef; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
-    .error-msg { color: var(--red); font-size: 0.85rem; margin-bottom: 1rem; display: none; }
 
-    /* DASHBOARD */
+    .forgot-pass-wrapper { text-align: right; margin-top: -8px; margin-bottom: 1.2rem; }
+    .forgot-pass-link { color: #00a8ef; font-size: 0.82rem; font-weight: 600; text-decoration: none; }
+
+    .btn-submit {
+      width: 100%; padding: 0.85rem; background-color: #00a8ef; color: #ffffff; border: none;
+      border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;
+    }
+
+    .error-msg { color: var(--red); font-size: 0.85rem; margin-bottom: 1rem; display: none; }
+    .success-msg { color: var(--green); font-size: 0.85rem; margin-bottom: 1rem; display: none; }
+
+    .login-lang-btn {
+      position: absolute; top: 20px; right: 20px; background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.3); color: #ffffff;
+      padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px;
+    }
+
+    /* DASHBOARD LAYOUT */
     #dashboard-section { display: none; background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; width: 100%; }
-    .dashboard-layout { display: flex; min-height: 100vh; }
+    .dashboard-layout { display: flex; min-height: 100vh; position: relative; overflow-x: hidden; }
 
     /* SIDEBAR */
-    .sidebar { width: var(--sidebar-width); background-color: var(--primary-dark); color: #fff; display: flex; flex-direction: column; padding: 20px 16px; }
-    .brand-logo { display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin-bottom: 25px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; }
-    .brand-logo img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #00a8ef; }
-    .brand-text h3 { font-size: 1.05rem; font-weight: 700; color: #fff; }
-    .brand-text span { font-size: 0.72rem; color: #00a8ef; font-weight: 600; text-transform: uppercase; }
-    
-    .menu-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-    .menu-item a { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #9ca3af; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 0.95rem; transition: 0.3s; }
-    .menu-item a.active, .menu-item a:hover { background: #00a8ef; color: #fff; }
+    .sidebar {
+      width: var(--sidebar-width); background-color: var(--primary-dark); color: #ffffff;
+      display: flex; flex-direction: column; padding: 20px 16px; transition: all 0.3s ease-in-out; z-index: 100;
+    }
+    .sidebar.collapsed { margin-left: calc(-1 * var(--sidebar-width)); }
 
-    .main-wrapper { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-    .top-navbar { background-color: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); position: relative; }
+    .brand-logo {
+      display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin-bottom: 25px;
+      background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px;
+    }
+    .brand-logo-img-wrapper { width: 44px; height: 44px; border-radius: 12px; padding: 2px; background: linear-gradient(135deg, #00a8ef, #10b981); display: flex; align-items: center; justify-content: center; }
+    .brand-logo img { width: 100%; height: 100%; border-radius: 10px; object-fit: cover; background: #fff; }
+    .brand-text h3 { font-size: 1.05rem; font-weight: 700; color: #ffffff; }
+    .brand-text span { font-size: 0.72rem; color: #00a8ef; font-weight: 600; text-transform: uppercase; }
+
+    .menu-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .menu-item a { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #94a3b8; text-decoration: none; border-radius: 10px; font-weight: 500; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; }
+    .menu-item.active a { background: linear-gradient(135deg, #00a8ef 0%, #0088e8 100%); color: #ffffff; box-shadow: 0 4px 15px rgba(0, 168, 239, 0.3); }
+
+    .main-wrapper { flex: 1; display: flex; flex-direction: column; min-width: 0; transition: all 0.3s ease-in-out; }
+
+    /* TOP NAVBAR */
+    .top-navbar { background-color: #ffffff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); position: relative; }
+    .navbar-left { display: flex; align-items: center; gap: 18px; }
+    .menu-toggle-btn { width: 40px; height: 40px; border-radius: 10px; background: #f3f4f6; border: 1px solid var(--border-color); color: var(--primary-dark); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; }
     .navbar-right { display: flex; align-items: center; gap: 15px; }
 
     .sync-badge {
@@ -84,38 +118,39 @@
     }
     .sync-badge.saving { background: #fffbebf1; color: #d97706; border-color: #fde68a; }
 
-    /* USER PROFILE MENU IN TOPBAR */
-    .user-profile { position: relative; cursor: pointer; }
-    .profile-info { display: flex; align-items: center; gap: 10px; padding: 4px 8px; border-radius: 20px; border: 1px solid var(--border-color); background: #f9fafb; }
-    .profile-info img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-color); }
-    .profile-info span { font-size: 0.85rem; font-weight: 600; }
+    .lang-btn { background: #f3f4f6; border: 1px solid var(--border-color); padding: 7px 16px; border-radius: 20px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; color: var(--text-color); font-size: 0.9rem; }
 
-    .profile-dropdown {
-      position: absolute; top: 115%; right: 0; width: 280px; background: #fff;
-      border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      display: none; flex-direction: column; padding: 15px; z-index: 1000;
+    /* DROPDOWN CONTAINER */
+    .profile-dropdown-wrapper { position: relative; }
+    .user-profile-trigger { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px; }
+    .user-profile-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid #00a8ef; }
+
+    .profile-dropdown-menu {
+      display: none; position: absolute; top: 55px; right: 0; width: 280px; background: #ffffff;
+      border-radius: 14px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18); border: 1px solid #e5e7eb; z-index: 9999; overflow: hidden;
     }
-    .profile-dropdown.active { display: flex; }
-    .profile-dropdown-header { text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 12px; }
-    .profile-dropdown-header img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; border: 2px solid var(--primary-color); }
-    .profile-dropdown-header h4 { font-size: 0.95rem; font-weight: 700; color: var(--text-color); }
-    .profile-dropdown-header p { font-size: 0.75rem; color: #6b7280; }
+    .profile-dropdown-menu.active { display: block; }
 
-    .dropdown-btn { width: 100%; padding: 8px 12px; margin-top: 6px; background: #f3f4f6; border: none; border-radius: 6px; text-align: left; font-size: 0.85rem; font-weight: 600; color: #374151; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-    .dropdown-btn:hover { background: #e5e7eb; }
-    .dropdown-btn.logout { background: #ffe4e6; color: var(--red); }
-    .dropdown-btn.logout:hover { background: #fecdd3; }
+    .dropdown-header { background: linear-gradient(135deg, #00bdff 0%, #0088e8 100%); padding: 18px 16px; color: #ffffff; display: flex; align-items: center; gap: 12px; }
+    .dropdown-header img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #ffffff; object-fit: cover; }
+    .dropdown-header-info h4 { font-size: 1.05rem; font-weight: 700; margin-bottom: 2px; }
+    .dropdown-header-info p { font-size: 0.8rem; opacity: 0.9; font-weight: 400; }
 
-    /* MODAL FOR PROFILE EDIT */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5);
-      display: none; justify-content: center; align-items: center; z-index: 9999;
+    .dropdown-section-title { font-size: 0.72rem; font-weight: 700; color: #9ca3af; padding: 14px 18px 6px 18px; letter-spacing: 0.5px; }
+    .dropdown-items-list { list-style: none; padding: 0 10px; }
+    .dropdown-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: #4b5563; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+    .dropdown-item i { width: 24px; height: 24px; background: #eff6ff; color: #3b82f6; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+    .dropdown-item:hover { background: #f3f4f6; color: #0088e8; }
+
+    .dropdown-logout-container { padding: 14px 16px 16px 16px; }
+    .btn-dropdown-logout {
+      width: 100%; background: #e11d48; color: #ffffff; border: none; padding: 11px;
+      border-radius: 10px; font-weight: 700; font-size: 0.92rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.25);
     }
-    .modal-overlay.active { display: flex; }
-    .modal-box { background: #fff; border-radius: 12px; width: 90%; max-width: 450px; padding: 25px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
-    .modal-header h3 { font-size: 1.1rem; font-weight: 700; }
-    .close-modal { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #9ca3af; }
+
+    /* VIEW PANELS */
+    .view-panel { display: none; padding: 25px; }
+    .view-panel.active { display: block; }
 
     /* SUMMARY CARDS */
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
@@ -130,7 +165,6 @@
     .card.grand .amount { color: var(--green); }
 
     /* DATE BAR & ACTIONS */
-    .view-panel { padding: 25px; }
     .date-filter-bar {
       background: #ffffff; padding: 15px 20px; border-radius: 12px; border: 1px solid var(--border-color);
       margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
@@ -159,6 +193,28 @@
 
     .closing-card-footer { padding: 12px 16px; background: #f9fafb; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; font-weight: 700; font-size: 0.95rem; }
 
+    /* FULL PAGE PROFILE PANEL */
+    .profile-page-card {
+      background: #ffffff; border-radius: 12px; border: 1px solid var(--border-color);
+      padding: 30px; max-width: 900px; margin: 0 auto;
+    }
+    .profile-header-banner {
+      display: flex; align-items: center; gap: 20px; padding-bottom: 25px;
+      border-bottom: 1px solid var(--border-color); margin-bottom: 25px;
+    }
+    .profile-big-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #00a8ef; }
+    .profile-upload-btn { margin-top: 10px; position: relative; overflow: hidden; display: inline-block; }
+    .profile-upload-btn input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+    
+    .btn-secondary { background: #f3f4f6; border: 1px solid var(--border-color); padding: 8px 15px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+    .btn-add { background-color: #00a8ef; color: #ffffff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+
+    .profile-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+    .full-width { grid-column: span 2; }
+    .field-group label { display: block; font-size: 0.88rem; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    .field-group input { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; outline: none; }
+    .section-divider { font-size: 1.05rem; font-weight: 700; color: var(--primary-dark); margin: 25px 0 15px 0; padding-bottom: 8px; border-bottom: 2px solid var(--bg-color); }
+
     /* PRINT LAYOUT */
     #print-section { display: none; }
     @media print {
@@ -177,93 +233,150 @@
 </head>
 <body>
 
-  <!-- LOADER -->
+  <!-- LOADING SCREEN -->
   <div id="loader">
     <div class="spinner"></div>
-    <p>Connecting Realtime Database...</p>
+    <p id="txt-loading">Please wait...</p>
   </div>
 
-  <!-- LOGIN SECTION -->
+  <!-- 1. LOGIN SECTION -->
   <div id="login-section">
-    <div class="login-card">
-      <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" id="loginLogo" alt="Logo" class="logo-img" />
-      <h2 class="shop-title">Mousumi Computer</h2>
-      <p class="error-msg" id="errorMsg">Invalid Credentials!</p>
+    <button class="login-lang-btn" onclick="toggleLanguage()">
+      <i class="fa-solid fa-globe"></i> <span class="lang-text-label">বাংলা</span>
+    </button>
 
-      <form id="loginForm" style="margin-top: 20px;">
+    <div class="login-card">
+      <div class="logo-container">
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" alt="Logo" class="logo-img" />
+        <h2 class="shop-title">Mousumi Computer</h2>
+      </div>
+
+      <p class="error-msg" id="errorMsg">Invalid Username or Password!</p>
+      <p class="success-msg" id="successMsg">Password reset email sent successfully!</p>
+
+      <form id="loginForm">
         <div class="form-group">
-          <label>Username / Email</label>
+          <label id="lbl-username">Username / Email</label>
           <div class="input-wrapper">
             <i class="fa-solid fa-user"></i>
             <input type="text" id="username" placeholder="admin" required />
           </div>
         </div>
+
         <div class="form-group">
-          <label>Password</label>
+          <label id="lbl-password">Password</label>
           <div class="input-wrapper">
             <i class="fa-solid fa-lock"></i>
             <input type="password" id="password" placeholder="••••••••" required />
           </div>
         </div>
-        <button type="submit" class="btn-submit"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+
+        <div class="forgot-pass-wrapper">
+          <a href="#" class="forgot-pass-link" id="btn-forgot-pass">Forgot Password?</a>
+        </div>
+
+        <button type="submit" class="btn-submit">
+          <i class="fa-solid fa-right-to-bracket"></i> <span id="txt-login-btn">Login</span>
+        </button>
       </form>
     </div>
   </div>
 
-  <!-- DASHBOARD SECTION -->
+  <!-- 2. DASHBOARD SECTION -->
   <div id="dashboard-section">
     <div class="dashboard-layout">
       
       <!-- SIDEBAR -->
-      <div class="sidebar">
+      <div class="sidebar" id="sidebar">
         <div class="brand-logo">
-          <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" id="sidebarLogo" alt="Logo" />
+          <div class="brand-logo-img-wrapper">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" id="sidebarLogo" alt="Logo" />
+          </div>
           <div class="brand-text">
             <h3>Mousumi</h3>
             <span>Computer</span>
           </div>
         </div>
+
         <ul class="menu-list">
-          <li class="menu-item"><a href="#" class="active"><i class="fa-solid fa-calculator"></i> Daily Closing</a></li>
+          <li class="menu-item active" id="menu-dash"><a onclick="switchPanel('dashboard')"><i class="fa-solid fa-calculator"></i> <span id="nav-dash">Daily Closing</span></a></li>
         </ul>
       </div>
 
-      <!-- MAIN WRAPPER -->
+      <!-- MAIN CONTENT WRAPPER -->
       <div class="main-wrapper">
         <div class="top-navbar">
-          <h2 style="font-size:1.25rem; font-weight:700;">Daily Closing Balance Sheet</h2>
+          <div class="navbar-left">
+            <button class="menu-toggle-btn" id="sidebarToggle" title="Toggle Sidebar">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <h2 id="top-title" style="font-size: 1.25rem; font-weight: 700;">Daily Closing Balance Sheet</h2>
+          </div>
+          
           <div class="navbar-right">
             <div class="sync-badge" id="syncBadge">
               <i class="fa-solid fa-bolt"></i> Live Real-time
             </div>
 
-            <!-- USER PROFILE DROPDOWN MENU -->
-            <div class="user-profile" id="userProfileMenu">
-              <div class="profile-info">
-                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" id="topAvatar" alt="User" />
-                <span id="topUsername">Admin</span>
-                <i class="fa-solid fa-chevron-down" style="font-size:0.75rem; color:#6b7280;"></i>
+            <button class="lang-btn" onclick="toggleLanguage()">
+              <i class="fa-solid fa-globe"></i> <span class="lang-text-label">বাংলা</span>
+            </button>
+
+            <!-- PROFILE DROPDOWN TRIGGER -->
+            <div class="profile-dropdown-wrapper">
+              <div class="user-profile-trigger" id="profileTrigger">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" id="navAvatar" class="user-profile-avatar" alt="Profile" />
+                <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: #6b7280;"></i>
               </div>
 
-              <!-- DROPDOWN CONTENT -->
-              <div class="profile-dropdown" id="profileDropdown">
-                <div class="profile-dropdown-header">
-                  <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" id="dropdownAvatar" alt="User" />
-                  <h4 id="dropdownName">Mousumi Computer</h4>
-                  <p id="dropdownEmail">mousumicomputer.org@gmail.com</p>
+              <!-- POPUP DROPDOWN MENU (YOUR ORIGINAL DESIGN) -->
+              <div class="profile-dropdown-menu" id="profileDropdown">
+                <div class="dropdown-header">
+                  <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" id="dropdownHeaderImg" alt="Profile" />
+                  <div class="dropdown-header-info">
+                    <h4 id="dropdownName">Mousumi Computer</h4>
+                    <p id="dropdownRole">Admin</p>
+                  </div>
                 </div>
-                <button class="dropdown-btn" id="btnEditProfile"><i class="fa-solid fa-user-pen"></i> Edit Profile</button>
-                <button class="dropdown-btn" id="btnChangePass"><i class="fa-solid fa-key"></i> Change Password</button>
-                <button class="dropdown-btn logout" id="logoutBtn"><i class="fa-solid fa-power-off"></i> Logout</button>
+
+                <div class="dropdown-section-title" id="txt-act-head">ACTIVITY</div>
+                <ul class="dropdown-items-list">
+                  <li class="dropdown-item" onclick="switchPanel('profile', 'pass')">
+                    <i class="fa-solid fa-lock"></i>
+                    <span id="drop-pass">Change Password</span>
+                  </li>
+                  <li class="dropdown-item" onclick="switchPanel('profile', 'info')">
+                    <i class="fa-regular fa-user"></i>
+                    <span id="drop-prof">My Profile</span>
+                  </li>
+                </ul>
+
+                <div class="dropdown-section-title" id="txt-acc-head">MY ACCOUNT</div>
+                <ul class="dropdown-items-list">
+                  <li class="dropdown-item">
+                    <i class="fa-regular fa-bell"></i>
+                    <span id="drop-notif">Notifications</span>
+                  </li>
+                  <li class="dropdown-item">
+                    <i class="fa-regular fa-clipboard"></i>
+                    <span id="drop-tasks">Tasks</span>
+                  </li>
+                </ul>
+
+                <div class="dropdown-logout-container">
+                  <button class="btn-dropdown-logout" id="logoutBtn">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span id="drop-logout">Logout</span>
+                  </button>
+                </div>
               </div>
             </div>
 
           </div>
         </div>
 
-        <!-- VIEW: DAILY CLOSING -->
-        <div class="view-panel">
-          <!-- TOP SUMMARY CARDS -->
+        <!-- VIEW 1: DAILY CLOSING SHEET PANEL -->
+        <div class="view-panel active" id="dashboard-view">
           <div class="cards-grid">
             <div class="card personal"><h4>🔴 Personal Total</h4><div class="amount" id="sumPersonal">৳ 0.00</div></div>
             <div class="card agent"><h4>🟡 Agent Total</h4><div class="amount" id="sumAgent">৳ 0.00</div></div>
@@ -272,7 +385,6 @@
             <div class="card grand"><h4>💰 Grand Total Balance</h4><div class="amount" id="sumGrand">৳ 0.00</div></div>
           </div>
 
-          <!-- DATE FILTER & PRINT BAR -->
           <div class="date-filter-bar">
             <div class="date-input-wrapper">
               <label style="font-weight:700;">📅 Select Closing Date:</label>
@@ -285,7 +397,6 @@
 
           <!-- INPUT FORM GRID -->
           <div class="closing-grid">
-            
             <!-- PERSONAL SECTION -->
             <div class="closing-card">
               <div class="closing-card-header bg-personal"><span>পার্সোনাল (Personal)</span><i class="fa-solid fa-user-lock"></i></div>
@@ -354,49 +465,65 @@
           </div>
         </div>
 
+        <!-- VIEW 2: FULL PAGE PROFILE PANEL (YOUR ORIGINAL PROFILE SECTION) -->
+        <div class="view-panel" id="profile-view">
+          <div class="profile-page-card">
+            <div class="profile-header-banner">
+              <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" id="fullProfileImg" class="profile-big-avatar" alt="Profile Avatar" />
+              <div>
+                <h2 id="fullProfileNameDisplay">Mousumi Computer</h2>
+                <p style="color: #6b7280; margin-bottom: 8px;" id="fullProfileRoleDisplay">Admin</p>
+                <div class="profile-upload-btn">
+                  <button class="btn-secondary"><i class="fa-solid fa-camera"></i> <span id="txt-change-photo">Change Photo</span></button>
+                  <input type="file" id="fullProfileImgInput" accept="image/*" />
+                </div>
+              </div>
+            </div>
+
+            <form id="fullProfileForm">
+              <div class="section-divider" id="txt-personal-info">Personal & Account Information</div>
+              <div class="profile-form-grid">
+                <div class="field-group">
+                  <label id="lbl-full-name">Full Name</label>
+                  <input type="text" id="profFullName" placeholder="Mousumi Computer" required />
+                </div>
+
+                <div class="field-group">
+                  <label id="lbl-designation">Role / Designation</label>
+                  <input type="text" id="profRole" placeholder="Admin" />
+                </div>
+
+                <div class="field-group">
+                  <label id="lbl-email">Email Address</label>
+                  <input type="email" id="profEmail" placeholder="mousumicomputer.org@gmail.com" readonly style="background: #f9fafb;" />
+                </div>
+
+                <div class="field-group">
+                  <label id="lbl-phone">Phone Number</label>
+                  <input type="text" id="profPhone" placeholder="+880 1700-000000" />
+                </div>
+              </div>
+
+              <div class="section-divider" id="txt-security-info">Security Settings</div>
+              <div class="profile-form-grid">
+                <div class="field-group full-width">
+                  <label id="lbl-new-password">New Password (Leave blank to keep unchanged)</label>
+                  <input type="password" id="profNewPass" placeholder="••••••••" />
+                </div>
+              </div>
+
+              <button type="submit" class="btn-add" style="width: auto; padding: 12px 30px;" id="btn-save-profile">
+                <i class="fa-solid fa-floppy-disk"></i> <span id="txt-save-changes">Save Profile Changes</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <!-- MODAL 1: EDIT PROFILE -->
-  <div class="modal-overlay" id="editProfileModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h3>Edit Profile</h3>
-        <button class="close-modal" id="closeEditModal">&times;</button>
-      </div>
-      <form id="editProfileForm">
-        <div class="form-group">
-          <label>Display Name</label>
-          <input type="text" id="editNameInput" placeholder="Enter name" required />
-        </div>
-        <div class="form-group">
-          <label>Profile Image URL</label>
-          <input type="text" id="editAvatarInput" placeholder="https://example.com/photo.jpg" required />
-        </div>
-        <button type="submit" class="btn-submit">Save Changes</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL 2: CHANGE PASSWORD -->
-  <div class="modal-overlay" id="changePassModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h3>Change Password</h3>
-        <button class="close-modal" id="closePassModal">&times;</button>
-      </div>
-      <form id="changePassForm">
-        <div class="form-group">
-          <label>New Password</label>
-          <input type="password" id="newPassInput" placeholder="Enter new password" required />
-        </div>
-        <button type="submit" class="btn-submit">Update Password</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- PRINT REPORT TEMPLATE -->
+  <!-- PRINT TEMPLATE SHEET -->
   <div id="print-section">
     <div class="print-header">
       <h2>MOUSUMI COMPUTER</h2>
@@ -437,10 +564,10 @@
     </div>
   </div>
 
-  <!-- FIREBASE MODULES -->
+  <!-- FIREBASE & JS SCRIPT -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getDatabase, ref, set, onValue, off } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
@@ -456,96 +583,222 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
+    auth.useDeviceLanguage();
 
     const loader = document.getElementById('loader');
+    const loginForm = document.getElementById('loginForm');
     const loginSection = document.getElementById('login-section');
     const dashboardSection = document.getElementById('dashboard-section');
+    const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+    const btnForgotPass = document.getElementById('btn-forgot-pass');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+
+    const profileTrigger = document.getElementById('profileTrigger');
+    const profileDropdown = document.getElementById('profileDropdown');
+
+    const navAvatar = document.getElementById('navAvatar');
+    const dropdownHeaderImg = document.getElementById('dropdownHeaderImg');
+    const dropdownName = document.getElementById('dropdownName');
+    const dropdownRole = document.getElementById('dropdownRole');
+
+    const fullProfileImg = document.getElementById('fullProfileImg');
+    const fullProfileNameDisplay = document.getElementById('fullProfileNameDisplay');
+    const fullProfileRoleDisplay = document.getElementById('fullProfileRoleDisplay');
+
+    const profFullName = document.getElementById('profFullName');
+    const profRole = document.getElementById('profRole');
+    const profEmail = document.getElementById('profEmail');
+    const profPhone = document.getElementById('profPhone');
+    const profNewPass = document.getElementById('profNewPass');
+    const fullProfileImgInput = document.getElementById('fullProfileImgInput');
+    const fullProfileForm = document.getElementById('fullProfileForm');
+
     const closingDateInput = document.getElementById('closingDateInput');
     const syncBadge = document.getElementById('syncBadge');
     const adminEmail = "mousumicomputer.org@gmail.com";
 
     // Set Default Today Date
     closingDateInput.valueAsDate = new Date();
-
     let currentClosingRef = null;
     let autoSaveTimer = null;
 
-    // PROFILE DROPDOWN TOGGLE
-    const userProfileMenu = document.getElementById('userProfileMenu');
-    const profileDropdown = document.getElementById('profileDropdown');
+    /* MULTI-LANGUAGE SYSTEM */
+    window.currentLang = 'en';
 
-    userProfileMenu.addEventListener('click', (e) => {
+    const translations = {
+      en: {
+        loading: "Please wait...",
+        usernameLabel: "Username / Email",
+        passwordLabel: "Password",
+        forgotPass: "Forgot Password?",
+        loginBtn: "Login",
+        langText: "বাংলা",
+        navDash: "Daily Closing",
+        topDashTitle: "Daily Closing Balance Sheet",
+        topProfTitle: "My Profile Settings",
+        actHead: "ACTIVITY",
+        dropPass: "Change Password",
+        dropProf: "My Profile",
+        accHead: "MY ACCOUNT",
+        dropNotif: "Notifications",
+        dropTasks: "Tasks",
+        dropLogout: "Logout",
+        changePhoto: "Change Photo",
+        personalInfo: "Personal & Account Information",
+        lblFullName: "Full Name",
+        lblDesignation: "Role / Designation",
+        lblEmail: "Email Address",
+        lblPhone: "Phone Number",
+        securityInfo: "Security Settings",
+        lblNewPass: "New Password (Leave blank to keep unchanged)",
+        saveChanges: "Save Profile Changes"
+      },
+      bn: {
+        loading: "অনুগ্ৰহ করে অপেক্ষা করুন...",
+        usernameLabel: "ইউজারনেম / ইমেইল",
+        passwordLabel: "পাসওয়ার্ড",
+        forgotPass: "পাসওয়ার্ড ভুলে গেছেন?",
+        loginBtn: "লগইন",
+        langText: "English",
+        navDash: "ডেইলি ক্লোজিং",
+        topDashTitle: "দৈনিক ক্লোজিং ব্যালেন্স শিট",
+        topProfTitle: "প্রোফাইল সেটিংস",
+        actHead: "অ্যাক্টিভিটি",
+        dropPass: "পাসওয়ার্ড পরিবর্তন",
+        dropProf: "মাই প্রোফাইল",
+        accHead: "মাই অ্যাকাউন্ট",
+        dropNotif: "নোটিফিকেশন",
+        dropTasks: "টাস্ক তালিকা",
+        dropLogout: "লগআউট",
+        changePhoto: "ছবি পরিবর্তন",
+        personalInfo: "ব্যক্তিগত ও অ্যাকাউন্ট তথ্য",
+        lblFullName: "পূর্ণ নাম",
+        lblDesignation: "পদবী / রোল",
+        lblEmail: "ইমেইল অ্যাড্রেস",
+        lblPhone: "ফোন নম্বর",
+        securityInfo: "সিকিউরিটি সেটিংস",
+        lblNewPass: "নতুন পাসওয়ার্ড (পরিবর্তন না করতে চাইলে ফাঁকা রাখুন)",
+        saveChanges: "তথ্য সেভ করুন"
+      }
+    };
+
+    window.toggleLanguage = function() {
+      currentLang = currentLang === 'en' ? 'bn' : 'en';
+      const t = translations[currentLang];
+
+      document.querySelectorAll('.lang-text-label').forEach(el => el.innerText = t.langText);
+      document.getElementById('txt-loading').innerText = t.loading;
+      document.getElementById('lbl-username').innerText = t.usernameLabel;
+      document.getElementById('lbl-password').innerText = t.passwordLabel;
+      document.getElementById('btn-forgot-pass').innerText = t.forgotPass;
+      document.getElementById('txt-login-btn').innerText = t.loginBtn;
+
+      document.getElementById('nav-dash').innerText = t.navDash;
+      document.getElementById('top-title').innerText = document.getElementById('profile-view').classList.contains('active') ? t.topProfTitle : t.topDashTitle;
+
+      document.getElementById('txt-act-head').innerText = t.actHead;
+      document.getElementById('drop-pass').innerText = t.dropPass;
+      document.getElementById('drop-prof').innerText = t.dropProf;
+      document.getElementById('txt-acc-head').innerText = t.accHead;
+      document.getElementById('drop-notif').innerText = t.dropNotif;
+      document.getElementById('drop-tasks').innerText = t.dropTasks;
+      document.getElementById('drop-logout').innerText = t.dropLogout;
+
+      document.getElementById('txt-change-photo').innerText = t.changePhoto;
+      document.getElementById('txt-personal-info').innerText = t.personalInfo;
+      document.getElementById('lbl-full-name').innerText = t.lblFullName;
+      document.getElementById('lbl-designation').innerText = t.lblDesignation;
+      document.getElementById('lbl-email').innerText = t.lblEmail;
+      document.getElementById('lbl-phone').innerText = t.lblPhone;
+      document.getElementById('txt-security-info').innerText = t.securityInfo;
+      document.getElementById('lbl-new-password').innerText = t.lblNewPass;
+      document.getElementById('txt-save-changes').innerText = t.saveChanges;
+    };
+
+    /* FORGOT PASSWORD HANDLER */
+    btnForgotPass.addEventListener('click', (e) => {
+      e.preventDefault();
+      const usernameInput = document.getElementById('username').value.trim();
+      let email = usernameInput.includes('@') ? usernameInput : adminEmail;
+
+      if (!usernameInput) {
+        alert(currentLang === 'en' ? 'Please enter Email or Username first!' : 'প্রথমে ইমেইল বা ইউজারনেম লিখুন!');
+        return;
+      }
+
+      loader.style.display = 'flex';
+      sendPasswordResetEmail(auth, email)
+        .then(() => {
+          loader.style.display = 'none';
+          alert(currentLang === 'en' ? 'Password reset link sent to email!' : 'পাসওয়ার্ড রিসেট লিংক ইমেইলে পাঠানো হয়েছে!');
+        })
+        .catch((err) => {
+          loader.style.display = 'none';
+          alert('Error: ' + err.message);
+        });
+    });
+
+    /* SIDEBAR TOGGLE */
+    sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+
+    /* DROPDOWN TOGGLE */
+    profileTrigger.addEventListener('click', (e) => {
       e.stopPropagation();
       profileDropdown.classList.toggle('active');
     });
 
-    document.addEventListener('click', () => {
+    document.addEventListener('click', (e) => {
+      if (!profileDropdown.contains(e.target)) profileDropdown.classList.remove('active');
+    });
+
+    /* PANEL SWITCHING */
+    window.switchPanel = function(panelName, focusSection = null) {
       profileDropdown.classList.remove('active');
-    });
+      document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
 
-    // MODAL HANDLERS
-    const editProfileModal = document.getElementById('editProfileModal');
-    const changePassModal = document.getElementById('changePassModal');
-
-    document.getElementById('btnEditProfile').addEventListener('click', (e) => {
-      e.stopPropagation();
-      profileDropdown.classList.remove('active');
-      document.getElementById('editNameInput').value = document.getElementById('dropdownName').innerText;
-      document.getElementById('editAvatarInput').value = document.getElementById('topAvatar').src;
-      editProfileModal.classList.add('active');
-    });
-
-    document.getElementById('btnChangePass').addEventListener('click', (e) => {
-      e.stopPropagation();
-      profileDropdown.classList.remove('active');
-      changePassModal.classList.add('active');
-    });
-
-    document.getElementById('closeEditModal').addEventListener('click', () => editProfileModal.classList.remove('active'));
-    document.getElementById('closePassModal').addEventListener('click', () => changePassModal.classList.remove('active'));
-
-    // EDIT PROFILE SUBMIT
-    document.getElementById('editProfileForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const newName = document.getElementById('editNameInput').value;
-      const newAvatar = document.getElementById('editAvatarInput').value;
-
-      document.getElementById('topUsername').innerText = newName;
-      document.getElementById('dropdownName').innerText = newName;
-      document.getElementById('topAvatar').src = newAvatar;
-      document.getElementById('dropdownAvatar').src = newAvatar;
-      document.getElementById('sidebarLogo').src = newAvatar;
-
-      editProfileModal.classList.remove('active');
-      alert('✅ প্রোফাইল সফলভাবে আপডেট করা হয়েছে!');
-    });
-
-    // CHANGE PASSWORD SUBMIT
-    document.getElementById('changePassForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const newPass = document.getElementById('newPassInput').value;
-      const user = auth.currentUser;
-
-      if (user && newPass) {
-        loader.style.display = 'flex';
-        updatePassword(user, newPass)
-          .then(() => {
-            loader.style.display = 'none';
-            changePassModal.classList.remove('active');
-            alert('✅ পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে!');
-            document.getElementById('newPassInput').value = '';
-          })
-          .catch(err => {
-            loader.style.display = 'none';
-            alert('❌ পাসওয়ার্ড পরিবর্তন করতে সমস্যা হয়েছে: ' + err.message);
-          });
+      if (panelName === 'profile') {
+        document.getElementById('profile-view').classList.add('active');
+        document.getElementById('top-title').innerText = translations[currentLang].topProfTitle;
+        if(focusSection === 'pass') profNewPass.focus();
+      } else {
+        document.getElementById('dashboard-view').classList.add('active');
+        document.getElementById('top-title').innerText = translations[currentLang].topDashTitle;
       }
-    });
+    };
 
-    // Format Currency
+    /* LOAD PROFILE DATA */
+    function loadSavedProfile() {
+      const savedPhoto = localStorage.getItem('mc_admin_photo');
+      const savedName = localStorage.getItem('mc_admin_name') || "Mousumi Computer";
+      const savedRole = localStorage.getItem('mc_admin_role') || "Admin";
+      const savedPhone = localStorage.getItem('mc_admin_phone') || "";
+
+      if (savedPhoto) {
+        navAvatar.src = savedPhoto;
+        dropdownHeaderImg.src = savedPhoto;
+        fullProfileImg.src = savedPhoto;
+        document.getElementById('sidebarLogo').src = savedPhoto;
+      }
+      
+      dropdownName.innerText = savedName;
+      fullProfileNameDisplay.innerText = savedName;
+      profFullName.value = savedName;
+
+      dropdownRole.innerText = savedRole;
+      fullProfileRoleDisplay.innerText = savedRole;
+      profRole.value = savedRole;
+
+      profEmail.value = auth.currentUser ? auth.currentUser.email : adminEmail;
+      profPhone.value = savedPhone;
+    }
+
+    /* REALTIME CLOSING CALCULATIONS & SYNC */
     const fmt = (num) => `৳ ${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-    // Live Total Calculation
     function calculateTotals() {
       const getSum = (cls) => {
         let sum = 0;
@@ -576,7 +829,6 @@
       return g;
     }
 
-    // Save Data to Firebase Realtime Database
     function saveToFirebase() {
       const selectedDate = closingDateInput.value;
       if (!selectedDate) return;
@@ -596,13 +848,11 @@
           syncBadge.innerHTML = `<i class="fa-solid fa-bolt"></i> Live Real-time`;
         })
         .catch(err => {
-          console.error("Save error:", err);
           syncBadge.classList.remove('saving');
           syncBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Sync Error`;
         });
     }
 
-    // Attach Realtime Listener
     function attachRealtimeSync(dateStr) {
       if (currentClosingRef) off(currentClosingRef);
       currentClosingRef = ref(db, 'closings/' + dateStr);
@@ -620,7 +870,6 @@
       });
     }
 
-    // Input Auto Save Handler
     document.querySelectorAll('.closing-inp').forEach(inp => {
       inp.addEventListener('input', () => {
         calculateTotals();
@@ -631,7 +880,7 @@
 
     closingDateInput.addEventListener('change', (e) => attachRealtimeSync(e.target.value));
 
-    // PRINT SYSTEM
+    /* PRINT CLOSING SHEET */
     document.getElementById('btnPrint').addEventListener('click', () => {
       document.getElementById('print-date-display').innerText = "Date: " + closingDateInput.value;
       
@@ -656,13 +905,13 @@
       window.print();
     });
 
-    // AUTH OBSERVER
+    /* AUTH OBSERVER */
     onAuthStateChanged(auth, (user) => {
       loader.style.display = 'none';
       if (user) {
         loginSection.style.display = 'none';
         dashboardSection.style.display = 'block';
-        document.getElementById('dropdownEmail').innerText = user.email || adminEmail;
+        loadSavedProfile();
         attachRealtimeSync(closingDateInput.value);
       } else {
         dashboardSection.style.display = 'none';
@@ -670,23 +919,77 @@
       }
     });
 
-    // LOGIN
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
+    /* LOGIN HANDLER */
+    loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      loader.style.display = 'flex';
-      const userVal = document.getElementById('username').value.trim();
-      const passVal = document.getElementById('password').value;
-      const email = userVal.includes('@') ? userVal : adminEmail;
+      const usernameInput = document.getElementById('username').value.trim();
+      const passwordInput = document.getElementById('password').value;
+      let email = usernameInput.includes('@') ? usernameInput : adminEmail;
 
-      signInWithEmailAndPassword(auth, email, passVal)
+      loader.style.display = 'flex';
+      signInWithEmailAndPassword(auth, email, passwordInput)
         .catch(() => {
           loader.style.display = 'none';
-          document.getElementById('errorMsg').style.display = 'block';
+          errorMsg.style.display = 'block';
         });
     });
 
-    // LOGOUT
-    document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+    /* LOGOUT HANDLER */
+    logoutBtn.addEventListener('click', () => {
+      loader.style.display = 'flex';
+      signOut(auth);
+    });
+
+    /* PROFILE IMAGE PREVIEW */
+    fullProfileImgInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) { fullProfileImg.src = evt.target.result; }
+        reader.readAsDataURL(file);
+      }
+    });
+
+    /* SAVE PROFILE FORM */
+    fullProfileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loader.style.display = 'flex';
+
+      try {
+        const newName = profFullName.value.trim();
+        const newRole = profRole.value.trim();
+        const newPhone = profPhone.value.trim();
+        const newPass = profNewPass.value.trim();
+        const file = fullProfileImgInput.files[0];
+
+        localStorage.setItem('mc_admin_name', newName);
+        localStorage.setItem('mc_admin_role', newRole);
+        localStorage.setItem('mc_admin_phone', newPhone);
+
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = async function(evt) {
+            localStorage.setItem('mc_admin_photo', evt.target.result);
+            loadSavedProfile();
+          };
+          reader.readAsDataURL(file);
+        } else {
+          loadSavedProfile();
+        }
+
+        if (newPass && auth.currentUser) {
+          await updatePassword(auth.currentUser, newPass);
+          profNewPass.value = '';
+        }
+
+        loader.style.display = 'none';
+        alert(currentLang === 'en' ? 'Profile details updated successfully!' : 'প্রোফাইল তথ্য সফলভাবে আপডেট করা হয়েছে!');
+
+      } catch (err) {
+        loader.style.display = 'none';
+        alert('Error: ' + err.message);
+      }
+    });
   </script>
 </body>
 </html>
