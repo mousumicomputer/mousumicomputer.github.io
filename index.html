@@ -18,14 +18,14 @@
       --card-bg: #ffffff;
       --text-color: #1f2937;
       --border-color: #e5e7eb;
-      --border-radius: 14px;
+      --border-radius: 12px;
       
-      /* FINTECH THEME COLORS */
-      --c-personal: #3b82f6; /* Blue */
-      --c-bank: #10b981;     /* Green */
-      --c-agent: #f59e0b;    /* Orange */
-      --c-load: #8b5cf6;     /* Purple */
-      --c-recharge: #14b8a6; /* Teal */
+      /* FINTECH ERP THEME COLORS */
+      --c-personal: #3b82f6; 
+      --c-bank: #10b981;     
+      --c-agent: #f59e0b;    
+      --c-load: #8b5cf6;     
+      --c-recharge: #14b8a6; 
       --red: #e11d48;
     }
 
@@ -94,25 +94,18 @@
       box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
     }
 
-    .shop-title {
-      font-size: 1.4rem; color: var(--primary-dark);
-      font-weight: 700; margin-top: 10px;
-    }
-
+    .shop-title { font-size: 1.4rem; color: var(--primary-dark); font-weight: 700; margin-top: 10px; }
     .form-group { text-align: left; margin-bottom: 1.2rem; }
     .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem; }
     .input-wrapper { position: relative; display: flex; align-items: center; }
     .input-wrapper i { position: absolute; left: 12px; color: #9ca3af; }
     .form-group input {
-      width: 100%;
-      padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-      border: 1px solid var(--border-color);
-      border-radius: 8px; font-size: 0.95rem; outline: none;
+      width: 100%; padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+      border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; outline: none;
     }
 
     .forgot-pass-wrapper { text-align: right; margin-top: -8px; margin-bottom: 1.2rem; }
     .forgot-pass-link { color: #00a8ef; font-size: 0.82rem; font-weight: 600; text-decoration: none; }
-    .forgot-pass-link:hover { text-decoration: underline; }
 
     .btn-submit {
       width: 100%; padding: 0.85rem;
@@ -133,7 +126,7 @@
       cursor: pointer; display: flex; align-items: center; gap: 6px;
     }
 
-    /* DASHBOARD LAYOUT */
+    /* DASHBOARD & ERP LAYOUT */
     #dashboard-section {
       display: none; background-color: var(--bg-color);
       color: var(--text-color); min-height: 100vh; width: 100%;
@@ -141,11 +134,11 @@
 
     .dashboard-layout { display: flex; min-height: 100vh; position: relative; overflow-x: hidden; }
 
-    /* SIDEBAR */
+    /* ERP SIDEBAR */
     .sidebar {
       width: var(--sidebar-width);
       background-color: var(--primary-dark); color: #ffffff;
-      display: flex; flex-direction: column; padding: 20px 16px;
+      display: flex; flex-direction: column; padding: 20px 12px;
       transition: all 0.3s ease-in-out; z-index: 100;
     }
 
@@ -154,90 +147,100 @@
     .brand-logo {
       display: flex; align-items: center; gap: 12px; padding: 10px 12px;
       margin-bottom: 25px; background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
     }
-    
     .brand-logo-img-wrapper {
-      width: 44px; height: 44px; border-radius: 12px; padding: 2px;
+      width: 40px; height: 40px; border-radius: 10px; padding: 2px;
       background: linear-gradient(135deg, #00a8ef, #10b981);
       display: flex; align-items: center; justify-content: center;
     }
+    .brand-logo img { width: 100%; height: 100%; border-radius: 8px; object-fit: cover; background: #fff; }
+    .brand-text h3 { font-size: 1rem; font-weight: 700; color: #ffffff; }
+    .brand-text span { font-size: 0.7rem; color: #00a8ef; font-weight: 600; text-transform: uppercase; }
 
-    .brand-logo img { width: 100%; height: 100%; border-radius: 10px; object-fit: cover; background: #fff; }
-    .brand-text h3 { font-size: 1.05rem; font-weight: 700; color: #ffffff; }
-    .brand-text span { font-size: 0.72rem; color: #00a8ef; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-
-    .menu-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .menu-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+    
     .menu-item a {
-      display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-      color: #94a3b8; text-decoration: none; border-radius: 10px;
-      font-weight: 500; font-size: 0.95rem; cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; color: #94a3b8; text-decoration: none;
+      border-radius: 8px; font-weight: 500; font-size: 0.92rem; cursor: pointer; transition: all 0.2s;
     }
-
+    .menu-item a .menu-link-inner { display: flex; align-items: center; gap: 12px; }
     .menu-item a:hover { background-color: rgba(255, 255, 255, 0.05); color: #ffffff; }
-    .menu-item.active a {
+    
+    .menu-item.active > a {
       background: linear-gradient(135deg, #00a8ef 0%, #0088e8 100%);
-      color: #ffffff; box-shadow: 0 4px 15px rgba(0, 168, 239, 0.3);
+      color: #ffffff; box-shadow: 0 4px 12px rgba(0, 168, 239, 0.25);
     }
 
-    .main-wrapper { flex: 1; display: flex; flex-direction: column; min-width: 0; transition: all 0.3s ease-in-out; }
+    /* ERP SUBMENU STYLE */
+    .submenu-list {
+      list-style: none; display: none;
+      padding-left: 28px; margin-top: 4px; margin-bottom: 6px;
+      flex-direction: column; gap: 4px;
+    }
+    .submenu-list.show { display: flex; }
+
+    .submenu-item a {
+      padding: 9px 12px; font-size: 0.85rem; color: #94a3b8;
+      border-radius: 6px; display: flex; align-items: center; gap: 10px;
+    }
+    .submenu-item a:hover { color: #ffffff; background: rgba(255,255,255,0.08); }
+    .submenu-item.active a { color: #00a8ef; font-weight: 700; background: rgba(0, 168, 239, 0.1); }
+
+    .chevron-icon { transition: transform 0.3s; font-size: 0.75rem; }
+    .menu-item.open .chevron-icon { transform: rotate(180deg); }
+
+    .main-wrapper { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
     /* TOP NAVBAR */
     .top-navbar {
-      background-color: #ffffff; padding: 15px 30px;
+      background-color: #ffffff; padding: 15px 25px;
       display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid var(--border-color); position: relative;
+      border-bottom: 1px solid var(--border-color);
     }
-
-    .navbar-left { display: flex; align-items: center; gap: 18px; }
+    .navbar-left { display: flex; align-items: center; gap: 15px; }
     .menu-toggle-btn {
-      width: 40px; height: 40px; border-radius: 10px; background: #f3f4f6;
+      width: 38px; height: 38px; border-radius: 8px; background: #f3f4f6;
       border: 1px solid var(--border-color); color: var(--primary-dark);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
     }
 
     .navbar-right { display: flex; align-items: center; gap: 15px; }
     .lang-btn {
       background: #f3f4f6; border: 1px solid var(--border-color);
-      padding: 7px 16px; border-radius: 20px; font-weight: 600;
-      cursor: pointer; display: flex; align-items: center; gap: 6px;
-      color: var(--text-color); font-size: 0.9rem;
+      padding: 6px 14px; border-radius: 20px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.85rem;
     }
 
     /* PROFILE DROPDOWN */
     .profile-dropdown-wrapper { position: relative; }
-    .user-profile-trigger { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px; }
-    .user-profile-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid #00a8ef; }
+    .user-profile-trigger { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .user-profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #00a8ef; }
 
     .profile-dropdown-menu {
-      display: none; position: absolute; top: 55px; right: 0; width: 280px;
-      background: #ffffff; border-radius: 14px;
+      display: none; position: absolute; top: 50px; right: 0; width: 270px;
+      background: #ffffff; border-radius: 12px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18); border: 1px solid #e5e7eb;
       z-index: 9999; overflow: hidden;
     }
-
     .profile-dropdown-menu.active { display: block; }
     .dropdown-header {
       background: linear-gradient(135deg, #00bdff 0%, #0088e8 100%);
-      padding: 18px 16px; color: #ffffff; display: flex; align-items: center; gap: 12px;
+      padding: 15px; color: #ffffff; display: flex; align-items: center; gap: 12px;
     }
-    .dropdown-header img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #ffffff; object-fit: cover; }
-    .dropdown-section-title { font-size: 0.72rem; font-weight: 700; color: #9ca3af; padding: 14px 18px 6px 18px; }
-    .dropdown-items-list { list-style: none; padding: 0 10px; }
+    .dropdown-header img { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #ffffff; object-fit: cover; }
+    .dropdown-section-title { font-size: 0.7rem; font-weight: 700; color: #9ca3af; padding: 12px 15px 4px 15px; }
+    .dropdown-items-list { list-style: none; padding: 0 8px; }
     .dropdown-item {
-      display: flex; align-items: center; gap: 12px; padding: 10px 12px;
-      color: #4b5563; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer;
-    }
-    .dropdown-item i {
-      width: 24px; height: 24px; background: #eff6ff; color: #3b82f6;
-      border-radius: 6px; display: flex; align-items: center; justify-content: center;
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      color: #4b5563; font-size: 0.88rem; font-weight: 600; border-radius: 6px; cursor: pointer;
     }
     .dropdown-item:hover { background: #f3f4f6; color: #0088e8; }
-    .dropdown-logout-container { padding: 14px 16px 16px 16px; }
+    .dropdown-logout-container { padding: 12px 15px; }
     .btn-dropdown-logout {
       width: 100%; background: #e11d48; color: #ffffff; border: none;
-      padding: 11px; border-radius: 10px; font-weight: 700; font-size: 0.92rem;
+      padding: 10px; border-radius: 8px; font-weight: 700; font-size: 0.9rem;
       cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
     }
 
@@ -245,29 +248,24 @@
     .view-panel { display: none; padding: 25px; }
     .view-panel.active { display: block; }
 
-    /* FINTECH CARDS GRID (MOBILE FIRST) */
+    /* DASHBOARD VIEW (SUMMARY CARDS) */
     .fintech-hero-card {
       background: linear-gradient(135deg, #0b1a2c 0%, #00a8ef 100%);
-      color: #ffffff; padding: 25px; border-radius: 18px;
-      box-shadow: 0 10px 25px rgba(0, 168, 239, 0.25); margin-bottom: 25px; text-align: center;
+      color: #ffffff; padding: 25px; border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 168, 239, 0.2); margin-bottom: 25px; text-align: center;
     }
-    .fintech-hero-card h3 { font-size: 0.95rem; opacity: 0.9; font-weight: 500; margin-bottom: 5px; }
-    .fintech-hero-card .hero-amount { font-size: 2.3rem; font-weight: 800; letter-spacing: -0.5px; }
+    .fintech-hero-card h3 { font-size: 0.9rem; opacity: 0.9; font-weight: 500; margin-bottom: 5px; }
+    .fintech-hero-card .hero-amount { font-size: 2.2rem; font-weight: 800; }
 
     .summary-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 16px; margin-bottom: 30px;
+      gap: 16px;
     }
-
     .fintech-card {
       background: #ffffff; padding: 18px; border-radius: var(--border-radius);
-      border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-      position: relative; overflow: hidden; transition: transform 0.2s;
+      border: 1px solid var(--border-color); position: relative; overflow: hidden;
     }
-    .fintech-card:hover { transform: translateY(-3px); }
-    .fintech-card::before {
-      content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%;
-    }
+    .fintech-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
     .fintech-card.c-personal::before { background-color: var(--c-personal); }
     .fintech-card.c-bank::before { background-color: var(--c-bank); }
     .fintech-card.c-agent::before { background-color: var(--c-agent); }
@@ -275,9 +273,9 @@
     .fintech-card.c-recharge::before { background-color: var(--c-recharge); }
 
     .card-icon {
-      width: 40px; height: 40px; border-radius: 10px;
+      width: 38px; height: 38px; border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem; margin-bottom: 12px;
+      font-size: 1rem; margin-bottom: 10px;
     }
     .c-personal .card-icon { background: #eff6ff; color: var(--c-personal); }
     .c-bank .card-icon { background: #ecfdf5; color: var(--c-bank); }
@@ -285,63 +283,35 @@
     .c-load .card-icon { background: #f3e8ff; color: var(--c-load); }
     .c-recharge .card-icon { background: #ccfbf1; color: var(--c-recharge); }
 
-    .fintech-card h4 { font-size: 0.85rem; color: #6b7280; font-weight: 600; margin-bottom: 6px; }
-    .fintech-card .amount { font-size: 1.35rem; font-weight: 700; color: #111827; }
+    .fintech-card h4 { font-size: 0.82rem; color: #6b7280; font-weight: 600; margin-bottom: 4px; }
+    .fintech-card .amount { font-size: 1.3rem; font-weight: 700; color: #111827; }
 
-    /* BALANCE MANAGEMENT CATEGORY CARDS */
-    .cat-menu-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
+    /* ERP FORM PANEL IN CONTENT AREA */
+    .erp-form-card {
+      background: #ffffff; border-radius: var(--border-radius);
+      border: 1px solid var(--border-color); padding: 25px; max-width: 700px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
     }
-
-    .category-select-card {
-      background: #ffffff; padding: 22px; border-radius: var(--border-radius);
-      border: 1px solid var(--border-color); cursor: pointer;
-      display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: all 0.2s;
-    }
-    .category-select-card:hover { border-color: #00a8ef; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
-    .cat-info { display: flex; align-items: center; gap: 15px; }
-    .cat-info h3 { font-size: 1rem; font-weight: 700; color: var(--primary-dark); }
-    .cat-arrow { color: #9ca3af; font-size: 1.1rem; }
-
-    /* CATEGORY INPUT FORM (FULL SCREEN UX) */
-    .category-form-panel {
-      display: none; background: #ffffff; border-radius: var(--border-radius);
-      padding: 25px; border: 1px solid var(--border-color); max-width: 650px; margin: 0 auto;
-    }
-    .category-form-panel.active { display: block; animation: fadeIn 0.3s ease-in-out; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .form-header-bar {
-      display: flex; align-items: center; justify-content: space-between;
-      padding-bottom: 15px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px;
-    }
-    .btn-back {
-      background: #f3f4f6; border: none; padding: 8px 14px; border-radius: 8px;
-      font-weight: 600; cursor: pointer; color: #4b5563; display: flex; align-items: center; gap: 8px;
+    .erp-form-header {
+      padding-bottom: 15px; border-bottom: 1px solid var(--border-color);
+      margin-bottom: 20px; font-size: 1.1rem; font-weight: 700; color: var(--primary-dark);
+      display: flex; align-items: center; gap: 10px;
     }
 
     .field-card {
       background: #f9fafb; border: 1px solid var(--border-color);
-      border-radius: 12px; padding: 15px; margin-bottom: 15px;
+      border-radius: 10px; padding: 14px; margin-bottom: 14px;
     }
-    .field-card-header {
-      display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
-    }
-    .field-card-header label { font-size: 0.9rem; font-weight: 700; color: #374151; }
+    .field-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .field-card-header label { font-size: 0.88rem; font-weight: 700; color: #374151; }
     .prev-bal { font-size: 0.82rem; font-weight: 600; color: #6b7280; }
     .prev-bal span { color: #00a8ef; font-weight: 700; }
 
     .field-card input {
-      width: 100%; padding: 11px 14px; border: 1px solid var(--border-color);
-      border-radius: 8px; font-size: 1rem; font-weight: 600; outline: none; background: #ffffff;
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border-color);
+      border-radius: 8px; font-size: 0.98rem; font-weight: 600; outline: none; background: #ffffff;
     }
-    .field-card input:focus { border-color: #00a8ef; box-shadow: 0 0 0 3px rgba(0, 168, 239, 0.15); }
+    .field-card input:focus { border-color: #00a8ef; box-shadow: 0 0 0 3px rgba(0, 168, 239, 0.12); }
 
     /* REPORTS TABLE */
     .filter-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
@@ -353,12 +323,12 @@
 
     .table-container { background: #ffffff; border-radius: var(--border-radius); border: 1px solid var(--border-color); overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; min-width: 600px; }
-    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+    th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 0.88rem; }
     th { background: #f9fafb; font-weight: 700; color: #4b5563; }
     .diff-plus { color: #10b981; font-weight: 700; }
     .diff-minus { color: #e11d48; font-weight: 700; }
 
-    /* PROFILE PAGE STYLE */
+    /* PROFILE PAGE STYLE (UNCHANGED & PRESERVED) */
     .profile-page-card {
       background: #ffffff; border-radius: var(--border-radius);
       border: 1px solid var(--border-color); padding: 30px; max-width: 800px; margin: 0 auto;
@@ -436,7 +406,7 @@
   <!-- 2. DASHBOARD SECTION -->
   <div id="dashboard-section">
     <div class="dashboard-layout">
-      <!-- SIDEBAR MENU -->
+      <!-- ERP SIDEBAR NAVIGATION -->
       <div class="sidebar" id="sidebar">
         <div class="brand-logo">
           <div class="brand-logo-img-wrapper">
@@ -444,15 +414,43 @@
           </div>
           <div class="brand-text">
             <h3>Mousumi</h3>
-            <span>Fintech ERP</span>
+            <span>Accounting ERP</span>
           </div>
         </div>
 
         <ul class="menu-list">
-          <li class="menu-item active" id="menu-dash"><a onclick="switchMainTab('dashboard')"><i class="fa-solid fa-chart-pie"></i> <span id="nav-dash">Dashboard</span></a></li>
-          <li class="menu-item" id="menu-bal"><a onclick="switchMainTab('balance')"><i class="fa-solid fa-wallet"></i> <span id="nav-bal">Balance Mgmt</span></a></li>
-          <li class="menu-item" id="menu-reports"><a onclick="switchMainTab('reports')"><i class="fa-solid fa-file-invoice-dollar"></i> <span id="nav-rep">Reports</span></a></li>
-          <li class="menu-item" id="menu-settings"><a onclick="switchMainTab('profile')"><i class="fa-solid fa-sliders"></i> <span id="nav-set">Settings</span></a></li>
+          <li class="menu-item active" id="menu-dash">
+            <a onclick="switchMainTab('dashboard')">
+              <span class="menu-link-inner"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span></span>
+            </a>
+          </li>
+
+          <!-- PARENT MENU: BALANCE MANAGEMENT WITH SUBMENU -->
+          <li class="menu-item" id="menu-bal-parent">
+            <a onclick="toggleBalanceSubmenu()">
+              <span class="menu-link-inner"><i class="fa-solid fa-wallet"></i> <span>Balance Mgmt</span></span>
+              <i class="fa-solid fa-chevron-down chevron-icon"></i>
+            </a>
+            <ul class="submenu-list" id="balanceSubmenu">
+              <li class="submenu-item" id="sub-personal"><a onclick="openBalanceCategory('personal')"><i class="fa-solid fa-user"></i> Personal Accounts</a></li>
+              <li class="submenu-item" id="sub-bank"><a onclick="openBalanceCategory('bank')"><i class="fa-solid fa-building-columns"></i> Bank Accounts</a></li>
+              <li class="submenu-item" id="sub-agent"><a onclick="openBalanceCategory('agent')"><i class="fa-solid fa-user-shield"></i> Agent Accounts</a></li>
+              <li class="submenu-item" id="sub-load"><a onclick="openBalanceCategory('load')"><i class="fa-solid fa-sim-card"></i> Load Cards</a></li>
+              <li class="submenu-item" id="sub-recharge"><a onclick="openBalanceCategory('recharge')"><i class="fa-solid fa-mobile-screen"></i> Recharge Balances</a></li>
+            </ul>
+          </li>
+
+          <li class="menu-item" id="menu-reports">
+            <a onclick="switchMainTab('reports')">
+              <span class="menu-link-inner"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Reports</span></span>
+            </a>
+          </li>
+
+          <li class="menu-item" id="menu-settings">
+            <a onclick="switchMainTab('profile')">
+              <span class="menu-link-inner"><i class="fa-solid fa-sliders"></i> <span>Settings</span></span>
+            </a>
+          </li>
         </ul>
       </div>
 
@@ -462,7 +460,7 @@
         <div class="top-navbar">
           <div class="navbar-left">
             <button class="menu-toggle-btn" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
-            <h2 id="top-title" style="font-size: 1.25rem; font-weight: 700;">Dashboard Overview</h2>
+            <h2 id="top-title" style="font-size: 1.2rem; font-weight: 700;">Dashboard Overview</h2>
           </div>
           
           <div class="navbar-right">
@@ -474,7 +472,7 @@
             <div class="profile-dropdown-wrapper">
               <div class="user-profile-trigger" id="profileTrigger">
                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="navAvatar" class="user-profile-avatar" />
-                <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: #6b7280;"></i>
+                <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; color: #6b7280;"></i>
               </div>
 
               <div class="profile-dropdown-menu" id="profileDropdown">
@@ -486,18 +484,18 @@
                   </div>
                 </div>
 
-                <div class="dropdown-section-title" id="txt-act-head">SETTINGS & PROFILE</div>
+                <div class="dropdown-section-title">SETTINGS & PROFILE</div>
                 <ul class="dropdown-items-list">
                   <li class="dropdown-item" onclick="switchMainTab('profile')">
                     <i class="fa-solid fa-user-gear"></i>
-                    <span id="drop-prof">My Profile & Security</span>
+                    <span>My Profile & Security</span>
                   </li>
                 </ul>
 
                 <div class="dropdown-logout-container">
                   <button class="btn-dropdown-logout" id="logoutBtn">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                    <span id="drop-logout">Logout</span>
+                    <span>Logout</span>
                   </button>
                 </div>
               </div>
@@ -508,94 +506,49 @@
         <!-- ==================== PAGE 1: DASHBOARD (VIEW ONLY) ==================== -->
         <div class="view-panel active" id="dashboard-view">
           <div class="fintech-hero-card">
-            <h3 id="lbl-total-all">Total Net Balance</h3>
+            <h3>Total Net Balance</h3>
             <div class="hero-amount" id="totalAllBalance">৳ 0.00</div>
           </div>
 
           <div class="summary-grid">
             <div class="fintech-card c-personal">
               <div class="card-icon"><i class="fa-solid fa-user"></i></div>
-              <h4 id="lbl-c-personal">Personal Balance</h4>
+              <h4>Personal Balance</h4>
               <div class="amount" id="sumPersonal">৳ 0.00</div>
             </div>
 
             <div class="fintech-card c-bank">
               <div class="card-icon"><i class="fa-solid fa-building-columns"></i></div>
-              <h4 id="lbl-c-bank">Bank Balance</h4>
+              <h4>Bank Balance</h4>
               <div class="amount" id="sumBank">৳ 0.00</div>
             </div>
 
             <div class="fintech-card c-agent">
               <div class="card-icon"><i class="fa-solid fa-user-shield"></i></div>
-              <h4 id="lbl-c-agent">Agent Balance</h4>
+              <h4>Agent Balance</h4>
               <div class="amount" id="sumAgent">৳ 0.00</div>
             </div>
 
             <div class="fintech-card c-load">
               <div class="card-icon"><i class="fa-solid fa-sim-card"></i></div>
-              <h4 id="lbl-c-load">Load Card Balance</h4>
+              <h4>Load Card Balance</h4>
               <div class="amount" id="sumLoad">৳ 0.00</div>
             </div>
 
             <div class="fintech-card c-recharge">
               <div class="card-icon"><i class="fa-solid fa-mobile-screen"></i></div>
-              <h4 id="lbl-c-recharge">Recharge Balance</h4>
+              <h4>Recharge Balance</h4>
               <div class="amount" id="sumRecharge">৳ 0.00</div>
             </div>
           </div>
         </div>
 
-        <!-- ==================== PAGE 2: BALANCE MANAGEMENT ==================== -->
+        <!-- ==================== PAGE 2: BALANCE MANAGEMENT (ERP FORM) ==================== -->
         <div class="view-panel" id="balance-view">
-          
-          <!-- STEP 1: CATEGORY SELECTION CARDS -->
-          <div id="categoryMenu" class="cat-menu-grid">
-            <div class="category-select-card" onclick="openCatForm('personal')">
-              <div class="cat-info">
-                <div class="card-icon" style="background:#eff6ff; color:#3b82f6;"><i class="fa-solid fa-user"></i></div>
-                <h3>Personal Accounts</h3>
-              </div>
-              <i class="fa-solid fa-chevron-right cat-arrow"></i>
-            </div>
-
-            <div class="category-select-card" onclick="openCatForm('bank')">
-              <div class="cat-info">
-                <div class="card-icon" style="background:#ecfdf5; color:#10b981;"><i class="fa-solid fa-building-columns"></i></div>
-                <h3>Bank Accounts</h3>
-              </div>
-              <i class="fa-solid fa-chevron-right cat-arrow"></i>
-            </div>
-
-            <div class="category-select-card" onclick="openCatForm('agent')">
-              <div class="cat-info">
-                <div class="card-icon" style="background:#fffbebf; color:#f59e0b;"><i class="fa-solid fa-user-shield"></i></div>
-                <h3>Agent Accounts</h3>
-              </div>
-              <i class="fa-solid fa-chevron-right cat-arrow"></i>
-            </div>
-
-            <div class="category-select-card" onclick="openCatForm('load')">
-              <div class="cat-info">
-                <div class="card-icon" style="background:#f3e8ff; color:#8b5cf6;"><i class="fa-solid fa-sim-card"></i></div>
-                <h3>Load Cards</h3>
-              </div>
-              <i class="fa-solid fa-chevron-right cat-arrow"></i>
-            </div>
-
-            <div class="category-select-card" onclick="openCatForm('recharge')">
-              <div class="cat-info">
-                <div class="card-icon" style="background:#ccfbf1; color:#14b8a6;"><i class="fa-solid fa-mobile-screen"></i></div>
-                <h3>Recharge Balances</h3>
-              </div>
-              <i class="fa-solid fa-chevron-right cat-arrow"></i>
-            </div>
-          </div>
-
-          <!-- STEP 2: CATEGORY INPUT FORMS (Hidden Initially) -->
-          <div id="categoryFormPanel" class="category-form-panel">
-            <div class="form-header-bar">
-              <button class="btn-back" onclick="closeCatForm()"><i class="fa-solid fa-arrow-left"></i> Back</button>
-              <h3 id="formCatTitle" style="font-size: 1.1rem; color: var(--primary-dark);">Category Form</h3>
+          <div class="erp-form-card">
+            <div class="erp-form-header">
+              <i class="fa-solid fa-pen-to-square" style="color: #00a8ef;"></i>
+              <span id="erpFormTitle">Category Form</span>
             </div>
 
             <form id="balanceUpdateForm">
@@ -606,7 +559,6 @@
               </button>
             </form>
           </div>
-
         </div>
 
         <!-- ==================== PAGE 3: REPORTS MODULE ==================== -->
@@ -624,8 +576,8 @@
                   <th>Date & Time</th>
                   <th>Category</th>
                   <th>Account Name</th>
-                  <th>Previous</th>
-                  <th>Current</th>
+                  <th>Previous Balance</th>
+                  <th>Current Balance</th>
                   <th>Difference</th>
                 </tr>
               </thead>
@@ -645,46 +597,46 @@
                 <h2 id="fullProfileNameDisplay">Rabbi Hosen</h2>
                 <p style="color: #6b7280; margin-bottom: 8px;" id="fullProfileRoleDisplay">Admin</p>
                 <div style="position: relative; overflow: hidden; display: inline-block;">
-                  <button class="btn-secondary"><i class="fa-solid fa-camera"></i> <span id="txt-change-photo">Change Photo</span></button>
+                  <button class="btn-secondary"><i class="fa-solid fa-camera"></i> <span>Change Photo</span></button>
                   <input type="file" id="fullProfileImgInput" accept="image/*" style="position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer;" />
                 </div>
               </div>
             </div>
 
             <form id="fullProfileForm">
-              <div class="section-divider" id="txt-personal-info">Personal & Account Information</div>
+              <div class="section-divider">Personal & Account Information</div>
               <div class="profile-form-grid">
                 <div class="field-group">
-                  <label id="lbl-full-name">Full Name</label>
+                  <label>Full Name</label>
                   <input type="text" id="profFullName" placeholder="Rabbi Hosen" required />
                 </div>
 
                 <div class="field-group">
-                  <label id="lbl-designation">Role / Designation</label>
+                  <label>Role / Designation</label>
                   <input type="text" id="profRole" placeholder="Admin" />
                 </div>
 
                 <div class="field-group">
-                  <label id="lbl-email">Email Address</label>
+                  <label>Email Address</label>
                   <input type="email" id="profEmail" readonly style="background: #f9fafb;" />
                 </div>
 
                 <div class="field-group">
-                  <label id="lbl-phone">Phone Number</label>
+                  <label>Phone Number</label>
                   <input type="text" id="profPhone" placeholder="+880 1700-000000" />
                 </div>
               </div>
 
-              <div class="section-divider" id="txt-security-info">Security Settings</div>
+              <div class="section-divider">Security Settings</div>
               <div class="profile-form-grid">
                 <div class="field-group full-width">
-                  <label id="lbl-new-password">New Password (Leave blank to keep unchanged)</label>
+                  <label>New Password (Leave blank to keep unchanged)</label>
                   <input type="password" id="profNewPass" placeholder="••••••••" />
                 </div>
               </div>
 
-              <button type="submit" class="btn-add" style="width: auto; padding: 12px 30px; background: #00a8ef; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
-                <i class="fa-solid fa-floppy-disk"></i> <span id="txt-save-changes">Save Profile Changes</span>
+              <button type="submit" style="padding: 12px 30px; background: #00a8ef; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                <i class="fa-solid fa-floppy-disk"></i> Save Profile Changes
               </button>
             </form>
           </div>
@@ -694,7 +646,7 @@
     </div>
   </div>
 
-  <!-- FIREBASE & FINTECH APP SCRIPT -->
+  <!-- FIREBASE & FINTECH ERP SCRIPT -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -715,26 +667,26 @@
 
     const adminEmail = "mousumicomputer.org@gmail.com";
 
-    /* ACCOUNT CATEGORIES STRUCTURE */
+    /* EXACT ACCOUNT CATEGORIES & FIELDS SCHEMA */
     const accountSchema = {
       personal: {
-        title: "Personal Accounts",
+        title: "Personal Accounts Balance Entry",
         fields: ["Bkash Personal", "Nagad Personal", "Rocket Personal", "Upay Personal", "Tap Personal"]
       },
       bank: {
-        title: "Bank Accounts",
+        title: "Bank Accounts Balance Entry",
         fields: ["DBBL", "Trust Bank", "BRAC Bank", "UCB Bank", "Prime Bank"]
       },
       agent: {
-        title: "Agent Accounts",
+        title: "Agent Accounts Balance Entry",
         fields: ["Bkash Agent", "Nagad Agent", "Rocket Agent", "Upay Agent", "Tap Agent"]
       },
       load: {
-        title: "Load Cards",
+        title: "Load Cards Balance Entry",
         fields: ["GP Card", "Robi Card", "Airtel Card", "Banglalink Card"]
       },
       recharge: {
-        title: "Recharge Balances",
+        title: "Recharge Balances Entry",
         fields: ["GP Recharge", "Robi Recharge", "Airtel Recharge", "Banglalink Recharge"]
       }
     };
@@ -749,7 +701,7 @@
     };
 
     let historyLogs = JSON.parse(localStorage.getItem('mc_fintech_history')) || [];
-    let currentActiveCategoryKey = '';
+    let currentActiveCategoryKey = 'personal';
 
     // DOM ELEMENTS
     const loader = document.getElementById('loader');
@@ -765,20 +717,22 @@
     const profileTrigger = document.getElementById('profileTrigger');
     const profileDropdown = document.getElementById('profileDropdown');
 
-    window.currentLang = 'en';
+    /* TOGGLE PARENT BALANCE MANAGEMENT SUBMENU */
+    window.toggleBalanceSubmenu = function() {
+      const parent = document.getElementById('menu-bal-parent');
+      const sub = document.getElementById('balanceSubmenu');
+      parent.classList.toggle('open');
+      sub.classList.toggle('show');
+    };
 
-    /* MAIN SWITCH TAB */
+    /* SWITCH MAIN VIEW TABS */
     window.switchMainTab = function(tabName) {
       profileDropdown.classList.remove('active');
       document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+      document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
 
-      if (tabName === 'balance') {
-        document.getElementById('balance-view').classList.add('active');
-        document.getElementById('menu-bal').classList.add('active');
-        document.getElementById('top-title').innerText = "Balance Management";
-        closeCatForm();
-      } else if (tabName === 'reports') {
+      if (tabName === 'reports') {
         document.getElementById('reports-view').classList.add('active');
         document.getElementById('menu-reports').classList.add('active');
         document.getElementById('top-title').innerText = "Reports & Audit Log";
@@ -795,13 +749,28 @@
       }
     };
 
-    /* OPEN CATEGORY FORM IN BALANCE MANAGEMENT */
-    window.openCatForm = function(catKey) {
+    /* OPEN BALANCE CATEGORY FROM SIDEBAR SUBMENU */
+    window.openBalanceCategory = function(catKey) {
       currentActiveCategoryKey = catKey;
+      
+      // Expand Submenu if collapsed
+      const sub = document.getElementById('balanceSubmenu');
+      const parent = document.getElementById('menu-bal-parent');
+      sub.classList.add('show');
+      parent.classList.add('open');
+
+      // Highlight active menu items
+      document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+      document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
+
+      parent.classList.add('active');
+      document.getElementById(`sub-${catKey}`).classList.add('active');
+
+      document.getElementById('balance-view').classList.add('active');
       const catData = accountSchema[catKey];
-      document.getElementById('categoryMenu').style.display = 'none';
-      document.getElementById('categoryFormPanel').classList.add('active');
-      document.getElementById('formCatTitle').innerText = catData.title;
+      document.getElementById('top-title').innerText = catData.title;
+      document.getElementById('erpFormTitle').innerText = catData.title;
 
       const container = document.getElementById('formFieldsContainer');
       container.innerHTML = '';
@@ -812,21 +781,16 @@
           <div class="field-card">
             <div class="field-card-header">
               <label>${field}</label>
-              <div class="prev-bal">Previous: <span>৳ ${prevVal.toFixed(2)}</span></div>
+              <div class="prev-bal">Previous Balance: <span>৳ ${prevVal.toFixed(2)}</span></div>
             </div>
-            <input type="number" step="any" name="${field}" placeholder="Enter new balance" value="${prevVal > 0 ? prevVal : ''}" />
+            <input type="number" step="any" name="${field}" placeholder="Enter new current balance" value="${prevVal > 0 ? prevVal : ''}" />
           </div>
         `;
         container.insertAdjacentHTML('beforeend', fieldHtml);
       });
     };
 
-    window.closeCatForm = function() {
-      document.getElementById('categoryFormPanel').classList.remove('active');
-      document.getElementById('categoryMenu').style.display = 'grid';
-    };
-
-    /* SAVE BALANCE FORM */
+    /* SAVE BALANCE ENTRY FORM */
     document.getElementById('balanceUpdateForm').addEventListener('submit', (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
@@ -844,7 +808,7 @@
             balanceStore[field] = newBal;
             historyLogs.unshift({
               date: now,
-              category: catData.title,
+              category: catData.title.replace(" Entry", ""),
               account: field,
               prev: oldBal,
               current: newBal,
@@ -857,8 +821,8 @@
       localStorage.setItem('mc_fintech_balances', JSON.stringify(balanceStore));
       localStorage.setItem('mc_fintech_history', JSON.stringify(historyLogs));
 
-      alert("Balances updated successfully!");
-      closeCatForm();
+      alert("Balance successfully updated!");
+      openBalanceCategory(currentActiveCategoryKey); // Refresh form prev balances
       updateDashboardCards();
     });
 
@@ -916,7 +880,7 @@
       renderHistoryTable(type);
     };
 
-    /* AUTH & PROFILE LOGIC */
+    /* AUTH & PROFILE LOGIC (PRESERVED EXCLUSIVELY) */
     onAuthStateChanged(auth, (user) => {
       loader.style.display = 'none';
       if (user) {
