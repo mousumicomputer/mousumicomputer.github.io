@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mousumi Computer - Dynamic Accounting ERP</title>
+    <title>Mousumi Computer - Dynamic Accounting & Card Inventory ERP</title>
     <!-- FontAwesome Icons & Google Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -573,7 +573,7 @@
             border-radius: var(--border-radius);
             border: 1px solid var(--border-color);
             padding: 25px;
-            max-width: 750px;
+            max-width: 900px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.02);
             margin-bottom: 25px;
         }
@@ -701,6 +701,54 @@
         .btn-toggle {
             background: #f3f4f6;
             color: #374151;
+        }
+
+        /* CARD INVENTORY STYLES */
+        .operator-tab-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .op-tab-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #f9fafb;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .op-tab-btn.active {
+            background: var(--primary-color);
+            color: #ffffff;
+            border-color: var(--primary-color);
+        }
+
+        .inv-grand-total-box {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+
+        .inv-grand-total-box h4 {
+            color: #065f46;
+            font-size: 1rem;
+        }
+
+        .inv-grand-total-box span {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #047857;
         }
 
         /* PROFILE PANEL */
@@ -849,6 +897,13 @@
                         </ul>
                     </li>
 
+                    <!-- MODULE: MULTI-OPERATOR CARD INVENTORY -->
+                    <li class="menu-item" id="menu-card-inv">
+                        <a onclick="switchMainTab('card-inventory')">
+                            <span class="menu-link-inner"><i class="fa-solid fa-sim-card"></i> <span>Card Inventory</span></span>
+                        </a>
+                    </li>
+
                     <!-- MODULE: CATEGORY & ACCOUNT MANAGEMENT -->
                     <li class="menu-item" id="menu-cat-mgmt">
                         <a onclick="switchMainTab('category-mgmt')">
@@ -858,7 +913,7 @@
 
                     <li class="menu-item" id="menu-reports">
                         <a onclick="switchMainTab('reports')">
-                            <span class="menu-link-inner"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Reports</span></span>
+                            <span class="menu-link-inner"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Reports & History</span></span>
                         </a>
                     </li>
 
@@ -936,7 +991,59 @@
                     </div>
                 </div>
 
-                <!-- ==================== VIEW 3: CATEGORY & ACCOUNT MANAGEMENT ==================== -->
+                <!-- ==================== VIEW 3: CARD INVENTORY MODULE ==================== -->
+                <div class="view-panel" id="card-inventory-view">
+                    <div class="erp-form-card">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-sim-card" style="color: #00a8ef;"></i> Card Inventory Management</span>
+                        </div>
+
+                        <!-- OPERATOR SELECTION TABS -->
+                        <div class="operator-tab-bar">
+                            <button class="op-tab-btn active" onclick="switchOperator('GP')">GP</button>
+                            <button class="op-tab-btn" onclick="switchOperator('Banglalink')">Banglalink</button>
+                            <button class="op-tab-btn" onclick="switchOperator('Airtel')">Airtel</button>
+                            <button class="op-tab-btn" onclick="switchOperator('Robi')">Robi</button>
+                        </div>
+
+                        <!-- ADD / EDIT PRODUCT FORM -->
+                        <form id="cardProductForm" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                            <input type="hidden" id="editProdId" value="" />
+                            <input type="text" id="prodTypeInput" placeholder="Product Type (e.g. MB 19, Minute 29)" required style="flex:2; min-width: 180px; padding: 10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            <input type="number" step="any" id="prodPriceInput" placeholder="Price" required style="flex:1; min-width: 100px; padding: 10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            <input type="number" id="prodQtyInput" placeholder="Quantity" required style="flex:1; min-width: 100px; padding: 10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            <button type="submit" class="btn-submit" style="width: auto; padding: 0 20px;"><i class="fa-solid fa-plus"></i> Save Product</button>
+                        </form>
+
+                        <!-- INVENTORY PRODUCTS TABLE -->
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Product Type</th>
+                                        <th>Price (BDT)</th>
+                                        <th>Quantity</th>
+                                        <th>Total (BDT)</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cardInventoryTableBody"></tbody>
+                            </table>
+                        </div>
+
+                        <!-- GRAND TOTAL DISPLAY -->
+                        <div class="inv-grand-total-box">
+                            <h4><span id="currentOpDisplay">GP</span> Inventory Grand Total:</h4>
+                            <span id="opGrandTotal">৳ 0.00</span>
+                        </div>
+
+                        <button class="btn-submit" onclick="saveCardInventoryHistory()" style="background: #10b981;">
+                            <i class="fa-solid fa-check-double"></i> Save & Record Inventory Audit
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 4: CATEGORY & ACCOUNT MANAGEMENT ==================== -->
                 <div class="view-panel" id="category-mgmt-view">
                     <!-- CATEGORY MANAGEMENT FORM & LIST -->
                     <div class="erp-form-card">
@@ -991,28 +1098,56 @@
                     </div>
                 </div>
 
-                <!-- ==================== VIEW 4: REPORTS MODULE ==================== -->
+                <!-- ==================== VIEW 5: REPORTS & HISTORY MODULE ==================== -->
                 <div class="view-panel" id="reports-view">
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Date & Time</th>
-                                    <th>Category</th>
-                                    <th>Account Name</th>
-                                    <th>Previous Balance</th>
-                                    <th>Current Balance</th>
-                                    <th>Difference</th>
-                                </tr>
-                            </thead>
-                            <tbody id="historyTableBody">
-                                <tr><td colspan="6" style="text-align: center; color: #9ca3af;">No record history available yet.</td></tr>
-                            </tbody>
-                        </table>
+                    <!-- ACCOUNT BALANCE HISTORY -->
+                    <div class="erp-form-card">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-clock-rotate-left" style="color: #00a8ef;"></i> Account Balance Audit Log</span>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Category</th>
+                                        <th>Account Name</th>
+                                        <th>Previous Balance</th>
+                                        <th>Current Balance</th>
+                                        <th>Difference</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody">
+                                    <tr><td colspan="6" style="text-align: center; color: #9ca3af;">No balance record history available yet.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- CARD INVENTORY HISTORY -->
+                    <div class="erp-form-card">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-boxes-stacked" style="color: #10b981;"></i> Card Inventory Audit Log</span>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Operator</th>
+                                        <th>Total Products</th>
+                                        <th>Grand Total Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cardHistoryTableBody">
+                                    <tr><td colspan="4" style="text-align: center; color: #9ca3af;">No card inventory history available yet.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-                <!-- ==================== VIEW 5: PROFILE & SETTINGS ==================== -->
+                <!-- ==================== VIEW 6: PROFILE & SETTINGS ==================== -->
                 <div class="view-panel" id="profile-view">
                     <div class="profile-page-card">
                         <div class="profile-header-banner">
@@ -1086,7 +1221,7 @@
         const auth = getAuth(app);
         const adminEmail = "mousumicomputer.org@gmail.com";
 
-        /* DEFAULT DYNAMIC CATEGORIES & ACCOUNTS DATA INITIALIZATION */
+        /* DEFAULT DYNAMIC CATEGORIES & ACCOUNTS DATA */
         let categories = JSON.parse(localStorage.getItem('mc_erp_categories')) || [
             { id: 'cat_1', name: 'Personal Accounts', order: 1, enabled: true },
             { id: 'cat_2', name: 'Bank Accounts', order: 2, enabled: true },
@@ -1104,9 +1239,26 @@
             { id: 'acc_6', catId: 'cat_2', name: 'DBBL', enabled: true },
             { id: 'acc_7', catId: 'cat_2', name: 'Trust Bank', enabled: true },
             { id: 'acc_8', catId: 'cat_3', name: 'Bkash Agent', enabled: true },
-            { id: 'acc_9', catId: 'cat_4', name: 'GP Card', enabled: true },
+            { id: 'acc_9', catId: 'cat_4', name: 'Card Inventory', enabled: true },
             { id: 'acc_10', catId: 'cat_5', name: 'GP Recharge', enabled: true }
         ];
+
+        /* CARD INVENTORY SYSTEM DATA */
+        let cardInventory = JSON.parse(localStorage.getItem('mc_card_inventory')) || {
+            GP: [
+                { id: 'p1', productType: 'MB 19', price: 19, quantity: 50 },
+                { id: 'p2', productType: 'MB 39', price: 39, quantity: 30 },
+                { id: 'p3', productType: 'MB 49', price: 49, quantity: 20 },
+                { id: 'p4', productType: 'Minute 29', price: 29, quantity: 40 },
+                { id: 'p5', productType: 'Minute 39', price: 39, quantity: 25 }
+            ],
+            Banglalink: [],
+            Airtel: [],
+            Robi: []
+        };
+
+        let cardHistoryLogs = JSON.parse(localStorage.getItem('mc_card_history')) || [];
+        let currentOperator = 'GP';
 
         let balanceStore = JSON.parse(localStorage.getItem('mc_fintech_balances')) || {
             'Bkash Personal': 13161.57
@@ -1132,6 +1284,13 @@
             localStorage.setItem('mc_erp_accounts', JSON.stringify(accounts));
             renderDynamicSidebar();
             renderCategoryManagementTables();
+            updateDashboardCards();
+        }
+
+        function saveCardInventoryData() {
+            localStorage.setItem('mc_card_inventory', JSON.stringify(cardInventory));
+            localStorage.setItem('mc_card_history', JSON.stringify(cardHistoryLogs));
+            renderCardInventory();
             updateDashboardCards();
         }
 
@@ -1165,7 +1324,12 @@
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
 
-            if (tabName === 'category-mgmt') {
+            if (tabName === 'card-inventory') {
+                document.getElementById('card-inventory-view').classList.add('active');
+                document.getElementById('menu-card-inv').classList.add('active');
+                document.getElementById('top-title').innerText = "Card Inventory Management";
+                renderCardInventory();
+            } else if (tabName === 'category-mgmt') {
                 document.getElementById('category-mgmt-view').classList.add('active');
                 document.getElementById('menu-cat-mgmt').classList.add('active');
                 document.getElementById('top-title').innerText = "Category & Account Management";
@@ -1173,8 +1337,9 @@
             } else if (tabName === 'reports') {
                 document.getElementById('reports-view').classList.add('active');
                 document.getElementById('menu-reports').classList.add('active');
-                document.getElementById('top-title').innerText = "Reports & Audit Log";
+                document.getElementById('top-title').innerText = "Reports & Audit Logs";
                 renderHistoryTable();
+                renderCardHistoryTable();
             } else if (tabName === 'profile') {
                 document.getElementById('profile-view').classList.add('active');
                 document.getElementById('menu-settings').classList.add('active');
@@ -1186,6 +1351,150 @@
                 updateDashboardCards();
             }
         };
+
+        /* CARD INVENTORY SYSTEM LOGIC */
+        window.switchOperator = function(op) {
+            currentOperator = op;
+            document.querySelectorAll('.op-tab-btn').forEach(btn => {
+                if(btn.innerText === op) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            renderCardInventory();
+        };
+
+        function renderCardInventory() {
+            document.getElementById('currentOpDisplay').innerText = currentOperator;
+            const tbody = document.getElementById('cardInventoryTableBody');
+            tbody.innerHTML = '';
+
+            const products = cardInventory[currentOperator] || [];
+            let grandTotal = 0;
+
+            if (products.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #9ca3af;">No products found for ${currentOperator}. Add a product above.</td></tr>`;
+            } else {
+                products.forEach(p => {
+                    const itemTotal = p.price * p.quantity;
+                    grandTotal += itemTotal;
+
+                    const row = `
+                        <tr>
+                            <td><strong>${p.productType}</strong></td>
+                            <td>৳ ${parseFloat(p.price).toFixed(2)}</td>
+                            <td>${p.quantity}</td>
+                            <td><strong>৳ ${itemTotal.toFixed(2)}</strong></td>
+                            <td>
+                                <button class="btn-action btn-edit" onclick="editCardProduct('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+                                <button class="btn-action btn-delete" onclick="deleteCardProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+            }
+
+            document.getElementById('opGrandTotal').innerText = `৳ ${grandTotal.toFixed(2)}`;
+
+            // Sync with Card Inventory Account Balance
+            let totalAllCards = 0;
+            Object.keys(cardInventory).forEach(opKey => {
+                (cardInventory[opKey] || []).forEach(item => {
+                    totalAllCards += (item.price * item.quantity);
+                });
+            });
+            balanceStore['Card Inventory'] = totalAllCards;
+            localStorage.setItem('mc_fintech_balances', JSON.stringify(balanceStore));
+        }
+
+        // Add / Edit Card Product Submit
+        document.getElementById('cardProductForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('editProdId').value;
+            const pType = document.getElementById('prodTypeInput').value.trim();
+            const pPrice = parseFloat(document.getElementById('prodPriceInput').value) || 0;
+            const pQty = parseInt(document.getElementById('prodQtyInput').value) || 0;
+
+            if(!cardInventory[currentOperator]) cardInventory[currentOperator] = [];
+
+            if(editId) {
+                const prod = cardInventory[currentOperator].find(p => p.id === editId);
+                if(prod) {
+                    prod.productType = pType;
+                    prod.price = pPrice;
+                    prod.quantity = pQty;
+                }
+            } else {
+                cardInventory[currentOperator].push({
+                    id: 'prod_' + Date.now(),
+                    productType: pType,
+                    price: pPrice,
+                    quantity: pQty
+                });
+            }
+
+            document.getElementById('editProdId').value = '';
+            document.getElementById('prodTypeInput').value = '';
+            document.getElementById('prodPriceInput').value = '';
+            document.getElementById('prodQtyInput').value = '';
+
+            saveCardInventoryData();
+        });
+
+        window.editCardProduct = function(id) {
+            const prod = cardInventory[currentOperator].find(p => p.id === id);
+            if(prod) {
+                document.getElementById('editProdId').value = prod.id;
+                document.getElementById('prodTypeInput').value = prod.productType;
+                document.getElementById('prodPriceInput').value = prod.price;
+                document.getElementById('prodQtyInput').value = prod.quantity;
+            }
+        };
+
+        window.deleteCardProduct = function(id) {
+            if(confirm('Are you sure you want to delete this product?')) {
+                cardInventory[currentOperator] = cardInventory[currentOperator].filter(p => p.id !== id);
+                saveCardInventoryData();
+            }
+        };
+
+        window.saveCardInventoryHistory = function() {
+            const products = cardInventory[currentOperator] || [];
+            let grandTotal = 0;
+            products.forEach(p => grandTotal += (p.price * p.quantity));
+
+            const logEntry = {
+                date: new Date().toLocaleString(),
+                operator: currentOperator,
+                prodCount: products.length,
+                grandTotal: grandTotal
+            };
+
+            cardHistoryLogs.unshift(logEntry);
+            saveCardInventoryData();
+            alert(`Card Inventory for ${currentOperator} saved and recorded in Audit Log!`);
+        };
+
+        function renderCardHistoryTable() {
+            const tbody = document.getElementById('cardHistoryTableBody');
+            tbody.innerHTML = '';
+
+            if (cardHistoryLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #9ca3af;">No card inventory history available yet.</td></tr>`;
+                return;
+            }
+
+            cardHistoryLogs.forEach(item => {
+                const rowHtml = `
+                    <tr>
+                        <td>${item.date}</td>
+                        <td><strong>${item.operator}</strong></td>
+                        <td>${item.prodCount} Products</td>
+                        <td><strong>৳ ${item.grandTotal.toFixed(2)}</strong></td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', rowHtml);
+            });
+        }
 
         /* OPEN DYNAMIC BALANCE CATEGORY FORM */
         window.openBalanceCategory = function(catId) {
@@ -1221,13 +1530,14 @@
 
             catAccounts.forEach(acc => {
                 const prevVal = balanceStore[acc.name] || 0;
+                const isCardInv = (acc.name === 'Card Inventory');
                 const fieldHtml = `
                     <div class="field-card">
                         <div class="field-card-header">
-                            <label>${acc.name}</label>
+                            <label>${acc.name} ${isCardInv ? '(Auto Calculated)' : ''}</label>
                             <div class="prev-bal">Previous Balance: <span>৳ ${prevVal.toFixed(2)}</span></div>
                         </div>
-                        <input type="number" step="any" name="${acc.name}" placeholder="Enter new balance" value="${prevVal > 0 ? prevVal : ''}" />
+                        <input type="number" step="any" name="${acc.name}" placeholder="Enter new balance" value="${prevVal > 0 ? prevVal : ''}" ${isCardInv ? 'readonly style="background:#f3f4f6;"' : ''} />
                     </div>
                 `;
                 container.insertAdjacentHTML('beforeend', fieldHtml);
@@ -1463,7 +1773,7 @@
             tbody.innerHTML = '';
 
             if (historyLogs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No record history available yet.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No balance record history available yet.</td></tr>`;
                 return;
             }
 
@@ -1493,6 +1803,7 @@
                 dashboardSection.style.display = 'block';
                 loadSavedProfile();
                 saveCoreData();
+                renderCardInventory();
             } else {
                 dashboardSection.style.display = 'none';
                 loginSection.style.display = 'flex';
