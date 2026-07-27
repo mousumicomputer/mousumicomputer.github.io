@@ -816,7 +816,7 @@
 
                 <div class="field-group">
                   <label id="lbl-email">Email Address</label>
-                  <input type="email" id="profEmail" placeholder="admin@mousumi.com" readonly style="background: #f9fafb;" />
+                  <input type="email" id="profEmail" placeholder="mousumicomputer.org@gmail.com" readonly style="background: #f9fafb;" />
                 </div>
 
                 <div class="field-group">
@@ -847,7 +847,7 @@
   <!-- FIREBASE & JS SCRIPT -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA1PhRiTkICNCd8sA4he3ZxKjHtIzM0d5E",
@@ -895,8 +895,8 @@
     const fullProfileImgInput = document.getElementById('fullProfileImgInput');
     const fullProfileForm = document.getElementById('fullProfileForm');
 
-    // ফায়ারবেস কনসোলে থাকা আপনার মূল ইমেইল অ্যাকাউন্ট
-    const adminEmail = "admin@mousumi.com";
+    // ফায়ারবেস কনসোলে থাকা সঠিক মূল ইমেইল অ্যাকাউন্ট
+    const adminEmail = "mousumicomputer.org@gmail.com";
 
     /* MULTI-LANGUAGE SYSTEM (Default: English) */
     window.currentLang = 'en';
@@ -1155,7 +1155,6 @@
       errorMsg.style.display = 'none';
       successMsg.style.display = 'none';
 
-      // 'admin' লিখলে সরাসরি 'admin@mousumi.com' দিয়ে লগইন হবে
       let email = usernameInput.includes('@') ? usernameInput : adminEmail;
       loader.style.display = 'flex';
 
@@ -1185,7 +1184,7 @@
       }
     });
 
-    /* SAVE PROFILE FORM */
+    /* SAVE PROFILE FORM (WITH RE-AUTHENTICATION FIX) */
     fullProfileForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       loader.style.display = 'flex';
@@ -1212,9 +1211,20 @@
           loadSavedProfile();
         }
 
+        // Re-authentication handling for updating password
         if (newPass && auth.currentUser) {
-          await updatePassword(auth.currentUser, newPass);
-          profNewPass.value = '';
+          const currentPassword = prompt(currentLang === 'en' 
+            ? 'Please enter your CURRENT password to confirm change:' 
+            : 'পাসওয়ার্ড পরিবর্তন করতে আপনার বর্তমান পাসওয়ার্ডটি লিখুন:');
+
+          if (currentPassword) {
+            const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
+            await reauthenticateWithCredential(auth.currentUser, credential);
+            await updatePassword(auth.currentUser, newPass);
+            profNewPass.value = '';
+          } else {
+            throw new Error(currentLang === 'en' ? 'Password update cancelled.' : 'পাসওয়ার্ড পরিবর্তন বাতিল করা হয়েছে।');
+          }
         }
 
         loader.style.display = 'none';
