@@ -703,7 +703,7 @@
             color: #374151;
         }
 
-        /* REDESIGNED ACCORDION CARD INVENTORY STYLES */
+        /* ACCORDION CARD INVENTORY STYLES */
         .accordion-container {
             display: flex;
             flex-direction: column;
@@ -1095,10 +1095,20 @@
                         </a>
                     </li>
 
-                    <li class="menu-item" id="menu-settings">
-                        <a onclick="switchMainTab('profile')">
-                            <span class="menu-link-inner"><i class="fa-solid fa-sliders"></i> <span>Settings</span></span>
+                    <!-- PARENT MENU: SETTINGS & CONFIG -->
+                    <li class="menu-item" id="menu-settings-parent">
+                        <a onclick="toggleSettingsSubmenu()">
+                            <span class="menu-link-inner"><i class="fa-solid fa-sliders"></i> <span>Settings & Config</span></span>
+                            <i class="fa-solid fa-chevron-down chevron-icon"></i>
                         </a>
+                        <ul class="submenu-list" id="settingsSubmenu">
+                            <li class="submenu-item" id="sub-card-mgmt">
+                                <a onclick="switchMainTab('card-mgmt')"><i class="fa-solid fa-gear"></i> <span>Card Management</span></a>
+                            </li>
+                            <li class="submenu-item" id="sub-profile">
+                                <a onclick="switchMainTab('profile')"><i class="fa-solid fa-user-gear"></i> <span>My Profile</span></a>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
             </div>
@@ -1327,7 +1337,67 @@
                     </div>
                 </div>
 
-                <!-- ==================== VIEW 6: PROFILE & SETTINGS ==================== -->
+                <!-- ==================== VIEW 6: NEW CARD MANAGEMENT (MASTER CONFIG) ==================== -->
+                <div class="view-panel" id="card-mgmt-view">
+                    <!-- ADD/EDIT CARD MASTER FORM -->
+                    <div class="erp-form-card" style="max-width: 1000px;">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-gears" style="color: #00a8ef;"></i> Card Master Configuration</span>
+                        </div>
+
+                        <form id="cardMasterForm" style="display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; background: #f9fafb; padding: 18px; border-radius: 10px; border: 1px solid var(--border-color);">
+                            <input type="hidden" id="cardMasterId" value="" />
+                            
+                            <div style="flex: 1; min-width: 130px;">
+                                <label style="font-size: 0.8rem; font-weight: 700; color: #4b5563; display: block; margin-bottom: 4px;">Operator</label>
+                                <select id="cardOperatorSelect" required style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                                    <option value="GP">GP</option>
+                                    <option value="Banglalink">Banglalink</option>
+                                    <option value="Robi">Robi</option>
+                                    <option value="Airtel">Airtel</option>
+                                </select>
+                            </div>
+
+                            <div style="flex: 1.5; min-width: 150px;">
+                                <label style="font-size: 0.8rem; font-weight: 700; color: #4b5563; display: block; margin-bottom: 4px;">Card Name</label>
+                                <input type="text" id="cardNameMasterInput" placeholder="e.g. MB 19" required style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;" />
+                            </div>
+
+                            <div style="flex: 1.2; min-width: 130px;">
+                                <label style="font-size: 0.8rem; font-weight: 700; color: #4b5563; display: block; margin-bottom: 4px;">Type</label>
+                                <select id="cardTypeSelect" required style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                                    <option value="Internet">Internet</option>
+                                    <option value="Minute">Minute</option>
+                                    <option value="Combo">Combo</option>
+                                    <option value="Flexi">Flexi</option>
+                                </select>
+                            </div>
+
+                            <div style="flex: 1; min-width: 110px;">
+                                <label style="font-size: 0.8rem; font-weight: 700; color: #4b5563; display: block; margin-bottom: 4px;">Price (৳)</label>
+                                <input type="number" step="any" id="cardPriceMasterInput" placeholder="19" required style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;" />
+                            </div>
+
+                            <div style="flex: 1; min-width: 110px;">
+                                <label style="font-size: 0.8rem; font-weight: 700; color: #4b5563; display: block; margin-bottom: 4px;">Status</label>
+                                <select id="cardStatusSelect" required style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+
+                            <div style="width: 100%; display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                                <button type="button" class="btn-secondary" onclick="resetCardMasterForm()" style="padding: 10px 20px;">Cancel / Reset</button>
+                                <button type="submit" class="btn-submit" style="width: auto; padding: 10px 25px;"><i class="fa-solid fa-plus"></i> Save Card Config</button>
+                            </div>
+                        </form>
+
+                        <!-- OPERATOR TABLES WRAPPER -->
+                        <div id="cardMasterTablesContainer"></div>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 7: PROFILE & SETTINGS ==================== -->
                 <div class="view-panel" id="profile-view">
                     <div class="profile-page-card">
                         <div class="profile-header-banner">
@@ -1423,39 +1493,39 @@
             { id: 'acc_10', catId: 'cat_5', name: 'GP Recharge', enabled: true }
         ];
 
-        /* ADMIN FIXED CARD CONFIGURATION SETTINGS */
+        /* MASTER CARD CONFIGURATION SETTINGS (UPDATED WITH TYPE & STATUS) */
         const DEFAULT_OPERATOR_CARDS = {
             GP: [
-                { id: 'gp_1', name: 'MB 19', price: 19 },
-                { id: 'gp_2', name: 'MB 39', price: 39 },
-                { id: 'gp_3', name: 'MB 49', price: 49 },
-                { id: 'gp_4', name: 'Minute 29', price: 29 },
-                { id: 'gp_5', name: 'Minute 49', price: 49 },
-                { id: 'gp_6', name: 'Minute 99', price: 99 }
+                { id: 'gp_1', name: 'MB 19', type: 'Internet', price: 19, active: true },
+                { id: 'gp_2', name: 'MB 39', type: 'Internet', price: 39, active: true },
+                { id: 'gp_3', name: 'MB 49', type: 'Internet', price: 49, active: true },
+                { id: 'gp_4', name: 'Minute 29', type: 'Minute', price: 29, active: true },
+                { id: 'gp_5', name: 'Minute 49', type: 'Minute', price: 49, active: true },
+                { id: 'gp_6', name: 'Minute 99', type: 'Minute', price: 99, active: true }
             ],
             Banglalink: [
-                { id: 'bl_1', name: 'MB 19', price: 19 },
-                { id: 'bl_2', name: 'MB 39', price: 39 },
-                { id: 'bl_3', name: 'MB 49', price: 49 },
-                { id: 'bl_4', name: 'Minute 29', price: 29 },
-                { id: 'bl_5', name: 'Minute 49', price: 49 },
-                { id: 'bl_6', name: 'Minute 99', price: 99 }
+                { id: 'bl_1', name: 'MB 19', type: 'Internet', price: 19, active: true },
+                { id: 'bl_2', name: 'MB 39', type: 'Internet', price: 39, active: true },
+                { id: 'bl_3', name: 'MB 49', type: 'Internet', price: 49, active: true },
+                { id: 'bl_4', name: 'Minute 29', type: 'Minute', price: 29, active: true },
+                { id: 'bl_5', name: 'Minute 49', type: 'Minute', price: 49, active: true },
+                { id: 'bl_6', name: 'Minute 99', type: 'Minute', price: 99, active: true }
             ],
             Robi: [
-                { id: 'robi_1', name: 'MB 19', price: 19 },
-                { id: 'robi_2', name: 'MB 39', price: 39 },
-                { id: 'robi_3', name: 'MB 49', price: 49 },
-                { id: 'robi_4', name: 'Minute 29', price: 29 },
-                { id: 'robi_5', name: 'Minute 49', price: 49 },
-                { id: 'robi_6', name: 'Minute 99', price: 99 }
+                { id: 'robi_1', name: 'MB 19', type: 'Internet', price: 19, active: true },
+                { id: 'robi_2', name: 'MB 39', type: 'Internet', price: 39, active: true },
+                { id: 'robi_3', name: 'MB 49', type: 'Internet', price: 49, active: true },
+                { id: 'robi_4', name: 'Minute 29', type: 'Minute', price: 29, active: true },
+                { id: 'robi_5', name: 'Minute 49', type: 'Minute', price: 49, active: true },
+                { id: 'robi_6', name: 'Minute 99', type: 'Minute', price: 99, active: true }
             ],
             Airtel: [
-                { id: 'air_1', name: 'MB 19', price: 19 },
-                { id: 'air_2', name: 'MB 39', price: 39 },
-                { id: 'air_3', name: 'MB 49', price: 49 },
-                { id: 'air_4', name: 'Minute 29', price: 29 },
-                { id: 'air_5', name: 'Minute 49', price: 49 },
-                { id: 'air_6', name: 'Minute 99', price: 99 }
+                { id: 'air_1', name: 'MB 19', type: 'Internet', price: 19, active: true },
+                { id: 'air_2', name: 'MB 39', type: 'Internet', price: 39, active: true },
+                { id: 'air_3', name: 'MB 49', type: 'Internet', price: 49, active: true },
+                { id: 'air_4', name: 'Minute 29', type: 'Minute', price: 29, active: true },
+                { id: 'air_5', name: 'Minute 49', type: 'Minute', price: 49, active: true },
+                { id: 'air_6', name: 'Minute 99', type: 'Minute', price: 99, active: true }
             ]
         };
 
@@ -1490,12 +1560,12 @@
         const profileTrigger = document.getElementById('profileTrigger');
         const profileDropdown = document.getElementById('profileDropdown');
 
-        /* CALCULATION HELPER: Calculate Grand Total Card Value from Quantities and Config */
+        /* CALCULATION HELPER: Calculate Grand Total Card Value from Quantities and Config (Active Cards Only) */
         function calculateGrandCardInventoryValue() {
             let grandTotal = 0;
             const operators = ['GP', 'Banglalink', 'Robi', 'Airtel'];
             operators.forEach(op => {
-                const cardsList = cardConfig[op] || [];
+                const cardsList = (cardConfig[op] || []).filter(c => c.active !== false);
                 const opQtyMap = cardQuantities[op] || {};
                 cardsList.forEach(card => {
                     const qty = parseInt(opQtyMap[card.id]) || 0;
@@ -1527,6 +1597,12 @@
             updateDashboardCards();
         }
 
+        function saveCardConfigMaster() {
+            localStorage.setItem('mc_card_config', JSON.stringify(cardConfig));
+            syncCardInventoryBalance();
+            updateDashboardCards();
+        }
+
         /* RENDER DYNAMIC SIDEBAR BALANCE MANAGEMENT SUBMENU */
         function renderDynamicSidebar() {
             const submenuContainer = document.getElementById('dynamicBalanceSubmenu');
@@ -1542,10 +1618,17 @@
             });
         }
 
-        /* TOGGLE PARENT BALANCE MANAGEMENT SUBMENU */
+        /* TOGGLE SUBMENUS */
         window.toggleBalanceSubmenu = function() {
             const parent = document.getElementById('menu-bal-parent');
             const sub = document.getElementById('dynamicBalanceSubmenu');
+            parent.classList.toggle('open');
+            sub.classList.toggle('show');
+        };
+
+        window.toggleSettingsSubmenu = function() {
+            const parent = document.getElementById('menu-settings-parent');
+            const sub = document.getElementById('settingsSubmenu');
             parent.classList.toggle('open');
             sub.classList.toggle('show');
         };
@@ -1562,6 +1645,12 @@
                 document.getElementById('menu-card-inv').classList.add('active');
                 document.getElementById('top-title').innerText = "Card Inventory Management";
                 renderRedesignedCardInventory();
+            } else if (tabName === 'card-mgmt') {
+                document.getElementById('card-mgmt-view').classList.add('active');
+                document.getElementById('menu-settings-parent').classList.add('active');
+                document.getElementById('sub-card-mgmt').classList.add('active');
+                document.getElementById('top-title').innerText = "Card Master Configuration";
+                renderCardMasterConfiguration();
             } else if (tabName === 'category-mgmt') {
                 document.getElementById('category-mgmt-view').classList.add('active');
                 document.getElementById('menu-cat-mgmt').classList.add('active');
@@ -1575,7 +1664,8 @@
                 renderCardHistoryTable();
             } else if (tabName === 'profile') {
                 document.getElementById('profile-view').classList.add('active');
-                document.getElementById('menu-settings').classList.add('active');
+                document.getElementById('menu-settings-parent').classList.add('active');
+                document.getElementById('sub-profile').classList.add('active');
                 document.getElementById('top-title').innerText = "Settings & Profile";
             } else {
                 document.getElementById('dashboard-view').classList.add('active');
@@ -1605,7 +1695,8 @@
             const opTotalsMap = { GP: 0, Banglalink: 0, Robi: 0, Airtel: 0 };
 
             OPERATORS_LIST.forEach(op => {
-                const cards = cardConfig[op] || [];
+                // Filter only ACTIVE cards from Master Config
+                const cards = (cardConfig[op] || []).filter(c => c.active !== false);
                 const opQtyMap = cardQuantities[op] || {};
 
                 let opCardsCount = 0;
@@ -1623,7 +1714,7 @@
 
                     tableRowsHtml += `
                         <tr>
-                            <td><strong>${card.name}</strong></td>
+                            <td><strong>${card.name}</strong> <span style="font-size:0.75rem; color:#6b7280;">(${card.type || 'Standard'})</span></td>
                             <td>৳${card.price}</td>
                             <td>
                                 <input type="number" min="0" class="inv-qty-input" 
@@ -1635,6 +1726,10 @@
                         </tr>
                     `;
                 });
+
+                if(cards.length === 0) {
+                    tableRowsHtml = `<tr><td colspan="4" style="text-align: center; color: #9ca3af;">No active cards configured for ${op}.</td></tr>`;
+                }
 
                 opTotalsMap[op] = opTotalValue;
                 grandTotalCards += opCardsCount;
@@ -1699,8 +1794,6 @@
             if(!accElem) return;
 
             const isOpen = accElem.classList.contains('active');
-            
-            // Accordion toggle behavior
             if (isOpen) {
                 accElem.classList.remove('active');
             } else {
@@ -1718,12 +1811,10 @@
                 cardQuantities[op][cardId] = numVal;
             }
 
-            // Save and recalculate live without re-rendering accordion states to avoid losing focus
             localStorage.setItem('mc_card_quantities', JSON.stringify(cardQuantities));
             syncCardInventoryBalance();
             updateDashboardCards();
 
-            // Live Update Header Summaries & Totals
             updateLiveSummaries();
         };
 
@@ -1732,7 +1823,7 @@
             let grandTotalValue = 0;
 
             OPERATORS_LIST.forEach(op => {
-                const cards = cardConfig[op] || [];
+                const cards = (cardConfig[op] || []).filter(c => c.active !== false);
                 const opQtyMap = cardQuantities[op] || {};
 
                 let opCardsCount = 0;
@@ -1748,13 +1839,11 @@
                 grandTotalCards += opCardsCount;
                 grandTotalValue += opTotalValue;
 
-                // Live Update Header Text
                 const hdrCnt = document.getElementById(`hdr-cnt-${op}`);
                 const hdrVal = document.getElementById(`hdr-val-${op}`);
                 if(hdrCnt) hdrCnt.innerText = `${opCardsCount} Pcs`;
                 if(hdrVal) hdrVal.innerText = `৳${opTotalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
-                // Live Update Grand Summary Boxes
                 if(op === 'GP') document.getElementById('summaryGpVal').innerText = `৳${opTotalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                 if(op === 'Banglalink') document.getElementById('summaryBlVal').innerText = `৳${opTotalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                 if(op === 'Robi') document.getElementById('summaryRobiVal').innerText = `৳${opTotalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -1771,7 +1860,7 @@
             let grandAuditVal = 0;
 
             OPERATORS_LIST.forEach(op => {
-                const cards = cardConfig[op] || [];
+                const cards = (cardConfig[op] || []).filter(c => c.active !== false);
                 const opQtyMap = cardQuantities[op] || {};
                 let opCards = 0;
                 let opVal = 0;
@@ -1821,6 +1910,155 @@
             });
         }
 
+        /* ==================== NEW CARD MASTER CONFIGURATION RENDERER ==================== */
+        function renderCardMasterConfiguration() {
+            const container = document.getElementById('cardMasterTablesContainer');
+            container.innerHTML = '';
+
+            OPERATORS_LIST.forEach(op => {
+                const cards = cardConfig[op] || [];
+                let rowsHtml = '';
+
+                cards.forEach(card => {
+                    const isActive = card.active !== false;
+                    const statusBadge = isActive 
+                        ? `<span class="badge badge-success">Active</span>` 
+                        : `<span class="badge badge-danger">Disabled</span>`;
+                    
+                    const toggleBtnText = isActive ? 'Disable' : 'Enable';
+                    const toggleBtnIcon = isActive ? 'fa-ban' : 'fa-check';
+
+                    rowsHtml += `
+                        <tr>
+                            <td><strong>${card.name}</strong></td>
+                            <td>${card.type || 'Standard'}</td>
+                            <td><strong>৳${card.price}</strong></td>
+                            <td>${statusBadge}</td>
+                            <td>
+                                <button class="btn-action btn-edit" onclick="editMasterCard('${op}', '${card.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+                                <button class="btn-action btn-toggle" onclick="toggleMasterCardStatus('${op}', '${card.id}')"><i class="fa-solid ${toggleBtnIcon}"></i> ${toggleBtnText}</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                if(cards.length === 0) {
+                    rowsHtml = `<tr><td colspan="5" style="text-align: center; color: #9ca3af;">No cards configured for ${op}. Add a new card above.</td></tr>`;
+                }
+
+                const tableCardHtml = `
+                    <div style="margin-bottom: 25px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <span class="op-badge ${getOpBadgeClass(op)}">${op}</span>
+                            <h3 style="font-size: 1rem; font-weight: 700; color: var(--primary-dark);">${op} Operator Master Cards</h3>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Card Name</th>
+                                        <th>Type</th>
+                                        <th>Fixed Price</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rowsHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', tableCardHtml);
+            });
+        }
+
+        // SAVE/UPDATE CARD MASTER FORM
+        document.getElementById('cardMasterForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const masterId = document.getElementById('cardMasterId').value;
+            const op = document.getElementById('cardOperatorSelect').value;
+            const name = document.getElementById('cardNameMasterInput').value.trim();
+            const type = document.getElementById('cardTypeSelect').value;
+            const price = parseFloat(document.getElementById('cardPriceMasterInput').value) || 0;
+            const status = document.getElementById('cardStatusSelect').value;
+
+            if(!cardConfig[op]) cardConfig[op] = [];
+
+            if(masterId) {
+                // EDIT EXISTING CARD
+                let found = false;
+                OPERATORS_LIST.forEach(operator => {
+                    const idx = cardConfig[operator].findIndex(c => c.id === masterId);
+                    if(idx !== -1) {
+                        found = true;
+                        // Move card if operator changed
+                        if(operator !== op) {
+                            cardConfig[operator].splice(idx, 1);
+                            cardConfig[op].push({
+                                id: masterId,
+                                name,
+                                type,
+                                price,
+                                active: status === 'active'
+                            });
+                        } else {
+                            cardConfig[operator][idx].name = name;
+                            cardConfig[operator][idx].type = type;
+                            cardConfig[operator][idx].price = price;
+                            cardConfig[operator][idx].active = status === 'active';
+                        }
+                    }
+                });
+            } else {
+                // ADD NEW CARD
+                const newId = op.toLowerCase() + '_' + Date.now();
+                cardConfig[op].push({
+                    id: newId,
+                    name,
+                    type,
+                    price,
+                    active: status === 'active'
+                });
+            }
+
+            saveCardConfigMaster();
+            resetCardMasterForm();
+            renderCardMasterConfiguration();
+            alert('Card Configuration saved successfully!');
+        });
+
+        window.resetCardMasterForm = function() {
+            document.getElementById('cardMasterId').value = '';
+            document.getElementById('cardNameMasterInput').value = '';
+            document.getElementById('cardPriceMasterInput').value = '';
+            document.getElementById('cardTypeSelect').value = 'Internet';
+            document.getElementById('cardStatusSelect').value = 'active';
+        };
+
+        window.editMasterCard = function(op, cardId) {
+            const card = (cardConfig[op] || []).find(c => c.id === cardId);
+            if(card) {
+                document.getElementById('cardMasterId').value = card.id;
+                document.getElementById('cardOperatorSelect').value = op;
+                document.getElementById('cardNameMasterInput').value = card.name;
+                document.getElementById('cardTypeSelect').value = card.type || 'Internet';
+                document.getElementById('cardPriceMasterInput').value = card.price;
+                document.getElementById('cardStatusSelect').value = (card.active !== false) ? 'active' : 'inactive';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+
+        window.toggleMasterCardStatus = function(op, cardId) {
+            const card = (cardConfig[op] || []).find(c => c.id === cardId);
+            if(card) {
+                card.active = (card.active === false); // Toggle
+                saveCardConfigMaster();
+                renderCardMasterConfiguration();
+            }
+        };
+
         /* OPEN DYNAMIC BALANCE CATEGORY FORM */
         window.openBalanceCategory = function(catId) {
             currentActiveCatId = catId;
@@ -1847,7 +2085,6 @@
             const container = document.getElementById('formFieldsContainer');
             container.innerHTML = '';
 
-            // Filter out 'Card Inventory' from manual input form fields
             const catAccounts = accounts.filter(a => a.catId === catId && a.enabled && a.name !== 'Card Inventory');
             
             if(catAccounts.length === 0) {
@@ -1911,7 +2148,6 @@
 
         /* CATEGORY & ACCOUNT MANAGEMENT LOGIC */
         function renderCategoryManagementTables() {
-            // 1. Categories Table
             const catTbody = document.getElementById('categoryTableBody');
             catTbody.innerHTML = '';
             const sortedCategories = [...categories].sort((a,b) => a.order - b.order);
@@ -1932,14 +2168,12 @@
                 catTbody.insertAdjacentHTML('beforeend', row);
             });
 
-            // 2. Category Select Dropdown in Account Form
             const catSelect = document.getElementById('accCatSelect');
             catSelect.innerHTML = '<option value="">Select Category</option>';
             sortedCategories.forEach(c => {
                 catSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
             });
 
-            // 3. Accounts Table
             const accTbody = document.getElementById('accountTableBody');
             accTbody.innerHTML = '';
             accounts.forEach(acc => {
@@ -1950,7 +2184,7 @@
                         <td><strong>${acc.name}</strong></td>
                         <td><span class="badge ${acc.enabled ? 'badge-success' : 'badge-danger'}">${acc.enabled ? 'Active' : 'Disabled'}</span></td>
                         <td>
-                            <button class="btn-action btn-edit" onclick="editCategory('${acc.id}')"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn-action btn-edit" onclick="editAccount('${acc.id}')"><i class="fa-solid fa-pen"></i></button>
                             <button class="btn-action btn-toggle" onclick="toggleAccount('${acc.id}')"><i class="fa-solid fa-power-off"></i></button>
                             <button class="btn-action btn-delete" onclick="deleteAccount('${acc.id}')"><i class="fa-solid fa-trash"></i></button>
                         </td>
@@ -1960,7 +2194,6 @@
             });
         }
 
-        // Add / Edit Category Submit
         document.getElementById('addCategoryForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const editId = document.getElementById('editCatId').value;
@@ -2013,7 +2246,6 @@
             }
         };
 
-        // Add / Edit Account Submit
         document.getElementById('addAccountForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const editId = document.getElementById('editAccId').value;
@@ -2066,7 +2298,6 @@
 
         /* UPDATE DASHBOARD TOTALS & DYNAMIC SUMMARY CARDS */
         function updateDashboardCards() {
-            // Guarantee latest Card Inventory is synced to balanceStore
             syncCardInventoryBalance();
 
             const grid = document.getElementById('dashboardSummaryGrid');
