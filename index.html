@@ -1172,10 +1172,10 @@
         </div>
     </div>
 
-    <!-- LOADING SCREEN WITH DYNAMIC TEXT -->
+    <!-- SIMPLE USER-FRIENDLY LOADING SCREEN -->
     <div id="loader">
         <div class="spinner"></div>
-        <p id="loader-text">Loading ERP System...</p>
+        <p id="loader-text">Please wait...</p>
     </div>
 
     <!-- 1. LOGIN SECTION -->
@@ -1331,7 +1331,7 @@
                         <div class="hero-amount" id="totalAllBalance">৳ 0.00</div>
                     </div>
                     <div class="summary-grid" id="dashboardSummaryGrid">
-                        <!-- Dynamic Cards Here -->
+                        <!-- Dynamic Summary Cards Rendered Here -->
                     </div>
                 </div>
 
@@ -1645,7 +1645,7 @@
         const db = getDatabase(app);
         const adminEmail = "mousumicomputer.org@gmail.com";
 
-        /* ==================== MODERN UI HELPER FUNCTIONS ==================== */
+        /* ==================== USER-FRIENDLY UI HELPER FUNCTIONS ==================== */
         window.showToast = function(message, type = 'info') {
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -1723,7 +1723,7 @@
         let cardConfig = { GP: [], Banglalink: [], Robi: [], Airtel: [] };
         let cardQuantities = { GP: {}, Banglalink: {}, Robi: {}, Airtel: {} };
         let cardHistoryLogs = [];
-        let balanceStore = {}; // Keys use Permanent Immutable Account IDs (e.g. 'acc_1', 'acc_8')
+        let balanceStore = {}; // Keys use Immutable Account IDs
         let historyLogs = [];
         let profileSettings = {};
         let currentActiveCatId = null;
@@ -1732,7 +1732,7 @@
             { id: 'cat_1', name: 'Personal Accounts', order: 1, enabled: true },
             { id: 'cat_2', name: 'Bank Accounts', order: 2, enabled: true },
             { id: 'cat_3', name: 'Agent Accounts', order: 3, enabled: true },
-            { id: 'cat_4', name: 'Load Cards', order: 4, enabled: true },
+            { id: 'cat_4', name: 'Card Inventory', order: 4, enabled: true },
             { id: 'cat_5', name: 'Recharge Balances', order: 5, enabled: true }
         ];
 
@@ -1784,22 +1784,6 @@
             ]
         };
 
-        // DOM ELEMENTS
-        const loginForm = document.getElementById('loginForm');
-        const loginSection = document.getElementById('login-section');
-        const dashboardSection = document.getElementById('dashboard-section');
-        const errorMsg = document.getElementById('errorMsg');
-        const successMsg = document.getElementById('successMsg');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const profileTrigger = document.getElementById('profileTrigger');
-        const profileDropdown = document.getElementById('profileDropdown');
-
-        /* SAFE JSON PARSER */
-        function safeJsonParse(str, fallback = null) {
-            try { return str ? JSON.parse(str) : fallback; } catch (e) { return fallback; }
-        }
-
         /* CARD INVENTORY ACCOUNT HELPER */
         function getCardInventoryAccount() {
             return accounts.find(a => a.id === 'acc_9' || a.name === 'Card Inventory') || { id: 'acc_9', name: 'Card Inventory' };
@@ -1822,105 +1806,9 @@
             }
         }
 
-        /* AUTOMATIC ONE-TIME MIGRATION TO PERMANENT ACCOUNT IDs */
-        async function runAccountIdentityMigration() {
-            try {
-                const migrationRef = ref(db, 'erp/migration/v1_account_id');
-                const migSnap = await get(migrationRef);
-                
-                if (migSnap.exists() && migSnap.val() === true) return;
-
-                showLoader("Preserving data & migrating to permanent Account IDs...");
-                const erpRef = ref(db, 'erp');
-                const snapshot = await get(erpRef);
-                if (!snapshot.exists()) return;
-
-                const data = snapshot.val();
-                const currentAccounts = data.accounts ? toArray(data.accounts) : DEFAULT_ACCOUNTS;
-                const oldBalances = data.balances || {};
-                const oldHistory = data.fintechHistory ? toArray(data.fintechHistory) : [];
-
-                let newBalances = {};
-
-                // 1. Migrate Name-based balances to ID-based balances
-                Object.keys(oldBalances).forEach(key => {
-                    const val = oldBalances[key];
-                    const matchedById = currentAccounts.find(a => a.id === key);
-                    if (matchedById) {
-                        newBalances[key] = val;
-                    } else {
-                        const matchedByName = currentAccounts.find(a => a.name === key);
-                        if (matchedByName) {
-                            newBalances[matchedByName.id] = val;
-                        } else if (key === 'Card Inventory') {
-                            const cardAcc = currentAccounts.find(a => a.name === 'Card Inventory' || a.id === 'acc_9');
-                            if (cardAcc) newBalances[cardAcc.id] = val;
-                        } else {
-                            newBalances[key] = val;
-                        }
-                    }
-                });
-
-                // 2. Migrate fintechHistory entries to include accountId & categoryId
-                let updatedHistory = oldHistory.map(entry => {
-                    if (!entry.accountId && entry.account) {
-                        const matchedAcc = currentAccounts.find(a => a.name === entry.account);
-                        if (matchedAcc) {
-                            return { ...entry, accountId: matchedAcc.id, categoryId: matchedAcc.catId };
-                        }
-                    }
-                    return entry;
-                });
-
-                // 3. Save updated balances, history and set migration flag
-                await writeToFirebase('erp/balances', newBalances);
-                await writeToFirebase('erp/fintechHistory', updatedHistory);
-                await writeToFirebase('erp/migration/v1_account_id', true);
-
-                showToast("Account architecture upgraded successfully!", "success");
-            } catch (err) {
-                console.error("[Migration Error]", err);
-            }
-        }
-
-        /* ONE-TIME SILENT MIGRATION FROM LOCALSTORAGE TO FIREBASE RTDB */
-        async function migrateLocalStorageToFirebase() {
-            try {
-                const erpRef = ref(db, 'erp');
-                const snapshot = await get(erpRef);
-                const rtdbData = snapshot.val() || {};
-
-                const localCategories = safeJsonParse(localStorage.getItem('mc_erp_categories'));
-                const localAccounts = safeJsonParse(localStorage.getItem('mc_erp_accounts'));
-                const localCardConfig = safeJsonParse(localStorage.getItem('mc_card_config'));
-                const localCardQuantities = safeJsonParse(localStorage.getItem('mc_card_quantities'));
-                const localCardHistory = safeJsonParse(localStorage.getItem('mc_card_history'));
-                const localBalances = safeJsonParse(localStorage.getItem('mc_fintech_balances'));
-                const localHistory = safeJsonParse(localStorage.getItem('mc_fintech_history'));
-
-                let migrationPayload = {};
-
-                if (!rtdbData.categories && localCategories) migrationPayload.categories = localCategories;
-                if (!rtdbData.accounts && localAccounts) migrationPayload.accounts = localAccounts;
-                if (!rtdbData.cardConfig && localCardConfig) migrationPayload.cardConfig = localCardConfig;
-                if (!rtdbData.cardInventory && localCardQuantities) migrationPayload.cardInventory = localCardQuantities;
-                if (!rtdbData.cardHistory && localCardHistory) migrationPayload.cardHistory = localCardHistory;
-                if (!rtdbData.balances && localBalances) migrationPayload.balances = localBalances;
-                if (!rtdbData.fintechHistory && localHistory) migrationPayload.fintechHistory = localHistory;
-
-                if (Object.keys(migrationPayload).length > 0) {
-                    for (const key in migrationPayload) {
-                        await writeToFirebase(`erp/${key}`, migrationPayload[key]);
-                    }
-                }
-            } catch (err) {
-                console.warn("LocalStorage migration warning:", err);
-            }
-        }
-
-        /* REALTIME DATABASE SUBSCRIPTION */
+        /* REALTIME DATABASE SUBSCRIPTION & INITIALIZATION */
         async function initRealtimeSync() {
-            showLoader("Synchronizing Firebase...");
+            showLoader("Loading Dashboard...");
             const erpRef = ref(db, 'erp');
             
             try {
@@ -1964,8 +1852,6 @@
 
             renderDynamicSidebar();
             updateDashboardCards();
-            loadSavedProfile();
-
             hideLoader();
 
             onValue(erpRef, (snapshot) => {
@@ -1990,7 +1876,6 @@
 
                 renderDynamicSidebar();
                 updateDashboardCards();
-                loadSavedProfile();
 
                 const activeView = document.querySelector('.view-panel.active');
                 if (activeView) {
@@ -2013,7 +1898,7 @@
             });
         }
 
-        /* CALCULATION HELPER */
+        /* CARD INVENTORY CALCULATION HELPER */
         function calculateGrandCardInventoryValue() {
             let grandTotal = 0;
             const operators = ['GP', 'Banglalink', 'Robi', 'Airtel'];
@@ -2079,6 +1964,85 @@
             }
         }
 
+        /* DASHBOARD SUMMARY CALCULATION & UPDATE LOGIC */
+        function updateDashboardCards() {
+            const grid = document.getElementById('dashboardSummaryGrid');
+            if(!grid) return;
+
+            // Compute live Card Inventory Balance
+            const cardInvVal = calculateGrandCardInventoryValue();
+            const cardAcc = getCardInventoryAccount();
+            if (cardAcc && cardAcc.id) {
+                balanceStore[cardAcc.id] = cardInvVal;
+            }
+
+            grid.innerHTML = '';
+            let netTotal = 0;
+
+            const activeCategories = toArray(categories).filter(c => c.enabled !== false).sort((a,b) => a.order - b.order);
+            const allAccounts = toArray(accounts);
+
+            let cardInvRendered = false;
+
+            activeCategories.forEach(cat => {
+                const catAccs = allAccounts.filter(a => a.catId === cat.id);
+                let catSum = 0;
+
+                catAccs.forEach(acc => {
+                    if (acc.id === cardAcc.id || acc.name === 'Card Inventory') {
+                        catSum += cardInvVal;
+                    } else {
+                        catSum += (balanceStore[acc.id] || 0);
+                    }
+                });
+
+                // Fallback check if category is dedicated to Card Inventory
+                if (cat.name === 'Card Inventory' || cat.id === 'cat_4' || catAccs.some(a => a.id === cardAcc.id)) {
+                    cardInvRendered = true;
+                    if (catAccs.length === 0) catSum = cardInvVal;
+                }
+
+                netTotal += catSum;
+
+                let iconClass = 'fa-wallet';
+                if (cat.name.includes('Agent')) iconClass = 'fa-user-tie';
+                else if (cat.name.includes('Recharge')) iconClass = 'fa-mobile-screen-button';
+                else if (cat.name.includes('Personal')) iconClass = 'fa-user-shield';
+                else if (cat.name.includes('Bank')) iconClass = 'fa-building-columns';
+                else if (cat.name.includes('Card') || cat.name.includes('Inventory')) iconClass = 'fa-sim-card';
+
+                const cardHtml = `
+                    <div class="fintech-card" id="dash-card-${cat.id}">
+                        <div class="card-icon"><i class="fa-solid ${iconClass}"></i></div>
+                        <h4>${cat.name}</h4>
+                        <div class="amount">৳ ${catSum.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', cardHtml);
+            });
+
+            // Dedicated fallback card for Card Inventory if not present in user categories
+            if (!cardInvRendered) {
+                netTotal += cardInvVal;
+                const cardInvHtml = `
+                    <div class="fintech-card" id="dash-card-card-inventory">
+                        <div class="card-icon"><i class="fa-solid fa-sim-card"></i></div>
+                        <h4>Card Inventory</h4>
+                        <div class="amount">৳ ${cardInvVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', cardInvHtml);
+            }
+
+            const totalElem = document.getElementById('totalAllBalance');
+            if(totalElem) totalElem.innerText = `৳ ${netTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
+
+        // Calculation & Refresh Aliases
+        window.updateDashboard = updateDashboardCards;
+        window.calculateDashboard = updateDashboardCards;
+        window.refreshDashboard = updateDashboardCards;
+
         /* RENDER DYNAMIC SIDEBAR BALANCE MANAGEMENT SUBMENU */
         function renderDynamicSidebar() {
             const submenuContainer = document.getElementById('dynamicBalanceSubmenu');
@@ -2112,13 +2076,15 @@
 
         /* SWITCH MAIN TABS */
         window.switchMainTab = function(tabName) {
-            profileDropdown.classList.remove('active');
+            const profileDropdown = document.getElementById('profileDropdown');
+            if (profileDropdown) profileDropdown.classList.remove('active');
+
             document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
 
             if (tabName === 'card-inventory') {
-                showLoader("Loading Inventory...");
+                showLoader("Loading Data...");
                 document.getElementById('card-inventory-view').classList.add('active');
                 document.getElementById('menu-card-inv').classList.add('active');
                 document.getElementById('top-title').innerText = "Card Inventory Management";
@@ -2136,7 +2102,7 @@
                 document.getElementById('top-title').innerText = "Category & Account Management";
                 renderCategoryManagementTables();
             } else if (tabName === 'reports') {
-                showLoader("Preparing Reports...");
+                showLoader("Loading Data...");
                 document.getElementById('reports-view').classList.add('active');
                 document.getElementById('menu-reports').classList.add('active');
                 document.getElementById('top-title').innerText = "Reports & Audit Logs";
@@ -2156,7 +2122,7 @@
             }
         };
 
-        /* ==================== CARD INVENTORY RENDERER ==================== */
+        /* CARD INVENTORY MODULE RENDERER */
         const OPERATORS_LIST = ['GP', 'Banglalink', 'Robi', 'Airtel'];
 
         function getOpBadgeClass(op) {
@@ -2357,12 +2323,12 @@
                 }
             });
 
-            showLoader("Saving Inventory & Synchronizing...");
+            showLoader("Please wait...");
             try {
                 await saveCardInventoryData();
                 showToast("Today's Card Inventory saved successfully!", "success");
             } catch(err) {
-                // Handled in writeToFirebase
+                // Handled
             } finally {
                 hideLoader();
             }
@@ -2393,7 +2359,7 @@
             });
         }
 
-        /* ==================== CARD MASTER CONFIGURATION RENDERER ==================== */
+        /* CARD MASTER CONFIGURATION RENDERER */
         function renderCardMasterConfiguration() {
             const container = document.getElementById('cardMasterTablesContainer');
             if(!container) return;
@@ -2491,7 +2457,7 @@
                 cardConfig[op].push({ id: newId, name, type, price, active: status === 'active' });
             }
 
-            showLoader("Saving Card Configuration...");
+            showLoader("Please wait...");
             try {
                 await saveCardConfigMaster();
                 resetCardMasterForm();
@@ -2531,7 +2497,7 @@
             const card = cardList.find(c => c.id === cardId);
             if(card) {
                 card.active = (card.active === false);
-                showLoader("Updating Card Status...");
+                showLoader("Please wait...");
                 try {
                     await saveCardConfigMaster();
                     renderCardMasterConfiguration();
@@ -2572,8 +2538,6 @@
             container.innerHTML = '';
 
             const cardAcc = getCardInventoryAccount();
-            
-            // STRICT COMPLIANCE: Active accounts ONLY are displayed for entering new transactions!
             const catAccounts = toArray(accounts).filter(a => a.catId === catId && a.enabled !== false && a.id !== cardAcc.id);
             
             if(catAccounts.length === 0) {
@@ -2596,12 +2560,12 @@
             });
         };
 
-        /* SAVE BALANCE FORM DATA USING IMMUTABLE ACCOUNT IDs */
+        /* SAVE BALANCE FORM DATA */
         document.getElementById('balanceUpdateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if(!currentActiveCatId) return;
 
-            showLoader("Saving Changes & Updating Balances...");
+            showLoader("Please wait...");
 
             const categoryList = toArray(categories);
             const category = categoryList.find(c => c.id === currentActiveCatId);
@@ -2730,7 +2694,7 @@
                 });
             }
 
-            showLoader("Saving Category...");
+            showLoader("Please wait...");
             try {
                 await saveCoreData();
                 document.getElementById('editCatId').value = '';
@@ -2758,7 +2722,7 @@
             const cat = categories.find(c => c.id === id);
             if(cat) {
                 cat.enabled = (cat.enabled === false);
-                showLoader("Updating Category Status...");
+                showLoader("Please wait...");
                 try {
                     await saveCoreData();
                     showToast(`Category ${cat.enabled ? 'enabled' : 'disabled'}`, "info");
@@ -2782,7 +2746,7 @@
                     categories = toArray(categories).filter(c => c.id !== id);
                     accounts = toArray(accounts).filter(a => a.catId !== id);
                     
-                    showLoader("Deleting Category...");
+                    showLoader("Please wait...");
                     try {
                         await saveCoreData();
                         showToast("Category deleted successfully", "warning");
@@ -2805,14 +2769,12 @@
             accounts = toArray(accounts);
 
             if(editId) {
-                // RENAMING PRESERVES PERMANENT ACCOUNT ID! Balance is 100% safe.
                 const acc = accounts.find(a => a.id === editId);
                 if(acc) {
                     acc.catId = catId;
                     acc.name = name;
                 }
             } else {
-                // Generates permanent immutable ID
                 accounts.push({
                     id: 'acc_' + Date.now(),
                     catId,
@@ -2821,7 +2783,7 @@
                 });
             }
 
-            showLoader("Saving Account...");
+            showLoader("Please wait...");
             try {
                 await saveCoreData();
                 document.getElementById('editAccId').value = '';
@@ -2848,7 +2810,7 @@
             const acc = accounts.find(a => a.id === id);
             if(acc) {
                 acc.enabled = (acc.enabled === false);
-                showLoader("Updating Account Status...");
+                showLoader("Please wait...");
                 try {
                     await saveCoreData();
                     showToast(`Account ${acc.enabled ? 'activated' : 'disabled'} successfully`, "info");
@@ -2869,7 +2831,7 @@
                     const oldAccounts = [...accounts];
                     accounts = toArray(accounts).filter(a => a.id !== id);
                     
-                    showLoader("Deleting Account...");
+                    showLoader("Please wait...");
                     try {
                         await saveCoreData();
                         showToast("Account deleted successfully", "warning");
@@ -2882,40 +2844,7 @@
             });
         };
 
-        /* UPDATE DASHBOARD TOTALS USING IMMUTABLE ACCOUNT IDs */
-        function updateDashboardCards() {
-            const grid = document.getElementById('dashboardSummaryGrid');
-            if(!grid) return;
-            grid.innerHTML = '';
-            let netTotal = 0;
-
-            const activeCategories = toArray(categories).filter(c => c.enabled !== false).sort((a,b) => a.order - b.order);
-            const allAccounts = toArray(accounts);
-
-            activeCategories.forEach(cat => {
-                // Computes sum of balances using permanent account IDs across ALL accounts (Active & Disabled)
-                const catAccs = allAccounts.filter(a => a.catId === cat.id);
-                let catSum = 0;
-                catAccs.forEach(acc => {
-                    catSum += (balanceStore[acc.id] || 0);
-                });
-                netTotal += catSum;
-
-                const cardHtml = `
-                    <div class="fintech-card">
-                        <div class="card-icon"><i class="fa-solid fa-wallet"></i></div>
-                        <h4>${cat.name}</h4>
-                        <div class="amount">৳ ${catSum.toFixed(2)}</div>
-                    </div>
-                `;
-                grid.insertAdjacentHTML('beforeend', cardHtml);
-            });
-
-            const totalElem = document.getElementById('totalAllBalance');
-            if(totalElem) totalElem.innerText = `৳ ${netTotal.toFixed(2)}`;
-        }
-
-        /* RENDER HISTORY REPORTS WITH DYNAMIC ID LOOKUPS */
+        /* RENDER HISTORY REPORTS */
         function renderHistoryTable() {
             const tbody = document.getElementById('historyTableBody');
             if(!tbody) return;
@@ -2930,10 +2859,8 @@
 
             logs.forEach(item => {
                 const diffVal = item.diff || 0;
-                const diffClass = diffVal >= 0 ? 'color:#10b981; font-weight:700;' : 'color:#e11d48; font-weight:700;';
                 const diffText = diffVal >= 0 ? `+৳ ${diffVal.toFixed(2)}` : `-৳ ${Math.abs(diffVal).toFixed(2)}`;
                 
-                // Dynamic lookup of display name by Account ID
                 const matchedAcc = accounts.find(a => a.id === item.accountId);
                 const matchedCat = categories.find(c => c.id === item.categoryId);
                 
@@ -2943,167 +2870,20 @@
                 const rowHtml = `
                     <tr>
                         <td>${item.date || ''}</td>
-                        <td><strong>${displayCatName}</strong></td>
-                        <td>${displayAccName}</td>
+                        <td>${displayCatName}</td>
+                        <td><strong>${displayAccName}</strong></td>
                         <td>৳ ${(item.prev || 0).toFixed(2)}</td>
-                        <td>৳ ${(item.current || 0).toFixed(2)}</td>
-                        <td style="${diffClass}">${diffText}</td>
+                        <td><strong>৳ ${(item.current || 0).toFixed(2)}</strong></td>
+                        <td style="${diffVal >= 0 ? 'color:#10b981; font-weight:700;' : 'color:#e11d48; font-weight:700;'}">${diffText}</td>
                     </tr>
                 `;
                 tbody.insertAdjacentHTML('beforeend', rowHtml);
             });
         }
 
-        /* PROFILE MANAGEMENT */
-        function loadSavedProfile() {
-            if(profileSettings.name) {
-                document.getElementById('dropdownName').innerText = profileSettings.name;
-                document.getElementById('fullProfileNameDisplay').innerText = profileSettings.name;
-                document.getElementById('profFullName').value = profileSettings.name;
-            }
-            if(profileSettings.role) {
-                document.getElementById('dropdownRole').innerText = profileSettings.role;
-                document.getElementById('fullProfileRoleDisplay').innerText = profileSettings.role;
-                document.getElementById('profRole').value = profileSettings.role;
-            }
-            if(profileSettings.phone) {
-                document.getElementById('profPhone').value = profileSettings.phone;
-            }
-            if(profileSettings.photo) {
-                document.getElementById('navAvatar').src = profileSettings.photo;
-                document.getElementById('dropdownHeaderImg').src = profileSettings.photo;
-                document.getElementById('fullProfileImg').src = profileSettings.photo;
-            }
-            if(auth.currentUser) {
-                document.getElementById('profEmail').value = auth.currentUser.email || '';
-            }
-        }
+        /* INITIALIZATION */
+        initRealtimeSync();
 
-        document.getElementById('fullProfileForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('profFullName').value.trim();
-            const role = document.getElementById('profRole').value.trim();
-            const phone = document.getElementById('profPhone').value.trim();
-            const newPass = document.getElementById('profNewPass').value;
-
-            showLoader("Saving Profile Settings...");
-
-            profileSettings.name = name;
-            profileSettings.role = role;
-            profileSettings.phone = phone;
-
-            try {
-                await writeToFirebase('erp/settings', profileSettings);
-                
-                if (newPass && auth.currentUser) {
-                    await updatePassword(auth.currentUser, newPass);
-                    showToast("Password updated successfully!", "success");
-                    document.getElementById('profNewPass').value = '';
-                }
-
-                loadSavedProfile();
-                showToast("Profile changes saved!", "success");
-            } catch (err) {
-                showToast("Error updating profile: " + err.message, "error");
-            } finally {
-                hideLoader();
-            }
-        });
-
-        document.getElementById('fullProfileImgInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = async (event) => {
-                    const base64Img = event.target.result;
-                    profileSettings.photo = base64Img;
-                    showLoader("Uploading Photo...");
-                    try {
-                        await writeToFirebase('erp/settings', profileSettings);
-                        loadSavedProfile();
-                        showToast("Profile photo updated!", "success");
-                    } catch(err) {
-                        // Handled
-                    } finally {
-                        hideLoader();
-                    }
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        /* AUTHENTICATION & INITIALIZATION SEQUENCE */
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                loginSection.style.display = 'none';
-                dashboardSection.style.display = 'block';
-                showLoader("Loading Account Infrastructure...");
-                
-                try {
-                    await migrateLocalStorageToFirebase();
-                    await runAccountIdentityMigration();
-                    await initRealtimeSync();
-                } catch(err) {
-                    console.error("Auth init error:", err);
-                    hideLoader();
-                }
-            } else {
-                hideLoader();
-                dashboardSection.style.display = 'none';
-                loginSection.style.display = 'flex';
-            }
-        });
-
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const uInput = document.getElementById('username').value.trim();
-            const pInput = document.getElementById('password').value;
-            errorMsg.style.display = 'none';
-            
-            let email = uInput.includes('@') ? uInput : adminEmail;
-            
-            showLoader("Authenticating...");
-            signInWithEmailAndPassword(auth, email, pInput).catch((err) => {
-                hideLoader();
-                errorMsg.style.display = 'block';
-                showToast("Invalid credentials", "error");
-            });
-        });
-
-        document.getElementById('btn-forgot-pass').addEventListener('click', (e) => {
-            e.preventDefault();
-            const uInput = document.getElementById('username').value.trim();
-            let email = uInput.includes('@') ? uInput : adminEmail;
-            if (!uInput) {
-                showToast("Please enter email first.", "warning");
-                return;
-            }
-            showLoader("Sending Reset Email...");
-            sendPasswordResetEmail(auth, email).then(() => {
-                hideLoader();
-                successMsg.style.display = 'block';
-                showToast("Password reset email sent!", "success");
-            }).catch(err => {
-                hideLoader();
-                showToast(err.message, "error");
-            });
-        });
-
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            showLoader("Logging out...");
-            signOut(auth);
-        });
-
-        sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
-        
-        profileTrigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            profileDropdown.classList.toggle('active');
-        });
-
-        document.addEventListener('click', (e) => {
-            if(!profileDropdown.contains(e.target)) profileDropdown.classList.remove('active');
-        });
     </script>
 </body>
 </html>
