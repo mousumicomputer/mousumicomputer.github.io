@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mousumi Computer - Dynamic Accounting & Card Inventory ERP</title>
+    <title>Mousumi Computer - Dynamic Accounting & Inventory ERP</title>
     <!-- FontAwesome Icons & Google Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -214,7 +214,7 @@
         /* LOGIN SECTION */
         #login-section {
             background: linear-gradient(135deg, #0b1a2c 0%, #00a8ef 100%);
-            display: none;
+            display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -1246,6 +1246,13 @@
                         </ul>
                     </li>
 
+                    <!-- NEW MODULE: CASH INVENTORY MANAGEMENT -->
+                    <li class="menu-item" id="menu-cash-inv">
+                        <a onclick="switchMainTab('cash-inventory')">
+                            <span class="menu-link-inner"><i class="fa-solid fa-money-bill-wave"></i> <span>Cash Inventory</span></span>
+                        </a>
+                    </li>
+
                     <!-- MODULE: MULTI-OPERATOR CARD INVENTORY -->
                     <li class="menu-item" id="menu-card-inv">
                         <a onclick="switchMainTab('card-inventory')">
@@ -1350,7 +1357,45 @@
                     </div>
                 </div>
 
-                <!-- ==================== VIEW 3: REDESIGNED CARD INVENTORY MODULE ==================== -->
+                <!-- ==================== NEW VIEW: CASH INVENTORY MANAGEMENT ==================== -->
+                <div class="view-panel" id="cash-inventory-view">
+                    <div class="erp-form-card" style="max-width: 900px;">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-money-bill-wave" style="color: #00a8ef;"></i> Cash Inventory Management</span>
+                        </div>
+
+                        <!-- DENOMINATION TABLE -->
+                        <div class="table-container" style="margin-bottom: 20px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width: 30%;">Denomination</th>
+                                        <th style="width: 35%;">Quantity</th>
+                                        <th style="width: 35%;">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cashDenomTableBody">
+                                    <!-- Dynamic Rows Generated from JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- GRAND TOTAL BANNER -->
+                        <div class="grand-totals-banner" style="margin-bottom: 20px;">
+                            <div class="grand-stat-item">
+                                <span>Physical Cash Total</span>
+                                <strong id="grandTotalCashVal">৳ 0.00</strong>
+                            </div>
+                        </div>
+
+                        <!-- SAVE BUTTON -->
+                        <button class="btn-submit" onclick="saveCashInventory()" style="background: #10b981; padding: 14px; font-size: 1.05rem;">
+                            <i class="fa-solid fa-floppy-disk"></i> Save Cash Inventory
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 3: CARD INVENTORY MODULE ==================== -->
                 <div class="view-panel" id="card-inventory-view">
                     <div class="erp-form-card" style="max-width: 1000px;">
                         <div class="erp-form-header">
@@ -1462,6 +1507,27 @@
 
                 <!-- ==================== VIEW 5: REPORTS & HISTORY MODULE ==================== -->
                 <div class="view-panel" id="reports-view">
+                    <!-- CASH INVENTORY HISTORY LOG -->
+                    <div class="erp-form-card">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-money-bill-transfer" style="color: #00a8ef;"></i> Cash Inventory Audit Log</span>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Others Amount</th>
+                                        <th>Grand Total Cash</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cashHistoryTableBody">
+                                    <tr><td colspan="3" style="text-align: center; color: #9ca3af;">No cash inventory audit records available yet.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <!-- ACCOUNT BALANCE HISTORY -->
                     <div class="erp-form-card">
                         <div class="erp-form-header">
@@ -1717,16 +1783,25 @@
             return Object.values(data);
         }
 
+        /* CASH DENOMINATIONS CONSTANT */
+        const CASH_DENOMINATIONS = [1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];
+
         /* DATA STORES */
         let categories = [];
         let accounts = [];
-        let cardConfig = { GP: [], Banglalink: [], Robi: [], Airtel: [] };
+        let cardConfig = { GP: [], Banglalink: [], Robi: [], Airtel: {} };
         let cardQuantities = { GP: {}, Banglalink: {}, Robi: {}, Airtel: {} };
         let cardHistoryLogs = [];
-        let balanceStore = {}; // Keys use Permanent Immutable Account IDs (e.g. 'acc_1', 'acc_8')
+        let balanceStore = {}; // Keys use Permanent Immutable Account IDs
         let historyLogs = [];
         let profileSettings = {};
         let currentActiveCatId = null;
+
+        /* CASH INVENTORY DATA STORE */
+        let cashQuantities = { 1000: 0, 500: 0, 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 2: 0, 1: 0 };
+        let cashOthersAmount = 0;
+        let cashGrandTotal = 0;
+        let cashHistoryLogs = [];
 
         const DEFAULT_CATEGORIES = [
             { id: 'cat_1', name: 'Personal Accounts', order: 1, enabled: true },
@@ -1822,101 +1897,65 @@
             }
         }
 
-        /* AUTOMATIC ONE-TIME MIGRATION TO PERMANENT ACCOUNT IDs */
-        async function runAccountIdentityMigration() {
-            try {
-                const migrationRef = ref(db, 'erp/migration/v1_account_id');
-                const migSnap = await get(migrationRef);
-                
-                if (migSnap.exists() && migSnap.val() === true) return;
-
-                showLoader("Preserving data & migrating to permanent Account IDs...");
-                const erpRef = ref(db, 'erp');
-                const snapshot = await get(erpRef);
-                if (!snapshot.exists()) return;
-
-                const data = snapshot.val();
-                const currentAccounts = data.accounts ? toArray(data.accounts) : DEFAULT_ACCOUNTS;
-                const oldBalances = data.balances || {};
-                const oldHistory = data.fintechHistory ? toArray(data.fintechHistory) : [];
-
-                let newBalances = {};
-
-                // 1. Migrate Name-based balances to ID-based balances
-                Object.keys(oldBalances).forEach(key => {
-                    const val = oldBalances[key];
-                    const matchedById = currentAccounts.find(a => a.id === key);
-                    if (matchedById) {
-                        newBalances[key] = val;
-                    } else {
-                        const matchedByName = currentAccounts.find(a => a.name === key);
-                        if (matchedByName) {
-                            newBalances[matchedByName.id] = val;
-                        } else if (key === 'Card Inventory') {
-                            const cardAcc = currentAccounts.find(a => a.name === 'Card Inventory' || a.id === 'acc_9');
-                            if (cardAcc) newBalances[cardAcc.id] = val;
-                        } else {
-                            newBalances[key] = val;
-                        }
-                    }
-                });
-
-                // 2. Migrate fintechHistory entries to include accountId & categoryId
-                let updatedHistory = oldHistory.map(entry => {
-                    if (!entry.accountId && entry.account) {
-                        const matchedAcc = currentAccounts.find(a => a.name === entry.account);
-                        if (matchedAcc) {
-                            return { ...entry, accountId: matchedAcc.id, categoryId: matchedAcc.catId };
-                        }
-                    }
-                    return entry;
-                });
-
-                // 3. Save updated balances, history and set migration flag
-                await writeToFirebase('erp/balances', newBalances);
-                await writeToFirebase('erp/fintechHistory', updatedHistory);
-                await writeToFirebase('erp/migration/v1_account_id', true);
-
-                showToast("Account architecture upgraded successfully!", "success");
-            } catch (err) {
-                console.error("[Migration Error]", err);
+        /* AUTHENTICATION LISTENERS & LOGIC */
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginSection.style.display = 'none';
+                dashboardSection.style.display = 'block';
+                document.getElementById('profEmail').value = user.email || adminEmail;
+                initRealtimeSync();
+            } else {
+                dashboardSection.style.display = 'none';
+                loginSection.style.display = 'flex';
+                hideLoader();
             }
-        }
+        });
 
-        /* ONE-TIME SILENT MIGRATION FROM LOCALSTORAGE TO FIREBASE RTDB */
-        async function migrateLocalStorageToFirebase() {
-            try {
-                const erpRef = ref(db, 'erp');
-                const snapshot = await get(erpRef);
-                const rtdbData = snapshot.val() || {};
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const usernameVal = document.getElementById('username').value.trim();
+            const passwordVal = document.getElementById('password').value;
+            errorMsg.style.display = 'none';
 
-                const localCategories = safeJsonParse(localStorage.getItem('mc_erp_categories'));
-                const localAccounts = safeJsonParse(localStorage.getItem('mc_erp_accounts'));
-                const localCardConfig = safeJsonParse(localStorage.getItem('mc_card_config'));
-                const localCardQuantities = safeJsonParse(localStorage.getItem('mc_card_quantities'));
-                const localCardHistory = safeJsonParse(localStorage.getItem('mc_card_history'));
-                const localBalances = safeJsonParse(localStorage.getItem('mc_fintech_balances'));
-                const localHistory = safeJsonParse(localStorage.getItem('mc_fintech_history'));
-
-                let migrationPayload = {};
-
-                if (!rtdbData.categories && localCategories) migrationPayload.categories = localCategories;
-                if (!rtdbData.accounts && localAccounts) migrationPayload.accounts = localAccounts;
-                if (!rtdbData.cardConfig && localCardConfig) migrationPayload.cardConfig = localCardConfig;
-                if (!rtdbData.cardInventory && localCardQuantities) migrationPayload.cardInventory = localCardQuantities;
-                if (!rtdbData.cardHistory && localCardHistory) migrationPayload.cardHistory = localCardHistory;
-                if (!rtdbData.balances && localBalances) migrationPayload.balances = localBalances;
-                if (!rtdbData.fintechHistory && localHistory) migrationPayload.fintechHistory = localHistory;
-
-                if (Object.keys(migrationPayload).length > 0) {
-                    for (const key in migrationPayload) {
-                        await writeToFirebase(`erp/${key}`, migrationPayload[key]);
-                    }
-                }
-            } catch (err) {
-                console.warn("LocalStorage migration warning:", err);
+            let emailToAuth = usernameVal;
+            if(!emailToAuth.includes('@')) {
+                emailToAuth = adminEmail;
             }
-        }
+
+            showLoader("Authenticating...");
+            try {
+                await signInWithEmailAndPassword(auth, emailToAuth, passwordVal);
+            } catch(err) {
+                hideLoader();
+                errorMsg.innerText = "Invalid credentials. Please try again.";
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        document.getElementById('btn-forgot-pass').addEventListener('click', async (e) => {
+            e.preventDefault();
+            showLoader("Sending reset email...");
+            try {
+                await sendPasswordResetEmail(auth, adminEmail);
+                hideLoader();
+                successMsg.style.display = 'block';
+            } catch(err) {
+                hideLoader();
+                errorMsg.innerText = "Failed to send reset email: " + err.message;
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            showLoader("Logging out...");
+            try {
+                await signOut(auth);
+            } catch(err) {
+                console.error("Logout Error:", err);
+            } finally {
+                hideLoader();
+            }
+        });
 
         /* REALTIME DATABASE SUBSCRIPTION */
         async function initRealtimeSync() {
@@ -1944,6 +1983,16 @@
                     balanceStore = data.balances || { 'acc_1': 13161.57 };
                     historyLogs = data.fintechHistory ? toArray(data.fintechHistory) : [];
                     profileSettings = data.settings || {};
+
+                    // CASH INVENTORY DATA RETRIEVAL
+                    if (data.cashInventory) {
+                        cashQuantities = data.cashInventory.quantities || cashQuantities;
+                        cashOthersAmount = parseFloat(data.cashInventory.others) || 0;
+                        cashGrandTotal = parseFloat(data.cashInventory.grandTotal) || 0;
+                    }
+                    if (data.cashHistory) {
+                        cashHistoryLogs = toArray(data.cashHistory);
+                    }
                 } else {
                     categories = DEFAULT_CATEGORIES;
                     accounts = DEFAULT_ACCOUNTS;
@@ -1954,6 +2003,7 @@
                     await writeToFirebase('erp/accounts', accounts);
                     await writeToFirebase('erp/cardConfig', cardConfig);
                     await writeToFirebase('erp/balances', balanceStore);
+                    await writeToFirebase('erp/cashInventory', { quantities: cashQuantities, others: cashOthersAmount, grandTotal: 0 });
                 }
             } catch(e) {
                 console.error("Initial load error:", e);
@@ -1987,6 +2037,14 @@
                 if (data.fintechHistory) historyLogs = toArray(data.fintechHistory);
                 if (data.settings) profileSettings = data.settings;
 
+                // CASH INVENTORY SYNC
+                if (data.cashInventory) {
+                    cashQuantities = data.cashInventory.quantities || cashQuantities;
+                    cashOthersAmount = parseFloat(data.cashInventory.others) || 0;
+                    cashGrandTotal = parseFloat(data.cashInventory.grandTotal) || calculateCashGrandTotal();
+                }
+                if (data.cashHistory) cashHistoryLogs = toArray(data.cashHistory);
+
                 const cardAcc = getCardInventoryAccount();
                 balanceStore[cardAcc.id] = calculateGrandCardInventoryValue();
 
@@ -1997,7 +2055,11 @@
                 const activeView = document.querySelector('.view-panel.active');
                 if (activeView) {
                     const activeId = activeView.id;
-                    if (activeId === 'card-inventory-view') {
+                    if (activeId === 'cash-inventory-view') {
+                        if (!document.activeElement || !document.activeElement.classList.contains('inv-qty-input')) {
+                            renderCashInventoryTable();
+                        }
+                    } else if (activeId === 'card-inventory-view') {
                         if (!document.activeElement || !document.activeElement.classList.contains('inv-qty-input')) {
                             renderRedesignedCardInventory();
                         } else {
@@ -2008,6 +2070,7 @@
                     else if (activeId === 'reports-view') {
                         renderHistoryTable();
                         renderCardHistoryTable();
+                        renderCashHistoryTable();
                     } else if (activeId === 'balance-view' && currentActiveCatId) {
                         openBalanceCategory(currentActiveCatId);
                     }
@@ -2015,7 +2078,7 @@
             });
         }
 
-        /* CALCULATION HELPER */
+        /* CARD & CASH CALCULATION HELPERS */
         function calculateGrandCardInventoryValue() {
             let grandTotal = 0;
             const operators = ['GP', 'Banglalink', 'Robi', 'Airtel'];
@@ -2028,6 +2091,16 @@
                 });
             });
             return grandTotal;
+        }
+
+        function calculateCashGrandTotal() {
+            let total = 0;
+            CASH_DENOMINATIONS.forEach(d => {
+                const qty = parseInt(cashQuantities[d]) || 0;
+                total += (d * qty);
+            });
+            total += (parseFloat(cashOthersAmount) || 0);
+            return total;
         }
 
         /* ASYNC SAVE HELPERS */
@@ -2119,7 +2192,14 @@
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
 
-            if (tabName === 'card-inventory') {
+            if (tabName === 'cash-inventory') {
+                showLoader("Loading Cash Inventory...");
+                document.getElementById('cash-inventory-view').classList.add('active');
+                document.getElementById('menu-cash-inv').classList.add('active');
+                document.getElementById('top-title').innerText = "Cash Inventory Management";
+                renderCashInventoryTable();
+                hideLoader();
+            } else if (tabName === 'card-inventory') {
                 showLoader("Loading Inventory...");
                 document.getElementById('card-inventory-view').classList.add('active');
                 document.getElementById('menu-card-inv').classList.add('active');
@@ -2144,6 +2224,7 @@
                 document.getElementById('top-title').innerText = "Reports & Audit Logs";
                 renderHistoryTable();
                 renderCardHistoryTable();
+                renderCashHistoryTable();
                 hideLoader();
             } else if (tabName === 'profile') {
                 document.getElementById('profile-view').classList.add('active');
@@ -2157,6 +2238,149 @@
                 updateDashboardCards();
             }
         };
+
+        /* ==================== CASH INVENTORY MANAGEMENT MODULE ==================== */
+        function renderCashInventoryTable() {
+            const tbody = document.getElementById('cashDenomTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            let totalDenomAmount = 0;
+
+            CASH_DENOMINATIONS.forEach(denom => {
+                const qty = parseInt(cashQuantities[denom]) || '';
+                const numQty = parseInt(qty) || 0;
+                const rowAmount = numQty * denom;
+                totalDenomAmount += rowAmount;
+
+                const rowHtml = `
+                    <tr>
+                        <td><strong>${denom}</strong></td>
+                        <td>
+                            <input type="number" min="0" class="inv-qty-input" 
+                                value="${qty}" 
+                                placeholder="0"
+                                oninput="updateCashDenomQty(${denom}, this.value)" />
+                        </td>
+                        <td class="total-green-highlight" id="cash-amount-${denom}">
+                            ৳ ${rowAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', rowHtml);
+            });
+
+            // OTHERS ROW
+            const othersVal = cashOthersAmount > 0 ? cashOthersAmount : '';
+            const othersRowHtml = `
+                <tr style="background: #f9fafb;">
+                    <td><strong>Others</strong></td>
+                    <td style="color: #9ca3af; font-size: 0.85rem; font-weight: 600;">Direct Amount</td>
+                    <td>
+                        <input type="number" min="0" step="any" class="inv-qty-input" style="width: 130px; text-align: left;"
+                            value="${othersVal}" 
+                            placeholder="0.00"
+                            oninput="updateCashOthersAmount(this.value)" />
+                    </td>
+                </tr>
+            `;
+            tbody.insertAdjacentHTML('beforeend', othersRowHtml);
+
+            cashGrandTotal = totalDenomAmount + (parseFloat(cashOthersAmount) || 0);
+            updateCashGrandTotalDisplay();
+        }
+
+        window.updateCashDenomQty = function(denom, val) {
+            const numQty = parseInt(val);
+            if (isNaN(numQty) || numQty <= 0) {
+                cashQuantities[denom] = 0;
+            } else {
+                cashQuantities[denom] = numQty;
+            }
+
+            const rowAmount = (parseInt(cashQuantities[denom]) || 0) * denom;
+            const amountCell = document.getElementById(`cash-amount-${denom}`);
+            if (amountCell) {
+                amountCell.innerText = `৳ ${rowAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            }
+
+            cashGrandTotal = calculateCashGrandTotal();
+            updateCashGrandTotalDisplay();
+            updateDashboardCards();
+        };
+
+        window.updateCashOthersAmount = function(val) {
+            const numVal = parseFloat(val);
+            if (isNaN(numVal) || numVal < 0) {
+                cashOthersAmount = 0;
+            } else {
+                cashOthersAmount = numVal;
+            }
+
+            cashGrandTotal = calculateCashGrandTotal();
+            updateCashGrandTotalDisplay();
+            updateDashboardCards();
+        };
+
+        function updateCashGrandTotalDisplay() {
+            const totalEl = document.getElementById('grandTotalCashVal');
+            if (totalEl) {
+                totalEl.innerText = `৳ ${cashGrandTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            }
+        }
+
+        window.saveCashInventory = async function() {
+            showLoader("Saving Cash Inventory...");
+            cashGrandTotal = calculateCashGrandTotal();
+
+            const cashPayload = {
+                quantities: cashQuantities,
+                others: cashOthersAmount,
+                grandTotal: cashGrandTotal,
+                updatedAt: new Date().toLocaleString()
+            };
+
+            const newLog = {
+                date: new Date().toLocaleString(),
+                others: cashOthersAmount,
+                grandTotal: cashGrandTotal
+            };
+            cashHistoryLogs.unshift(newLog);
+
+            try {
+                await writeToFirebase('erp/cashInventory', cashPayload);
+                await writeToFirebase('erp/cashHistory', cashHistoryLogs);
+                updateDashboardCards();
+                showToast("Cash Inventory saved successfully!", "success");
+            } catch (err) {
+                console.error("Cash Inventory Save Error:", err);
+            } finally {
+                hideLoader();
+            }
+        };
+
+        function renderCashHistoryTable() {
+            const tbody = document.getElementById('cashHistoryTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            const logs = toArray(cashHistoryLogs);
+            if (logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #9ca3af;">No cash inventory audit records available yet.</td></tr>`;
+                return;
+            }
+
+            logs.forEach(item => {
+                const rowHtml = `
+                    <tr>
+                        <td>${item.date || ''}</td>
+                        <td>৳ ${(parseFloat(item.others) || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td><strong>৳ ${(parseFloat(item.grandTotal) || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', rowHtml);
+            });
+        }
 
         /* ==================== CARD INVENTORY RENDERER ==================== */
         const OPERATORS_LIST = ['GP', 'Banglalink', 'Robi', 'Airtel'];
@@ -2575,7 +2799,7 @@
 
             const cardAcc = getCardInventoryAccount();
             
-            // STRICT COMPLIANCE: Active accounts ONLY are displayed for entering new transactions!
+            // Active accounts ONLY are displayed for entering new transactions
             const catAccounts = toArray(accounts).filter(a => a.catId === catId && a.enabled !== false && a.id !== cardAcc.id);
             
             if(catAccounts.length === 0) {
@@ -2807,14 +3031,12 @@
             accounts = toArray(accounts);
 
             if(editId) {
-                // RENAMING PRESERVES PERMANENT ACCOUNT ID! Balance is 100% safe.
                 const acc = accounts.find(a => a.id === editId);
                 if(acc) {
                     acc.catId = catId;
                     acc.name = name;
                 }
             } else {
-                // Generates permanent immutable ID
                 accounts.push({
                     id: 'acc_' + Date.now(),
                     catId,
@@ -2884,7 +3106,7 @@
             });
         };
 
-        /* UPDATE DASHBOARD TOTALS & DEDICATED CARD INVENTORY CARD */
+        /* UPDATE DASHBOARD TOTALS & DEDICATED CARDS */
         function updateDashboardCards() {
             const grid = document.getElementById('dashboardSummaryGrid');
             if(!grid) return;
@@ -2899,7 +3121,6 @@
             const allAccounts = toArray(accounts);
 
             activeCategories.forEach(cat => {
-                // Exclude Card Inventory account from category sum so it gets its own dedicated card
                 const catAccs = allAccounts.filter(a => a.catId === cat.id && a.id !== cardAcc.id);
                 let catSum = 0;
                 catAccs.forEach(acc => {
@@ -2928,6 +3149,18 @@
             `;
             grid.insertAdjacentHTML('beforeend', cardInvHtml);
 
+            // Dedicated Cash Inventory Dashboard Card
+            cashGrandTotal = calculateCashGrandTotal();
+            netTotal += cashGrandTotal;
+            const cashInvHtml = `
+                <div class="fintech-card" id="dashCashInventory">
+                    <div class="card-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+                    <h4>Cash Inventory</h4>
+                    <div class="amount">৳ ${cashGrandTotal.toFixed(2)}</div>
+                </div>
+            `;
+            grid.insertAdjacentHTML('beforeend', cashInvHtml);
+
             const totalElem = document.getElementById('totalAllBalance');
             if(totalElem) totalElem.innerText = `৳ ${netTotal.toFixed(2)}`;
         }
@@ -2950,7 +3183,6 @@
                 const diffClass = diffVal >= 0 ? 'color:#10b981; font-weight:700;' : 'color:#e11d48; font-weight:700;';
                 const diffText = diffVal >= 0 ? `+৳ ${diffVal.toFixed(2)}` : `-৳ ${Math.abs(diffVal).toFixed(2)}`;
                 
-                // Dynamic lookup of display name by Account ID
                 const matchedAcc = accounts.find(a => a.id === item.accountId);
                 const matchedCat = categories.find(c => c.id === item.categoryId);
                 
@@ -2987,12 +3219,9 @@
                 document.getElementById('profPhone').value = profileSettings.phone;
             }
             if(profileSettings.photo) {
+                document.getElementById('fullProfileImg').src = profileSettings.photo;
                 document.getElementById('navAvatar').src = profileSettings.photo;
                 document.getElementById('dropdownHeaderImg').src = profileSettings.photo;
-                document.getElementById('fullProfileImg').src = profileSettings.photo;
-            }
-            if(auth.currentUser) {
-                document.getElementById('profEmail').value = auth.currentUser.email || '';
             }
         }
 
@@ -3003,25 +3232,21 @@
             const phone = document.getElementById('profPhone').value.trim();
             const newPass = document.getElementById('profNewPass').value;
 
-            showLoader("Saving Profile Settings...");
-
             profileSettings.name = name;
             profileSettings.role = role;
             profileSettings.phone = phone;
 
+            showLoader("Updating Profile...");
             try {
-                await writeToFirebase('erp/settings', profileSettings);
-                
-                if (newPass && auth.currentUser) {
-                    await updatePassword(auth.currentUser, newPass);
-                    showToast("Password updated successfully!", "success");
-                    document.getElementById('profNewPass').value = '';
+                if(newPass) {
+                    const user = auth.currentUser;
+                    if(user) await updatePassword(user, newPass);
                 }
-
+                await writeToFirebase('erp/settings', profileSettings);
                 loadSavedProfile();
-                showToast("Profile changes saved!", "success");
-            } catch (err) {
-                showToast("Error updating profile: " + err.message, "error");
+                showToast("Profile & Settings saved successfully!", "success");
+            } catch(err) {
+                showToast("Profile update error: " + err.message, "error");
             } finally {
                 hideLoader();
             }
@@ -3029,106 +3254,23 @@
 
         document.getElementById('fullProfileImgInput').addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) {
+            if(file) {
                 const reader = new FileReader();
-                reader.onload = async (event) => {
-                    const base64Img = event.target.result;
-                    profileSettings.photo = base64Img;
-                    showLoader("Uploading Photo...");
+                reader.onload = async (evt) => {
+                    profileSettings.photo = evt.target.result;
+                    loadSavedProfile();
                     try {
                         await writeToFirebase('erp/settings', profileSettings);
-                        loadSavedProfile();
                         showToast("Profile photo updated!", "success");
                     } catch(err) {
-                        // Handled
-                    } finally {
-                        hideLoader();
+                        showToast("Photo update failed", "error");
                     }
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        /* AUTHENTICATION & INITIALIZATION SEQUENCE */
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                loginSection.style.display = 'none';
-                dashboardSection.style.display = 'block';
-                showLoader("Loading Account Infrastructure...");
-                
-                try {
-                    await migrateLocalStorageToFirebase();
-                    await runAccountIdentityMigration();
-                    await initRealtimeSync();
-                } catch (err) {
-                    console.error("Initialization error:", err);
-                } finally {
-                    hideLoader();
-                }
-            } else {
-                dashboardSection.style.display = 'none';
-                loginSection.style.display = 'flex';
-                hideLoader();
-            }
-        });
-
-        /* LOGIN EVENT LISTENERS */
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const userVal = document.getElementById('username').value.trim();
-            const passVal = document.getElementById('password').value;
-            
-            errorMsg.style.display = 'none';
-            successMsg.style.display = 'none';
-
-            let loginEmail = userVal;
-            if (userVal === "admin") loginEmail = adminEmail;
-
-            showLoader("Authenticating...");
-            try {
-                await signInWithEmailAndPassword(auth, loginEmail, passVal);
-            } catch (err) {
-                errorMsg.innerText = "Invalid credentials: " + err.message;
-                errorMsg.style.display = 'block';
-            } finally {
-                hideLoader();
-            }
-        });
-
-        document.getElementById('btn-forgot-pass').addEventListener('click', async (e) => {
-            e.preventDefault();
-            const userVal = document.getElementById('username').value.trim();
-            let resetEmail = userVal === 'admin' ? adminEmail : userVal;
-
-            if (!resetEmail) {
-                showToast("Please enter username or email first.", "warning");
-                return;
-            }
-
-            showLoader("Sending reset link...");
-            try {
-                await sendPasswordResetEmail(auth, resetEmail);
-                successMsg.innerText = `Password reset link sent to ${resetEmail}`;
-                successMsg.style.display = 'block';
-            } catch (err) {
-                errorMsg.innerText = err.message;
-                errorMsg.style.display = 'block';
-            } finally {
-                hideLoader();
-            }
-        });
-
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            showLoader("Logging out...");
-            try {
-                await signOut(auth);
-            } catch(e) {
-                console.error(e);
-            } finally {
-                hideLoader();
-            }
-        });
-
+        /* SIDEBAR TOGGLE & DROPDOWN LISTENERS */
         sidebarToggle.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
         });
@@ -3139,7 +3281,7 @@
         });
 
         document.addEventListener('click', (e) => {
-            if (!profileDropdown.contains(e.target) && !profileTrigger.contains(e.target)) {
+            if(!profileDropdown.contains(e.target) && !profileTrigger.contains(e.target)) {
                 profileDropdown.classList.remove('active');
             }
         });
