@@ -6,7 +6,7 @@
     <title>Mousumi Computer - Dynamic Accounting & Card Inventory ERP</title>
     <!-- FontAwesome Icons & Google Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #00a8ef;
@@ -19,6 +19,8 @@
             --border-radius: 12px;
             --red: #e11d48;
             --green: #10b981;
+            --warning: #f97316;
+            --info: #00a8ef;
         }
 
         * {
@@ -27,6 +29,149 @@
             padding: 0;
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
+
+        /* TOAST NOTIFICATION CONTAINER */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 380px;
+            width: calc(100% - 40px);
+            pointer-events: none;
+        }
+
+        .toast {
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0;
+            transform: translateX(60px);
+        }
+
+        .toast.toast-out {
+            animation: toastOut 0.3s forwards ease-in;
+        }
+
+        .toast-success { background: var(--green); }
+        .toast-error { background: var(--red); }
+        .toast-warning { background: var(--warning); }
+        .toast-info { background: var(--info); }
+
+        @keyframes toastIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes toastOut {
+            to { opacity: 0; transform: translateX(60px); }
+        }
+
+        /* CUSTOM CONFIRMATION MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 26, 44, 0.65);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            animation: modalIn 0.25s ease-out;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: #fee2e2;
+            color: #e11d48;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 15px auto;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+
+        .modal-message {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 22px;
+            line-height: 1.4;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn-modal-cancel {
+            flex: 1;
+            padding: 11px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #f3f4f6;
+            color: #374151;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-modal-cancel:hover { background: #e5e7eb; }
+
+        .btn-modal-confirm {
+            flex: 1;
+            padding: 11px;
+            border-radius: 8px;
+            border: none;
+            background: var(--red);
+            color: #ffffff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-modal-confirm:hover { background: #be123c; }
 
         /* LOADING SCREEN */
         #loader {
@@ -41,17 +186,24 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 99999;
+            z-index: 99998;
         }
 
         .spinner {
-            border: 4px solid rgba(255,255,255,0.1);
+            border: 4px solid rgba(255, 255, 255, 0.1);
             width: 50px;
             height: 50px;
             border-radius: 50%;
             border-left-color: #00a8ef;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        #loader-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            letter-spacing: 0.5px;
         }
 
         @keyframes spin {
@@ -163,7 +315,10 @@
             justify-content: center;
             align-items: center;
             gap: 8px;
+            transition: background 0.2s;
         }
+
+        .btn-submit:hover { background-color: #0088e8; }
 
         .error-msg {
             color: var(--red);
@@ -1001,10 +1156,26 @@
 </head>
 <body>
 
-    <!-- LOADING SCREEN -->
+    <!-- TOAST NOTIFICATIONS CONTAINER -->
+    <div id="toast-container"></div>
+
+    <!-- CUSTOM CONFIRMATION MODAL -->
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal-card">
+            <div class="modal-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h3 class="modal-title" id="modal-title">Are you sure?</h3>
+            <p class="modal-message" id="modal-message">This operation cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" id="btn-modal-cancel">Cancel</button>
+                <button class="btn-modal-confirm" id="btn-modal-confirm">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOADING SCREEN WITH DYNAMIC TEXT -->
     <div id="loader">
         <div class="spinner"></div>
-        <p>Please wait...</p>
+        <p id="loader-text">Loading ERP System...</p>
     </div>
 
     <!-- 1. LOGIN SECTION -->
@@ -1188,7 +1359,7 @@
 
                         <!-- ACCORDION OPERATORS CONTAINER -->
                         <div class="accordion-container" id="operatorAccordions">
-                            <!-- Accordions for GP, Banglalink, Robi, Airtel will be dynamically populated -->
+                            <!-- Accordions for GP, Banglalink, Robi, Airtel dynamically populated -->
                         </div>
 
                         <!-- GRAND SUMMARY CARD -->
@@ -1240,9 +1411,9 @@
                         <div class="erp-form-header">
                             <span><i class="fa-solid fa-folder-plus" style="color: #00a8ef;"></i> Add / Manage Category</span>
                         </div>
-                        <form id="addCategoryForm" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <form id="addCategoryForm" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                             <input type="hidden" id="editCatId" value="" />
-                            <input type="text" id="catNameInput" placeholder="Category Name (e.g. Personal Accounts)" required style="flex:1; padding: 10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            <input type="text" id="catNameInput" placeholder="Category Name (e.g. Personal Accounts)" required style="flex:1; min-width: 200px; padding: 10px; border:1px solid #e5e7eb; border-radius:8px;" />
                             <input type="number" id="catOrderInput" placeholder="Order (1,2..)" required style="width: 100px; padding: 10px; border:1px solid #e5e7eb; border-radius:8px;" />
                             <button type="submit" class="btn-submit" style="width: auto; padding: 0 20px;"><i class="fa-solid fa-plus"></i> Save</button>
                         </form>
@@ -1277,7 +1448,7 @@
                                 <thead>
                                     <tr>
                                         <th>Category</th>
-                                        <th>Account ID</th>
+                                        <th>Permanent ID</th>
                                         <th>Account Name</th>
                                         <th>Status</th>
                                         <th>Actions</th>
@@ -1338,9 +1509,8 @@
                     </div>
                 </div>
 
-                <!-- ==================== VIEW 6: NEW CARD MANAGEMENT (MASTER CONFIG) ==================== -->
+                <!-- ==================== VIEW 6: CARD MANAGEMENT (MASTER CONFIG) ==================== -->
                 <div class="view-panel" id="card-mgmt-view">
-                    <!-- ADD/EDIT CARD MASTER FORM -->
                     <div class="erp-form-card" style="max-width: 1000px;">
                         <div class="erp-form-header">
                             <span><i class="fa-solid fa-gears" style="color: #00a8ef;"></i> Card Master Configuration</span>
@@ -1456,7 +1626,7 @@
     <!-- FIREBASE & FINTECH ERP SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
@@ -1475,20 +1645,85 @@
         const db = getDatabase(app);
         const adminEmail = "mousumicomputer.org@gmail.com";
 
-        // SAFE ARRAY CONVERTER HELPER
+        /* ==================== MODERN UI HELPER FUNCTIONS ==================== */
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            let iconClass = 'fa-circle-info';
+            if (type === 'success') iconClass = 'fa-circle-check';
+            if (type === 'error') iconClass = 'fa-circle-xmark';
+            if (type === 'warning') iconClass = 'fa-triangle-exclamation';
+
+            toast.innerHTML = `<i class="fa-solid ${iconClass}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('toast-out');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        };
+
+        window.showConfirmModal = function({ title, message, confirmText = "Delete", onConfirm }) {
+            const modal = document.getElementById('confirm-modal');
+            const titleEl = document.getElementById('modal-title');
+            const msgEl = document.getElementById('modal-message');
+            const btnConfirm = document.getElementById('btn-modal-confirm');
+            const btnCancel = document.getElementById('btn-modal-cancel');
+
+            titleEl.innerText = title || "Are you sure?";
+            msgEl.innerText = message || "This operation cannot be undone.";
+            btnConfirm.innerText = confirmText;
+
+            modal.classList.add('active');
+
+            const handleConfirm = () => {
+                cleanup();
+                if (onConfirm) onConfirm();
+            };
+
+            const handleCancel = () => {
+                cleanup();
+            };
+
+            const cleanup = () => {
+                modal.classList.remove('active');
+                btnConfirm.removeEventListener('click', handleConfirm);
+                btnCancel.removeEventListener('click', handleCancel);
+            };
+
+            btnConfirm.addEventListener('click', handleConfirm);
+            btnCancel.addEventListener('click', handleCancel);
+        };
+
+        window.showLoader = function(message = "Please wait...") {
+            const loader = document.getElementById('loader');
+            const text = document.getElementById('loader-text');
+            if (text) text.innerText = message;
+            if (loader) loader.style.display = 'flex';
+        };
+
+        window.hideLoader = function() {
+            const loader = document.getElementById('loader');
+            if (loader) loader.style.display = 'none';
+        };
+
+        // SAFE ARRAY CONVERTER
         function toArray(data, defaultArr = []) {
             if (!data) return defaultArr;
             if (Array.isArray(data)) return data;
             return Object.values(data);
         }
 
-        /* DEFAULT DYNAMIC CATEGORIES & ACCOUNTS DATA */
+        /* DATA STORES */
         let categories = [];
         let accounts = [];
         let cardConfig = { GP: [], Banglalink: [], Robi: [], Airtel: [] };
         let cardQuantities = { GP: {}, Banglalink: {}, Robi: {}, Airtel: {} };
         let cardHistoryLogs = [];
-        let balanceStore = {}; // Keys MUST use Permanent Account ID (e.g. 'acc_1', 'acc_8')
+        let balanceStore = {}; // Keys use Permanent Immutable Account IDs (e.g. 'acc_1', 'acc_8')
         let historyLogs = [];
         let profileSettings = {};
         let currentActiveCatId = null;
@@ -1550,7 +1785,6 @@
         };
 
         // DOM ELEMENTS
-        const loader = document.getElementById('loader');
         const loginForm = document.getElementById('loginForm');
         const loginSection = document.getElementById('login-section');
         const dashboardSection = document.getElementById('dashboard-section');
@@ -1563,11 +1797,7 @@
 
         /* SAFE JSON PARSER */
         function safeJsonParse(str, fallback = null) {
-            try {
-                return str ? JSON.parse(str) : fallback;
-            } catch (e) {
-                return fallback;
-            }
+            try { return str ? JSON.parse(str) : fallback; } catch (e) { return fallback; }
         }
 
         /* CARD INVENTORY ACCOUNT HELPER */
@@ -1579,18 +1809,15 @@
         async function writeToFirebase(path, data) {
             const user = auth.currentUser;
             if (!user) {
-                const authErr = new Error("Authentication Required: No user is currently logged in.");
-                console.error("WRITE FAILED - AUTH CHECK:", authErr);
-                throw authErr;
+                showToast("Authentication required to save changes.", "error");
+                throw new Error("No logged in user.");
             }
-
             try {
                 const dbRef = ref(db, path);
                 await set(dbRef, data);
-                console.log(`[Firebase Write Success] Path: ${path}`);
                 return true;
             } catch (error) {
-                console.error("WRITE FAILED - FIREBASE ERROR:", error);
+                showToast("Firebase write error: " + error.message, "error");
                 throw error;
             }
         }
@@ -1601,46 +1828,34 @@
                 const migrationRef = ref(db, 'erp/migration/v1_account_id');
                 const migSnap = await get(migrationRef);
                 
-                if (migSnap.exists() && migSnap.val() === true) {
-                    console.log("[Migration] Account ID migration already completed.");
-                    return;
-                }
+                if (migSnap.exists() && migSnap.val() === true) return;
 
-                console.log("[Migration] Running automatic Account ID migration...");
+                showLoader("Preserving data & migrating to permanent Account IDs...");
                 const erpRef = ref(db, 'erp');
                 const snapshot = await get(erpRef);
                 if (!snapshot.exists()) return;
 
                 const data = snapshot.val();
-                const currentCategories = data.categories ? toArray(data.categories) : DEFAULT_CATEGORIES;
                 const currentAccounts = data.accounts ? toArray(data.accounts) : DEFAULT_ACCOUNTS;
                 const oldBalances = data.balances || {};
                 const oldHistory = data.fintechHistory ? toArray(data.fintechHistory) : [];
 
                 let newBalances = {};
-                let migratedCount = 0;
 
                 // 1. Migrate Name-based balances to ID-based balances
                 Object.keys(oldBalances).forEach(key => {
                     const val = oldBalances[key];
-                    // Check if key is already a valid Account ID
                     const matchedById = currentAccounts.find(a => a.id === key);
                     if (matchedById) {
                         newBalances[key] = val;
                     } else {
-                        // Key is an Account Name (e.g. "Bkash Personal")
                         const matchedByName = currentAccounts.find(a => a.name === key);
                         if (matchedByName) {
                             newBalances[matchedByName.id] = val;
-                            migratedCount++;
                         } else if (key === 'Card Inventory') {
                             const cardAcc = currentAccounts.find(a => a.name === 'Card Inventory' || a.id === 'acc_9');
-                            if (cardAcc) {
-                                newBalances[cardAcc.id] = val;
-                                migratedCount++;
-                            }
+                            if (cardAcc) newBalances[cardAcc.id] = val;
                         } else {
-                            // Retain key if unmatched
                             newBalances[key] = val;
                         }
                     }
@@ -1662,7 +1877,7 @@
                 await writeToFirebase('erp/fintechHistory', updatedHistory);
                 await writeToFirebase('erp/migration/v1_account_id', true);
 
-                console.log(`[Migration Complete] Successfully migrated ${migratedCount} balances to Account ID structure.`);
+                showToast("Account architecture upgraded successfully!", "success");
             } catch (err) {
                 console.error("[Migration Error]", err);
             }
@@ -1682,10 +1897,6 @@
                 const localCardHistory = safeJsonParse(localStorage.getItem('mc_card_history'));
                 const localBalances = safeJsonParse(localStorage.getItem('mc_fintech_balances'));
                 const localHistory = safeJsonParse(localStorage.getItem('mc_fintech_history'));
-                const localName = localStorage.getItem('mc_admin_name');
-                const localRole = localStorage.getItem('mc_admin_role');
-                const localPhone = localStorage.getItem('mc_admin_phone');
-                const localPhoto = localStorage.getItem('mc_admin_photo');
 
                 let migrationPayload = {};
 
@@ -1696,15 +1907,6 @@
                 if (!rtdbData.cardHistory && localCardHistory) migrationPayload.cardHistory = localCardHistory;
                 if (!rtdbData.balances && localBalances) migrationPayload.balances = localBalances;
                 if (!rtdbData.fintechHistory && localHistory) migrationPayload.fintechHistory = localHistory;
-                
-                if (!rtdbData.settings && (localName || localRole || localPhone || localPhoto)) {
-                    migrationPayload.settings = {
-                        name: localName || "Rabbi Hosen",
-                        role: localRole || "Admin",
-                        phone: localPhone || "",
-                        photo: localPhoto || ""
-                    };
-                }
 
                 if (Object.keys(migrationPayload).length > 0) {
                     for (const key in migrationPayload) {
@@ -1712,12 +1914,13 @@
                     }
                 }
             } catch (err) {
-                console.warn("Localstorage sync warning:", err);
+                console.warn("LocalStorage migration warning:", err);
             }
         }
 
         /* REALTIME DATABASE SUBSCRIPTION */
         async function initRealtimeSync() {
+            showLoader("Synchronizing Firebase...");
             const erpRef = ref(db, 'erp');
             
             try {
@@ -1742,7 +1945,6 @@
                     historyLogs = data.fintechHistory ? toArray(data.fintechHistory) : [];
                     profileSettings = data.settings || {};
                 } else {
-                    // Initial seed
                     categories = DEFAULT_CATEGORIES;
                     accounts = DEFAULT_ACCOUNTS;
                     cardConfig = DEFAULT_OPERATOR_CARDS;
@@ -1758,14 +1960,13 @@
             }
 
             const cardAcc = getCardInventoryAccount();
-            const cardTotal = calculateGrandCardInventoryValue();
-            balanceStore[cardAcc.id] = cardTotal;
+            balanceStore[cardAcc.id] = calculateGrandCardInventoryValue();
 
             renderDynamicSidebar();
             updateDashboardCards();
             loadSavedProfile();
 
-            loader.style.display = 'none';
+            hideLoader();
 
             onValue(erpRef, (snapshot) => {
                 const data = snapshot.val() || {};
@@ -1785,8 +1986,7 @@
                 if (data.settings) profileSettings = data.settings;
 
                 const cardAcc = getCardInventoryAccount();
-                const cardTotal = calculateGrandCardInventoryValue();
-                balanceStore[cardAcc.id] = cardTotal;
+                balanceStore[cardAcc.id] = calculateGrandCardInventoryValue();
 
                 renderDynamicSidebar();
                 updateDashboardCards();
@@ -1835,7 +2035,6 @@
             balanceStore[cardAcc.id] = totalVal;
             try {
                 await writeToFirebase('erp/balances', balanceStore);
-                console.log("Card Inventory Balance Synced to DB");
             } catch (err) {
                 console.error("Failed to sync Card Inventory Balance:", err);
             }
@@ -1845,14 +2044,12 @@
             try {
                 await writeToFirebase('erp/categories', categories);
                 await writeToFirebase('erp/accounts', accounts);
-                console.log("Core Categories & Accounts Saved Successfully");
                 renderDynamicSidebar();
                 renderCategoryManagementTables();
                 updateDashboardCards();
                 return true;
             } catch (error) {
-                console.error("Save Core Data Error:", error);
-                alert("Failed to save Categories/Accounts: " + error.message);
+                showToast("Failed to save Categories/Accounts", "error");
                 throw error;
             }
         }
@@ -1862,12 +2059,10 @@
                 await writeToFirebase('erp/cardInventory', cardQuantities);
                 await writeToFirebase('erp/cardHistory', cardHistoryLogs);
                 await syncCardInventoryBalance();
-                console.log("Inventory Saved Successfully");
                 updateDashboardCards();
                 return true;
             } catch (error) {
-                console.error("Save Card Inventory Error:", error);
-                alert("Failed to save Inventory: " + error.message);
+                showToast("Failed to save Inventory data", "error");
                 throw error;
             }
         }
@@ -1876,12 +2071,10 @@
             try {
                 await writeToFirebase('erp/cardConfig', cardConfig);
                 await syncCardInventoryBalance();
-                console.log("Card Configuration Saved Successfully");
                 updateDashboardCards();
                 return true;
             } catch (error) {
-                console.error("Save Card Master Config Error:", error);
-                alert("Failed to save Card Configuration: " + error.message);
+                showToast("Failed to save Card Master configuration", "error");
                 throw error;
             }
         }
@@ -1925,10 +2118,12 @@
             document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
 
             if (tabName === 'card-inventory') {
+                showLoader("Loading Inventory...");
                 document.getElementById('card-inventory-view').classList.add('active');
                 document.getElementById('menu-card-inv').classList.add('active');
                 document.getElementById('top-title').innerText = "Card Inventory Management";
                 renderRedesignedCardInventory();
+                hideLoader();
             } else if (tabName === 'card-mgmt') {
                 document.getElementById('card-mgmt-view').classList.add('active');
                 document.getElementById('menu-settings-parent').classList.add('active');
@@ -1941,11 +2136,13 @@
                 document.getElementById('top-title').innerText = "Category & Account Management";
                 renderCategoryManagementTables();
             } else if (tabName === 'reports') {
+                showLoader("Preparing Reports...");
                 document.getElementById('reports-view').classList.add('active');
                 document.getElementById('menu-reports').classList.add('active');
                 document.getElementById('top-title').innerText = "Reports & Audit Logs";
                 renderHistoryTable();
                 renderCardHistoryTable();
+                hideLoader();
             } else if (tabName === 'profile') {
                 document.getElementById('profile-view').classList.add('active');
                 document.getElementById('menu-settings-parent').classList.add('active');
@@ -1976,7 +2173,6 @@
 
             let grandTotalCards = 0;
             let grandTotalValue = 0;
-
             const opTotalsMap = { GP: 0, Banglalink: 0, Robi: 0, Airtel: 0 };
 
             OPERATORS_LIST.forEach(op => {
@@ -1985,7 +2181,6 @@
 
                 let opCardsCount = 0;
                 let opTotalValue = 0;
-
                 let tableRowsHtml = '';
 
                 cards.forEach(card => {
@@ -2074,18 +2269,11 @@
         window.toggleAccordion = function(op) {
             const accElem = document.getElementById(`acc-item-${op}`);
             if(!accElem) return;
-
-            const isOpen = accElem.classList.contains('active');
-            if (isOpen) {
-                accElem.classList.remove('active');
-            } else {
-                accElem.classList.add('active');
-            }
+            accElem.classList.toggle('active');
         };
 
         window.updateCardQuantity = async function(op, cardId, val) {
             if(!cardQuantities[op]) cardQuantities[op] = {};
-            
             const numVal = parseInt(val);
             if(isNaN(numVal) || numVal <= 0) {
                 delete cardQuantities[op][cardId];
@@ -2169,14 +2357,14 @@
                 }
             });
 
-            loader.style.display = 'flex';
+            showLoader("Saving Inventory & Synchronizing...");
             try {
                 await saveCardInventoryData();
-                alert("Today's Card Inventory saved and synchronized successfully!");
+                showToast("Today's Card Inventory saved successfully!", "success");
             } catch(err) {
-                // Handled
+                // Handled in writeToFirebase
             } finally {
-                loader.style.display = 'none';
+                hideLoader();
             }
         };
 
@@ -2289,13 +2477,7 @@
                     if(idx !== -1) {
                         if(operator !== op) {
                             cardConfig[operator].splice(idx, 1);
-                            cardConfig[op].push({
-                                id: masterId,
-                                name,
-                                type,
-                                price,
-                                active: status === 'active'
-                            });
+                            cardConfig[op].push({ id: masterId, name, type, price, active: status === 'active' });
                         } else {
                             cardConfig[operator][idx].name = name;
                             cardConfig[operator][idx].type = type;
@@ -2306,25 +2488,19 @@
                 });
             } else {
                 const newId = op.toLowerCase() + '_' + Date.now();
-                cardConfig[op].push({
-                    id: newId,
-                    name,
-                    type,
-                    price,
-                    active: status === 'active'
-                });
+                cardConfig[op].push({ id: newId, name, type, price, active: status === 'active' });
             }
 
-            loader.style.display = 'flex';
+            showLoader("Saving Card Configuration...");
             try {
                 await saveCardConfigMaster();
                 resetCardMasterForm();
                 renderCardMasterConfiguration();
-                alert('Card Configuration saved successfully!');
+                showToast("Card Configuration saved successfully!", "success");
             } catch(err) {
                 // Handled
             } finally {
-                loader.style.display = 'none';
+                hideLoader();
             }
         });
 
@@ -2355,14 +2531,15 @@
             const card = cardList.find(c => c.id === cardId);
             if(card) {
                 card.active = (card.active === false);
-                loader.style.display = 'flex';
+                showLoader("Updating Card Status...");
                 try {
                     await saveCardConfigMaster();
                     renderCardMasterConfiguration();
+                    showToast(`Card ${card.active ? 'enabled' : 'disabled'} successfully`, "info");
                 } catch(err) {
                     card.active = !card.active;
                 } finally {
-                    loader.style.display = 'none';
+                    hideLoader();
                 }
             }
         };
@@ -2395,11 +2572,12 @@
             container.innerHTML = '';
 
             const cardAcc = getCardInventoryAccount();
-            // ONLY Enabled accounts are allowed for new balance entry!
-            const catAccounts = toArray(accounts).filter(a => a.catId === catId && a.enabled && a.id !== cardAcc.id);
+            
+            // STRICT COMPLIANCE: Active accounts ONLY are displayed for entering new transactions!
+            const catAccounts = toArray(accounts).filter(a => a.catId === catId && a.enabled !== false && a.id !== cardAcc.id);
             
             if(catAccounts.length === 0) {
-                container.innerHTML = `<p style="color: #9ca3af; text-align: center; padding: 20px;">No active accounts found in this category.</p>`;
+                container.innerHTML = `<p style="color: #9ca3af; text-align: center; padding: 25px;">No active accounts found in this category.</p>`;
                 return;
             }
 
@@ -2418,17 +2596,17 @@
             });
         };
 
-        /* SAVE BALANCE FORM DATA USING ACCOUNT IDs */
+        /* SAVE BALANCE FORM DATA USING IMMUTABLE ACCOUNT IDs */
         document.getElementById('balanceUpdateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if(!currentActiveCatId) return;
 
-            loader.style.display = 'flex';
+            showLoader("Saving Changes & Updating Balances...");
 
             const categoryList = toArray(categories);
             const category = categoryList.find(c => c.id === currentActiveCatId);
             const cardAcc = getCardInventoryAccount();
-            const catAccounts = toArray(accounts).filter(a => a.catId === currentActiveCatId && a.enabled && a.id !== cardAcc.id);
+            const catAccounts = toArray(accounts).filter(a => a.catId === currentActiveCatId && a.enabled !== false && a.id !== cardAcc.id);
             const formData = new FormData(e.target);
             const now = new Date().toLocaleString();
 
@@ -2465,14 +2643,13 @@
                 balanceStore = tempBalanceStore;
                 historyLogs = tempHistoryLogs;
 
-                loader.style.display = 'none';
-                alert("Balances updated successfully!");
+                hideLoader();
+                showToast("Balances updated successfully!", "success");
                 openBalanceCategory(currentActiveCatId);
                 updateDashboardCards();
             } catch (error) {
-                loader.style.display = 'none';
-                console.error("Balance Save Failure:", error);
-                alert("Failed to save Balance: " + error.message);
+                hideLoader();
+                showToast("Failed to update balances", "error");
             }
         });
 
@@ -2488,11 +2665,11 @@
                     <tr>
                         <td><strong>#${cat.order}</strong></td>
                         <td>${cat.name}</td>
-                        <td><span class="badge ${cat.enabled ? 'badge-success' : 'badge-danger'}">${cat.enabled ? 'Active' : 'Disabled'}</span></td>
+                        <td><span class="badge ${cat.enabled !== false ? 'badge-success' : 'badge-danger'}">${cat.enabled !== false ? 'Active' : 'Disabled'}</span></td>
                         <td>
-                            <button class="btn-action btn-edit" onclick="editCategory('${cat.id}')"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn-action btn-edit" onclick="editCategory('${cat.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
                             <button class="btn-action btn-toggle" onclick="toggleCategory('${cat.id}')"><i class="fa-solid fa-power-off"></i></button>
-                            <button class="btn-action btn-delete" onclick="deleteCategory('${cat.id}')"><i class="fa-solid fa-trash"></i></button>
+                            <button class="btn-action btn-delete" onclick="confirmDeleteCategory('${cat.id}')"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -2518,11 +2695,11 @@
                         <td>${cat ? cat.name : 'Unknown'}</td>
                         <td><code>${acc.id}</code></td>
                         <td><strong>${acc.name}</strong></td>
-                        <td><span class="badge ${acc.enabled ? 'badge-success' : 'badge-danger'}">${acc.enabled ? 'Active' : 'Disabled'}</span></td>
+                        <td><span class="badge ${acc.enabled !== false ? 'badge-success' : 'badge-danger'}">${acc.enabled !== false ? 'Active' : 'Disabled'}</span></td>
                         <td>
                             <button class="btn-action btn-edit" onclick="editAccount('${acc.id}')"><i class="fa-solid fa-pen"></i> Edit Name</button>
                             <button class="btn-action btn-toggle" onclick="toggleAccount('${acc.id}')"><i class="fa-solid fa-power-off"></i></button>
-                            <button class="btn-action btn-delete" onclick="deleteAccount('${acc.id}')"><i class="fa-solid fa-trash"></i></button>
+                            <button class="btn-action btn-delete" onclick="confirmDeleteAccount('${acc.id}')"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -2553,16 +2730,17 @@
                 });
             }
 
-            loader.style.display = 'flex';
+            showLoader("Saving Category...");
             try {
                 await saveCoreData();
                 document.getElementById('editCatId').value = '';
                 document.getElementById('catNameInput').value = '';
                 document.getElementById('catOrderInput').value = '';
+                showToast("Category saved successfully!", "success");
             } catch(err) {
                 // Handled
             } finally {
-                loader.style.display = 'none';
+                hideLoader();
             }
         });
 
@@ -2579,36 +2757,43 @@
             categories = toArray(categories);
             const cat = categories.find(c => c.id === id);
             if(cat) {
-                cat.enabled = !cat.enabled;
-                loader.style.display = 'flex';
+                cat.enabled = (cat.enabled === false);
+                showLoader("Updating Category Status...");
                 try {
                     await saveCoreData();
+                    showToast(`Category ${cat.enabled ? 'enabled' : 'disabled'}`, "info");
                 } catch(err) {
                     cat.enabled = !cat.enabled;
                 } finally {
-                    loader.style.display = 'none';
+                    hideLoader();
                 }
             }
         };
 
-        window.deleteCategory = async function(id) {
-            if(confirm('Are you sure you want to delete this category? Associated accounts will also be removed.')) {
-                const oldCategories = [...categories];
-                const oldAccounts = [...accounts];
-                
-                categories = toArray(categories).filter(c => c.id !== id);
-                accounts = toArray(accounts).filter(a => a.catId !== id);
-                
-                loader.style.display = 'flex';
-                try {
-                    await saveCoreData();
-                } catch(err) {
-                    categories = oldCategories;
-                    accounts = oldAccounts;
-                } finally {
-                    loader.style.display = 'none';
+        window.confirmDeleteCategory = function(id) {
+            showConfirmModal({
+                title: "Delete Category?",
+                message: "Deleting this category will also remove associated accounts. History and ledger logs will remain safe.",
+                confirmText: "Delete Category",
+                onConfirm: async () => {
+                    const oldCategories = [...categories];
+                    const oldAccounts = [...accounts];
+                    
+                    categories = toArray(categories).filter(c => c.id !== id);
+                    accounts = toArray(accounts).filter(a => a.catId !== id);
+                    
+                    showLoader("Deleting Category...");
+                    try {
+                        await saveCoreData();
+                        showToast("Category deleted successfully", "warning");
+                    } catch(err) {
+                        categories = oldCategories;
+                        accounts = oldAccounts;
+                    } finally {
+                        hideLoader();
+                    }
                 }
-            }
+            });
         };
 
         document.getElementById('addAccountForm').addEventListener('submit', async (e) => {
@@ -2627,7 +2812,7 @@
                     acc.name = name;
                 }
             } else {
-                // Generates permanent immutable ID (e.g. acc_171120000)
+                // Generates permanent immutable ID
                 accounts.push({
                     id: 'acc_' + Date.now(),
                     catId,
@@ -2636,15 +2821,16 @@
                 });
             }
 
-            loader.style.display = 'flex';
+            showLoader("Saving Account...");
             try {
                 await saveCoreData();
                 document.getElementById('editAccId').value = '';
                 document.getElementById('accNameInput').value = '';
+                showToast("Account saved successfully!", "success");
             } catch(err) {
                 // Handled
             } finally {
-                loader.style.display = 'none';
+                hideLoader();
             }
         });
 
@@ -2661,46 +2847,53 @@
             accounts = toArray(accounts);
             const acc = accounts.find(a => a.id === id);
             if(acc) {
-                acc.enabled = !acc.enabled;
-                loader.style.display = 'flex';
+                acc.enabled = (acc.enabled === false);
+                showLoader("Updating Account Status...");
                 try {
                     await saveCoreData();
+                    showToast(`Account ${acc.enabled ? 'activated' : 'disabled'} successfully`, "info");
                 } catch(err) {
                     acc.enabled = !acc.enabled;
                 } finally {
-                    loader.style.display = 'none';
+                    hideLoader();
                 }
             }
         };
 
-        window.deleteAccount = async function(id) {
-            if(confirm('Are you sure you want to delete this account?')) {
-                const oldAccounts = [...accounts];
-                accounts = toArray(accounts).filter(a => a.id !== id);
-                
-                loader.style.display = 'flex';
-                try {
-                    await saveCoreData();
-                } catch(err) {
-                    accounts = oldAccounts;
-                } finally {
-                    loader.style.display = 'none';
+        window.confirmDeleteAccount = function(id) {
+            showConfirmModal({
+                title: "Delete Account?",
+                message: "Are you sure you want to delete this account? Existing ledger and history records will remain intact.",
+                confirmText: "Delete Account",
+                onConfirm: async () => {
+                    const oldAccounts = [...accounts];
+                    accounts = toArray(accounts).filter(a => a.id !== id);
+                    
+                    showLoader("Deleting Account...");
+                    try {
+                        await saveCoreData();
+                        showToast("Account deleted successfully", "warning");
+                    } catch(err) {
+                        accounts = oldAccounts;
+                    } finally {
+                        hideLoader();
+                    }
                 }
-            }
+            });
         };
 
-        /* UPDATE DASHBOARD TOTALS USING PERMANENT ACCOUNT IDs */
+        /* UPDATE DASHBOARD TOTALS USING IMMUTABLE ACCOUNT IDs */
         function updateDashboardCards() {
             const grid = document.getElementById('dashboardSummaryGrid');
             if(!grid) return;
             grid.innerHTML = '';
             let netTotal = 0;
 
-            const activeCategories = toArray(categories).filter(c => c.enabled).sort((a,b) => a.order - b.order);
+            const activeCategories = toArray(categories).filter(c => c.enabled !== false).sort((a,b) => a.order - b.order);
             const allAccounts = toArray(accounts);
 
             activeCategories.forEach(cat => {
-                // Compute sum of balances using account ID
+                // Computes sum of balances using permanent account IDs across ALL accounts (Active & Disabled)
                 const catAccs = allAccounts.filter(a => a.catId === cat.id);
                 let catSum = 0;
                 catAccs.forEach(acc => {
@@ -2761,25 +2954,101 @@
             });
         }
 
+        /* PROFILE MANAGEMENT */
+        function loadSavedProfile() {
+            if(profileSettings.name) {
+                document.getElementById('dropdownName').innerText = profileSettings.name;
+                document.getElementById('fullProfileNameDisplay').innerText = profileSettings.name;
+                document.getElementById('profFullName').value = profileSettings.name;
+            }
+            if(profileSettings.role) {
+                document.getElementById('dropdownRole').innerText = profileSettings.role;
+                document.getElementById('fullProfileRoleDisplay').innerText = profileSettings.role;
+                document.getElementById('profRole').value = profileSettings.role;
+            }
+            if(profileSettings.phone) {
+                document.getElementById('profPhone').value = profileSettings.phone;
+            }
+            if(profileSettings.photo) {
+                document.getElementById('navAvatar').src = profileSettings.photo;
+                document.getElementById('dropdownHeaderImg').src = profileSettings.photo;
+                document.getElementById('fullProfileImg').src = profileSettings.photo;
+            }
+            if(auth.currentUser) {
+                document.getElementById('profEmail').value = auth.currentUser.email || '';
+            }
+        }
+
+        document.getElementById('fullProfileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('profFullName').value.trim();
+            const role = document.getElementById('profRole').value.trim();
+            const phone = document.getElementById('profPhone').value.trim();
+            const newPass = document.getElementById('profNewPass').value;
+
+            showLoader("Saving Profile Settings...");
+
+            profileSettings.name = name;
+            profileSettings.role = role;
+            profileSettings.phone = phone;
+
+            try {
+                await writeToFirebase('erp/settings', profileSettings);
+                
+                if (newPass && auth.currentUser) {
+                    await updatePassword(auth.currentUser, newPass);
+                    showToast("Password updated successfully!", "success");
+                    document.getElementById('profNewPass').value = '';
+                }
+
+                loadSavedProfile();
+                showToast("Profile changes saved!", "success");
+            } catch (err) {
+                showToast("Error updating profile: " + err.message, "error");
+            } finally {
+                hideLoader();
+            }
+        });
+
+        document.getElementById('fullProfileImgInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    const base64Img = event.target.result;
+                    profileSettings.photo = base64Img;
+                    showLoader("Uploading Photo...");
+                    try {
+                        await writeToFirebase('erp/settings', profileSettings);
+                        loadSavedProfile();
+                        showToast("Profile photo updated!", "success");
+                    } catch(err) {
+                        // Handled
+                    } finally {
+                        hideLoader();
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
         /* AUTHENTICATION & INITIALIZATION SEQUENCE */
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                console.log("[Auth State] Logged in user:", user.email, "UID:", user.uid);
                 loginSection.style.display = 'none';
                 dashboardSection.style.display = 'block';
-                loader.style.display = 'flex';
+                showLoader("Loading Account Infrastructure...");
                 
                 try {
                     await migrateLocalStorageToFirebase();
-                    await runAccountIdentityMigration(); // Run ID migration on startup
+                    await runAccountIdentityMigration();
                     await initRealtimeSync();
                 } catch(err) {
                     console.error("Auth init error:", err);
-                    loader.style.display = 'none';
+                    hideLoader();
                 }
             } else {
-                console.log("[Auth State] No active session. User is logged out.");
-                loader.style.display = 'none';
+                hideLoader();
                 dashboardSection.style.display = 'none';
                 loginSection.style.display = 'flex';
             }
@@ -2793,11 +3062,11 @@
             
             let email = uInput.includes('@') ? uInput : adminEmail;
             
-            loader.style.display = 'flex';
+            showLoader("Authenticating...");
             signInWithEmailAndPassword(auth, email, pInput).catch((err) => {
-                loader.style.display = 'none';
+                hideLoader();
                 errorMsg.style.display = 'block';
-                console.error("Login Failure:", err);
+                showToast("Invalid credentials", "error");
             });
         });
 
@@ -2806,18 +3075,22 @@
             const uInput = document.getElementById('username').value.trim();
             let email = uInput.includes('@') ? uInput : adminEmail;
             if (!uInput) {
-                alert("Please enter email first.");
+                showToast("Please enter email first.", "warning");
                 return;
             }
-            loader.style.display = 'flex';
+            showLoader("Sending Reset Email...");
             sendPasswordResetEmail(auth, email).then(() => {
-                loader.style.display = 'none';
+                hideLoader();
                 successMsg.style.display = 'block';
-            }).catch(err => alert(err.message));
+                showToast("Password reset email sent!", "success");
+            }).catch(err => {
+                hideLoader();
+                showToast(err.message, "error");
+            });
         });
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
-            loader.style.display = 'flex';
+            showLoader("Logging out...");
             signOut(auth);
         });
 
@@ -2830,91 +3103,6 @@
 
         document.addEventListener('click', (e) => {
             if(!profileDropdown.contains(e.target)) profileDropdown.classList.remove('active');
-        });
-
-        function loadSavedProfile() {
-            const savedPhoto = profileSettings.photo;
-            const savedName = profileSettings.name || "Rabbi Hosen";
-            const savedRole = profileSettings.role || "Admin";
-            const savedPhone = profileSettings.phone || "";
-
-            if (savedPhoto) {
-                document.getElementById('navAvatar').src = savedPhoto;
-                document.getElementById('dropdownHeaderImg').src = savedPhoto;
-                document.getElementById('fullProfileImg').src = savedPhoto;
-            }
-
-            document.getElementById('dropdownName').innerText = savedName;
-            document.getElementById('fullProfileNameDisplay').innerText = savedName;
-            document.getElementById('profFullName').value = savedName;
-
-            document.getElementById('dropdownRole').innerText = savedRole;
-            document.getElementById('fullProfileRoleDisplay').innerText = savedRole;
-            document.getElementById('profRole').value = savedRole;
-
-            document.getElementById('profEmail').value = auth.currentUser ? auth.currentUser.email : adminEmail;
-            document.getElementById('profPhone').value = savedPhone;
-        }
-
-        document.getElementById('fullProfileImgInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    document.getElementById('fullProfileImg').src = evt.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
-        });
-
-        const readFileAsDataURL = (file) => new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-
-        document.getElementById('fullProfileForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            loader.style.display = 'flex';
-
-            try {
-                const newName = document.getElementById('profFullName').value.trim();
-                const newRole = document.getElementById('profRole').value.trim();
-                const newPhone = document.getElementById('profPhone').value.trim();
-                const newPass = document.getElementById('profNewPass').value.trim();
-                const file = document.getElementById('fullProfileImgInput').files[0];
-
-                profileSettings.name = newName;
-                profileSettings.role = newRole;
-                profileSettings.phone = newPhone;
-
-                if (file) {
-                    profileSettings.photo = await readFileAsDataURL(file);
-                }
-
-                await writeToFirebase('erp/settings', profileSettings);
-                loadSavedProfile();
-
-                if (newPass && auth.currentUser) {
-                    const currentPassword = prompt('পাসওয়ার্ড পরিবর্তন নিশ্চিত করতে আপনার বর্তমান পাসওয়ার্ডটি লিখুন:');
-                    if (currentPassword) {
-                        const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
-                        await reauthenticateWithCredential(auth.currentUser, credential);
-                        await updatePassword(auth.currentUser, newPass);
-                        document.getElementById('profNewPass').value = '';
-                    } else {
-                        throw new Error('পাসওয়ার্ড পরিবর্তন বাতিল করা হয়েছে।');
-                    }
-                }
-
-                loader.style.display = 'none';
-                alert('প্রোফাইল তথ্য সফলভাবে আপডেট করা হয়েছে!');
-            } catch (err) {
-                loader.style.display = 'none';
-                console.error("Profile Save Failure:", err);
-                alert('Error: ' + err.message);
-            }
         });
     </script>
 </body>
