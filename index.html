@@ -1569,6 +1569,51 @@
             }
         }
 
+        /* REALTIME DATABASE WRITE HELPER WITH COMPLETE ERROR HANDLING & LOGGING */
+        async function writeToFirebase(path, data) {
+            const user = auth.currentUser;
+            
+            // 1. AUTHENTICATION READINESS CHECK
+            if (!user) {
+                const authErr = new Error("Authentication Required: No user is currently logged in.");
+                console.error("WRITE FAILED - AUTH CHECK:", {
+                    currentUser: null,
+                    uid: null,
+                    email: null,
+                    path: path,
+                    errorCode: "auth/user-not-logged-in",
+                    errorMessage: authErr.message,
+                    errorObject: authErr
+                });
+                throw authErr;
+            }
+
+            // 2. ASYNC WRITE WITH TRY/CATCH
+            try {
+                const dbRef = ref(db, path);
+                await set(dbRef, data);
+                console.log(`[Firebase Write Success] Path: ${path}`, {
+                    currentUser: user.displayName || 'Authenticated User',
+                    uid: user.uid,
+                    email: user.email,
+                    path: path
+                });
+                return true;
+            } catch (error) {
+                // 3. COMPLETE ERROR LOGGING
+                console.error("WRITE FAILED - FIREBASE ERROR:", {
+                    currentUser: user.displayName || 'Authenticated User',
+                    uid: user.uid,
+                    email: user.email,
+                    path: path,
+                    errorCode: error.code || 'UNKNOWN_ERROR',
+                    errorMessage: error.message,
+                    errorObject: error
+                });
+                throw error;
+            }
+        }
+
         /* ONE-TIME SILENT MIGRATION FROM LOCALSTORAGE TO FIREBASE RTDB */
         async function migrateLocalStorageToFirebase() {
             try {
@@ -1609,7 +1654,7 @@
 
                 if (Object.keys(migrationPayload).length > 0) {
                     for (const key in migrationPayload) {
-                        await set(ref(db, `erp/${key}`), migrationPayload[key]);
+                        await writeToFirebase(`erp/${key}`, migrationPayload[key]);
                     }
                 }
             } catch (err) {
@@ -1649,10 +1694,10 @@
                     cardConfig = DEFAULT_OPERATOR_CARDS;
                     balanceStore = { 'Bkash Personal': 13161.57 };
                     
-                    await set(ref(db, 'erp/categories'), categories);
-                    await set(ref(db, 'erp/accounts'), accounts);
-                    await set(ref(db, 'erp/cardConfig'), cardConfig);
-                    await set(ref(db, 'erp/balances'), balanceStore);
+                    await writeToFirebase('erp/categories', categories);
+                    await writeToFirebase('erp/accounts', accounts);
+                    await writeToFirebase('erp/cardConfig', cardConfig);
+                    await writeToFirebase('erp/balances', balanceStore);
                 }
             } catch(e) {
                 console.error("Initial load error:", e);
@@ -1732,7 +1777,7 @@
             const totalVal = calculateGrandCardInventoryValue();
             balanceStore['Card Inventory'] = totalVal;
             try {
-                await set(ref(db, 'erp/balances'), balanceStore);
+                await writeToFirebase('erp/balances', balanceStore);
                 console.log("Card Inventory Balance Synced to DB");
             } catch (err) {
                 console.error("Failed to sync Card Inventory Balance:", err);
@@ -1741,40 +1786,46 @@
 
         async function saveCoreData() {
             try {
-                await set(ref(db, 'erp/categories'), categories);
-                await set(ref(db, 'erp/accounts'), accounts);
+                await writeToFirebase('erp/categories', categories);
+                await writeToFirebase('erp/accounts', accounts);
                 console.log("Core Categories & Accounts Saved Successfully");
                 renderDynamicSidebar();
                 renderCategoryManagementTables();
                 updateDashboardCards();
+                return true;
             } catch (error) {
                 console.error("Save Core Data Error:", error);
                 alert("Failed to save Categories/Accounts: " + error.message);
+                throw error;
             }
         }
 
         async function saveCardInventoryData() {
             try {
-                await set(ref(db, 'erp/cardInventory'), cardQuantities);
-                await set(ref(db, 'erp/cardHistory'), cardHistoryLogs);
+                await writeToFirebase('erp/cardInventory', cardQuantities);
+                await writeToFirebase('erp/cardHistory', cardHistoryLogs);
                 await syncCardInventoryBalance();
                 console.log("Inventory Saved Successfully");
                 updateDashboardCards();
+                return true;
             } catch (error) {
                 console.error("Save Card Inventory Error:", error);
                 alert("Failed to save Inventory: " + error.message);
+                throw error;
             }
         }
 
         async function saveCardConfigMaster() {
             try {
-                await set(ref(db, 'erp/cardConfig'), cardConfig);
+                await writeToFirebase('erp/cardConfig', cardConfig);
                 await syncCardInventoryBalance();
                 console.log("Card Configuration Saved Successfully");
                 updateDashboardCards();
+                return true;
             } catch (error) {
                 console.error("Save Card Master Config Error:", error);
                 alert("Failed to save Card Configuration: " + error.message);
+                throw error;
             }
         }
 
@@ -1986,7 +2037,7 @@
             }
 
             try {
-                await set(ref(db, 'erp/cardInventory'), cardQuantities);
+                await writeToFirebase('erp/cardInventory', cardQuantities);
                 await syncCardInventoryBalance();
                 updateDashboardCards();
                 updateLiveSummaries();
@@ -2067,9 +2118,14 @@
             });
 
             loader.style.display = 'flex';
-            await saveCardInventoryData();
-            loader.style.display = 'none';
-            alert("Today's Card Inventory saved and synchronized successfully!");
+            try {
+                await saveCardInventoryData();
+                alert("Today's Card Inventory saved and synchronized successfully!");
+            } catch(err) {
+                // UI won't falsely state success
+            } finally {
+                loader.style.display = 'none';
+            }
         };
 
         function renderCardHistoryTable() {
@@ -2208,11 +2264,16 @@
             }
 
             loader.style.display = 'flex';
-            await saveCardConfigMaster();
-            resetCardMasterForm();
-            renderCardMasterConfiguration();
-            loader.style.display = 'none';
-            alert('Card Configuration saved successfully!');
+            try {
+                await saveCardConfigMaster();
+                resetCardMasterForm();
+                renderCardMasterConfiguration();
+                alert('Card Configuration saved successfully!');
+            } catch(err) {
+                // Handled gracefully
+            } finally {
+                loader.style.display = 'none';
+            }
         });
 
         window.resetCardMasterForm = function() {
@@ -2243,9 +2304,14 @@
             if(card) {
                 card.active = (card.active === false);
                 loader.style.display = 'flex';
-                await saveCardConfigMaster();
-                renderCardMasterConfiguration();
-                loader.style.display = 'none';
+                try {
+                    await saveCardConfigMaster();
+                    renderCardMasterConfiguration();
+                } catch(err) {
+                    card.active = !card.active; // Revert UI State on failure
+                } finally {
+                    loader.style.display = 'none';
+                }
             }
         };
 
@@ -2311,16 +2377,19 @@
             const formData = new FormData(e.target);
             const now = new Date().toLocaleString();
 
+            const tempBalanceStore = { ...balanceStore };
+            const tempHistoryLogs = [ ...historyLogs ];
+
             catAccounts.forEach(acc => {
                 const inputVal = formData.get(acc.name);
                 if (inputVal !== "" && inputVal !== null) {
                     const newBal = parseFloat(inputVal) || 0;
-                    const oldBal = balanceStore[acc.name] || 0;
+                    const oldBal = tempBalanceStore[acc.name] || 0;
                     const diff = newBal - oldBal;
                     
                     if (diff !== 0) {
-                        balanceStore[acc.name] = newBal;
-                        historyLogs.unshift({
+                        tempBalanceStore[acc.name] = newBal;
+                        tempHistoryLogs.unshift({
                             date: now,
                             category: category.name,
                             account: acc.name,
@@ -2334,8 +2403,11 @@
 
             try {
                 // DB Save Happens BEFORE Dashboard & UI State Update
-                await set(ref(db, 'erp/balances'), balanceStore);
-                await set(ref(db, 'erp/fintechHistory'), historyLogs);
+                await writeToFirebase('erp/balances', tempBalanceStore);
+                await writeToFirebase('erp/fintechHistory', tempHistoryLogs);
+                
+                balanceStore = tempBalanceStore;
+                historyLogs = tempHistoryLogs;
                 console.log("Balance and History Saved to DB");
 
                 loader.style.display = 'none';
@@ -2425,13 +2497,17 @@
                 });
             }
 
-            document.getElementById('editCatId').value = '';
-            document.getElementById('catNameInput').value = '';
-            document.getElementById('catOrderInput').value = '';
-            
             loader.style.display = 'flex';
-            await saveCoreData();
-            loader.style.display = 'none';
+            try {
+                await saveCoreData();
+                document.getElementById('editCatId').value = '';
+                document.getElementById('catNameInput').value = '';
+                document.getElementById('catOrderInput').value = '';
+            } catch(err) {
+                // Handled in saveCoreData
+            } finally {
+                loader.style.display = 'none';
+            }
         });
 
         window.editCategory = function(id) {
@@ -2449,18 +2525,33 @@
             if(cat) {
                 cat.enabled = !cat.enabled;
                 loader.style.display = 'flex';
-                await saveCoreData();
-                loader.style.display = 'none';
+                try {
+                    await saveCoreData();
+                } catch(err) {
+                    cat.enabled = !cat.enabled; // Revert UI
+                } finally {
+                    loader.style.display = 'none';
+                }
             }
         };
 
         window.deleteCategory = async function(id) {
             if(confirm('Are you sure you want to delete this category? Associated accounts may be affected.')) {
+                const oldCategories = [...categories];
+                const oldAccounts = [...accounts];
+                
                 categories = toArray(categories).filter(c => c.id !== id);
                 accounts = toArray(accounts).filter(a => a.catId !== id);
+                
                 loader.style.display = 'flex';
-                await saveCoreData();
-                loader.style.display = 'none';
+                try {
+                    await saveCoreData();
+                } catch(err) {
+                    categories = oldCategories;
+                    accounts = oldAccounts;
+                } finally {
+                    loader.style.display = 'none';
+                }
             }
         };
 
@@ -2487,12 +2578,16 @@
                 });
             }
 
-            document.getElementById('editAccId').value = '';
-            document.getElementById('accNameInput').value = '';
-            
             loader.style.display = 'flex';
-            await saveCoreData();
-            loader.style.display = 'none';
+            try {
+                await saveCoreData();
+                document.getElementById('editAccId').value = '';
+                document.getElementById('accNameInput').value = '';
+            } catch(err) {
+                // Handled
+            } finally {
+                loader.style.display = 'none';
+            }
         });
 
         window.editAccount = function(id) {
@@ -2510,17 +2605,29 @@
             if(acc) {
                 acc.enabled = !acc.enabled;
                 loader.style.display = 'flex';
-                await saveCoreData();
-                loader.style.display = 'none';
+                try {
+                    await saveCoreData();
+                } catch(err) {
+                    acc.enabled = !acc.enabled;
+                } finally {
+                    loader.style.display = 'none';
+                }
             }
         };
 
         window.deleteAccount = async function(id) {
             if(confirm('Are you sure you want to delete this account?')) {
+                const oldAccounts = [...accounts];
                 accounts = toArray(accounts).filter(a => a.id !== id);
+                
                 loader.style.display = 'flex';
-                await saveCoreData();
-                loader.style.display = 'none';
+                try {
+                    await saveCoreData();
+                } catch(err) {
+                    accounts = oldAccounts;
+                } finally {
+                    loader.style.display = 'none';
+                }
             }
         };
 
@@ -2591,6 +2698,7 @@
         /* AUTHENTICATION & INITIALIZATION SEQUENCE */
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                console.log("[Auth State] Logged in user:", user.email, "UID:", user.uid);
                 loginSection.style.display = 'none';
                 dashboardSection.style.display = 'block';
                 loader.style.display = 'flex';
@@ -2603,6 +2711,7 @@
                     loader.style.display = 'none';
                 }
             } else {
+                console.log("[Auth State] No active session. User is logged out.");
                 loader.style.display = 'none';
                 dashboardSection.style.display = 'none';
                 loginSection.style.display = 'flex';
@@ -2618,9 +2727,10 @@
             let email = uInput.includes('@') ? uInput : adminEmail;
             
             loader.style.display = 'flex';
-            signInWithEmailAndPassword(auth, email, pInput).catch(() => {
+            signInWithEmailAndPassword(auth, email, pInput).catch((err) => {
                 loader.style.display = 'none';
                 errorMsg.style.display = 'block';
+                console.error("Login Failure:", err);
             });
         });
 
@@ -2716,7 +2826,7 @@
                     profileSettings.photo = await readFileAsDataURL(file);
                 }
 
-                await set(ref(db, 'erp/settings'), profileSettings);
+                await writeToFirebase('erp/settings', profileSettings);
                 console.log("Profile Settings Saved to DB");
                 loadSavedProfile();
 
