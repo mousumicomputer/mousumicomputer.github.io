@@ -1474,6 +1474,13 @@
         const db = getDatabase(app);
         const adminEmail = "mousumicomputer.org@gmail.com";
 
+        // SAFE ARRAY CONVERTER HELPER
+        function toArray(data, defaultArr = []) {
+            if (!data) return defaultArr;
+            if (Array.isArray(data)) return data;
+            return Object.values(data);
+        }
+
         /* DEFAULT DYNAMIC CATEGORIES & ACCOUNTS DATA */
         let categories = [
             { id: 'cat_1', name: 'Personal Accounts', order: 1, enabled: true },
@@ -1564,103 +1571,122 @@
         const profileTrigger = document.getElementById('profileTrigger');
         const profileDropdown = document.getElementById('profileDropdown');
 
-        /* ONE-TIME SILENT MIGRATION FROM LOCALSTORAGE TO FIREBASE RTDB */
-        async function migrateLocalStorageToFirebase() {
-            const erpRef = ref(db, 'erp');
-            const snapshot = await get(erpRef);
-            const rtdbData = snapshot.val() || {};
-
-            const localCategories = localStorage.getItem('mc_erp_categories');
-            const localAccounts = localStorage.getItem('mc_erp_accounts');
-            const localCardConfig = localStorage.getItem('mc_card_config');
-            const localCardQuantities = localStorage.getItem('mc_card_quantities');
-            const localCardHistory = localStorage.getItem('mc_card_history');
-            const localBalances = localStorage.getItem('mc_fintech_balances');
-            const localHistory = localStorage.getItem('mc_fintech_history');
-            const localName = localStorage.getItem('mc_admin_name');
-            const localRole = localStorage.getItem('mc_admin_role');
-            const localPhone = localStorage.getItem('mc_admin_phone');
-            const localPhoto = localStorage.getItem('mc_admin_photo');
-
-            let migrationPayload = {};
-
-            if (!rtdbData.categories && localCategories) migrationPayload.categories = JSON.parse(localCategories);
-            if (!rtdbData.accounts && localAccounts) migrationPayload.accounts = JSON.parse(localAccounts);
-            if (!rtdbData.cardConfig && localCardConfig) migrationPayload.cardConfig = JSON.parse(localCardConfig);
-            if (!rtdbData.cardInventory && localCardQuantities) migrationPayload.cardInventory = JSON.parse(localCardQuantities);
-            if (!rtdbData.cardHistory && localCardHistory) migrationPayload.cardHistory = JSON.parse(localCardHistory);
-            if (!rtdbData.balances && localBalances) migrationPayload.balances = JSON.parse(localBalances);
-            if (!rtdbData.fintechHistory && localHistory) migrationPayload.fintechHistory = JSON.parse(localHistory);
-            
-            if (!rtdbData.settings && (localName || localRole || localPhone || localPhoto)) {
-                migrationPayload.settings = {
-                    name: localName || "Rabbi Hosen",
-                    role: localRole || "Admin",
-                    phone: localPhone || "",
-                    photo: localPhoto || ""
-                };
-            }
-
-            if (Object.keys(migrationPayload).length > 0) {
-                for (const key in migrationPayload) {
-                    await set(ref(db, `erp/${key}`), migrationPayload[key]);
-                }
+        /* SAFE JSON PARSER */
+        function safeJsonParse(str, fallback = null) {
+            try {
+                return str ? JSON.parse(str) : fallback;
+            } catch (e) {
+                return fallback;
             }
         }
 
-        /* REALTIME DATABASE SUBSCRIPTION (SYNC Across Devices & Correct Sequence) */
+        /* ONE-TIME SILENT MIGRATION FROM LOCALSTORAGE TO FIREBASE RTDB */
+        async function migrateLocalStorageToFirebase() {
+            try {
+                const erpRef = ref(db, 'erp');
+                const snapshot = await get(erpRef);
+                const rtdbData = snapshot.val() || {};
+
+                const localCategories = safeJsonParse(localStorage.getItem('mc_erp_categories'));
+                const localAccounts = safeJsonParse(localStorage.getItem('mc_erp_accounts'));
+                const localCardConfig = safeJsonParse(localStorage.getItem('mc_card_config'));
+                const localCardQuantities = safeJsonParse(localStorage.getItem('mc_card_quantities'));
+                const localCardHistory = safeJsonParse(localStorage.getItem('mc_card_history'));
+                const localBalances = safeJsonParse(localStorage.getItem('mc_fintech_balances'));
+                const localHistory = safeJsonParse(localStorage.getItem('mc_fintech_history'));
+                const localName = localStorage.getItem('mc_admin_name');
+                const localRole = localStorage.getItem('mc_admin_role');
+                const localPhone = localStorage.getItem('mc_admin_phone');
+                const localPhoto = localStorage.getItem('mc_admin_photo');
+
+                let migrationPayload = {};
+
+                if (!rtdbData.categories && localCategories) migrationPayload.categories = localCategories;
+                if (!rtdbData.accounts && localAccounts) migrationPayload.accounts = localAccounts;
+                if (!rtdbData.cardConfig && localCardConfig) migrationPayload.cardConfig = localCardConfig;
+                if (!rtdbData.cardInventory && localCardQuantities) migrationPayload.cardInventory = localCardQuantities;
+                if (!rtdbData.cardHistory && localCardHistory) migrationPayload.cardHistory = localCardHistory;
+                if (!rtdbData.balances && localBalances) migrationPayload.balances = localBalances;
+                if (!rtdbData.fintechHistory && localHistory) migrationPayload.fintechHistory = localHistory;
+                
+                if (!rtdbData.settings && (localName || localRole || localPhone || localPhoto)) {
+                    migrationPayload.settings = {
+                        name: localName || "Rabbi Hosen",
+                        role: localRole || "Admin",
+                        phone: localPhone || "",
+                        photo: localPhoto || ""
+                    };
+                }
+
+                if (Object.keys(migrationPayload).length > 0) {
+                    for (const key in migrationPayload) {
+                        await set(ref(db, `erp/${key}`), migrationPayload[key]);
+                    }
+                }
+            } catch (err) {
+                console.warn("Migration warning:", err);
+            }
+        }
+
+        /* REALTIME DATABASE SUBSCRIPTION */
         async function initRealtimeSync() {
             const erpRef = ref(db, 'erp');
             
-            // 1. First fetch data once before rendering UI to avoid empty dashboard state on refresh
-            const initialSnapshot = await get(erpRef);
-            if (initialSnapshot.exists()) {
-                const data = initialSnapshot.val();
-                if (data.categories) categories = data.categories;
-                if (data.accounts) accounts = data.accounts;
-                if (data.cardConfig) cardConfig = data.cardConfig;
-                if (data.cardInventory) cardQuantities = data.cardInventory;
-                if (data.cardHistory) cardHistoryLogs = data.cardHistory;
-                if (data.balances) balanceStore = data.balances;
-                if (data.fintechHistory) historyLogs = data.fintechHistory;
-                if (data.settings) profileSettings = data.settings;
+            try {
+                const initialSnapshot = await get(erpRef);
+                if (initialSnapshot.exists()) {
+                    const data = initialSnapshot.val();
+                    if (data.categories) categories = toArray(data.categories, categories);
+                    if (data.accounts) accounts = toArray(data.accounts, accounts);
+                    if (data.cardConfig) {
+                        cardConfig = data.cardConfig;
+                        ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
+                            if (cardConfig[op]) cardConfig[op] = toArray(cardConfig[op]);
+                        });
+                    }
+                    if (data.cardInventory) cardQuantities = data.cardInventory;
+                    if (data.cardHistory) cardHistoryLogs = toArray(data.cardHistory);
+                    if (data.balances) balanceStore = data.balances;
+                    if (data.fintechHistory) historyLogs = toArray(data.fintechHistory);
+                    if (data.settings) profileSettings = data.settings;
+                }
+            } catch(e) {
+                console.error("Initial load error:", e);
             }
 
-            // Sync Card Inventory Balance
             const cardTotal = calculateGrandCardInventoryValue();
             balanceStore['Card Inventory'] = cardTotal;
 
-            // Render components with complete initial data
             renderDynamicSidebar();
             updateDashboardCards();
             loadSavedProfile();
 
-            // Hide Loader after initial data rendering completes
             loader.style.display = 'none';
 
-            // 2. Attach real-time listener for subsequent background updates
             onValue(erpRef, (snapshot) => {
                 const data = snapshot.val() || {};
 
-                if (data.categories) categories = data.categories;
-                if (data.accounts) accounts = data.accounts;
-                if (data.cardConfig) cardConfig = data.cardConfig;
+                if (data.categories) categories = toArray(data.categories, categories);
+                if (data.accounts) accounts = toArray(data.accounts, accounts);
+                if (data.cardConfig) {
+                    cardConfig = data.cardConfig;
+                    ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
+                        if (cardConfig[op]) cardConfig[op] = toArray(cardConfig[op]);
+                    });
+                }
                 if (data.cardInventory) cardQuantities = data.cardInventory;
-                if (data.cardHistory) cardHistoryLogs = data.cardHistory;
+                if (data.cardHistory) cardHistoryLogs = toArray(data.cardHistory);
                 if (data.balances) balanceStore = data.balances;
-                if (data.fintechHistory) historyLogs = data.fintechHistory;
+                if (data.fintechHistory) historyLogs = toArray(data.fintechHistory);
                 if (data.settings) profileSettings = data.settings;
 
-                // Sync Card Inventory to Balance Store
                 const cardTotal = calculateGrandCardInventoryValue();
                 balanceStore['Card Inventory'] = cardTotal;
 
-                // Refresh UI Components
                 renderDynamicSidebar();
                 updateDashboardCards();
                 loadSavedProfile();
 
-                // Refresh Active View without breaking active input focus
                 const activeView = document.querySelector('.view-panel.active');
                 if (activeView) {
                     const activeId = activeView.id;
@@ -1687,7 +1713,7 @@
             let grandTotal = 0;
             const operators = ['GP', 'Banglalink', 'Robi', 'Airtel'];
             operators.forEach(op => {
-                const cardsList = (cardConfig[op] || []).filter(c => c.active !== false);
+                const cardsList = toArray(cardConfig[op] || []).filter(c => c.active !== false);
                 const opQtyMap = cardQuantities[op] || {};
                 cardsList.forEach(card => {
                     const qty = parseInt(opQtyMap[card.id]) || 0;
@@ -1730,7 +1756,7 @@
             const submenuContainer = document.getElementById('dynamicBalanceSubmenu');
             if(!submenuContainer) return;
             submenuContainer.innerHTML = '';
-            const activeCategories = categories.filter(c => c.enabled).sort((a,b) => a.order - b.order);
+            const activeCategories = toArray(categories).filter(c => c.enabled).sort((a,b) => a.order - b.order);
             
             activeCategories.forEach(cat => {
                 const li = document.createElement('li');
@@ -1819,7 +1845,7 @@
             const opTotalsMap = { GP: 0, Banglalink: 0, Robi: 0, Airtel: 0 };
 
             OPERATORS_LIST.forEach(op => {
-                const cards = (cardConfig[op] || []).filter(c => c.active !== false);
+                const cards = toArray(cardConfig[op] || []).filter(c => c.active !== false);
                 const opQtyMap = cardQuantities[op] || {};
 
                 let opCardsCount = 0;
@@ -1943,7 +1969,7 @@
             let grandTotalValue = 0;
 
             OPERATORS_LIST.forEach(op => {
-                const cards = (cardConfig[op] || []).filter(c => c.active !== false);
+                const cards = toArray(cardConfig[op] || []).filter(c => c.active !== false);
                 const opQtyMap = cardQuantities[op] || {};
 
                 let opCardsCount = 0;
@@ -1985,7 +2011,7 @@
             let grandAuditVal = 0;
 
             OPERATORS_LIST.forEach(op => {
-                const cards = (cardConfig[op] || []).filter(c => c.active !== false);
+                const cards = toArray(cardConfig[op] || []).filter(c => c.active !== false);
                 const opQtyMap = cardQuantities[op] || {};
                 let opCards = 0;
                 let opVal = 0;
@@ -2018,17 +2044,19 @@
             if(!tbody) return;
             tbody.innerHTML = '';
 
-            if (cardHistoryLogs.length === 0) {
+            const logs = toArray(cardHistoryLogs);
+
+            if (logs.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #9ca3af;">No card inventory history available yet.</td></tr>`;
                 return;
             }
 
-            cardHistoryLogs.forEach(item => {
+            logs.forEach(item => {
                 const rowHtml = `
                     <tr>
-                        <td>${item.date}</td>
-                        <td><strong>${item.operator}</strong></td>
-                        <td>${item.prodCount} Cards</td>
+                        <td>${item.date || ''}</td>
+                        <td><strong>${item.operator || ''}</strong></td>
+                        <td>${item.prodCount || 0} Cards</td>
                         <td><strong>৳ ${(item.grandTotal || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
                     </tr>
                 `;
@@ -2043,7 +2071,7 @@
             container.innerHTML = '';
 
             OPERATORS_LIST.forEach(op => {
-                const cards = cardConfig[op] || [];
+                const cards = toArray(cardConfig[op] || []);
                 let rowsHtml = '';
 
                 cards.forEach(card => {
@@ -2111,9 +2139,11 @@
             const status = document.getElementById('cardStatusSelect').value;
 
             if(!cardConfig[op]) cardConfig[op] = [];
+            cardConfig[op] = toArray(cardConfig[op]);
 
             if(masterId) {
                 OPERATORS_LIST.forEach(operator => {
+                    cardConfig[operator] = toArray(cardConfig[operator]);
                     const idx = cardConfig[operator].findIndex(c => c.id === masterId);
                     if(idx !== -1) {
                         if(operator !== op) {
@@ -2159,7 +2189,8 @@
         };
 
         window.editMasterCard = function(op, cardId) {
-            const card = (cardConfig[op] || []).find(c => c.id === cardId);
+            const cardList = toArray(cardConfig[op] || []);
+            const card = cardList.find(c => c.id === cardId);
             if(card) {
                 document.getElementById('cardMasterId').value = card.id;
                 document.getElementById('cardOperatorSelect').value = op;
@@ -2172,7 +2203,8 @@
         };
 
         window.toggleMasterCardStatus = function(op, cardId) {
-            const card = (cardConfig[op] || []).find(c => c.id === cardId);
+            const cardList = toArray(cardConfig[op] || []);
+            const card = cardList.find(c => c.id === cardId);
             if(card) {
                 card.active = (card.active === false);
                 saveCardConfigMaster();
@@ -2183,7 +2215,8 @@
         /* OPEN DYNAMIC BALANCE CATEGORY FORM */
         window.openBalanceCategory = function(catId) {
             currentActiveCatId = catId;
-            const category = categories.find(c => c.id === catId);
+            const categoryList = toArray(categories);
+            const category = categoryList.find(c => c.id === catId);
             if(!category) return;
 
             const sub = document.getElementById('dynamicBalanceSubmenu');
@@ -2206,7 +2239,7 @@
             const container = document.getElementById('formFieldsContainer');
             container.innerHTML = '';
 
-            const catAccounts = accounts.filter(a => a.catId === catId && a.enabled && a.name !== 'Card Inventory');
+            const catAccounts = toArray(accounts).filter(a => a.catId === catId && a.enabled && a.name !== 'Card Inventory');
             
             if(catAccounts.length === 0) {
                 container.innerHTML = `<p style="color: #9ca3af; text-align: center; padding: 20px;">No manual entry accounts found in this category.</p>`;
@@ -2233,8 +2266,9 @@
             e.preventDefault();
             if(!currentActiveCatId) return;
 
-            const category = categories.find(c => c.id === currentActiveCatId);
-            const catAccounts = accounts.filter(a => a.catId === currentActiveCatId && a.enabled && a.name !== 'Card Inventory');
+            const categoryList = toArray(categories);
+            const category = categoryList.find(c => c.id === currentActiveCatId);
+            const catAccounts = toArray(accounts).filter(a => a.catId === currentActiveCatId && a.enabled && a.name !== 'Card Inventory');
             const formData = new FormData(e.target);
             const now = new Date().toLocaleString();
 
@@ -2272,7 +2306,7 @@
             const catTbody = document.getElementById('categoryTableBody');
             if(!catTbody) return;
             catTbody.innerHTML = '';
-            const sortedCategories = [...categories].sort((a,b) => a.order - b.order);
+            const sortedCategories = toArray(categories).sort((a,b) => a.order - b.order);
             
             sortedCategories.forEach(cat => {
                 const row = `
@@ -2301,8 +2335,9 @@
             const accTbody = document.getElementById('accountTableBody');
             if(!accTbody) return;
             accTbody.innerHTML = '';
-            accounts.forEach(acc => {
-                const cat = categories.find(c => c.id === acc.catId);
+            const accountList = toArray(accounts);
+            accountList.forEach(acc => {
+                const cat = sortedCategories.find(c => c.id === acc.catId);
                 const row = `
                     <tr>
                         <td>${cat ? cat.name : 'Unknown'}</td>
@@ -2324,6 +2359,8 @@
             const editId = document.getElementById('editCatId').value;
             const name = document.getElementById('catNameInput').value.trim();
             const order = parseInt(document.getElementById('catOrderInput').value) || 1;
+
+            categories = toArray(categories);
 
             if(editId) {
                 const cat = categories.find(c => c.id === editId);
@@ -2347,7 +2384,7 @@
         });
 
         window.editCategory = function(id) {
-            const cat = categories.find(c => c.id === id);
+            const cat = toArray(categories).find(c => c.id === id);
             if(cat) {
                 document.getElementById('editCatId').value = cat.id;
                 document.getElementById('catNameInput').value = cat.name;
@@ -2356,6 +2393,7 @@
         };
 
         window.toggleCategory = function(id) {
+            categories = toArray(categories);
             const cat = categories.find(c => c.id === id);
             if(cat) {
                 cat.enabled = !cat.enabled;
@@ -2365,8 +2403,8 @@
 
         window.deleteCategory = function(id) {
             if(confirm('Are you sure you want to delete this category? Associated accounts may be affected.')) {
-                categories = categories.filter(c => c.id !== id);
-                accounts = accounts.filter(a => a.catId !== id);
+                categories = toArray(categories).filter(c => c.id !== id);
+                accounts = toArray(accounts).filter(a => a.catId !== id);
                 saveCoreData();
             }
         };
@@ -2376,6 +2414,8 @@
             const editId = document.getElementById('editAccId').value;
             const catId = document.getElementById('accCatSelect').value;
             const name = document.getElementById('accNameInput').value.trim();
+
+            accounts = toArray(accounts);
 
             if(editId) {
                 const acc = accounts.find(a => a.id === editId);
@@ -2398,7 +2438,7 @@
         });
 
         window.editAccount = function(id) {
-            const acc = accounts.find(a => a.id === id);
+            const acc = toArray(accounts).find(a => a.id === id);
             if(acc) {
                 document.getElementById('editAccId').value = acc.id;
                 document.getElementById('accCatSelect').value = acc.catId;
@@ -2407,6 +2447,7 @@
         };
 
         window.toggleAccount = function(id) {
+            accounts = toArray(accounts);
             const acc = accounts.find(a => a.id === id);
             if(acc) {
                 acc.enabled = !acc.enabled;
@@ -2416,7 +2457,7 @@
 
         window.deleteAccount = function(id) {
             if(confirm('Are you sure you want to delete this account?')) {
-                accounts = accounts.filter(a => a.id !== id);
+                accounts = toArray(accounts).filter(a => a.id !== id);
                 saveCoreData();
             }
         };
@@ -2428,10 +2469,11 @@
             grid.innerHTML = '';
             let netTotal = 0;
 
-            const activeCategories = categories.filter(c => c.enabled).sort((a,b) => a.order - b.order);
+            const activeCategories = toArray(categories).filter(c => c.enabled).sort((a,b) => a.order - b.order);
+            const allAccounts = toArray(accounts);
 
             activeCategories.forEach(cat => {
-                const catAccs = accounts.filter(a => a.catId === cat.id && a.enabled);
+                const catAccs = allAccounts.filter(a => a.catId === cat.id && a.enabled);
                 let catSum = 0;
                 catAccs.forEach(acc => {
                     catSum += (balanceStore[acc.name] || 0);
@@ -2458,22 +2500,25 @@
             if(!tbody) return;
             tbody.innerHTML = '';
 
-            if (historyLogs.length === 0) {
+            const logs = toArray(historyLogs);
+
+            if (logs.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No balance record history available yet.</td></tr>`;
                 return;
             }
 
-            historyLogs.forEach(item => {
-                const diffClass = item.diff >= 0 ? 'color:#10b981; font-weight:700;' : 'color:#e11d48; font-weight:700;';
-                const diffText = item.diff >= 0 ? `+৳ ${item.diff.toFixed(2)}` : `-৳ ${Math.abs(item.diff).toFixed(2)}`;
+            logs.forEach(item => {
+                const diffVal = item.diff || 0;
+                const diffClass = diffVal >= 0 ? 'color:#10b981; font-weight:700;' : 'color:#e11d48; font-weight:700;';
+                const diffText = diffVal >= 0 ? `+৳ ${diffVal.toFixed(2)}` : `-৳ ${Math.abs(diffVal).toFixed(2)}`;
                 
                 const rowHtml = `
                     <tr>
-                        <td>${item.date}</td>
-                        <td><strong>${item.category}</strong></td>
-                        <td>${item.account}</td>
-                        <td>৳ ${item.prev.toFixed(2)}</td>
-                        <td>৳ ${item.current.toFixed(2)}</td>
+                        <td>${item.date || ''}</td>
+                        <td><strong>${item.category || ''}</strong></td>
+                        <td>${item.account || ''}</td>
+                        <td>৳ ${(item.prev || 0).toFixed(2)}</td>
+                        <td>৳ ${(item.current || 0).toFixed(2)}</td>
                         <td style="${diffClass}">${diffText}</td>
                     </tr>
                 `;
@@ -2488,8 +2533,13 @@
                 dashboardSection.style.display = 'block';
                 loader.style.display = 'flex';
                 
-                await migrateLocalStorageToFirebase();
-                await initRealtimeSync();
+                try {
+                    await migrateLocalStorageToFirebase();
+                    await initRealtimeSync();
+                } catch(err) {
+                    console.error("Auth init error:", err);
+                    loader.style.display = 'none';
+                }
             } else {
                 loader.style.display = 'none';
                 dashboardSection.style.display = 'none';
