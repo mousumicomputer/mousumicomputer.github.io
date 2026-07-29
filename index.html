@@ -1,0 +1,3653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mousumi Computer - Dynamic Accounting & Inventory ERP</title>
+    <!-- FontAwesome Icons & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- SheetJS Library for Real Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #00a8ef;
+            --primary-dark: #0b1a2c;
+            --sidebar-width: 260px;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb;
+            --border-radius: 12px;
+            --red: #e11d48;
+            --green: #10b981;
+            --warning: #f97316;
+            --info: #00a8ef;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* TOAST NOTIFICATION CONTAINER */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 380px;
+            width: calc(100% - 40px);
+            pointer-events: none;
+        }
+
+        .toast {
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0;
+            transform: translateX(60px);
+        }
+
+        .toast.toast-out {
+            animation: toastOut 0.3s forwards ease-in;
+        }
+
+        .toast-success { background: var(--green); }
+        .toast-error { background: var(--red); }
+        .toast-warning { background: var(--warning); }
+        .toast-info { background: var(--info); }
+
+        @keyframes toastIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes toastOut {
+            to { opacity: 0; transform: translateX(60px); }
+        }
+
+        /* CUSTOM CONFIRMATION MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 26, 44, 0.65);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            animation: modalIn 0.25s ease-out;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: #fee2e2;
+            color: #e11d48;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 15px auto;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+
+        .modal-message {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 22px;
+            line-height: 1.4;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn-modal-cancel {
+            flex: 1;
+            padding: 11px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #f3f4f6;
+            color: #374151;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-modal-cancel:hover { background: #e5e7eb; }
+
+        .btn-modal-confirm {
+            flex: 1;
+            padding: 11px;
+            border-radius: 8px;
+            border: none;
+            background: var(--red);
+            color: #ffffff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-modal-confirm:hover { background: #be123c; }
+
+        /* LOADING SCREEN */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-dark);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 99998;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border-left-color: #00a8ef;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        #loader-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            letter-spacing: 0.5px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* LOGIN SECTION */
+        #login-section {
+            background: linear-gradient(135deg, #0b1a2c 0%, #00a8ef 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        .login-card {
+            background-color: var(--card-bg);
+            padding: 2.5rem 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+        }
+
+        .logo-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #ffffff;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .shop-title {
+            font-size: 1.4rem;
+            color: var(--primary-dark);
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 0.4rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 12px;
+            color: #9ca3af;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .forgot-pass-wrapper {
+            text-align: right;
+            margin-top: -8px;
+            margin-bottom: 1.2rem;
+        }
+
+        .forgot-pass-link {
+            color: #00a8ef;
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.85rem;
+            background-color: #00a8ef;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover { background-color: #0088e8; }
+
+        .error-msg {
+            color: var(--red);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .success-msg {
+            color: var(--green);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        /* DASHBOARD & ERP LAYOUT */
+        #dashboard-section {
+            display: none;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ERP SIDEBAR */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--primary-dark);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 12px;
+            transition: all 0.3s ease-in-out;
+            z-index: 100;
+        }
+
+        .sidebar.collapsed {
+            margin-left: calc(-1 * var(--sidebar-width));
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+
+        .brand-logo-img-wrapper {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            padding: 2px;
+            background: linear-gradient(135deg, #00a8ef, #10b981);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brand-logo img {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #fff;
+        }
+
+        .brand-text h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .brand-text span {
+            font-size: 0.7rem;
+            color: #00a8ef;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .menu-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .menu-item a {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.92rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .menu-item a .menu-link-inner {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-item a:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+        }
+
+        .menu-item.active > a {
+            background: linear-gradient(135deg, #00a8ef 0%, #0088e8 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 168, 239, 0.25);
+        }
+
+        /* SUBMENU STYLE */
+        .submenu-list {
+            list-style: none;
+            display: none;
+            padding-left: 20px;
+            margin-top: 4px;
+            margin-bottom: 6px;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .submenu-list.show {
+            display: flex;
+        }
+
+        .submenu-item a {
+            padding: 9px 12px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .submenu-item a:hover {
+            color: #ffffff;
+            background: rgba(255,255,255,0.08);
+        }
+
+        .submenu-item.active a {
+            color: #00a8ef;
+            font-weight: 700;
+            background: rgba(0, 168, 239, 0.1);
+        }
+
+        .chevron-icon {
+            transition: transform 0.3s;
+            font-size: 0.75rem;
+        }
+
+        .menu-item.open .chevron-icon {
+            transform: rotate(180deg);
+        }
+
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        /* TOP NAVBAR */
+        .top-navbar {
+            background-color: #ffffff;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .menu-toggle-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            background: #f3f4f6;
+            border: 1px solid var(--border-color);
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* PROFILE DROPDOWN */
+        .profile-dropdown-wrapper {
+            position: relative;
+        }
+
+        .user-profile-trigger {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .user-profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #00a8ef;
+        }
+
+        .profile-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 50px;
+            right: 0;
+            width: 270px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+            border: 1px solid #e5e7eb;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .profile-dropdown-menu.active {
+            display: block;
+        }
+
+        .dropdown-header {
+            background: linear-gradient(135deg, #00bdff 0%, #0088e8 100%);
+            padding: 15px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dropdown-header img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            object-fit: cover;
+        }
+
+        .dropdown-section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #9ca3af;
+            padding: 12px 15px 4px 15px;
+        }
+
+        .dropdown-items-list {
+            list-style: none;
+            padding: 0 8px;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            color: #4b5563;
+            font-size: 0.88rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: #f3f4f6;
+            color: #0088e8;
+        }
+
+        .dropdown-logout-container {
+            padding: 12px 15px;
+        }
+
+        .btn-dropdown-logout {
+            width: 100%;
+            background: #e11d48;
+            color: #ffffff;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* VIEW PANELS */
+        .view-panel {
+            display: none;
+            padding: 25px;
+        }
+
+        .view-panel.active {
+            display: block;
+        }
+
+        /* DASHBOARD VIEW */
+        .fintech-hero-card {
+            background: linear-gradient(135deg, #0b1a2c 0%, #00a8ef 100%);
+            color: #ffffff;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 168, 239, 0.2);
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .fintech-hero-card h3 {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .fintech-hero-card .hero-amount {
+            font-size: 2.2rem;
+            font-weight: 800;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .fintech-card {
+            background: #ffffff;
+            padding: 18px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fintech-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #00a8ef;
+        }
+
+        .card-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            background: #eff6ff;
+            color: #00a8ef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .fintech-card h4 {
+            font-size: 0.82rem;
+            color: #6b7280;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .fintech-card .amount {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        /* FORM PANEL */
+        .erp-form-card {
+            background: #ffffff;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            max-width: 900px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            margin-bottom: 25px;
+        }
+
+        .erp-form-header {
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .field-card {
+            background: #f9fafb;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 14px;
+        }
+
+        .field-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .field-card-header label {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #374151;
+        }
+
+        .prev-bal {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        .prev-bal span {
+            color: #00a8ef;
+            font-weight: 700;
+        }
+
+        .field-card input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.98rem;
+            font-weight: 600;
+            outline: none;
+            background: #ffffff;
+        }
+
+        /* TABLE SYSTEM */
+        .table-container {
+            background: #ffffff;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.88rem;
+        }
+
+        th {
+            background: #f9fafb;
+            font-weight: 700;
+            color: #4b5563;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-action {
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 4px;
+        }
+
+        .btn-edit {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .btn-delete {
+            background: #ffe4e6;
+            color: #be123c;
+        }
+
+        .btn-toggle {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        /* ACCORDION CARD INVENTORY STYLES */
+        .accordion-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .accordion-item {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            transition: border-color 0.2s;
+        }
+
+        .accordion-item.active {
+            border-color: #00a8ef;
+        }
+
+        .accordion-header {
+            background: #ffffff;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .accordion-header:hover {
+            background: #f9fafb;
+        }
+
+        .accordion-title-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .accordion-title-box h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .op-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .op-gp { background: #00a8ef; }
+        .op-bl { background: #f97316; }
+        .op-robi { background: #e11d48; }
+        .op-airtel { background: #dc2626; }
+
+        .accordion-summary-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .acc-summary-item {
+            text-align: right;
+        }
+
+        .acc-summary-item span {
+            display: block;
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        .acc-summary-item strong {
+            font-size: 0.95rem;
+            color: var(--primary-dark);
+        }
+
+        .acc-summary-item strong.highlight-val {
+            color: #10b981;
+            font-weight: 800;
+        }
+
+        .accordion-icon {
+            font-size: 0.9rem;
+            color: #6b7280;
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-item.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
+            background: #fafafa;
+            border-top: 1px solid transparent;
+        }
+
+        .accordion-item.active .accordion-content {
+            max-height: 2000px;
+            transition: max-height 0.3s cubic-bezier(1, 0, 1, 0);
+            border-top-color: var(--border-color);
+            padding: 15px;
+        }
+
+        .inv-qty-input {
+            width: 100px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            outline: none;
+            text-align: center;
+            background: #ffffff;
+            transition: border-color 0.2s;
+        }
+
+        .inv-qty-input:focus {
+            border-color: #00a8ef;
+            box-shadow: 0 0 0 3px rgba(0, 168, 239, 0.15);
+        }
+
+        .total-green-highlight {
+            color: #059669 !important;
+            font-weight: 800 !important;
+            font-size: 0.95rem;
+        }
+
+        /* GRAND SUMMARY CONTAINER CARD */
+        .grand-summary-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .grand-summary-header {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .op-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .op-summary-box {
+            background: #f9fafb;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .op-summary-box span {
+            font-size: 0.8rem;
+            color: #6b7280;
+            font-weight: 600;
+            display: block;
+        }
+
+        .op-summary-box strong {
+            font-size: 1.05rem;
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        .grand-totals-banner {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 1px solid #a7f3d0;
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .grand-stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .grand-stat-item span {
+            font-size: 0.85rem;
+            color: #065f46;
+            font-weight: 600;
+        }
+
+        .grand-stat-item strong {
+            font-size: 1.5rem;
+            color: #047857;
+            font-weight: 800;
+        }
+
+        /* PROFILE PANEL */
+        .profile-page-card {
+            background: #ffffff;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .profile-header-banner {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 25px;
+        }
+
+        .profile-big-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #00a8ef;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            border: 1px solid var(--border-color);
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .profile-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        .section-divider {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin: 25px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--bg-color);
+        }
+
+        /* DAILY CLOSING MODULE SPECIFIC STYLES */
+        .dcr-filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            background: #f8fafc;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .dcr-filter-bar label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #4b5563;
+        }
+
+        .dcr-filter-input {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.88rem;
+            outline: none;
+            background: #ffffff;
+        }
+
+        .dcr-btn-filter {
+            padding: 8px 16px;
+            background: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .dcr-btn-reset {
+            padding: 8px 16px;
+            background: #e5e7eb;
+            color: #374151;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .dcr-grid-3col {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .dcr-grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .dcr-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .dcr-card-title {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            padding-bottom: 4px;
+            border-bottom: 2px solid var(--bg-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dcr-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+            min-width: auto;
+        }
+
+        .dcr-table th {
+            padding: 4px 6px;
+            background: #f8fafc;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+
+        .dcr-table td {
+            padding: 4px 6px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .dcr-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .dcr-total-row td {
+            font-weight: 800;
+            background: #f8fafc;
+            color: var(--primary-dark);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .dcr-highlight-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 10px 14px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+        }
+
+        .dcr-highlight-card .dcr-card-title {
+            color: #38bdf8;
+            border-bottom-color: rgba(255,255,255,0.1);
+        }
+
+        .dcr-highlight-card table td {
+            border-bottom-color: rgba(255,255,255,0.05);
+        }
+
+        /* PRINT MEDIA STYLES - A4 LANDSCAPE EXACT 1 PAGE FIT */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 4mm 6mm;
+            }
+            html, body {
+                height: 100%;
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            body * {
+                visibility: hidden;
+            }
+            #printable-closing-report, #printable-closing-report * {
+                visibility: visible;
+            }
+            #printable-closing-report {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100% !important;
+                background: #ffffff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                font-size: 8pt !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .dcr-card {
+                border: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+                padding: 6px 10px !important;
+                margin-bottom: 6px !important;
+            }
+            .dcr-grid-3col {
+                gap: 8px !important;
+                margin-bottom: 6px !important;
+            }
+            .dcr-grid-2col {
+                gap: 8px !important;
+                margin-bottom: 6px !important;
+            }
+            .dcr-table th, .dcr-table td {
+                padding: 2px 4px !important;
+                font-size: 7.5pt !important;
+            }
+            .dcr-highlight-card {
+                background: #0f172a !important;
+                color: #ffffff !important;
+                padding: 8px 12px !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .dcr-grid-3col, .dcr-grid-2col {
+                grid-template-columns: 1fr;
+            }
+            .profile-form-grid {
+                grid-template-columns: 1fr;
+            }
+            .full-width {
+                grid-column: span 1;
+            }
+            .view-panel {
+                padding: 15px;
+            }
+            .accordion-header {
+                padding: 12px 15px;
+            }
+            .accordion-summary-info {
+                gap: 10px;
+            }
+            .acc-summary-item strong {
+                font-size: 0.85rem;
+            }
+            .inv-qty-input {
+                width: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOAST NOTIFICATIONS CONTAINER -->
+    <div id="toast-container"></div>
+
+    <!-- CUSTOM CONFIRMATION MODAL -->
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal-card">
+            <div class="modal-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h3 class="modal-title" id="modal-title">Are you sure?</h3>
+            <p class="modal-message" id="modal-message">This operation cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" id="btn-modal-cancel">Cancel</button>
+                <button class="btn-modal-confirm" id="btn-modal-confirm">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOADING SCREEN WITH DYNAMIC TEXT -->
+    <div id="loader">
+        <div class="spinner"></div>
+        <p id="loader-text">Loading ERP System...</p>
+    </div>
+
+    <!-- 1. LOGIN SECTION -->
+    <div id="login-section">
+        <div class="login-card">
+            <div class="logo-container">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" alt="Logo" class="logo-img" />
+                <h2 class="shop-title">Mousumi Computer</h2>
+            </div>
+            <p class="error-msg" id="errorMsg">Invalid Username or Password!</p>
+            <p class="success-msg" id="successMsg">Password reset email sent successfully!</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Username / Email</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" id="username" placeholder="admin" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="password" placeholder="••••••••" required />
+                    </div>
+                </div>
+                <div class="forgot-pass-wrapper">
+                    <a href="#" class="forgot-pass-link" id="btn-forgot-pass">Forgot Password?</a>
+                </div>
+                <button type="submit" class="btn-submit">
+                    <i class="fa-solid fa-right-to-bracket"></i> Login
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. DASHBOARD SECTION -->
+    <div id="dashboard-section">
+        <div class="dashboard-layout">
+            
+            <!-- ERP SIDEBAR NAVIGATION -->
+            <div class="sidebar" id="sidebar">
+                <div class="brand-logo">
+                    <div class="brand-logo-img-wrapper">
+                        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg" alt="Logo" />
+                    </div>
+                    <div class="brand-text">
+                        <h3>Mousumi</h3>
+                        <span>Accounting ERP</span>
+                    </div>
+                </div>
+                
+                <ul class="menu-list">
+                    <li class="menu-item active" id="menu-dash">
+                        <a onclick="switchMainTab('dashboard')">
+                            <span class="menu-link-inner"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span></span>
+                        </a>
+                    </li>
+
+                    <!-- NEW DAILY CLOSING REPORT MODULE -->
+                    <li class="menu-item" id="menu-daily-closing">
+                        <a onclick="switchMainTab('daily-closing')">
+                            <span class="menu-link-inner"><i class="fa-solid fa-file-shield"></i> <span>Daily Closing Report</span></span>
+                        </a>
+                    </li>
+                    
+                    <!-- PARENT MENU: BALANCE MANAGEMENT WITH DYNAMIC SUBMENU -->
+                    <li class="menu-item" id="menu-bal-parent">
+                        <a onclick="toggleBalanceSubmenu()">
+                            <span class="menu-link-inner"><i class="fa-solid fa-wallet"></i> <span>Balance Mgmt</span></span>
+                            <i class="fa-solid fa-chevron-down chevron-icon"></i>
+                        </a>
+                        <ul class="submenu-list" id="dynamicBalanceSubmenu">
+                            <!-- Dynamically populated from JS -->
+                        </ul>
+                    </li>
+
+                    <!-- MODULE: CASH INVENTORY MANAGEMENT -->
+                    <li class="menu-item" id="menu-cash-inv">
+                        <a onclick="switchMainTab('cash-inventory')">
+                            <span class="menu-link-inner"><i class="fa-solid fa-money-bill-wave"></i> <span>Cash Inventory</span></span>
+                        </a>
+                    </li>
+
+                    <!-- MODULE: MULTI-OPERATOR CARD INVENTORY -->
+                    <li class="menu-item" id="menu-card-inv">
+                        <a onclick="switchMainTab('card-inventory')">
+                            <span class="menu-link-inner"><i class="fa-solid fa-sim-card"></i> <span>Card Inventory</span></span>
+                        </a>
+                    </li>
+
+                    <!-- MODULE: CATEGORY & ACCOUNT MANAGEMENT -->
+                    <li class="menu-item" id="menu-cat-mgmt">
+                        <a onclick="switchMainTab('category-mgmt')">
+                            <span class="menu-link-inner"><i class="fa-solid fa-layer-group"></i> <span>Category & Accounts</span></span>
+                        </a>
+                    </li>
+
+                    <li class="menu-item" id="menu-reports">
+                        <a onclick="switchMainTab('reports')">
+                            <span class="menu-link-inner"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Reports & History</span></span>
+                        </a>
+                    </li>
+
+                    <!-- PARENT MENU: SETTINGS & CONFIG -->
+                    <li class="menu-item" id="menu-settings-parent">
+                        <a onclick="toggleSettingsSubmenu()">
+                            <span class="menu-link-inner"><i class="fa-solid fa-sliders"></i> <span>Settings & Config</span></span>
+                            <i class="fa-solid fa-chevron-down chevron-icon"></i>
+                        </a>
+                        <ul class="submenu-list" id="settingsSubmenu">
+                            <li class="submenu-item" id="sub-card-mgmt">
+                                <a onclick="switchMainTab('card-mgmt')"><i class="fa-solid fa-gear"></i> <span>Card Management</span></a>
+                            </li>
+                            <li class="submenu-item" id="sub-profile">
+                                <a onclick="switchMainTab('profile')"><i class="fa-solid fa-user-gear"></i> <span>My Profile</span></a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- MAIN CONTENT WRAPPER -->
+            <div class="main-wrapper">
+                
+                <!-- TOP NAVBAR -->
+                <div class="top-navbar">
+                    <div class="navbar-left">
+                        <button class="menu-toggle-btn" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+                        <h2 id="top-title" style="font-size: 1.2rem; font-weight: 700;">Dashboard Overview</h2>
+                    </div>
+                    <div class="navbar-right">
+                        <!-- Profile Dropdown Trigger -->
+                        <div class="profile-dropdown-wrapper">
+                            <div class="user-profile-trigger" id="profileTrigger">
+                                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="navAvatar" class="user-profile-avatar" />
+                                <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; color: #6b7280;"></i>
+                            </div>
+                            <div class="profile-dropdown-menu" id="profileDropdown">
+                                <div class="dropdown-header">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="dropdownHeaderImg" alt="Profile" />
+                                    <div>
+                                        <h4 id="dropdownName">Rabbi Hosen</h4>
+                                        <p id="dropdownRole" style="font-size: 0.8rem; opacity: 0.9;">Admin</p>
+                                    </div>
+                                </div>
+                                <div class="dropdown-section-title">SETTINGS & PROFILE</div>
+                                <ul class="dropdown-items-list">
+                                    <li class="dropdown-item" onclick="switchMainTab('profile')">
+                                        <i class="fa-solid fa-user-gear"></i> <span>My Profile & Security</span>
+                                    </li>
+                                </ul>
+                                <div class="dropdown-logout-container">
+                                    <button class="btn-dropdown-logout" id="logoutBtn">
+                                        <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 1: DASHBOARD ==================== -->
+                <div class="view-panel active" id="dashboard-view">
+                    <div class="fintech-hero-card">
+                        <h3>Total Net Balance</h3>
+                        <div class="hero-amount" id="totalAllBalance">৳ 0.00</div>
+                    </div>
+                    <div class="summary-grid" id="dashboardSummaryGrid">
+                        <!-- Dynamic Cards Here -->
+                    </div>
+                </div>
+
+                <!-- ==================== NEW MODULE VIEW: DAILY CLOSING REPORT ==================== -->
+                <div class="view-panel" id="daily-closing-view">
+                    <!-- TOP GENERATE CLOSING HEADER -->
+                    <div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                            <div>
+                                <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--primary-dark);">Daily Closing Snapshot Engine</h3>
+                                <p style="font-size: 0.85rem; color: #64748b;">Permanently lock & freeze today's overall financial position into an immutable report.</p>
+                            </div>
+                            <button class="btn-submit" onclick="generateDailyClosingSnapshot()" style="width: auto; padding: 12px 24px; background: #059669;">
+                                <i class="fa-solid fa-lock"></i> Generate & Save Today's Daily Closing
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- CLOSING REPORT HISTORY TABLE -->
+                    <div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px;">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-clock-rotate-left" style="color: #00a8ef;"></i> Daily Closing Report History</span>
+                        </div>
+
+                        <!-- ISSUES 3 & 4: DATE RANGE FILTER & QUICK SEARCH BAR -->
+                        <div class="dcr-filter-bar">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label><i class="fa-solid fa-calendar-day"></i> From:</label>
+                                <input type="date" id="dcrFromDate" class="dcr-filter-input">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label>To:</label>
+                                <input type="date" id="dcrToDate" class="dcr-filter-input">
+                            </div>
+                            <button class="dcr-btn-filter" onclick="filterDailyClosingHistory()"><i class="fa-solid fa-filter"></i> Filter</button>
+                            <button class="dcr-btn-reset" onclick="resetDailyClosingHistory()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+
+                            <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+                                <label><i class="fa-solid fa-magnifying-glass"></i> Quick Search:</label>
+                                <input type="text" id="dcrSearchInput" class="dcr-filter-input" placeholder="Search Date or ID..." oninput="filterDailyClosingHistory()" style="min-width: 200px;">
+                            </div>
+                        </div>
+
+                        <!-- ISSUE 5: HISTORY TABLE IMPROVEMENTS -->
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Report Date</th>
+                                        <th>Closing Time</th>
+                                        <th>Report ID</th>
+                                        <th>Net Balance</th>
+                                        <th style="text-align: center;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dailyClosingHistoryTableBody">
+                                    <tr><td colspan="5" style="text-align: center; color: #9ca3af;">No daily closing snapshots saved yet.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- REPORT DISPLAY CONTAINER (A4 LANDSCAPE DASHBOARD STYLE) -->
+                    <div id="closingReportDisplayCard" class="erp-form-card" style="max-width: 100%; display: none; background: #f8fafc; padding: 20px;">
+                        <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <span style="font-size: 0.9rem; font-weight: 700; color: var(--primary-dark);"><i class="fa-solid fa-eye" style="color: #00a8ef;"></i> Viewing Immutable Report Snapshot</span>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn-action btn-edit" onclick="printDailyClosingPDF()" style="padding: 8px 16px; font-size: 0.85rem;"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
+                                <button class="btn-action btn-toggle" onclick="exportDailyClosingExcel()" style="padding: 8px 16px; font-size: 0.85rem; background: #10b981; color: #fff;"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+                            </div>
+                        </div>
+
+                        <!-- PRINTABLE LANDSCAPE A4 CONTENT AREA -->
+                        <div id="printable-closing-report" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 15px;">
+                            <!-- Dynamic Printable Snapshot Content Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 2: BALANCE MANAGEMENT (ERP FORM) ==================== -->
+                <div class="view-panel" id="balance-view">
+                    <div class="erp-form-card">
+                        <div class="erp-form-header">
+                            <span id="erpFormTitle"><i class="fa-solid fa-pen-to-square" style="color: #00a8ef;"></i> Category Form</span>
+                        </div>
+                        <form id="balanceUpdateForm">
+                            <div id="formFieldsContainer"></div>
+                            <button type="submit" class="btn-submit" style="margin-top: 20px;">
+                                <i class="fa-solid fa-floppy-disk"></i> Save & Update Balance
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW: CASH INVENTORY MANAGEMENT ==================== -->
+                <div class="view-panel" id="cash-inventory-view">
+                    <div class="erp-form-card" style="max-width: 900px;">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-money-bill-wave" style="color: #00a8ef;"></i> Cash Inventory Management</span>
+                        </div>
+
+                        <!-- DENOMINATION TABLE -->
+                        <div class="table-container" style="margin-bottom: 20px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width: 30%;">Denomination</th>
+                                        <th style="width: 35%;">Quantity</th>
+                                        <th style="width: 35%;">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cashDenomTableBody">
+                                    <!-- Dynamic Rows Generated from JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- GRAND TOTAL BANNER -->
+                        <div class="grand-totals-banner" style="margin-bottom: 20px;">
+                            <div class="grand-stat-item">
+                                <span>Physical Cash Total</span>
+                                <strong id="grandTotalCashVal">৳ 0.00</strong>
+                            </div>
+                        </div>
+
+                        <!-- SAVE BUTTON -->
+                        <button class="btn-submit" onclick="saveCashInventory()" style="background: #10b981; padding: 14px; font-size: 1.05rem;">
+                            <i class="fa-solid fa-floppy-disk"></i> Save Cash Inventory
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 3: CARD INVENTORY MODULE ==================== -->
+                <div class="view-panel" id="card-inventory-view">
+                    <div class="erp-form-card" style="max-width: 1000px;">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-sim-card" style="color: #00a8ef;"></i> Daily Card Inventory Audit</span>
+                        </div>
+
+                        <!-- ACCORDION OPERATORS CONTAINER -->
+                        <div class="accordion-container" id="operatorAccordions">
+                            <!-- Accordions for GP, Banglalink, Robi, Airtel dynamically populated -->
+                        </div>
+
+                        <!-- GRAND SUMMARY CARD -->
+                        <div class="grand-summary-card">
+                            <div class="grand-summary-header">
+                                <i class="fa-solid fa-chart-line" style="color: #10b981;"></i> Card Inventory Summary
+                            </div>
+                            <div class="op-summary-grid">
+                                <div class="op-summary-box">
+                                    <span>GP Total</span>
+                                    <strong id="summaryGpVal">৳0.00</strong>
+                                </div>
+                                <div class="op-summary-box">
+                                    <span>Banglalink Total</span>
+                                    <strong id="summaryBlVal">৳0.00</strong>
+                                </div>
+                                <div class="op-summary-box">
+                                    <span>Robi Total</span>
+                                    <strong id="summaryRobiVal">৳0.00</strong>
+                                </div>
+                                <div class="op-summary-box">
+                                    <span>Airtel Total</span>
+                                    <strong id="summaryAirtelVal">৳0.00</strong>
+                                </div>
+                            </div>
+                            <div class="grand-totals-banner">
+                                <div class="grand-stat-item">
+                                    <span>Grand Total Cards</span>
+                                    <strong id="grandTotalCardsCount">0 Pcs</strong>
+                                </div>
+                                <div class="grand-stat-item" style="text-align: right;">
+                                    <span>Grand Total Value</span>
+                                    <strong id="grandTotalCardsVal">৳ 0.00</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SAVE BUTTON -->
+                        <button class="btn-submit" onclick="saveTodayInventory()" style="background: #10b981; padding: 14px; font-size: 1.05rem;">
+                            <i class="fa-solid fa-check-double"></i> Save Today's Inventory
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 4: CATEGORY & ACCOUNT MANAGEMENT ==================== -->
+                <div class="view-panel" id="category-mgmt-view">
+                    <!-- CATEGORY MANAGEMENT FORM & LIST -->
+                    <div class="erp-form-card">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-folder-plus" style="color: #00a8ef;"></i> Add / Manage Category</span>
+                        </div>
+                        <form id="addCategoryForm" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                            <input type="hidden" id="editCatId" value="" />
+                            <input type="text" id="catNameInput" placeholder="Category Name (e.g. Personal Accounts)" required style="flex:1; min-width: 200px; padding: 10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            <input type="number" id="catOrderInput" placeholder="Order (1,2..)" required style="width: 100px; padding: 10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            <button type="submit" class="btn-submit" style="width: auto; padding: 0 20px;"><i class="fa-solid fa-plus"></i> Save</button>
+                        </form>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Order</th>
+                                        <th>Category Name</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categoryTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ACCOUNT MANAGEMENT FORM & LIST -->
+                    <div class="erp-form-card">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-wallet" style="color: #10b981;"></i> Add / Manage Accounts</span>
+                        </div>
+                        <form id="addAccountForm" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                            <input type="hidden" id="editAccId" value="" />
+                            <select id="accCatSelect" required style="flex:1; min-width: 180px; padding: 10px; border:1px solid #e5e7eb; border-radius:8px;"></select>
+                            <input type="text" id="accNameInput" placeholder="Account Name (e.g. Bkash Agent)" required style="flex:1; min-width: 180px; padding: 10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            <button type="submit" class="btn-submit" style="width: auto; padding: 0 20px;"><i class="fa-solid fa-plus"></i> Save Account</button>
+                        </form>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Permanent ID</th>
+                                        <th>Account Name</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="accountTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 5: REPORTS & HISTORY MODULE ==================== -->
+                <div class="view-panel" id="reports-view">
+                    <!-- CASH INVENTORY HISTORY LOG -->
+                    <div class="erp-form-card">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-money-bill-transfer" style="color: #00a8ef;"></i> Cash Inventory Audit Log</span>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Others Amount</th>
+                                        <th>Grand Total Cash</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cashHistoryTableBody">
+                                    <tr><td colspan="3" style="text-align: center; color: #9ca3af;">No cash inventory audit records available yet.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ACCOUNT BALANCE HISTORY -->
+                    <div class="erp-form-card">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-clock-rotate-left" style="color: #00a8ef;"></i> Account Balance Audit Log</span>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Category</th>
+                                        <th>Account Name</th>
+                                        <th>Previous Balance</th>
+                                        <th>Current Balance</th>
+                                        <th>Difference</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody">
+                                    <tr><td colspan="6" style="text-align: center; color: #9ca3af;">No balance record history available yet.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- CARD INVENTORY HISTORY -->
+                    <div class="erp-form-card">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-boxes-stacked" style="color: #10b981;"></i> Card Inventory Audit Log</span>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Operator</th>
+                                        <th>Total Cards</th>
+                                        <th>Grand Total Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cardHistoryTableBody">
+                                    <tr><td colspan="4" style="text-align: center; color: #9ca3af;">No card inventory history available yet.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 6: CARD MANAGEMENT (MASTER CONFIG) ==================== -->
+                <div class="view-panel" id="card-mgmt-view">
+                    <div class="erp-form-card" style="max-width: 1000px;">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-gears" style="color: #00a8ef;"></i> Card Master Configuration</span>
+                        </div>
+
+                        <form id="cardMasterForm" style="display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; background: #f9fafb; padding: 18px; border-radius: 10px; border: 1px solid var(--border-color);">
+                            <input type="hidden" id="cardMasterId" value="" />
+                            
+                            <div style="flex: 1; min-width: 130px;">
+                                <label style="font-size: 0.8rem; font-weight: 700; color: #4b5563; display: block; margin-bottom: 4px;">Operator</label>
+                                <select id="cardOperatorSelect" required style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                                    <option value="GP">GP</option>
+                                    <option value="Banglalink">Banglalink</option>
+                                    <option value="Robi">Robi</option>
+                                    <option value="Airtel">Airtel</option>
+                                </select>
+                            </div>
+
+                            <div style="flex: 1.5; min-width: 150px;">
+                                <label style="font-size: 0.8rem; font-weight: 700; color: #4b5563; display: block; margin-bottom: 4px;">Card Name</label>
+                                <input type="text" id="cardNameMasterInput" placeholder="e.g. MB 19" required style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;" />
+                            </div>
+
+                            <div style="flex: 1.2; min-width: 130px;">
+                                <label style="font-size: 0.8rem; font-weight: 700; color: #4b5563; display: block; margin-bottom: 4px;">Type</label>
+                                <select id="cardTypeSelect" required style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                                    <option value="Internet">Internet</option>
+                                    <option value="Minute">Minute</option>
+                                    <option value="Combo">Combo</option>
+                                    <option value="Flexi">Flexi</option>
+                                </select>
+                            </div>
+
+                            <div style="flex: 1; min-width: 110px;">
+                                <label style="font-size: 0.8rem; font-weight: 700; color: #4b5563; display: block; margin-bottom: 4px;">Price (৳)</label>
+                                <input type="number" step="any" id="cardPriceMasterInput" placeholder="19" required style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;" />
+                            </div>
+
+                            <div style="flex: 1; min-width: 110px;">
+                                <label style="font-size: 0.8rem; font-weight: 700; color: #4b5563; display: block; margin-bottom: 4px;">Status</label>
+                                <select id="cardStatusSelect" required style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+
+                            <div style="width: 100%; display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                                <button type="button" class="btn-secondary" onclick="resetCardMasterForm()" style="padding: 10px 20px;">Cancel / Reset</button>
+                                <button type="submit" class="btn-submit" style="width: auto; padding: 10px 25px;"><i class="fa-solid fa-plus"></i> Save Card Config</button>
+                            </div>
+                        </form>
+
+                        <!-- OPERATOR TABLES WRAPPER -->
+                        <div id="cardMasterTablesContainer"></div>
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 7: PROFILE & SETTINGS ==================== -->
+                <div class="view-panel" id="profile-view">
+                    <div class="profile-page-card">
+                        <div class="profile-header-banner">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="fullProfileImg" class="profile-big-avatar" />
+                            <div>
+                                <h2 id="fullProfileNameDisplay">Rabbi Hosen</h2>
+                                <p style="color: #6b7280; margin-bottom: 8px;" id="fullProfileRoleDisplay">Admin</p>
+                                <div style="position: relative; overflow: hidden; display: inline-block;">
+                                    <button class="btn-secondary"><i class="fa-solid fa-camera"></i> <span>Change Photo</span></button>
+                                    <input type="file" id="fullProfileImgInput" accept="image/*" style="position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer;" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <form id="fullProfileForm">
+                            <div class="section-divider">Personal & Account Information</div>
+                            <div class="profile-form-grid">
+                                <div class="field-group">
+                                    <label>Full Name</label>
+                                    <input type="text" id="profFullName" placeholder="Rabbi Hosen" required />
+                                </div>
+                                <div class="field-group">
+                                    <label>Role / Designation</label>
+                                    <input type="text" id="profRole" placeholder="Admin" />
+                                </div>
+                                <div class="field-group">
+                                    <label>Email Address</label>
+                                    <input type="email" id="profEmail" readonly style="background: #f9fafb;" />
+                                </div>
+                                <div class="field-group">
+                                    <label>Phone Number</label>
+                                    <input type="text" id="profPhone" placeholder="+880 1700-000000" />
+                                </div>
+                            </div>
+
+                            <div class="section-divider">Security Settings</div>
+                            <div class="profile-form-grid">
+                                <div class="field-group full-width">
+                                    <label>New Password (Leave blank to keep unchanged)</label>
+                                    <input type="password" id="profNewPass" placeholder="••••••••" />
+                                </div>
+                            </div>
+
+                            <button type="submit" style="padding: 12px 30px; background: #00a8ef; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                                <i class="fa-solid fa-floppy-disk"></i> Save Profile Changes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE & FINTECH ERP SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1PhRiTkICNCd8sA4he3ZxKjHtIzM0d5E",
+            authDomain: "mousumi-computer.firebaseapp.com",
+            databaseURL: "https://mousumi-computer-default-rtdb.firebaseio.com",
+            projectId: "mousumi-computer",
+            storageBucket: "mousumi-computer.firebasestorage.app",
+            messagingSenderId: "104820462623",
+            appId: "1:104820462623:web:e3abae9533cc841463712a",
+            measurementId: "G-EPYJ70W97Z"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const adminEmail = "mousumicomputer.org@gmail.com";
+        const OPERATORS_LIST = ['GP', 'Banglalink', 'Robi', 'Airtel'];
+
+        /* ==================== MODERN UI HELPER FUNCTIONS ==================== */
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            let iconClass = 'fa-circle-info';
+            if (type === 'success') iconClass = 'fa-circle-check';
+            if (type === 'error') iconClass = 'fa-circle-xmark';
+            if (type === 'warning') iconClass = 'fa-triangle-exclamation';
+
+            toast.innerHTML = `<i class="fa-solid ${iconClass}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('toast-out');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        };
+
+        window.showConfirmModal = function({ title, message, confirmText = "Delete", onConfirm }) {
+            const modal = document.getElementById('confirm-modal');
+            const titleEl = document.getElementById('modal-title');
+            const msgEl = document.getElementById('modal-message');
+            const btnConfirm = document.getElementById('btn-modal-confirm');
+            const btnCancel = document.getElementById('btn-modal-cancel');
+
+            titleEl.innerText = title || "Are you sure?";
+            msgEl.innerText = message || "This operation cannot be undone.";
+            btnConfirm.innerText = confirmText;
+
+            modal.classList.add('active');
+
+            const handleConfirm = () => {
+                cleanup();
+                if (onConfirm) onConfirm();
+            };
+
+            const handleCancel = () => {
+                cleanup();
+            };
+
+            const cleanup = () => {
+                modal.classList.remove('active');
+                btnConfirm.removeEventListener('click', handleConfirm);
+                btnCancel.removeEventListener('click', handleCancel);
+            };
+
+            btnConfirm.addEventListener('click', handleConfirm);
+            btnCancel.addEventListener('click', handleCancel);
+        };
+
+        window.showLoader = function(message = "Please wait...") {
+            const loader = document.getElementById('loader');
+            const text = document.getElementById('loader-text');
+            if (text) text.innerText = message;
+            if (loader) loader.style.display = 'flex';
+        };
+
+        window.hideLoader = function() {
+            const loader = document.getElementById('loader');
+            if (loader) loader.style.display = 'none';
+        };
+
+        // SAFE ARRAY CONVERTER
+        function toArray(data, defaultArr = []) {
+            if (!data) return defaultArr;
+            if (Array.isArray(data)) return data;
+            return Object.values(data);
+        }
+
+        /* CASH DENOMINATIONS CONSTANT */
+        const CASH_DENOMINATIONS = [1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];
+
+        /* DATA STORES */
+        let categories = [];
+        let accounts = [];
+        let cardConfig = { GP: [], Banglalink: [], Robi: [], Airtel: [] };
+        let cardQuantities = { GP: {}, Banglalink: {}, Robi: {}, Airtel: {} };
+        let cardHistoryLogs = [];
+        let balanceStore = {}; // Keys use Permanent Immutable Account IDs
+        let historyLogs = [];
+        let profileSettings = {};
+        let currentActiveCatId = null;
+
+        /* CASH INVENTORY DATA STORE */
+        let cashQuantities = { 1000: 0, 500: 0, 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 2: 0, 1: 0 };
+        let cashOthersAmount = 0;
+        let cashGrandTotal = 0;
+        let cashHistoryLogs = [];
+
+        /* DAILY CLOSING REPORTS STORE */
+        let dailyClosingReports = [];
+        let activeViewingReport = null;
+
+        const DEFAULT_CATEGORIES = [
+            { id: 'cat_1', name: 'Personal Accounts', order: 1, enabled: true },
+            { id: 'cat_2', name: 'Bank Accounts', order: 2, enabled: true },
+            { id: 'cat_3', name: 'Agent Accounts', order: 3, enabled: true },
+            { id: 'cat_4', name: 'Load Cards', order: 4, enabled: true },
+            { id: 'cat_5', name: 'Recharge Balances', order: 5, enabled: true }
+        ];
+
+        const DEFAULT_ACCOUNTS = [
+            { id: 'acc_1', catId: 'cat_1', name: 'Bkash Personal', enabled: true },
+            { id: 'acc_2', catId: 'cat_1', name: 'Nagad Personal', enabled: true },
+            { id: 'acc_3', catId: 'cat_1', name: 'Rocket Personal', enabled: true },
+            { id: 'acc_4', catId: 'cat_1', name: 'Upay Personal', enabled: true },
+            { id: 'acc_5', catId: 'cat_1', name: 'Tap Personal', enabled: true },
+            { id: 'acc_6', catId: 'cat_2', name: 'DBBL', enabled: true },
+            { id: 'acc_7', catId: 'cat_2', name: 'Trust Bank', enabled: true },
+            { id: 'acc_8', catId: 'cat_3', name: 'Bkash Agent', enabled: true },
+            { id: 'acc_9', catId: 'cat_4', name: 'Card Inventory', enabled: true },
+            { id: 'acc_10', catId: 'cat_5', name: 'GP Recharge', enabled: true }
+        ];
+
+        const DEFAULT_OPERATOR_CARDS = {
+            GP: [
+                { id: 'gp_1', name: 'MB 19', type: 'Internet', price: 19, active: true },
+                { id: 'gp_2', name: 'MB 39', type: 'Internet', price: 39, active: true },
+                { id: 'gp_3', name: 'MB 49', type: 'Internet', price: 49, active: true },
+                { id: 'gp_4', name: 'Minute 29', type: 'Minute', price: 29, active: true },
+                { id: 'gp_5', name: 'Minute 49', type: 'Minute', price: 49, active: true },
+                { id: 'gp_6', name: 'Minute 99', type: 'Minute', price: 99, active: true }
+            ],
+            Banglalink: [
+                { id: 'bl_1', name: 'MB 19', type: 'Internet', price: 19, active: true },
+                { id: 'bl_2', name: 'MB 39', type: 'Internet', price: 39, active: true },
+                { id: 'bl_3', name: 'MB 49', type: 'Internet', price: 49, active: true },
+                { id: 'bl_4', name: 'Minute 29', type: 'Minute', price: 29, active: true },
+                { id: 'bl_5', name: 'Minute 49', type: 'Minute', price: 49, active: true },
+                { id: 'bl_6', name: 'Minute 99', type: 'Minute', price: 99, active: true }
+            ],
+            Robi: [
+                { id: 'robi_1', name: 'MB 19', type: 'Internet', price: 19, active: true },
+                { id: 'robi_2', name: 'MB 39', type: 'Internet', price: 39, active: true },
+                { id: 'robi_3', name: 'MB 49', type: 'Internet', price: 49, active: true },
+                { id: 'robi_4', name: 'Minute 29', type: 'Minute', price: 29, active: true },
+                { id: 'robi_5', name: 'Minute 49', type: 'Minute', price: 49, active: true },
+                { id: 'robi_6', name: 'Minute 99', type: 'Minute', price: 99, active: true }
+            ],
+            Airtel: [
+                { id: 'air_1', name: 'MB 19', type: 'Internet', price: 19, active: true },
+                { id: 'air_2', name: 'MB 39', type: 'Internet', price: 39, active: true },
+                { id: 'air_3', name: 'MB 49', type: 'Internet', price: 49, active: true },
+                { id: 'air_4', name: 'Minute 29', type: 'Minute', price: 29, active: true },
+                { id: 'air_5', name: 'Minute 49', type: 'Minute', price: 49, active: true },
+                { id: 'air_6', name: 'Minute 99', type: 'Minute', price: 99, active: true }
+            ]
+        };
+
+        // DOM ELEMENTS
+        const loginForm = document.getElementById('loginForm');
+        const loginSection = document.getElementById('login-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const profileTrigger = document.getElementById('profileTrigger');
+        const profileDropdown = document.getElementById('profileDropdown');
+
+        /* SAFE JSON PARSER */
+        function safeJsonParse(str, fallback = null) {
+            try { return str ? JSON.parse(str) : fallback; } catch (e) { return fallback; }
+        }
+
+        /* CARD INVENTORY ACCOUNT HELPER */
+        function getCardInventoryAccount() {
+            return accounts.find(a => a.id === 'acc_9' || a.name === 'Card Inventory') || { id: 'acc_9', name: 'Card Inventory' };
+        }
+
+        /* REALTIME DATABASE WRITE HELPER */
+        async function writeToFirebase(path, data) {
+            const user = auth.currentUser;
+            if (!user) {
+                showToast("Authentication required to save changes.", "error");
+                throw new Error("No logged in user.");
+            }
+            try {
+                const dbRef = ref(db, path);
+                await set(dbRef, data);
+                return true;
+            } catch (error) {
+                showToast("Firebase write error: " + error.message, "error");
+                throw error;
+            }
+        }
+
+        /* AUTHENTICATION LISTENERS & LOGIC */
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginSection.style.display = 'none';
+                dashboardSection.style.display = 'block';
+                document.getElementById('profEmail').value = user.email || adminEmail;
+                initRealtimeSync();
+            } else {
+                dashboardSection.style.display = 'none';
+                loginSection.style.display = 'flex';
+                hideLoader();
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const usernameVal = document.getElementById('username').value.trim();
+            const passwordVal = document.getElementById('password').value;
+            errorMsg.style.display = 'none';
+
+            let emailToAuth = usernameVal;
+            if(!emailToAuth.includes('@')) {
+                emailToAuth = adminEmail;
+            }
+
+            showLoader("Authenticating...");
+            try {
+                await signInWithEmailAndPassword(auth, emailToAuth, passwordVal);
+            } catch(err) {
+                hideLoader();
+                errorMsg.innerText = "Invalid credentials. Please try again.";
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        document.getElementById('btn-forgot-pass').addEventListener('click', async (e) => {
+            e.preventDefault();
+            showLoader("Sending reset email...");
+            try {
+                await sendPasswordResetEmail(auth, adminEmail);
+                hideLoader();
+                successMsg.style.display = 'block';
+            } catch(err) {
+                hideLoader();
+                errorMsg.innerText = "Failed to send reset email: " + err.message;
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            showLoader("Logging out...");
+            try {
+                await signOut(auth);
+            } catch(err) {
+                console.error("Logout Error:", err);
+            } finally {
+                hideLoader();
+            }
+        });
+
+        /* REALTIME DATABASE SUBSCRIPTION */
+        async function initRealtimeSync() {
+            showLoader("Synchronizing Firebase...");
+            const erpRef = ref(db, 'erp');
+            
+            try {
+                const initialSnapshot = await get(erpRef);
+                if (initialSnapshot.exists()) {
+                    const data = initialSnapshot.val();
+                    categories = data.categories ? toArray(data.categories) : DEFAULT_CATEGORIES;
+                    accounts = data.accounts ? toArray(data.accounts) : DEFAULT_ACCOUNTS;
+                    
+                    if (data.cardConfig) {
+                        cardConfig = data.cardConfig;
+                        OPERATORS_LIST.forEach(op => {
+                            if (cardConfig[op]) cardConfig[op] = toArray(cardConfig[op]);
+                        });
+                    } else {
+                        cardConfig = DEFAULT_OPERATOR_CARDS;
+                    }
+                    
+                    cardQuantities = data.cardInventory || { GP: {}, Banglalink: {}, Robi: {}, Airtel: {} };
+                    cardHistoryLogs = data.cardHistory ? toArray(data.cardHistory) : [];
+                    balanceStore = data.balances || { 'acc_1': 13161.57 };
+                    historyLogs = data.fintechHistory ? toArray(data.fintechHistory) : [];
+                    profileSettings = data.settings || {};
+
+                    // CASH INVENTORY DATA RETRIEVAL
+                    if (data.cashInventory) {
+                        cashQuantities = data.cashInventory.quantities || cashQuantities;
+                        cashOthersAmount = parseFloat(data.cashInventory.others) || 0;
+                        cashGrandTotal = parseFloat(data.cashInventory.grandTotal) || 0;
+                    }
+                    if (data.cashHistory) {
+                        cashHistoryLogs = toArray(data.cashHistory);
+                    }
+                    if (data.dailyClosingReports) {
+                        dailyClosingReports = toArray(data.dailyClosingReports);
+                    }
+                } else {
+                    categories = DEFAULT_CATEGORIES;
+                    accounts = DEFAULT_ACCOUNTS;
+                    cardConfig = DEFAULT_OPERATOR_CARDS;
+                    balanceStore = { 'acc_1': 13161.57 };
+                    
+                    await writeToFirebase('erp/categories', categories);
+                    await writeToFirebase('erp/accounts', accounts);
+                    await writeToFirebase('erp/cardConfig', cardConfig);
+                    await writeToFirebase('erp/balances', balanceStore);
+                    await writeToFirebase('erp/cashInventory', { quantities: cashQuantities, others: cashOthersAmount, grandTotal: 0 });
+                }
+            } catch(e) {
+                console.error("Initial load error:", e);
+            }
+
+            const cardAcc = getCardInventoryAccount();
+            balanceStore[cardAcc.id] = calculateGrandCardInventoryValue();
+
+            renderDynamicSidebar();
+            updateDashboardCards();
+            loadSavedProfile();
+
+            hideLoader();
+
+            onValue(erpRef, (snapshot) => {
+                const data = snapshot.val() || {};
+
+                if (data.categories) categories = toArray(data.categories);
+                if (data.accounts) accounts = toArray(data.accounts);
+                if (data.cardConfig) {
+                    cardConfig = data.cardConfig;
+                    OPERATORS_LIST.forEach(op => {
+                        if (cardConfig[op]) cardConfig[op] = toArray(cardConfig[op]);
+                    });
+                } else {
+                    cardConfig = DEFAULT_OPERATOR_CARDS;
+                }
+                if (data.cardInventory) cardQuantities = data.cardInventory;
+                if (data.cardHistory) cardHistoryLogs = toArray(data.cardHistory);
+                if (data.balances) balanceStore = data.balances;
+                if (data.fintechHistory) historyLogs = toArray(data.fintechHistory);
+                if (data.settings) profileSettings = data.settings;
+
+                // CASH INVENTORY SYNC
+                if (data.cashInventory) {
+                    cashQuantities = data.cashInventory.quantities || cashQuantities;
+                    cashOthersAmount = parseFloat(data.cashInventory.others) || 0;
+                    cashGrandTotal = parseFloat(data.cashInventory.grandTotal) || calculateCashGrandTotal();
+                }
+                if (data.cashHistory) cashHistoryLogs = toArray(data.cashHistory);
+                if (data.dailyClosingReports) dailyClosingReports = toArray(data.dailyClosingReports);
+
+                const cardAcc = getCardInventoryAccount();
+                balanceStore[cardAcc.id] = calculateGrandCardInventoryValue();
+
+                renderDynamicSidebar();
+                updateDashboardCards();
+                loadSavedProfile();
+
+                const activeView = document.querySelector('.view-panel.active');
+                if (activeView) {
+                    const activeId = activeView.id;
+                    if (activeId === 'daily-closing-view') {
+                        renderDailyClosingHistoryTable();
+                    } else if (activeId === 'cash-inventory-view') {
+                        if (!document.activeElement || !document.activeElement.classList.contains('inv-qty-input')) {
+                            renderCashInventoryTable();
+                        }
+                    } else if (activeId === 'card-inventory-view') {
+                        if (!document.activeElement || !document.activeElement.classList.contains('inv-qty-input')) {
+                            renderRedesignedCardInventory();
+                        } else {
+                            updateLiveSummaries();
+                        }
+                    } else if (activeId === 'card-mgmt-view') renderCardMasterConfiguration();
+                    else if (activeId === 'category-mgmt-view') renderCategoryManagementTables();
+                    else if (activeId === 'reports-view') {
+                        renderHistoryTable();
+                        renderCardHistoryTable();
+                        renderCashHistoryTable();
+                    } else if (activeId === 'balance-view' && currentActiveCatId) {
+                        openBalanceCategory(currentActiveCatId);
+                    }
+                }
+            });
+        }
+
+        /* CARD & CASH CALCULATION HELPERS */
+        function calculateGrandCardInventoryValue() {
+            let grandTotal = 0;
+            OPERATORS_LIST.forEach(op => {
+                const cardsList = toArray(cardConfig[op] || []).filter(c => c.active !== false);
+                const opQtyMap = cardQuantities[op] || {};
+                cardsList.forEach(card => {
+                    const qty = parseInt(opQtyMap[card.id]) || 0;
+                    grandTotal += (qty * card.price);
+                });
+            });
+            return grandTotal;
+        }
+
+        function calculateCashGrandTotal() {
+            let total = 0;
+            CASH_DENOMINATIONS.forEach(d => {
+                const qty = parseInt(cashQuantities[d]) || 0;
+                total += (d * qty);
+            });
+            total += (parseFloat(cashOthersAmount) || 0);
+            return total;
+        }
+
+        /* ==================== ISSUE 1 FIX: DASHBOARD CARD INVENTORY & NET BALANCE ==================== */
+        function updateDashboardCards() {
+            const grid = document.getElementById('dashboardSummaryGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            let grandTotalBalance = 0;
+            const cardVal = calculateGrandCardInventoryValue();
+            const cardAcc = getCardInventoryAccount();
+            balanceStore[cardAcc.id] = cardVal;
+
+            // Render category balance cards
+            const sortedCategories = toArray(categories).filter(c => c.enabled !== false).sort((a,b) => a.order - b.order);
+
+            sortedCategories.forEach(cat => {
+                const catAccs = toArray(accounts).filter(a => a.catId === cat.id && a.enabled !== false);
+                let catTotal = 0;
+                catAccs.forEach(acc => {
+                    catTotal += parseFloat(balanceStore[acc.id] || 0);
+                });
+
+                grandTotalBalance += catTotal;
+
+                const cardHtml = `
+                    <div class="fintech-card">
+                        <div class="card-icon"><i class="fa-solid fa-wallet"></i></div>
+                        <h4>${cat.name}</h4>
+                        <div class="amount">৳ ${catTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', cardHtml);
+            });
+
+            // Include Cash Inventory in Total Balance if not in category
+            const cashTotal = calculateCashGrandTotal();
+
+            // Display Total Net Balance
+            const totalNetBalElement = document.getElementById('totalAllBalance');
+            if (totalNetBalElement) {
+                totalNetBalElement.innerText = `৳ ${grandTotalBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            }
+        }
+
+        /* ASYNC SAVE HELPERS */
+        async function syncCardInventoryBalance() {
+            const totalVal = calculateGrandCardInventoryValue();
+            const cardAcc = getCardInventoryAccount();
+            balanceStore[cardAcc.id] = totalVal;
+            try {
+                await writeToFirebase('erp/balances', balanceStore);
+            } catch (err) {
+                console.error("Failed to sync Card Inventory Balance:", err);
+            }
+        }
+
+        async function saveCoreData() {
+            try {
+                await writeToFirebase('erp/categories', categories);
+                await writeToFirebase('erp/accounts', accounts);
+                renderDynamicSidebar();
+                renderCategoryManagementTables();
+                updateDashboardCards();
+                return true;
+            } catch (error) {
+                showToast("Failed to save Categories/Accounts", "error");
+                throw error;
+            }
+        }
+
+        async function saveCardInventoryData() {
+            try {
+                await writeToFirebase('erp/cardInventory', cardQuantities);
+                await writeToFirebase('erp/cardHistory', cardHistoryLogs);
+                await syncCardInventoryBalance();
+                updateDashboardCards();
+                return true;
+            } catch (error) {
+                showToast("Failed to save Inventory data", "error");
+                throw error;
+            }
+        }
+
+        async function saveCardConfigMaster() {
+            try {
+                await writeToFirebase('erp/cardConfig', cardConfig);
+                await syncCardInventoryBalance();
+                updateDashboardCards();
+                return true;
+            } catch (error) {
+                showToast("Failed to save Card Master configuration", "error");
+                throw error;
+            }
+        }
+
+        /* RENDER DYNAMIC SIDEBAR BALANCE MANAGEMENT SUBMENU */
+        function renderDynamicSidebar() {
+            const submenuContainer = document.getElementById('dynamicBalanceSubmenu');
+            if(!submenuContainer) return;
+            submenuContainer.innerHTML = '';
+            const activeCategories = toArray(categories).filter(c => c.enabled).sort((a,b) => a.order - b.order);
+            
+            activeCategories.forEach(cat => {
+                const li = document.createElement('li');
+                li.className = 'submenu-item';
+                li.id = `sub-${cat.id}`;
+                li.innerHTML = `<a onclick="openBalanceCategory('${cat.id}')"><i class="fa-solid fa-angle-right"></i> ${cat.name}</a>`;
+                submenuContainer.appendChild(li);
+            });
+        }
+
+        /* TOGGLE SUBMENUS */
+        window.toggleBalanceSubmenu = function() {
+            const parent = document.getElementById('menu-bal-parent');
+            const sub = document.getElementById('dynamicBalanceSubmenu');
+            parent.classList.toggle('open');
+            sub.classList.toggle('show');
+        };
+
+        window.toggleSettingsSubmenu = function() {
+            const parent = document.getElementById('menu-settings-parent');
+            const sub = document.getElementById('settingsSubmenu');
+            parent.classList.toggle('open');
+            sub.classList.toggle('show');
+        };
+
+        /* SWITCH MAIN TABS */
+        window.switchMainTab = function(tabName) {
+            profileDropdown.classList.remove('active');
+            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
+
+            if (tabName === 'daily-closing') {
+                showLoader("Loading Daily Closing History...");
+                document.getElementById('daily-closing-view').classList.add('active');
+                document.getElementById('menu-daily-closing').classList.add('active');
+                document.getElementById('top-title').innerText = "Daily Closing Report Module";
+                renderDailyClosingHistoryTable();
+                hideLoader();
+            } else if (tabName === 'cash-inventory') {
+                showLoader("Loading Cash Inventory...");
+                document.getElementById('cash-inventory-view').classList.add('active');
+                document.getElementById('menu-cash-inv').classList.add('active');
+                document.getElementById('top-title').innerText = "Cash Inventory Management";
+                renderCashInventoryTable();
+                hideLoader();
+            } else if (tabName === 'card-inventory') {
+                showLoader("Loading Inventory...");
+                document.getElementById('card-inventory-view').classList.add('active');
+                document.getElementById('menu-card-inv').classList.add('active');
+                document.getElementById('top-title').innerText = "Card Inventory Management";
+                renderRedesignedCardInventory();
+                hideLoader();
+            } else if (tabName === 'card-mgmt') {
+                document.getElementById('card-mgmt-view').classList.add('active');
+                document.getElementById('menu-settings-parent').classList.add('active');
+                document.getElementById('sub-card-mgmt').classList.add('active');
+                document.getElementById('top-title').innerText = "Card Master Configuration";
+                renderCardMasterConfiguration();
+            } else if (tabName === 'category-mgmt') {
+                document.getElementById('category-mgmt-view').classList.add('active');
+                document.getElementById('menu-cat-mgmt').classList.add('active');
+                document.getElementById('top-title').innerText = "Category & Account Management";
+                renderCategoryManagementTables();
+            } else if (tabName === 'reports') {
+                showLoader("Preparing Reports...");
+                document.getElementById('reports-view').classList.add('active');
+                document.getElementById('menu-reports').classList.add('active');
+                document.getElementById('top-title').innerText = "Reports & Audit Logs";
+                renderHistoryTable();
+                renderCardHistoryTable();
+                renderCashHistoryTable();
+                hideLoader();
+            } else if (tabName === 'profile') {
+                document.getElementById('profile-view').classList.add('active');
+                document.getElementById('menu-settings-parent').classList.add('active');
+                document.getElementById('sub-profile').classList.add('active');
+                document.getElementById('top-title').innerText = "Settings & Profile";
+            } else {
+                document.getElementById('dashboard-view').classList.add('active');
+                document.getElementById('menu-dash').classList.add('active');
+                document.getElementById('top-title').innerText = "Dashboard Overview";
+                updateDashboardCards();
+            }
+        };
+
+        /* ==================== DAILY CLOSING REPORT SNAPSHOT ENGINE ==================== */
+        window.generateDailyClosingSnapshot = async function() {
+            showLoader("Freezing financial position & generating snapshot...");
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const reportId = "DCR-" + Date.now().toString().slice(-6);
+
+            // CATEGORY MATCHING HELPERS
+            const bankCat = toArray(categories).find(c => c.name.toLowerCase().includes('bank')) || { id: 'cat_2' };
+            const personalCat = toArray(categories).find(c => c.name.toLowerCase().includes('personal')) || { id: 'cat_1' };
+            const agentCat = toArray(categories).find(c => c.name.toLowerCase().includes('agent')) || { id: 'cat_3' };
+
+            // 1. BANK ACCOUNTS SNAPSHOT
+            const bankAccList = toArray(accounts).filter(a => a.catId === bankCat.id && a.enabled !== false);
+            let totalBankVal = 0;
+            const bankSnapshot = bankAccList.map(a => {
+                const bal = parseFloat(balanceStore[a.id]) || 0;
+                totalBankVal += bal;
+                return { id: a.id, name: a.name, balance: bal };
+            });
+
+            // 2. PERSONAL ACCOUNTS SNAPSHOT
+            const personalAccList = toArray(accounts).filter(a => a.catId === personalCat.id && a.enabled !== false);
+            let totalPersonalVal = 0;
+            const personalSnapshot = personalAccList.map(a => {
+                const bal = parseFloat(balanceStore[a.id]) || 0;
+                totalPersonalVal += bal;
+                return { id: a.id, name: a.name, balance: bal };
+            });
+
+            // 3. AGENT ACCOUNTS SNAPSHOT
+            const agentAccList = toArray(accounts).filter(a => a.catId === agentCat.id && a.enabled !== false);
+            let totalAgentVal = 0;
+            const agentSnapshot = agentAccList.map(a => {
+                const bal = parseFloat(balanceStore[a.id]) || 0;
+                totalAgentVal += bal;
+                return { id: a.id, name: a.name, balance: bal };
+            });
+
+            // 4. CARD INVENTORY SNAPSHOT
+            let totalCardVal = 0;
+            const cardSnapshotByOp = {};
+            OPERATORS_LIST.forEach(op => {
+                const cardsList = toArray(cardConfig[op] || []).filter(c => c.active !== false);
+                const opQtyMap = cardQuantities[op] || {};
+                let opTotal = 0;
+                cardsList.forEach(card => {
+                    const qty = parseInt(opQtyMap[card.id]) || 0;
+                    opTotal += (qty * card.price);
+                });
+                cardSnapshotByOp[op] = opTotal;
+                totalCardVal += opTotal;
+            });
+
+            // 5. CASH INVENTORY SNAPSHOT
+            let totalCashVal = calculateCashGrandTotal();
+            const cashDenomSnapshot = {};
+            CASH_DENOMINATIONS.forEach(d => {
+                cashDenomSnapshot[d] = {
+                    quantity: parseInt(cashQuantities[d]) || 0,
+                    amount: (parseInt(cashQuantities[d]) || 0) * d
+                };
+            });
+
+            // 6. ASSETS & LIABILITIES
+            let totalAssets = totalBankVal + totalPersonalVal + totalAgentVal + totalCardVal + totalCashVal;
+            
+            const knownCatIds = [bankCat.id, personalCat.id, agentCat.id];
+            const otherAccs = toArray(accounts).filter(a => !knownCatIds.includes(a.catId) && a.enabled !== false && a.id !== getCardInventoryAccount().id);
+            otherAccs.forEach(a => {
+                totalAssets += (parseFloat(balanceStore[a.id]) || 0);
+            });
+
+            const totalLiabilities = 0;
+            const netBalance = totalAssets - totalLiabilities;
+
+            const reportPayload = {
+                reportId: reportId,
+                closingDate: dateStr,
+                closingTime: timeStr,
+                createdAt: now.toISOString(),
+                bankAccounts: bankSnapshot,
+                totalBank: totalBankVal,
+                personalAccounts: personalSnapshot,
+                totalPersonal: totalPersonalVal,
+                agentAccounts: agentSnapshot,
+                totalAgent: totalAgentVal,
+                cardInventory: cardSnapshotByOp,
+                totalCardInventory: totalCardVal,
+                cashInventory: {
+                    denominations: cashDenomSnapshot,
+                    others: parseFloat(cashOthersAmount) || 0,
+                    totalCash: totalCashVal
+                },
+                totalAssets: totalAssets,
+                totalLiabilities: totalLiabilities,
+                netBalance: netBalance
+            };
+
+            dailyClosingReports.unshift(reportPayload);
+
+            try {
+                await writeToFirebase('erp/dailyClosingReports', dailyClosingReports);
+                showToast("Daily Closing Snapshot locked & saved permanently!", "success");
+                renderDailyClosingHistoryTable();
+                viewDailyClosingReport(reportId);
+            } catch(err) {
+                console.error("Save Closing Snapshot Error:", err);
+            } finally {
+                hideLoader();
+            }
+        };
+
+        /* ==================== ISSUES 3, 4, 5 FIX: DAILY CLOSING HISTORY TABLE & FILTERS ==================== */
+        window.filterDailyClosingHistory = function() {
+            renderDailyClosingHistoryTable();
+        };
+
+        window.resetDailyClosingHistory = function() {
+            document.getElementById('dcrFromDate').value = '';
+            document.getElementById('dcrToDate').value = '';
+            document.getElementById('dcrSearchInput').value = '';
+            renderDailyClosingHistoryTable();
+        };
+
+        function renderDailyClosingHistoryTable() {
+            const tbody = document.getElementById('dailyClosingHistoryTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            let reports = toArray(dailyClosingReports);
+
+            // ISSUE 5: Newest report first
+            reports.sort((a, b) => new Date(b.createdAt || b.closingDate) - new Date(a.createdAt || a.closingDate));
+
+            // ISSUE 3: Date Range Filter
+            const fromDate = document.getElementById('dcrFromDate')?.value;
+            const toDate = document.getElementById('dcrToDate')?.value;
+
+            if (fromDate) {
+                const fDate = new Date(fromDate);
+                fDate.setHours(0,0,0,0);
+                reports = reports.filter(r => new Date(r.createdAt || r.closingDate) >= fDate);
+            }
+            if (toDate) {
+                const tDate = new Date(toDate);
+                tDate.setHours(23,59,59,999);
+                reports = reports.filter(r => new Date(r.createdAt || r.closingDate) <= tDate);
+            }
+
+            // ISSUE 4: Quick Search
+            const searchQuery = document.getElementById('dcrSearchInput')?.value.trim().toLowerCase();
+            if (searchQuery) {
+                reports = reports.filter(r => 
+                    (r.closingDate && r.closingDate.toLowerCase().includes(searchQuery)) ||
+                    (r.reportId && r.reportId.toLowerCase().includes(searchQuery))
+                );
+            }
+
+            if(reports.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #9ca3af;">No matching daily closing snapshots found.</td></tr>`;
+                return;
+            }
+
+            // ISSUE 5: Display columns: Report Date | Closing Time | Report ID | Net Balance | Actions
+            reports.forEach(rep => {
+                const rowHtml = `
+                    <tr>
+                        <td><strong>${rep.closingDate}</strong></td>
+                        <td>${rep.closingTime}</td>
+                        <td><code>${rep.reportId}</code></td>
+                        <td><strong style="color: #059669;">৳ ${(rep.netBalance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
+                        <td style="text-align: center;">
+                            <button class="btn-action btn-edit" onclick="viewDailyClosingReport('${rep.reportId}')"><i class="fa-solid fa-eye"></i> View</button>
+                            <button class="btn-action btn-toggle" onclick="printDailyClosingPDF('${rep.reportId}')"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                            <button class="btn-action btn-toggle" onclick="exportDailyClosingExcel('${rep.reportId}')" style="background: #dcfce7; color: #166534;"><i class="fa-solid fa-file-excel"></i> Excel</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', rowHtml);
+            });
+        }
+
+        /* ==================== ISSUE 2 FIX: SINGLE A4 LANDSCAPE PAGE FIT ==================== */
+        window.viewDailyClosingReport = function(reportId) {
+            const rep = toArray(dailyClosingReports).find(r => r.reportId === reportId);
+            if(!rep) return;
+            activeViewingReport = rep;
+
+            const container = document.getElementById('printable-closing-report');
+            const displayCard = document.getElementById('closingReportDisplayCard');
+            displayCard.style.display = 'block';
+
+            // COMPACT DASHBOARD GRID LAYOUT FITTING EXACTLY ONE A4 LANDSCAPE PAGE
+            let bankRows = (rep.bankAccounts || []).map(b => `<tr><td>${b.name}</td><td style="text-align:right;">৳ ${b.balance.toFixed(2)}</td></tr>`).join('');
+            let personalRows = (rep.personalAccounts || []).map(p => `<tr><td>${p.name}</td><td style="text-align:right;">৳ ${p.balance.toFixed(2)}</td></tr>`).join('');
+            let agentRows = (rep.agentAccounts || []).map(a => `<tr><td>${a.name}</td><td style="text-align:right;">৳ ${a.balance.toFixed(2)}</td></tr>`).join('');
+
+            let cardOpRows = OPERATORS_LIST.map(op => `<tr><td>${op} Cards</td><td style="text-align:right;">৳ ${(rep.cardInventory[op] || 0).toFixed(2)}</td></tr>`).join('');
+
+            let cashDenomRows = CASH_DENOMINATIONS.slice(0, 6).map(d => {
+                const item = rep.cashInventory?.denominations?.[d] || { quantity: 0, amount: 0 };
+                return `<tr><td>৳${d} x ${item.quantity}</td><td style="text-align:right;">৳ ${item.amount.toFixed(2)}</td></tr>`;
+            }).join('');
+
+            let html = `
+                <!-- COMPACT HEADER -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary-dark); padding-bottom: 6px; margin-bottom: 8px;">
+                    <div>
+                        <h2 style="font-size: 1.1rem; font-weight: 800; color: var(--primary-dark); margin:0;">MOUSUMI COMPUTER - DAILY CLOSING REPORT</h2>
+                        <span style="font-size: 0.7rem; color: #64748b; font-weight: 600;">IMMUTABLE FINANCIAL POSITION SNAPSHOT</span>
+                    </div>
+                    <div style="text-align: right; font-size: 0.75rem; color: #334155;">
+                        <div><strong>Report ID:</strong> <code>${rep.reportId}</code></div>
+                        <div><strong>Date:</strong> ${rep.closingDate} | <strong>Time:</strong> ${rep.closingTime}</div>
+                    </div>
+                </div>
+
+                <!-- SIDE-BY-SIDE SIDEBAR/GRID 3-COLUMN LAYOUT FOR COMPACTNESS -->
+                <div class="dcr-grid-3col">
+                    <!-- ROW 1: ACCOUNTS -->
+                    <div class="dcr-card">
+                        <div class="dcr-card-title"><span><i class="fa-solid fa-building-columns"></i> Bank Accounts</span> <span>৳ ${rep.totalBank.toFixed(2)}</span></div>
+                        <table class="dcr-table"><tbody>${bankRows}</tbody></table>
+                    </div>
+
+                    <div class="dcr-card">
+                        <div class="dcr-card-title"><span><i class="fa-solid fa-user-check"></i> Personal Accounts</span> <span>৳ ${rep.totalPersonal.toFixed(2)}</span></div>
+                        <table class="dcr-table"><tbody>${personalRows}</tbody></table>
+                    </div>
+
+                    <div class="dcr-card">
+                        <div class="dcr-card-title"><span><i class="fa-solid fa-user-tie"></i> Agent Accounts</span> <span>৳ ${rep.totalAgent.toFixed(2)}</span></div>
+                        <table class="dcr-table"><tbody>${agentRows}</tbody></table>
+                    </div>
+                </div>
+
+                <div class="dcr-grid-3col">
+                    <!-- ROW 2: CARDS & CASH -->
+                    <div class="dcr-card">
+                        <div class="dcr-card-title"><span><i class="fa-solid fa-sim-card"></i> Card Inventory</span> <span>৳ ${rep.totalCardInventory.toFixed(2)}</span></div>
+                        <table class="dcr-table"><tbody>${cardOpRows}</tbody></table>
+                    </div>
+
+                    <div class="dcr-card">
+                        <div class="dcr-card-title"><span><i class="fa-solid fa-money-bill-wave"></i> Cash Denominations</span> <span>৳ ${(rep.cashInventory?.totalCash || 0).toFixed(2)}</span></div>
+                        <table class="dcr-table">
+                            <tbody>
+                                ${cashDenomRows}
+                                <tr><td>Others / Loose</td><td style="text-align:right;">৳ ${(rep.cashInventory?.others || 0).toFixed(2)}</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- FINANCIAL SUMMARY BANNER -->
+                    <div class="dcr-card dcr-highlight-card">
+                        <div class="dcr-card-title" style="color: #38bdf8;"><span><i class="fa-solid fa-calculator"></i> Statement Summary</span></div>
+                        <table class="dcr-table" style="margin-top: 4px;">
+                            <tbody>
+                                <tr><td>Total Bank Balances</td><td style="text-align:right;">৳ ${rep.totalBank.toFixed(2)}</td></tr>
+                                <tr><td>Total Personal Balances</td><td style="text-align:right;">৳ ${rep.totalPersonal.toFixed(2)}</td></tr>
+                                <tr><td>Total Agent Balances</td><td style="text-align:right;">৳ ${rep.totalAgent.toFixed(2)}</td></tr>
+                                <tr><td>Total Card Inventory</td><td style="text-align:right;">৳ ${rep.totalCardInventory.toFixed(2)}</td></tr>
+                                <tr><td>Total Physical Cash</td><td style="text-align:right;">৳ ${(rep.cashInventory?.totalCash || 0).toFixed(2)}</td></tr>
+                                <tr style="font-weight: 800; font-size: 0.85rem; border-top: 1px solid rgba(255,255,255,0.2); color: #38bdf8;">
+                                    <td>NET TOTAL BALANCE</td>
+                                    <td style="text-align:right;">৳ ${rep.netBalance.toFixed(2)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.68rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 4px; margin-top: 4px;">
+                    <span>Generated by Mousumi Computer ERP</span>
+                    <span>System Clock Verified Snapshot</span>
+                </div>
+            `;
+
+            container.innerHTML = html;
+            displayCard.scrollIntoView({ behavior: 'smooth' });
+        };
+
+        window.printDailyClosingPDF = function(reportId) {
+            if(reportId) viewDailyClosingReport(reportId);
+            window.print();
+        };
+
+        /* ==================== ISSUE 6 FIX: REAL EXCEL EXPORT (.XLSX) ==================== */
+        window.exportDailyClosingExcel = function(reportId) {
+            const rep = reportId ? toArray(dailyClosingReports).find(r => r.reportId === reportId) : activeViewingReport;
+            if(!rep) {
+                showToast("No report selected for Excel export", "warning");
+                return;
+            }
+
+            // Create XLSX Workbook & Sheet
+            const wb = XLSX.utils.book_new();
+
+            const excelData = [
+                ["MOUSUMI COMPUTER - DAILY CLOSING REPORT"],
+                ["Report ID", rep.reportId],
+                ["Report Date", rep.closingDate],
+                ["Closing Time", rep.closingTime],
+                [""],
+                ["CATEGORY / SECTION", "ACCOUNT / ITEM", "AMOUNT (BDT)"],
+                ["Bank Accounts"],
+                ...(rep.bankAccounts || []).map(b => ["Bank", b.name, b.balance]),
+                ["Bank Total", "", rep.totalBank],
+                [""],
+                ["Personal Accounts"],
+                ...(rep.personalAccounts || []).map(p => ["Personal", p.name, p.balance]),
+                ["Personal Total", "", rep.totalPersonal],
+                [""],
+                ["Agent Accounts"],
+                ...(rep.agentAccounts || []).map(a => ["Agent", a.name, a.balance]),
+                ["Agent Total", "", rep.totalAgent],
+                [""],
+                ["Card Inventory"],
+                ...OPERATORS_LIST.map(op => ["Cards", op + " Cards", rep.cardInventory[op] || 0]),
+                ["Card Total", "", rep.totalCardInventory],
+                [""],
+                ["Cash Inventory"],
+                ...CASH_DENOMINATIONS.map(d => ["Cash", `৳${d} Notes`, (rep.cashInventory?.denominations?.[d]?.amount || 0)]),
+                ["Cash Others", "", rep.cashInventory?.others || 0],
+                ["Cash Total", "", rep.cashInventory?.totalCash || 0],
+                [""],
+                ["GRAND TOTAL NET BALANCE", "", rep.netBalance]
+            ];
+
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            XLSX.utils.book_append_sheet(wb, ws, "Daily Closing");
+
+            XLSX.writeFile(wb, `Daily_Closing_${rep.reportId}_${rep.closingDate.replace(/ /g, '_')}.xlsx`);
+            showToast("Excel workbook generated successfully!", "success");
+        };
+
+        /* ACCOUNT BALANCE EDIT ENGINE */
+        window.openBalanceCategory = function(catId) {
+            currentActiveCatId = catId;
+            const cat = categories.find(c => c.id === catId);
+            if (!cat) return;
+
+            switchMainTab('balance');
+            document.getElementById('menu-bal-parent').classList.add('active');
+            
+            const subEl = document.getElementById(`sub-${catId}`);
+            if (subEl) subEl.classList.add('active');
+
+            document.getElementById('top-title').innerText = `${cat.name} - Balance Form`;
+            document.getElementById('erpFormTitle').innerHTML = `<i class="fa-solid fa-wallet" style="color: #00a8ef;"></i> Update ${cat.name}`;
+
+            const container = document.getElementById('formFieldsContainer');
+            container.innerHTML = '';
+
+            const catAccounts = toArray(accounts).filter(a => a.catId === catId && a.enabled !== false);
+            
+            if (catAccounts.length === 0) {
+                container.innerHTML = `<p style="color: #6b7280; font-size: 0.9rem;">No active accounts configured in this category.</p>`;
+                return;
+            }
+
+            catAccounts.forEach(acc => {
+                const currentVal = parseFloat(balanceStore[acc.id] || 0);
+                const fieldCard = document.createElement('div');
+                fieldCard.className = 'field-card';
+                fieldCard.innerHTML = `
+                    <div class="field-card-header">
+                        <label>${acc.name}</label>
+                        <div class="prev-bal">Current: <span>৳ ${currentVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
+                    </div>
+                    <input type="number" step="any" data-acc-id="${acc.id}" value="${currentVal}" placeholder="Enter new balance" required />
+                `;
+                container.appendChild(fieldCard);
+            });
+        };
+
+        document.getElementById('balanceUpdateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const inputs = document.querySelectorAll('#formFieldsContainer input');
+            const now = new Date();
+            const timeStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+
+            inputs.forEach(input => {
+                const accId = input.getAttribute('data-acc-id');
+                const newVal = parseFloat(input.value) || 0;
+                const prevVal = parseFloat(balanceStore[accId] || 0);
+                const diff = newVal - prevVal;
+
+                if (diff !== 0) {
+                    balanceStore[accId] = newVal;
+                    const accObj = accounts.find(a => a.id === accId) || {};
+                    const catObj = categories.find(c => c.id === accObj.catId) || {};
+
+                    historyLogs.unshift({
+                        timestamp: timeStr,
+                        category: catObj.name || 'General',
+                        account: accObj.name || accId,
+                        prevBalance: prevVal,
+                        newBalance: newVal,
+                        diff: diff
+                    });
+                }
+            });
+
+            showLoader("Updating Balances...");
+            try {
+                await writeToFirebase('erp/balances', balanceStore);
+                await writeToFirebase('erp/fintechHistory', historyLogs);
+                showToast("Account balances updated successfully!", "success");
+                updateDashboardCards();
+            } catch(err) {
+                console.error("Save error:", err);
+            } finally {
+                hideLoader();
+            }
+        });
+
+        /* CASH INVENTORY MANAGEMENT ENGINE */
+        function renderCashInventoryTable() {
+            const tbody = document.getElementById('cashDenomTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            CASH_DENOMINATIONS.forEach(denom => {
+                const qty = parseInt(cashQuantities[denom]) || 0;
+                const amt = denom * qty;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>৳ ${denom} Notes</strong></td>
+                    <td>
+                        <input type="number" min="0" class="inv-qty-input cash-qty-input" data-denom="${denom}" value="${qty}" oninput="updateLiveCashCalculations()" />
+                    </td>
+                    <td><strong id="cash-amt-${denom}">৳ ${amt.toFixed(2)}</strong></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            const othersRow = document.createElement('tr');
+            othersRow.innerHTML = `
+                <td><strong>Others / Loose Coins</strong></td>
+                <td>
+                    <input type="number" step="any" min="0" class="inv-qty-input" id="cashOthersInput" value="${cashOthersAmount}" oninput="updateLiveCashCalculations()" style="width: 130px;" />
+                </td>
+                <td><strong id="cash-amt-others">৳ ${parseFloat(cashOthersAmount).toFixed(2)}</strong></td>
+            `;
+            tbody.appendChild(othersRow);
+
+            updateLiveCashCalculations();
+        }
+
+        window.updateLiveCashCalculations = function() {
+            let total = 0;
+            CASH_DENOMINATIONS.forEach(d => {
+                const input = document.querySelector(`.cash-qty-input[data-denom="${d}"]`);
+                const qty = input ? (parseInt(input.value) || 0) : 0;
+                const amt = d * qty;
+                const amtEl = document.getElementById(`cash-amt-${d}`);
+                if(amtEl) amtEl.innerText = `৳ ${amt.toFixed(2)}`;
+                total += amt;
+            });
+
+            const othersInput = document.getElementById('cashOthersInput');
+            const othersVal = othersInput ? (parseFloat(othersInput.value) || 0) : 0;
+            const othersAmtEl = document.getElementById('cash-amt-others');
+            if(othersAmtEl) othersAmtEl.innerText = `৳ ${othersVal.toFixed(2)}`;
+
+            total += othersVal;
+            cashGrandTotal = total;
+
+            const grandTotalEl = document.getElementById('grandTotalCashVal');
+            if(grandTotalEl) grandTotalEl.innerText = `৳ ${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        };
+
+        window.saveCashInventory = async function() {
+            showLoader("Saving Cash Inventory...");
+            CASH_DENOMINATIONS.forEach(d => {
+                const input = document.querySelector(`.cash-qty-input[data-denom="${d}"]`);
+                cashQuantities[d] = input ? (parseInt(input.value) || 0) : 0;
+            });
+
+            const othersInput = document.getElementById('cashOthersInput');
+            cashOthersAmount = othersInput ? (parseFloat(othersInput.value) || 0) : 0;
+            cashGrandTotal = calculateCashGrandTotal();
+
+            const now = new Date();
+            const timeStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+
+            cashHistoryLogs.unshift({
+                timestamp: timeStr,
+                others: cashOthersAmount,
+                grandTotal: cashGrandTotal
+            });
+
+            try {
+                await writeToFirebase('erp/cashInventory', {
+                    quantities: cashQuantities,
+                    others: cashOthersAmount,
+                    grandTotal: cashGrandTotal
+                });
+                await writeToFirebase('erp/cashHistory', cashHistoryLogs);
+                showToast("Cash Inventory saved successfully!", "success");
+            } catch(err) {
+                console.error(err);
+            } finally {
+                hideLoader();
+            }
+        };
+
+        /* CARD INVENTORY AUDIT ENGINE */
+        function renderRedesignedCardInventory() {
+            const container = document.getElementById('operatorAccordions');
+            if (!container) return;
+            container.innerHTML = '';
+
+            OPERATORS_LIST.forEach(op => {
+                const cards = toArray(cardConfig[op] || []).filter(c => c.active !== false);
+                const qtyMap = cardQuantities[op] || {};
+
+                let opTotalQty = 0;
+                let opTotalVal = 0;
+
+                cards.forEach(c => {
+                    const q = parseInt(qtyMap[c.id]) || 0;
+                    opTotalQty += q;
+                    opTotalVal += (q * c.price);
+                });
+
+                let badgeClass = 'op-gp';
+                if (op === 'Banglalink') badgeClass = 'op-bl';
+                if (op === 'Robi') badgeClass = 'op-robi';
+                if (op === 'Airtel') badgeClass = 'op-airtel';
+
+                let cardTableRows = cards.map(c => {
+                    const q = parseInt(qtyMap[c.id]) || 0;
+                    const lineVal = q * c.price;
+                    return `
+                        <tr>
+                            <td><strong>${c.name}</strong> <span style="font-size: 0.75rem; color: #6b7280;">(${c.type})</span></td>
+                            <td>৳ ${c.price}</td>
+                            <td>
+                                <input type="number" min="0" class="inv-qty-input card-qty-input" data-op="${op}" data-card-id="${c.id}" data-price="${c.price}" value="${q}" oninput="updateLiveSummaries()" />
+                            </td>
+                            <td><strong id="val-${op}-${c.id}">৳ ${lineVal.toFixed(2)}</strong></td>
+                        </tr>
+                    `;
+                }).join('');
+
+                const accordionHtml = `
+                    <div class="accordion-item" id="acc-item-${op}">
+                        <div class="accordion-header" onclick="toggleAccordion('${op}')">
+                            <div class="accordion-title-box">
+                                <span class="op-badge ${badgeClass}">${op}</span>
+                                <h3>${op} Card Inventory</h3>
+                            </div>
+                            <div class="accordion-summary-info">
+                                <div class="acc-summary-item">
+                                    <span>Cards Count</span>
+                                    <strong id="op-count-${op}">${opTotalQty} Pcs</strong>
+                                </div>
+                                <div class="acc-summary-item">
+                                    <span>Total Value</span>
+                                    <strong class="highlight-val" id="op-val-${op}">৳ ${opTotalVal.toFixed(2)}</strong>
+                                </div>
+                                <i class="fa-solid fa-chevron-down accordion-icon"></i>
+                            </div>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Card Item</th>
+                                            <th>Price</th>
+                                            <th>Quantity</th>
+                                            <th>Total Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${cardTableRows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', accordionHtml);
+            });
+
+            updateLiveSummaries();
+        }
+
+        window.toggleAccordion = function(op) {
+            const item = document.getElementById(`acc-item-${op}`);
+            if (item) item.classList.toggle('active');
+        };
+
+        window.updateLiveSummaries = function() {
+            let grandCount = 0;
+            let grandVal = 0;
+
+            OPERATORS_LIST.forEach(op => {
+                let opCount = 0;
+                let opVal = 0;
+
+                const inputs = document.querySelectorAll(`.card-qty-input[data-op="${op}"]`);
+                inputs.forEach(input => {
+                    const cardId = input.getAttribute('data-card-id');
+                    const price = parseFloat(input.getAttribute('data-price')) || 0;
+                    const qty = parseInt(input.value) || 0;
+                    const lineVal = qty * price;
+
+                    opCount += qty;
+                    opVal += lineVal;
+
+                    const lineValEl = document.getElementById(`val-${op}-${cardId}`);
+                    if (lineValEl) lineValEl.innerText = `৳ ${lineVal.toFixed(2)}`;
+                });
+
+                const opCountEl = document.getElementById(`op-count-${op}`);
+                const opValEl = document.getElementById(`op-val-${op}`);
+                if (opCountEl) opCountEl.innerText = `${opCount} Pcs`;
+                if (opValEl) opValEl.innerText = `৳ ${opVal.toFixed(2)}`;
+
+                const summaryOpValEl = document.getElementById(`summary${op}Val`);
+                if (summaryOpValEl) summaryOpValEl.innerText = `৳ ${opVal.toFixed(2)}`;
+
+                grandCount += opCount;
+                grandVal += opVal;
+            });
+
+            const grandCountEl = document.getElementById('grandTotalCardsCount');
+            const grandValEl = document.getElementById('grandTotalCardsVal');
+            if (grandCountEl) grandCountEl.innerText = `${grandCount} Pcs`;
+            if (grandValEl) grandValEl.innerText = `৳ ${grandVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        };
+
+        window.saveTodayInventory = async function() {
+            showLoader("Saving Card Inventory...");
+
+            OPERATORS_LIST.forEach(op => {
+                cardQuantities[op] = cardQuantities[op] || {};
+                const inputs = document.querySelectorAll(`.card-qty-input[data-op="${op}"]`);
+                inputs.forEach(input => {
+                    const cardId = input.getAttribute('data-card-id');
+                    const qty = parseInt(input.value) || 0;
+                    cardQuantities[op][cardId] = qty;
+                });
+            });
+
+            const now = new Date();
+            const timeStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+
+            OPERATORS_LIST.forEach(op => {
+                let opCards = 0;
+                let opVal = 0;
+                const cards = toArray(cardConfig[op] || []).filter(c => c.active !== false);
+                cards.forEach(c => {
+                    const q = parseInt(cardQuantities[op][c.id]) || 0;
+                    opCards += q;
+                    opVal += (q * c.price);
+                });
+
+                cardHistoryLogs.unshift({
+                    timestamp: timeStr,
+                    operator: op,
+                    totalCards: opCards,
+                    totalValue: opVal
+                });
+            });
+
+            try {
+                await saveCardInventoryData();
+                showToast("Card Inventory saved successfully!", "success");
+            } catch(err) {
+                console.error(err);
+            } finally {
+                hideLoader();
+            }
+        };
+
+        /* CATEGORY & ACCOUNT MANAGEMENT ENGINE */
+        function renderCategoryManagementTables() {
+            const catTbody = document.getElementById('categoryTableBody');
+            const accTbody = document.getElementById('accountTableBody');
+            const accSelect = document.getElementById('accCatSelect');
+
+            if (catTbody) {
+                catTbody.innerHTML = '';
+                toArray(categories).sort((a,b) => a.order - b.order).forEach(cat => {
+                    catTbody.innerHTML += `
+                        <tr>
+                            <td>${cat.order}</td>
+                            <td><strong>${cat.name}</strong></td>
+                            <td><span class="badge ${cat.enabled !== false ? 'badge-success' : 'badge-danger'}">${cat.enabled !== false ? 'Active' : 'Disabled'}</span></td>
+                            <td>
+                                <button class="btn-action btn-edit" onclick="editCategory('${cat.id}')">Edit</button>
+                                <button class="btn-action btn-toggle" onclick="toggleCategory('${cat.id}')">Toggle</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            if (accSelect) {
+                accSelect.innerHTML = '<option value="">Select Category</option>';
+                toArray(categories).filter(c => c.enabled !== false).forEach(cat => {
+                    accSelect.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+                });
+            }
+
+            if (accTbody) {
+                accTbody.innerHTML = '';
+                toArray(accounts).forEach(acc => {
+                    const cat = categories.find(c => c.id === acc.catId) || {};
+                    accTbody.innerHTML += `
+                        <tr>
+                            <td>${cat.name || 'N/A'}</td>
+                            <td><code>${acc.id}</code></td>
+                            <td><strong>${acc.name}</strong></td>
+                            <td><span class="badge ${acc.enabled !== false ? 'badge-success' : 'badge-danger'}">${acc.enabled !== false ? 'Active' : 'Disabled'}</span></td>
+                            <td>
+                                <button class="btn-action btn-edit" onclick="editAccount('${acc.id}')">Edit</button>
+                                <button class="btn-action btn-toggle" onclick="toggleAccount('${acc.id}')">Toggle</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        document.getElementById('addCategoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('editCatId').value;
+            const name = document.getElementById('catNameInput').value.trim();
+            const order = parseInt(document.getElementById('catOrderInput').value) || 1;
+
+            if (editId) {
+                const cat = categories.find(c => c.id === editId);
+                if (cat) {
+                    cat.name = name;
+                    cat.order = order;
+                }
+            } else {
+                const newId = 'cat_' + Date.now();
+                categories.push({ id: newId, name: name, order: order, enabled: true });
+            }
+
+            document.getElementById('editCatId').value = '';
+            document.getElementById('catNameInput').value = '';
+            document.getElementById('catOrderInput').value = '';
+
+            showLoader("Saving Category...");
+            await saveCoreData();
+            hideLoader();
+        });
+
+        window.editCategory = function(id) {
+            const cat = categories.find(c => c.id === id);
+            if (!cat) return;
+            document.getElementById('editCatId').value = cat.id;
+            document.getElementById('catNameInput').value = cat.name;
+            document.getElementById('catOrderInput').value = cat.order;
+        };
+
+        window.toggleCategory = async function(id) {
+            const cat = categories.find(c => c.id === id);
+            if (cat) {
+                cat.enabled = cat.enabled === false ? true : false;
+                showLoader("Updating Category...");
+                await saveCoreData();
+                hideLoader();
+            }
+        };
+
+        document.getElementById('addAccountForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('editAccId').value;
+            const catId = document.getElementById('accCatSelect').value;
+            const name = document.getElementById('accNameInput').value.trim();
+
+            if (editId) {
+                const acc = accounts.find(a => a.id === editId);
+                if (acc) {
+                    acc.catId = catId;
+                    acc.name = name;
+                }
+            } else {
+                const newId = 'acc_' + Date.now();
+                accounts.push({ id: newId, catId: catId, name: name, enabled: true });
+                balanceStore[newId] = 0;
+            }
+
+            document.getElementById('editAccId').value = '';
+            document.getElementById('accNameInput').value = '';
+
+            showLoader("Saving Account...");
+            await saveCoreData();
+            await writeToFirebase('erp/balances', balanceStore);
+            hideLoader();
+        });
+
+        window.editAccount = function(id) {
+            const acc = accounts.find(a => a.id === id);
+            if (!acc) return;
+            document.getElementById('editAccId').value = acc.id;
+            document.getElementById('accCatSelect').value = acc.catId;
+            document.getElementById('accNameInput').value = acc.name;
+        };
+
+        window.toggleAccount = async function(id) {
+            const acc = accounts.find(a => a.id === id);
+            if (acc) {
+                acc.enabled = acc.enabled === false ? true : false;
+                showLoader("Updating Account...");
+                await saveCoreData();
+                hideLoader();
+            }
+        };
+
+        /* CARD MASTER CONFIGURATION ENGINE */
+        function renderCardMasterConfiguration() {
+            const container = document.getElementById('cardMasterTablesContainer');
+            if(!container) return;
+            container.innerHTML = '';
+
+            OPERATORS_LIST.forEach(op => {
+                const cards = toArray(cardConfig[op] || []);
+                let tableRows = cards.map(c => `
+                    <tr>
+                        <td><code>${c.id}</code></td>
+                        <td><strong>${c.name}</strong></td>
+                        <td>${c.type}</td>
+                        <td>৳ ${c.price}</td>
+                        <td><span class="badge ${c.active !== false ? 'badge-success' : 'badge-danger'}">${c.active !== false ? 'Active' : 'Inactive'}</span></td>
+                        <td>
+                            <button class="btn-action btn-edit" onclick="editCardMaster('${op}', '${c.id}')">Edit</button>
+                            <button class="btn-action btn-toggle" onclick="toggleCardMaster('${op}', '${c.id}')">Toggle</button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                container.innerHTML += `
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 1rem; color: var(--primary-dark); margin-bottom: 8px;">${op} Master Config</h4>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Card Name</th>
+                                        <th>Type</th>
+                                        <th>Price</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tableRows.length ? tableRows : '<tr><td colspan="6" style="text-align:center;">No cards configured</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        document.getElementById('cardMasterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('cardMasterId').value;
+            const op = document.getElementById('cardOperatorSelect').value;
+            const name = document.getElementById('cardNameMasterInput').value.trim();
+            const type = document.getElementById('cardTypeSelect').value;
+            const price = parseFloat(document.getElementById('cardPriceMasterInput').value) || 0;
+            const active = document.getElementById('cardStatusSelect').value === 'active';
+
+            cardConfig[op] = toArray(cardConfig[op] || []);
+
+            if(editId) {
+                const card = cardConfig[op].find(c => c.id === editId);
+                if(card) {
+                    card.name = name;
+                    card.type = type;
+                    card.price = price;
+                    card.active = active;
+                }
+            } else {
+                const newId = op.toLowerCase() + '_' + Date.now();
+                cardConfig[op].push({ id: newId, name: name, type: type, price: price, active: active });
+            }
+
+            resetCardMasterForm();
+            showLoader("Saving Card Configuration...");
+            await saveCardConfigMaster();
+            renderCardMasterConfiguration();
+            hideLoader();
+        });
+
+        window.editCardMaster = function(op, id) {
+            const card = toArray(cardConfig[op] || []).find(c => c.id === id);
+            if(!card) return;
+            document.getElementById('cardMasterId').value = card.id;
+            document.getElementById('cardOperatorSelect').value = op;
+            document.getElementById('cardNameMasterInput').value = card.name;
+            document.getElementById('cardTypeSelect').value = card.type;
+            document.getElementById('cardPriceMasterInput').value = card.price;
+            document.getElementById('cardStatusSelect').value = card.active !== false ? 'active' : 'inactive';
+        };
+
+        window.toggleCardMaster = async function(op, id) {
+            const card = toArray(cardConfig[op] || []).find(c => c.id === id);
+            if(card) {
+                card.active = card.active === false ? true : false;
+                showLoader("Updating Card...");
+                await saveCardConfigMaster();
+                renderCardMasterConfiguration();
+                hideLoader();
+            }
+        };
+
+        window.resetCardMasterForm = function() {
+            document.getElementById('cardMasterId').value = '';
+            document.getElementById('cardNameMasterInput').value = '';
+            document.getElementById('cardPriceMasterInput').value = '';
+        };
+
+        /* AUDIT REPORTS TABLES ENGINE */
+        function renderHistoryTable() {
+            const tbody = document.getElementById('historyTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            const logs = toArray(historyLogs);
+            if(logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No balance record history available yet.</td></tr>`;
+                return;
+            }
+
+            logs.forEach(log => {
+                const diffColor = log.diff >= 0 ? '#10b981' : '#e11d48';
+                const diffSign = log.diff >= 0 ? '+' : '';
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${log.timestamp}</td>
+                        <td>${log.category}</td>
+                        <td><strong>${log.account}</strong></td>
+                        <td>৳ ${log.prevBalance.toFixed(2)}</td>
+                        <td>৳ ${log.newBalance.toFixed(2)}</td>
+                        <td><strong style="color: ${diffColor};">${diffSign}৳ ${log.diff.toFixed(2)}</strong></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderCardHistoryTable() {
+            const tbody = document.getElementById('cardHistoryTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            const logs = toArray(cardHistoryLogs);
+            if(logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #9ca3af;">No card inventory history available yet.</td></tr>`;
+                return;
+            }
+
+            logs.forEach(log => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${log.timestamp}</td>
+                        <td><strong>${log.operator}</strong></td>
+                        <td>${log.totalCards} Pcs</td>
+                        <td><strong style="color: #10b981;">৳ ${log.totalValue.toFixed(2)}</strong></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderCashHistoryTable() {
+            const tbody = document.getElementById('cashHistoryTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            const logs = toArray(cashHistoryLogs);
+            if(logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #9ca3af;">No cash inventory audit records available yet.</td></tr>`;
+                return;
+            }
+
+            logs.forEach(log => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${log.timestamp}</td>
+                        <td>৳ ${(log.others || 0).toFixed(2)}</td>
+                        <td><strong style="color: #10b981;">৳ ${(log.grandTotal || 0).toFixed(2)}</strong></td>
+                    </tr>
+                `;
+            });
+        }
+
+        /* PROFILE & SETTINGS ENGINE */
+        function loadSavedProfile() {
+            if(profileSettings.fullName) {
+                document.getElementById('profFullName').value = profileSettings.fullName;
+                document.getElementById('fullProfileNameDisplay').innerText = profileSettings.fullName;
+                document.getElementById('dropdownName').innerText = profileSettings.fullName;
+            }
+            if(profileSettings.role) {
+                document.getElementById('profRole').value = profileSettings.role;
+                document.getElementById('fullProfileRoleDisplay').innerText = profileSettings.role;
+                document.getElementById('dropdownRole').innerText = profileSettings.role;
+            }
+            if(profileSettings.phone) {
+                document.getElementById('profPhone').value = profileSettings.phone;
+            }
+            if(profileSettings.avatar) {
+                document.getElementById('fullProfileImg').src = profileSettings.avatar;
+                document.getElementById('navAvatar').src = profileSettings.avatar;
+                document.getElementById('dropdownHeaderImg').src = profileSettings.avatar;
+            }
+        }
+
+        document.getElementById('fullProfileImgInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const base64 = evt.target.result;
+                    document.getElementById('fullProfileImg').src = base64;
+                    document.getElementById('navAvatar').src = base64;
+                    document.getElementById('dropdownHeaderImg').src = base64;
+                    profileSettings.avatar = base64;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('fullProfileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            profileSettings.fullName = document.getElementById('profFullName').value.trim();
+            profileSettings.role = document.getElementById('profRole').value.trim();
+            profileSettings.phone = document.getElementById('profPhone').value.trim();
+
+            const newPass = document.getElementById('profNewPass').value;
+
+            showLoader("Updating Profile...");
+            try {
+                if(newPass && auth.currentUser) {
+                    await updatePassword(auth.currentUser, newPass);
+                    document.getElementById('profNewPass').value = '';
+                }
+                await writeToFirebase('erp/settings', profileSettings);
+                loadSavedProfile();
+                showToast("Profile & Settings saved successfully!", "success");
+            } catch(err) {
+                showToast("Failed to update profile: " + err.message, "error");
+            } finally {
+                hideLoader();
+            }
+        });
+
+        /* SIDEBAR TOGGLE & DROPDOWN LISTENERS */
+        sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+        profileTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('active');
+        });
+        document.addEventListener('click', () => profileDropdown.classList.remove('active'));
+
+    </script>
+</body>
+</html>
