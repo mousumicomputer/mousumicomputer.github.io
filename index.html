@@ -1978,6 +1978,8 @@
                     ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
                         if (cardConfig[op]) cardConfig[op] = toArray(cardConfig[op]);
                     });
+                } else {
+                    cardConfig = DEFAULT_OPERATOR_CARDS;
                 }
                 if (data.cardInventory) cardQuantities = data.cardInventory;
                 if (data.cardHistory) cardHistoryLogs = toArray(data.cardHistory);
@@ -2882,19 +2884,23 @@
             });
         };
 
-        /* UPDATE DASHBOARD TOTALS USING IMMUTABLE ACCOUNT IDs */
+        /* UPDATE DASHBOARD TOTALS & DEDICATED CARD INVENTORY CARD */
         function updateDashboardCards() {
             const grid = document.getElementById('dashboardSummaryGrid');
             if(!grid) return;
             grid.innerHTML = '';
             let netTotal = 0;
 
+            const cardAcc = getCardInventoryAccount();
+            const cardInvVal = calculateGrandCardInventoryValue();
+            balanceStore[cardAcc.id] = cardInvVal;
+
             const activeCategories = toArray(categories).filter(c => c.enabled !== false).sort((a,b) => a.order - b.order);
             const allAccounts = toArray(accounts);
 
             activeCategories.forEach(cat => {
-                // Computes sum of balances using permanent account IDs across ALL accounts (Active & Disabled)
-                const catAccs = allAccounts.filter(a => a.catId === cat.id);
+                // Exclude Card Inventory account from category sum so it gets its own dedicated card
+                const catAccs = allAccounts.filter(a => a.catId === cat.id && a.id !== cardAcc.id);
                 let catSum = 0;
                 catAccs.forEach(acc => {
                     catSum += (balanceStore[acc.id] || 0);
@@ -2910,6 +2916,17 @@
                 `;
                 grid.insertAdjacentHTML('beforeend', cardHtml);
             });
+
+            // Dedicated Card Inventory Dashboard Card
+            netTotal += cardInvVal;
+            const cardInvHtml = `
+                <div class="fintech-card" id="dashCardInventory">
+                    <div class="card-icon"><i class="fa-solid fa-sim-card"></i></div>
+                    <h4>Card Inventory</h4>
+                    <div class="amount">৳ ${cardInvVal.toFixed(2)}</div>
+                </div>
+            `;
+            grid.insertAdjacentHTML('beforeend', cardInvHtml);
 
             const totalElem = document.getElementById('totalAllBalance');
             if(totalElem) totalElem.innerText = `৳ ${netTotal.toFixed(2)}`;
@@ -3043,66 +3060,88 @@
                     await migrateLocalStorageToFirebase();
                     await runAccountIdentityMigration();
                     await initRealtimeSync();
-                } catch(err) {
-                    console.error("Auth init error:", err);
+                } catch (err) {
+                    console.error("Initialization error:", err);
+                } finally {
                     hideLoader();
                 }
             } else {
-                hideLoader();
                 dashboardSection.style.display = 'none';
                 loginSection.style.display = 'flex';
+                hideLoader();
             }
         });
 
-        loginForm.addEventListener('submit', (e) => {
+        /* LOGIN EVENT LISTENERS */
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const uInput = document.getElementById('username').value.trim();
-            const pInput = document.getElementById('password').value;
+            const userVal = document.getElementById('username').value.trim();
+            const passVal = document.getElementById('password').value;
+            
             errorMsg.style.display = 'none';
-            
-            let email = uInput.includes('@') ? uInput : adminEmail;
-            
+            successMsg.style.display = 'none';
+
+            let loginEmail = userVal;
+            if (userVal === "admin") loginEmail = adminEmail;
+
             showLoader("Authenticating...");
-            signInWithEmailAndPassword(auth, email, pInput).catch((err) => {
-                hideLoader();
+            try {
+                await signInWithEmailAndPassword(auth, loginEmail, passVal);
+            } catch (err) {
+                errorMsg.innerText = "Invalid credentials: " + err.message;
                 errorMsg.style.display = 'block';
-                showToast("Invalid credentials", "error");
-            });
+            } finally {
+                hideLoader();
+            }
         });
 
-        document.getElementById('btn-forgot-pass').addEventListener('click', (e) => {
+        document.getElementById('btn-forgot-pass').addEventListener('click', async (e) => {
             e.preventDefault();
-            const uInput = document.getElementById('username').value.trim();
-            let email = uInput.includes('@') ? uInput : adminEmail;
-            if (!uInput) {
-                showToast("Please enter email first.", "warning");
+            const userVal = document.getElementById('username').value.trim();
+            let resetEmail = userVal === 'admin' ? adminEmail : userVal;
+
+            if (!resetEmail) {
+                showToast("Please enter username or email first.", "warning");
                 return;
             }
-            showLoader("Sending Reset Email...");
-            sendPasswordResetEmail(auth, email).then(() => {
-                hideLoader();
+
+            showLoader("Sending reset link...");
+            try {
+                await sendPasswordResetEmail(auth, resetEmail);
+                successMsg.innerText = `Password reset link sent to ${resetEmail}`;
                 successMsg.style.display = 'block';
-                showToast("Password reset email sent!", "success");
-            }).catch(err => {
+            } catch (err) {
+                errorMsg.innerText = err.message;
+                errorMsg.style.display = 'block';
+            } finally {
                 hideLoader();
-                showToast(err.message, "error");
-            });
+            }
         });
 
-        document.getElementById('logoutBtn').addEventListener('click', () => {
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
             showLoader("Logging out...");
-            signOut(auth);
+            try {
+                await signOut(auth);
+            } catch(e) {
+                console.error(e);
+            } finally {
+                hideLoader();
+            }
         });
 
-        sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
-        
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+
         profileTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
             profileDropdown.classList.toggle('active');
         });
 
         document.addEventListener('click', (e) => {
-            if(!profileDropdown.contains(e.target)) profileDropdown.classList.remove('active');
+            if (!profileDropdown.contains(e.target) && !profileTrigger.contains(e.target)) {
+                profileDropdown.classList.remove('active');
+            }
         });
     </script>
 </body>
