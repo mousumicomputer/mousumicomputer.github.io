@@ -1482,7 +1482,17 @@
         }
 
         /* DEFAULT DYNAMIC CATEGORIES & ACCOUNTS DATA */
-        let categories = [
+        let categories = [];
+        let accounts = [];
+        let cardConfig = { GP: [], Banglalink: [], Robi: [], Airtel: [] };
+        let cardQuantities = { GP: {}, Banglalink: {}, Robi: {}, Airtel: {} };
+        let cardHistoryLogs = [];
+        let balanceStore = {};
+        let historyLogs = [];
+        let profileSettings = {};
+        let currentActiveCatId = null;
+
+        const DEFAULT_CATEGORIES = [
             { id: 'cat_1', name: 'Personal Accounts', order: 1, enabled: true },
             { id: 'cat_2', name: 'Bank Accounts', order: 2, enabled: true },
             { id: 'cat_3', name: 'Agent Accounts', order: 3, enabled: true },
@@ -1490,7 +1500,7 @@
             { id: 'cat_5', name: 'Recharge Balances', order: 5, enabled: true }
         ];
 
-        let accounts = [
+        const DEFAULT_ACCOUNTS = [
             { id: 'acc_1', catId: 'cat_1', name: 'Bkash Personal', enabled: true },
             { id: 'acc_2', catId: 'cat_1', name: 'Nagad Personal', enabled: true },
             { id: 'acc_3', catId: 'cat_1', name: 'Rocket Personal', enabled: true },
@@ -1503,7 +1513,6 @@
             { id: 'acc_10', catId: 'cat_5', name: 'GP Recharge', enabled: true }
         ];
 
-        /* MASTER CARD CONFIGURATION SETTINGS */
         const DEFAULT_OPERATOR_CARDS = {
             GP: [
                 { id: 'gp_1', name: 'MB 19', type: 'Internet', price: 19, active: true },
@@ -1538,26 +1547,6 @@
                 { id: 'air_6', name: 'Minute 99', type: 'Minute', price: 99, active: true }
             ]
         };
-
-        let cardConfig = DEFAULT_OPERATOR_CARDS;
-
-        /* QUANTITY STORAGE DATA STRUCTURE */
-        let cardQuantities = {
-            GP: {},
-            Banglalink: {},
-            Robi: {},
-            Airtel: {}
-        };
-
-        let cardHistoryLogs = [];
-
-        let balanceStore = {
-            'Bkash Personal': 13161.57
-        };
-
-        let historyLogs = [];
-        let profileSettings = {};
-        let currentActiveCatId = null;
 
         // DOM ELEMENTS
         const loader = document.getElementById('loader');
@@ -1636,19 +1625,34 @@
                 const initialSnapshot = await get(erpRef);
                 if (initialSnapshot.exists()) {
                     const data = initialSnapshot.val();
-                    if (data.categories) categories = toArray(data.categories, categories);
-                    if (data.accounts) accounts = toArray(data.accounts, accounts);
+                    categories = data.categories ? toArray(data.categories) : DEFAULT_CATEGORIES;
+                    accounts = data.accounts ? toArray(data.accounts) : DEFAULT_ACCOUNTS;
+                    
                     if (data.cardConfig) {
                         cardConfig = data.cardConfig;
                         ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
                             if (cardConfig[op]) cardConfig[op] = toArray(cardConfig[op]);
                         });
+                    } else {
+                        cardConfig = DEFAULT_OPERATOR_CARDS;
                     }
-                    if (data.cardInventory) cardQuantities = data.cardInventory;
-                    if (data.cardHistory) cardHistoryLogs = toArray(data.cardHistory);
-                    if (data.balances) balanceStore = data.balances;
-                    if (data.fintechHistory) historyLogs = toArray(data.fintechHistory);
-                    if (data.settings) profileSettings = data.settings;
+                    
+                    cardQuantities = data.cardInventory || { GP: {}, Banglalink: {}, Robi: {}, Airtel: {} };
+                    cardHistoryLogs = data.cardHistory ? toArray(data.cardHistory) : [];
+                    balanceStore = data.balances || { 'Bkash Personal': 13161.57 };
+                    historyLogs = data.fintechHistory ? toArray(data.fintechHistory) : [];
+                    profileSettings = data.settings || {};
+                } else {
+                    // Seed initial data once if DB is empty completely
+                    categories = DEFAULT_CATEGORIES;
+                    accounts = DEFAULT_ACCOUNTS;
+                    cardConfig = DEFAULT_OPERATOR_CARDS;
+                    balanceStore = { 'Bkash Personal': 13161.57 };
+                    
+                    await set(ref(db, 'erp/categories'), categories);
+                    await set(ref(db, 'erp/accounts'), accounts);
+                    await set(ref(db, 'erp/cardConfig'), cardConfig);
+                    await set(ref(db, 'erp/balances'), balanceStore);
                 }
             } catch(e) {
                 console.error("Initial load error:", e);
@@ -1666,8 +1670,8 @@
             onValue(erpRef, (snapshot) => {
                 const data = snapshot.val() || {};
 
-                if (data.categories) categories = toArray(data.categories, categories);
-                if (data.accounts) accounts = toArray(data.accounts, accounts);
+                if (data.categories) categories = toArray(data.categories);
+                if (data.accounts) accounts = toArray(data.accounts);
                 if (data.cardConfig) {
                     cardConfig = data.cardConfig;
                     ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
@@ -1723,32 +1727,55 @@
             return grandTotal;
         }
 
-        /* SYNC HELPER */
-        function syncCardInventoryBalance() {
+        /* ASYNC SAVE HELPERS WITH TRY-CATCH & LOGGING */
+        async function syncCardInventoryBalance() {
             const totalVal = calculateGrandCardInventoryValue();
             balanceStore['Card Inventory'] = totalVal;
-            set(ref(db, 'erp/balances'), balanceStore);
+            try {
+                await set(ref(db, 'erp/balances'), balanceStore);
+                console.log("Card Inventory Balance Synced to DB");
+            } catch (err) {
+                console.error("Failed to sync Card Inventory Balance:", err);
+            }
         }
 
-        function saveCoreData() {
-            set(ref(db, 'erp/categories'), categories);
-            set(ref(db, 'erp/accounts'), accounts);
-            renderDynamicSidebar();
-            renderCategoryManagementTables();
-            updateDashboardCards();
+        async function saveCoreData() {
+            try {
+                await set(ref(db, 'erp/categories'), categories);
+                await set(ref(db, 'erp/accounts'), accounts);
+                console.log("Core Categories & Accounts Saved Successfully");
+                renderDynamicSidebar();
+                renderCategoryManagementTables();
+                updateDashboardCards();
+            } catch (error) {
+                console.error("Save Core Data Error:", error);
+                alert("Failed to save Categories/Accounts: " + error.message);
+            }
         }
 
-        function saveCardInventoryData() {
-            set(ref(db, 'erp/cardInventory'), cardQuantities);
-            set(ref(db, 'erp/cardHistory'), cardHistoryLogs);
-            syncCardInventoryBalance();
-            updateDashboardCards();
+        async function saveCardInventoryData() {
+            try {
+                await set(ref(db, 'erp/cardInventory'), cardQuantities);
+                await set(ref(db, 'erp/cardHistory'), cardHistoryLogs);
+                await syncCardInventoryBalance();
+                console.log("Inventory Saved Successfully");
+                updateDashboardCards();
+            } catch (error) {
+                console.error("Save Card Inventory Error:", error);
+                alert("Failed to save Inventory: " + error.message);
+            }
         }
 
-        function saveCardConfigMaster() {
-            set(ref(db, 'erp/cardConfig'), cardConfig);
-            syncCardInventoryBalance();
-            updateDashboardCards();
+        async function saveCardConfigMaster() {
+            try {
+                await set(ref(db, 'erp/cardConfig'), cardConfig);
+                await syncCardInventoryBalance();
+                console.log("Card Configuration Saved Successfully");
+                updateDashboardCards();
+            } catch (error) {
+                console.error("Save Card Master Config Error:", error);
+                alert("Failed to save Card Configuration: " + error.message);
+            }
         }
 
         /* RENDER DYNAMIC SIDEBAR BALANCE MANAGEMENT SUBMENU */
@@ -1948,7 +1975,7 @@
             }
         };
 
-        window.updateCardQuantity = function(op, cardId, val) {
+        window.updateCardQuantity = async function(op, cardId, val) {
             if(!cardQuantities[op]) cardQuantities[op] = {};
             
             const numVal = parseInt(val);
@@ -1958,10 +1985,14 @@
                 cardQuantities[op][cardId] = numVal;
             }
 
-            set(ref(db, 'erp/cardInventory'), cardQuantities);
-            syncCardInventoryBalance();
-            updateDashboardCards();
-            updateLiveSummaries();
+            try {
+                await set(ref(db, 'erp/cardInventory'), cardQuantities);
+                await syncCardInventoryBalance();
+                updateDashboardCards();
+                updateLiveSummaries();
+            } catch (err) {
+                console.error("Quantity Update Error:", err);
+            }
         };
 
         function updateLiveSummaries() {
@@ -2005,7 +2036,7 @@
             document.getElementById('grandTotalCardsVal').innerText = `৳ ${grandTotalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         }
 
-        window.saveTodayInventory = function() {
+        window.saveTodayInventory = async function() {
             const now = new Date().toLocaleString();
             let totalAuditCards = 0;
             let grandAuditVal = 0;
@@ -2035,7 +2066,9 @@
                 }
             });
 
-            saveCardInventoryData();
+            loader.style.display = 'flex';
+            await saveCardInventoryData();
+            loader.style.display = 'none';
             alert("Today's Card Inventory saved and synchronized successfully!");
         };
 
@@ -2129,7 +2162,7 @@
             });
         }
 
-        document.getElementById('cardMasterForm').addEventListener('submit', (e) => {
+        document.getElementById('cardMasterForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const masterId = document.getElementById('cardMasterId').value;
             const op = document.getElementById('cardOperatorSelect').value;
@@ -2174,9 +2207,11 @@
                 });
             }
 
-            saveCardConfigMaster();
+            loader.style.display = 'flex';
+            await saveCardConfigMaster();
             resetCardMasterForm();
             renderCardMasterConfiguration();
+            loader.style.display = 'none';
             alert('Card Configuration saved successfully!');
         });
 
@@ -2202,13 +2237,15 @@
             }
         };
 
-        window.toggleMasterCardStatus = function(op, cardId) {
+        window.toggleMasterCardStatus = async function(op, cardId) {
             const cardList = toArray(cardConfig[op] || []);
             const card = cardList.find(c => c.id === cardId);
             if(card) {
                 card.active = (card.active === false);
-                saveCardConfigMaster();
+                loader.style.display = 'flex';
+                await saveCardConfigMaster();
                 renderCardMasterConfiguration();
+                loader.style.display = 'none';
             }
         };
 
@@ -2262,9 +2299,11 @@
         };
 
         /* SAVE BALANCE FORM DATA */
-        document.getElementById('balanceUpdateForm').addEventListener('submit', (e) => {
+        document.getElementById('balanceUpdateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if(!currentActiveCatId) return;
+
+            loader.style.display = 'flex';
 
             const categoryList = toArray(categories);
             const category = categoryList.find(c => c.id === currentActiveCatId);
@@ -2293,12 +2332,21 @@
                 }
             });
 
-            set(ref(db, 'erp/balances'), balanceStore);
-            set(ref(db, 'erp/fintechHistory'), historyLogs);
-            
-            alert("Balances updated successfully!");
-            openBalanceCategory(currentActiveCatId);
-            updateDashboardCards();
+            try {
+                // DB Save Happens BEFORE Dashboard & UI State Update
+                await set(ref(db, 'erp/balances'), balanceStore);
+                await set(ref(db, 'erp/fintechHistory'), historyLogs);
+                console.log("Balance and History Saved to DB");
+
+                loader.style.display = 'none';
+                alert("Balances updated successfully!");
+                openBalanceCategory(currentActiveCatId);
+                updateDashboardCards();
+            } catch (error) {
+                loader.style.display = 'none';
+                console.error("Balance Save Failure:", error);
+                alert("Failed to save Balance: " + error.message);
+            }
         });
 
         /* CATEGORY & ACCOUNT MANAGEMENT LOGIC */
@@ -2354,7 +2402,7 @@
             });
         }
 
-        document.getElementById('addCategoryForm').addEventListener('submit', (e) => {
+        document.getElementById('addCategoryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const editId = document.getElementById('editCatId').value;
             const name = document.getElementById('catNameInput').value.trim();
@@ -2380,7 +2428,10 @@
             document.getElementById('editCatId').value = '';
             document.getElementById('catNameInput').value = '';
             document.getElementById('catOrderInput').value = '';
-            saveCoreData();
+            
+            loader.style.display = 'flex';
+            await saveCoreData();
+            loader.style.display = 'none';
         });
 
         window.editCategory = function(id) {
@@ -2392,24 +2443,28 @@
             }
         };
 
-        window.toggleCategory = function(id) {
+        window.toggleCategory = async function(id) {
             categories = toArray(categories);
             const cat = categories.find(c => c.id === id);
             if(cat) {
                 cat.enabled = !cat.enabled;
-                saveCoreData();
+                loader.style.display = 'flex';
+                await saveCoreData();
+                loader.style.display = 'none';
             }
         };
 
-        window.deleteCategory = function(id) {
+        window.deleteCategory = async function(id) {
             if(confirm('Are you sure you want to delete this category? Associated accounts may be affected.')) {
                 categories = toArray(categories).filter(c => c.id !== id);
                 accounts = toArray(accounts).filter(a => a.catId !== id);
-                saveCoreData();
+                loader.style.display = 'flex';
+                await saveCoreData();
+                loader.style.display = 'none';
             }
         };
 
-        document.getElementById('addAccountForm').addEventListener('submit', (e) => {
+        document.getElementById('addAccountForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const editId = document.getElementById('editAccId').value;
             const catId = document.getElementById('accCatSelect').value;
@@ -2434,7 +2489,10 @@
 
             document.getElementById('editAccId').value = '';
             document.getElementById('accNameInput').value = '';
-            saveCoreData();
+            
+            loader.style.display = 'flex';
+            await saveCoreData();
+            loader.style.display = 'none';
         });
 
         window.editAccount = function(id) {
@@ -2446,19 +2504,23 @@
             }
         };
 
-        window.toggleAccount = function(id) {
+        window.toggleAccount = async function(id) {
             accounts = toArray(accounts);
             const acc = accounts.find(a => a.id === id);
             if(acc) {
                 acc.enabled = !acc.enabled;
-                saveCoreData();
+                loader.style.display = 'flex';
+                await saveCoreData();
+                loader.style.display = 'none';
             }
         };
 
-        window.deleteAccount = function(id) {
+        window.deleteAccount = async function(id) {
             if(confirm('Are you sure you want to delete this account?')) {
                 accounts = toArray(accounts).filter(a => a.id !== id);
-                saveCoreData();
+                loader.style.display = 'flex';
+                await saveCoreData();
+                loader.style.display = 'none';
             }
         };
 
@@ -2655,6 +2717,7 @@
                 }
 
                 await set(ref(db, 'erp/settings'), profileSettings);
+                console.log("Profile Settings Saved to DB");
                 loadSavedProfile();
 
                 if (newPass && auth.currentUser) {
@@ -2673,6 +2736,7 @@
                 alert('প্রোফাইল তথ্য সফলভাবে আপডেট করা হয়েছে!');
             } catch (err) {
                 loader.style.display = 'none';
+                console.error("Profile Save Failure:", err);
                 alert('Error: ' + err.message);
             }
         });
