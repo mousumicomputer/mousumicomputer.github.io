@@ -23,6 +23,27 @@
             --green: #10b981;
             --warning: #f97316;
             --info: #00a8ef;
+            
+            /* DCR Soft Executive Color Palette */
+            --dcr-blue-bg: #eff6ff;
+            --dcr-blue-border: #bfdbfe;
+            --dcr-blue-text: #1e40af;
+            
+            --dcr-green-bg: #ecfdf5;
+            --dcr-green-border: #a7f3d0;
+            --dcr-green-text: #065f46;
+            
+            --dcr-orange-bg: #fff7ed;
+            --dcr-orange-border: #fed7aa;
+            --dcr-orange-text: #9a3412;
+            
+            --dcr-purple-bg: #faf5ff;
+            --dcr-purple-border: #e9d5ff;
+            --dcr-purple-text: #6b21a8;
+
+            --dcr-gray-bg: #f8fafc;
+            --dcr-gray-border: #cbd5e1;
+            --dcr-gray-dark: #1e293b;
         }
 
         * {
@@ -1172,7 +1193,7 @@
 
         .dcr-btn-reset {
             padding: 8px 16px;
-            background: #e5e7eb;
+            background: #e5e5e7;
             color: #374151;
             border: none;
             border-radius: 8px;
@@ -1181,101 +1202,278 @@
             cursor: pointer;
         }
 
-        .dcr-grid-3col {
+        /* REDESIGNED EXECUTIVE FINANCIAL REPORT STYLES */
+        .dcr-container {
+            width: 100%;
+            background: #ffffff;
+            padding: 10px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            box-sizing: border-radius;
+            color: #1e293b;
+        }
+
+        /* HEADER */
+        .dcr-header-box {
+            background: linear-gradient(135deg, #0b1a2c 0%, #1e3a8a 100%);
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 3px solid #00a8ef;
+        }
+
+        .dcr-header-left h1 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+            margin-bottom: 2px;
+        }
+
+        .dcr-header-left p {
+            font-size: 0.72rem;
+            color: #93c5fd;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .dcr-header-right {
+            text-align: right;
+            font-size: 0.75rem;
+            color: #e2e8f0;
+            line-height: 1.3;
+        }
+
+        .dcr-header-right strong {
+            color: #38bdf8;
+        }
+
+        /* TOP EXECUTIVE SUMMARY CARDS */
+        .dcr-exec-cards {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
             margin-bottom: 10px;
         }
 
-        .dcr-grid-2col {
+        .dcr-exec-card {
+            border-radius: 8px;
+            padding: 8px 10px;
+            border: 1px solid;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .dcr-exec-card.card-blue {
+            background: var(--dcr-blue-bg);
+            border-color: var(--dcr-blue-border);
+            color: var(--dcr-blue-text);
+        }
+
+        .dcr-exec-card.card-green {
+            background: var(--dcr-green-bg);
+            border-color: var(--dcr-green-border);
+            color: var(--dcr-green-text);
+        }
+
+        .dcr-exec-card.card-orange {
+            background: var(--dcr-orange-bg);
+            border-color: var(--dcr-orange-border);
+            color: var(--dcr-orange-text);
+        }
+
+        .dcr-exec-card.card-purple {
+            background: var(--dcr-purple-bg);
+            border-color: var(--dcr-purple-border);
+            color: var(--dcr-purple-text);
+        }
+
+        .dcr-exec-card .card-info span {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.85;
+        }
+
+        .dcr-exec-card .card-info strong {
+            font-size: 1.05rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .dcr-exec-card .card-icon-box {
+            font-size: 1.1rem;
+            opacity: 0.85;
+        }
+
+        /* TWO-COLUMN LAYOUT */
+        .dcr-two-columns {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-bottom: 10px;
+            align-items: start;
         }
 
-        .dcr-card {
+        .dcr-col {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* SECTION CARDS */
+        .dcr-section-card {
             background: #ffffff;
-            border: 1px solid var(--border-color);
+            border: 1px solid #e2e8f0;
             border-radius: 8px;
-            padding: 8px 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            padding: 6px 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         }
 
-        .dcr-card-title {
-            font-size: 0.8rem;
+        .dcr-section-title {
+            font-size: 0.72rem;
             font-weight: 800;
-            color: var(--primary-dark);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 6px;
             padding-bottom: 4px;
-            border-bottom: 2px solid var(--bg-color);
+            margin-bottom: 4px;
+            border-bottom: 1.5px solid #f1f5f9;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .dcr-table {
+        .dcr-section-title.title-blue { color: #1d4ed8; border-bottom-color: #bfdbfe; }
+        .dcr-section-title.title-green { color: #047857; border-bottom-color: #a7f3d0; }
+        .dcr-section-title.title-orange { color: #c2410c; border-bottom-color: #fed7aa; }
+        .dcr-section-title.title-purple { color: #7e22ce; border-bottom-color: #e9d5ff; }
+
+        /* COMPACT TABLES */
+        .dcr-sub-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.78rem;
-            min-width: auto;
-        }
-
-        .dcr-table th {
-            padding: 4px 6px;
-            background: #f8fafc;
             font-size: 0.72rem;
-            text-transform: uppercase;
+        }
+
+        .dcr-sub-table th {
+            padding: 2px 4px;
+            background: #f8fafc;
             color: #64748b;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
         }
 
-        .dcr-table td {
-            padding: 4px 6px;
+        .dcr-sub-table td {
+            padding: 2.5px 4px;
             border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            font-weight: 600;
         }
 
-        .dcr-table tr:last-child td {
+        .dcr-sub-table tr:last-child td {
             border-bottom: none;
         }
 
-        .dcr-total-row td {
+        .dcr-sub-table .text-right {
+            text-align: right;
+        }
+
+        .dcr-sub-table .row-total td {
             font-weight: 800;
             background: #f8fafc;
-            color: var(--primary-dark);
-            border-top: 1px solid var(--border-color);
+            color: #0f172a;
+            border-top: 1px solid #cbd5e1;
         }
 
-        .dcr-highlight-card {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        /* HIGHLIGHTED FINANCIAL SUMMARY BOX */
+        .dcr-fin-summary-box {
+            background: #0f172a;
             color: #ffffff;
             border-radius: 8px;
-            padding: 10px 14px;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+            padding: 8px 10px;
+            border: 1px solid #1e293b;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
         }
 
-        .dcr-highlight-card .dcr-card-title {
+        .dcr-fin-summary-box .summary-header {
+            font-size: 0.78rem;
+            font-weight: 800;
             color: #38bdf8;
-            border-bottom-color: rgba(255,255,255,0.1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding-bottom: 4px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .dcr-highlight-card table td {
-            border-bottom-color: rgba(255,255,255,0.05);
+        .dcr-fin-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.73rem;
         }
 
-        /* PRINT MEDIA STYLES - CUSTOMER STATEMENT & DAILY CLOSING REPORT */
+        .dcr-fin-summary-table td {
+            padding: 2.5px 4px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+            color: #cbd5e1;
+        }
+
+        .dcr-fin-summary-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .dcr-fin-summary-table .total-net-row td {
+            background: rgba(56, 189, 248, 0.12);
+            color: #38bdf8;
+            font-weight: 800;
+            font-size: 0.85rem;
+            padding: 5px 4px;
+            border-top: 1px solid #38bdf8;
+            border-bottom: 1px solid #38bdf8;
+        }
+
+        /* FOOTER */
+        .dcr-footer-box {
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.65rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .dcr-footer-box span strong {
+            color: #00a8ef;
+        }
+
+        /* PRINT MEDIA STYLES - STRICT SINGLE A4 LANDSCAPE FIT */
         @media print {
             @page {
-                size: A4 portrait;
-                margin: 10mm;
+                size: A4 landscape;
+                margin: 5mm;
             }
             html, body {
                 height: 100%;
                 background: #ffffff !important;
                 margin: 0 !important;
                 padding: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             body * {
                 visibility: hidden;
@@ -1292,40 +1490,53 @@
                 background: #ffffff !important;
                 padding: 0 !important;
                 margin: 0 !important;
-                font-size: 9pt !important;
             }
             .no-print {
                 display: none !important;
             }
-            .dcr-card {
-                border: 1px solid #cbd5e1 !important;
-                box-shadow: none !important;
-                padding: 6px 10px !important;
+            .dcr-container {
+                padding: 0 !important;
+            }
+            .dcr-header-box {
+                padding: 6px 12px !important;
                 margin-bottom: 6px !important;
             }
-            .dcr-grid-3col {
+            .dcr-exec-cards {
+                gap: 6px !important;
+                margin-bottom: 6px !important;
+            }
+            .dcr-exec-card {
+                padding: 5px 8px !important;
+            }
+            .dcr-two-columns {
                 gap: 8px !important;
-                margin-bottom: 6px !important;
             }
-            .dcr-grid-2col {
-                gap: 8px !important;
-                margin-bottom: 6px !important;
+            .dcr-col {
+                gap: 6px !important;
             }
-            .dcr-table th, .dcr-table td {
-                padding: 2px 4px !important;
-                font-size: 7.5pt !important;
+            .dcr-section-card {
+                padding: 4px 6px !important;
             }
-            .dcr-highlight-card {
-                background: #0f172a !important;
-                color: #ffffff !important;
-                padding: 8px 12px !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+            .dcr-sub-table td, .dcr-sub-table th {
+                padding: 1.5px 3px !important;
+                font-size: 6.8pt !important;
+            }
+            .dcr-fin-summary-box {
+                padding: 6px 8px !important;
+            }
+            .dcr-fin-summary-table td {
+                padding: 1.5px 3px !important;
+                font-size: 7pt !important;
+            }
+            .dcr-footer-box {
+                margin-top: 5px !important;
+                padding-top: 4px !important;
+                font-size: 6pt !important;
             }
         }
 
         @media (max-width: 900px) {
-            .dcr-grid-3col, .dcr-grid-2col {
+            .dcr-two-columns, .dcr-exec-cards {
                 grid-template-columns: 1fr;
             }
             .profile-form-grid {
@@ -1883,7 +2094,7 @@
                             </div>
                         </div>
 
-                        <div id="printable-closing-report" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 15px;">
+                        <div id="printable-closing-report" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 10px;">
                             <!-- Dynamic Printable Snapshot Content Populated via JS -->
                         </div>
                     </div>
@@ -2695,7 +2906,6 @@
             if (custTxs.length === 0) {
                 return parseFloat(cust.openingBalance) || 0;
             }
-            // Sort ascending by creation date to get latest running balance
             custTxs.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
             return custTxs[custTxs.length - 1].runningBalance;
         }
@@ -2718,12 +2928,10 @@
             const cardVal = calculateGrandCardInventoryValue();
             const cardAcc = getCardInventoryAccount();
             
-            // Sync current calculated card inventory value to the balance store
             balanceStore[cardAcc.id] = cardVal;
 
             const cashTotal = calculateCashGrandTotal();
 
-            // Render category balance cards
             const sortedCategories = toArray(categories).filter(c => c.enabled !== false).sort((a,b) => a.order - b.order);
 
             sortedCategories.forEach(cat => {
@@ -2745,134 +2953,114 @@
                 grid.insertAdjacentHTML('beforeend', cardHtml);
             });
 
-            // If Card Inventory account (acc_9) is not part of an active category, include its value directly
-            const cardAccObj = accounts.find(a => a.id === cardAcc.id);
-            const cardCatObj = cardAccObj ? categories.find(c => c.id === cardAccObj.catId) : null;
-            if (!cardAccObj || !cardCatObj || cardCatObj.enabled === false) {
-                grandTotalBalance += cardVal;
-            }
-
-            // 1. Add dedicated "Cash Inventory" summary card
-            const cashCardHtml = `
+            // Add Cash Inventory Card
+            grandTotalBalance += cashTotal;
+            grid.insertAdjacentHTML('beforeend', `
                 <div class="fintech-card">
-                    <div class="card-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+                    <div class="card-icon" style="background:#ecfdf5; color:#10b981;"><i class="fa-solid fa-money-bill-wave"></i></div>
                     <h4>Cash Inventory</h4>
-                    <div class="amount">৳ ${cashTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                    <div class="amount" style="color:#059669;">৳ ${cashTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                 </div>
-            `;
-            grid.insertAdjacentHTML('beforeend', cashCardHtml);
+            `);
 
-            // 2. Add dedicated "Card Inventory" summary card
-            const cardInventoryHtml = `
+            // Add Customer Outstanding Due
+            const totalDue = calculateTotalCustomerDue();
+            grid.insertAdjacentHTML('beforeend', `
                 <div class="fintech-card">
-                    <div class="card-icon"><i class="fa-solid fa-sim-card"></i></div>
-                    <h4>Card Inventory</h4>
-                    <div class="amount">৳ ${cardVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                    <div class="card-icon" style="background:#ffe4e6; color:#e11d48;"><i class="fa-solid fa-users"></i></div>
+                    <h4>Customer Dues</h4>
+                    <div class="amount" style="color:#e11d48;">৳ ${totalDue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                 </div>
-            `;
-            grid.insertAdjacentHTML('beforeend', cardInventoryHtml);
+            `);
 
-            // 3. NEW DASHBOARD CARD: CUSTOMER DUE
-            const customerDueTotal = calculateTotalCustomerDue();
-            const customerDueCardHtml = `
-                <div class="fintech-card">
-                    <div class="card-icon" style="background:#fff1f2; color:#e11d48;"><i class="fa-solid fa-users"></i></div>
-                    <h4>Customer Due</h4>
-                    <div class="amount" style="color:#e11d48;">৳ ${customerDueTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
-                </div>
-            `;
-            grid.insertAdjacentHTML('beforeend', customerDueCardHtml);
+            // Include Customer Due in Grand Net Balance Calculation
+            const netBalance = grandTotalBalance + totalDue;
 
-            // Calculate overall net balance including physical cash and customer dues
-            const overallNetBalance = grandTotalBalance + cashTotal + customerDueTotal;
-
-            // Update Total Net Balance Hero Display
             const totalEl = document.getElementById('totalAllBalance');
-            if (totalEl) totalEl.innerText = `৳ ${overallNetBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            if (totalEl) totalEl.innerText = `৳ ${netBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         }
 
-        /* UI NAVIGATION & TAB SWITCHING */
-        window.switchMainTab = function(tabId) {
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-            document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
-
-            const titleEl = document.getElementById('top-title');
-
-            if (tabId === 'dashboard') {
-                document.getElementById('dashboard-view').classList.add('active');
-                document.getElementById('menu-dash').classList.add('active');
-                if (titleEl) titleEl.innerText = "Dashboard Overview";
-                updateDashboardCards();
-            } else if (tabId === 'cash-inventory') {
-                document.getElementById('cash-inventory-view').classList.add('active');
-                document.getElementById('menu-inv-parent').classList.add('active');
-                document.getElementById('sub-cash-inv').classList.add('active');
-                if (titleEl) titleEl.innerText = "Cash Inventory Audit";
-                renderCashInventoryTable();
-            } else if (tabId === 'card-inventory') {
-                document.getElementById('card-inventory-view').classList.add('active');
-                document.getElementById('menu-inv-parent').classList.add('active');
-                document.getElementById('sub-card-inv').classList.add('active');
-                if (titleEl) titleEl.innerText = "Card Inventory Audit";
-                renderRedesignedCardInventory();
-            } else if (tabId === 'category-mgmt') {
-                document.getElementById('category-mgmt-view').classList.add('active');
-                document.getElementById('menu-settings-parent').classList.add('active');
-                document.getElementById('sub-cat-mgmt').classList.add('active');
-                if (titleEl) titleEl.innerText = "Category & Account Management";
-                renderCategoryManagementTables();
-            } else if (tabId === 'card-mgmt') {
-                document.getElementById('card-mgmt-view').classList.add('active');
-                document.getElementById('menu-settings-parent').classList.add('active');
-                document.getElementById('sub-card-mgmt').classList.add('active');
-                if (titleEl) titleEl.innerText = "Card Master Configuration";
-                renderCardMasterConfiguration();
-            } else if (tabId === 'reports') {
-                document.getElementById('reports-view').classList.add('active');
-                document.getElementById('menu-reports-parent').classList.add('active');
-                document.getElementById('sub-tx-history').classList.add('active');
-                if (titleEl) titleEl.innerText = "Transaction History & Audit Logs";
-                renderHistoryTable();
-                renderCardHistoryTable();
-                renderCashHistoryTable();
-            } else if (tabId === 'profile') {
-                document.getElementById('profile-view').classList.add('active');
-                document.getElementById('menu-settings-parent').classList.add('active');
-                document.getElementById('sub-profile').classList.add('active');
-                if (titleEl) titleEl.innerText = "User Profile & Security";
-                loadSavedProfile();
-            } else if (tabId === 'daily-closing') {
-                document.getElementById('daily-closing-view').classList.add('active');
-                document.getElementById('menu-reports-parent').classList.add('active');
-                document.getElementById('sub-dcr-report').classList.add('active');
-                if (titleEl) titleEl.innerText = "Daily Closing Report Engine";
-                renderDailyClosingHistoryTable();
-            }
-        };
-
+        /* ==================== NAVIGATION & TABS ==================== */
         window.toggleParentMenu = function(menuId) {
             const menuItem = document.getElementById(menuId);
             if (!menuItem) return;
             const submenu = menuItem.querySelector('.submenu-list');
-            if (submenu) {
-                const isExpanded = submenu.classList.contains('show');
-                document.querySelectorAll('.submenu-list').forEach(s => s.classList.remove('show'));
-                document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('open'));
-                
-                if (!isExpanded) {
-                    submenu.classList.add('show');
-                    menuItem.classList.add('open');
+            const isOpen = menuItem.classList.contains('open');
+
+            document.querySelectorAll('.menu-item').forEach(el => {
+                if(el.id !== menuId) {
+                    el.classList.remove('open');
+                    const sub = el.querySelector('.submenu-list');
+                    if(sub) sub.classList.remove('show');
                 }
+            });
+
+            if (isOpen) {
+                menuItem.classList.remove('open');
+                if (submenu) submenu.classList.remove('show');
+            } else {
+                menuItem.classList.add('open');
+                if (submenu) submenu.classList.add('show');
             }
         };
 
-        window.openBalanceCategoryByName = function(catName) {
-            const cat = categories.find(c => c.name.toLowerCase() === catName.toLowerCase() && c.enabled !== false);
+        window.switchMainTab = function(viewName) {
+            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.menu-item, .submenu-item').forEach(m => m.classList.remove('active'));
+
+            const titleMap = {
+                'dashboard': 'Dashboard Overview',
+                'customer-ledger': 'Customer Management & Ledger',
+                'daily-closing': 'Daily Closing Financial Snapshot',
+                'balance': 'Balance Management Form',
+                'cash-inventory': 'Cash Inventory Audit',
+                'card-inventory': 'Daily Card Inventory Audit',
+                'category-mgmt': 'Category & Account Management',
+                'reports': 'Transaction History & Audit Logs',
+                'card-mgmt': 'Card Master Configuration',
+                'profile': 'My Profile & Security Settings'
+            };
+
+            const titleEl = document.getElementById('top-title');
+            if (titleEl) titleEl.innerText = titleMap[viewName] || 'Mousumi ERP';
+
+            const targetView = document.getElementById(`${viewName}-view`);
+            if (targetView) targetView.classList.add('active');
+
+            if (viewName === 'dashboard') {
+                document.getElementById('menu-dash').classList.add('active');
+                updateDashboardCards();
+            } else if (viewName === 'daily-closing') {
+                document.getElementById('sub-dcr-report').classList.add('active');
+                renderDailyClosingHistoryTable();
+            } else if (viewName === 'cash-inventory') {
+                document.getElementById('sub-cash-inv').classList.add('active');
+                renderCashInventoryTable();
+            } else if (viewName === 'card-inventory') {
+                document.getElementById('sub-card-inv').classList.add('active');
+                renderRedesignedCardInventory();
+            } else if (viewName === 'category-mgmt') {
+                document.getElementById('sub-cat-mgmt').classList.add('active');
+                renderCategoryManagementTables();
+            } else if (viewName === 'reports') {
+                document.getElementById('sub-tx-history').classList.add('active');
+                renderHistoryTable();
+                renderCardHistoryTable();
+                renderCashHistoryTable();
+            } else if (viewName === 'card-mgmt') {
+                document.getElementById('sub-card-mgmt').classList.add('active');
+                renderCardMasterConfiguration();
+            } else if (viewName === 'profile') {
+                document.getElementById('sub-profile').classList.add('active');
+            }
+        };
+
+        window.openBalanceCategoryByName = function(categoryName) {
+            const cat = categories.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
             if (cat) {
                 openBalanceCategory(cat.id);
             } else {
-                showToast(`Category "${catName}" not found or disabled.`, "warning");
+                showToast(`Category '${categoryName}' not found.`, "error");
             }
         };
 
@@ -2881,783 +3069,110 @@
             const cat = categories.find(c => c.id === catId);
             if (!cat) return;
 
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-            document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
+            if (cat.name === 'Bank Accounts') document.getElementById('sub-bank-acc')?.classList.add('active');
+            if (cat.name === 'Personal Accounts') document.getElementById('sub-pers-acc')?.classList.add('active');
+            if (cat.name === 'Agent Accounts') document.getElementById('sub-agent-acc')?.classList.add('active');
+            if (cat.name === 'Recharge Balances') document.getElementById('sub-recharge-acc')?.classList.add('active');
 
-            document.getElementById('balance-view').classList.add('active');
-            document.getElementById('menu-bal-parent').classList.add('active');
-
-            if (cat.name === 'Bank Accounts') document.getElementById('sub-bank-acc').classList.add('active');
-            else if (cat.name === 'Personal Accounts') document.getElementById('sub-pers-acc').classList.add('active');
-            else if (cat.name === 'Agent Accounts') document.getElementById('sub-agent-acc').classList.add('active');
-            else if (cat.name === 'Recharge Balances') document.getElementById('sub-recharge-acc').classList.add('active');
-
-            const titleEl = document.getElementById('top-title');
-            if (titleEl) titleEl.innerText = cat.name + " Management";
-
-            const formTitle = document.getElementById('erpFormTitle');
-            if (formTitle) formTitle.innerHTML = `<i class="fa-solid fa-pen-to-square" style="color: #00a8ef;"></i> Update ${cat.name}`;
+            document.getElementById('erpFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square" style="color: #00a8ef;"></i> Update ${cat.name}`;
 
             const container = document.getElementById('formFieldsContainer');
             container.innerHTML = '';
 
             const catAccs = accounts.filter(a => a.catId === catId && a.enabled !== false);
-
             if (catAccs.length === 0) {
-                container.innerHTML = `<p style="color: #6b7280; font-size: 0.9rem;">No accounts configured for ${cat.name}. Please add accounts in Category & Account Management.</p>`;
-                return;
+                container.innerHTML = `<p style="color:#6b7280; font-size:0.9rem;">No active accounts configured under ${cat.name}.</p>`;
+            } else {
+                catAccs.forEach(acc => {
+                    const currentBal = balanceStore[acc.id] || 0;
+                    const fieldHtml = `
+                        <div class="field-card">
+                            <div class="field-card-header">
+                                <label>${acc.name}</label>
+                                <span class="prev-bal">Current: <span>৳ ${parseFloat(currentBal).toLocaleString('en-US', {minimumFractionDigits:2})}</span></span>
+                            </div>
+                            <input type="number" step="any" data-acc-id="${acc.id}" value="${currentBal}" placeholder="0.00" />
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', fieldHtml);
+                });
             }
 
-            catAccs.forEach(acc => {
-                const currentBal = parseFloat(balanceStore[acc.id] || 0);
-                const fieldHtml = `
-                    <div class="field-card">
-                        <div class="field-card-header">
-                            <label>${acc.name}</label>
-                            <span class="prev-bal">Current: <span>৳ ${currentBal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</span></span>
-                        </div>
-                        <input type="number" step="any" id="input_acc_${acc.id}" value="${currentBal}" required />
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', fieldHtml);
-            });
+            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('balance-view').classList.add('active');
         };
 
-        /* SAVE BALANCE FORM */
+        // BALANCE UPDATE FORM SUBMISSION
         document.getElementById('balanceUpdateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentActiveCatId) return;
 
+            showLoader("Saving Balance Updates...");
+            const inputs = document.querySelectorAll('#formFieldsContainer input');
+            const nowIso = new Date().toISOString();
             const cat = categories.find(c => c.id === currentActiveCatId);
-            const catAccs = accounts.filter(a => a.catId === currentActiveCatId && a.enabled !== false);
-            const now = new Date().toLocaleString();
 
-            showLoader("Saving account balance update...");
+            inputs.forEach(input => {
+                const accId = input.getAttribute('data-acc-id');
+                const acc = accounts.find(a => a.id === accId);
+                const oldBal = parseFloat(balanceStore[accId] || 0);
+                const newBal = parseFloat(input.value) || 0;
+
+                if (oldBal !== newBal) {
+                    balanceStore[accId] = newBal;
+                    historyLogs.unshift({
+                        id: 'hist_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                        timestamp: nowIso,
+                        catName: cat ? cat.name : 'General',
+                        accName: acc ? acc.name : accId,
+                        prevBal: oldBal,
+                        currentBal: newBal,
+                        diff: newBal - oldBal
+                    });
+                }
+            });
 
             try {
-                catAccs.forEach(acc => {
-                    const inputEl = document.getElementById(`input_acc_${acc.id}`);
-                    if (inputEl) {
-                        const newBal = parseFloat(inputEl.value) || 0;
-                        const prevBal = parseFloat(balanceStore[acc.id] || 0);
-
-                        if (newBal !== prevBal) {
-                            balanceStore[acc.id] = newBal;
-                            const diff = newBal - prevBal;
-                            historyLogs.unshift({
-                                timestamp: now,
-                                catName: cat.name,
-                                accName: acc.name,
-                                prevBal: prevBal,
-                                currentBal: newBal,
-                                diff: diff
-                            });
-                        }
-                    }
-                });
-
                 await writeToFirebase('erp/balances', balanceStore);
                 await writeToFirebase('erp/fintechHistory', historyLogs);
-
                 hideLoader();
-                showToast(`${cat.name} balances updated successfully!`, "success");
+                showToast("Balances updated successfully!", "success");
                 updateDashboardCards();
             } catch(err) {
                 hideLoader();
-                showToast("Failed to save balances: " + err.message, "error");
             }
         });
 
-        /* CASH INVENTORY RENDER & SAVE */
-        function renderCashInventoryTable() {
-            const tbody = document.getElementById('cashDenomTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            CASH_DENOMINATIONS.forEach(denom => {
-                const qty = parseInt(cashQuantities[denom]) || 0;
-                const amt = denom * qty;
-                const row = `
-                    <tr>
-                        <td style="font-weight:700; color:var(--primary-dark);">৳ ${denom} Note</td>
-                        <td>
-                            <input type="number" min="0" class="inv-qty-input cash-denom-input" data-denom="${denom}" value="${qty}" oninput="calculateCashInventoryLive()" />
-                        </td>
-                        <td style="font-weight:700; color:#10b981;" id="cash_amt_${denom}">৳ ${amt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', row);
-            });
-
-            // Add 'Others' Row
-            const othersRow = `
-                <tr>
-                    <td style="font-weight:700; color:var(--primary-dark);">Others / Coins / Small Notes</td>
-                    <td>
-                        <input type="number" step="any" min="0" class="inv-qty-input" id="cash_others_input" value="${cashOthersAmount}" oninput="calculateCashInventoryLive()" style="width: 130px; text-align: left; padding-left: 10px;" />
-                    </td>
-                    <td style="font-weight:700; color:#10b981;" id="cash_amt_others">৳ ${cashOthersAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                </tr>
-            `;
-            tbody.insertAdjacentHTML('beforeend', othersRow);
-
-            calculateCashInventoryLive();
-        }
-
-        window.calculateCashInventoryLive = function() {
-            let total = 0;
-            CASH_DENOMINATIONS.forEach(d => {
-                const input = document.querySelector(`.cash-denom-input[data-denom="${d}"]`);
-                const qty = input ? (parseInt(input.value) || 0) : 0;
-                const amt = d * qty;
-                const amtEl = document.getElementById(`cash_amt_${d}`);
-                if (amtEl) amtEl.innerText = `৳ ${amt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-                total += amt;
-            });
-
-            const othersInput = document.getElementById('cash_others_input');
-            const othersVal = othersInput ? (parseFloat(othersInput.value) || 0) : 0;
-            const othersAmtEl = document.getElementById('cash_amt_others');
-            if (othersAmtEl) othersAmtEl.innerText = `৳ ${othersVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-
-            total += othersVal;
-
-            const grandEl = document.getElementById('grandTotalCashVal');
-            if (grandEl) grandEl.innerText = `৳ ${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            cashGrandTotal = total;
-        };
-
-        window.saveCashInventory = async function() {
-            showLoader("Saving Cash Inventory...");
-            const newQuantities = {};
-            CASH_DENOMINATIONS.forEach(d => {
-                const input = document.querySelector(`.cash-denom-input[data-denom="${d}"]`);
-                newQuantities[d] = input ? (parseInt(input.value) || 0) : 0;
-            });
-
-            const othersInput = document.getElementById('cash_others_input');
-            const newOthers = othersInput ? (parseFloat(othersInput.value) || 0) : 0;
-
-            cashQuantities = newQuantities;
-            cashOthersAmount = newOthers;
-            cashGrandTotal = calculateCashGrandTotal();
-
-            const now = new Date().toLocaleString();
-            cashHistoryLogs.unshift({
-                timestamp: now,
-                others: cashOthersAmount,
-                grandTotal: cashGrandTotal
-            });
-
-            try {
-                await writeToFirebase('erp/cashInventory', {
-                    quantities: cashQuantities,
-                    others: cashOthersAmount,
-                    grandTotal: cashGrandTotal
-                });
-                await writeToFirebase('erp/cashHistory', cashHistoryLogs);
-
-                hideLoader();
-                showToast("Cash inventory saved & logged successfully!", "success");
-                updateDashboardCards();
-            } catch(e) {
-                hideLoader();
-                showToast("Failed to save cash inventory: " + e.message, "error");
-            }
-        };
-
-        /* REDESIGNED CARD INVENTORY ACCORDIONS & LIVE CALCULATIONS */
-        function renderRedesignedCardInventory() {
-            const container = document.getElementById('operatorAccordions');
-            if (!container) return;
-            container.innerHTML = '';
-
-            OPERATORS_LIST.forEach(op => {
-                const cardsList = toArray(cardConfig[op] || []).filter(c => c.active !== false);
-                const badgeClass = `op-${op.toLowerCase()}`;
-
-                let opTotalQty = 0;
-                let opTotalVal = 0;
-                const opQtyMap = cardQuantities[op] || {};
-
-                cardsList.forEach(card => {
-                    const q = parseInt(opQtyMap[card.id]) || 0;
-                    opTotalQty += q;
-                    opTotalVal += (q * card.price);
-                });
-
-                let tableRows = '';
-                if (cardsList.length === 0) {
-                    tableRows = `<tr><td colspan="5" style="text-align:center; color:#9ca3af;">No active cards configured for ${op}. Configure in Settings -> Card Management.</td></tr>`;
-                } else {
-                    cardsList.forEach(card => {
-                        const qty = parseInt(opQtyMap[card.id]) || 0;
-                        const lineTotal = qty * card.price;
-                        tableRows += `
-                            <tr>
-                                <td><strong style="color: var(--primary-dark);">${card.name}</strong></td>
-                                <td><span class="badge" style="background:#f3f4f6; color:#4b5563;">${card.type || 'Internet'}</span></td>
-                                <td><strong>৳${card.price}</strong></td>
-                                <td>
-                                    <input type="number" min="0" class="inv-qty-input card-qty-input" data-op="${op}" data-cardid="${card.id}" data-price="${card.price}" value="${qty}" oninput="updateLiveSummaries()" />
-                                </td>
-                                <td class="total-green-highlight" id="line_total_${op}_${card.id}">৳${lineTotal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                            </tr>
-                        `;
-                    });
-                }
-
-                const accordionHtml = `
-                    <div class="accordion-item" id="acc_item_${op}">
-                        <div class="accordion-header" onclick="toggleAccordion('acc_item_${op}')">
-                            <div class="accordion-title-box">
-                                <span class="op-badge ${badgeClass}">${op}</span>
-                                <h3>${op} Card Inventory</h3>
-                            </div>
-                            <div class="accordion-summary-info">
-                                <div class="acc-summary-item">
-                                    <span>Total Cards</span>
-                                    <strong id="header_qty_${op}">${opTotalQty} Pcs</strong>
-                                </div>
-                                <div class="acc-summary-item">
-                                    <span>Total Value</span>
-                                    <strong class="highlight-val" id="header_val_${op}">৳${opTotalVal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</strong>
-                                </div>
-                                <i class="fa-solid fa-chevron-down accordion-icon"></i>
-                            </div>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="table-container" style="border:none;">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Card Name</th>
-                                            <th>Type</th>
-                                            <th>Price</th>
-                                            <th>Quantity</th>
-                                            <th>Total Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${tableRows}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', accordionHtml);
-            });
-
-            updateLiveSummaries();
-        }
-
-        window.toggleAccordion = function(itemId) {
-            const item = document.getElementById(itemId);
-            if (!item) return;
-            const isActive = item.classList.contains('active');
-            item.classList.toggle('active', !isActive);
-        };
-
-        window.updateLiveSummaries = function() {
-            let grandCardsCount = 0;
-            let grandCardsVal = 0;
-
-            OPERATORS_LIST.forEach(op => {
-                let opQty = 0;
-                let opVal = 0;
-
-                const inputs = document.querySelectorAll(`.card-qty-input[data-op="${op}"]`);
-                inputs.forEach(input => {
-                    const cardId = input.getAttribute('data-cardid');
-                    const price = parseFloat(input.getAttribute('data-price')) || 0;
-                    const qty = parseInt(input.value) || 0;
-                    const lineTotal = qty * price;
-
-                    opQty += qty;
-                    opVal += lineTotal;
-
-                    const lineEl = document.getElementById(`line_total_${op}_${cardId}`);
-                    if (lineEl) lineEl.innerText = `৳${lineTotal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-                });
-
-                const headQty = document.getElementById(`header_qty_${op}`);
-                const headVal = document.getElementById(`header_val_${op}`);
-                if (headQty) headQty.innerText = `${opQty} Pcs`;
-                if (headVal) headVal.innerText = `৳${opVal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-
-                const summaryOpVal = document.getElementById(`summary${op}Val`);
-                if (summaryOpVal) summaryOpVal.innerText = `৳${opVal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-
-                grandCardsCount += opQty;
-                grandCardsVal += opVal;
-            });
-
-            const totalCountEl = document.getElementById('grandTotalCardsCount');
-            const totalValEl = document.getElementById('grandTotalCardsVal');
-            if (totalCountEl) totalCountEl.innerText = `${grandCardsCount} Pcs`;
-            if (totalValEl) totalValEl.innerText = `৳ ${grandCardsVal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-        };
-
-        window.saveTodayInventory = async function() {
-            showLoader("Saving Card Inventory...");
-            const newQuantities = { GP: {}, Banglalink: {}, Robi: {}, Airtel: {} };
-
-            OPERATORS_LIST.forEach(op => {
-                const inputs = document.querySelectorAll(`.card-qty-input[data-op="${op}"]`);
-                inputs.forEach(input => {
-                    const cardId = input.getAttribute('data-cardid');
-                    const qty = parseInt(input.value) || 0;
-                    newQuantities[op][cardId] = qty;
-                });
-            });
-
-            cardQuantities = newQuantities;
-            const grandVal = calculateGrandCardInventoryValue();
-            const cardAcc = getCardInventoryAccount();
-            balanceStore[cardAcc.id] = grandVal;
-
-            const now = new Date().toLocaleString();
-            OPERATORS_LIST.forEach(op => {
-                let opTotalQty = 0;
-                let opTotalVal = 0;
-                const cardsList = toArray(cardConfig[op] || []).filter(c => c.active !== false);
-                cardsList.forEach(c => {
-                    const q = parseInt(cardQuantities[op][c.id]) || 0;
-                    opTotalQty += q;
-                    opTotalVal += (q * c.price);
-                });
-
-                if (opTotalQty > 0 || cardHistoryLogs.length === 0) {
-                    cardHistoryLogs.unshift({
-                        timestamp: now,
-                        operator: op,
-                        totalCards: opTotalQty,
-                        totalValue: opTotalVal
-                    });
-                }
-            });
-
-            try {
-                await writeToFirebase('erp/cardInventory', cardQuantities);
-                await writeToFirebase('erp/balances', balanceStore);
-                await writeToFirebase('erp/cardHistory', cardHistoryLogs);
-
-                hideLoader();
-                showToast("Card inventory saved & synced to balances!", "success");
-                updateDashboardCards();
-            } catch(e) {
-                hideLoader();
-                showToast("Failed to save inventory: " + e.message, "error");
-            }
-        };
-
-        /* CATEGORY & ACCOUNT MANAGEMENT MODULE */
-        function renderCategoryManagementTables() {
-            const catBody = document.getElementById('categoryTableBody');
-            const accBody = document.getElementById('accountTableBody');
-            const accCatSelect = document.getElementById('accCatSelect');
-
-            if (catBody) {
-                catBody.innerHTML = '';
-                const sortedCats = toArray(categories).sort((a,b) => a.order - b.order);
-                sortedCats.forEach(cat => {
-                    const isEnabled = cat.enabled !== false;
-                    const row = `
-                        <tr>
-                            <td><strong>${cat.order}</strong></td>
-                            <td><strong>${cat.name}</strong></td>
-                            <td><span class="badge ${isEnabled ? 'badge-success' : 'badge-danger'}">${isEnabled ? 'Active' : 'Disabled'}</span></td>
-                            <td>
-                                <button class="btn-action btn-edit" onclick="editCategory('${cat.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
-                                <button class="btn-action btn-toggle" onclick="toggleCategoryStatus('${cat.id}')">${isEnabled ? 'Disable' : 'Enable'}</button>
-                            </td>
-                        </tr>
-                    `;
-                    catBody.insertAdjacentHTML('beforeend', row);
-                });
-            }
-
-            if (accCatSelect) {
-                accCatSelect.innerHTML = '<option value="">Select Category...</option>';
-                toArray(categories).filter(c => c.enabled !== false).forEach(c => {
-                    accCatSelect.insertAdjacentHTML('beforeend', `<option value="${c.id}">${c.name}</option>`);
-                });
-            }
-
-            if (accBody) {
-                accBody.innerHTML = '';
-                toArray(accounts).forEach(acc => {
-                    const cat = categories.find(c => c.id === acc.catId);
-                    const isEnabled = acc.enabled !== false;
-                    const row = `
-                        <tr>
-                            <td><span class="badge" style="background:#eff6ff; color:#00a8ef;">${cat ? cat.name : 'Unassigned'}</span></td>
-                            <td><code>${acc.id}</code></td>
-                            <td><strong>${acc.name}</strong></td>
-                            <td><span class="badge ${isEnabled ? 'badge-success' : 'badge-danger'}">${isEnabled ? 'Active' : 'Disabled'}</span></td>
-                            <td>
-                                <button class="btn-action btn-edit" onclick="editAccount('${acc.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
-                                <button class="btn-action btn-toggle" onclick="toggleAccountStatus('${acc.id}')">${isEnabled ? 'Disable' : 'Enable'}</button>
-                            </td>
-                        </tr>
-                    `;
-                    accBody.insertAdjacentHTML('beforeend', row);
-                });
-            }
-        }
-
-        document.getElementById('addCategoryForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const editId = document.getElementById('editCatId').value;
-            const name = document.getElementById('catNameInput').value.trim();
-            const order = parseInt(document.getElementById('catOrderInput').value) || 1;
-
-            if (editId) {
-                const cat = categories.find(c => c.id === editId);
-                if (cat) {
-                    cat.name = name;
-                    cat.order = order;
-                }
-            } else {
-                const newId = 'cat_' + Date.now();
-                categories.push({ id: newId, name: name, order: order, enabled: true });
-            }
-
-            showLoader("Saving category...");
-            try {
-                await writeToFirebase('erp/categories', categories);
-                hideLoader();
-                showToast("Category saved successfully!", "success");
-                document.getElementById('addCategoryForm').reset();
-                document.getElementById('editCatId').value = '';
-                renderCategoryManagementTables();
-            } catch(err) {
-                hideLoader();
-                showToast("Error saving category: " + err.message, "error");
-            }
-        });
-
-        window.editCategory = function(catId) {
-            const cat = categories.find(c => c.id === catId);
-            if (!cat) return;
-            document.getElementById('editCatId').value = cat.id;
-            document.getElementById('catNameInput').value = cat.name;
-            document.getElementById('catOrderInput').value = cat.order;
-        };
-
-        window.toggleCategoryStatus = async function(catId) {
-            const cat = categories.find(c => c.id === catId);
-            if (!cat) return;
-            cat.enabled = (cat.enabled === false) ? true : false;
-            showLoader("Updating category status...");
-            try {
-                await writeToFirebase('erp/categories', categories);
-                hideLoader();
-                showToast(`Category ${cat.enabled ? 'enabled' : 'disabled'} successfully!`, "info");
-                renderCategoryManagementTables();
-                updateDashboardCards();
-            } catch(e) {
-                hideLoader();
-                showToast("Failed to update status.", "error");
-            }
-        };
-
-        document.getElementById('addAccountForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const editId = document.getElementById('editAccId').value;
-            const catId = document.getElementById('accCatSelect').value;
-            const name = document.getElementById('accNameInput').value.trim();
-
-            if (editId) {
-                const acc = accounts.find(a => a.id === editId);
-                if (acc) {
-                    acc.catId = catId;
-                    acc.name = name;
-                }
-            } else {
-                const newId = 'acc_' + Date.now();
-                accounts.push({ id: newId, catId: catId, name: name, enabled: true });
-                balanceStore[newId] = 0; // Initialize balance
-            }
-
-            showLoader("Saving account...");
-            try {
-                await writeToFirebase('erp/accounts', accounts);
-                await writeToFirebase('erp/balances', balanceStore);
-                hideLoader();
-                showToast("Account saved successfully!", "success");
-                document.getElementById('addAccountForm').reset();
-                document.getElementById('editAccId').value = '';
-                renderCategoryManagementTables();
-            } catch(err) {
-                hideLoader();
-                showToast("Error saving account: " + err.message, "error");
-            }
-        });
-
-        window.editAccount = function(accId) {
-            const acc = accounts.find(a => a.id === accId);
-            if (!acc) return;
-            document.getElementById('editAccId').value = acc.id;
-            document.getElementById('accCatSelect').value = acc.catId;
-            document.getElementById('accNameInput').value = acc.name;
-        };
-
-        window.toggleAccountStatus = async function(accId) {
-            const acc = accounts.find(a => a.id === accId);
-            if (!acc) return;
-            acc.enabled = (acc.enabled === false) ? true : false;
-            showLoader("Updating account status...");
-            try {
-                await writeToFirebase('erp/accounts', accounts);
-                hideLoader();
-                showToast(`Account ${acc.enabled ? 'enabled' : 'disabled'} successfully!`, "info");
-                renderCategoryManagementTables();
-                updateDashboardCards();
-            } catch(e) {
-                hideLoader();
-                showToast("Failed to update status.", "error");
-            }
-        };
-
-        /* CARD MASTER CONFIGURATION MANAGEMENT */
-        function renderCardMasterConfiguration() {
-            const container = document.getElementById('cardMasterTablesContainer');
-            if (!container) return;
-            container.innerHTML = '';
-
-            OPERATORS_LIST.forEach(op => {
-                const cards = toArray(cardConfig[op] || []);
-                let rows = '';
-
-                if (cards.length === 0) {
-                    rows = `<tr><td colspan="5" style="text-align:center; color:#9ca3af;">No card configurations defined for ${op}.</td></tr>`;
-                } else {
-                    cards.forEach(c => {
-                        const isActive = c.active !== false;
-                        rows += `
-                            <tr>
-                                <td><strong>${c.name}</strong></td>
-                                <td><span class="badge" style="background:#f3f4f6; color:#4b5563;">${c.type || 'Internet'}</span></td>
-                                <td><strong>৳${c.price}</strong></td>
-                                <td><span class="badge ${isActive ? 'badge-success' : 'badge-danger'}">${isActive ? 'Active' : 'Inactive'}</span></td>
-                                <td>
-                                    <button class="btn-action btn-edit" onclick="editMasterCard('${op}', '${c.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
-                                    <button class="btn-action btn-toggle" onclick="toggleMasterCardStatus('${op}', '${c.id}')">${isActive ? 'Disable' : 'Enable'}</button>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                }
-
-                const tableCard = `
-                    <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:10px; margin-bottom:20px; padding:15px;">
-                        <h4 style="font-size:1rem; font-weight:700; color:var(--primary-dark); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
-                            <span class="op-badge op-${op.toLowerCase()}">${op}</span> ${op} Master Cards Configuration
-                        </h4>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Card Name</th>
-                                        <th>Type</th>
-                                        <th>Price</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>${rows}</tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', tableCard);
-            });
-        }
-
-        document.getElementById('cardMasterForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const editId = document.getElementById('cardMasterId').value;
-            const op = document.getElementById('cardOperatorSelect').value;
-            const name = document.getElementById('cardNameMasterInput').value.trim();
-            const type = document.getElementById('cardTypeSelect').value;
-            const price = parseFloat(document.getElementById('cardPriceMasterInput').value) || 0;
-            const active = document.getElementById('cardStatusSelect').value === 'active';
-
-            if (!cardConfig[op]) cardConfig[op] = [];
-
-            if (editId) {
-                const card = cardConfig[op].find(c => c.id === editId);
-                if (card) {
-                    card.name = name;
-                    card.type = type;
-                    card.price = price;
-                    card.active = active;
-                }
-            } else {
-                const newId = op.toLowerCase() + '_' + Date.now();
-                cardConfig[op].push({ id: newId, name: name, type: type, price: price, active: active });
-            }
-
-            showLoader("Saving card configuration...");
-            try {
-                await writeToFirebase('erp/cardConfig', cardConfig);
-                hideLoader();
-                showToast("Card config saved successfully!", "success");
-                resetCardMasterForm();
-                renderCardMasterConfiguration();
-            } catch(err) {
-                hideLoader();
-                showToast("Error saving card config: " + err.message, "error");
-            }
-        });
-
-        window.resetCardMasterForm = function() {
-            document.getElementById('cardMasterForm').reset();
-            document.getElementById('cardMasterId').value = '';
-        };
-
-        window.editMasterCard = function(op, cardId) {
-            const card = (cardConfig[op] || []).find(c => c.id === cardId);
-            if (!card) return;
-            document.getElementById('cardMasterId').value = card.id;
-            document.getElementById('cardOperatorSelect').value = op;
-            document.getElementById('cardNameMasterInput').value = card.name;
-            document.getElementById('cardTypeSelect').value = card.type || 'Internet';
-            document.getElementById('cardPriceMasterInput').value = card.price;
-            document.getElementById('cardStatusSelect').value = card.active !== false ? 'active' : 'inactive';
-        };
-
-        window.toggleMasterCardStatus = async function(op, cardId) {
-            const card = (cardConfig[op] || []).find(c => c.id === cardId);
-            if (!card) return;
-            card.active = card.active === false ? true : false;
-
-            showLoader("Updating card status...");
-            try {
-                await writeToFirebase('erp/cardConfig', cardConfig);
-                hideLoader();
-                showToast(`Card ${card.active ? 'enabled' : 'disabled'}!`, "info");
-                renderCardMasterConfiguration();
-            } catch(e) {
-                hideLoader();
-                showToast("Failed to update status.", "error");
-            }
-        };
-
-        /* AUDIT & TRANSACTION HISTORY LOGS */
-        function renderHistoryTable() {
-            const tbody = document.getElementById('historyTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            if (historyLogs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No balance record history available yet.</td></tr>';
-                return;
-            }
-
-            historyLogs.forEach(log => {
-                const diffVal = parseFloat(log.diff) || 0;
-                const isPositive = diffVal >= 0;
-                const diffBadge = `<span class="badge ${isPositive ? 'badge-success' : 'badge-danger'}">${isPositive ? '+' : ''}৳ ${diffVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>`;
-
-                const row = `
-                    <tr>
-                        <td>${log.timestamp}</td>
-                        <td><span class="badge" style="background:#eff6ff; color:#00a8ef;">${log.catName}</span></td>
-                        <td><strong>${log.accName}</strong></td>
-                        <td>৳ ${parseFloat(log.prevBal).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                        <td><strong>৳ ${parseFloat(log.currentBal).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
-                        <td>${diffBadge}</td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', row);
-            });
-        }
-
-        function renderCardHistoryTable() {
-            const tbody = document.getElementById('cardHistoryTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            if (cardHistoryLogs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #9ca3af;">No card inventory history available yet.</td></tr>';
-                return;
-            }
-
-            cardHistoryLogs.forEach(log => {
-                const row = `
-                    <tr>
-                        <td>${log.timestamp}</td>
-                        <td><span class="op-badge op-${log.operator.toLowerCase()}">${log.operator}</span></td>
-                        <td><strong>${log.totalCards} Pcs</strong></td>
-                        <td style="color:#059669; font-weight:800;">৳ ${parseFloat(log.totalValue).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', row);
-            });
-        }
-
-        function renderCashHistoryTable() {
-            const tbody = document.getElementById('cashHistoryTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            if (cashHistoryLogs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #9ca3af;">No cash inventory history available yet.</td></tr>';
-                return;
-            }
-
-            cashHistoryLogs.forEach(log => {
-                const row = `
-                    <tr>
-                        <td>${log.timestamp}</td>
-                        <td>৳ ${parseFloat(log.others || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                        <td style="color:#059669; font-weight:800;">৳ ${parseFloat(log.grandTotal || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', row);
-            });
-        }
-
-        /* ==================== CUSTOMER MANAGEMENT MODULE JS LOGIC ==================== */
+        /* ==================== CUSTOMER MANAGEMENT MODULE ==================== */
         window.switchCustomerSubSection = function(sectionId) {
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            switchMainTab('customer-ledger');
             document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
-
-            document.getElementById('customer-ledger-view').classList.add('active');
-            document.getElementById('menu-cust-parent').classList.add('active');
+            
+            if (sectionId === 'cust-list-section') document.getElementById('sub-cust-list')?.classList.add('active');
+            if (sectionId === 'cust-tx-section') document.getElementById('sub-cust-tx')?.classList.add('active');
+            if (sectionId === 'cust-ledger-section') document.getElementById('sub-cust-ledger')?.classList.add('active');
+            if (sectionId === 'cust-due-section') document.getElementById('sub-cust-due')?.classList.add('active');
+            if (sectionId === 'cust-reports-section') document.getElementById('sub-cust-reports')?.classList.add('active');
 
             document.querySelectorAll('.cust-sub-section').forEach(sec => sec.style.display = 'none');
-            const targetSec = document.getElementById(sectionId);
-            if (targetSec) targetSec.style.display = 'block';
+            const target = document.getElementById(sectionId);
+            if (target) target.style.display = 'block';
 
-            const titleEl = document.getElementById('top-title');
-
-            if (sectionId === 'cust-list-section') {
-                document.getElementById('sub-cust-list').classList.add('active');
-                if (titleEl) titleEl.innerText = "Customer Directory & Management";
-                renderCustomerListTable();
-            } else if (sectionId === 'cust-tx-section') {
-                document.getElementById('sub-cust-tx').classList.add('active');
-                if (titleEl) titleEl.innerText = "New Customer Transaction";
+            if (sectionId === 'cust-list-section') renderCustomerListTable();
+            if (sectionId === 'cust-tx-section') {
                 populateCustomerSelectDropdowns();
-            } else if (sectionId === 'cust-ledger-section') {
-                document.getElementById('sub-cust-ledger').classList.add('active');
-                if (titleEl) titleEl.innerText = "Customer Ledger & Statement";
+                const txDateEl = document.getElementById('txDate');
+                const txTimeEl = document.getElementById('txTime');
+                const now = new Date();
+                if (txDateEl) txDateEl.value = now.toISOString().split('T')[0];
+                if (txTimeEl) txTimeEl.value = now.toTimeString().split(' ')[0].substring(0, 5);
+            }
+            if (sectionId === 'cust-ledger-section') {
                 populateCustomerSelectDropdowns();
                 if (activeViewingCustomerId) renderCustomerStatement(activeViewingCustomerId);
-            } else if (sectionId === 'cust-due-section') {
-                document.getElementById('sub-cust-due').classList.add('active');
-                if (titleEl) titleEl.innerText = "Customer Dues Summary";
-                renderDueSummarySection();
-            } else if (sectionId === 'cust-reports-section') {
-                document.getElementById('sub-cust-reports').classList.add('active');
-                if (titleEl) titleEl.innerText = "Customer Reports Center";
             }
+            if (sectionId === 'cust-due-section') renderDueSummarySection();
         };
 
         function populateCustomerSelectDropdowns() {
@@ -3666,22 +3181,28 @@
             const activeCusts = customers.filter(c => c.status === 'Active');
 
             if (txSelect) {
-                txSelect.innerHTML = '<option value="">Select Customer...</option>';
+                txSelect.innerHTML = '<option value="">-- Select Customer --</option>';
                 activeCusts.forEach(c => {
                     txSelect.insertAdjacentHTML('beforeend', `<option value="${c.customerId}">${c.name} (${c.phone || c.customerId})</option>`);
                 });
             }
 
             if (ledgerSelect) {
-                ledgerSelect.innerHTML = '<option value="">Select Customer to view Ledger...</option>';
-                activeCusts.forEach(c => {
-                    const isSel = c.customerId === activeViewingCustomerId ? 'selected' : '';
-                    ledgerSelect.insertAdjacentHTML('beforeend', `<option value="${c.customerId}" ${isSel}>${c.name} (${c.customerId})</option>`);
+                ledgerSelect.innerHTML = '<option value="">-- Select Customer --</option>';
+                customers.forEach(c => {
+                    ledgerSelect.insertAdjacentHTML('beforeend', `<option value="${c.customerId}">${c.name} (${c.phone || c.customerId})</option>`);
                 });
+                if (activeViewingCustomerId) ledgerSelect.value = activeViewingCustomerId;
             }
         }
 
-        // CUSTOMER FORM SUBMISSION
+        function resetCustomerForm() {
+            document.getElementById('custEditId').value = '';
+            document.getElementById('customerFormTitle').innerHTML = `<i class="fa-solid fa-user-plus" style="color: #00a8ef;"></i> Add New Customer`;
+            document.getElementById('customerMgmtForm').reset();
+            document.getElementById('custOpeningBal').disabled = false;
+        }
+
         document.getElementById('customerMgmtForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const editId = document.getElementById('custEditId').value;
@@ -3691,307 +3212,251 @@
             const openingBal = parseFloat(document.getElementById('custOpeningBal').value) || 0;
             const status = document.getElementById('custStatus').value;
 
-            showLoader("Saving customer...");
+            showLoader("Saving Customer...");
+            if (editId) {
+                const idx = customers.findIndex(c => c.customerId === editId);
+                if (idx !== -1) {
+                    customers[idx].name = name;
+                    customers[idx].phone = phone;
+                    customers[idx].address = address;
+                    customers[idx].status = status;
+                }
+            } else {
+                const newId = 'CUST-' + String(customers.length + 1).padStart(4, '0');
+                const newCust = {
+                    customerId: newId,
+                    name,
+                    phone,
+                    address,
+                    openingBalance: openingBal,
+                    status,
+                    createdAt: new Date().toISOString()
+                };
+                customers.push(newCust);
+            }
 
             try {
-                if (editId) {
-                    const cust = customers.find(c => c.customerId === editId);
-                    if (cust) {
-                        cust.name = name;
-                        cust.phone = phone;
-                        cust.address = address;
-                        cust.openingBalance = openingBal;
-                        cust.status = status;
-                        cust.updatedAt = new Date().toISOString();
-                    }
-                } else {
-                    const newCustId = 'CUST-' + Math.floor(1000 + Math.random() * 9000);
-                    const newCust = {
-                        customerId: newCustId,
-                        name: name,
-                        phone: phone,
-                        address: address,
-                        openingBalance: openingBal,
-                        status: status,
-                        createdAt: new Date().toISOString()
-                    };
-                    customers.push(newCust);
-                }
-
                 await writeToFirebase('customers', customers);
                 hideLoader();
                 showToast("Customer saved successfully!", "success");
                 resetCustomerForm();
                 renderCustomerListTable();
-                updateDashboardCards();
             } catch(err) {
                 hideLoader();
-                showToast("Failed to save customer: " + err.message, "error");
             }
         });
-
-        window.resetCustomerForm = function() {
-            document.getElementById('customerMgmtForm').reset();
-            document.getElementById('custEditId').value = '';
-            document.getElementById('customerFormTitle').innerHTML = `<i class="fa-solid fa-user-plus" style="color: #00a8ef;"></i> Add New Customer`;
-        };
 
         function renderCustomerListTable() {
             const tbody = document.getElementById('customerTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
 
-            const searchVal = (document.getElementById('custSearchInput').value || '').toLowerCase();
+            const query = (document.getElementById('custSearchInput')?.value || '').toLowerCase();
             const filtered = customers.filter(c => 
-                c.name.toLowerCase().includes(searchVal) || 
-                (c.phone && c.phone.toLowerCase().includes(searchVal)) || 
-                c.customerId.toLowerCase().includes(searchVal)
+                c.name.toLowerCase().includes(query) || 
+                (c.phone && c.phone.toLowerCase().includes(query)) || 
+                c.customerId.toLowerCase().includes(query)
             );
 
             if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #9ca3af;">No matching customers found.</td></tr>';
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #9ca3af;">No customers found.</td></tr>`;
                 return;
             }
 
             filtered.forEach(c => {
                 const currentDue = calculateCustomerCurrentDue(c.customerId);
-                const isDue = currentDue > 0;
-                const row = `
+                const tr = `
                     <tr>
-                        <td><code>${c.customerId}</code></td>
-                        <td><strong>${c.name}</strong></td>
+                        <td><strong>${c.customerId}</strong></td>
+                        <td>${c.name}</td>
                         <td>${c.phone || '-'}</td>
                         <td>${c.address || '-'}</td>
-                        <td>৳ ${(parseFloat(c.openingBalance) || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                        <td style="font-weight:800; color:${isDue ? '#e11d48' : '#059669'};">৳ ${currentDue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                        <td>৳ ${(parseFloat(c.openingBalance) || 0).toFixed(2)}</td>
+                        <td style="font-weight: 800; color: ${currentDue > 0 ? '#e11d48' : '#10b981'};">৳ ${currentDue.toFixed(2)}</td>
                         <td><span class="badge ${c.status === 'Active' ? 'badge-success' : 'badge-danger'}">${c.status}</span></td>
-                        <td style="text-align:center;">
-                            <button class="btn-action btn-edit" onclick="openCustomerLedgerDirect('${c.customerId}')"><i class="fa-solid fa-file-invoice"></i> Statement</button>
-                            <button class="btn-action btn-edit" onclick="editCustomer('${c.customerId}')"><i class="fa-solid fa-pen"></i> Edit</button>
-                            <button class="btn-action btn-toggle" onclick="toggleCustomerStatus('${c.customerId}')">${c.status === 'Active' ? 'Disable' : 'Enable'}</button>
+                        <td style="text-align: center;">
+                            <button class="btn-action btn-edit" onclick="openCustomerLedgerDirect('${c.customerId}')" title="View Ledger"><i class="fa-solid fa-file-invoice"></i></button>
+                            <button class="btn-action btn-toggle" onclick="editCustomer('${c.customerId}')" title="Edit Customer"><i class="fa-solid fa-pen"></i></button>
                         </td>
                     </tr>
                 `;
-                tbody.insertAdjacentHTML('beforeend', row);
+                tbody.insertAdjacentHTML('beforeend', tr);
             });
         }
 
-        window.editCustomer = function(id) {
-            const c = customers.find(cust => cust.customerId === id);
+        window.editCustomer = function(custId) {
+            const c = customers.find(item => item.customerId === custId);
             if (!c) return;
             document.getElementById('custEditId').value = c.customerId;
+            document.getElementById('customerFormTitle').innerHTML = `<i class="fa-solid fa-user-pen" style="color: #00a8ef;"></i> Edit Customer (${c.customerId})`;
             document.getElementById('custName').value = c.name;
             document.getElementById('custPhone').value = c.phone || '';
             document.getElementById('custAddress').value = c.address || '';
             document.getElementById('custOpeningBal').value = c.openingBalance || 0;
+            document.getElementById('custOpeningBal').disabled = true;
             document.getElementById('custStatus').value = c.status;
-            document.getElementById('customerFormTitle').innerHTML = `<i class="fa-solid fa-user-pen" style="color: #00a8ef;"></i> Edit Customer (${c.customerId})`;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            switchCustomerSubSection('cust-list-section');
         };
 
-        window.toggleCustomerStatus = async function(id) {
-            const c = customers.find(cust => cust.customerId === id);
-            if (!c) return;
-            c.status = c.status === 'Active' ? 'Inactive' : 'Active';
-            showLoader("Updating customer status...");
-            try {
-                await writeToFirebase('customers', customers);
-                hideLoader();
-                showToast(`Customer status updated to ${c.status}`, "info");
-                renderCustomerListTable();
-            } catch(e) {
-                hideLoader();
-                showToast("Failed to update status", "error");
-            }
-        };
-
-        // NEW TRANSACTION JS LOGIC
         window.handleTxTypeChange = function() {
             const type = document.getElementById('txType').value;
-            const debitInp = document.getElementById('txDebit');
-            const creditInp = document.getElementById('txCredit');
-
+            const debitIn = document.getElementById('txDebit');
+            const creditIn = document.getElementById('txCredit');
             if (type === 'Debit') {
-                debitInp.disabled = false;
-                debitInp.style.background = '#ffffff';
-                creditInp.disabled = true;
-                creditInp.value = 0;
-                creditInp.style.background = '#f3f4f6';
+                debitIn.disabled = false;
+                debitIn.style.background = '#ffffff';
+                creditIn.disabled = true;
+                creditIn.value = '0';
+                creditIn.style.background = '#f3f4f6';
             } else {
-                creditInp.disabled = false;
-                creditInp.style.background = '#ffffff';
-                debitInp.disabled = true;
-                debitInp.value = 0;
-                debitInp.style.background = '#f3f4f6';
+                creditIn.disabled = false;
+                creditIn.style.background = '#ffffff';
+                debitIn.disabled = true;
+                debitIn.value = '0';
+                debitIn.style.background = '#f3f4f6';
             }
         };
-
-        // Initialize today's date and time for new tx
-        const todayStr = new Date().toISOString().split('T')[0];
-        const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
-        if (document.getElementById('txDate')) document.getElementById('txDate').value = todayStr;
-        if (document.getElementById('txTime')) document.getElementById('txTime').value = timeStr;
 
         document.getElementById('transactionEntryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const customerId = document.getElementById('txCustSelect').value;
-            const type = document.getElementById('txType').value;
-            const debit = type === 'Debit' ? (parseFloat(document.getElementById('txDebit').value) || 0) : 0;
-            const credit = type === 'Credit' ? (parseFloat(document.getElementById('txCredit').value) || 0) : 0;
-            const txDate = document.getElementById('txDate').value;
-            const txTime = document.getElementById('txTime').value;
-            const description = document.getElementById('txDescription').value.trim();
-
             if (!customerId) {
                 showToast("Please select a customer.", "warning");
                 return;
             }
 
-            const cust = customers.find(c => c.customerId === customerId);
-            if (!cust) return;
+            const type = document.getElementById('txType').value;
+            const debit = parseFloat(document.getElementById('txDebit').value) || 0;
+            const credit = parseFloat(document.getElementById('txCredit').value) || 0;
+            const txDate = document.getElementById('txDate').value;
+            const txTime = document.getElementById('txTime').value;
+            const particulars = document.getElementById('txDescription').value.trim() || 'General Transaction';
 
-            const prevDue = calculateCustomerCurrentDue(customerId);
-            const runningBalance = prevDue + debit - credit;
+            const txDateTime = new Date(`${txDate}T${txTime}`).toISOString();
+            const currentDue = calculateCustomerCurrentDue(customerId);
+            const runningBalance = type === 'Debit' ? (currentDue + debit) : (currentDue - credit);
 
-            const txId = 'TX-' + Date.now();
             const newTx = {
-                txId: txId,
-                customerId: customerId,
-                type: type,
-                debit: debit,
-                credit: credit,
-                runningBalance: runningBalance,
+                transactionId: 'TX-' + Date.now(),
+                customerId,
                 date: txDate,
                 time: txTime,
-                description: description,
-                createdAt: new Date().toISOString()
+                createdAt: txDateTime,
+                particulars,
+                debit,
+                credit,
+                runningBalance
             };
 
-            showLoader("Recording transaction...");
+            showLoader("Posting Transaction...");
+            customerTransactions.push(newTx);
+
             try {
-                customerTransactions.push(newTx);
                 await writeToFirebase('transactions', customerTransactions);
                 hideLoader();
                 showToast("Transaction saved successfully!", "success");
-
                 document.getElementById('transactionEntryForm').reset();
-                document.getElementById('txDate').value = todayStr;
-                document.getElementById('txTime').value = timeStr;
                 handleTxTypeChange();
-
-                updateDashboardCards();
+                switchCustomerSubSection('cust-ledger-section');
                 openCustomerLedgerDirect(customerId);
             } catch(err) {
                 hideLoader();
-                showToast("Transaction error: " + err.message, "error");
             }
         });
 
-        // CUSTOMER LEDGER STATEMENT DIRECT LINK
-        window.openCustomerLedgerDirect = function(customerId) {
-            if (!customerId) return;
-            activeViewingCustomerId = customerId;
+        window.openCustomerLedgerDirect = function(custId) {
+            if (!custId) return;
+            activeViewingCustomerId = custId;
             switchCustomerSubSection('cust-ledger-section');
-            renderCustomerStatement(customerId);
+            renderCustomerStatement(custId);
         };
 
-        function renderCustomerStatement(customerId) {
-            const printArea = document.getElementById('printable-statement-area');
-            if (!printArea) return;
+        function renderCustomerStatement(custId) {
+            const container = document.getElementById('printable-statement-area');
+            const cust = customers.find(c => c.customerId === custId);
+            if (!cust || !container) return;
 
-            const cust = customers.find(c => c.customerId === customerId);
-            if (!cust) {
-                printArea.innerHTML = '<div style="text-align: center; color: #9ca3af; padding: 40px;">Select a customer to view ledger statement.</div>';
-                return;
-            }
+            const fromDate = document.getElementById('stmtFromDate')?.value;
+            const toDate = document.getElementById('stmtToDate')?.value;
 
-            let custTxs = customerTransactions.filter(t => t.customerId === customerId);
-            custTxs.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+            let txs = customerTransactions.filter(t => t.customerId === custId);
+            txs.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
 
-            // Apply Date Filter if present
-            const fromDate = document.getElementById('stmtFromDate').value;
-            const toDate = document.getElementById('stmtToDate').value;
+            if (fromDate) txs = txs.filter(t => t.date >= fromDate);
+            if (toDate) txs = txs.filter(t => t.date <= toDate);
 
-            if (fromDate) custTxs = custTxs.filter(t => t.date >= fromDate);
-            if (toDate) custTxs = custTxs.filter(t => t.date <= toDate);
+            let html = `
+                <div style="border-bottom: 2px solid #00a8ef; padding-bottom: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 style="font-size: 1.4rem; color: var(--primary-dark); font-weight: 800;">Mousumi Computer</h2>
+                        <p style="font-size: 0.85rem; color: #6b7280;">Dynamic Accounting & Customer Statement</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <h3 style="font-size: 1.1rem; color: #00a8ef; font-weight: 700;">CUSTOMER LEDGER</h3>
+                        <p style="font-size: 0.8rem; color: #6b7280;">Date: ${new Date().toLocaleDateString('en-GB')}</p>
+                    </div>
+                </div>
 
-            let totalDebit = 0;
-            let totalCredit = 0;
-            custTxs.forEach(t => {
-                totalDebit += (t.debit || 0);
-                totalCredit += (t.credit || 0);
-            });
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 15px;">
+                    <div>
+                        <p style="font-size: 0.8rem; color: #6b7280;">Customer Info:</p>
+                        <h4 style="font-size: 1rem; color: var(--primary-dark);">${cust.name} (${cust.customerId})</h4>
+                        <p style="font-size: 0.85rem; color: #374151;">Phone: ${cust.phone || 'N/A'}</p>
+                        <p style="font-size: 0.85rem; color: #374151;">Address: ${cust.address || 'N/A'}</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="font-size: 0.8rem; color: #6b7280;">Opening Balance: <strong>৳ ${(parseFloat(cust.openingBalance)||0).toFixed(2)}</strong></p>
+                        <p style="font-size: 0.8rem; color: #6b7280;">Current Outstanding Balance:</p>
+                        <h3 style="font-size: 1.3rem; color: #e11d48; font-weight: 800;">৳ ${calculateCustomerCurrentDue(cust.customerId).toFixed(2)}</h3>
+                    </div>
+                </div>
 
-            const currentDue = calculateCustomerCurrentDue(customerId);
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Particulars</th>
+                                <th style="text-align: right;">Debit (+Due)</th>
+                                <th style="text-align: right;">Credit (-Payment)</th>
+                                <th style="text-align: right;">Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${cust.createdAt ? cust.createdAt.split('T')[0] : 'Initial'}</td>
+                                <td><em>Opening Balance</em></td>
+                                <td style="text-align: right;">-</td>
+                                <td style="text-align: right;">-</td>
+                                <td style="text-align: right; font-weight: 700;">৳ ${(parseFloat(cust.openingBalance)||0).toFixed(2)}</td>
+                            </tr>
+            `;
 
-            let rowsHtml = '';
-            if (custTxs.length === 0) {
-                rowsHtml = `<tr><td colspan="6" style="text-align:center; color:#9ca3af; padding:20px;">No transactions recorded for this period.</td></tr>`;
+            let running = parseFloat(cust.openingBalance) || 0;
+            if (txs.length === 0) {
+                html += `<tr><td colspan="5" style="text-align: center; color: #9ca3af; padding: 15px;">No transactions found in selected period.</td></tr>`;
             } else {
-                custTxs.forEach(t => {
-                    rowsHtml += `
+                txs.forEach(t => {
+                    running = running + (t.debit || 0) - (t.credit || 0);
+                    html += `
                         <tr>
                             <td>${t.date} ${t.time || ''}</td>
-                            <td><code>${t.txId}</code></td>
-                            <td>${t.description || '-'}</td>
-                            <td style="color:${t.debit > 0 ? '#e11d48' : '#6b7280'}; font-weight:${t.debit > 0 ? '700' : '400'};">৳ ${(t.debit || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                            <td style="color:${t.credit > 0 ? '#059669' : '#6b7280'}; font-weight:${t.credit > 0 ? '700' : '400'};">৳ ${(t.credit || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                            <td style="font-weight:800; color:#0f172a;">৳ ${(t.runningBalance || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                            <td>${t.particulars}</td>
+                            <td style="text-align: right; color: #e11d48;">${t.debit > 0 ? '৳ ' + t.debit.toFixed(2) : '-'}</td>
+                            <td style="text-align: right; color: #10b981;">${t.credit > 0 ? '৳ ' + t.credit.toFixed(2) : '-'}</td>
+                            <td style="text-align: right; font-weight: 700;">৳ ${running.toFixed(2)}</td>
                         </tr>
                     `;
                 });
             }
 
-            const html = `
-                <div style="padding: 10px;">
-                    <!-- HEADER BANNER -->
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--primary-dark); padding-bottom:12px; margin-bottom:15px;">
-                        <div>
-                            <h2 style="font-size:1.4rem; font-weight:800; color:var(--primary-dark);">MOUSUMI COMPUTER</h2>
-                            <p style="font-size:0.82rem; color:#64748b;">Customer Ledger & Account Statement</p>
-                        </div>
-                        <div style="text-align:right;">
-                            <span class="badge" style="background:#eff6ff; color:#00a8ef; font-size:0.85rem;">${cust.customerId}</span>
-                            <p style="font-size:0.78rem; color:#64748b; margin-top:4px;">Date: ${new Date().toLocaleDateString()}</p>
-                        </div>
-                    </div>
-
-                    <!-- CUSTOMER INFO CARD -->
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; background:#f8fafc; border:1px solid var(--border-color); border-radius:10px; padding:12px 16px; margin-bottom:15px;">
-                        <div>
-                            <p style="font-size:0.75rem; color:#64748b; font-weight:700;">CUSTOMER INFORMATION</p>
-                            <h3 style="font-size:1.1rem; color:var(--primary-dark); font-weight:800;">${cust.name}</h3>
-                            <p style="font-size:0.85rem; color:#475569;"><i class="fa-solid fa-phone"></i> ${cust.phone || 'N/A'}</p>
-                            <p style="font-size:0.85rem; color:#475569;"><i class="fa-solid fa-location-dot"></i> ${cust.address || 'N/A'}</p>
-                        </div>
-                        <div style="text-align:right; display:flex; flex-direction:column; justify-content:center;">
-                            <p style="font-size:0.8rem; color:#64748b;">Opening Balance: <strong>৳ ${(parseFloat(cust.openingBalance) || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</strong></p>
-                            <p style="font-size:0.8rem; color:#64748b;">Total Sales (Debit): <strong style="color:#e11d48;">৳ ${totalDebit.toLocaleString('en-US', {minimumFractionDigits:2})}</strong></p>
-                            <p style="font-size:0.8rem; color:#64748b;">Total Paid (Credit): <strong style="color:#059669;">৳ ${totalCredit.toLocaleString('en-US', {minimumFractionDigits:2})}</strong></p>
-                            <h3 style="font-size:1.2rem; font-weight:800; color:#e11d48; margin-top:4px;">Net Due: ৳ ${currentDue.toLocaleString('en-US', {minimumFractionDigits:2})}</h3>
-                        </div>
-                    </div>
-
-                    <!-- STATEMENT TABLE -->
-                    <div class="table-container">
-                        <table class="dcr-table">
-                            <thead>
-                                <tr>
-                                    <th>Date & Time</th>
-                                    <th>Tx ID</th>
-                                    <th>Particulars</th>
-                                    <th>Debit (+ Due)</th>
-                                    <th>Credit (- Paid)</th>
-                                    <th>Balance</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rowsHtml}</tbody>
-                        </table>
-                    </div>
+            html += `
+                        </tbody>
+                    </table>
                 </div>
             `;
 
-            printArea.innerHTML = html;
+            container.innerHTML = html;
         }
 
         window.filterCustomerStatement = function() {
@@ -4005,256 +3470,443 @@
         };
 
         window.printCustomerStatementPDF = function() {
-            if (!activeViewingCustomerId) {
-                showToast("Please select a customer first.", "warning");
-                return;
-            }
             window.print();
         };
 
         window.exportCustomerStatementExcel = function() {
-            if (!activeViewingCustomerId) {
-                showToast("Please select a customer first.", "warning");
-                return;
-            }
+            if (!activeViewingCustomerId) return;
             const cust = customers.find(c => c.customerId === activeViewingCustomerId);
-            let custTxs = customerTransactions.filter(t => t.customerId === activeViewingCustomerId);
-            custTxs.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-            const excelData = custTxs.map(t => ({
-                "Date": t.date,
-                "Time": t.time || '',
-                "Tx ID": t.txId,
-                "Description": t.description || '',
-                "Debit (Sales/Due)": t.debit,
-                "Credit (Paid)": t.credit,
-                "Running Balance": t.runningBalance
+            const txs = customerTransactions.filter(t => t.customerId === activeViewingCustomerId);
+            
+            const data = txs.map(t => ({
+                Date: t.date,
+                Time: t.time,
+                Particulars: t.particulars,
+                Debit: t.debit,
+                Credit: t.credit,
+                Balance: t.runningBalance
             }));
 
-            const ws = XLSX.utils.json_to_sheet(excelData);
+            const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Statement");
-            XLSX.writeFile(wb, `Statement_${cust.name}_${activeViewingCustomerId}.xlsx`);
+            XLSX.writeFile(wb, `Statement_${cust ? cust.name : 'Customer'}.xlsx`);
         };
 
-        // DUE SUMMARY SECTION RENDER
         function renderDueSummarySection() {
+            const totalCust = customers.length;
             const activeCusts = customers.filter(c => c.status === 'Active');
-            let custWithDueCount = 0;
-            let totalDueAmt = 0;
+            let dueCount = 0;
+            let totalOutstanding = 0;
 
             const dueList = [];
 
             activeCusts.forEach(c => {
                 const due = calculateCustomerCurrentDue(c.customerId);
                 if (due > 0) {
-                    custWithDueCount++;
-                    totalDueAmt += due;
-                    dueList.push({ ...c, currentDue: due });
+                    dueCount++;
+                    totalOutstanding += due;
+                    dueList.push({ ...c, due });
                 }
             });
 
-            document.getElementById('dueCardTotalCust').innerText = activeCusts.length;
-            document.getElementById('dueCardCustWithDue').innerText = custWithDueCount;
-            document.getElementById('dueCardTotalOutstanding').innerText = `৳ ${totalDueAmt.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            dueList.sort((a,b) => b.due - a.due);
 
-            // Sort by Highest Due
-            dueList.sort((a,b) => b.currentDue - a.currentDue);
+            document.getElementById('dueCardTotalCust').innerText = totalCust;
+            document.getElementById('dueCardCustWithDue').innerText = dueCount;
+            document.getElementById('dueCardTotalOutstanding').innerText = `৳ ${totalOutstanding.toLocaleString('en-US', {minimumFractionDigits:2})}`;
 
             const tbody = document.getElementById('highestDueTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
 
             if (dueList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No active customer dues.</td></tr>';
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No due records found.</td></tr>`;
                 return;
             }
 
-            dueList.forEach((c, index) => {
-                const row = `
-                    <tr style="cursor:pointer;" onclick="openCustomerLedgerDirect('${c.customerId}')">
-                        <td><strong>#${index + 1}</strong></td>
-                        <td><code>${c.customerId}</code></td>
-                        <td><strong>${c.name}</strong></td>
+            dueList.forEach((c, idx) => {
+                const tr = `
+                    <tr style="cursor: pointer;" onclick="openCustomerLedgerDirect('${c.customerId}')">
+                        <td><strong>#${idx + 1}</strong></td>
+                        <td>${c.customerId}</td>
+                        <td style="font-weight: 700;">${c.name}</td>
                         <td>${c.phone || '-'}</td>
-                        <td style="font-weight:800; color:#e11d48;">৳ ${c.currentDue.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                        <td style="text-align:center;">
+                        <td style="font-weight: 800; color: #e11d48;">৳ ${c.due.toFixed(2)}</td>
+                        <td style="text-align: center;">
                             <button class="btn-action btn-edit"><i class="fa-solid fa-eye"></i> View Statement</button>
                         </td>
                     </tr>
                 `;
-                tbody.insertAdjacentHTML('beforeend', row);
+                tbody.insertAdjacentHTML('beforeend', tr);
             });
         }
 
         window.exportOutstandingDueExcel = function() {
-            const activeCusts = customers.filter(c => c.status === 'Active');
-            const dueData = [];
-
-            activeCusts.forEach(c => {
+            const dueList = [];
+            customers.filter(c => c.status === 'Active').forEach(c => {
                 const due = calculateCustomerCurrentDue(c.customerId);
                 if (due > 0) {
-                    dueData.push({
-                        "Customer ID": c.customerId,
-                        "Name": c.name,
-                        "Phone": c.phone || '',
-                        "Address": c.address || '',
-                        "Opening Balance": c.openingBalance || 0,
-                        "Outstanding Due": due
+                    dueList.push({
+                        CustomerID: c.customerId,
+                        Name: c.name,
+                        Phone: c.phone || 'N/A',
+                        Address: c.address || 'N/A',
+                        OutstandingDue: due
                     });
                 }
             });
 
-            if (dueData.length === 0) {
-                showToast("No outstanding dues to export.", "info");
-                return;
-            }
-
-            const ws = XLSX.utils.json_to_sheet(dueData);
+            const ws = XLSX.utils.json_to_sheet(dueList);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Outstanding Dues");
             XLSX.writeFile(wb, `Outstanding_Dues_${new Date().toISOString().split('T')[0]}.xlsx`);
         };
 
-        /* ==================== DAILY CLOSING REPORT MODULE (IMMUTABLE SNAPSHOT ENGINE) ==================== */
+        /* ==================== CASH INVENTORY MODULE ==================== */
+        function renderCashInventoryTable() {
+            const tbody = document.getElementById('cashDenomTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            let denomTotal = 0;
+            CASH_DENOMINATIONS.forEach(d => {
+                const qty = parseInt(cashQuantities[d]) || 0;
+                const amt = d * qty;
+                denomTotal += amt;
+
+                const tr = `
+                    <tr>
+                        <td style="font-weight: 700;">৳ ${d} Note</td>
+                        <td>
+                            <input type="number" min="0" class="inv-qty-input cash-denom-input" data-denom="${d}" value="${qty}" oninput="calculateCashInventoryLive()" />
+                        </td>
+                        <td style="font-weight: 700;" id="cashAmt_${d}">৳ ${amt.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', tr);
+            });
+
+            // Add Others Input Row
+            const othersRow = `
+                <tr style="background: #f9fafb;">
+                    <td style="font-weight: 700;">Others / Coins</td>
+                    <td>
+                        <input type="number" step="any" min="0" class="inv-qty-input" id="cashOthersInput" value="${cashOthersAmount}" oninput="calculateCashInventoryLive()" style="width: 120px;" />
+                    </td>
+                    <td style="font-weight: 700;" id="cashOthersAmt">৳ ${(parseFloat(cashOthersAmount) || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                </tr>
+            `;
+            tbody.insertAdjacentHTML('beforeend', othersRow);
+
+            calculateCashInventoryLive();
+        }
+
+        window.calculateCashInventoryLive = function() {
+            let total = 0;
+            CASH_DENOMINATIONS.forEach(d => {
+                const input = document.querySelector(`.cash-denom-input[data-denom="${d}"]`);
+                const qty = input ? (parseInt(input.value) || 0) : (parseInt(cashQuantities[d]) || 0);
+                const amt = d * qty;
+                total += amt;
+                const amtEl = document.getElementById(`cashAmt_${d}`);
+                if (amtEl) amtEl.innerText = `৳ ${amt.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            });
+
+            const othersInput = document.getElementById('cashOthersInput');
+            const othersVal = othersInput ? (parseFloat(othersInput.value) || 0) : cashOthersAmount;
+            total += othersVal;
+
+            const othersAmtEl = document.getElementById('cashOthersAmt');
+            if (othersAmtEl) othersAmtEl.innerText = `৳ ${othersVal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+
+            const grandEl = document.getElementById('grandTotalCashVal');
+            if (grandEl) grandEl.innerText = `৳ ${total.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+
+            return total;
+        };
+
+        window.saveCashInventory = async function() {
+            showLoader("Saving Cash Inventory...");
+            const newQuantities = {};
+            CASH_DENOMINATIONS.forEach(d => {
+                const input = document.querySelector(`.cash-denom-input[data-denom="${d}"]`);
+                newQuantities[d] = input ? (parseInt(input.value) || 0) : 0;
+            });
+
+            const othersInput = document.getElementById('cashOthersInput');
+            const newOthers = othersInput ? (parseFloat(othersInput.value) || 0) : 0;
+            const newGrandTotal = calculateCashInventoryLive();
+
+            cashQuantities = newQuantities;
+            cashOthersAmount = newOthers;
+            cashGrandTotal = newGrandTotal;
+
+            const nowIso = new Date().toISOString();
+            cashHistoryLogs.unshift({
+                id: 'cash_hist_' + Date.now(),
+                timestamp: nowIso,
+                others: newOthers,
+                grandTotal: newGrandTotal
+            });
+
+            try {
+                await writeToFirebase('erp/cashInventory', {
+                    quantities: cashQuantities,
+                    others: cashOthersAmount,
+                    grandTotal: cashGrandTotal
+                });
+                await writeToFirebase('erp/cashHistory', cashHistoryLogs);
+                hideLoader();
+                showToast("Cash Inventory saved successfully!", "success");
+                updateDashboardCards();
+            } catch(err) {
+                hideLoader();
+            }
+        };
+
+        /* ==================== CARD INVENTORY MODULE ==================== */
+        function renderRedesignedCardInventory() {
+            const container = document.getElementById('operatorAccordions');
+            if(!container) return;
+            container.innerHTML = '';
+
+            OPERATORS_LIST.forEach(op => {
+                const opCards = toArray(cardConfig[op] || []).filter(c => c.active !== false);
+                const opBadgeClass = `op-${op.toLowerCase()}`;
+
+                let rowsHtml = '';
+                opCards.forEach(card => {
+                    const savedQty = (cardQuantities[op] && cardQuantities[op][card.id]) ? cardQuantities[op][card.id] : 0;
+                    const totalVal = savedQty * card.price;
+
+                    rowsHtml += `
+                        <tr>
+                            <td><strong>${card.name}</strong></td>
+                            <td><span class="badge badge-success">${card.type}</span></td>
+                            <td>৳ ${card.price.toFixed(2)}</td>
+                            <td>
+                                <input type="number" min="0" class="inv-qty-input card-qty-input" 
+                                    data-op="${op}" data-card-id="${card.id}" data-price="${card.price}" 
+                                    value="${savedQty}" oninput="updateLiveSummaries()" />
+                            </td>
+                            <td class="total-val-cell total-green-highlight" id="val_${op}_${card.id}">৳ ${totalVal.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+
+                const accordionHtml = `
+                    <div class="accordion-item active" id="acc_item_${op}">
+                        <div class="accordion-header" onclick="toggleAccordion('acc_item_${op}')">
+                            <div class="accordion-title-box">
+                                <span class="op-badge ${opBadgeClass}">${op}</span>
+                                <h3>${op} Cards</h3>
+                            </div>
+                            <div class="accordion-summary-info">
+                                <div class="acc-summary-item">
+                                    <span>Total Cards</span>
+                                    <strong id="hdr_count_${op}">0 Pcs</strong>
+                                </div>
+                                <div class="acc-summary-item">
+                                    <span>Total Value</span>
+                                    <strong class="highlight-val" id="hdr_val_${op}">৳ 0.00</strong>
+                                </div>
+                                <i class="fa-solid fa-chevron-down accordion-icon"></i>
+                            </div>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Card Name</th>
+                                            <th>Type</th>
+                                            <th>Price</th>
+                                            <th>Quantity</th>
+                                            <th>Total Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${rowsHtml || '<tr><td colspan="5" style="text-align:center;">No cards configured for this operator.</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', accordionHtml);
+            });
+
+            updateLiveSummaries();
+        }
+
+        window.toggleAccordion = function(id) {
+            const item = document.getElementById(id);
+            if (item) item.classList.toggle('active');
+        };
+
+        window.updateLiveSummaries = function() {
+            let grandCount = 0;
+            let grandVal = 0;
+
+            OPERATORS_LIST.forEach(op => {
+                let opCount = 0;
+                let opVal = 0;
+
+                const inputs = document.querySelectorAll(`.card-qty-input[data-op="${op}"]`);
+                inputs.forEach(input => {
+                    const qty = parseInt(input.value) || 0;
+                    const price = parseFloat(input.getAttribute('data-price')) || 0;
+                    const cardId = input.getAttribute('data-card-id');
+                    const itemVal = qty * price;
+
+                    opCount += qty;
+                    opVal += itemVal;
+
+                    const cell = document.getElementById(`val_${op}_${cardId}`);
+                    if (cell) cell.innerText = `৳ ${itemVal.toFixed(2)}`;
+                });
+
+                const hdrCount = document.getElementById(`hdr_count_${op}`);
+                const hdrVal = document.getElementById(`hdr_val_${op}`);
+                if (hdrCount) hdrCount.innerText = `${opCount} Pcs`;
+                if (hdrVal) hdrVal.innerText = `৳ ${opVal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+
+                const summaryOpVal = document.getElementById(`summary${op}Val`);
+                if (summaryOpVal) summaryOpVal.innerText = `৳ ${opVal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+
+                grandCount += opCount;
+                grandVal += opVal;
+            });
+
+            const countEl = document.getElementById('grandTotalCardsCount');
+            const valEl = document.getElementById('grandTotalCardsVal');
+            if (countEl) countEl.innerText = `${grandCount} Pcs`;
+            if (valEl) valEl.innerText = `৳ ${grandVal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+        };
+
+        window.saveTodayInventory = async function() {
+            showLoader("Saving Card Inventory...");
+            const newQuantities = { GP: {}, Banglalink: {}, Robi: {}, Airtel: {} };
+
+            OPERATORS_LIST.forEach(op => {
+                const inputs = document.querySelectorAll(`.card-qty-input[data-op="${op}"]`);
+                inputs.forEach(input => {
+                    const cardId = input.getAttribute('data-card-id');
+                    const qty = parseInt(input.value) || 0;
+                    newQuantities[op][cardId] = qty;
+                });
+            });
+
+            cardQuantities = newQuantities;
+            const grandVal = calculateGrandCardInventoryValue();
+
+            const cardAcc = getCardInventoryAccount();
+            balanceStore[cardAcc.id] = grandVal;
+
+            const nowIso = new Date().toISOString();
+            OPERATORS_LIST.forEach(op => {
+                let opCount = 0;
+                let opVal = 0;
+                const opCards = toArray(cardConfig[op] || []);
+                opCards.forEach(c => {
+                    const q = cardQuantities[op][c.id] || 0;
+                    opCount += q;
+                    opVal += (q * c.price);
+                });
+
+                if (opCount > 0) {
+                    cardHistoryLogs.unshift({
+                        id: 'card_hist_' + Date.now() + '_' + op,
+                        timestamp: nowIso,
+                        operator: op,
+                        totalCards: opCount,
+                        grandTotalVal: opVal
+                    });
+                }
+            });
+
+            try {
+                await writeToFirebase('erp/cardInventory', cardQuantities);
+                await writeToFirebase('erp/balances', balanceStore);
+                await writeToFirebase('erp/cardHistory', cardHistoryLogs);
+                hideLoader();
+                showToast("Card Inventory saved successfully!", "success");
+                updateDashboardCards();
+            } catch(err) {
+                hideLoader();
+            }
+        };
+
+        /* ==================== DAILY CLOSING REPORT MODULE (REDESIGNED SINGLE A4 LANDSCAPE) ==================== */
         window.generateDailyClosingSnapshot = async function() {
             showConfirmModal({
                 title: "Generate Daily Closing Snapshot?",
-                message: "This will capture an immutable frozen snapshot of all current ERP balances, card inventory, cash inventory, and customer dues.",
-                confirmText: "Generate Snapshot",
+                message: "This will permanently lock and freeze today's balance sheet into an immutable record snapshot.",
+                confirmText: "Generate & Lock Snapshot",
                 onConfirm: async () => {
-                    showLoader("Creating immutable Daily Closing Report...");
-                    
-                    const nowObj = new Date();
-                    const reportDate = nowObj.toISOString().split('T')[0];
-                    const closingTime = nowObj.toLocaleTimeString();
-                    const reportId = 'DCR-' + Date.now();
+                    showLoader("Generating Daily Closing Snapshot...");
+                    const now = new Date();
+                    const dateStr = now.toISOString().split('T')[0];
+                    const timeStr = now.toLocaleTimeString('en-US', { hour12: true });
+                    const reportId = 'DCR-' + dateStr.replace(/-/g, '') + '-' + String(Date.now()).slice(-4);
 
-                    // 1. BANK ACCOUNTS SNAPSHOT
-                    const bankCat = categories.find(c => c.name === 'Bank Accounts');
-                    const bankAccs = bankCat ? accounts.filter(a => a.catId === bankCat.id) : [];
-                    let bankTotal = 0;
-                    const bankItems = bankAccs.map(a => {
-                        const bal = parseFloat(balanceStore[a.id] || 0);
-                        bankTotal += bal;
-                        return { id: a.id, name: a.name, balance: bal };
-                    });
+                    const snapshotAccounts = accounts.filter(a => a.enabled !== false).map(a => ({
+                        id: a.id,
+                        catId: a.catId,
+                        catName: categories.find(c => c.id === a.catId)?.name || 'General',
+                        name: a.name,
+                        balance: parseFloat(balanceStore[a.id] || 0)
+                    }));
 
-                    // 2. PERSONAL ACCOUNTS SNAPSHOT
-                    const persCat = categories.find(c => c.name === 'Personal Accounts');
-                    const persAccs = persCat ? accounts.filter(a => a.catId === persCat.id) : [];
-                    let persTotal = 0;
-                    const persItems = persAccs.map(a => {
-                        const bal = parseFloat(balanceStore[a.id] || 0);
-                        persTotal += bal;
-                        return { id: a.id, name: a.name, balance: bal };
-                    });
-
-                    // 3. AGENT ACCOUNTS SNAPSHOT
-                    const agentCat = categories.find(c => c.name === 'Agent Accounts');
-                    const agentAccs = agentCat ? accounts.filter(a => a.catId === agentCat.id) : [];
-                    let agentTotal = 0;
-                    const agentItems = agentAccs.map(a => {
-                        const bal = parseFloat(balanceStore[a.id] || 0);
-                        agentTotal += bal;
-                        return { id: a.id, name: a.name, balance: bal };
-                    });
-
-                    // 4. RECHARGE BALANCES SNAPSHOT
-                    const rechCat = categories.find(c => c.name === 'Recharge Balances');
-                    const rechAccs = rechCat ? accounts.filter(a => a.catId === rechCat.id) : [];
-                    let rechTotal = 0;
-                    const rechItems = rechAccs.map(a => {
-                        const bal = parseFloat(balanceStore[a.id] || 0);
-                        rechTotal += bal;
-                        return { id: a.id, name: a.name, balance: bal };
-                    });
-
-                    // 5. CASH INVENTORY SNAPSHOT
-                    const cashItems = CASH_DENOMINATIONS.map(d => {
-                        const qty = parseInt(cashQuantities[d]) || 0;
-                        const amt = d * qty;
-                        return { denomination: d, quantity: qty, amount: amt };
-                    });
-                    const cashOthers = parseFloat(cashOthersAmount) || 0;
-                    const cashTotal = calculateCashGrandTotal();
-
-                    // 6. CARD INVENTORY SNAPSHOT
-                    const cardBreakdown = {};
-                    let cardTotalQty = 0;
-                    let cardTotalVal = 0;
-
-                    OPERATORS_LIST.forEach(op => {
-                        const cardsList = toArray(cardConfig[op] || []).filter(c => c.active !== false);
-                        const opQtyMap = cardQuantities[op] || {};
-                        let opVal = 0;
-                        let opQty = 0;
-
-                        const items = cardsList.map(c => {
-                            const q = parseInt(opQtyMap[c.id]) || 0;
-                            const lineVal = q * c.price;
-                            opQty += q;
-                            opVal += lineVal;
-                            return { id: c.id, name: c.name, type: c.type || 'Internet', price: c.price, quantity: q, total: lineVal };
-                        });
-
-                        cardBreakdown[op] = { items: items, operatorTotalQty: opQty, operatorTotalVal: opVal };
-                        cardTotalQty += opQty;
-                        cardTotalVal += opVal;
-                    });
-
-                    // 7. CUSTOMER DUE SNAPSHOT (Summary only)
-                    const activeCusts = customers.filter(c => c.status === 'Active');
-                    let custWithDueCount = 0;
-                    let totalDueAmt = 0;
-
-                    activeCusts.forEach(c => {
-                        const due = calculateCustomerCurrentDue(c.customerId);
-                        if (due > 0) {
-                            custWithDueCount++;
-                            totalDueAmt += due;
-                        }
-                    });
-
-                    // 8. FINANCIAL SUMMARY & TOTAL NET BALANCE
-                    const netAccountBalances = bankTotal + persTotal + agentTotal + rechTotal;
-                    const grandTotalNetBalance = netAccountBalances + cashTotal + cardTotalVal + totalDueAmt;
-
-                    const reportSnapshot = {
-                        reportId: reportId,
-                        reportDate: reportDate,
-                        closingTime: closingTime,
-                        createdAt: nowObj.toISOString(),
-                        bankAccounts: { items: bankItems, total: bankTotal },
-                        personalAccounts: { items: persItems, total: persTotal },
-                        agentAccounts: { items: agentItems, total: agentTotal },
-                        rechargeBalances: { items: rechItems, total: rechTotal },
-                        cashInventory: { items: cashItems, others: cashOthers, total: cashTotal },
-                        cardInventory: { operators: cardBreakdown, totalQuantity: cardTotalQty, totalValue: cardTotalVal },
-                        customerDueSummary: { totalCustomers: activeCusts.length, customersWithDue: custWithDueCount, totalOutstandingDue: totalDueAmt },
-                        financialSummary: {
-                            totalBankBalance: bankTotal,
-                            totalPersonalBalance: persTotal,
-                            totalAgentBalance: agentTotal,
-                            totalRechargeBalance: rechTotal,
-                            totalCashInventory: cashTotal,
-                            totalCardInventory: cardTotalVal,
-                            totalCustomerDue: totalDueAmt,
-                            grandTotalNetBalance: grandTotalNetBalance
-                        }
+                    const snapshotCash = {
+                        quantities: { ...cashQuantities },
+                        others: cashOthersAmount,
+                        grandTotal: calculateCashGrandTotal()
                     };
 
-                    dailyClosingReports.unshift(reportSnapshot);
+                    const snapshotCards = {
+                        quantities: JSON.parse(JSON.stringify(cardQuantities)),
+                        grandTotal: calculateGrandCardInventoryValue()
+                    };
+
+                    const snapshotDues = {
+                        totalDue: calculateTotalCustomerDue(),
+                        customers: customers.filter(c => c.status === 'Active').map(c => ({
+                            customerId: c.customerId,
+                            name: c.name,
+                            phone: c.phone || '',
+                            due: calculateCustomerCurrentDue(c.customerId)
+                        })).filter(c => c.due > 0)
+                    };
+
+                    let totalAssets = 0;
+                    snapshotAccounts.forEach(a => totalAssets += a.balance);
+                    totalAssets += snapshotCash.grandTotal;
+                    totalAssets += snapshotDues.totalDue;
+
+                    const snapshot = {
+                        reportId,
+                        date: dateStr,
+                        time: timeStr,
+                        timestamp: now.toISOString(),
+                        accounts: snapshotAccounts,
+                        cashInventory: snapshotCash,
+                        cardInventory: snapshotCards,
+                        customerDues: snapshotDues,
+                        netBalance: totalAssets
+                    };
+
+                    dailyClosingReports.unshift(snapshot);
 
                     try {
                         await writeToFirebase('erp/dailyClosingReports', dailyClosingReports);
                         hideLoader();
-                        showToast("Daily closing snapshot generated successfully!", "success");
+                        showToast("Daily Closing Snapshot locked successfully!", "success");
                         renderDailyClosingHistoryTable();
                         viewDailyClosingReport(reportId);
-                    } catch(e) {
+                    } catch(err) {
                         hideLoader();
-                        showToast("Failed to save daily closing snapshot: " + e.message, "error");
                     }
                 }
             });
@@ -4265,39 +3917,33 @@
             if (!tbody) return;
             tbody.innerHTML = '';
 
-            let filtered = toArray(dailyClosingReports);
+            const fromDate = document.getElementById('dcrFromDate')?.value;
+            const toDate = document.getElementById('dcrToDate')?.value;
+            const search = (document.getElementById('dcrSearchInput')?.value || '').toLowerCase();
 
-            const fromDate = document.getElementById('dcrFromDate').value;
-            const toDate = document.getElementById('dcrToDate').value;
-            const searchVal = (document.getElementById('dcrSearchInput').value || '').toLowerCase();
+            let reports = [...dailyClosingReports];
+            if (fromDate) reports = reports.filter(r => r.date >= fromDate);
+            if (toDate) reports = reports.filter(r => r.date <= toDate);
+            if (search) reports = reports.filter(r => r.reportId.toLowerCase().includes(search) || r.date.includes(search));
 
-            if (fromDate) filtered = filtered.filter(r => r.reportDate >= fromDate);
-            if (toDate) filtered = filtered.filter(r => r.reportDate <= toDate);
-            if (searchVal) {
-                filtered = filtered.filter(r => r.reportDate.includes(searchVal) || r.reportId.toLowerCase().includes(searchVal));
-            }
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #9ca3af;">No daily closing report snapshots found.</td></tr>';
+            if (reports.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #9ca3af;">No daily closing snapshots saved yet.</td></tr>`;
                 return;
             }
 
-            filtered.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-            filtered.forEach(r => {
-                const netBal = r.financialSummary ? r.financialSummary.grandTotalNetBalance : 0;
-                const row = `
+            reports.forEach(r => {
+                const tr = `
                     <tr>
-                        <td><strong>${r.reportDate}</strong></td>
-                        <td>${r.closingTime || '-'}</td>
-                        <td><code>${r.reportId}</code></td>
-                        <td style="font-weight:800; color:#059669;">৳ ${netBal.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                        <td style="text-align:center;">
+                        <td><strong>${r.date}</strong></td>
+                        <td>${r.time}</td>
+                        <td><span class="badge badge-success">${r.reportId}</span></td>
+                        <td style="font-weight: 800; color: #10b981;">৳ ${r.netBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                        <td style="text-align: center;">
                             <button class="btn-action btn-edit" onclick="viewDailyClosingReport('${r.reportId}')"><i class="fa-solid fa-eye"></i> View Report</button>
                         </td>
                     </tr>
                 `;
-                tbody.insertAdjacentHTML('beforeend', row);
+                tbody.insertAdjacentHTML('beforeend', tr);
             });
         }
 
@@ -4314,285 +3960,821 @@
 
         window.viewDailyClosingReport = function(reportId) {
             const report = dailyClosingReports.find(r => r.reportId === reportId);
-            if (!report) {
-                showToast("Report not found.", "error");
-                return;
-            }
-
+            if (!report) return;
             activeViewingReport = report;
-            const cardEl = document.getElementById('closingReportDisplayCard');
-            const printEl = document.getElementById('printable-closing-report');
 
-            cardEl.style.display = 'block';
+            const card = document.getElementById('closingReportDisplayCard');
+            const printArea = document.getElementById('printable-closing-report');
 
-            // GENERATE COMPLETE DYNAMIC IMMUTABLE HTML LAYOUT
-            const bankRows = (report.bankAccounts?.items || []).map(i => `<tr><td>${i.name}</td><td style="text-align:right;">৳ ${i.balance.toLocaleString('en-US', {minimumFractionDigits:2})}</td></tr>`).join('') || '<tr><td colspan="2" style="color:#9ca3af; text-align:center;">None</td></tr>';
-            const persRows = (report.personalAccounts?.items || []).map(i => `<tr><td>${i.name}</td><td style="text-align:right;">৳ ${i.balance.toLocaleString('en-US', {minimumFractionDigits:2})}</td></tr>`).join('') || '<tr><td colspan="2" style="color:#9ca3af; text-align:center;">None</td></tr>';
-            const agentRows = (report.agentAccounts?.items || []).map(i => `<tr><td>${i.name}</td><td style="text-align:right;">৳ ${i.balance.toLocaleString('en-US', {minimumFractionDigits:2})}</td></tr>`).join('') || '<tr><td colspan="2" style="color:#9ca3af; text-align:center;">None</td></tr>';
-            const rechRows = (report.rechargeBalances?.items || []).map(i => `<tr><td>${i.name}</td><td style="text-align:right;">৳ ${i.balance.toLocaleString('en-US', {minimumFractionDigits:2})}</td></tr>`).join('') || '<tr><td colspan="2" style="color:#9ca3af; text-align:center;">None</td></tr>';
+            card.style.display = 'block';
+            card.scrollIntoView({ behavior: 'smooth' });
 
-            const cashRows = (report.cashInventory?.items || []).map(i => `<tr><td>৳${i.denomination} Note</td><td style="text-align:center;">${i.quantity}</td><td style="text-align:right;">৳ ${i.amount.toLocaleString('en-US', {minimumFractionDigits:2})}</td></tr>`).join('');
-            
-            let cardOpBlocks = '';
-            OPERATORS_LIST.forEach(op => {
-                const opData = report.cardInventory?.operators ? report.cardInventory.operators[op] : null;
-                if (opData && opData.items && opData.items.length > 0) {
-                    const opRows = opData.items.map(i => `
-                        <tr>
-                            <td>${i.name} (${i.type})</td>
-                            <td>৳${i.price}</td>
-                            <td style="text-align:center;">${i.quantity}</td>
-                            <td style="text-align:right;">৳ ${i.total.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                        </tr>
-                    `).join('');
-                    cardOpBlocks += `
-                        <div style="margin-bottom:8px;">
-                            <div style="font-size:0.75rem; font-weight:800; color:var(--primary-dark); margin-bottom:4px; display:flex; justify-content:space-between;">
-                                <span>${op} Cards</span>
-                                <span>Total: ৳ ${(opData.operatorTotalVal || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</span>
-                            </div>
-                            <table class="dcr-table">
-                                <thead><tr><th>Card</th><th>Price</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Total</th></tr></thead>
-                                <tbody>${opRows}</tbody>
-                            </table>
+            // Calculate category breakdown totals
+            const getCatTotal = (catName) => {
+                return report.accounts.filter(a => a.catName.toLowerCase() === catName.toLowerCase()).reduce((sum, a) => sum + a.balance, 0);
+            };
+
+            const bankTotal = getCatTotal('Bank Accounts');
+            const personalTotal = getCatTotal('Personal Accounts');
+            const agentTotal = getCatTotal('Agent Accounts');
+            const rechargeTotal = getCatTotal('Recharge Balances');
+            const cashTotal = report.cashInventory?.grandTotal || 0;
+            const cardTotal = report.cardInventory?.grandTotal || 0;
+            const dueTotal = report.customerDues?.totalDue || 0;
+
+            // Generate Two-Column Executive Layout Fitting Perfect Single A4 Landscape Page
+            let html = `
+                <div class="dcr-container">
+                    <!-- 1. HEADER -->
+                    <div class="dcr-header-box">
+                        <div class="dcr-header-left">
+                            <h1>MOUSUMI COMPUTER</h1>
+                            <p>Executive Financial Closing Snapshot</p>
                         </div>
-                    `;
-                }
-            });
-
-            const fin = report.financialSummary || {};
-
-            const html = `
-                <!-- BRAND HEADER -->
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--primary-dark); padding-bottom:8px; margin-bottom:12px;">
-                    <div>
-                        <h2 style="font-size:1.3rem; font-weight:800; color:var(--primary-dark);">MOUSUMI COMPUTER</h2>
-                        <p style="font-size:0.8rem; color:#64748b;">Daily Closing Financial Snapshot Report</p>
-                    </div>
-                    <div style="text-align:right;">
-                        <span class="badge" style="background:#0f172a; color:#ffffff; font-size:0.8rem;">${report.reportId}</span>
-                        <p style="font-size:0.78rem; color:#64748b; margin-top:2px;">Date: <strong>${report.reportDate}</strong> | Time: <strong>${report.closingTime}</strong></p>
-                    </div>
-                </div>
-
-                <!-- SECTION 1: ACCOUNT BALANCES 3-COLUMN GRID -->
-                <div class="dcr-grid-3col">
-                    <div class="dcr-card">
-                        <div class="dcr-card-title"><span>Bank Accounts</span> <span>৳ ${(report.bankAccounts?.total || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</span></div>
-                        <table class="dcr-table"><tbody>${bankRows}</tbody></table>
-                    </div>
-                    <div class="dcr-card">
-                        <div class="dcr-card-title"><span>Personal Accounts</span> <span>৳ ${(report.personalAccounts?.total || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</span></div>
-                        <table class="dcr-table"><tbody>${persRows}</tbody></table>
-                    </div>
-                    <div class="dcr-card">
-                        <div class="dcr-card-title"><span>Agent Accounts</span> <span>৳ ${(report.agentAccounts?.total || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</span></div>
-                        <table class="dcr-table"><tbody>${agentRows}</tbody></table>
-                    </div>
-                </div>
-
-                <!-- SECTION 2: RECHARGE & CASH INVENTORY 2-COLUMN GRID -->
-                <div class="dcr-grid-2col">
-                    <div class="dcr-card">
-                        <div class="dcr-card-title"><span>Recharge Balances</span> <span>৳ ${(report.rechargeBalances?.total || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</span></div>
-                        <table class="dcr-table"><tbody>${rechRows}</tbody></table>
-
-                        <div class="dcr-card-title" style="margin-top:10px;"><span>Customer Due Summary</span></div>
-                        <table class="dcr-table">
-                            <tbody>
-                                <tr><td>Active Customers</td><td style="text-align:right;">${report.customerDueSummary?.totalCustomers || 0}</td></tr>
-                                <tr><td>Customers With Due</td><td style="text-align:right;">${report.customerDueSummary?.customersWithDue || 0}</td></tr>
-                                <tr class="dcr-total-row"><td>Total Outstanding Due</td><td style="text-align:right; color:#e11d48;">৳ ${(report.customerDueSummary?.totalOutstandingDue || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td></tr>
-                            </tbody>
-                        </table>
+                        <div class="dcr-header-right">
+                            <div><strong>Report ID:</strong> ${report.reportId}</div>
+                            <div><strong>Date:</strong> ${report.date} | <strong>Time:</strong> ${report.time}</div>
+                        </div>
                     </div>
 
-                    <div class="dcr-card">
-                        <div class="dcr-card-title"><span>Cash Inventory</span> <span>৳ ${(report.cashInventory?.total || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</span></div>
-                        <table class="dcr-table">
-                            <thead><tr><th>Note</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Amount</th></tr></thead>
-                            <tbody>
-                                ${cashRows}
-                                <tr><td>Others / Coins</td><td style="text-align:center;">-</td><td style="text-align:right;">৳ ${(report.cashInventory?.others || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td></tr>
-                                <tr class="dcr-total-row"><td>Cash Total</td><td></td><td style="text-align:right; color:#059669;">৳ ${(report.cashInventory?.total || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td></tr>
-                            </tbody>
-                        </table>
+                    <!-- 2. EXECUTIVE SUMMARY TOP CARDS -->
+                    <div class="dcr-exec-cards">
+                        <div class="dcr-exec-card card-blue">
+                            <div class="card-info">
+                                <span>Total Net Balance</span>
+                                <strong>৳ ${report.netBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+                            </div>
+                            <div class="card-icon-box"><i class="fa-solid fa-wallet"></i></div>
+                        </div>
+                        <div class="dcr-exec-card card-green">
+                            <div class="card-info">
+                                <span>Total Cash Inventory</span>
+                                <strong>৳ ${cashTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+                            </div>
+                            <div class="card-icon-box"><i class="fa-solid fa-money-bill-wave"></i></div>
+                        </div>
+                        <div class="dcr-exec-card card-orange">
+                            <div class="card-info">
+                                <span>Total Card Inventory</span>
+                                <strong>৳ ${cardTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+                            </div>
+                            <div class="card-icon-box"><i class="fa-solid fa-sim-card"></i></div>
+                        </div>
+                        <div class="dcr-exec-card card-purple">
+                            <div class="card-info">
+                                <span>Total Customer Due</span>
+                                <strong>৳ ${dueTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>
+                            </div>
+                            <div class="card-icon-box"><i class="fa-solid fa-users"></i></div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- SECTION 3: CARD INVENTORY BREAKDOWN -->
-                <div class="dcr-card" style="margin-bottom:10px;">
-                    <div class="dcr-card-title"><span>Card Inventory Breakdown</span> <span>Total Value: ৳ ${(report.cardInventory?.totalValue || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</span></div>
-                    <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px;">
-                        ${cardOpBlocks || '<p style="color:#9ca3af; font-size:0.8rem;">No card inventory recorded.</p>'}
+                    <!-- 3. TWO-COLUMN LAYOUT -->
+                    <div class="dcr-two-columns">
+                        
+                        <!-- LEFT COLUMN -->
+                        <div class="dcr-col">
+                            
+                            <!-- BANK ACCOUNTS -->
+                            <div class="dcr-section-card">
+                                <div class="dcr-section-title title-blue">
+                                    <span><i class="fa-solid fa-building-columns"></i> Bank Accounts</span>
+                                    <span>৳ ${bankTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                </div>
+                                <table class="dcr-sub-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Account Name</th>
+                                            <th class="text-right">Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${report.accounts.filter(a => a.catName === 'Bank Accounts').map(a => `
+                                            <tr>
+                                                <td>${a.name}</td>
+                                                <td class="text-right">৳ ${a.balance.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                            </tr>
+                                        `).join('') || '<tr><td colspan="2">No accounts</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- AGENT ACCOUNTS -->
+                            <div class="dcr-section-card">
+                                <div class="dcr-section-title title-blue">
+                                    <span><i class="fa-solid fa-user-shield"></i> Agent Accounts</span>
+                                    <span>৳ ${agentTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                </div>
+                                <table class="dcr-sub-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Account Name</th>
+                                            <th class="text-right">Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${report.accounts.filter(a => a.catName === 'Agent Accounts').map(a => `
+                                            <tr>
+                                                <td>${a.name}</td>
+                                                <td class="text-right">৳ ${a.balance.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                            </tr>
+                                        `).join('') || '<tr><td colspan="2">No accounts</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- CASH INVENTORY -->
+                            <div class="dcr-section-card">
+                                <div class="dcr-section-title title-green">
+                                    <span><i class="fa-solid fa-money-bill-wave"></i> Cash Inventory</span>
+                                    <span>৳ ${cashTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                </div>
+                                <table class="dcr-sub-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Denom</th>
+                                            <th class="text-right">Qty</th>
+                                            <th class="text-right">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${CASH_DENOMINATIONS.map(d => {
+                                            const qty = report.cashInventory?.quantities?.[d] || 0;
+                                            if (qty <= 0) return '';
+                                            return `
+                                                <tr>
+                                                    <td>৳ ${d} Note</td>
+                                                    <td class="text-right">${qty}</td>
+                                                    <td class="text-right">৳ ${(d * qty).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                        ${(report.cashInventory?.others || 0) > 0 ? `
+                                            <tr>
+                                                <td>Others / Coins</td>
+                                                <td class="text-right">-</td>
+                                                <td class="text-right">৳ ${(report.cashInventory.others).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                            </tr>
+                                        ` : ''}
+                                        <tr class="row-total">
+                                            <td>Total Cash</td>
+                                            <td class="text-right">-</td>
+                                            <td class="text-right">৳ ${cashTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- CUSTOMER DUE -->
+                            <div class="dcr-section-card">
+                                <div class="dcr-section-title title-purple">
+                                    <span><i class="fa-solid fa-users"></i> Customer Due Summary</span>
+                                    <span>৳ ${dueTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                </div>
+                                <table class="dcr-sub-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Customer Name</th>
+                                            <th class="text-right">Outstanding Due</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${(report.customerDues?.customers || []).slice(0, 5).map(c => `
+                                            <tr>
+                                                <td>${c.name} (${c.customerId})</td>
+                                                <td class="text-right" style="color:#e11d48;">৳ ${c.due.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                            </tr>
+                                        `).join('') || '<tr><td colspan="2">No Dues Outstanding</td></tr>'}
+                                        ${(report.customerDues?.customers || []).length > 5 ? `
+                                            <tr>
+                                                <td colspan="2" style="text-align:center; color:#6b7280; font-size:0.65rem;">+ ${(report.customerDues.customers.length - 5)} More Customers With Dues</td>
+                                            </tr>
+                                        ` : ''}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+
+                        <!-- RIGHT COLUMN -->
+                        <div class="dcr-col">
+                            
+                            <!-- PERSONAL ACCOUNTS -->
+                            <div class="dcr-section-card">
+                                <div class="dcr-section-title title-blue">
+                                    <span><i class="fa-solid fa-wallet"></i> Personal Accounts</span>
+                                    <span>৳ ${personalTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                </div>
+                                <table class="dcr-sub-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Account Name</th>
+                                            <th class="text-right">Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${report.accounts.filter(a => a.catName === 'Personal Accounts').map(a => `
+                                            <tr>
+                                                <td>${a.name}</td>
+                                                <td class="text-right">৳ ${a.balance.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                            </tr>
+                                        `).join('') || '<tr><td colspan="2">No accounts</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- RECHARGE ACCOUNTS -->
+                            <div class="dcr-section-card">
+                                <div class="dcr-section-title title-blue">
+                                    <span><i class="fa-solid fa-mobile-screen"></i> Recharge Accounts</span>
+                                    <span>৳ ${rechargeTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                </div>
+                                <table class="dcr-sub-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Account Name</th>
+                                            <th class="text-right">Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${report.accounts.filter(a => a.catName === 'Recharge Balances').map(a => `
+                                            <tr>
+                                                <td>${a.name}</td>
+                                                <td class="text-right">৳ ${a.balance.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                            </tr>
+                                        `).join('') || '<tr><td colspan="2">No accounts</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- CARD INVENTORY -->
+                            <div class="dcr-section-card">
+                                <div class="dcr-section-title title-orange">
+                                    <span><i class="fa-solid fa-sim-card"></i> Card Inventory</span>
+                                    <span>৳ ${cardTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                </div>
+                                <table class="dcr-sub-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Operator Name</th>
+                                            <th>Type</th>
+                                            <th class="text-right">Qty</th>
+                                            <th class="text-right">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${OPERATORS_LIST.map(op => {
+                                            const opCards = toArray(cardConfig[op] || []);
+                                            const qtyMap = report.cardInventory?.quantities?.[op] || {};
+                                            let opQty = 0;
+                                            let opVal = 0;
+                                            opCards.forEach(c => {
+                                                const q = qtyMap[c.id] || 0;
+                                                opQty += q;
+                                                opVal += (q * c.price);
+                                            });
+                                            if (opQty <= 0) return '';
+                                            return `
+                                                <tr>
+                                                    <td><strong>${op} Cards</strong></td>
+                                                    <td>Stock</td>
+                                                    <td class="text-right">${opQty} Pcs</td>
+                                                    <td class="text-right">৳ ${opVal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                        <tr class="row-total">
+                                            <td colspan="2">Total Card Inventory</td>
+                                            <td class="text-right">-</td>
+                                            <td class="text-right">৳ ${cardTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- HIGHLIGHTED FINANCIAL SUMMARY BOX -->
+                            <div class="dcr-fin-summary-box">
+                                <div class="summary-header">
+                                    <span><i class="fa-solid fa-chart-pie"></i> FINANCIAL SUMMARY</span>
+                                    <span style="color:#ffffff; font-size:0.68rem;">OFFICIAL AUDIT</span>
+                                </div>
+                                <table class="dcr-fin-summary-table">
+                                    <tbody>
+                                        <tr>
+                                            <td>Total Bank Balance</td>
+                                            <td class="text-right">৳ ${bankTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Personal Balance</td>
+                                            <td class="text-right">৳ ${personalTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Agent Balance</td>
+                                            <td class="text-right">৳ ${agentTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Recharge Balance</td>
+                                            <td class="text-right">৳ ${rechargeTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Cash Inventory</td>
+                                            <td class="text-right">৳ ${cashTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Card Inventory</td>
+                                            <td class="text-right">৳ ${cardTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Customer Due</td>
+                                            <td class="text-right" style="color:#f87171;">৳ ${dueTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                        </tr>
+                                        <tr class="total-net-row">
+                                            <td><strong>TOTAL NET BALANCE</strong></td>
+                                            <td class="text-right"><strong>৳ ${report.netBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+
                     </div>
-                </div>
 
-                <!-- SECTION 4: FINANCIAL SUMMARY & GRAND TOTAL BANNER -->
-                <div class="dcr-highlight-card">
-                    <div class="dcr-card-title"><span>Financial Summary Position</span> <span>Snapshot Audit</span></div>
-                    <table class="dcr-table">
-                        <tbody>
-                            <tr><td>Total Bank Accounts Balance</td><td style="text-align:right;">৳ ${(fin.totalBankBalance || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td></tr>
-                            <tr><td>Total Personal Accounts Balance</td><td style="text-align:right;">৳ ${(fin.totalPersonalBalance || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td></tr>
-                            <tr><td>Total Agent Accounts Balance</td><td style="text-align:right;">৳ ${(fin.totalAgentBalance || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td></tr>
-                            <tr><td>Total Recharge Accounts Balance</td><td style="text-align:right;">৳ ${(fin.totalRechargeBalance || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td></tr>
-                            <tr><td>Total Cash Inventory</td><td style="text-align:right;">৳ ${(fin.totalCashInventory || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td></tr>
-                            <tr><td>Total Card Inventory</td><td style="text-align:right;">৳ ${(fin.totalCardInventory || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td></tr>
-                            <tr><td>Total Customer Outstanding Due</td><td style="text-align:right;">৳ ${(fin.totalCustomerDue || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td></tr>
-                            <tr style="font-size:0.95rem; font-weight:800; color:#38bdf8;">
-                                <td style="padding-top:6px; border-top:1px solid rgba(255,255,255,0.2);">GRAND TOTAL NET BALANCE</td>
-                                <td style="padding-top:6px; border-top:1px solid rgba(255,255,255,0.2); text-align:right;">৳ ${(fin.grandTotalNetBalance || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <!-- 4. FOOTER -->
+                    <div class="dcr-footer-box">
+                        <span>Generated by <strong>Mousumi Accounting ERP</strong></span>
+                        <span>Immutable Daily Closing Snapshot</span>
+                        <span>Generated Date & Time: ${report.date} ${report.time}</span>
+                    </div>
                 </div>
             `;
 
-            printEl.innerHTML = html;
-            cardEl.scrollIntoView({ behavior: 'smooth' });
+            printArea.innerHTML = html;
         };
 
         window.printDailyClosingPDF = function() {
-            if (!activeViewingReport) {
-                showToast("Please select a report first.", "warning");
-                return;
-            }
             window.print();
         };
 
         window.exportDailyClosingExcel = function() {
-            if (!activeViewingReport) {
-                showToast("Please select a report snapshot first.", "warning");
-                return;
-            }
-
+            if (!activeViewingReport) return;
             const r = activeViewingReport;
+            const rows = [];
+
+            rows.push({ Section: 'Report ID', Name: r.reportId, Value: '' });
+            rows.push({ Section: 'Date & Time', Name: `${r.date} ${r.time}`, Value: '' });
+            rows.push({ Section: 'Net Balance', Name: 'Grand Total', Value: r.netBalance });
+
+            r.accounts.forEach(a => {
+                rows.push({ Section: a.catName, Name: a.name, Value: a.balance });
+            });
+
+            rows.push({ Section: 'Cash Inventory', Name: 'Grand Total Cash', Value: r.cashInventory?.grandTotal || 0 });
+            rows.push({ Section: 'Card Inventory', Name: 'Grand Total Cards', Value: r.cardInventory?.grandTotal || 0 });
+            rows.push({ Section: 'Customer Due', Name: 'Total Dues', Value: r.customerDues?.totalDue || 0 });
+
+            const ws = XLSX.utils.json_to_sheet(rows);
             const wb = XLSX.utils.book_new();
-
-            // 1. FINANCIAL SUMMARY SHEET
-            const finData = [
-                { "Metric": "Report ID", "Value": r.reportId },
-                { "Metric": "Report Date", "Value": r.reportDate },
-                { "Metric": "Closing Time", "Value": r.closingTime },
-                { "Metric": "Total Bank Balance", "Value": r.financialSummary?.totalBankBalance },
-                { "Metric": "Total Personal Balance", "Value": r.financialSummary?.totalPersonalBalance },
-                { "Metric": "Total Agent Balance", "Value": r.financialSummary?.totalAgentBalance },
-                { "Metric": "Total Recharge Balance", "Value": r.financialSummary?.totalRechargeBalance },
-                { "Metric": "Total Cash Inventory", "Value": r.financialSummary?.totalCashInventory },
-                { "Metric": "Total Card Inventory", "Value": r.financialSummary?.totalCardInventory },
-                { "Metric": "Total Customer Due", "Value": r.financialSummary?.totalCustomerDue },
-                { "Metric": "Grand Total Net Balance", "Value": r.financialSummary?.grandTotalNetBalance }
-            ];
-            const wsFin = XLSX.utils.json_to_sheet(finData);
-            XLSX.utils.book_append_sheet(wb, wsFin, "Financial Summary");
-
-            // 2. ACCOUNT BALANCES SHEET
-            const accData = [];
-            (r.bankAccounts?.items || []).forEach(i => accData.push({ "Category": "Bank Accounts", "Account Name": i.name, "Balance": i.balance }));
-            (r.personalAccounts?.items || []).forEach(i => accData.push({ "Category": "Personal Accounts", "Account Name": i.name, "Balance": i.balance }));
-            (r.agentAccounts?.items || []).forEach(i => accData.push({ "Category": "Agent Accounts", "Account Name": i.name, "Balance": i.balance }));
-            (r.rechargeBalances?.items || []).forEach(i => accData.push({ "Category": "Recharge Balances", "Account Name": i.name, "Balance": i.balance }));
-            const wsAcc = XLSX.utils.json_to_sheet(accData);
-            XLSX.utils.book_append_sheet(wb, wsAcc, "Account Balances");
-
-            // 3. CASH INVENTORY SHEET
-            const cashData = (r.cashInventory?.items || []).map(i => ({ "Denomination": `৳${i.denomination}`, "Quantity": i.quantity, "Amount": i.amount }));
-            cashData.push({ "Denomination": "Others / Coins", "Quantity": "-", "Amount": r.cashInventory?.others || 0 });
-            const wsCash = XLSX.utils.json_to_sheet(cashData);
-            XLSX.utils.book_append_sheet(wb, wsCash, "Cash Inventory");
-
-            XLSX.writeFile(wb, `Daily_Closing_${r.reportDate}_${r.reportId}.xlsx`);
+            XLSX.utils.book_append_sheet(wb, ws, "Daily Closing");
+            XLSX.writeFile(wb, `Daily_Closing_${r.reportId}.xlsx`);
         };
 
-        /* USER PROFILE MANAGEMENT */
-        function loadSavedProfile() {
-            if (profileSettings.name) {
-                document.getElementById('dropdownName').innerText = profileSettings.name;
-                document.getElementById('fullProfileNameDisplay').innerText = profileSettings.name;
-                document.getElementById('profFullName').value = profileSettings.name;
+        /* ==================== CATEGORY & ACCOUNT MANAGEMENT ==================== */
+        function renderCategoryManagementTables() {
+            const catTbody = document.getElementById('categoryTableBody');
+            const accTbody = document.getElementById('accountTableBody');
+            const catSelect = document.getElementById('accCatSelect');
+
+            if (catTbody) {
+                catTbody.innerHTML = '';
+                const sorted = [...categories].sort((a,b) => a.order - b.order);
+                sorted.forEach(c => {
+                    catTbody.insertAdjacentHTML('beforeend', `
+                        <tr>
+                            <td><strong>${c.order}</strong></td>
+                            <td>${c.name}</td>
+                            <td><span class="badge ${c.enabled !== false ? 'badge-success' : 'badge-danger'}">${c.enabled !== false ? 'Active' : 'Disabled'}</span></td>
+                            <td>
+                                <button class="btn-action btn-edit" onclick="editCategory('${c.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+                                <button class="btn-action btn-toggle" onclick="toggleCategory('${c.id}')">${c.enabled !== false ? 'Disable' : 'Enable'}</button>
+                            </td>
+                        </tr>
+                    `);
+                });
             }
-            if (profileSettings.role) {
-                document.getElementById('dropdownRole').innerText = profileSettings.role;
-                document.getElementById('fullProfileRoleDisplay').innerText = profileSettings.role;
-                document.getElementById('profRole').value = profileSettings.role;
+
+            if (catSelect) {
+                catSelect.innerHTML = '<option value="">-- Select Category --</option>';
+                categories.filter(c => c.enabled !== false).forEach(c => {
+                    catSelect.insertAdjacentHTML('beforeend', `<option value="${c.id}">${c.name}</option>`);
+                });
             }
-            if (profileSettings.phone) {
-                document.getElementById('profPhone').value = profileSettings.phone;
-            }
-            if (profileSettings.avatar) {
-                document.getElementById('navAvatar').src = profileSettings.avatar;
-                document.getElementById('dropdownHeaderImg').src = profileSettings.avatar;
-                document.getElementById('fullProfileImg').src = profileSettings.avatar;
+
+            if (accTbody) {
+                accTbody.innerHTML = '';
+                accounts.forEach(a => {
+                    const catName = categories.find(c => c.id === a.catId)?.name || 'N/A';
+                    accTbody.insertAdjacentHTML('beforeend', `
+                        <tr>
+                            <td>${catName}</td>
+                            <td><code>${a.id}</code></td>
+                            <td><strong>${a.name}</strong></td>
+                            <td><span class="badge ${a.enabled !== false ? 'badge-success' : 'badge-danger'}">${a.enabled !== false ? 'Active' : 'Disabled'}</span></td>
+                            <td>
+                                <button class="btn-action btn-edit" onclick="editAccount('${a.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+                                <button class="btn-action btn-toggle" onclick="toggleAccount('${a.id}')">${a.enabled !== false ? 'Disable' : 'Enable'}</button>
+                            </td>
+                        </tr>
+                    `);
+                });
             }
         }
 
-        document.getElementById('fullProfileImgInput').addEventListener('change', (e) => {
+        document.getElementById('addCategoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('editCatId').value;
+            const name = document.getElementById('catNameInput').value.trim();
+            const order = parseInt(document.getElementById('catOrderInput').value) || 1;
+
+            showLoader("Saving Category...");
+            if (editId) {
+                const cat = categories.find(c => c.id === editId);
+                if (cat) {
+                    cat.name = name;
+                    cat.order = order;
+                }
+            } else {
+                categories.push({
+                    id: 'cat_' + Date.now(),
+                    name,
+                    order,
+                    enabled: true
+                });
+            }
+
+            try {
+                await writeToFirebase('erp/categories', categories);
+                hideLoader();
+                showToast("Category saved!", "success");
+                document.getElementById('addCategoryForm').reset();
+                document.getElementById('editCatId').value = '';
+                renderCategoryManagementTables();
+            } catch(err) {
+                hideLoader();
+            }
+        });
+
+        window.editCategory = function(catId) {
+            const cat = categories.find(c => c.id === catId);
+            if (!cat) return;
+            document.getElementById('editCatId').value = cat.id;
+            document.getElementById('catNameInput').value = cat.name;
+            document.getElementById('catOrderInput').value = cat.order;
+        };
+
+        window.toggleCategory = async function(catId) {
+            const cat = categories.find(c => c.id === catId);
+            if (!cat) return;
+            cat.enabled = cat.enabled === false ? true : false;
+            showLoader("Updating Category...");
+            try {
+                await writeToFirebase('erp/categories', categories);
+                hideLoader();
+                renderCategoryManagementTables();
+            } catch(e) { hideLoader(); }
+        };
+
+        document.getElementById('addAccountForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('editAccId').value;
+            const catId = document.getElementById('accCatSelect').value;
+            const name = document.getElementById('accNameInput').value.trim();
+
+            showLoader("Saving Account...");
+            if (editId) {
+                const acc = accounts.find(a => a.id === editId);
+                if (acc) {
+                    acc.catId = catId;
+                    acc.name = name;
+                }
+            } else {
+                const newAccId = 'acc_' + Date.now();
+                accounts.push({
+                    id: newAccId,
+                    catId,
+                    name,
+                    enabled: true
+                });
+                balanceStore[newAccId] = 0;
+            }
+
+            try {
+                await writeToFirebase('erp/accounts', accounts);
+                await writeToFirebase('erp/balances', balanceStore);
+                hideLoader();
+                showToast("Account saved!", "success");
+                document.getElementById('addAccountForm').reset();
+                document.getElementById('editAccId').value = '';
+                renderCategoryManagementTables();
+            } catch(err) {
+                hideLoader();
+            }
+        });
+
+        window.editAccount = function(accId) {
+            const acc = accounts.find(a => a.id === accId);
+            if (!acc) return;
+            document.getElementById('editAccId').value = acc.id;
+            document.getElementById('accCatSelect').value = acc.catId;
+            document.getElementById('accNameInput').value = acc.name;
+        };
+
+        window.toggleAccount = async function(accId) {
+            const acc = accounts.find(a => a.id === accId);
+            if (!acc) return;
+            acc.enabled = acc.enabled === false ? true : false;
+            showLoader("Updating Account...");
+            try {
+                await writeToFirebase('erp/accounts', accounts);
+                hideLoader();
+                renderCategoryManagementTables();
+            } catch(e) { hideLoader(); }
+        };
+
+        /* ==================== CARD MASTER CONFIGURATION ==================== */
+        function renderCardMasterConfiguration() {
+            const container = document.getElementById('cardMasterTablesContainer');
+            if(!container) return;
+            container.innerHTML = '';
+
+            OPERATORS_LIST.forEach(op => {
+                const opCards = toArray(cardConfig[op] || []);
+                let rowsHtml = '';
+                opCards.forEach(card => {
+                    rowsHtml += `
+                        <tr>
+                            <td><strong>${card.name}</strong></td>
+                            <td><span class="badge badge-success">${card.type}</span></td>
+                            <td>৳ ${parseFloat(card.price).toFixed(2)}</td>
+                            <td><span class="badge ${card.active !== false ? 'badge-success' : 'badge-danger'}">${card.active !== false ? 'Active' : 'Inactive'}</span></td>
+                            <td>
+                                <button class="btn-action btn-edit" onclick="editCardMaster('${op}', '${card.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+                                <button class="btn-action btn-delete" onclick="deleteCardMaster('${op}', '${card.id}')"><i class="fa-solid fa-trash"></i> Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                const html = `
+                    <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                        <h4 style="font-size: 1rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                            <span>${op} Cards Configuration</span>
+                            <span style="font-size: 0.8rem; color: #6b7280;">Total Cards: ${opCards.length}</span>
+                        </h4>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Card Name</th>
+                                        <th>Type</th>
+                                        <th>Price</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rowsHtml || '<tr><td colspan="5" style="text-align: center; color: #9ca3af;">No cards configured for this operator.</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        window.resetCardMasterForm = function() {
+            document.getElementById('cardMasterId').value = '';
+            document.getElementById('cardMasterForm').reset();
+        };
+
+        document.getElementById('cardMasterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('cardMasterId').value;
+            const op = document.getElementById('cardOperatorSelect').value;
+            const name = document.getElementById('cardNameMasterInput').value.trim();
+            const type = document.getElementById('cardTypeSelect').value;
+            const price = parseFloat(document.getElementById('cardPriceMasterInput').value) || 0;
+            const status = document.getElementById('cardStatusSelect').value;
+
+            showLoader("Saving Card Config...");
+            if (!cardConfig[op]) cardConfig[op] = [];
+
+            if (editId) {
+                const card = cardConfig[op].find(c => c.id === editId);
+                if (card) {
+                    card.name = name;
+                    card.type = type;
+                    card.price = price;
+                    card.active = (status === 'active');
+                }
+            } else {
+                cardConfig[op].push({
+                    id: op.toLowerCase() + '_' + Date.now(),
+                    name,
+                    type,
+                    price,
+                    active: (status === 'active')
+                });
+            }
+
+            try {
+                await writeToFirebase('erp/cardConfig', cardConfig);
+                hideLoader();
+                showToast("Card Configuration saved!", "success");
+                resetCardMasterForm();
+                renderCardMasterConfiguration();
+            } catch(err) {
+                hideLoader();
+            }
+        });
+
+        window.editCardMaster = function(op, cardId) {
+            const card = (cardConfig[op] || []).find(c => c.id === cardId);
+            if (!card) return;
+            document.getElementById('cardMasterId').value = card.id;
+            document.getElementById('cardOperatorSelect').value = op;
+            document.getElementById('cardNameMasterInput').value = card.name;
+            document.getElementById('cardTypeSelect').value = card.type;
+            document.getElementById('cardPriceMasterInput').value = card.price;
+            document.getElementById('cardStatusSelect').value = card.active !== false ? 'active' : 'inactive';
+        };
+
+        window.deleteCardMaster = function(op, cardId) {
+            showConfirmModal({
+                title: "Delete Card Configuration?",
+                message: "Are you sure you want to delete this card configuration?",
+                confirmText: "Delete Card",
+                onConfirm: async () => {
+                    showLoader("Deleting Card...");
+                    cardConfig[op] = (cardConfig[op] || []).filter(c => c.id !== cardId);
+                    try {
+                        await writeToFirebase('erp/cardConfig', cardConfig);
+                        hideLoader();
+                        showToast("Card configuration deleted.", "success");
+                        renderCardMasterConfiguration();
+                    } catch(e) { hideLoader(); }
+                }
+            });
+        };
+
+        /* ==================== AUDIT HISTORY LOGS ==================== */
+        function renderHistoryTable() {
+            const tbody = document.getElementById('historyTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            if (historyLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No balance audit history available.</td></tr>`;
+                return;
+            }
+
+            historyLogs.slice(0, 30).forEach(log => {
+                const diff = log.diff || (log.currentBal - log.prevBal);
+                const tr = `
+                    <tr>
+                        <td>${new Date(log.timestamp).toLocaleString()}</td>
+                        <td>${log.catName}</td>
+                        <td><strong>${log.accName}</strong></td>
+                        <td>৳ ${parseFloat(log.prevBal).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                        <td>৳ ${parseFloat(log.currentBal).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                        <td style="font-weight:700; color: ${diff >= 0 ? '#10b981' : '#e11d48'};">
+                            ${diff >= 0 ? '+' : ''}৳ ${parseFloat(diff).toLocaleString('en-US', {minimumFractionDigits:2})}
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', tr);
+            });
+        }
+
+        function renderCardHistoryTable() {
+            const tbody = document.getElementById('cardHistoryTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            if (cardHistoryLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #9ca3af;">No card audit history available.</td></tr>`;
+                return;
+            }
+
+            cardHistoryLogs.slice(0, 30).forEach(log => {
+                const tr = `
+                    <tr>
+                        <td>${new Date(log.timestamp).toLocaleString()}</td>
+                        <td><span class="badge badge-success">${log.operator}</span></td>
+                        <td>${log.totalCards} Pcs</td>
+                        <td style="font-weight:700; color:#10b981;">৳ ${parseFloat(log.grandTotalVal).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', tr);
+            });
+        }
+
+        function renderCashHistoryTable() {
+            const tbody = document.getElementById('cashHistoryTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            if (cashHistoryLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #9ca3af;">No cash inventory audit logs available.</td></tr>`;
+                return;
+            }
+
+            cashHistoryLogs.slice(0, 30).forEach(log => {
+                const tr = `
+                    <tr>
+                        <td>${new Date(log.timestamp).toLocaleString()}</td>
+                        <td>৳ ${(parseFloat(log.others) || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                        <td style="font-weight: 800; color: #10b981;">৳ ${parseFloat(log.grandTotal).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', tr);
+            });
+        }
+
+        /* ==================== PROFILE MANAGEMENT ==================== */
+        function loadSavedProfile() {
+            const name = profileSettings.fullName || 'Rabbi Hosen';
+            const role = profileSettings.role || 'Admin';
+            const phone = profileSettings.phone || '';
+            const avatar = profileSettings.avatar || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+
+            document.getElementById('dropdownName').innerText = name;
+            document.getElementById('dropdownRole').innerText = role;
+            document.getElementById('fullProfileNameDisplay').innerText = name;
+            document.getElementById('fullProfileRoleDisplay').innerText = role;
+            document.getElementById('profFullName').value = name;
+            document.getElementById('profRole').value = role;
+            document.getElementById('profPhone').value = phone;
+
+            document.getElementById('navAvatar').src = avatar;
+            document.getElementById('dropdownHeaderImg').src = avatar;
+            document.getElementById('fullProfileImg').src = avatar;
+        }
+
+        document.getElementById('fullProfileImgInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                const imgBase64 = evt.target.result;
-                profileSettings.avatar = imgBase64;
-                document.getElementById('navAvatar').src = imgBase64;
-                document.getElementById('dropdownHeaderImg').src = imgBase64;
-                document.getElementById('fullProfileImg').src = imgBase64;
-            };
-            reader.readAsDataURL(file);
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    profileSettings.avatar = evt.target.result;
+                    document.getElementById('navAvatar').src = evt.target.result;
+                    document.getElementById('dropdownHeaderImg').src = evt.target.result;
+                    document.getElementById('fullProfileImg').src = evt.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
         });
 
         document.getElementById('fullProfileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('profFullName').value.trim();
+            const fullName = document.getElementById('profFullName').value.trim();
             const role = document.getElementById('profRole').value.trim();
             const phone = document.getElementById('profPhone').value.trim();
             const newPass = document.getElementById('profNewPass').value;
 
-            profileSettings.name = name;
+            showLoader("Saving Profile Changes...");
+            profileSettings.fullName = fullName;
             profileSettings.role = role;
             profileSettings.phone = phone;
 
-            showLoader("Saving profile settings...");
-
             try {
                 if (newPass) {
-                    const user = auth.currentUser;
-                    if (user) {
-                        await updatePassword(user, newPass);
-                        showToast("Password updated successfully!", "info");
-                    }
+                    await updatePassword(auth.currentUser, newPass);
+                    showToast("Password updated successfully!", "success");
                 }
-
                 await writeToFirebase('erp/settings', profileSettings);
                 hideLoader();
-                showToast("Profile settings saved successfully!", "success");
+                showToast("Profile saved successfully!", "success");
                 loadSavedProfile();
             } catch(err) {
                 hideLoader();
-                showToast("Error updating profile: " + err.message, "error");
             }
         });
 
-        /* SIDEBAR TOGGLE & PROFILE DROPDOWN LISTENER */
-        if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-            });
-        }
-
-        if (profileTrigger) {
-            profileTrigger.addEventListener('click', (e) => {
-                e.stopPropagation();
-                profileDropdown.classList.toggle('active');
-            });
-        }
-
-        document.addEventListener('click', (e) => {
-            if (profileDropdown && !profileDropdown.contains(e.target) && !profileTrigger.contains(e.target)) {
-                profileDropdown.classList.remove('active');
-            }
+        /* SIDEBAR TOGGLE & DROPDOWN EVENT LISTENERS */
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
         });
 
+        profileTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('active');
+        });
+
+        document.addEventListener('click', () => {
+            profileDropdown.classList.remove('active');
+        });
     </script>
 </body>
 </html>
