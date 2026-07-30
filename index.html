@@ -2070,7 +2070,7 @@
         /* DATA STORES */
         let categories = [];
         let accounts = [];
-        let cardConfig = { GP: [], Banglalink: [], Robi: [], Airtel: [] };
+        let cardConfig = { GP: [], Banglalink: [], Robi: [], Airtel: {} };
         let cardQuantities = { GP: {}, Banglalink: {}, Robi: {}, Airtel: {} };
         let cardHistoryLogs = [];
         let balanceStore = {}; // Keys use Permanent Immutable Account IDs
@@ -2402,6 +2402,8 @@
             let grandTotalBalance = 0;
             const cardVal = calculateGrandCardInventoryValue();
             const cardAcc = getCardInventoryAccount();
+            
+            // Sync current calculated card inventory value to the balance store
             balanceStore[cardAcc.id] = cardVal;
 
             const cashTotal = calculateCashGrandTotal();
@@ -2428,6 +2430,13 @@
                 grid.insertAdjacentHTML('beforeend', cardHtml);
             });
 
+            // If Card Inventory account (acc_9) is not part of an active category, include its value directly
+            const cardAccObj = accounts.find(a => a.id === cardAcc.id);
+            const cardCatObj = cardAccObj ? categories.find(c => c.id === cardAccObj.catId) : null;
+            if (!cardAccObj || !cardCatObj || cardCatObj.enabled === false) {
+                grandTotalBalance += cardVal;
+            }
+
             // 1. Add dedicated "Cash Inventory" summary card
             const cashCardHtml = `
                 <div class="fintech-card">
@@ -2438,7 +2447,7 @@
             `;
             grid.insertAdjacentHTML('beforeend', cashCardHtml);
 
-            // 2. Add dedicated "Card Inventory" summary card
+            // 2. Add dedicated "Card Inventory" summary card (if not rendered dynamically)
             const cardInventoryHtml = `
                 <div class="fintech-card">
                     <div class="card-icon"><i class="fa-solid fa-sim-card"></i></div>
@@ -2448,7 +2457,7 @@
             `;
             grid.insertAdjacentHTML('beforeend', cardInventoryHtml);
 
-            // Add Cash Total to Net Balance (Card Inventory is already inside category Load Cards)
+            // Add Physical Cash Total to Total Net Balance Calculation
             grandTotalBalance += cashTotal;
 
             // Display Total Net Balance
@@ -2940,135 +2949,114 @@
             `;
             tbody.appendChild(trOthers);
 
-            updateCashGrandTotalDisplay();
+            updateCashTotalDisplay();
         }
 
-        window.updateCashRowAmount = function(denom, qtyVal) {
-            const qty = parseInt(qtyVal) || 0;
-            cashQuantities[denom] = qty;
-            const amt = denom * qty;
+        window.updateCashRowAmount = function(denom, val) {
+            cashQuantities[denom] = parseInt(val) || 0;
+            const amt = denom * (parseInt(val) || 0);
             const el = document.getElementById(`cashAmt_${denom}`);
-            if (el) el.innerText = `৳ ${amt.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            updateCashGrandTotalDisplay();
+            if(el) el.innerText = `৳ ${amt.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            updateCashTotalDisplay();
         };
 
         window.updateCashOthersAmount = function(val) {
             cashOthersAmount = parseFloat(val) || 0;
             const el = document.getElementById('cashAmt_others');
-            if (el) el.innerText = `৳ ${cashOthersAmount.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            updateCashGrandTotalDisplay();
+            if(el) el.innerText = `৳ ${cashOthersAmount.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            updateCashTotalDisplay();
         };
 
-        function updateCashGrandTotalDisplay() {
-            cashGrandTotal = calculateCashGrandTotal();
+        function updateCashTotalDisplay() {
+            const total = calculateCashGrandTotal();
+            cashGrandTotal = total;
             const el = document.getElementById('grandTotalCashVal');
-            if (el) el.innerText = `৳ ${cashGrandTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            if(el) el.innerText = `৳ ${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         }
 
         window.saveCashInventory = async function() {
             showLoader("Saving Cash Inventory...");
-            cashGrandTotal = calculateCashGrandTotal();
+            const total = calculateCashGrandTotal();
 
             const now = new Date();
             const logEntry = {
-                id: 'cash_log_' + Date.now(),
                 timestamp: now.toLocaleString(),
                 others: cashOthersAmount,
-                grandTotal: cashGrandTotal
+                grandTotal: total
             };
 
             cashHistoryLogs.unshift(logEntry);
 
             try {
-                await writeToFirebase('erp/cashInventory', { quantities: cashQuantities, others: cashOthersAmount, grandTotal: cashGrandTotal });
+                await writeToFirebase('erp/cashInventory', {
+                    quantities: cashQuantities,
+                    others: cashOthersAmount,
+                    grandTotal: total
+                });
                 await writeToFirebase('erp/cashHistory', cashHistoryLogs);
                 updateDashboardCards();
-                showToast("Cash Inventory saved successfully!", "success");
+                showToast("Cash Inventory updated successfully!", "success");
             } catch(e) {
-                console.error("Save cash error:", e);
+                console.error(e);
             } finally {
                 hideLoader();
             }
         };
 
-        /* RENDER CASH HISTORY */
-        function renderCashHistoryTable() {
-            const tbody = document.getElementById('cashHistoryTableBody');
-            if(!tbody) return;
-            tbody.innerHTML = '';
-
-            if (cashHistoryLogs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #9ca3af;">No cash inventory audit records available yet.</td></tr>`;
-                return;
-            }
-
-            cashHistoryLogs.forEach(log => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${log.timestamp}</td>
-                    <td>৳ ${(parseFloat(log.others)||0).toFixed(2)}</td>
-                    <td><strong style="color: #059669;">৳ ${(log.grandTotal||0).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
         /* CARD INVENTORY AUDIT RENDER & SAVE */
         function renderRedesignedCardInventory() {
             const container = document.getElementById('operatorAccordions');
-            if (!container) return;
+            if(!container) return;
             container.innerHTML = '';
 
             OPERATORS_LIST.forEach((op, index) => {
-                const cardsList = toArray(cardConfig[op] || []).filter(c => c.active !== false);
-                const opQtyMap = cardQuantities[op] || {};
+                const cards = toArray(cardConfig[op] || []).filter(c => c.active !== false);
+                const opQty = cardQuantities[op] || {};
+                let opCount = 0;
+                let opVal = 0;
 
-                let opCardsCount = 0;
-                let opTotalVal = 0;
+                cards.forEach(c => {
+                    const q = parseInt(opQty[c.id]) || 0;
+                    opCount += q;
+                    opVal += (q * c.price);
+                });
 
-                let tableRowsHtml = cardsList.map(card => {
-                    const qty = parseInt(opQtyMap[card.id]) || 0;
-                    const itemTotal = qty * card.price;
-                    opCardsCount += qty;
-                    opTotalVal += itemTotal;
+                let badgeClass = 'op-gp';
+                if(op === 'Banglalink') badgeClass = 'op-bl';
+                if(op === 'Robi') badgeClass = 'op-robi';
+                if(op === 'Airtel') badgeClass = 'op-airtel';
 
+                let rowsHtml = cards.map(c => {
+                    const q = parseInt(opQty[c.id]) || 0;
+                    const tot = q * c.price;
                     return `
                         <tr>
-                            <td><strong>${card.name}</strong></td>
-                            <td><span class="badge badge-success">${card.type}</span></td>
-                            <td>৳ ${card.price.toFixed(2)}</td>
+                            <td><strong>${c.name}</strong></td>
+                            <td><span class="badge badge-success">${c.type}</span></td>
+                            <td>৳ ${c.price}</td>
                             <td>
-                                <input type="number" class="inv-qty-input" value="${qty}" min="0" oninput="updateCardQty('${op}', '${card.id}', this.value)" />
+                                <input type="number" class="inv-qty-input" value="${q}" min="0" oninput="updateCardRowCalc('${op}', '${c.id}', ${c.price}, this.value)" />
                             </td>
-                            <td><strong id="cardTotal_${op}_${card.id}" class="total-green-highlight">৳ ${itemTotal.toFixed(2)}</strong></td>
+                            <td><strong id="cardRowTotal_${op}_${c.id}" class="total-green-highlight">৳ ${tot.toFixed(2)}</strong></td>
                         </tr>
                     `;
                 }).join('');
-
-                if (cardsList.length === 0) {
-                    tableRowsHtml = `<tr><td colspan="5" style="text-align: center; color: #9ca3af;">No active cards configured for ${op}. Configure in Card Management.</td></tr>`;
-                }
-
-                let badgeClass = 'op-gp';
-                if (op === 'Banglalink') badgeClass = 'op-bl';
-                if (op === 'Robi') badgeClass = 'op-robi';
-                if (op === 'Airtel') badgeClass = 'op-airtel';
 
                 const accordionHtml = `
                     <div class="accordion-item ${index === 0 ? 'active' : ''}" id="acc_item_${op}">
                         <div class="accordion-header" onclick="toggleAccordion('${op}')">
                             <div class="accordion-title-box">
                                 <span class="op-badge ${badgeClass}">${op}</span>
-                                <h3>${op} Card Inventory</h3>
+                                <h3>${op} Cards</h3>
                             </div>
                             <div class="accordion-summary-info">
                                 <div class="acc-summary-item">
                                     <span>Total Cards</span>
-                                    <strong id="accCount_${op}">${opCardsCount} Pcs</strong>
+                                    <strong id="accCount_${op}">${opCount} Pcs</strong>
                                 </div>
                                 <div class="acc-summary-item">
                                     <span>Total Value</span>
-                                    <strong id="accVal_${op}" class="highlight-val">৳ ${opTotalVal.toFixed(2)}</strong>
+                                    <strong id="accVal_${op}" class="highlight-val">৳ ${opVal.toFixed(2)}</strong>
                                 </div>
                                 <i class="fa-solid fa-chevron-down accordion-icon"></i>
                             </div>
@@ -3082,11 +3070,11 @@
                                             <th>Type</th>
                                             <th>Price</th>
                                             <th>Quantity</th>
-                                            <th>Total Amount</th>
+                                            <th>Total Value</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${tableRowsHtml}
+                                        ${rowsHtml || '<tr><td colspan="5" style="text-align:center;">No cards configured for this operator.</td></tr>'}
                                     </tbody>
                                 </table>
                             </div>
@@ -3101,96 +3089,90 @@
 
         window.toggleAccordion = function(op) {
             const item = document.getElementById(`acc_item_${op}`);
-            if (item) item.classList.toggle('active');
+            if(item) item.classList.toggle('active');
         };
 
-        window.updateCardQty = function(op, cardId, qtyVal) {
-            if (!cardQuantities[op]) cardQuantities[op] = {};
-            const qty = parseInt(qtyVal) || 0;
-            cardQuantities[op][cardId] = qty;
+        window.updateCardRowCalc = function(op, cardId, price, qtyVal) {
+            if(!cardQuantities[op]) cardQuantities[op] = {};
+            cardQuantities[op][cardId] = parseInt(qtyVal) || 0;
 
-            const cardsList = toArray(cardConfig[op] || []);
-            const card = cardsList.find(c => c.id === cardId);
-            if (card) {
-                const itemTotal = qty * card.price;
-                const totalEl = document.getElementById(`cardTotal_${op}_${cardId}`);
-                if (totalEl) totalEl.innerText = `৳ ${itemTotal.toFixed(2)}`;
-            }
+            const total = (parseInt(qtyVal) || 0) * price;
+            const el = document.getElementById(`cardRowTotal_${op}_${cardId}`);
+            if(el) el.innerText = `৳ ${total.toFixed(2)}`;
 
             updateLiveSummaries();
         };
 
         function updateLiveSummaries() {
-            let grandCardsCount = 0;
-            let grandCardsVal = 0;
+            let grandCount = 0;
+            let grandVal = 0;
 
             OPERATORS_LIST.forEach(op => {
-                const cardsList = toArray(cardConfig[op] || []).filter(c => c.active !== false);
-                const opQtyMap = cardQuantities[op] || {};
+                const cards = toArray(cardConfig[op] || []).filter(c => c.active !== false);
+                const opQty = cardQuantities[op] || {};
+                let opCount = 0;
+                let opVal = 0;
 
-                let opCardsCount = 0;
-                let opTotalVal = 0;
-
-                cardsList.forEach(card => {
-                    const qty = parseInt(opQtyMap[card.id]) || 0;
-                    const itemTotal = qty * card.price;
-                    opCardsCount += qty;
-                    opTotalVal += itemTotal;
+                cards.forEach(c => {
+                    const q = parseInt(opQty[c.id]) || 0;
+                    opCount += q;
+                    opVal += (q * c.price);
                 });
 
-                grandCardsCount += opCardsCount;
-                grandCardsVal += opTotalVal;
+                grandCount += opCount;
+                grandVal += opVal;
 
                 const countEl = document.getElementById(`accCount_${op}`);
                 const valEl = document.getElementById(`accVal_${op}`);
-                if (countEl) countEl.innerText = `${opCardsCount} Pcs`;
-                if (valEl) valEl.innerText = `৳ ${opTotalVal.toFixed(2)}`;
+                if(countEl) countEl.innerText = `${opCount} Pcs`;
+                if(valEl) valEl.innerText = `৳ ${opVal.toFixed(2)}`;
 
-                let summaryElId = `summary${op}Val`;
-                if (op === 'Banglalink') summaryElId = 'summaryBlVal';
-                const sumBox = document.getElementById(summaryElId);
-                if (sumBox) sumBox.innerText = `৳ ${opTotalVal.toFixed(2)}`;
+                let summaryBoxId = 'summaryGpVal';
+                if(op === 'Banglalink') summaryBoxId = 'summaryBlVal';
+                if(op === 'Robi') summaryBoxId = 'summaryRobiVal';
+                if(op === 'Airtel') summaryBoxId = 'summaryAirtelVal';
+
+                const boxEl = document.getElementById(summaryBoxId);
+                if(boxEl) boxEl.innerText = `৳ ${opVal.toFixed(2)}`;
             });
 
             const grandCountEl = document.getElementById('grandTotalCardsCount');
             const grandValEl = document.getElementById('grandTotalCardsVal');
-            if (grandCountEl) grandCountEl.innerText = `${grandCardsCount} Pcs`;
-            if (grandValEl) grandValEl.innerText = `৳ ${grandCardsVal.toFixed(2)}`;
+            if(grandCountEl) grandCountEl.innerText = `${grandCount} Pcs`;
+            if(grandValEl) grandValEl.innerText = `৳ ${grandVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         }
 
         window.saveTodayInventory = async function() {
-            showLoader("Saving Card Inventory...");
+            showLoader("Saving Today's Card Inventory...");
             const now = new Date();
-            const timeStr = now.toLocaleString();
 
             OPERATORS_LIST.forEach(op => {
-                const cardsList = toArray(cardConfig[op] || []).filter(c => c.active !== false);
-                const opQtyMap = cardQuantities[op] || {};
+                const cards = toArray(cardConfig[op] || []).filter(c => c.active !== false);
+                const opQty = cardQuantities[op] || {};
+                let opCount = 0;
+                let opVal = 0;
 
-                let opCardsCount = 0;
-                let opTotalVal = 0;
-
-                cardsList.forEach(card => {
-                    const qty = parseInt(opQtyMap[card.id]) || 0;
-                    opCardsCount += qty;
-                    opTotalVal += (qty * card.price);
+                cards.forEach(c => {
+                    const q = parseInt(opQty[c.id]) || 0;
+                    opCount += q;
+                    opVal += (q * c.price);
                 });
 
-                const log = {
-                    id: 'card_log_' + Date.now() + '_' + op,
-                    timestamp: timeStr,
-                    operator: op,
-                    totalCards: opCardsCount,
-                    totalValue: opTotalVal
-                };
-                cardHistoryLogs.unshift(log);
+                if(opCount > 0 || opVal > 0) {
+                    cardHistoryLogs.unshift({
+                        timestamp: now.toLocaleString(),
+                        operator: op,
+                        totalCards: opCount,
+                        grandTotal: opVal
+                    });
+                }
             });
 
             try {
                 await saveCardInventoryData();
                 showToast("Card Inventory saved successfully!", "success");
             } catch(e) {
-                console.error("Card Inventory save error:", e);
+                console.error(e);
             } finally {
                 hideLoader();
             }
@@ -3199,36 +3181,27 @@
         /* CARD MASTER CONFIGURATION */
         function renderCardMasterConfiguration() {
             const container = document.getElementById('cardMasterTablesContainer');
-            if (!container) return;
+            if(!container) return;
             container.innerHTML = '';
 
             OPERATORS_LIST.forEach(op => {
-                const cardsList = toArray(cardConfig[op] || []);
-
-                let rowsHtml = cardsList.map(card => `
+                const cards = toArray(cardConfig[op] || []);
+                let rowsHtml = cards.map(c => `
                     <tr>
-                        <td><strong>${card.name}</strong></td>
-                        <td><span class="badge badge-success">${card.type}</span></td>
-                        <td>৳ ${parseFloat(card.price).toFixed(2)}</td>
+                        <td><strong>${c.name}</strong></td>
+                        <td><span class="badge badge-success">${c.type}</span></td>
+                        <td>৳ ${c.price}</td>
+                        <td><span class="badge ${c.active !== false ? 'badge-success' : 'badge-danger'}">${c.active !== false ? 'Active' : 'Inactive'}</span></td>
                         <td>
-                            <span class="badge ${card.active !== false ? 'badge-success' : 'badge-danger'}">
-                                ${card.active !== false ? 'Active' : 'Inactive'}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn-action btn-edit" onclick="editCardMaster('${op}', '${card.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
-                            <button class="btn-action btn-delete" onclick="deleteCardMaster('${op}', '${card.id}')"><i class="fa-solid fa-trash"></i></button>
+                            <button class="btn-action btn-edit" onclick="editCardMasterItem('${op}', '${c.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+                            <button class="btn-action btn-delete" onclick="deleteCardMasterItem('${op}', '${c.id}')"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `).join('');
 
-                if (cardsList.length === 0) {
-                    rowsHtml = `<tr><td colspan="5" style="text-align: center; color: #9ca3af;">No cards configured for ${op}.</td></tr>`;
-                }
-
-                const cardTableHtml = `
-                    <div style="margin-bottom: 25px;">
-                        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 10px;">${op} Cards Configuration</h4>
+                const tableCard = `
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 8px;">${op} Card Master List</h4>
                         <div class="table-container">
                             <table>
                                 <thead>
@@ -3241,65 +3214,53 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${rowsHtml}
+                                    ${rowsHtml || '<tr><td colspan="5" style="text-align:center;">No cards defined.</td></tr>'}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 `;
-                container.insertAdjacentHTML('beforeend', cardTableHtml);
+                container.insertAdjacentHTML('beforeend', tableCard);
             });
         }
 
-        window.resetCardMasterForm = function() {
-            document.getElementById('cardMasterId').value = '';
-            document.getElementById('cardNameMasterInput').value = '';
-            document.getElementById('cardPriceMasterInput').value = '';
-            document.getElementById('cardOperatorSelect').value = 'GP';
-            document.getElementById('cardTypeSelect').value = 'Internet';
-            document.getElementById('cardStatusSelect').value = 'active';
-        };
-
         document.getElementById('cardMasterForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const editId = document.getElementById('cardMasterId').value;
+            const id = document.getElementById('cardMasterId').value;
             const op = document.getElementById('cardOperatorSelect').value;
             const name = document.getElementById('cardNameMasterInput').value.trim();
             const type = document.getElementById('cardTypeSelect').value;
             const price = parseFloat(document.getElementById('cardPriceMasterInput').value) || 0;
             const active = document.getElementById('cardStatusSelect').value === 'active';
 
-            if (!cardConfig[op]) cardConfig[op] = [];
+            if(!cardConfig[op]) cardConfig[op] = [];
 
-            if (editId) {
-                const cardIndex = cardConfig[op].findIndex(c => c.id === editId);
-                if (cardIndex !== -1) {
-                    cardConfig[op][cardIndex] = { id: editId, name, type, price, active };
+            if(id) {
+                const idx = cardConfig[op].findIndex(c => c.id === id);
+                if(idx !== -1) {
+                    cardConfig[op][idx] = { id, name, type, price, active };
                 }
             } else {
-                const newCard = {
-                    id: op.toLowerCase() + '_' + Date.now(),
-                    name, type, price, active
-                };
-                cardConfig[op].push(newCard);
+                const newId = op.toLowerCase() + '_' + Date.now();
+                cardConfig[op].push({ id: newId, name, type, price, active });
             }
 
-            showLoader("Saving card master...");
+            showLoader("Saving Card Configuration...");
             try {
                 await saveCardConfigMaster();
                 resetCardMasterForm();
                 renderCardMasterConfiguration();
-                showToast("Card configuration saved!", "success");
-            } catch(e) {
-                console.error("Save card config error:", e);
+                showToast("Card master configuration updated!", "success");
+            } catch(err) {
+                console.error(err);
             } finally {
                 hideLoader();
             }
         });
 
-        window.editCardMaster = function(op, cardId) {
-            const card = (cardConfig[op] || []).find(c => c.id === cardId);
-            if (!card) return;
+        window.editCardMasterItem = function(op, id) {
+            const card = (cardConfig[op] || []).find(c => c.id === id);
+            if(!card) return;
 
             document.getElementById('cardMasterId').value = card.id;
             document.getElementById('cardOperatorSelect').value = op;
@@ -3309,19 +3270,19 @@
             document.getElementById('cardStatusSelect').value = card.active !== false ? 'active' : 'inactive';
         };
 
-        window.deleteCardMaster = function(op, cardId) {
+        window.deleteCardMasterItem = function(op, id) {
             showConfirmModal({
-                title: "Delete Card Configuration",
-                message: "Are you sure you want to delete this card configuration?",
+                title: "Delete Card Configuration?",
+                message: "This will remove the card item from inventory config.",
                 onConfirm: async () => {
-                    cardConfig[op] = (cardConfig[op] || []).filter(c => c.id !== cardId);
-                    showLoader("Deleting card...");
+                    cardConfig[op] = (cardConfig[op] || []).filter(c => c.id !== id);
+                    showLoader("Deleting Card Item...");
                     try {
                         await saveCardConfigMaster();
                         renderCardMasterConfiguration();
-                        showToast("Card deleted!", "warning");
-                    } catch(e) {
-                        console.error("Delete card error:", e);
+                        showToast("Card item removed successfully.", "warning");
+                    } catch(err) {
+                        console.error(err);
                     } finally {
                         hideLoader();
                     }
@@ -3329,51 +3290,58 @@
             });
         };
 
+        window.resetCardMasterForm = function() {
+            document.getElementById('cardMasterId').value = '';
+            document.getElementById('cardNameMasterInput').value = '';
+            document.getElementById('cardPriceMasterInput').value = '';
+        };
+
         /* CATEGORY & ACCOUNT MANAGEMENT TABLES */
         function renderCategoryManagementTables() {
             const catTbody = document.getElementById('categoryTableBody');
-            if (catTbody) {
+            const accTbody = document.getElementById('accountTableBody');
+            const catSelect = document.getElementById('accCatSelect');
+
+            if(catTbody) {
                 catTbody.innerHTML = '';
-                const sortedCategories = toArray(categories).sort((a,b) => a.order - b.order);
-                sortedCategories.forEach(cat => {
+                const sortedCats = toArray(categories).sort((a,b) => a.order - b.order);
+                sortedCats.forEach(cat => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${cat.order}</td>
                         <td><strong>${cat.name}</strong></td>
-                        <td><span class="badge ${cat.enabled ? 'badge-success' : 'badge-danger'}">${cat.enabled ? 'Active' : 'Disabled'}</span></td>
+                        <td><span class="badge ${cat.enabled !== false ? 'badge-success' : 'badge-danger'}">${cat.enabled !== false ? 'Enabled' : 'Disabled'}</span></td>
                         <td>
-                            <button class="btn-action btn-edit" onclick="editCategory('${cat.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
-                            <button class="btn-action btn-toggle" onclick="toggleCategory('${cat.id}')">${cat.enabled ? 'Disable' : 'Enable'}</button>
-                            <button class="btn-action btn-delete" onclick="deleteCategory('${cat.id}')"><i class="fa-solid fa-trash"></i></button>
+                            <button class="btn-action btn-edit" onclick="editCategoryItem('${cat.id}')"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn-action btn-toggle" onclick="toggleCategoryStatus('${cat.id}')">${cat.enabled !== false ? 'Disable' : 'Enable'}</button>
+                            <button class="btn-action btn-delete" onclick="deleteCategoryItem('${cat.id}')"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     `;
                     catTbody.appendChild(tr);
                 });
             }
 
-            const accCatSelect = document.getElementById('accCatSelect');
-            if (accCatSelect) {
-                accCatSelect.innerHTML = '';
-                categories.filter(c => c.enabled).forEach(c => {
-                    accCatSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+            if(catSelect) {
+                catSelect.innerHTML = '<option value="">Select Category</option>';
+                toArray(categories).filter(c => c.enabled !== false).forEach(cat => {
+                    catSelect.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
                 });
             }
 
-            const accTbody = document.getElementById('accountTableBody');
-            if (accTbody) {
+            if(accTbody) {
                 accTbody.innerHTML = '';
                 toArray(accounts).forEach(acc => {
-                    const cat = categories.find(c => c.id === acc.catId);
+                    const cat = categories.find(c => c.id === acc.catId) || { name: 'Unassigned' };
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${cat ? cat.name : 'Unknown'}</td>
+                        <td>${cat.name}</td>
                         <td><code>${acc.id}</code></td>
                         <td><strong>${acc.name}</strong></td>
-                        <td><span class="badge ${acc.enabled ? 'badge-success' : 'badge-danger'}">${acc.enabled ? 'Active' : 'Disabled'}</span></td>
+                        <td><span class="badge ${acc.enabled !== false ? 'badge-success' : 'badge-danger'}">${acc.enabled !== false ? 'Enabled' : 'Disabled'}</span></td>
                         <td>
-                            <button class="btn-action btn-edit" onclick="editAccount('${acc.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
-                            <button class="btn-action btn-toggle" onclick="toggleAccount('${acc.id}')">${acc.enabled ? 'Disable' : 'Enable'}</button>
-                            <button class="btn-action btn-delete" onclick="deleteAccount('${acc.id}')"><i class="fa-solid fa-trash"></i></button>
+                            <button class="btn-action btn-edit" onclick="editAccountItem('${acc.id}')"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn-action btn-toggle" onclick="toggleAccountStatus('${acc.id}')">${acc.enabled !== false ? 'Disable' : 'Enable'}</button>
+                            <button class="btn-action btn-delete" onclick="deleteAccountItem('${acc.id}')"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     `;
                     accTbody.appendChild(tr);
@@ -3383,269 +3351,234 @@
 
         document.getElementById('addCategoryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const editId = document.getElementById('editCatId').value;
+            const id = document.getElementById('editCatId').value;
             const name = document.getElementById('catNameInput').value.trim();
             const order = parseInt(document.getElementById('catOrderInput').value) || 1;
 
-            if (editId) {
-                const cat = categories.find(c => c.id === editId);
-                if (cat) { cat.name = name; cat.order = order; }
+            if(id) {
+                const idx = categories.findIndex(c => c.id === id);
+                if(idx !== -1) categories[idx].name = name;
+                categories[idx].order = order;
             } else {
-                categories.push({ id: 'cat_' + Date.now(), name, order, enabled: true });
+                const newId = 'cat_' + Date.now();
+                categories.push({ id: newId, name, order, enabled: true });
             }
 
-            showLoader("Saving category...");
+            showLoader("Saving Category...");
             try {
                 await saveCoreData();
                 document.getElementById('editCatId').value = '';
                 document.getElementById('catNameInput').value = '';
                 document.getElementById('catOrderInput').value = '';
                 showToast("Category saved!", "success");
-            } catch(e) {
-                console.error("Save category error:", e);
-            } finally {
-                hideLoader();
-            }
+            } catch(e) { console.error(e); }
+            finally { hideLoader(); }
         });
-
-        window.editCategory = function(id) {
-            const cat = categories.find(c => c.id === id);
-            if (cat) {
-                document.getElementById('editCatId').value = cat.id;
-                document.getElementById('catNameInput').value = cat.name;
-                document.getElementById('catOrderInput').value = cat.order;
-            }
-        };
-
-        window.toggleCategory = async function(id) {
-            const cat = categories.find(c => c.id === id);
-            if (cat) {
-                cat.enabled = !cat.enabled;
-                showLoader("Updating status...");
-                try {
-                    await saveCoreData();
-                    showToast("Category status updated!", "info");
-                } catch(e) {
-                    console.error("Toggle category error:", e);
-                } finally {
-                    hideLoader();
-                }
-            }
-        };
-
-        window.deleteCategory = function(id) {
-            showConfirmModal({
-                title: "Delete Category",
-                message: "Deleting a category will also delete all associated accounts.",
-                onConfirm: async () => {
-                    categories = categories.filter(c => c.id !== id);
-                    accounts = accounts.filter(a => a.catId !== id);
-                    showLoader("Deleting category...");
-                    try {
-                        await saveCoreData();
-                        showToast("Category deleted!", "warning");
-                    } catch(e) {
-                        console.error("Delete category error:", e);
-                    } finally {
-                        hideLoader();
-                    }
-                }
-            });
-        };
 
         document.getElementById('addAccountForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const editId = document.getElementById('editAccId').value;
+            const id = document.getElementById('editAccId').value;
             const catId = document.getElementById('accCatSelect').value;
             const name = document.getElementById('accNameInput').value.trim();
 
-            if (editId) {
-                const acc = accounts.find(a => a.id === editId);
-                if (acc) { acc.catId = catId; acc.name = name; }
+            if(id) {
+                const idx = accounts.findIndex(a => a.id === id);
+                if(idx !== -1) {
+                    accounts[idx].catId = catId;
+                    accounts[idx].name = name;
+                }
             } else {
-                const newAccId = 'acc_' + Date.now();
-                accounts.push({ id: newAccId, catId, name, enabled: true });
-                balanceStore[newAccId] = 0;
+                const newId = 'acc_' + Date.now();
+                accounts.push({ id: newId, catId, name, enabled: true });
             }
 
-            showLoader("Saving account...");
+            showLoader("Saving Account...");
             try {
                 await saveCoreData();
-                await writeToFirebase('erp/balances', balanceStore);
                 document.getElementById('editAccId').value = '';
                 document.getElementById('accNameInput').value = '';
                 showToast("Account saved!", "success");
-            } catch(e) {
-                console.error("Save account error:", e);
-            } finally {
-                hideLoader();
-            }
+            } catch(e) { console.error(e); }
+            finally { hideLoader(); }
         });
 
-        window.editAccount = function(id) {
-            const acc = accounts.find(a => a.id === id);
-            if (acc) {
-                document.getElementById('editAccId').value = acc.id;
-                document.getElementById('accCatSelect').value = acc.catId;
-                document.getElementById('accNameInput').value = acc.name;
-            }
+        window.editCategoryItem = function(id) {
+            const cat = categories.find(c => c.id === id);
+            if(!cat) return;
+            document.getElementById('editCatId').value = cat.id;
+            document.getElementById('catNameInput').value = cat.name;
+            document.getElementById('catOrderInput').value = cat.order;
         };
 
-        window.toggleAccount = async function(id) {
-            const acc = accounts.find(a => a.id === id);
-            if (acc) {
-                acc.enabled = !acc.enabled;
-                showLoader("Updating status...");
-                try {
-                    await saveCoreData();
-                    showToast("Account status updated!", "info");
-                } catch(e) {
-                    console.error("Toggle account error:", e);
-                } finally {
-                    hideLoader();
-                }
-            }
+        window.toggleCategoryStatus = async function(id) {
+            const cat = categories.find(c => c.id === id);
+            if(!cat) return;
+            cat.enabled = (cat.enabled === false);
+            showLoader("Updating Status...");
+            try {
+                await saveCoreData();
+                showToast(`Category ${cat.enabled ? 'enabled' : 'disabled'}.`, "info");
+            } catch(e) { console.error(e); }
+            finally { hideLoader(); }
         };
 
-        window.deleteAccount = function(id) {
+        window.deleteCategoryItem = function(id) {
             showConfirmModal({
-                title: "Delete Account",
-                message: "Are you sure you want to delete this account?",
+                title: "Delete Category?",
+                message: "Deleting a category will remove it permanently.",
                 onConfirm: async () => {
-                    accounts = accounts.filter(a => a.id !== id);
-                    delete balanceStore[id];
-                    showLoader("Deleting account...");
+                    categories = categories.filter(c => c.id !== id);
+                    showLoader("Deleting Category...");
                     try {
                         await saveCoreData();
-                        await writeToFirebase('erp/balances', balanceStore);
-                        showToast("Account deleted!", "warning");
-                    } catch(e) {
-                        console.error("Delete account error:", e);
-                    } finally {
-                        hideLoader();
-                    }
+                        showToast("Category deleted.", "warning");
+                    } catch(e) { console.error(e); }
+                    finally { hideLoader(); }
                 }
             });
         };
 
-        /* OPEN BALANCE CATEGORY FORM */
+        window.editAccountItem = function(id) {
+            const acc = accounts.find(a => a.id === id);
+            if(!acc) return;
+            document.getElementById('editAccId').value = acc.id;
+            document.getElementById('accCatSelect').value = acc.catId;
+            document.getElementById('accNameInput').value = acc.name;
+        };
+
+        window.toggleAccountStatus = async function(id) {
+            const acc = accounts.find(a => a.id === id);
+            if(!acc) return;
+            acc.enabled = (acc.enabled === false);
+            showLoader("Updating Account Status...");
+            try {
+                await saveCoreData();
+                showToast(`Account ${acc.enabled ? 'enabled' : 'disabled'}.`, "info");
+            } catch(e) { console.error(e); }
+            finally { hideLoader(); }
+        };
+
+        window.deleteAccountItem = function(id) {
+            showConfirmModal({
+                title: "Delete Account?",
+                message: "Deleting an account permanently removes it.",
+                onConfirm: async () => {
+                    accounts = accounts.filter(a => a.id !== id);
+                    showLoader("Deleting Account...");
+                    try {
+                        await saveCoreData();
+                        showToast("Account deleted.", "warning");
+                    } catch(e) { console.error(e); }
+                    finally { hideLoader(); }
+                }
+            });
+        };
+
+        /* BALANCE FORM GENERATION & SUBMIT */
         window.openBalanceCategory = function(catId) {
             currentActiveCatId = catId;
             const cat = categories.find(c => c.id === catId);
-            if (!cat) return;
+            if(!cat) return;
 
             document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
-            document.getElementById('balance-view').classList.add('active');
 
             const subItem = document.getElementById(`sub-${catId}`);
-            if (subItem) subItem.classList.add('active');
+            if(subItem) subItem.classList.add('active');
 
-            document.getElementById('top-title').innerText = `${cat.name} Balance Update`;
-            document.getElementById('erpFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square" style="color: #00a8ef;"></i> Update ${cat.name}`;
+            document.getElementById('balance-view').classList.add('active');
+            document.getElementById('top-title').innerText = `${cat.name} Balance Management`;
+            document.getElementById('erpFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square" style="color:#00a8ef;"></i> Update ${cat.name}`;
 
             const container = document.getElementById('formFieldsContainer');
             container.innerHTML = '';
 
-            const catAccounts = accounts.filter(a => a.catId === catId && a.enabled);
+            const catAccs = accounts.filter(a => a.catId === catId && a.enabled !== false);
 
-            if (catAccounts.length === 0) {
-                container.innerHTML = `<p style="color: #6b7280; font-size: 0.9rem;">No active accounts found in this category. Go to Category & Accounts to add accounts.</p>`;
+            if(catAccs.length === 0) {
+                container.innerHTML = `<p style="color:#6b7280;">No active accounts configured under this category.</p>`;
                 return;
             }
 
-            catAccounts.forEach(acc => {
-                const isCardAcc = acc.id === 'acc_9' || acc.name === 'Card Inventory';
-                if (isCardAcc) {
-                    balanceStore[acc.id] = calculateGrandCardInventoryValue();
-                }
-
-                const currentBal = parseFloat(balanceStore[acc.id] || 0);
-
-                const cardDiv = document.createElement('div');
-                cardDiv.className = 'field-card';
-                cardDiv.innerHTML = `
-                    <div class="field-card-header">
-                        <label>${acc.name}</label>
-                        <span class="prev-bal">Current: <span>৳ ${currentBal.toLocaleString('en-US', {minimumFractionDigits: 2})}</span></span>
+            catAccs.forEach(acc => {
+                const prevBal = parseFloat(balanceStore[acc.id] || 0);
+                const fieldCard = `
+                    <div class="field-card">
+                        <div class="field-card-header">
+                            <label>${acc.name}</label>
+                            <span class="prev-bal">Previous: <span>৳ ${prevBal.toFixed(2)}</span></span>
+                        </div>
+                        <input type="number" step="any" name="${acc.id}" value="${prevBal}" required />
                     </div>
-                    <input type="number" step="any" data-accid="${acc.id}" value="${currentBal}" ${isCardAcc ? 'readonly style="background:#f3f4f6;"' : ''} />
-                    ${isCardAcc ? '<small style="color:#00a8ef; font-weight:600; margin-top:4px; display:block;"><i class="fa-solid fa-info-circle"></i> Calculated automatically from Card Inventory</small>' : ''}
                 `;
-                container.appendChild(cardDiv);
+                container.insertAdjacentHTML('beforeend', fieldCard);
             });
         };
 
-        /* SAVE BALANCE FORM */
         document.getElementById('balanceUpdateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const inputs = document.querySelectorAll('#formFieldsContainer input[data-accid]');
+            const formData = new FormData(e.target);
             const now = new Date();
-            const timeStr = now.toLocaleString();
+            const timestamp = now.toLocaleString();
             const cat = categories.find(c => c.id === currentActiveCatId);
 
-            inputs.forEach(input => {
-                const accId = input.getAttribute('data-accid');
-                const acc = accounts.find(a => a.id === accId);
-                const isCardAcc = accId === 'acc_9' || (acc && acc.name === 'Card Inventory');
+            showLoader("Updating Balances...");
 
-                let newVal = parseFloat(input.value) || 0;
-                if (isCardAcc) {
-                    newVal = calculateGrandCardInventoryValue();
-                }
+            for (let [accId, valStr] of formData.entries()) {
+                const newVal = parseFloat(valStr) || 0;
+                const oldVal = parseFloat(balanceStore[accId] || 0);
+                const diff = newVal - oldVal;
 
-                const prevVal = parseFloat(balanceStore[accId] || 0);
+                balanceStore[accId] = newVal;
 
-                if (prevVal !== newVal) {
-                    balanceStore[accId] = newVal;
+                if(diff !== 0) {
+                    const acc = accounts.find(a => a.id === accId);
                     historyLogs.unshift({
-                        id: 'hist_' + Date.now() + '_' + accId,
-                        timestamp: timeStr,
-                        category: cat ? cat.name : 'Unknown',
-                        accountName: acc ? acc.name : 'Unknown',
-                        prevBal: prevVal,
+                        timestamp,
+                        category: cat ? cat.name : 'General',
+                        account: acc ? acc.name : accId,
+                        prevBal: oldVal,
                         currBal: newVal,
-                        diff: newVal - prevVal
+                        diff
                     });
                 }
-            });
+            }
 
-            showLoader("Updating balance...");
             try {
                 await writeToFirebase('erp/balances', balanceStore);
                 await writeToFirebase('erp/fintechHistory', historyLogs);
                 updateDashboardCards();
                 showToast("Balances updated successfully!", "success");
             } catch(err) {
-                console.error("Balance update error:", err);
+                console.error(err);
             } finally {
                 hideLoader();
             }
         });
 
-        /* RENDER REPORTS HISTORY TABLES */
+        /* RENDER HISTORY TABLES */
         function renderHistoryTable() {
             const tbody = document.getElementById('historyTableBody');
-            if (!tbody) return;
+            if(!tbody) return;
             tbody.innerHTML = '';
 
-            if (historyLogs.length === 0) {
+            const logs = toArray(historyLogs);
+            if(logs.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No balance record history available yet.</td></tr>`;
                 return;
             }
 
-            historyLogs.forEach(log => {
-                const diff = log.diff || 0;
+            logs.forEach(log => {
+                const diffClass = log.diff >= 0 ? 'badge-success' : 'badge-danger';
+                const diffSign = log.diff >= 0 ? '+' : '';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${log.timestamp}</td>
                     <td>${log.category}</td>
-                    <td><strong>${log.accountName}</strong></td>
-                    <td>৳ ${(log.prevBal || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                    <td><strong>৳ ${(log.currBal || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong></td>
-                    <td style="color: ${diff >= 0 ? '#10b981' : '#e11d48'}; font-weight: 700;">
-                        ${diff >= 0 ? '+' : ''}৳ ${diff.toLocaleString('en-US', {minimumFractionDigits: 2})}
-                    </td>
+                    <td><strong>${log.account}</strong></td>
+                    <td>৳ ${(log.prevBal||0).toFixed(2)}</td>
+                    <td>৳ ${(log.currBal||0).toFixed(2)}</td>
+                    <td><span class="badge ${diffClass}">${diffSign}৳ ${(log.diff||0).toFixed(2)}</span></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -3653,21 +3586,44 @@
 
         function renderCardHistoryTable() {
             const tbody = document.getElementById('cardHistoryTableBody');
-            if (!tbody) return;
+            if(!tbody) return;
             tbody.innerHTML = '';
 
-            if (cardHistoryLogs.length === 0) {
+            const logs = toArray(cardHistoryLogs);
+            if(logs.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #9ca3af;">No card inventory history available yet.</td></tr>`;
                 return;
             }
 
-            cardHistoryLogs.forEach(log => {
+            logs.forEach(log => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${log.timestamp}</td>
                     <td><strong>${log.operator}</strong></td>
                     <td>${log.totalCards} Pcs</td>
-                    <td><strong style="color: #059669;">৳ ${(log.totalValue || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong></td>
+                    <td><strong class="total-green-highlight">৳ ${(log.grandTotal||0).toFixed(2)}</strong></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderCashHistoryTable() {
+            const tbody = document.getElementById('cashHistoryTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            const logs = toArray(cashHistoryLogs);
+            if(logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #9ca3af;">No cash inventory audit records available yet.</td></tr>`;
+                return;
+            }
+
+            logs.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${log.timestamp}</td>
+                    <td>৳ ${(log.others||0).toFixed(2)}</td>
+                    <td><strong class="total-green-highlight">৳ ${(log.grandTotal||0).toFixed(2)}</strong></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -3675,53 +3631,49 @@
 
         /* PROFILE MANAGEMENT */
         function loadSavedProfile() {
-            if (profileSettings.fullName) {
+            if(profileSettings.fullName) {
                 document.getElementById('profFullName').value = profileSettings.fullName;
-                document.getElementById('fullProfileNameDisplay').innerText = profileSettings.fullName;
                 document.getElementById('dropdownName').innerText = profileSettings.fullName;
+                document.getElementById('fullProfileNameDisplay').innerText = profileSettings.fullName;
             }
-            if (profileSettings.role) {
+            if(profileSettings.role) {
                 document.getElementById('profRole').value = profileSettings.role;
-                document.getElementById('fullProfileRoleDisplay').innerText = profileSettings.role;
                 document.getElementById('dropdownRole').innerText = profileSettings.role;
+                document.getElementById('fullProfileRoleDisplay').innerText = profileSettings.role;
             }
-            if (profileSettings.phone) {
+            if(profileSettings.phone) {
                 document.getElementById('profPhone').value = profileSettings.phone;
             }
-            if (profileSettings.photoUrl) {
-                document.getElementById('navAvatar').src = profileSettings.photoUrl;
-                document.getElementById('dropdownHeaderImg').src = profileSettings.photoUrl;
-                document.getElementById('fullProfileImg').src = profileSettings.photoUrl;
+            if(profileSettings.avatar) {
+                document.getElementById('navAvatar').src = profileSettings.avatar;
+                document.getElementById('dropdownHeaderImg').src = profileSettings.avatar;
+                document.getElementById('fullProfileImg').src = profileSettings.avatar;
             }
         }
 
         document.getElementById('fullProfileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const fullName = document.getElementById('profFullName').value.trim();
-            const role = document.getElementById('profRole').value.trim();
-            const phone = document.getElementById('profPhone').value.trim();
+            const fullName = document.getElementById('profFullName').value;
+            const role = document.getElementById('profRole').value;
+            const phone = document.getElementById('profPhone').value;
             const newPass = document.getElementById('profNewPass').value;
 
             profileSettings.fullName = fullName;
             profileSettings.role = role;
             profileSettings.phone = phone;
 
-            showLoader("Saving profile...");
+            showLoader("Updating Profile...");
 
             try {
-                if (newPass) {
-                    const user = auth.currentUser;
-                    if (user) {
-                        await updatePassword(user, newPass);
-                        showToast("Password updated successfully!", "success");
-                    }
+                if(newPass && newPass.trim().length > 0) {
+                    await updatePassword(auth.currentUser, newPass.trim());
+                    showToast("Password updated successfully!", "success");
                 }
-
                 await writeToFirebase('erp/settings', profileSettings);
                 loadSavedProfile();
-                showToast("Profile settings saved!", "success");
-            } catch(e) {
-                console.error("Profile save error:", e);
+                showToast("Profile settings saved successfully!", "success");
+            } catch(err) {
+                showToast("Profile update failed: " + err.message, "error");
             } finally {
                 hideLoader();
             }
@@ -3729,19 +3681,17 @@
 
         document.getElementById('fullProfileImgInput').addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) {
+            if(file) {
                 const reader = new FileReader();
                 reader.onload = function(evt) {
-                    profileSettings.photoUrl = evt.target.result;
-                    document.getElementById('navAvatar').src = evt.target.result;
-                    document.getElementById('dropdownHeaderImg').src = evt.target.result;
-                    document.getElementById('fullProfileImg').src = evt.target.result;
+                    profileSettings.avatar = evt.target.result;
+                    loadSavedProfile();
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        /* SIDEBAR TOGGLE & PROFILE DROPDOWN INTERACTION */
+        /* SIDEBAR TOGGLE & PROFILE DROPDOWN */
         sidebarToggle.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
         });
