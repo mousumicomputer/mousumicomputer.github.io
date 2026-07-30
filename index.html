@@ -1265,11 +1265,11 @@
             border-bottom-color: rgba(255,255,255,0.05);
         }
 
-        /* PRINT MEDIA STYLES - A4 LANDSCAPE EXACT 1 PAGE FIT */
+        /* PRINT MEDIA STYLES - CUSTOMER STATEMENT & DAILY CLOSING REPORT */
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 8mm 10mm;
+                margin: 10mm;
             }
             html, body {
                 height: 100%;
@@ -1280,10 +1280,11 @@
             body * {
                 visibility: hidden;
             }
-            #printable-closing-report, #printable-closing-report *, #printable-customer-ledger, #printable-customer-ledger * {
+            #printable-closing-report, #printable-closing-report *,
+            #printable-statement-area, #printable-statement-area * {
                 visibility: visible;
             }
-            #printable-closing-report, #printable-customer-ledger {
+            #printable-closing-report, #printable-statement-area {
                 position: absolute;
                 left: 0;
                 top: 0;
@@ -1432,10 +1433,10 @@
                         </a>
                     </li>
 
-                    <!-- NEW CUSTOMER LEDGER MODULE MENU ITEM -->
+                    <!-- NEW CUSTOMER LEDGER MANAGEMENT MODULE -->
                     <li class="menu-item" id="menu-customer-ledger">
                         <a onclick="switchMainTab('customer-ledger')">
-                            <span class="menu-link-inner"><i class="fa-solid fa-users"></i> <span>Customer Ledger</span></span>
+                            <span class="menu-link-inner"><i class="fa-solid fa-users-between-lines"></i> <span>Customer Ledger</span></span>
                         </a>
                     </li>
 
@@ -1553,157 +1554,152 @@
                     </div>
                 </div>
 
-                <!-- ==================== NEW MODULE VIEW: CUSTOMER LEDGER ==================== -->
+                <!-- ==================== NEW MODULE VIEW: CUSTOMER LEDGER MANAGEMENT ==================== -->
                 <div class="view-panel" id="customer-ledger-view">
-                    <!-- CUSTOMER MANAGEMENT / ENTRY SECTION -->
+                    <!-- CREATE / EDIT CUSTOMER FORM -->
                     <div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px;">
                         <div class="erp-form-header">
-                            <span><i class="fa-solid fa-user-plus" style="color: #00a8ef;"></i> Customer Master & Transaction Entry</span>
-                            <button class="btn-action btn-edit" onclick="resetCustomerForm()" style="padding: 6px 14px;"><i class="fa-solid fa-rotate-left"></i> New / Reset</button>
+                            <span id="customerFormTitle"><i class="fa-solid fa-user-plus" style="color: #00a8ef;"></i> Add New Customer</span>
                         </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                            <!-- CUSTOMER MASTER FORM -->
-                            <form id="customerMasterForm" style="background: #f8fafc; padding: 16px; border-radius: 10px; border: 1px solid var(--border-color);">
-                                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 12px; color: var(--primary-dark);"><i class="fa-solid fa-address-card"></i> Add / Edit Customer Profile</h4>
-                                <input type="hidden" id="custMasterId" value="" />
-                                
-                                <div class="form-group" style="margin-bottom: 10px;">
-                                    <label>Customer Name *</label>
-                                    <input type="text" id="custNameInput" placeholder="Full Customer Name" required style="padding: 8px 12px;" />
-                                </div>
-                                <div class="form-group" style="margin-bottom: 10px;">
-                                    <label>Mobile Number *</label>
-                                    <input type="text" id="custMobileInput" placeholder="01700000000" required style="padding: 8px 12px;" />
-                                </div>
-                                <div class="form-group" style="margin-bottom: 10px;">
-                                    <label>Address (Optional)</label>
-                                    <input type="text" id="custAddressInput" placeholder="Address / Location" style="padding: 8px 12px;" />
-                                </div>
-                                <div class="form-group" style="margin-bottom: 10px;">
-                                    <label>Opening Balance (Optional)</label>
-                                    <input type="number" step="any" id="custOpeningBalInput" placeholder="0.00" style="padding: 8px 12px;" />
-                                </div>
-                                <div class="form-group" style="margin-bottom: 14px;">
-                                    <label>Status</label>
-                                    <select id="custStatusSelect" style="padding: 8px 12px;">
-                                        <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn-submit" style="padding: 10px; font-size: 0.9rem;"><i class="fa-solid fa-floppy-disk"></i> Save Customer</button>
-                            </form>
-
-                            <!-- NEW TRANSACTION ENTRY FORM -->
-                            <form id="custTxnForm" style="background: #f8fafc; padding: 16px; border-radius: 10px; border: 1px solid var(--border-color);">
-                                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 12px; color: var(--primary-dark);"><i class="fa-solid fa-money-bill-transfer"></i> Record Customer Transaction</h4>
-                                
-                                <div class="form-group" style="margin-bottom: 10px;">
-                                    <label>Select Customer *</label>
-                                    <select id="custTxnSelect" required style="padding: 8px 12px;">
-                                        <!-- Dynamic Options -->
-                                    </select>
-                                </div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                                    <div class="form-group" style="margin-bottom: 0;">
-                                        <label>Date *</label>
-                                        <input type="date" id="custTxnDate" required style="padding: 8px 12px;" />
-                                    </div>
-                                    <div class="form-group" style="margin-bottom: 0;">
-                                        <label>Time *</label>
-                                        <input type="time" id="custTxnTime" required style="padding: 8px 12px;" />
-                                    </div>
-                                </div>
-                                <div class="form-group" style="margin-bottom: 10px;">
-                                    <label>Transaction Type *</label>
-                                    <select id="custTxnType" required style="padding: 8px 12px;">
-                                        <option value="debit">Debit (Customer purchased on credit / Due Increase)</option>
-                                        <option value="credit">Credit (Customer paid / Due Decrease)</option>
-                                    </select>
-                                </div>
-                                <div class="form-group" style="margin-bottom: 10px;">
-                                    <label>Amount (৳) *</label>
-                                    <input type="number" step="any" id="custTxnAmount" placeholder="0.00" required style="padding: 8px 12px;" />
-                                </div>
-                                <div class="form-group" style="margin-bottom: 14px;">
-                                    <label>Description / Particulars</label>
-                                    <input type="text" id="custTxnDesc" placeholder="e.g. Card Purchase, Due Payment" style="padding: 8px 12px;" />
-                                </div>
-                                <button type="submit" class="btn-submit" style="padding: 10px; font-size: 0.9rem; background: #10b981;"><i class="fa-solid fa-plus-circle"></i> Save Transaction</button>
-                            </form>
-                        </div>
+                        <form id="customerMgmtForm" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                            <input type="hidden" id="custEditId" value="" />
+                            <div>
+                                <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Customer Name</label>
+                                <input type="text" id="custName" placeholder="Full Name" required style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            </div>
+                            <div>
+                                <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Phone Number</label>
+                                <input type="text" id="custPhone" placeholder="01700000000" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            </div>
+                            <div>
+                                <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Address</label>
+                                <input type="text" id="custAddress" placeholder="Address Details" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            </div>
+                            <div>
+                                <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Opening Balance (৳)</label>
+                                <input type="number" step="any" id="custOpeningBal" placeholder="0.00" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            </div>
+                            <div>
+                                <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Status</label>
+                                <select id="custStatus" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;">
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            </div>
+                            <div style="grid-column: 1 / -1; display:flex; justify-content: flex-end; gap:10px; margin-top:5px;">
+                                <button type="button" class="btn-secondary" onclick="resetCustomerForm()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                                <button type="submit" class="btn-submit" style="width:auto; padding: 10px 24px;"><i class="fa-solid fa-floppy-disk"></i> Save Customer</button>
+                            </div>
+                        </form>
                     </div>
 
-                    <!-- CUSTOMER LIST & SEARCH SECTION -->
+                    <!-- TRANSACTION ENTRY FORM -->
                     <div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px;">
                         <div class="erp-form-header">
-                            <span><i class="fa-solid fa-list-check" style="color: #00a8ef;"></i> Customer Directory & Outstanding Dues</span>
+                            <span><i class="fa-solid fa-money-bill-transfer" style="color: #10b981;"></i> New Transaction Entry</span>
                         </div>
+                        <form id="transactionEntryForm" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                            <div>
+                                <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Customer</label>
+                                <select id="txCustSelect" required style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;"></select>
+                            </div>
+                            <div>
+                                <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Transaction Type</label>
+                                <select id="txType" required style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" onchange="handleTxTypeChange()">
+                                    <option value="Debit">Debit (+ Due / Sales)</option>
+                                    <option value="Credit">Credit (- Payment Received)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Debit Amount (৳)</label>
+                                <input type="number" step="any" id="txDebit" placeholder="0.00" value="0" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            </div>
+                            <div>
+                                <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Credit Amount (৳)</label>
+                                <input type="number" step="any" id="txCredit" placeholder="0.00" value="0" disabled style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px; background:#f3f4f6;" />
+                            </div>
+                            <div>
+                                <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Date</label>
+                                <input type="date" id="txDate" required style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            </div>
+                            <div>
+                                <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Time</label>
+                                <input type="time" id="txTime" required style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            </div>
+                            <div style="grid-column: 1 / -1;">
+                                <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Description / Particulars</label>
+                                <input type="text" id="txDescription" placeholder="Notes, Item Details or Receipt info..." style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            </div>
+                            <div style="grid-column: 1 / -1; text-align: right;">
+                                <button type="submit" class="btn-submit" style="width:auto; padding: 10px 28px; background:#10b981; display:inline-flex;"><i class="fa-solid fa-plus-circle"></i> Save Transaction</button>
+                            </div>
+                        </form>
+                    </div>
 
-                        <!-- SEARCH & FILTER BAR -->
+                    <!-- CUSTOMER SEARCH & MANAGEMENT TABLE -->
+                    <div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px;">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-address-book" style="color: #00a8ef;"></i> Customer Directory</span>
+                        </div>
                         <div class="dcr-filter-bar">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <label><i class="fa-solid fa-magnifying-glass"></i> Customer Search:</label>
-                                <input type="text" id="custSearchName" class="dcr-filter-input" placeholder="Search Name..." oninput="renderCustomerListTable()">
+                            <div style="flex:1; min-width: 200px;">
+                                <label><i class="fa-solid fa-magnifying-glass"></i> Search Customers:</label>
+                                <input type="text" id="custSearchInput" class="dcr-filter-input" placeholder="Search by Name, Phone, or ID..." oninput="renderCustomerListTable()" style="width:100%;">
                             </div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <label><i class="fa-solid fa-phone"></i> Mobile Search:</label>
-                                <input type="text" id="custSearchMobile" class="dcr-filter-input" placeholder="Search Mobile..." oninput="renderCustomerListTable()">
-                            </div>
-                            <button class="dcr-btn-reset" onclick="resetCustSearch()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
                         </div>
-
                         <div class="table-container">
                             <table>
                                 <thead>
                                     <tr>
                                         <th>Customer ID</th>
-                                        <th>Customer Name</th>
-                                        <th>Mobile</th>
+                                        <th>Name</th>
+                                        <th>Phone</th>
+                                        <th>Address</th>
+                                        <th>Opening Bal</th>
                                         <th>Current Due</th>
-                                        <th>Last Transaction Date</th>
                                         <th>Status</th>
                                         <th style="text-align: center;">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="customerListTableBody">
-                                    <!-- Dynamic Rows -->
+                                <tbody id="customerTableBody">
+                                    <tr><td colspan="8" style="text-align: center; color: #9ca3af;">No customers registered yet.</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <!-- SINGLE CUSTOMER LEDGER DISPLAY & PDF PRINT CARD -->
-                    <div id="customerLedgerDisplayCard" class="erp-form-card" style="max-width: 100%; display: none; background: #ffffff; padding: 20px;">
-                        <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <span style="font-size: 0.9rem; font-weight: 700; color: var(--primary-dark);"><i class="fa-solid fa-book-open" style="color: #00a8ef;"></i> Viewing Customer Statement</span>
-                            <div style="display: flex; gap: 10px;">
-                                <button class="btn-action btn-edit" onclick="printCustomerLedgerPDF()" style="padding: 8px 16px; font-size: 0.85rem;"><i class="fa-solid fa-file-pdf"></i> Download PDF / Print</button>
-                                <button class="btn-action btn-toggle" onclick="exportCustomerLedgerExcel()" style="padding: 8px 16px; font-size: 0.85rem; background: #10b981; color: #fff;"><i class="fa-solid fa-file-excel"></i> Export Excel (.xlsx)</button>
+                    <!-- CUSTOMER STATEMENT VIEW & REPORTS -->
+                    <div id="customerStatementCard" class="erp-form-card" style="max-width: 100%; display: none;">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-file-invoice" style="color: #00a8ef;"></i> Customer Statement & Ledger</span>
+                            <div class="no-print" style="display:flex; gap:8px;">
+                                <button class="btn-action btn-edit" onclick="printCustomerStatementPDF()"><i class="fa-solid fa-print"></i> Print / PDF</button>
+                                <button class="btn-action btn-toggle" onclick="exportCustomerStatementExcel()" style="background:#10b981; color:#fff;"><i class="fa-solid fa-file-excel"></i> Excel</button>
                             </div>
                         </div>
 
-                        <!-- DATE RANGE FILTER FOR INDIVIDUAL LEDGER VIEW -->
-                        <div class="dcr-filter-bar no-print" style="margin-bottom: 15px;">
+                        <!-- STATEMENT SEARCH / DATE FILTER -->
+                        <div class="dcr-filter-bar no-print">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <label><i class="fa-solid fa-calendar-day"></i> From Date:</label>
-                                <input type="date" id="custLedgerFromDate" class="dcr-filter-input">
+                                <label>From Date:</label>
+                                <input type="date" id="stmtFromDate" class="dcr-filter-input">
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label>To Date:</label>
-                                <input type="date" id="custLedgerToDate" class="dcr-filter-input">
+                                <input type="date" id="stmtToDate" class="dcr-filter-input">
                             </div>
-                            <button class="dcr-btn-filter" onclick="filterCustomerLedgerByDate()"><i class="fa-solid fa-filter"></i> Apply Filter</button>
-                            <button class="dcr-btn-reset" onclick="resetCustomerLedgerDateFilter()"><i class="fa-solid fa-rotate-left"></i> Reset Filter</button>
+                            <button class="dcr-btn-filter" onclick="filterCustomerStatement()"><i class="fa-solid fa-filter"></i> Apply Filter</button>
+                            <button class="dcr-btn-reset" onclick="resetCustomerStatementFilter()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
                         </div>
 
-                        <!-- PRINTABLE A4 PORTRAIT CONTAINER -->
-                        <div id="printable-customer-ledger" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
-                            <!-- Dynamic Content Rendered Here -->
+                        <!-- PRINTABLE STATEMENT AREA -->
+                        <div id="printable-statement-area">
+                            <!-- Dynamic Content Populated from JS -->
                         </div>
                     </div>
                 </div>
 
-                <!-- ==================== VIEW: DAILY CLOSING REPORT ==================== -->
+                <!-- ==================== VIEW VIEW: DAILY CLOSING REPORT ==================== -->
                 <div class="view-panel" id="daily-closing-view">
                     <!-- TOP GENERATE CLOSING HEADER -->
                     <div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px;">
@@ -1724,7 +1720,6 @@
                             <span><i class="fa-solid fa-clock-rotate-left" style="color: #00a8ef;"></i> Daily Closing Report History</span>
                         </div>
 
-                        <!-- DATE RANGE FILTER & QUICK SEARCH BAR -->
                         <div class="dcr-filter-bar">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label><i class="fa-solid fa-calendar-day"></i> From:</label>
@@ -1743,7 +1738,6 @@
                             </div>
                         </div>
 
-                        <!-- HISTORY TABLE -->
                         <div class="table-container">
                             <table>
                                 <thead>
@@ -1772,7 +1766,6 @@
                             </div>
                         </div>
 
-                        <!-- PRINTABLE LANDSCAPE A4 CONTENT AREA -->
                         <div id="printable-closing-report" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 15px;">
                             <!-- Dynamic Printable Snapshot Content Populated via JS -->
                         </div>
@@ -2235,6 +2228,11 @@
         let profileSettings = {};
         let currentActiveCatId = null;
 
+        /* CUSTOMER LEDGER MANAGEMENT DATA STORE */
+        let customers = [];
+        let customerTransactions = [];
+        let activeViewingCustomerId = null;
+
         /* CASH INVENTORY DATA STORE */
         let cashQuantities = { 1000: 0, 500: 0, 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 2: 0, 1: 0 };
         let cashOthersAmount = 0;
@@ -2244,11 +2242,6 @@
         /* DAILY CLOSING REPORTS STORE */
         let dailyClosingReports = [];
         let activeViewingReport = null;
-
-        /* CUSTOMER LEDGER DATA STORES */
-        let customers = []; // { id, name, mobile, address, openingBalance, status }
-        let customerTransactions = []; // { id, custId, date, time, description, type, amount, previousBalance, runningBalance, createdAt }
-        let activeViewingCustomer = null;
 
         const DEFAULT_CATEGORIES = [
             { id: 'cat_1', name: 'Personal Accounts', order: 1, enabled: true },
@@ -2408,6 +2401,29 @@
         async function initRealtimeSync() {
             showLoader("Synchronizing Firebase...");
             const erpRef = ref(db, 'erp');
+            const custRef = ref(db, 'customers');
+            const txRef = ref(db, 'transactions');
+
+            // SUBSCRIBE TO CUSTOMERS COLLECTION
+            onValue(custRef, (snapshot) => {
+                const data = snapshot.val();
+                customers = data ? toArray(data) : [];
+                populateCustomerSelectDropdowns();
+                updateDashboardCards();
+                if (document.getElementById('customer-ledger-view').classList.contains('active')) {
+                    renderCustomerListTable();
+                }
+            });
+
+            // SUBSCRIBE TO TRANSACTIONS COLLECTION
+            onValue(txRef, (snapshot) => {
+                const data = snapshot.val();
+                customerTransactions = data ? toArray(data) : [];
+                updateDashboardCards();
+                if (activeViewingCustomerId && document.getElementById('customer-ledger-view').classList.contains('active')) {
+                    renderCustomerStatement(activeViewingCustomerId);
+                }
+            });
             
             try {
                 const initialSnapshot = await get(erpRef);
@@ -2443,10 +2459,6 @@
                     if (data.dailyClosingReports) {
                         dailyClosingReports = toArray(data.dailyClosingReports);
                     }
-
-                    // CUSTOMER LEDGER DATA RETRIEVAL
-                    if (data.customers) customers = toArray(data.customers);
-                    if (data.customerTransactions) customerTransactions = toArray(data.customerTransactions);
                 } else {
                     categories = DEFAULT_CATEGORIES;
                     accounts = DEFAULT_ACCOUNTS;
@@ -2500,10 +2512,6 @@
                 if (data.cashHistory) cashHistoryLogs = toArray(data.cashHistory);
                 if (data.dailyClosingReports) dailyClosingReports = toArray(data.dailyClosingReports);
 
-                // CUSTOMER LEDGER REALTIME SYNC
-                if (data.customers) customers = toArray(data.customers);
-                if (data.customerTransactions) customerTransactions = toArray(data.customerTransactions);
-
                 const cardAcc = getCardInventoryAccount();
                 balanceStore[cardAcc.id] = calculateGrandCardInventoryValue();
 
@@ -2514,13 +2522,7 @@
                 const activeView = document.querySelector('.view-panel.active');
                 if (activeView) {
                     const activeId = activeView.id;
-                    if (activeId === 'customer-ledger-view') {
-                        renderCustomerSelectDropdown();
-                        renderCustomerListTable();
-                        if (activeViewingCustomer) {
-                            viewCustomerLedger(activeViewingCustomer.id);
-                        }
-                    } else if (activeId === 'daily-closing-view') {
+                    if (activeId === 'daily-closing-view') {
                         renderDailyClosingHistoryTable();
                     } else if (activeId === 'cash-inventory-view') {
                         if (!document.activeElement || !document.activeElement.classList.contains('inv-qty-input')) {
@@ -2569,31 +2571,28 @@
             return total;
         }
 
-        /* CUSTOMER BALANCE CALCULATION HELPER */
-        function getCustomerCurrentDue(custId) {
-            const cust = customers.find(c => c.id === custId);
+        /* CUSTOMER DUES HELPER FUNCTIONS */
+        function calculateCustomerCurrentDue(customerId) {
+            const cust = customers.find(c => c.customerId === customerId);
             if (!cust) return 0;
-
-            const txns = toArray(customerTransactions)
-                .filter(t => t.custId === custId)
-                .sort((a, b) => new Date(a.createdAt || `${a.date} ${a.time}`) - new Date(b.createdAt || `${b.date} ${b.time}`));
-
-            if (txns.length > 0) {
-                return txns[txns.length - 1].runningBalance;
+            const custTxs = customerTransactions.filter(t => t.customerId === customerId);
+            if (custTxs.length === 0) {
+                return parseFloat(cust.openingBalance) || 0;
             }
-            return parseFloat(cust.openingBalance) || 0;
+            // Sort ascending by creation date to get latest running balance
+            custTxs.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+            return custTxs[custTxs.length - 1].runningBalance;
         }
 
-        function calculateTotalActiveCustomerDue() {
+        function calculateTotalCustomerDue() {
             let total = 0;
-            const activeCusts = toArray(customers).filter(c => c.status === 'active');
-            activeCusts.forEach(c => {
-                total += getCustomerCurrentDue(c.id);
+            customers.filter(c => c.status === 'Active').forEach(c => {
+                total += calculateCustomerCurrentDue(c.customerId);
             });
             return total;
         }
 
-        /* ==================== DASHBOARD SUMMARY CARDS ==================== */
+        /* ==================== DASHBOARD CARDS & SUMMARY ==================== */
         function updateDashboardCards() {
             const grid = document.getElementById('dashboardSummaryGrid');
             if (!grid) return;
@@ -2657,21 +2656,21 @@
             `;
             grid.insertAdjacentHTML('beforeend', cardInventoryHtml);
 
-            // 3. NEW DASHBOARD CARD: Customer Due (For information only, Net Balance calculation strictly unchanged)
-            const totalCustDue = calculateTotalActiveCustomerDue();
-            const custDueCardHtml = `
-                <div class="fintech-card" style="border-left-color: #f97316;">
-                    <div class="card-icon" style="background: #fff7ed; color: #f97316;"><i class="fa-solid fa-users"></i></div>
+            // 3. NEW DASHBOARD CARD: CUSTOMER DUE
+            const customerDueTotal = calculateTotalCustomerDue();
+            const customerDueCardHtml = `
+                <div class="fintech-card">
+                    <div class="card-icon" style="background:#fff1f2; color:#e11d48;"><i class="fa-solid fa-users"></i></div>
                     <h4>Customer Due</h4>
-                    <div class="amount" style="color: #ea580c;">৳ ${totalCustDue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                    <div class="amount" style="color:#e11d48;">৳ ${customerDueTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                 </div>
             `;
-            grid.insertAdjacentHTML('beforeend', custDueCardHtml);
+            grid.insertAdjacentHTML('beforeend', customerDueCardHtml);
 
-            // Physical Cash Total added to Total Net Balance Calculation
+            // Add Physical Cash Total to Total Net Balance Calculation
             grandTotalBalance += cashTotal;
 
-            // Display Total Net Balance (Calculation remains completely unmodified per instructions)
+            // Display Total Net Balance
             const totalNetBalElement = document.getElementById('totalAllBalance');
             if (totalNetBalElement) {
                 totalNetBalElement.innerText = `৳ ${grandTotalBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -2746,8 +2745,9 @@
                 showLoader("Loading Customer Ledger...");
                 document.getElementById('customer-ledger-view').classList.add('active');
                 document.getElementById('menu-customer-ledger').classList.add('active');
-                document.getElementById('top-title').innerText = "Customer Ledger & Credit Management";
-                initCustomerLedgerView();
+                document.getElementById('top-title').innerText = "Customer Ledger Management";
+                initCustomerFormDefaults();
+                renderCustomerListTable();
                 hideLoader();
             } else if (tabName === 'daily-closing') {
                 showLoader("Loading Daily Closing History...");
@@ -2803,73 +2803,76 @@
             }
         };
 
-        /* ==================== NEW MODULE: CUSTOMER LEDGER LOGIC ==================== */
+        /* ==================== CUSTOMER LEDGER MANAGEMENT MODULE ==================== */
+        function initCustomerFormDefaults() {
+            const today = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0].substring(0,5);
+            document.getElementById('txDate').value = today;
+            document.getElementById('txTime').value = timeStr;
+        }
 
-        function initCustomerLedgerView() {
-            const today = new Date();
-            document.getElementById('custTxnDate').value = today.toISOString().split('T')[0];
-            document.getElementById('custTxnTime').value = today.toTimeString().split(' ')[0].substring(0, 5);
-            renderCustomerSelectDropdown();
-            renderCustomerListTable();
+        function populateCustomerSelectDropdowns() {
+            const select = document.getElementById('txCustSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- Select Customer --</option>';
+            customers.filter(c => c.status === 'Active').forEach(c => {
+                select.insertAdjacentHTML('beforeend', `<option value="${c.customerId}">${c.name} (${c.phone || c.customerId})</option>`);
+            });
         }
 
         window.resetCustomerForm = function() {
-            document.getElementById('custMasterId').value = '';
-            document.getElementById('custNameInput').value = '';
-            document.getElementById('custMobileInput').value = '';
-            document.getElementById('custAddressInput').value = '';
-            document.getElementById('custOpeningBalInput').value = '';
-            document.getElementById('custStatusSelect').value = 'active';
+            document.getElementById('custEditId').value = '';
+            document.getElementById('custName').value = '';
+            document.getElementById('custPhone').value = '';
+            document.getElementById('custAddress').value = '';
+            document.getElementById('custOpeningBal').value = '';
+            document.getElementById('custStatus').value = 'Active';
+            document.getElementById('customerFormTitle').innerHTML = `<i class="fa-solid fa-user-plus" style="color: #00a8ef;"></i> Add New Customer`;
         };
 
-        // SAVE / RENAME CUSTOMER
-        document.getElementById('customerMasterForm').addEventListener('submit', async (e) => {
+        document.getElementById('customerMgmtForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const idInput = document.getElementById('custMasterId').value;
-            const name = document.getElementById('custNameInput').value.trim();
-            const mobile = document.getElementById('custMobileInput').value.trim();
-            const address = document.getElementById('custAddressInput').value.trim();
-            const openingBal = parseFloat(document.getElementById('custOpeningBalInput').value) || 0;
-            const status = document.getElementById('custStatusSelect').value;
+            const editId = document.getElementById('custEditId').value;
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+            const openingBalance = parseFloat(document.getElementById('custOpeningBal').value) || 0;
+            const status = document.getElementById('custStatus').value;
+            const nowIso = new Date().toISOString();
 
-            if (!name || !mobile) {
-                showToast("Name and Mobile are required.", "warning");
-                return;
-            }
-
-            showLoader("Saving Customer Profile...");
-
-            if (idInput) {
-                // Edit existing customer (Customer ID is permanent, Name/Mobile can be renamed without losing history)
-                const cust = customers.find(c => c.id === idInput);
-                if (cust) {
-                    cust.name = name;
-                    cust.mobile = mobile;
-                    cust.address = address;
-                    cust.openingBalance = openingBal;
-                    cust.status = status;
+            if (editId) {
+                // UPDATE EXISTING CUSTOMER (Name renaming allowed, customerId permanent)
+                const custIndex = customers.findIndex(c => c.customerId === editId);
+                if (custIndex !== -1) {
+                    customers[custIndex].name = name;
+                    customers[custIndex].phone = phone;
+                    customers[custIndex].address = address;
+                    customers[custIndex].openingBalance = openingBalance;
+                    customers[custIndex].status = status;
+                    customers[custIndex].updatedAt = nowIso;
                 }
             } else {
-                // New Customer Creation with Permanent ID
-                const newId = 'cust_' + Date.now();
-                customers.push({
-                    id: newId,
-                    name: name,
-                    mobile: mobile,
-                    address: address,
-                    openingBalance: openingBal,
-                    status: status,
-                    createdAt: new Date().toISOString()
-                });
+                // CREATE NEW CUSTOMER
+                const newCustomerId = 'CUST-' + Date.now().toString().slice(-6);
+                const newCustomer = {
+                    customerId: newCustomerId,
+                    name,
+                    phone,
+                    address,
+                    openingBalance,
+                    status,
+                    createdAt: nowIso,
+                    updatedAt: nowIso
+                };
+                customers.push(newCustomer);
             }
 
+            showLoader("Saving Customer Data...");
             try {
-                await writeToFirebase('erp/customers', customers);
+                await writeToFirebase('customers', customers);
                 showToast("Customer saved successfully!", "success");
                 resetCustomerForm();
-                renderCustomerSelectDropdown();
-                renderCustomerListTable();
-                updateDashboardCards();
             } catch (err) {
                 console.error("Save Customer Error:", err);
             } finally {
@@ -2877,71 +2880,109 @@
             }
         });
 
-        function renderCustomerSelectDropdown() {
-            const select = document.getElementById('custTxnSelect');
-            if (!select) return;
-            select.innerHTML = '<option value="">-- Choose Customer --</option>';
+        window.editCustomer = function(customerId) {
+            const cust = customers.find(c => c.customerId === customerId);
+            if (!cust) return;
+            document.getElementById('custEditId').value = cust.customerId;
+            document.getElementById('custName').value = cust.name;
+            document.getElementById('custPhone').value = cust.phone || '';
+            document.getElementById('custAddress').value = cust.address || '';
+            document.getElementById('custOpeningBal').value = cust.openingBalance || 0;
+            document.getElementById('custStatus').value = cust.status || 'Active';
+            document.getElementById('customerFormTitle').innerHTML = `<i class="fa-solid fa-user-pen" style="color: #00a8ef;"></i> Edit Customer (${cust.customerId})`;
+        };
 
-            const activeCustomers = toArray(customers).filter(c => c.status === 'active');
-            activeCustomers.forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c.id;
-                opt.innerText = `${c.name} (${c.mobile})`;
-                select.appendChild(opt);
-            });
-        }
+        window.toggleCustomerStatus = async function(customerId) {
+            const custIndex = customers.findIndex(c => c.customerId === customerId);
+            if (custIndex === -1) return;
+            const currentStatus = customers[custIndex].status;
+            customers[custIndex].status = currentStatus === 'Active' ? 'Inactive' : 'Active';
+            customers[custIndex].updatedAt = new Date().toISOString();
 
-        // SAVE TRANSACTION ENTRY (DEBIT / CREDIT)
-        document.getElementById('custTxnForm').addEventListener('submit', async (e) => {
+            showLoader("Updating Customer Status...");
+            try {
+                await writeToFirebase('customers', customers);
+                showToast(`Customer marked as ${customers[custIndex].status}`, "info");
+            } catch (err) {
+                console.error("Toggle Status Error:", err);
+            } finally {
+                hideLoader();
+            }
+        };
+
+        window.handleTxTypeChange = function() {
+            const type = document.getElementById('txType').value;
+            const debitInput = document.getElementById('txDebit');
+            const creditInput = document.getElementById('txCredit');
+            if (type === 'Debit') {
+                debitInput.disabled = false;
+                debitInput.style.background = '#ffffff';
+                creditInput.disabled = true;
+                creditInput.value = 0;
+                creditInput.style.background = '#f3f4f6';
+            } else {
+                creditInput.disabled = false;
+                creditInput.style.background = '#ffffff';
+                debitInput.disabled = true;
+                debitInput.value = 0;
+                debitInput.style.background = '#f3f4f6';
+            }
+        };
+
+        document.getElementById('transactionEntryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const custId = document.getElementById('custTxnSelect').value;
-            const date = document.getElementById('custTxnDate').value;
-            const time = document.getElementById('custTxnTime').value;
-            const type = document.getElementById('custTxnType').value;
-            const amount = parseFloat(document.getElementById('custTxnAmount').value) || 0;
-            const description = document.getElementById('custTxnDesc').value.trim();
-
-            if (!custId || amount <= 0) {
-                showToast("Please select a customer and enter a valid amount.", "warning");
+            const customerId = document.getElementById('txCustSelect').value;
+            if (!customerId) {
+                showToast("Please select a customer", "warning");
                 return;
             }
 
-            showLoader("Recording Ledger Entry...");
+            const type = document.getElementById('txType').value;
+            const debit = parseFloat(document.getElementById('txDebit').value) || 0;
+            const credit = parseFloat(document.getElementById('txCredit').value) || 0;
+            const date = document.getElementById('txDate').value;
+            const time = document.getElementById('txTime').value;
+            const description = document.getElementById('txDescription').value.trim();
 
-            // Get previous balance from last transaction, or opening balance
-            const previousBalance = getCustomerCurrentDue(custId);
-            let runningBalance = previousBalance;
+            const cust = customers.find(c => c.customerId === customerId);
+            if (!cust) return;
 
-            if (type === 'debit') {
-                runningBalance = previousBalance + amount; // Debit increases Customer Due
-            } else {
-                runningBalance = previousBalance - amount; // Credit decreases Customer Due
+            // PREVIOUS RUNNING BALANCE CALCULATOR
+            const custTxs = customerTransactions.filter(t => t.customerId === customerId);
+            let prevRunningBalance = parseFloat(cust.openingBalance) || 0;
+            if (custTxs.length > 0) {
+                custTxs.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+                prevRunningBalance = custTxs[custTxs.length - 1].runningBalance;
             }
 
-            const newTxn = {
-                id: 'ctxn_' + Date.now(),
-                custId: custId,
+            // PERMANENT RUNNING BALANCE FORMULA: Previous Running Balance + Debit - Credit
+            const runningBalance = prevRunningBalance + debit - credit;
+
+            const newTxId = 'TXN-' + Date.now().toString().slice(-8);
+            const newTransaction = {
+                transactionId: newTxId,
+                customerId: customerId,
                 date: date,
                 time: time,
+                description: description || (type === 'Debit' ? 'Sales / Goods Issued' : 'Payment Received'),
                 type: type,
-                amount: amount,
-                description: description || (type === 'debit' ? 'Credit Purchase' : 'Payment Received'),
-                previousBalance: previousBalance,
+                debit: debit,
+                credit: credit,
                 runningBalance: runningBalance,
                 createdAt: new Date().toISOString()
             };
 
-            customerTransactions.push(newTxn);
+            customerTransactions.push(newTransaction);
 
+            showLoader("Processing Transaction...");
             try {
-                await writeToFirebase('erp/customerTransactions', customerTransactions);
-                showToast("Transaction saved to Customer Ledger!", "success");
-                document.getElementById('custTxnAmount').value = '';
-                document.getElementById('custTxnDesc').value = '';
-                renderCustomerListTable();
-                updateDashboardCards();
-                if (activeViewingCustomer && activeViewingCustomer.id === custId) {
-                    viewCustomerLedger(custId);
+                await writeToFirebase('transactions', customerTransactions);
+                showToast("Transaction saved permanently!", "success");
+                document.getElementById('txDescription').value = '';
+                document.getElementById('txDebit').value = 0;
+                document.getElementById('txCredit').value = 0;
+                if (activeViewingCustomerId === customerId) {
+                    renderCustomerStatement(customerId);
                 }
             } catch (err) {
                 console.error("Save Transaction Error:", err);
@@ -2950,260 +2991,173 @@
             }
         });
 
-        // RENDER CUSTOMER DIRECTORY LIST
-        window.renderCustomerListTable = function() {
-            const tbody = document.getElementById('customerListTableBody');
+        function renderCustomerListTable() {
+            const tbody = document.getElementById('customerTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
 
             let list = toArray(customers);
-
-            const nameQuery = document.getElementById('custSearchName')?.value.trim().toLowerCase();
-            const mobileQuery = document.getElementById('custSearchMobile')?.value.trim().toLowerCase();
-
-            if (nameQuery) {
-                list = list.filter(c => c.name.toLowerCase().includes(nameQuery));
-            }
-            if (mobileQuery) {
-                list = list.filter(c => c.mobile.toLowerCase().includes(mobileQuery));
+            const query = document.getElementById('custSearchInput')?.value.trim().toLowerCase();
+            if (query) {
+                list = list.filter(c => 
+                    (c.name && c.name.toLowerCase().includes(query)) ||
+                    (c.phone && c.phone.toLowerCase().includes(query)) ||
+                    (c.customerId && c.customerId.toLowerCase().includes(query))
+                );
             }
 
             if (list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #9ca3af;">No customers found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #9ca3af;">No customers found.</td></tr>`;
                 return;
             }
 
             list.forEach(c => {
-                const currentDue = getCustomerCurrentDue(c.id);
-
-                // Get last transaction date
-                const txns = toArray(customerTransactions).filter(t => t.custId === c.id);
-                let lastDate = '-';
-                if (txns.length > 0) {
-                    txns.sort((a,b) => new Date(b.createdAt || `${b.date} ${b.time}`) - new Date(a.createdAt || `${a.date} ${a.time}`));
-                    lastDate = txns[0].date;
-                }
-
-                const statusBadge = c.status === 'active' 
+                const currentDue = calculateCustomerCurrentDue(c.customerId);
+                const statusBadge = c.status === 'Active' 
                     ? `<span class="badge badge-success">Active</span>` 
                     : `<span class="badge badge-danger">Inactive</span>`;
 
                 const rowHtml = `
                     <tr>
-                        <td><code>${c.id}</code></td>
+                        <td><code>${c.customerId}</code></td>
                         <td><strong>${c.name}</strong></td>
-                        <td>${c.mobile}</td>
-                        <td><strong style="color: ${currentDue > 0 ? '#e11d48' : '#10b981'};">৳ ${currentDue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
-                        <td>${lastDate}</td>
+                        <td>${c.phone || '-'}</td>
+                        <td>${c.address || '-'}</td>
+                        <td>৳ ${(c.openingBalance || 0).toFixed(2)}</td>
+                        <td><strong style="color:${currentDue > 0 ? '#e11d48' : '#059669'};">৳ ${currentDue.toFixed(2)}</strong></td>
                         <td>${statusBadge}</td>
                         <td style="text-align: center;">
-                            <button class="btn-action btn-edit" onclick="viewCustomerLedger('${c.id}')"><i class="fa-solid fa-book"></i> View Ledger</button>
-                            <button class="btn-action btn-toggle" onclick="editCustomerProfile('${c.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
-                            <button class="btn-action btn-delete" onclick="toggleCustomerStatus('${c.id}')">${c.status === 'active' ? 'Disable' : 'Enable'}</button>
+                            <button class="btn-action btn-edit" onclick="viewCustomerStatement('${c.customerId}')"><i class="fa-solid fa-receipt"></i> Statement</button>
+                            <button class="btn-action btn-toggle" onclick="editCustomer('${c.customerId}')"><i class="fa-solid fa-pen"></i> Edit</button>
+                            <button class="btn-action btn-delete" onclick="toggleCustomerStatus('${c.customerId}')"><i class="fa-solid fa-power-off"></i> ${c.status === 'Active' ? 'Disable' : 'Enable'}</button>
                         </td>
                     </tr>
                 `;
                 tbody.insertAdjacentHTML('beforeend', rowHtml);
             });
-        };
-
-        window.resetCustSearch = function() {
-            document.getElementById('custSearchName').value = '';
-            document.getElementById('custSearchMobile').value = '';
-            renderCustomerListTable();
-        };
-
-        window.editCustomerProfile = function(custId) {
-            const cust = customers.find(c => c.id === custId);
-            if (!cust) return;
-
-            document.getElementById('custMasterId').value = cust.id;
-            document.getElementById('custNameInput').value = cust.name;
-            document.getElementById('custMobileInput').value = cust.mobile;
-            document.getElementById('custAddressInput').value = cust.address || '';
-            document.getElementById('custOpeningBalInput').value = cust.openingBalance || 0;
-            document.getElementById('custStatusSelect').value = cust.status || 'active';
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        // DELETE SAFETY: Disable/Inactive only. Never delete customer or erase transactions.
-        window.toggleCustomerStatus = async function(custId) {
-            const cust = customers.find(c => c.id === custId);
-            if (!cust) return;
-
-            const newStatus = cust.status === 'active' ? 'inactive' : 'active';
-            
-            showConfirmModal({
-                title: `${newStatus === 'inactive' ? 'Disable' : 'Enable'} Customer?`,
-                message: `Transaction history for ${cust.name} will be permanently preserved.`,
-                confirmText: newStatus === 'inactive' ? "Disable" : "Enable",
-                onConfirm: async () => {
-                    cust.status = newStatus;
-                    showLoader("Updating status...");
-                    try {
-                        await writeToFirebase('erp/customers', customers);
-                        showToast(`Customer is now ${newStatus}`, "info");
-                        renderCustomerSelectDropdown();
-                        renderCustomerListTable();
-                        updateDashboardCards();
-                    } catch (err) {
-                        console.error(err);
-                    } finally {
-                        hideLoader();
-                    }
-                }
-            });
-        };
-
-        // VIEW INDIVIDUAL CUSTOMER LEDGER
-        window.viewCustomerLedger = function(custId) {
-            const cust = customers.find(c => c.id === custId);
-            if (!cust) return;
-
-            activeViewingCustomer = cust;
-            const displayCard = document.getElementById('customerLedgerDisplayCard');
-            displayCard.style.display = 'block';
-
-            renderSingleCustomerLedgerContent();
-            displayCard.scrollIntoView({ behavior: 'smooth' });
-        };
-
-        window.filterCustomerLedgerByDate = function() {
-            renderSingleCustomerLedgerContent();
-        };
-
-        window.resetCustomerLedgerDateFilter = function() {
-            document.getElementById('custLedgerFromDate').value = '';
-            document.getElementById('custLedgerToDate').value = '';
-            renderSingleCustomerLedgerContent();
-        };
-
-        function renderSingleCustomerLedgerContent() {
-            if (!activeViewingCustomer) return;
-            const cust = activeViewingCustomer;
-            const container = document.getElementById('printable-customer-ledger');
-
-            let txns = toArray(customerTransactions).filter(t => t.custId === cust.id);
-
-            // Filter Date Range
-            const fromDate = document.getElementById('custLedgerFromDate')?.value;
-            const toDate = document.getElementById('custLedgerToDate')?.value;
-
-            if (fromDate) {
-                const fDate = new Date(fromDate);
-                fDate.setHours(0,0,0,0);
-                txns = txns.filter(t => new Date(t.date) >= fDate);
-            }
-            if (toDate) {
-                const tDate = new Date(toDate);
-                tDate.setHours(23,59,59,999);
-                txns = txns.filter(t => new Date(t.date) <= tDate);
-            }
-
-            // Newest transaction first
-            txns.sort((a,b) => new Date(b.createdAt || `${b.date} ${b.time}`) - new Date(a.createdAt || `${a.date} ${a.time}`));
-
-            const currentDue = getCustomerCurrentDue(cust.id);
-
-            let tableRows = txns.map(t => {
-                const debitVal = t.type === 'debit' ? `৳ ${t.amount.toFixed(2)}` : '-';
-                const creditVal = t.type === 'credit' ? `৳ ${t.amount.toFixed(2)}` : '-';
-                return `
-                    <tr>
-                        <td>${t.date}</td>
-                        <td>${t.time}</td>
-                        <td>${t.description}</td>
-                        <td style="color: #e11d48; font-weight: 600;">${debitVal}</td>
-                        <td style="color: #10b981; font-weight: 600;">${creditVal}</td>
-                        <td><strong>৳ ${t.runningBalance.toFixed(2)}</strong></td>
-                    </tr>
-                `;
-            }).join('');
-
-            if (txns.length === 0) {
-                tableRows = `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No transaction records found for this period.</td></tr>`;
-            }
-
-            const html = `
-                <!-- STATEMENT HEADER -->
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary-dark); padding-bottom: 12px; margin-bottom: 16px;">
-                    <div>
-                        <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-dark); margin:0;">MOUSUMI COMPUTER</h2>
-                        <p style="font-size: 0.82rem; color: #64748b; font-weight: 600;">CUSTOMER CREDIT LEDGER STATEMENT</p>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 1.1rem; font-weight: 800; color: #e11d48;">CURRENT DUE: ৳ ${currentDue.toFixed(2)}</div>
-                        <span style="font-size: 0.75rem; color: #64748b;">Status: <strong>${cust.status.toUpperCase()}</strong></span>
-                    </div>
-                </div>
-
-                <!-- CUSTOMER INFO CARD -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
-                    <div>
-                        <span style="font-size: 0.75rem; color: #64748b; font-weight: 700; display: block;">CUSTOMER NAME</span>
-                        <strong style="font-size: 0.95rem; color: var(--primary-dark);">${cust.name}</strong>
-                    </div>
-                    <div>
-                        <span style="font-size: 0.75rem; color: #64748b; font-weight: 700; display: block;">MOBILE NUMBER</span>
-                        <strong style="font-size: 0.95rem; color: var(--primary-dark);">${cust.mobile}</strong>
-                    </div>
-                    <div>
-                        <span style="font-size: 0.75rem; color: #64748b; font-weight: 700; display: block;">OPENING BALANCE / ADDRESS</span>
-                        <strong style="font-size: 0.9rem; color: var(--primary-dark);">৳ ${(cust.openingBalance || 0).toFixed(2)} | ${cust.address || 'N/A'}</strong>
-                    </div>
-                </div>
-
-                <!-- TRANSACTIONS LEDGER TABLE -->
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Time</th>
-                                <th>Description</th>
-                                <th>Debit (Purchased)</th>
-                                <th>Credit (Paid)</th>
-                                <th>Running Balance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${tableRows}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-
-            container.innerHTML = html;
         }
 
-        // PRINT / DOWNLOAD PDF FOR CUSTOMER LEDGER
-        window.printCustomerLedgerPDF = function() {
-            if (!activeViewingCustomer) return;
+        window.viewCustomerStatement = function(customerId) {
+            activeViewingCustomerId = customerId;
+            document.getElementById('customerStatementCard').style.display = 'block';
+            renderCustomerStatement(customerId);
+        };
+
+        window.filterCustomerStatement = function() {
+            if (activeViewingCustomerId) {
+                renderCustomerStatement(activeViewingCustomerId);
+            }
+        };
+
+        window.resetCustomerStatementFilter = function() {
+            document.getElementById('stmtFromDate').value = '';
+            document.getElementById('stmtToDate').value = '';
+            if (activeViewingCustomerId) {
+                renderCustomerStatement(activeViewingCustomerId);
+            }
+        };
+
+        function renderCustomerStatement(customerId) {
+            const cust = customers.find(c => c.customerId === customerId);
+            if (!cust) return;
+
+            let txs = customerTransactions.filter(t => t.customerId === customerId);
+            txs.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            const fromDate = document.getElementById('stmtFromDate')?.value;
+            const toDate = document.getElementById('stmtToDate')?.value;
+
+            if (fromDate) {
+                txs = txs.filter(t => t.date >= fromDate);
+            }
+            if (toDate) {
+                txs = txs.filter(t => t.date <= toDate);
+            }
+
+            const currentDue = calculateCustomerCurrentDue(customerId);
+
+            let rowsHtml = txs.map(t => `
+                <tr>
+                    <td>${t.date}</td>
+                    <td>${t.time}</td>
+                    <td>${t.description}</td>
+                    <td style="color:#e11d48;">${t.debit > 0 ? '৳ ' + t.debit.toFixed(2) : '-'}</td>
+                    <td style="color:#059669;">${t.credit > 0 ? '৳ ' + t.credit.toFixed(2) : '-'}</td>
+                    <td><strong>৳ ${t.runningBalance.toFixed(2)}</strong></td>
+                </tr>
+            `).join('');
+
+            if (txs.length === 0) {
+                rowsHtml = `<tr><td colspan="6" style="text-align:center; color:#9ca3af;">No transaction records found for the selected period.</td></tr>`;
+            }
+
+            const area = document.getElementById('printable-statement-area');
+            area.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--primary-dark); padding-bottom:10px; margin-bottom:15px;">
+                    <div>
+                        <h2 style="font-size:1.2rem; font-weight:800; color:var(--primary-dark);">MOUSUMI COMPUTER</h2>
+                        <p style="font-size:0.85rem; color:#6b7280;">CUSTOMER ACCOUNT STATEMENT</p>
+                    </div>
+                    <div style="text-align:right; font-size:0.85rem;">
+                        <div><strong>Customer Name:</strong> ${cust.name}</div>
+                        <div><strong>Customer ID:</strong> <code>${cust.customerId}</code></div>
+                        <div><strong>Phone:</strong> ${cust.phone || 'N/A'} | <strong>Address:</strong> ${cust.address || 'N/A'}</div>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px; background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0;">
+                    <div><strong>Opening Balance:</strong> ৳ ${(cust.openingBalance || 0).toFixed(2)}</div>
+                    <div style="text-align:right;"><strong>Current Outstanding Due:</strong> <span style="color:#e11d48; font-weight:800;">৳ ${currentDue.toFixed(2)}</span></div>
+                </div>
+
+                <table class="dcr-table" style="width:100%; font-size:0.85rem;">
+                    <thead>
+                        <tr style="background:#f1f5f9;">
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Description</th>
+                            <th>Debit (+ Sales)</th>
+                            <th>Credit (- Paid)</th>
+                            <th>Running Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        window.printCustomerStatementPDF = function() {
             window.print();
         };
 
-        // EXPORT REAL .XLSX FOR CUSTOMER LEDGER
-        window.exportCustomerLedgerExcel = function() {
-            if (!activeViewingCustomer) return;
-            const cust = activeViewingCustomer;
-            const txns = toArray(customerTransactions)
-                .filter(t => t.custId === cust.id)
-                .sort((a,b) => new Date(b.createdAt || `${b.date} ${b.time}`) - new Date(a.createdAt || `${a.date} ${a.time}`));
+        window.exportCustomerStatementExcel = function() {
+            const cust = customers.find(c => c.customerId === activeViewingCustomerId);
+            if (!cust) return;
 
-            const data = txns.map(t => ({
-                "Date": t.date,
-                "Time": t.time,
-                "Description": t.description,
-                "Debit": t.type === 'debit' ? t.amount : 0,
-                "Credit": t.type === 'credit' ? t.amount : 0,
-                "Running Balance": t.runningBalance
-            }));
+            const txs = customerTransactions.filter(t => t.customerId === activeViewingCustomerId);
+            txs.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
 
-            const worksheet = XLSX.utils.json_to_sheet(data);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Customer Ledger");
-            XLSX.writeFile(workbook, `Customer_Ledger_${cust.name.replace(/ /g, '_')}_${cust.id}.xlsx`);
+            const wb = XLSX.utils.book_new();
+            const data = [
+                ["MOUSUMI COMPUTER - CUSTOMER STATEMENT"],
+                ["Customer ID", cust.customerId],
+                ["Customer Name", cust.name],
+                ["Phone", cust.phone || 'N/A'],
+                ["Opening Balance", cust.openingBalance || 0],
+                ["Current Outstanding Due", calculateCustomerCurrentDue(cust.customerId)],
+                [""],
+                ["Date", "Time", "Description", "Debit", "Credit", "Running Balance"]
+            ];
+
+            txs.forEach(t => {
+                data.push([t.date, t.time, t.description, t.debit, t.credit, t.runningBalance]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, "Customer Statement");
+            XLSX.writeFile(wb, `Statement_${cust.name.replace(/\s+/g, '_')}.xlsx`);
         };
 
         /* ==================== DAILY CLOSING REPORT SNAPSHOT ENGINE ==================== */
@@ -3271,11 +3225,11 @@
                 };
             });
 
-            // 6. CUSTOMER DUE SNAPSHOT
-            const totalCustomerDueVal = calculateTotalActiveCustomerDue();
+            // 6. TOTAL CUSTOMER DUE (INCLUDED IN DAILY CLOSING REPORT)
+            const customerDueTotal = calculateTotalCustomerDue();
 
-            // ASSETS & LIABILITIES
-            let totalAssets = totalBankVal + totalPersonalVal + totalAgentVal + totalCardVal + totalCashVal;
+            // 7. ASSETS & LIABILITIES
+            let totalAssets = totalBankVal + totalPersonalVal + totalAgentVal + totalCardVal + totalCashVal + customerDueTotal;
             
             const knownCatIds = [bankCat.id, personalCat.id, agentCat.id];
             const otherAccs = toArray(accounts).filter(a => !knownCatIds.includes(a.catId) && a.enabled !== false && a.id !== getCardInventoryAccount().id);
@@ -3304,7 +3258,7 @@
                     others: parseFloat(cashOthersAmount) || 0,
                     totalCash: totalCashVal
                 },
-                totalCustomerDue: totalCustomerDueVal,
+                totalCustomerDue: customerDueTotal,
                 totalAssets: totalAssets,
                 totalLiabilities: totalLiabilities,
                 netBalance: netBalance
@@ -3375,6 +3329,7 @@
                 return;
             }
 
+            // Display columns: Report Date | Closing Time | Report ID | Net Balance | Actions
             reports.forEach(rep => {
                 const rowHtml = `
                     <tr>
@@ -3393,6 +3348,7 @@
             });
         }
 
+        /* ==================== SINGLE A4 LANDSCAPE PAGE FIT ==================== */
         window.viewDailyClosingReport = function(reportId) {
             const rep = toArray(dailyClosingReports).find(r => r.reportId === reportId);
             if(!rep) return;
@@ -3402,10 +3358,12 @@
             const displayCard = document.getElementById('closingReportDisplayCard');
             displayCard.style.display = 'block';
 
+            // COMPACT DASHBOARD GRID LAYOUT FITTING EXACTLY ONE A4 LANDSCAPE PAGE
             let bankRows = (rep.bankAccounts || []).map(b => `<tr><td>${b.name}</td><td style="text-align:right;">৳ ${b.balance.toFixed(2)}</td></tr>`).join('');
             let personalRows = (rep.personalAccounts || []).map(p => `<tr><td>${p.name}</td><td style="text-align:right;">৳ ${p.balance.toFixed(2)}</td></tr>`).join('');
             let agentRows = (rep.agentAccounts || []).map(a => `<tr><td>${a.name}</td><td style="text-align:right;">৳ ${a.balance.toFixed(2)}</td></tr>`).join('');
-            let cardOpRows = OPERATORS_LIST.map(op => `<tr><td>${op} Cards</td><td style="text-align:right;">৳ ${(rep.cardInventory[op] || 0).toFixed(2)}</td></tr>`).join('');
+
+            let cardOpRows = OPERATORS_LIST.map(op => `<tr><td>${op} Cards</td><td style="text-align:right;">৳ ${(rep.cardInventory?.[op] || 0).toFixed(2)}</td></tr>`).join('');
 
             let cashDenomRows = CASH_DENOMINATIONS.slice(0, 6).map(d => {
                 const item = rep.cashInventory?.denominations?.[d] || { quantity: 0, amount: 0 };
@@ -3413,6 +3371,7 @@
             }).join('');
 
             let html = `
+                <!-- COMPACT HEADER -->
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary-dark); padding-bottom: 6px; margin-bottom: 8px;">
                     <div>
                         <h2 style="font-size: 1.1rem; font-weight: 800; color: var(--primary-dark); margin:0;">MOUSUMI COMPUTER - DAILY CLOSING REPORT</h2>
@@ -3425,6 +3384,7 @@
                 </div>
 
                 <div class="dcr-grid-3col">
+                    <!-- ROW 1: ACCOUNTS -->
                     <div class="dcr-card">
                         <div class="dcr-card-title"><span><i class="fa-solid fa-building-columns"></i> Bank Accounts</span> <span>৳ ${rep.totalBank.toFixed(2)}</span></div>
                         <table class="dcr-table"><tbody>${bankRows}</tbody></table>
@@ -3442,6 +3402,7 @@
                 </div>
 
                 <div class="dcr-grid-3col">
+                    <!-- ROW 2: CARDS & CASH & CUSTOMER DUE -->
                     <div class="dcr-card">
                         <div class="dcr-card-title"><span><i class="fa-solid fa-sim-card"></i> Card Inventory</span> <span>৳ ${rep.totalCardInventory.toFixed(2)}</span></div>
                         <table class="dcr-table"><tbody>${cardOpRows}</tbody></table>
@@ -3457,6 +3418,7 @@
                         </table>
                     </div>
 
+                    <!-- FINANCIAL SUMMARY BANNER -->
                     <div class="dcr-card dcr-highlight-card">
                         <div class="dcr-card-title" style="color: #38bdf8;"><span><i class="fa-solid fa-calculator"></i> Statement Summary</span></div>
                         <table class="dcr-table" style="margin-top: 4px;">
@@ -3466,204 +3428,154 @@
                                 <tr><td>Total Agent Balances</td><td style="text-align:right;">৳ ${rep.totalAgent.toFixed(2)}</td></tr>
                                 <tr><td>Total Card Inventory</td><td style="text-align:right;">৳ ${rep.totalCardInventory.toFixed(2)}</td></tr>
                                 <tr><td>Total Physical Cash</td><td style="text-align:right;">৳ ${(rep.cashInventory?.totalCash || 0).toFixed(2)}</td></tr>
-                                <tr style="border-top: 1px solid rgba(255,255,255,0.2);">
-                                    <td style="color: #f97316; font-weight: 700;">Total Customer Due</td>
-                                    <td style="text-align:right; color: #f97316; font-weight: 700;">৳ ${(rep.totalCustomerDue || 0).toFixed(2)}</td>
-                                </tr>
-                                <tr style="border-top: 1px solid rgba(255,255,255,0.2);">
-                                    <td style="font-weight: 800; color: #38bdf8;">TOTAL NET BALANCE</td>
-                                    <td style="text-align:right; font-weight: 800; color: #38bdf8;">৳ ${rep.netBalance.toFixed(2)}</td>
+                                <tr><td>Total Customer Due</td><td style="text-align:right; color:#f87171; font-weight:700;">৳ ${(rep.totalCustomerDue || 0).toFixed(2)}</td></tr>
+                                <tr style="font-weight: 800; font-size: 0.85rem; border-top: 1px solid rgba(255,255,255,0.2); color: #38bdf8;">
+                                    <td>NET TOTAL BALANCE</td>
+                                    <td style="text-align:right;">৳ ${(rep.netBalance || 0).toFixed(2)}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             `;
-
             container.innerHTML = html;
         };
 
-        window.printDailyClosingPDF = function() {
+        window.printDailyClosingPDF = function(reportId) {
+            if(reportId) viewDailyClosingReport(reportId);
             window.print();
         };
 
-        window.exportDailyClosingExcel = function() {
-            if(!activeViewingReport) return;
-            const rep = activeViewingReport;
-            const data = [
-                { "Section": "Bank Accounts", "Total": rep.totalBank },
-                { "Section": "Personal Accounts", "Total": rep.totalPersonal },
-                { "Section": "Agent Accounts", "Total": rep.totalAgent },
-                { "Section": "Card Inventory", "Total": rep.totalCardInventory },
-                { "Section": "Physical Cash", "Total": rep.cashInventory?.totalCash || 0 },
-                { "Section": "Total Customer Due", "Total": rep.totalCustomerDue || 0 },
-                { "Section": "Total Net Balance", "Total": rep.netBalance }
+        window.exportDailyClosingExcel = function(reportId) {
+            const rep = reportId ? toArray(dailyClosingReports).find(r => r.reportId === reportId) : activeViewingReport;
+            if(!rep) return;
+
+            const wb = XLSX.utils.book_new();
+            
+            const summaryData = [
+                ["MOUSUMI COMPUTER - DAILY CLOSING REPORT"],
+                ["Report ID", rep.reportId],
+                ["Closing Date", rep.closingDate],
+                ["Closing Time", rep.closingTime],
+                [""],
+                ["Section", "Amount (BDT)"],
+                ["Total Bank Accounts", rep.totalBank],
+                ["Total Personal Accounts", rep.totalPersonal],
+                ["Total Agent Accounts", rep.totalAgent],
+                ["Total Card Inventory", rep.totalCardInventory],
+                ["Total Cash Inventory", rep.cashInventory?.totalCash || 0],
+                ["Total Customer Due", rep.totalCustomerDue || 0],
+                ["NET TOTAL BALANCE", rep.netBalance]
             ];
-            const worksheet = XLSX.utils.json_to_sheet(data);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Daily Closing Report");
-            XLSX.writeFile(workbook, `Daily_Closing_${rep.reportId}.xlsx`);
+
+            const ws = XLSX.utils.aoa_to_sheet(summaryData);
+            XLSX.utils.book_append_sheet(wb, ws, "Closing Summary");
+            XLSX.writeFile(wb, `Daily_Closing_${rep.reportId}.xlsx`);
         };
 
-        /* CATEGORY / BALANCE FORM HANDLER */
-        window.openBalanceCategory = function(catId) {
-            currentActiveCatId = catId;
-            const cat = categories.find(c => c.id === catId);
-            if(!cat) return;
-
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
-            
-            document.getElementById('balance-view').classList.add('active');
-            document.getElementById('menu-bal-parent').classList.add('active');
-            
-            const subEl = document.getElementById(`sub-${catId}`);
-            if(subEl) subEl.classList.add('active');
-
-            document.getElementById('top-title').innerText = `${cat.name} Balance Management`;
-            document.getElementById('erpFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square" style="color: #00a8ef;"></i> Update ${cat.name}`;
-
-            const container = document.getElementById('formFieldsContainer');
-            container.innerHTML = '';
-
-            const catAccs = toArray(accounts).filter(a => a.catId === catId && a.enabled !== false);
-            if(catAccs.length === 0) {
-                container.innerHTML = `<p style="color: #6b7280; font-size: 0.9rem;">No accounts found under this category. Please add accounts from Category & Accounts menu.</p>`;
-                return;
-            }
-
-            catAccs.forEach(acc => {
-                const currentBal = balanceStore[acc.id] !== undefined ? parseFloat(balanceStore[acc.id]) : 0;
-                const isCardInventory = (acc.id === 'acc_9' || acc.name === 'Card Inventory');
-
-                const fieldHtml = `
-                    <div class="field-card">
-                        <div class="field-card-header">
-                            <label>${acc.name}</label>
-                            <span class="prev-bal">Current: <span>৳ ${currentBal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></span>
-                        </div>
-                        <input type="number" step="any" data-acc-id="${acc.id}" value="${currentBal}" ${isCardInventory ? 'readonly style="background: #e5e7eb; cursor: not-allowed;"' : ''} />
-                        ${isCardInventory ? '<span style="font-size: 0.72rem; color: #f97316; font-weight: 600; margin-top: 4px; display: block;"><i class="fa-solid fa-info-circle"></i> Auto-calculated from Card Inventory Module.</span>' : ''}
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', fieldHtml);
-            });
-        };
-
-        document.getElementById('balanceUpdateForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const inputs = document.querySelectorAll('#formFieldsContainer input[data-acc-id]');
-            
-            showLoader("Updating Balances...");
-            inputs.forEach(inp => {
-                const accId = inp.getAttribute('data-acc-id');
-                const isCardInventory = (accId === 'acc_9');
-                if(!isCardInventory) {
-                    const val = parseFloat(inp.value) || 0;
-                    balanceStore[accId] = val;
-                }
-            });
-
-            try {
-                await writeToFirebase('erp/balances', balanceStore);
-                showToast("Balances updated successfully!", "success");
-                updateDashboardCards();
-            } catch (err) {
-                console.error(err);
-            } finally {
-                hideLoader();
-            }
-        });
-
-        /* CASH INVENTORY RENDER & SAVE */
+        /* CASH INVENTORY TABLE RENDER & SAVE */
         function renderCashInventoryTable() {
             const tbody = document.getElementById('cashDenomTableBody');
-            if(!tbody) return;
+            if (!tbody) return;
             tbody.innerHTML = '';
 
-            CASH_DENOMINATIONS.forEach(denom => {
-                const qty = cashQuantities[denom] || 0;
-                const amt = denom * qty;
-
-                const rowHtml = `
+            CASH_DENOMINATIONS.forEach(d => {
+                const qty = cashQuantities[d] || 0;
+                const rowVal = qty * d;
+                const tr = `
                     <tr>
-                        <td><strong>৳ ${denom} Notes</strong></td>
+                        <td><strong>৳ ${d} Notes</strong></td>
                         <td>
-                            <input type="number" class="inv-qty-input cash-qty-input" data-denom="${denom}" value="${qty}" min="0" oninput="recalculateCashTotals()" />
+                            <input type="number" class="inv-qty-input" value="${qty}" min="0" oninput="updateCashRowValue(${d}, this.value)" />
                         </td>
-                        <td><strong id="cash-amt-${denom}">৳ ${amt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
+                        <td><strong id="denomVal_${d}">৳ ${rowVal.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong></td>
                     </tr>
                 `;
-                tbody.insertAdjacentHTML('beforeend', rowHtml);
+                tbody.insertAdjacentHTML('beforeend', tr);
             });
 
-            // Loose / Others Cash Row
-            const othersRowHtml = `
-                <tr style="background: #f8fafc;">
+            // Add Loose Cash / Others row
+            const othersTr = `
+                <tr>
                     <td><strong>Others / Loose Cash</strong></td>
                     <td colspan="2">
-                        <input type="number" step="any" id="cashOthersInput" class="inv-qty-input" style="width: 100%; text-align: left;" value="${cashOthersAmount}" oninput="recalculateCashTotals()" placeholder="0.00" />
+                        <input type="number" step="any" class="inv-qty-input" style="width: 100%; text-align: left;" value="${cashOthersAmount}" oninput="updateCashOthersValue(this.value)" />
                     </td>
                 </tr>
             `;
-            tbody.insertAdjacentHTML('beforeend', othersRowHtml);
+            tbody.insertAdjacentHTML('beforeend', othersTr);
 
-            recalculateCashTotals();
+            updateCashGrandTotalDisplay();
         }
 
-        window.recalculateCashTotals = function() {
-            let total = 0;
-            CASH_DENOMINATIONS.forEach(denom => {
-                const input = document.querySelector(`.cash-qty-input[data-denom="${denom}"]`);
-                const qty = input ? (parseInt(input.value) || 0) : (cashQuantities[denom] || 0);
-                const amt = denom * qty;
-                total += amt;
-
-                const amtEl = document.getElementById(`cash-amt-${denom}`);
-                if(amtEl) amtEl.innerText = `৳ ${amt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            });
-
-            const othersInp = document.getElementById('cashOthersInput');
-            const othersVal = othersInp ? (parseFloat(othersInp.value) || 0) : cashOthersAmount;
-            total += othersVal;
-
-            const grandEl = document.getElementById('grandTotalCashVal');
-            if(grandEl) grandEl.innerText = `৳ ${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        window.updateCashRowValue = function(denom, qty) {
+            cashQuantities[denom] = parseInt(qty) || 0;
+            const rowVal = (parseInt(qty) || 0) * denom;
+            const valEl = document.getElementById(`denomVal_${denom}`);
+            if (valEl) valEl.innerText = `৳ ${rowVal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            updateCashGrandTotalDisplay();
         };
+
+        window.updateCashOthersValue = function(val) {
+            cashOthersAmount = parseFloat(val) || 0;
+            updateCashGrandTotalDisplay();
+        };
+
+        function updateCashGrandTotalDisplay() {
+            cashGrandTotal = calculateCashGrandTotal();
+            const el = document.getElementById('grandTotalCashVal');
+            if (el) el.innerText = `৳ ${cashGrandTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
 
         window.saveCashInventory = async function() {
             showLoader("Saving Cash Inventory...");
-            
-            CASH_DENOMINATIONS.forEach(denom => {
-                const input = document.querySelector(`.cash-qty-input[data-denom="${denom}"]`);
-                if(input) cashQuantities[denom] = parseInt(input.value) || 0;
-            });
-
-            const othersInp = document.getElementById('cashOthersInput');
-            cashOthersAmount = othersInp ? (parseFloat(othersInp.value) || 0) : 0;
             cashGrandTotal = calculateCashGrandTotal();
+            
+            const now = new Date();
+            const timeLog = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ', ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
-            const logEntry = {
-                timestamp: new Date().toISOString(),
-                dateTime: new Date().toLocaleString(),
+            cashHistoryLogs.unshift({
+                dateTime: timeLog,
                 others: cashOthersAmount,
                 grandTotal: cashGrandTotal
-            };
-            cashHistoryLogs.unshift(logEntry);
+            });
 
             try {
-                await writeToFirebase('erp/cashInventory', { quantities: cashQuantities, others: cashOthersAmount, grandTotal: cashGrandTotal });
+                await writeToFirebase('erp/cashInventory', {
+                    quantities: cashQuantities,
+                    others: cashOthersAmount,
+                    grandTotal: cashGrandTotal
+                });
                 await writeToFirebase('erp/cashHistory', cashHistoryLogs);
-                showToast("Cash Inventory saved successfully!", "success");
+                showToast("Cash inventory updated successfully!", "success");
                 updateDashboardCards();
-            } catch(e) {
-                console.error(e);
+            } catch (err) {
+                console.error("Cash save error:", err);
             } finally {
                 hideLoader();
             }
         };
 
-        /* CARD INVENTORY ACCORDIONS */
+        function renderCashHistoryTable() {
+            const tbody = document.getElementById('cashHistoryTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (cashHistoryLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #9ca3af;">No cash inventory audit records available yet.</td></tr>`;
+                return;
+            }
+            cashHistoryLogs.forEach(log => {
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr>
+                        <td>${log.dateTime}</td>
+                        <td>৳ ${(parseFloat(log.others) || 0).toFixed(2)}</td>
+                        <td><strong style="color: #059669;">৳ ${(parseFloat(log.grandTotal) || 0).toFixed(2)}</strong></td>
+                    </tr>
+                `);
+            });
+        }
+
+        /* CARD INVENTORY MODULE RENDER & LIVE UPDATE FUNCTIONS */
         function renderRedesignedCardInventory() {
             const container = document.getElementById('operatorAccordions');
             if(!container) return;
@@ -3673,43 +3585,51 @@
                 const cards = toArray(cardConfig[op] || []).filter(c => c.active !== false);
                 const opQtyMap = cardQuantities[op] || {};
 
-                let opTotalCount = 0;
-                let opTotalVal = 0;
+                let opTotalCards = 0;
+                let opTotalValue = 0;
 
-                const cardRows = cards.map(c => {
-                    const qty = parseInt(opQtyMap[c.id]) || 0;
-                    const val = qty * c.price;
-                    opTotalCount += qty;
-                    opTotalVal += val;
+                cards.forEach(c => {
+                    const q = parseInt(opQtyMap[c.id]) || 0;
+                    opTotalCards += q;
+                    opTotalValue += (q * c.price);
+                });
 
+                let rowsHtml = cards.map(c => {
+                    const q = parseInt(opQtyMap[c.id]) || 0;
+                    const cardTotalVal = q * c.price;
                     return `
                         <tr>
                             <td><strong>${c.name}</strong></td>
-                            <td><span class="badge" style="background:#e0f2fe; color:#0369a1;">${c.type}</span></td>
-                            <td>৳ ${c.price}</td>
+                            <td><span class="badge badge-success">${c.type}</span></td>
+                            <td>৳${c.price}</td>
                             <td>
-                                <input type="number" class="inv-qty-input" data-op="${op}" data-card-id="${c.id}" value="${qty}" min="0" oninput="updateLiveSummaries()" />
+                                <input type="number" class="inv-qty-input" value="${q}" min="0" oninput="updateCardQty('${op}', '${c.id}', this.value)" />
                             </td>
-                            <td><strong id="card-val-${c.id}">৳ ${val.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
+                            <td><strong id="cardTotalVal_${op}_${c.id}" class="total-green-highlight">৳${cardTotalVal.toFixed(2)}</strong></td>
                         </tr>
                     `;
                 }).join('');
 
+                if(cards.length === 0) {
+                    rowsHtml = `<tr><td colspan="5" style="text-align: center; color: #9ca3af;">No active cards configured for ${op}.</td></tr>`;
+                }
+
+                const opClass = 'op-' + op.toLowerCase();
                 const accordionHtml = `
-                    <div class="accordion-item" id="acc-item-${op}">
+                    <div class="accordion-item" id="acc_item_${op}">
                         <div class="accordion-header" onclick="toggleAccordion('${op}')">
                             <div class="accordion-title-box">
-                                <span class="op-badge op-${op.toLowerCase()}">${op}</span>
+                                <span class="op-badge ${opClass}">${op}</span>
                                 <h3>${op} Card Inventory</h3>
                             </div>
                             <div class="accordion-summary-info">
                                 <div class="acc-summary-item">
-                                    <span>Cards:</span>
-                                    <strong id="op-cards-${op}">${opTotalCount} Pcs</strong>
+                                    <span>Total Cards</span>
+                                    <strong id="accSummaryQty_${op}">${opTotalCards} Pcs</strong>
                                 </div>
                                 <div class="acc-summary-item">
-                                    <span>Total Value:</span>
-                                    <strong class="highlight-val" id="op-val-${op}">৳ ${opTotalVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>
+                                    <span>Total Value</span>
+                                    <strong id="accSummaryVal_${op}" class="highlight-val">৳${opTotalValue.toFixed(2)}</strong>
                                 </div>
                                 <i class="fa-solid fa-chevron-down accordion-icon"></i>
                             </div>
@@ -3726,7 +3646,9 @@
                                             <th>Total Value</th>
                                         </tr>
                                     </thead>
-                                    <tbody>${cardRows}</tbody>
+                                    <tbody>
+                                        ${rowsHtml}
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -3739,76 +3661,112 @@
         }
 
         window.toggleAccordion = function(op) {
-            const item = document.getElementById(`acc-item-${op}`);
+            const item = document.getElementById(`acc_item_${op}`);
             if(item) item.classList.toggle('active');
         };
 
-        window.updateLiveSummaries = function() {
+        window.updateCardQty = function(op, cardId, newQty) {
+            if(!cardQuantities[op]) cardQuantities[op] = {};
+            cardQuantities[op][cardId] = parseInt(newQty) || 0;
+
+            const cards = toArray(cardConfig[op] || []);
+            const card = cards.find(c => c.id === cardId);
+            if(card) {
+                const q = parseInt(newQty) || 0;
+                const rowTotal = q * card.price;
+                const rowEl = document.getElementById(`cardTotalVal_${op}_${cardId}`);
+                if(rowEl) rowEl.innerText = `৳${rowTotal.toFixed(2)}`;
+            }
+
+            updateOperatorAccordionHeader(op);
+            updateLiveSummaries();
+        };
+
+        function updateOperatorAccordionHeader(op) {
+            const cards = toArray(cardConfig[op] || []).filter(c => c.active !== false);
+            const opQtyMap = cardQuantities[op] || {};
+            let opTotalCards = 0;
+            let opTotalValue = 0;
+
+            cards.forEach(c => {
+                const q = parseInt(opQtyMap[c.id]) || 0;
+                opTotalCards += q;
+                opTotalValue += (q * c.price);
+            });
+
+            const qtyEl = document.getElementById(`accSummaryQty_${op}`);
+            const valEl = document.getElementById(`accSummaryVal_${op}`);
+
+            if(qtyEl) qtyEl.innerText = `${opTotalCards} Pcs`;
+            if(valEl) valEl.innerText = `৳${opTotalValue.toFixed(2)}`;
+        }
+
+        function updateLiveSummaries() {
             let grandCount = 0;
-            let grandValue = 0;
+            let grandVal = 0;
 
             OPERATORS_LIST.forEach(op => {
                 const cards = toArray(cardConfig[op] || []).filter(c => c.active !== false);
-                let opCount = 0;
-                let opVal = 0;
+                const opQtyMap = cardQuantities[op] || {};
+                let opTotalValue = 0;
 
                 cards.forEach(c => {
-                    const input = document.querySelector(`.inv-qty-input[data-op="${op}"][data-card-id="${c.id}"]`);
-                    const qty = input ? (parseInt(input.value) || 0) : (parseInt(cardQuantities[op]?.[c.id]) || 0);
-                    const val = qty * c.price;
-
-                    opCount += qty;
-                    opVal += val;
-
-                    const rowValEl = document.getElementById(`card-val-${c.id}`);
-                    if(rowValEl) rowValEl.innerText = `৳ ${val.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    const q = parseInt(opQtyMap[c.id]) || 0;
+                    grandCount += q;
+                    opTotalValue += (q * c.price);
                 });
 
-                grandCount += opCount;
-                grandValue += opVal;
+                grandVal += opTotalValue;
 
-                const opCardsEl = document.getElementById(`op-cards-${op}`);
-                const opValEl = document.getElementById(`op-val-${op}`);
-                const summaryOpEl = document.getElementById(`summary${op === 'Banglalink' ? 'Bl' : op}Val`);
-
-                if(opCardsEl) opCardsEl.innerText = `${opCount} Pcs`;
-                if(opValEl) opValEl.innerText = `৳ ${opVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-                if(summaryOpEl) summaryOpEl.innerText = `৳ ${opVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                const summaryOpEl = document.getElementById(`summary${op}Val`);
+                if(summaryOpEl) summaryOpEl.innerText = `৳${opTotalValue.toFixed(2)}`;
             });
 
-            const grandCountEl = document.getElementById('grandTotalCardsCount');
-            const grandValEl = document.getElementById('grandTotalCardsVal');
+            const countEl = document.getElementById('grandTotalCardsCount');
+            const valEl = document.getElementById('grandTotalCardsVal');
 
-            if(grandCountEl) grandCountEl.innerText = `${grandCount} Pcs`;
-            if(grandValEl) grandValEl.innerText = `৳ ${grandValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        };
+            if(countEl) countEl.innerText = `${grandCount} Pcs`;
+            if(valEl) valEl.innerText = `৳ ${grandVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
 
         window.saveTodayInventory = async function() {
             showLoader("Saving Inventory Audit...");
+            const now = new Date();
+            const timeLog = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ', ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
             OPERATORS_LIST.forEach(op => {
                 const cards = toArray(cardConfig[op] || []).filter(c => c.active !== false);
-                if(!cardQuantities[op]) cardQuantities[op] = {};
+                const opQtyMap = cardQuantities[op] || {};
+                let totalCards = 0;
+                let totalVal = 0;
 
                 cards.forEach(c => {
-                    const input = document.querySelector(`.inv-qty-input[data-op="${op}"][data-card-id="${c.id}"]`);
-                    if(input) {
-                        cardQuantities[op][c.id] = parseInt(input.value) || 0;
-                    }
+                    const q = parseInt(opQtyMap[c.id]) || 0;
+                    totalCards += q;
+                    totalVal += (q * c.price);
                 });
+
+                if(totalCards > 0 || totalVal > 0) {
+                    cardHistoryLogs.unshift({
+                        dateTime: timeLog,
+                        operator: op,
+                        totalCards: totalCards,
+                        grandTotalVal: totalVal
+                    });
+                }
             });
 
             try {
                 await saveCardInventoryData();
-                showToast("Card Inventory updated and saved!", "success");
-            } catch(e) {
-                console.error(e);
+                showToast("Today's Card Inventory saved successfully!", "success");
+            } catch (err) {
+                console.error("Card inventory save error:", err);
             } finally {
                 hideLoader();
             }
         };
 
-        /* CARD MASTER CONFIGURATION */
+        /* CARD MASTER CONFIGURATION MODULE */
         function renderCardMasterConfiguration() {
             const container = document.getElementById('cardMasterTablesContainer');
             if(!container) return;
@@ -3816,29 +3774,38 @@
 
             OPERATORS_LIST.forEach(op => {
                 const cards = toArray(cardConfig[op] || []);
-
-                const rows = cards.map(c => `
+                let rowsHtml = cards.map(c => `
                     <tr>
+                        <td><code>${c.id}</code></td>
                         <td><strong>${c.name}</strong></td>
-                        <td><span class="badge" style="background:#e0f2fe; color:#0369a1;">${c.type}</span></td>
-                        <td>৳ ${c.price}</td>
-                        <td>${c.active !== false ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>'}</td>
+                        <td><span class="badge badge-success">${c.type}</span></td>
+                        <td>৳${c.price}</td>
                         <td>
-                            <button class="btn-action btn-edit" onclick="editCardMaster('${op}', '${c.id}')"><i class="fa-solid fa-pen"></i></button>
-                            <button class="btn-action btn-delete" onclick="toggleCardStatus('${op}', '${c.id}')"><i class="fa-solid fa-power-off"></i></button>
+                            ${c.active !== false 
+                                ? '<span class="badge badge-success">Active</span>' 
+                                : '<span class="badge badge-danger">Inactive</span>'}
+                        </td>
+                        <td>
+                            <button class="btn-action btn-edit" onclick="editCardMasterConfig('${op}', '${c.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+                            <button class="btn-action btn-delete" onclick="deleteCardMasterConfig('${op}', '${c.id}')"><i class="fa-solid fa-trash"></i> Delete</button>
                         </td>
                     </tr>
                 `).join('');
 
-                const cardHtml = `
-                    <div class="erp-form-card" style="margin-bottom: 20px;">
-                        <div class="erp-form-header">
-                            <span><span class="op-badge op-${op.toLowerCase()}">${op}</span> Operator Configurations</span>
-                        </div>
+                if(cards.length === 0) {
+                    rowsHtml = `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No cards configured for ${op}.</td></tr>`;
+                }
+
+                const cardBoxHtml = `
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="font-size: 1rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                            <span class="op-badge op-${op.toLowerCase()}">${op}</span> Master Cards List
+                        </h4>
                         <div class="table-container">
                             <table>
                                 <thead>
                                     <tr>
+                                        <th>Card ID</th>
                                         <th>Card Name</th>
                                         <th>Type</th>
                                         <th>Price</th>
@@ -3846,12 +3813,14 @@
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>${rows.length > 0 ? rows : '<tr><td colspan="5" style="text-align:center;">No cards configured for this operator.</td></tr>'}</tbody>
+                                <tbody>
+                                    ${rowsHtml}
+                                </tbody>
                             </table>
                         </div>
                     </div>
                 `;
-                container.insertAdjacentHTML('beforeend', cardHtml);
+                container.insertAdjacentHTML('beforeend', cardBoxHtml);
             });
         }
 
@@ -3859,10 +3828,48 @@
             document.getElementById('cardMasterId').value = '';
             document.getElementById('cardNameMasterInput').value = '';
             document.getElementById('cardPriceMasterInput').value = '';
+            document.getElementById('cardOperatorSelect').value = 'GP';
+            document.getElementById('cardTypeSelect').value = 'Internet';
+            document.getElementById('cardStatusSelect').value = 'active';
         };
 
-        window.editCardMaster = function(op, cardId) {
-            const card = toArray(cardConfig[op] || []).find(c => c.id === cardId);
+        document.getElementById('cardMasterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('cardMasterId').value;
+            const op = document.getElementById('cardOperatorSelect').value;
+            const name = document.getElementById('cardNameMasterInput').value.trim();
+            const type = document.getElementById('cardTypeSelect').value;
+            const price = parseFloat(document.getElementById('cardPriceMasterInput').value) || 0;
+            const active = document.getElementById('cardStatusSelect').value === 'active';
+
+            if(!cardConfig[op]) cardConfig[op] = [];
+
+            if(editId) {
+                const cardIndex = cardConfig[op].findIndex(c => c.id === editId);
+                if(cardIndex !== -1) {
+                    cardConfig[op][cardIndex] = { id: editId, name, type, price, active };
+                }
+            } else {
+                const newId = op.toLowerCase() + '_' + Date.now().toString().slice(-5);
+                cardConfig[op].push({ id: newId, name, type, price, active });
+            }
+
+            showLoader("Saving Card Config...");
+            try {
+                await saveCardConfigMaster();
+                showToast("Card configuration saved successfully!", "success");
+                resetCardMasterForm();
+                renderCardMasterConfiguration();
+            } catch(err) {
+                console.error("Card config error:", err);
+            } finally {
+                hideLoader();
+            }
+        });
+
+        window.editCardMasterConfig = function(op, id) {
+            const cards = toArray(cardConfig[op] || []);
+            const card = cards.find(c => c.id === id);
             if(!card) return;
 
             document.getElementById('cardMasterId').value = card.id;
@@ -3873,135 +3880,78 @@
             document.getElementById('cardStatusSelect').value = card.active !== false ? 'active' : 'inactive';
         };
 
-        window.toggleCardStatus = async function(op, cardId) {
-            const card = toArray(cardConfig[op] || []).find(c => c.id === cardId);
-            if(!card) return;
-
-            card.active = !(card.active !== false);
-            showLoader("Updating status...");
-            try {
-                await saveCardConfigMaster();
-                renderCardMasterConfiguration();
-                showToast("Card status updated!", "info");
-            } catch(e) {
-                console.error(e);
-            } finally {
-                hideLoader();
-            }
+        window.deleteCardMasterConfig = function(op, id) {
+            showConfirmModal({
+                title: "Delete Card Configuration?",
+                message: "This card product will be removed from future inventory audits.",
+                onConfirm: async () => {
+                    showLoader("Deleting Card...");
+                    cardConfig[op] = toArray(cardConfig[op] || []).filter(c => c.id !== id);
+                    try {
+                        await saveCardConfigMaster();
+                        showToast("Card removed successfully", "info");
+                        renderCardMasterConfiguration();
+                    } catch(err) {
+                        console.error("Delete Card Error:", err);
+                    } finally {
+                        hideLoader();
+                    }
+                }
+            });
         };
 
-        document.getElementById('cardMasterForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const cardId = document.getElementById('cardMasterId').value;
-            const op = document.getElementById('cardOperatorSelect').value;
-            const name = document.getElementById('cardNameMasterInput').value.trim();
-            const type = document.getElementById('cardTypeSelect').value;
-            const price = parseFloat(document.getElementById('cardPriceMasterInput').value) || 0;
-            const active = document.getElementById('cardStatusSelect').value === 'active';
-
-            if(!cardConfig[op]) cardConfig[op] = [];
-
-            if(cardId) {
-                const card = cardConfig[op].find(c => c.id === cardId);
-                if(card) {
-                    card.name = name;
-                    card.type = type;
-                    card.price = price;
-                    card.active = active;
-                }
-            } else {
-                const newId = `${op.toLowerCase()}_${Date.now()}`;
-                cardConfig[op].push({ id: newId, name, type, price, active });
-            }
-
-            showLoader("Saving Config...");
-            try {
-                await saveCardConfigMaster();
-                resetCardMasterForm();
-                renderCardMasterConfiguration();
-                showToast("Card Configuration Saved!", "success");
-            } catch(e) {
-                console.error(e);
-            } finally {
-                hideLoader();
-            }
-        });
-
-        /* CATEGORY & ACCOUNT MANAGEMENT */
+        /* CATEGORY & ACCOUNT MANAGEMENT MODULE */
         function renderCategoryManagementTables() {
-            const catTbody = document.getElementById('categoryTableBody');
-            const accTbody = document.getElementById('accountTableBody');
+            const catBody = document.getElementById('categoryTableBody');
+            const accBody = document.getElementById('accountTableBody');
             const catSelect = document.getElementById('accCatSelect');
 
-            if(catTbody) {
-                catTbody.innerHTML = '';
+            if (catBody) {
+                catBody.innerHTML = '';
                 const sortedCats = toArray(categories).sort((a,b) => a.order - b.order);
                 sortedCats.forEach(cat => {
-                    const row = `
+                    const tr = `
                         <tr>
-                            <td>${cat.order}</td>
-                            <td><strong>${cat.name}</strong></td>
-                            <td>${cat.enabled !== false ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Disabled</span>'}</td>
+                            <td><strong>${cat.order}</strong></td>
+                            <td>${cat.name}</td>
+                            <td>${cat.enabled ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Disabled</span>'}</td>
                             <td>
                                 <button class="btn-action btn-edit" onclick="editCategory('${cat.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
-                                <button class="btn-action btn-toggle" onclick="toggleCategory('${cat.id}')">${cat.enabled !== false ? 'Disable' : 'Enable'}</button>
+                                <button class="btn-action btn-toggle" onclick="toggleCategoryStatus('${cat.id}')">${cat.enabled ? 'Disable' : 'Enable'}</button>
                             </td>
                         </tr>
                     `;
-                    catTbody.insertAdjacentHTML('beforeend', row);
+                    catBody.insertAdjacentHTML('beforeend', tr);
                 });
             }
 
-            if(accTbody) {
-                accTbody.innerHTML = '';
+            if (accBody) {
+                accBody.innerHTML = '';
                 toArray(accounts).forEach(acc => {
-                    const cat = categories.find(c => c.id === acc.catId);
-                    const row = `
+                    const parentCat = categories.find(c => c.id === acc.catId);
+                    const tr = `
                         <tr>
-                            <td>${cat ? cat.name : '-'}</td>
+                            <td>${parentCat ? parentCat.name : 'N/A'}</td>
                             <td><code>${acc.id}</code></td>
                             <td><strong>${acc.name}</strong></td>
-                            <td>${acc.enabled !== false ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Disabled</span>'}</td>
+                            <td>${acc.enabled ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Disabled</span>'}</td>
                             <td>
-                                <button class="btn-action btn-edit" onclick="editAccount('${acc.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
-                                <button class="btn-action btn-toggle" onclick="toggleAccount('${acc.id}')">${acc.enabled !== false ? 'Disable' : 'Enable'}</button>
+                                <button class="btn-action btn-edit" onclick="editAccount('${acc.id}')"><i class="fa-solid fa-pen"></i> Edit Name</button>
+                                <button class="btn-action btn-toggle" onclick="toggleAccountStatus('${acc.id}')">${acc.enabled ? 'Disable' : 'Enable'}</button>
                             </td>
                         </tr>
                     `;
-                    accTbody.insertAdjacentHTML('beforeend', row);
+                    accBody.insertAdjacentHTML('beforeend', tr);
                 });
             }
 
-            if(catSelect) {
+            if (catSelect) {
                 catSelect.innerHTML = '<option value="">-- Select Category --</option>';
-                toArray(categories).filter(c => c.enabled !== false).forEach(c => {
+                toArray(categories).filter(c => c.enabled).forEach(c => {
                     catSelect.insertAdjacentHTML('beforeend', `<option value="${c.id}">${c.name}</option>`);
                 });
             }
         }
-
-        window.editCategory = function(catId) {
-            const cat = categories.find(c => c.id === catId);
-            if(!cat) return;
-            document.getElementById('editCatId').value = cat.id;
-            document.getElementById('catNameInput').value = cat.name;
-            document.getElementById('catOrderInput').value = cat.order;
-        };
-
-        window.toggleCategory = async function(catId) {
-            const cat = categories.find(c => c.id === catId);
-            if(!cat) return;
-            cat.enabled = !(cat.enabled !== false);
-            showLoader("Updating status...");
-            try {
-                await saveCoreData();
-                showToast("Category status updated!", "info");
-            } catch(e) {
-                console.error(e);
-            } finally {
-                hideLoader();
-            }
-        };
 
         document.getElementById('addCategoryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -4009,49 +3959,49 @@
             const name = document.getElementById('catNameInput').value.trim();
             const order = parseInt(document.getElementById('catOrderInput').value) || 1;
 
-            if(editId) {
+            if (editId) {
                 const cat = categories.find(c => c.id === editId);
-                if(cat) {
+                if (cat) {
                     cat.name = name;
                     cat.order = order;
                 }
             } else {
-                const newId = `cat_${Date.now()}`;
-                categories.push({ id: newId, name, order, enabled: true });
+                const newCatId = 'cat_' + Date.now();
+                categories.push({ id: newCatId, name, order, enabled: true });
             }
 
             showLoader("Saving Category...");
             try {
                 await saveCoreData();
+                showToast("Category saved successfully!", "success");
                 document.getElementById('editCatId').value = '';
                 document.getElementById('catNameInput').value = '';
                 document.getElementById('catOrderInput').value = '';
-                showToast("Category saved successfully!", "success");
-            } catch(e) {
-                console.error(e);
+            } catch(err) {
+                console.error("Save Category Error:", err);
             } finally {
                 hideLoader();
             }
         });
 
-        window.editAccount = function(accId) {
-            const acc = accounts.find(a => a.id === accId);
-            if(!acc) return;
-            document.getElementById('editAccId').value = acc.id;
-            document.getElementById('accCatSelect').value = acc.catId;
-            document.getElementById('accNameInput').value = acc.name;
+        window.editCategory = function(catId) {
+            const cat = categories.find(c => c.id === catId);
+            if (!cat) return;
+            document.getElementById('editCatId').value = cat.id;
+            document.getElementById('catNameInput').value = cat.name;
+            document.getElementById('catOrderInput').value = cat.order;
         };
 
-        window.toggleAccount = async function(accId) {
-            const acc = accounts.find(a => a.id === accId);
-            if(!acc) return;
-            acc.enabled = !(acc.enabled !== false);
-            showLoader("Updating status...");
+        window.toggleCategoryStatus = async function(catId) {
+            const cat = categories.find(c => c.id === catId);
+            if (!cat) return;
+            cat.enabled = !cat.enabled;
+            showLoader("Updating Category Status...");
             try {
                 await saveCoreData();
-                showToast("Account status updated!", "info");
-            } catch(e) {
-                console.error(e);
+                showToast("Category status updated!", "info");
+            } catch(err) {
+                console.error("Toggle Category Error:", err);
             } finally {
                 hideLoader();
             }
@@ -4063,104 +4013,205 @@
             const catId = document.getElementById('accCatSelect').value;
             const name = document.getElementById('accNameInput').value.trim();
 
-            if(editId) {
+            if (editId) {
                 const acc = accounts.find(a => a.id === editId);
-                if(acc) {
-                    acc.catId = catId;
+                if (acc) {
                     acc.name = name;
+                    acc.catId = catId;
                 }
             } else {
-                const newId = `acc_${Date.now()}`;
-                accounts.push({ id: newId, catId, name, enabled: true });
-                balanceStore[newId] = 0;
+                const newAccId = 'acc_' + Date.now();
+                accounts.push({ id: newAccId, catId, name, enabled: true });
+                balanceStore[newAccId] = 0;
             }
 
             showLoader("Saving Account...");
             try {
                 await saveCoreData();
                 await writeToFirebase('erp/balances', balanceStore);
+                showToast("Account saved successfully!", "success");
                 document.getElementById('editAccId').value = '';
                 document.getElementById('accNameInput').value = '';
-                showToast("Account saved successfully!", "success");
-            } catch(e) {
-                console.error(e);
+            } catch(err) {
+                console.error("Save Account Error:", err);
             } finally {
                 hideLoader();
             }
         });
 
-        /* HISTORY LOG TABLES */
+        window.editAccount = function(accId) {
+            const acc = accounts.find(a => a.id === accId);
+            if (!acc) return;
+            document.getElementById('editAccId').value = acc.id;
+            document.getElementById('accCatSelect').value = acc.catId;
+            document.getElementById('accNameInput').value = acc.name;
+        };
+
+        window.toggleAccountStatus = async function(accId) {
+            const acc = accounts.find(a => a.id === accId);
+            if (!acc) return;
+            acc.enabled = !acc.enabled;
+            showLoader("Updating Account Status...");
+            try {
+                await saveCoreData();
+                showToast("Account status updated!", "info");
+            } catch(err) {
+                console.error("Toggle Account Error:", err);
+            } finally {
+                hideLoader();
+            }
+        };
+
+        /* DYNAMIC BALANCE MANAGEMENT PANEL */
+        window.openBalanceCategory = function(catId) {
+            currentActiveCatId = catId;
+            const cat = categories.find(c => c.id === catId);
+            if(!cat) return;
+
+            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
+            
+            const subEl = document.getElementById(`sub-${catId}`);
+            if(subEl) subEl.classList.add('active');
+
+            document.getElementById('balance-view').classList.add('active');
+            document.getElementById('menu-bal-parent').classList.add('active');
+            document.getElementById('top-title').innerText = `${cat.name} Balance Management`;
+            document.getElementById('erpFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square" style="color: #00a8ef;"></i> Manage ${cat.name}`;
+
+            const fieldsContainer = document.getElementById('formFieldsContainer');
+            fieldsContainer.innerHTML = '';
+
+            const catAccounts = toArray(accounts).filter(a => a.catId === catId && a.enabled);
+
+            if(catAccounts.length === 0) {
+                fieldsContainer.innerHTML = `<p style="color: #9ca3af; text-align: center; padding: 20px;">No active accounts configured in this category.</p>`;
+                return;
+            }
+
+            catAccounts.forEach(acc => {
+                const currentBal = parseFloat(balanceStore[acc.id] || 0);
+                const isCardInventoryAccount = (acc.id === getCardInventoryAccount().id);
+
+                const fieldCardHtml = `
+                    <div class="field-card">
+                        <div class="field-card-header">
+                            <label><i class="fa-solid fa-wallet" style="color: #00a8ef;"></i> ${acc.name}</label>
+                            <span class="prev-bal">Current: <span>৳ ${currentBal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></span>
+                        </div>
+                        <input type="number" step="any" id="field_${acc.id}" value="${currentBal}" ${isCardInventoryAccount ? 'readonly style="background: #f3f4f6; cursor: not-allowed;"' : ''} />
+                        ${isCardInventoryAccount ? '<span style="font-size: 0.75rem; color: #6b7280; margin-top: 4px; display: block;"><i class="fa-solid fa-info-circle"></i> Auto-calculated from Card Inventory Module</span>' : ''}
+                    </div>
+                `;
+                fieldsContainer.insertAdjacentHTML('beforeend', fieldCardHtml);
+            });
+        };
+
+        document.getElementById('balanceUpdateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!currentActiveCatId) return;
+
+            const cat = categories.find(c => c.id === currentActiveCatId);
+            const catAccounts = toArray(accounts).filter(a => a.catId === currentActiveCatId && a.enabled);
+            
+            const now = new Date();
+            const timeLog = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ', ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+            let hasChanges = false;
+
+            catAccounts.forEach(acc => {
+                const isCardInventoryAccount = (acc.id === getCardInventoryAccount().id);
+                if(isCardInventoryAccount) return;
+
+                const inputEl = document.getElementById(`field_${acc.id}`);
+                if(inputEl) {
+                    const newVal = parseFloat(inputEl.value) || 0;
+                    const prevVal = parseFloat(balanceStore[acc.id] || 0);
+
+                    if(newVal !== prevVal) {
+                        hasChanges = true;
+                        balanceStore[acc.id] = newVal;
+                        
+                        historyLogs.unshift({
+                            dateTime: timeLog,
+                            catName: cat ? cat.name : 'General',
+                            accName: acc.name,
+                            prevBal: prevVal,
+                            currBal: newVal,
+                            diff: newVal - prevVal
+                        });
+                    }
+                }
+            });
+
+            if(!hasChanges) {
+                showToast("No balance changes detected.", "info");
+                return;
+            }
+
+            showLoader("Saving Balance Changes...");
+            try {
+                await writeToFirebase('erp/balances', balanceStore);
+                await writeToFirebase('erp/fintechHistory', historyLogs);
+                showToast("Balances updated successfully!", "success");
+                updateDashboardCards();
+            } catch(err) {
+                console.error("Balance update error:", err);
+            } finally {
+                hideLoader();
+            }
+        });
+
+        /* HISTORY LOG RENDER FUNCTIONS */
         function renderHistoryTable() {
             const tbody = document.getElementById('historyTableBody');
-            if(!tbody) return;
+            if (!tbody) return;
             tbody.innerHTML = '';
 
-            if(historyLogs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No balance audit history recorded.</td></tr>';
+            if (historyLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No balance record history available yet.</td></tr>`;
                 return;
             }
 
             historyLogs.forEach(log => {
-                const row = `
+                const diffColor = log.diff >= 0 ? '#10b981' : '#e11d48';
+                const diffSign = log.diff >= 0 ? '+' : '';
+                tbody.insertAdjacentHTML('beforeend', `
                     <tr>
                         <td>${log.dateTime}</td>
-                        <td>${log.categoryName}</td>
-                        <td><strong>${log.accountName}</strong></td>
-                        <td>৳ ${log.prevBal.toFixed(2)}</td>
-                        <td>৳ ${log.newBal.toFixed(2)}</td>
-                        <td><strong style="color: ${log.diff >= 0 ? '#10b981' : '#e11d48'};">${log.diff >= 0 ? '+' : ''}৳ ${log.diff.toFixed(2)}</strong></td>
+                        <td>${log.catName}</td>
+                        <td><strong>${log.accName}</strong></td>
+                        <td>৳ ${parseFloat(log.prevBal).toFixed(2)}</td>
+                        <td>৳ ${parseFloat(log.currBal).toFixed(2)}</td>
+                        <td><strong style="color: ${diffColor};">${diffSign}৳ ${parseFloat(log.diff).toFixed(2)}</strong></td>
                     </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', row);
+                `);
             });
         }
 
         function renderCardHistoryTable() {
             const tbody = document.getElementById('cardHistoryTableBody');
-            if(!tbody) return;
+            if (!tbody) return;
             tbody.innerHTML = '';
 
-            if(cardHistoryLogs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #9ca3af;">No card inventory history recorded.</td></tr>';
+            if (cardHistoryLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #9ca3af;">No card inventory history available yet.</td></tr>`;
                 return;
             }
 
             cardHistoryLogs.forEach(log => {
-                const row = `
+                tbody.insertAdjacentHTML('beforeend', `
                     <tr>
                         <td>${log.dateTime}</td>
-                        <td><strong>${log.operator}</strong></td>
-                        <td>${log.totalCount} Pcs</td>
-                        <td><strong style="color:#059669;">৳ ${log.totalVal.toFixed(2)}</strong></td>
+                        <td><span class="op-badge op-${log.operator.toLowerCase()}">${log.operator}</span></td>
+                        <td>${log.totalCards} Pcs</td>
+                        <td><strong style="color: #059669;">৳ ${parseFloat(log.grandTotalVal).toFixed(2)}</strong></td>
                     </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', row);
+                `);
             });
         }
 
-        function renderCashHistoryTable() {
-            const tbody = document.getElementById('cashHistoryTableBody');
-            if(!tbody) return;
-            tbody.innerHTML = '';
-
-            if(cashHistoryLogs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #9ca3af;">No cash audit logs recorded.</td></tr>';
-                return;
-            }
-
-            cashHistoryLogs.forEach(log => {
-                const row = `
-                    <tr>
-                        <td>${log.dateTime}</td>
-                        <td>৳ ${(log.others || 0).toFixed(2)}</td>
-                        <td><strong style="color:#059669;">৳ ${(log.grandTotal || 0).toFixed(2)}</strong></td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', row);
-            });
-        }
-
-        /* PROFILE MANAGEMENT */
+        /* PROFILE MANAGEMENT ENGINE */
         function loadSavedProfile() {
             if(profileSettings.fullName) {
                 document.getElementById('dropdownName').innerText = profileSettings.fullName;
@@ -4173,12 +4224,28 @@
                 document.getElementById('profRole').value = profileSettings.role;
             }
             if(profileSettings.phone) document.getElementById('profPhone').value = profileSettings.phone;
-            if(profileSettings.avatar) {
-                document.getElementById('navAvatar').src = profileSettings.avatar;
-                document.getElementById('dropdownHeaderImg').src = profileSettings.avatar;
-                document.getElementById('fullProfileImg').src = profileSettings.avatar;
+            
+            if(profileSettings.avatarUrl) {
+                document.getElementById('navAvatar').src = profileSettings.avatarUrl;
+                document.getElementById('dropdownHeaderImg').src = profileSettings.avatarUrl;
+                document.getElementById('fullProfileImg').src = profileSettings.avatarUrl;
             }
         }
+
+        document.getElementById('fullProfileImgInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const imgUrl = evt.target.result;
+                    document.getElementById('navAvatar').src = imgUrl;
+                    document.getElementById('dropdownHeaderImg').src = imgUrl;
+                    document.getElementById('fullProfileImg').src = imgUrl;
+                    profileSettings.avatarUrl = imgUrl;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
 
         document.getElementById('fullProfileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -4191,51 +4258,31 @@
             profileSettings.role = role;
             profileSettings.phone = phone;
 
-            showLoader("Updating Profile...");
+            showLoader("Saving Profile...");
+
             try {
-                if(newPass) {
+                if(newPass && newPass.length >= 6) {
                     await updatePassword(auth.currentUser, newPass);
                     showToast("Password updated successfully!", "success");
+                    document.getElementById('profNewPass').value = '';
                 }
                 await writeToFirebase('erp/settings', profileSettings);
-                showToast("Profile settings saved!", "success");
                 loadSavedProfile();
-            } catch(e) {
-                showToast(e.message, "error");
+                showToast("Profile settings updated successfully!", "success");
+            } catch(err) {
+                console.error("Profile save error:", err);
             } finally {
                 hideLoader();
             }
         });
 
-        // PROFILE PHOTO BASE64 UPLOADER
-        document.getElementById('fullProfileImgInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    const base64 = evt.target.result;
-                    profileSettings.avatar = base64;
-                    loadSavedProfile();
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // NAVIGATION & TOGGLE EVENTS
-        sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-        });
-
+        // NAVBAR ACTIONS & TOGGLES
+        sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
         profileTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
             profileDropdown.classList.toggle('active');
         });
-
-        document.addEventListener('click', (e) => {
-            if(!profileDropdown.contains(e.target) && !profileTrigger.contains(e.target)) {
-                profileDropdown.classList.remove('active');
-            }
-        });
+        document.addEventListener('click', () => profileDropdown.classList.remove('active'));
 
     </script>
 </body>
