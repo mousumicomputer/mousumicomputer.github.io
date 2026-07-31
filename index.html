@@ -2791,7 +2791,7 @@
             `;
             grid.appendChild(custCard);
 // --- Cash Inventory Card ---
-        const cashTotals = typeof calculateCashInventoryTotals === 'function' ? calculateCashInventoryTotals() : { totalAmount: 0 };
+        const cashTotals = typeof calculateCashTotals === 'function' ? calculateCashTotals() : { totalAmount: 0 };
         const cashCard = document.createElement('div');
         cashCard.className = 'fintech-card';
         cashCard.innerHTML = `
@@ -2803,7 +2803,7 @@
         grandTotalNetBalance += cashTotals.totalAmount;
 
         // --- Card Inventory Stock Card ---
-        const cardTotals = typeof calculateCardInventoryTotals === 'function' ? calculateCardInventoryTotals() : { totalValue: 0 };
+        const cardTotals = typeof calculateCardTotals === 'function' ? calculateCardTotals() : { totalValue: 0 };
         const cardStockCard = document.createElement('div');
         cardStockCard.className = 'fintech-card';
         cardStockCard.innerHTML = `
