@@ -2821,22 +2821,27 @@
 // --- Card Inventory Stock Card ---
         let cardInventoryTotal = 0;
         try {
-            if (typeof cardConfig !== 'undefined' && typeof OPERATORS_LIST !== 'undefined') {
+            if (typeof cardInventoryData !== 'undefined' && cardInventoryData) {
+                Object.values(cardInventoryData).forEach(item => {
+                    const price = Number(item.price || item.rate || item.unitPrice || 0);
+                    const qty = Number(item.qty || item.quantity || item.pcs || 0);
+                    cardInventoryTotal += (price * qty);
+                });
+            }
+            if (cardInventoryTotal === 0 && typeof OPERATORS_LIST !== 'undefined') {
                 OPERATORS_LIST.forEach(op => {
-                    const list = cardConfig[op] || [];
+                    const list = (typeof cardConfig !== 'undefined' && cardConfig[op]) || [];
                     list.forEach(c => {
                         const price = Number(c.price || 0);
-                        const qty = Number(c.qty || c.quantity || c.stock || 1);
+                        const qty = Number(c.qty || c.quantity || c.stock || 0);
                         cardInventoryTotal += (price * qty);
                     });
                 });
-            } else if (window.cardStockData) {
-                cardInventoryTotal = Object.values(window.cardStockData).reduce((a, b) => a + Number(b || 0), 0);
             }
         } catch (e) {
             console.error("Card inventory calculation error:", e);
-        }
-        const cardStockCard = document.createElement('div');
+        }        
+            const cardStockCard = document.createElement('div');
         cardStockCard.className = 'fintech-card';
         cardStockCard.innerHTML = `
             <div class="card-icon" style="background: #fef3c7; color: #b45309;"><i class="fa-solid fa-sim-card"></i></div>
