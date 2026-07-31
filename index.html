@@ -2821,41 +2821,30 @@
 // --- Card Inventory Stock Card ---
         let cardInventoryTotal = 0;
         try {
-            // ১. যদি অডিট সামারি পেজের এলিমেন্টগুলো স্ক্রিনে রেন্ডার হয়ে থাকে
-            const summaryIds = ['summaryGpVal', 'summaryBlVal', 'summaryRobival', 'summaryAirtelval'];
-            let foundInDom = false;
-            
-            summaryIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    const text = el.innerText.replace(/[^0-9.]/g, '');
-                    const val = Number(text || 0);
-                    if (val > 0) {
-                        cardInventoryTotal += val;
-                        foundInDom = true;
-                    }
+            // ১. মূল ফাংশন থেকে সরাসরি সঠিক অডিট ভ্যালু নেওয়া
+            if (typeof calculateGrandCardInventoryValue === 'function') {
+                cardInventoryTotal = calculateGrandCardInventoryValue() || 0;
+            } 
+            // ২. বিকল্প হিসেবে ব্যাকগ্রাউন্ডে থাকলে balanceStore বা গ্লোবাল অবজেক্ট থেকে নেওয়া
+            else if (typeof getCardInventoryAccount === 'function' && typeof balanceStore !== 'undefined') {
+                const cardAcc = getCardInventoryAccount();
+                if (cardAcc && balanceStore[cardAcc.id] !== undefined) {
+                    cardInventoryTotal = Number(balanceStore[cardAcc.id] || 0);
                 }
-            });
+            }
 
-            // ২. যদি স্ক্রিনে না থাকে, তবে গ্লোবাল ডাটাবেজ/কনফিগ থেকে সাম দিয়ে আনা
-            if (!foundInDom) {
-                if (typeof cardConfig !== 'undefined' && typeof OPERATORS_LIST !== 'undefined') {
-                    OPERATORS_LIST.forEach(op => {
-                        const list = cardConfig[op] || [];
-                        list.forEach(c => {
-                            const price = Number(c.price || 0);
-                            const qty = Number(c.qty || c.quantity || c.stock || 1);
-                            cardInventoryTotal += (price * qty);
-                        });
-                    });
-                } else if (window.cardStockData) {
-                    cardInventoryTotal = Object.values(window.cardStockData).reduce((a, b) => a + Number(b || 0), 0);
+            // ৩. যদি কোনো কারণে ওপরের ২টি না কাজ করে, তবে ডম থেকে রিড
+            if (!cardInventoryTotal || cardInventoryTotal === 0) {
+                const grandValEl = document.getElementById('grandTotalCardsVal');
+                if (grandValEl) {
+                    const text = grandValEl.innerText.replace(/[^0-9.]/g, '');
+                    cardInventoryTotal = Number(text || 0);
                 }
             }
         } catch (e) {
             console.error("Card inventory calculation error:", e);
         }
-           
+            
             const cardStockCard = document.createElement('div');
         cardStockCard.className = 'fintech-card';
         cardStockCard.innerHTML = `
