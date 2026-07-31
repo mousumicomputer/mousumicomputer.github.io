@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- SheetJS Library for Real Excel Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --primary-color: #00a8ef;
@@ -3977,9 +3978,24 @@
         };
 
         window.printDailyClosingPDF = function() {
-            window.print();
-        };
+            const element = document.getElementById('printable-closing-report');
+            if (!activeViewingReport) {
+                showToast("কোন রিপোর্ট সিলেক্ট করা নেই!", "error");
+                return;
+            }
+            
+            const opt = {
+                margin:       [10, 10, 10, 10],
+                filename:     `Daily_Closing_${activeViewingReport.report_date}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
 
+            // সরাসরি পিডিএফ ডাউনলোড হবে
+            html2pdf().set(opt).from(element).save();
+        };
+        
         window.exportDailyClosingExcel = function() {
             if (!activeViewingReport) return;
             const r = activeViewingReport;
