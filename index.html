@@ -1539,26 +1539,22 @@
 
                     <!-- PARENT MENU: REPORTS & HISTORY -->
                     <li class="menu-item" id="menu-reports-parent">
-                        <a onclick="toggleParentMenu('menu-reports-parent')">
-                            <span class="menu-link-inner"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Reports & History</span></span>
-                            <i class="fa-solid fa-chevron-down chevron-icon"></i>
-                        </a>
-                        <ul class="submenu-list">
-                            <li class="submenu-item" id="sub-dcr-report">
-                                <a onclick="switchMainTab('daily-closing')"><i class="fa-solid fa-angle-right"></i> <span>Daily Closing Report</span></a>
-                            </li>
-                            <li class="submenu-item" id="sub-fin-summary">
-                                <a onclick="switchMainTab('dashboard')"><i class="fa-solid fa-angle-right"></i> <span>Financial Summary</span></a>
-                            </li>
-                            <li class="submenu-item" id="sub-tx-history">
-                                <a onclick="switchMainTab('reports')"><i class="fa-solid fa-angle-right"></i> <span>Transaction History</span></a>
-                            </li>
-                            <li class="submenu-item" id="sub-export-center">
-                                <a onclick="switchCustomerSubSection('cust-reports-section')"><i class="fa-solid fa-angle-right"></i> <span>Export Center</span></a>
-                            </li>
-                        </ul>
-                    </li>
-
+    <a onclick="toggleParentMenu('menu-reports-parent')">
+        <span class="menu-link-inner"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Reports & History</span></span>
+        <i class="fa-solid fa-chevron-down chevron-icon"></i>
+    </a>
+    <ul class="submenu-list">
+        <li class="submenu-item">
+            <a onclick="switchMainTab('daily-closing-view')"><i class="fa-solid fa-angle-right"></i> <span>Daily Closing Report</span></a>
+        </li>
+        <li class="submenu-item">
+            <a onclick="switchMainTab('financial-summary-view')"><i class="fa-solid fa-angle-right"></i> <span>Financial Summary</span></a>
+        </li>
+        <li class="submenu-item">
+            <a onclick="switchMainTab('transaction-history-view')"><i class="fa-solid fa-angle-right"></i> <span>Audit History Log</span></a>
+        </li>
+    </ul>
+</li>
                     <!-- PARENT MENU: SETTINGS & CONFIGURATION -->
                     <li class="menu-item" id="menu-settings-parent">
                         <a onclick="toggleParentMenu('menu-settings-parent')">
@@ -2093,76 +2089,84 @@
                     </div>
                 </div>
 
-                <!-- ==================== VIEW 5: REPORTS & HISTORY MODULE ==================== -->
-                <div class="view-panel" id="reports-view">
-                    <!-- CASH INVENTORY HISTORY LOG -->
+<!-- ==================== নতুন উন্নত REPORTS & HISTORY মডিউল ==================== -->
+
+                <!-- সেকশন ১: Daily Closing Report (আলাদা প্যানেল) -->
+                <div class="view-panel" id="daily-closing-view">
                     <div class="erp-form-card">
                         <div class="erp-form-header">
-                            <span><i class="fa-solid fa-money-bill-transfer" style="color: #00a8ef;"></i> Cash Inventory Audit Log</span>
+                            <span><i class="fa-solid fa-lock" style="color: #059669;"></i> Generate Today's Final Closing</span>
                         </div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Date & Time</th>
-                                        <th>Others Amount</th>
-                                        <th>Grand Total Cash</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="cashHistoryTableBody">
-                                    <tr><td colspan="3" style="text-align: center; color: #9ca3af;">No cash inventory audit records available yet.</td></tr>
-                                </tbody>
-                            </table>
+                        <div style="text-align: center; padding: 30px; background: #f0fdf4; border-radius: 12px; margin: 10px;">
+                            <p style="color: #166534; font-weight: 600; margin-bottom: 15px;">আজকের দিনের সমস্ত হিসাব একবারে ক্লোজ করে পিডিএফ জেনারেট করতে নিচের বাটনে ক্লিক করুন।</p>
+                            <button class="btn-submit" onclick="generateDailyClosingSnapshot()" style="width: auto; padding: 12px 30px; background: #059669;">
+                                <i class="fa-solid fa-bolt-lightning"></i> Generate & Save Snapshot
+                            </button>
                         </div>
                     </div>
 
-                    <!-- ACCOUNT BALANCE HISTORY -->
-                    <div class="erp-form-card">
+                    <div id="closingReportDisplayCard" class="erp-form-card" style="display:none; background: #fff;">
                         <div class="erp-form-header">
-                            <span><i class="fa-solid fa-clock-rotate-left" style="color: #00a8ef;"></i> Account Balance Audit Log</span>
+                            <span><i class="fa-solid fa-file-pdf"></i> Report Preview</span>
+                            <button class="btn-action btn-edit" onclick="printDailyClosingPDF()" style="background: #e11d48; color: #fff;">
+                                <i class="fa-solid fa-download"></i> Download PDF
+                            </button>
                         </div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Date & Time</th>
-                                        <th>Category</th>
-                                        <th>Account Name</th>
-                                        <th>Previous Balance</th>
-                                        <th>Current Balance</th>
-                                        <th>Difference</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="historyTableBody">
-                                    <tr><td colspan="6" style="text-align: center; color: #9ca3af;">No balance record history available yet.</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
+                        <div id="printable-closing-report" style="padding: 10px;"></div>
                     </div>
 
-                    <!-- CARD INVENTORY HISTORY -->
                     <div class="erp-form-card">
-                        <div class="erp-form-header">
-                            <span><i class="fa-solid fa-boxes-stacked" style="color: #10b981;"></i> Card Inventory Audit Log</span>
-                        </div>
+                        <div class="erp-form-header"><span><i class="fa-solid fa-history"></i> Closing History Logs</span></div>
                         <div class="table-container">
                             <table>
                                 <thead>
-                                    <tr>
-                                        <th>Date & Time</th>
-                                        <th>Operator</th>
-                                        <th>Total Cards</th>
-                                        <th>Grand Total Value</th>
-                                    </tr>
+                                    <tr><th>Date</th><th>Time</th><th>Report ID</th><th>Net Balance</th><th>Action</th></tr>
                                 </thead>
-                                <tbody id="cardHistoryTableBody">
-                                    <tr><td colspan="4" style="text-align: center; color: #9ca3af;">No card inventory history available yet.</td></tr>
-                                </tbody>
+                                <tbody id="dailyClosingHistoryTableBody"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
+                <!-- সেকশন ২: Financial Summary (আলাদা প্যানেল) -->
+                <div class="view-panel" id="financial-summary-view">
+                    <div class="fintech-hero-card">
+                        <h3>Executive Financial Overview</h3>
+                        <div class="hero-amount" id="summaryTotalBalance">৳ 0.00</div>
+                    </div>
+                    <div class="summary-grid" id="summaryDashboardGrid">
+                        <!-- ডাইনামিক কার্ড এখানে আসবে -->
+                    </div>
+                </div>
+
+                <!-- সেকশন ৩: Transaction History / Audit Log (আলাদা প্যানেল) -->
+                <div class="view-panel" id="transaction-history-view">
+                    <!-- এখানে আপনার পুরানো ৩টি টেবিল থাকবে কিন্তু পরিষ্কারভাবে -->
+                    <div class="erp-form-card">
+                        <div class="erp-form-header"><span><i class="fa-solid fa-clock-rotate-left"></i> Account Audit Logs</span></div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr><th>Date</th><th>Category</th><th>Account</th><th>Prev Bal</th><th>Current Bal</th><th>Diff</th></tr>
+                                </thead>
+                                <tbody id="historyTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="erp-form-card">
+                        <div class="erp-form-header"><span><i class="fa-solid fa-money-bill-wave"></i> Cash Audit Logs</span></div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr><th>Date & Time</th><th>Others Amount</th><th>Grand Total Cash</th></tr>
+                                </thead>
+                                <tbody id="cashHistoryTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- ==================== VIEW 6: CARD MANAGEMENT (MASTER CONFIG) ==================== -->
                 <div class="view-panel" id="card-mgmt-view">
                     <div class="erp-form-card" style="max-width: 1000px;">
@@ -4585,13 +4589,18 @@
                 document.getElementById('sub-card-inv').classList.add('active');
                 topTitle.innerText = "Card Inventory Audit";
                 renderAccordionInventory();
-            } else if (tabName === 'daily-closing') {
-                document.getElementById('daily-closing-view').classList.add('active');
-                document.getElementById('menu-reports-parent').classList.add('active');
-                document.getElementById('sub-dcr-report').classList.add('active');
-                topTitle.innerText = "Daily Closing Financial Statement";
-                renderDailyClosingHistory();
-            } else if (tabName === 'category-mgmt') {
+} else if (tabName === 'daily-closing-view') {
+        document.getElementById('daily-closing-view').classList.add('active');
+        topTitle.innerText = "Daily Closing Reports";
+        renderDailyClosingHistory();
+    } else if (tabName === 'financial-summary-view') {
+        document.getElementById('financial-summary-view').classList.add('active');
+        topTitle.innerText = "Financial Summary Overview";
+        updateDashboardCards();
+    } else if (tabName === 'transaction-history-view') {
+        document.getElementById('transaction-history-view').classList.add('active');
+        topTitle.innerText = "Audit History Log";
+        renderReportsView();            } else if (tabName === 'category-mgmt') {
                 document.getElementById('category-mgmt-view').classList.add('active');
                 document.getElementById('menu-settings-parent').classList.add('active');
                 document.getElementById('sub-cat-mgmt').classList.add('active');
@@ -4603,13 +4612,7 @@
                 document.getElementById('menu-settings-parent').classList.add('active');
                 document.getElementById('sub-card-mgmt').classList.add('active');
                 topTitle.innerText = "Master Card Configuration";
-                renderCardMasterView();
-            } else if (tabName === 'reports') {
-                document.getElementById('reports-view').classList.add('active');
-                document.getElementById('menu-reports-parent').classList.add('active');
-                document.getElementById('sub-tx-history').classList.add('active');
-                topTitle.innerText = "Audit History & Reports";
-                renderReportsView();
+                renderCardMasterView();            
             } else if (tabName === 'profile') {
                 document.getElementById('profile-view').classList.add('active');
                 document.getElementById('menu-settings-parent').classList.add('active');
