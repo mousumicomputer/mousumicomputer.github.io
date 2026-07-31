@@ -2821,26 +2821,41 @@
 // --- Card Inventory Stock Card ---
         let cardInventoryTotal = 0;
         try {
-            if (typeof cardInventoryData !== 'undefined' && cardInventoryData) {
-                Object.values(cardInventoryData).forEach(item => {
-                    const price = Number(item.price || item.rate || item.unitPrice || 0);
-                    const qty = Number(item.qty || item.quantity || item.pcs || 0);
-                    cardInventoryTotal += (price * qty);
-                });
-            }
-            if (cardInventoryTotal === 0 && typeof OPERATORS_LIST !== 'undefined') {
-                OPERATORS_LIST.forEach(op => {
-                    const list = (typeof cardConfig !== 'undefined' && cardConfig[op]) || [];
-                    list.forEach(c => {
-                        const price = Number(c.price || 0);
-                        const qty = Number(c.qty || c.quantity || c.stock || 0);
-                        cardInventoryTotal += (price * qty);
+            // ১. যদি অডিট সামারি পেজের এলিমেন্টগুলো স্ক্রিনে রেন্ডার হয়ে থাকে
+            const summaryIds = ['summaryGpVal', 'summaryBlVal', 'summaryRobival', 'summaryAirtelval'];
+            let foundInDom = false;
+            
+            summaryIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const text = el.innerText.replace(/[^0-9.]/g, '');
+                    const val = Number(text || 0);
+                    if (val > 0) {
+                        cardInventoryTotal += val;
+                        foundInDom = true;
+                    }
+                }
+            });
+
+            // ২. যদি স্ক্রিনে না থাকে, তবে গ্লোবাল ডাটাবেজ/কনফিগ থেকে সাম দিয়ে আনা
+            if (!foundInDom) {
+                if (typeof cardConfig !== 'undefined' && typeof OPERATORS_LIST !== 'undefined') {
+                    OPERATORS_LIST.forEach(op => {
+                        const list = cardConfig[op] || [];
+                        list.forEach(c => {
+                            const price = Number(c.price || 0);
+                            const qty = Number(c.qty || c.quantity || c.stock || 1);
+                            cardInventoryTotal += (price * qty);
+                        });
                     });
-                });
+                } else if (window.cardStockData) {
+                    cardInventoryTotal = Object.values(window.cardStockData).reduce((a, b) => a + Number(b || 0), 0);
+                }
             }
         } catch (e) {
             console.error("Card inventory calculation error:", e);
-        }        
+        }
+           
             const cardStockCard = document.createElement('div');
         cardStockCard.className = 'fintech-card';
         cardStockCard.innerHTML = `
