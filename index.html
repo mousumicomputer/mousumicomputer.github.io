@@ -3978,40 +3978,47 @@
         };
 
         window.printDailyClosingPDF = function() {
-            // ১. এলিমেন্টটি ধরুন
             const element = document.getElementById('printable-closing-report');
-            
-            // ২. চেক করুন রিপোর্টটি আসলে আছে কি না
-            if (!activeViewingReport || !element || element.innerHTML.trim() === "") {
-                showToast("আগে একটি রিপোর্ট 'View' করুন তারপর ডাউনলোড করুন।", "warning");
+
+            // ১. কন্টেন্ট আছে কি না চেক করুন
+            if (!activeViewingReport || !element || element.innerText.trim() === "") {
+                showToast("আগে একটি রিপোর্ট ভিউ (View) করুন!", "error");
                 return;
             }
 
-            showLoader("পিডিএফ তৈরি হচ্ছে, অপেক্ষা করুন...");
+            showLoader("পিডিএফ ফাইল তৈরি হচ্ছে...");
 
+            // ২. পিডিএফ অপশন সেটআপ
             const opt = {
                 margin:       [10, 10, 10, 10],
                 filename:     `Daily_Closing_${activeViewingReport.report_date}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
+                image:        { type: 'jpeg', quality: 1 },
                 html2canvas:  { 
                     scale: 2, 
-                    useCORS: true, 
-                    letterRendering: true,
-                    scrollY: 0 
+                    useCORS: true,
+                    scrollY: 0,
+                    // এই অংশটি সিএসএস সমস্যা সমাধান করবে
+                    onclone: (clonedDoc) => {
+                        const report = clonedDoc.getElementById('printable-closing-report');
+                        if (report) {
+                            report.style.display = 'block';
+                            report.style.visibility = 'visible';
+                            // ভেতরকার সব এলিমেন্টকেও দৃশ্যমান করা
+                            const all = report.getElementsByTagName("*");
+                            for (let i = 0; i < all.length; i++) {
+                                all[i].style.visibility = 'visible';
+                            }
+                        }
+                    }
                 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // ৩. সামান্য সময় বিরতি দিয়ে ডাউনলোড শুরু করুন যাতে ফাঁকা না আসে
-            setTimeout(() => {
-                html2pdf().set(opt).from(element).save().then(() => {
-                    hideLoader();
-                    showToast("পিডিএফ ডাউনলোড সম্পন্ন হয়েছে।", "success");
-                }).catch(err => {
-                    hideLoader();
-                    showToast("ডাউনলোড ব্যর্থ হয়েছে!", "error");
-                });
-            }, 500); // ৫০০ মিলিসেকেন্ড অপেক্ষা
+            // ৩. প্রসেসিং শুরু
+            html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
+                hideLoader();
+                showToast("ডাউনলোড সম্পন্ন হয়েছে।", "success");
+            }).save();
         };
         
         window.exportDailyClosingExcel = function() {
