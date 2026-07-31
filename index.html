@@ -3978,58 +3978,63 @@
         };
 
         window.printDailyClosingPDF = function() {
-            // ১. ডাটা চেক করুন
-            const reportArea = document.getElementById('printable-closing-report');
-            if (!activeViewingReport || !reportArea || reportArea.innerHTML.trim() === "") {
-                alert("আগে একটি রিপোর্ট 'View' করুন তারপর ডাউনলোড করুন।");
+            const reportContent = document.getElementById('printable-closing-report');
+
+            // ১. কন্টেন্ট চেক
+            if (!activeViewingReport || !reportContent || reportContent.innerHTML.trim() === "") {
+                alert("দুঃখিত, আগে একটি রিপোর্ট 'View' করুন!");
                 return;
             }
 
-            showLoader("পিডিএফ তৈরি হচ্ছে...");
+            showLoader("পিডিএফ ফাইল তৈরি হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...");
 
-            // ২. একটি অস্থায়ী DIV তৈরি করুন যা সব CSS বাধা এড়িয়ে চলবে
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = reportArea.innerHTML;
+            // ২. একটি সম্পূর্ণ নতুন এলিমেন্ট তৈরি করা যা সব CSS বাধা এড়িয়ে চলবে
+            const container = document.createElement('div');
             
-            // ৩. এই DIV টিকে স্টাইল দিন যাতে এটি দৃশ্যমান হয় কিন্তু মূল পেজে ঝামেলা না করে
-            tempDiv.style.position = 'absolute';
-            tempDiv.style.left = '-9999px';
-            tempDiv.style.top = '0';
-            tempDiv.style.width = '190mm'; // A4 width
-            tempDiv.style.backgroundColor = 'white';
-            tempDiv.style.color = 'black';
-            tempDiv.style.padding = '10px';
-            tempDiv.style.visibility = 'visible';
-            tempDiv.style.display = 'block';
+            // ৩. এই কন্টেনারের ভেতর সরাসরি রিপোর্টের HTML কপি করে দেওয়া
+            container.innerHTML = reportContent.innerHTML;
 
-            document.body.appendChild(tempDiv);
+            // ৪. স্টাইল গুলোকে ইনলাইন ভাবে ফিক্স করে দেওয়া যাতে ব্ল্যাঙ্ক না আসে
+            container.style.width = '190mm';
+            container.style.padding = '10px';
+            container.style.backgroundColor = '#ffffff';
+            container.style.color = '#000000';
+            container.style.fontFamily = 'Arial, sans-serif';
 
-            // ৪. PDF অপশন
+            // ৫. পিডিএফ অপশন (এখানেই আসল ম্যাজিক)
             const opt = {
                 margin:       [10, 10, 10, 10],
                 filename:     `Daily_Closing_${activeViewingReport.report_date}.pdf`,
                 image:        { type: 'jpeg', quality: 1 },
                 html2canvas:  { 
                     scale: 2, 
-                    useCORS: true,
-                    backgroundColor: '#ffffff'
+                    useCORS: true, 
+                    logging: false,
+                    letterRendering: true,
+                    // এই অপশনটি সিএসএস এর ব্ল্যাঙ্ক হওয়ার সমস্যা সমাধান করবে
+                    onclone: (clonedDoc) => {
+                        // ক্লোন করা ডকুমেন্টে বডি এবং কন্টেন্টকে দৃশ্যমান করা
+                        clonedDoc.body.style.visibility = 'visible';
+                        const el = clonedDoc.querySelector('div');
+                        if (el) {
+                            el.style.visibility = 'visible';
+                            el.style.display = 'block';
+                        }
+                    }
                 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // ৫. পিডিএফ জেনারেট এবং ক্লিনআপ
-            html2pdf().set(opt).from(tempDiv).save().then(() => {
-                document.body.removeChild(tempDiv); // কাজ শেষ হলে অস্থায়ী DIV টি মুছে ফেলুন
+            // ৬. সরাসরি কন্টেনার থেকে পিডিএফ জেনারেট করা
+            html2pdf().set(opt).from(container).toPdf().get('pdf').then(function(pdf) {
                 hideLoader();
-                showToast("সফলভাবে ডাউনলোড হয়েছে।", "success");
-            }).catch(err => {
+                showToast("পিডিএফ ডাউনলোড সম্পন্ন হয়েছে।", "success");
+            }).save().catch(err => {
                 console.error(err);
-                document.body.removeChild(tempDiv);
                 hideLoader();
-                showToast("ডাউনলোড ব্যর্থ হয়েছে!", "error");
+                showToast("পিডিএফ তৈরি করতে সমস্যা হয়েছে।", "error");
             });
-        };
-        
+        };        
         window.exportDailyClosingExcel = function() {
             if (!activeViewingReport) return;
             const r = activeViewingReport;
