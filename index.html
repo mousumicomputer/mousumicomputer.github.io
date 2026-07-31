@@ -2818,27 +2818,24 @@
         grid.appendChild(cashCard);
         grandTotalNetBalance += cashInventoryTotal;
 
-        // --- Card Inventory Stock Card ---
+// --- Card Inventory Stock Card ---
         let cardInventoryTotal = 0;
         try {
-            const cards = window.cardMasterList || window.cardMasterData || [];
-            if (Array.isArray(cards)) {
-                cards.forEach(card => {
-                    const qty = Number(card.qty || card.quantity || card.stock || 0);
-                    const price = Number(card.price || card.rate || card.unitPrice || 0);
-                    cardInventoryTotal += qty * price;
+            if (typeof cardConfig !== 'undefined' && typeof OPERATORS_LIST !== 'undefined') {
+                OPERATORS_LIST.forEach(op => {
+                    const list = cardConfig[op] || [];
+                    list.forEach(c => {
+                        const price = Number(c.price || 0);
+                        const qty = Number(c.qty || c.quantity || c.stock || 1);
+                        cardInventoryTotal += (price * qty);
+                    });
                 });
-            } else if (typeof cards === 'object' && cards) {
-                Object.values(cards).forEach(card => {
-                    const qty = Number(card.qty || card.quantity || card.stock || 0);
-                    const price = Number(card.price || card.rate || card.unitPrice || 0);
-                    cardInventoryTotal += qty * price;
-                });
+            } else if (window.cardStockData) {
+                cardInventoryTotal = Object.values(window.cardStockData).reduce((a, b) => a + Number(b || 0), 0);
             }
         } catch (e) {
             console.error("Card inventory calculation error:", e);
         }
-
         const cardStockCard = document.createElement('div');
         cardStockCard.className = 'fintech-card';
         cardStockCard.innerHTML = `
