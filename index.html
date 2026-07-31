@@ -2792,14 +2792,11 @@
             grid.appendChild(custCard);
 // --- Cash Inventory Card ---
         let cashInventoryTotal = 0;
-        if (typeof calculateCashTotals === 'function') {
-            const res = calculateCashTotals();
-            cashInventoryTotal = Number(res?.totalAmount || res?.total || res || 0);
+        if (typeof cashInventoryState === 'object' && cashInventoryState) {
+            cashInventoryTotal = Object.entries(cashInventoryState).reduce((sum, [denom, qty]) => sum + (Number(denom) * Number(qty || 0)), 0);
         } else if (typeof calculateCashInventoryTotals === 'function') {
             const res = calculateCashInventoryTotals();
             cashInventoryTotal = Number(res?.totalAmount || res?.total || res || 0);
-        } else if (window.cashInventoryData) {
-            cashInventoryTotal = Object.values(window.cashInventoryData).reduce((a, b) => a + Number(b || 0), 0);
         }
 
         const cashCard = document.createElement('div');
@@ -2814,14 +2811,13 @@
 
         // --- Card Inventory Stock Card ---
         let cardInventoryTotal = 0;
-        if (typeof calculateCardTotals === 'function') {
-            const res = calculateCardTotals();
-            cardInventoryTotal = Number(res?.totalValue || res?.total || res || 0);
+        if (typeof cardInventoryState === 'object' && cardInventoryState) {
+            cardInventoryTotal = Object.values(cardInventoryState).reduce((sum, item) => sum + Number(item?.totalValue || item?.value || (Number(item?.qty || 0) * Number(item?.price || 0)) || 0), 0);
+        } else if (typeof cardMasterList === 'object' && cardMasterList) {
+            cardInventoryTotal = Object.values(cardMasterList).reduce((sum, item) => sum + Number(item?.totalValue || item?.value || (Number(item?.qty || 0) * Number(item?.price || 0)) || 0), 0);
         } else if (typeof calculateCardInventoryTotals === 'function') {
             const res = calculateCardInventoryTotals();
             cardInventoryTotal = Number(res?.totalValue || res?.total || res || 0);
-        } else if (window.cardInventoryData) {
-            cardInventoryTotal = Object.values(window.cardInventoryData).reduce((a, b) => a + Number(b?.totalValue || 0), 0);
         }
 
         const cardStockCard = document.createElement('div');
