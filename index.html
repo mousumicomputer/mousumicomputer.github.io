@@ -2792,11 +2792,20 @@
             grid.appendChild(custCard);
 // --- Cash Inventory Card ---
         let cashInventoryTotal = 0;
-        if (typeof cashInventoryState === 'object' && cashInventoryState) {
-            cashInventoryTotal = Object.entries(cashInventoryState).reduce((sum, [denom, qty]) => sum + (Number(denom) * Number(qty || 0)), 0);
-        } else if (typeof calculateCashInventoryTotals === 'function') {
-            const res = calculateCashInventoryTotals();
-            cashInventoryTotal = Number(res?.totalAmount || res?.total || res || 0);
+        try {
+            if (typeof cashQuantities !== 'undefined' && typeof CASH_DENOMINATIONS !== 'undefined') {
+                CASH_DENOMINATIONS.forEach(denom => {
+                    const qty = Number(cashQuantities[denom] || 0);
+                    cashInventoryTotal += qty * denom;
+                });
+                if (typeof cashOthersAmount !== 'undefined') {
+                    cashInventoryTotal += Number(cashOthersAmount || 0);
+                }
+            } else if (window.cashInventoryData) {
+                cashInventoryTotal = Object.values(window.cashInventoryData).reduce((a, b) => a + Number(b || 0), 0);
+            }
+        } catch (e) {
+            console.error("Cash inventory calculation error:", e);
         }
 
         const cashCard = document.createElement('div');
@@ -2811,13 +2820,23 @@
 
         // --- Card Inventory Stock Card ---
         let cardInventoryTotal = 0;
-        if (typeof cardInventoryState === 'object' && cardInventoryState) {
-            cardInventoryTotal = Object.values(cardInventoryState).reduce((sum, item) => sum + Number(item?.totalValue || item?.value || (Number(item?.qty || 0) * Number(item?.price || 0)) || 0), 0);
-        } else if (typeof cardMasterList === 'object' && cardMasterList) {
-            cardInventoryTotal = Object.values(cardMasterList).reduce((sum, item) => sum + Number(item?.totalValue || item?.value || (Number(item?.qty || 0) * Number(item?.price || 0)) || 0), 0);
-        } else if (typeof calculateCardInventoryTotals === 'function') {
-            const res = calculateCardInventoryTotals();
-            cardInventoryTotal = Number(res?.totalValue || res?.total || res || 0);
+        try {
+            const cards = window.cardMasterList || window.cardMasterData || [];
+            if (Array.isArray(cards)) {
+                cards.forEach(card => {
+                    const qty = Number(card.qty || card.quantity || card.stock || 0);
+                    const price = Number(card.price || card.rate || card.unitPrice || 0);
+                    cardInventoryTotal += qty * price;
+                });
+            } else if (typeof cards === 'object' && cards) {
+                Object.values(cards).forEach(card => {
+                    const qty = Number(card.qty || card.quantity || card.stock || 0);
+                    const price = Number(card.price || card.rate || card.unitPrice || 0);
+                    cardInventoryTotal += qty * price;
+                });
+            }
+        } catch (e) {
+            console.error("Card inventory calculation error:", e);
         }
 
         const cardStockCard = document.createElement('div');
@@ -2828,13 +2847,12 @@
             <div class="amount" style="color: #b45309;">৳ ${cardInventoryTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
         `;
         grid.appendChild(cardStockCard);
-        grandTotalNetBalance += cardInventoryTotal;            
-            const totalEl = document.getElementById('totalAllBalance');
-            if (totalEl) {
-                totalEl.innerText = `৳ ${grandTotalNetBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
-            }
-        }
+        grandTotalNetBalance += cardInventoryTotal;
 
+        const totalEl = document.getElementById('totalAllBalance');
+        if (totalEl) {
+            totalEl.innerText = `৳ ${grandTotalNetBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+        }
         /* CASH INVENTORY RENDERER & ACTIONS */
         window.renderCashInventoryTable = function() {
             const tbody = document.getElementById('cashDenomTableBody');
