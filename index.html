@@ -2791,29 +2791,48 @@
             `;
             grid.appendChild(custCard);
 // --- Cash Inventory Card ---
-        const cashTotals = typeof calculateCashTotals === 'function' ? calculateCashTotals() : { totalAmount: 0 };
+        let cashInventoryTotal = 0;
+        if (typeof calculateCashTotals === 'function') {
+            const res = calculateCashTotals();
+            cashInventoryTotal = Number(res?.totalAmount || res?.total || res || 0);
+        } else if (typeof calculateCashInventoryTotals === 'function') {
+            const res = calculateCashInventoryTotals();
+            cashInventoryTotal = Number(res?.totalAmount || res?.total || res || 0);
+        } else if (window.cashInventoryData) {
+            cashInventoryTotal = Object.values(window.cashInventoryData).reduce((a, b) => a + Number(b || 0), 0);
+        }
+
         const cashCard = document.createElement('div');
         cashCard.className = 'fintech-card';
         cashCard.innerHTML = `
             <div class="card-icon" style="background: #dcfce7; color: #15803d;"><i class="fa-solid fa-money-bill-wave"></i></div>
             <h4>Cash Inventory</h4>
-            <div class="amount" style="color: #15803d;">৳ ${cashTotals.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+            <div class="amount" style="color: #15803d;">৳ ${cashInventoryTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
         `;
         grid.appendChild(cashCard);
-        grandTotalNetBalance += cashTotals.totalAmount;
+        grandTotalNetBalance += cashInventoryTotal;
 
         // --- Card Inventory Stock Card ---
-        const cardTotals = typeof calculateCardTotals === 'function' ? calculateCardTotals() : { totalValue: 0 };
+        let cardInventoryTotal = 0;
+        if (typeof calculateCardTotals === 'function') {
+            const res = calculateCardTotals();
+            cardInventoryTotal = Number(res?.totalValue || res?.total || res || 0);
+        } else if (typeof calculateCardInventoryTotals === 'function') {
+            const res = calculateCardInventoryTotals();
+            cardInventoryTotal = Number(res?.totalValue || res?.total || res || 0);
+        } else if (window.cardInventoryData) {
+            cardInventoryTotal = Object.values(window.cardInventoryData).reduce((a, b) => a + Number(b?.totalValue || 0), 0);
+        }
+
         const cardStockCard = document.createElement('div');
         cardStockCard.className = 'fintech-card';
         cardStockCard.innerHTML = `
             <div class="card-icon" style="background: #fef3c7; color: #b45309;"><i class="fa-solid fa-sim-card"></i></div>
             <h4>Card Inventory Stock</h4>
-            <div class="amount" style="color: #b45309;">৳ ${cardTotals.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+            <div class="amount" style="color: #b45309;">৳ ${cardInventoryTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
         `;
         grid.appendChild(cardStockCard);
-        grandTotalNetBalance += cardTotals.totalValue;
-            
+        grandTotalNetBalance += cardInventoryTotal;            
             const totalEl = document.getElementById('totalAllBalance');
             if (totalEl) {
                 totalEl.innerText = `৳ ${grandTotalNetBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
