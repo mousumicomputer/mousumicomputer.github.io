@@ -2790,7 +2790,30 @@
                 <div class="amount" style="color: #e11d48;">৳ ${custTotals.totalOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
             `;
             grid.appendChild(custCard);
+// --- Cash Inventory Card ---
+        const cashTotals = typeof calculateCashInventoryTotals === 'function' ? calculateCashInventoryTotals() : { totalAmount: 0 };
+        const cashCard = document.createElement('div');
+        cashCard.className = 'fintech-card';
+        cashCard.innerHTML = `
+            <div class="card-icon" style="background: #dcfce7; color: #15803d;"><i class="fa-solid fa-money-bill-wave"></i></div>
+            <h4>Cash Inventory</h4>
+            <div class="amount" style="color: #15803d;">৳ ${cashTotals.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+        `;
+        grid.appendChild(cashCard);
+        grandTotalNetBalance += cashTotals.totalAmount;
 
+        // --- Card Inventory Stock Card ---
+        const cardTotals = typeof calculateCardInventoryTotals === 'function' ? calculateCardInventoryTotals() : { totalValue: 0 };
+        const cardStockCard = document.createElement('div');
+        cardStockCard.className = 'fintech-card';
+        cardStockCard.innerHTML = `
+            <div class="card-icon" style="background: #fef3c7; color: #b45309;"><i class="fa-solid fa-sim-card"></i></div>
+            <h4>Card Inventory Stock</h4>
+            <div class="amount" style="color: #b45309;">৳ ${cardTotals.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+        `;
+        grid.appendChild(cardStockCard);
+        grandTotalNetBalance += cardTotals.totalValue;
+            
             const totalEl = document.getElementById('totalAllBalance');
             if (totalEl) {
                 totalEl.innerText = `৳ ${grandTotalNetBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
