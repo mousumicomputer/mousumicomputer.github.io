@@ -1657,29 +1657,83 @@
                                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="navAvatar" class="user-profile-avatar" />
                                 <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; color: #6b7280;"></i>
                             </div>
-                            <div class="profile-dropdown-menu" id="profileDropdown">
-                                <div class="dropdown-header">
-                                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="dropdownHeaderImg" alt="Profile" />
-                                    <div>
-                                        <h4 id="dropdownName">Rabbi Hosen</h4>
-                                        <p id="dropdownRole" style="font-size: 0.8rem; opacity: 0.9;">Admin</p>
-                                    </div>
-                                </div>
-                                <div class="dropdown-section-title">SETTINGS & PROFILE</div>
-                                <ul class="dropdown-items-list">
-                                    <li class="dropdown-item" onclick="switchMainTab('profile')">
-                                        <i class="fa-solid fa-user-gear"></i> <span>My Profile & Security</span>
-                                    </li>
-                                </ul>
-                                <div class="dropdown-logout-container">
-                                    <button class="btn-dropdown-logout" id="logoutBtn">
-                                        <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                            <!-- আধুনিক প্রোফাইল ড্রপডাউন -->
+<div class="profile-dropdown-menu" id="profileDropdown">
+    <div style="background: linear-gradient(135deg, #00bdff 0%, #0088e8 100%); padding: 15px; color: #fff; text-align: center; border-radius: 12px 12px 0 0;">
+        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="dropdownHeaderImg" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #fff; margin-bottom: 5px;">
+        <h4 id="dropdownName" style="margin: 0;">Rabbi Hosen</h4>
+        <p id="dropdownRole" style="font-size: 0.75rem; opacity: 0.9; margin: 0;">Administrator</p>
+    </div>
+    <ul style="list-style: none; padding: 10px 0; margin: 0;">
+        <li style="padding: 10px 20px; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: #4b5563;" onclick="openProfileModal()">
+            <i class="fa-solid fa-user-gear" style="margin-right: 10px; color: #00a8ef;"></i> My Profile & Security
+        </li>
+        <li style="padding: 10px 20px; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: #4b5563;" onclick="switchMainTab('daily-closing')">
+            <i class="fa-solid fa-file-invoice-dollar" style="margin-right: 10px; color: #10b981;"></i> Financial Logs
+        </li>
+        <li style="padding: 10px 20px; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: #4b5563;" onclick="alert('Support: 017xx-xxxxxx')">
+            <i class="fa-solid fa-circle-info" style="margin-right: 10px; color: #f97316;"></i> System Support
+        </li>
+    </ul>
+    <div style="padding: 10px; border-top: 1px solid #eee;">
+        <button id="logoutBtn" style="width:100%; padding:10px; border:none; background:#e11d48; color:#fff; cursor:pointer; border-radius:8px; font-weight: 700;">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout Account
+        </button>
+    </div>
+</div>
+
+<!-- আধুনিক প্রোফাইল সেটিংস পপ-আপ (Modal) -->
+<div id="profileModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 500px; text-align: left;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
+            <h3 style="color: var(--primary-dark);"><i class="fa-solid fa-id-card"></i> Profile & Security Settings</h3>
+            <button onclick="closeProfileModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #9ca3af;">&times;</button>
+        </div>
+        
+        <form id="enhancedProfileForm">
+            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <div style="flex: 1;">
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #6b7280; display: block; margin-bottom: 5px;">Full Name</label>
+                    <input type="text" id="profNameInput" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
                 </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #6b7280; display: block; margin-bottom: 5px;">Designation</label>
+                    <input type="text" id="profRoleInput" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="font-size: 0.8rem; font-weight: 700; color: #6b7280; display: block; margin-bottom: 5px;">Shop/Company Name (For Reports)</label>
+                <input type="text" id="profCompanyInput" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <div style="flex: 1;">
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #6b7280; display: block; margin-bottom: 5px;">Phone Number</label>
+                    <input type="text" id="profPhoneInput" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #6b7280; display: block; margin-bottom: 5px;">Avatar/Photo URL</label>
+                    <input type="text" id="profAvatarInput" placeholder="Image link..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+            </div>
+
+            <div style="background: #fff9f0; padding: 15px; border-radius: 10px; border: 1px solid #ffedd5;">
+                <h4 style="font-size: 0.9rem; color: #9a3412; margin-bottom: 10px;"><i class="fa-solid fa-lock"></i> Security (Change Password)</h4>
+                <div style="display: flex; gap: 10px;">
+                    <input type="password" id="profPassInput" placeholder="Enter new password" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    <button type="button" class="btn-submit" onclick="updateUserPassword()" style="width: auto; padding: 0 15px; background: #9a3412; font-size: 0.85rem;">Update Pass</button>
+                </div>
+                <p style="font-size: 0.7rem; color: #b45309; margin-top: 5px;">খালি রাখলে পাসওয়ার্ড পরিবর্তন হবে না।</p>
+            </div>
+
+            <div style="margin-top: 25px; display: flex; gap: 10px;">
+                <button type="button" class="btn-modal-cancel" onclick="closeProfileModal()">Cancel</button>
+                <button type="submit" class="btn-submit" style="background: #00a8ef;"><i class="fa-solid fa-floppy-disk"></i> Save All Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
 <!-- হারানো প্যানেলগুলো এখানে ফিরিয়ে আনা হলো -->
 
                 <!-- ১. ব্যালেন্স আপডেট করার প্যানেল -->
@@ -2387,7 +2441,7 @@
     <!-- FIREBASE & FINTECH ERP SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
@@ -4881,6 +4935,73 @@ window.downloadDailyClosingPDF = function() {
         const wb = XLSX.utils.table_to_book(table);
         XLSX.writeFile(wb, 'Daily_Closing_Report.xlsx');
     };
+// --- প্রোফাইল পপ-আপ ওপেন করার ফাংশন ---
+window.openProfileModal = function() {
+    // আগের সেভ করা তথ্যগুলো বক্সে বসানো হচ্ছে
+    document.getElementById('profNameInput').value = profileSettings.fullName || 'Rabbi Hosen';
+    document.getElementById('profRoleInput').value = profileSettings.role || 'Admin';
+    document.getElementById('profCompanyInput').value = profileSettings.companyName || 'Mousumi Computer';
+    document.getElementById('profPhoneInput').value = profileSettings.phone || '';
+    document.getElementById('profAvatarInput').value = profileSettings.avatarUrl || '';
+    
+    // পপ-আপটি দেখানো হচ্ছে
+    document.getElementById('profileModal').style.display = 'flex';
+};
+
+// --- পপ-আপ বন্ধ করার ফাংশন ---
+window.closeProfileModal = function() {
+    document.getElementById('profileModal').style.display = 'none';
+};
+
+// --- প্রোফাইল তথ্য সেভ করার কোড ---
+document.getElementById('enhancedProfileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showLoader("Saving Profile Changes...");
+
+    // নতুন তথ্যগুলো অবজেক্টে নেওয়া হচ্ছে
+    profileSettings.fullName = document.getElementById('profNameInput').value;
+    profileSettings.role = document.getElementById('profRoleInput').value;
+    profileSettings.companyName = document.getElementById('profCompanyInput').value;
+    profileSettings.phone = document.getElementById('profPhoneInput').value;
+    profileSettings.avatarUrl = document.getElementById('profAvatarInput').value;
+
+    try {
+        // Firebase এ সেভ করা হচ্ছে
+        await writeToFirebase('erp/settings', profileSettings);
+        
+        // ড্যাশবোর্ডে নাম-ছবি আপডেট করা
+        if (typeof loadSavedProfile === 'function') loadSavedProfile();
+        
+        closeProfileModal();
+        hideLoader();
+        showToast("Profile settings updated successfully!", "success");
+    } catch(err) {
+        hideLoader();
+        showToast("Failed to save settings.", "error");
+    }
+});
+
+window.updateUserPassword = async function() {
+    const newPass = document.getElementById('profPassInput').value;
+    if (!newPass || newPass.length < 6) {
+        showToast("Password must be at least 6 characters!", "warning");
+        return;
+    }
+
+    showLoader("Updating Security...");
+    try {
+        const user = auth.currentUser;
+        if (user) {
+            await updatePassword(user, newPass);
+            document.getElementById('profPassInput').value = '';
+            hideLoader();
+            showToast("Password changed successfully!", "success");
+        }
+    } catch(err) {
+        hideLoader();
+        showToast("Error: " + err.message, "error");
+    }
+};
 </script>
 </body>
 </html>
