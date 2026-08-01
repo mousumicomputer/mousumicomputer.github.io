@@ -4569,19 +4569,58 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
 document.addEventListener('click', () => {
     if(document.getElementById('profileDropdown')) document.getElementById('profileDropdown').classList.remove('active');
 });
+// উপরের ফাংশনটি (initSync) এখানে শেষ করা হলো
+} 
 
-// ৭. পিডিএফ এবং এক্সেল ডাউনলোড
+// ৭. পিডিএফ এবং এক্সেল ডাউনলোড (নিখুঁত কোড)
 window.downloadDailyClosingPDF = function() {
+    console.log("PDF download starting...");
     const element = document.getElementById('printable-closing-report');
-    const opt = { margin:10, filename:'Report.pdf', html2canvas:{scale:2}, jsPDF:{unit:'mm', format:'a4', orientation:'portrait'}, pagebreak:{mode:['avoid-all']} };
+    if (!element) { 
+        alert("রিপোর্ট এলাকা খুঁজে পাওয়া যায়নি!"); 
+        return; 
+    }
+
+    const opt = {
+        margin:       10,
+        filename:     'Report.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    // সরাসরি ডাউনলোড শুরু হবে
     html2pdf().set(opt).from(element).save();
 };
 
 window.exportDailyClosingExcel = () => {
+    console.log("Excel download starting...");
     const t = document.querySelector('#printable-closing-report table');
+    if (!t) { 
+        alert("টেবিল পাওয়া যায়নি!"); 
+        return; 
+    }
     const wb = XLSX.utils.table_to_book(t);
     XLSX.writeFile(wb, 'Report.xlsx');
-};            
-</script>
+};
+
+// সাইডবার এবং প্রোফাইল ইভেন্ট লিসনার
+if (document.getElementById('sidebarToggle')) {
+    document.getElementById('sidebarToggle').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+}
+if (document.getElementById('profileTrigger')) {
+    document.getElementById('profileTrigger').addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('profileDropdown').classList.toggle('active');
+    });
+}
+document.addEventListener('click', () => {
+    if (document.getElementById('profileDropdown')) {
+        document.getElementById('profileDropdown').classList.remove('active');
+    }
+});
+
+    </script>
 </body>
 </html>
