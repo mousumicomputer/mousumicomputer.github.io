@@ -3677,6 +3677,8 @@ window.generateDailyClosingSnapshot = async function() {
 
 // --- ডেইলি ক্লোজিং রিপোর্ট ভিউয়ার (টেবিল এলাইনমেন্ট ফিক্স করা হয়েছে) ---
 
+// --- ডেইলি ক্লোজিং রিপোর্ট ভিউয়ার (টোটাল রো এবং সেন্টার হেডার ফিক্সড) ---
+
 window.renderDailyClosingReportView = function(snap) {
     const container = document.getElementById('printable-closing-report');
     if (!container) return;
@@ -3718,15 +3720,15 @@ window.renderDailyClosingReportView = function(snap) {
             ${renderSubTable(snap.agent_accounts, "AGENT ACCOUNTS", aSum)}
             ${renderSubTable(snap.recharge_accounts, "RECHARGE BALANCES", rSum)}
 
-            <!-- ক্যাশ ডিটেইলস (ফিক্সড কলাম) -->
+            <!-- ক্যাশ ইনভেন্টরি বিস্তারিত -->
             ${snap.cash_inventory_details && snap.cash_inventory_details.length > 0 ? `
             <div style="border: 1px solid #000; margin-bottom: 10px;">
                 <div style="background: #eee; padding: 4px 10px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">CASH INVENTORY DETAILS</div>
                 <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
                     <tr style="background:#f9f9f9; font-weight:bold; text-align:center;">
-                        <td style="border: 1px solid #000; padding: 4px; width: 45%; text-align: left;">NOTES</td>
+                        <td style="border: 1px solid #000; padding: 4px; width: 45%; text-align: center;">NOTES</td>
                         <td style="border: 1px solid #000; padding: 4px; width: 15%;">QTY</td>
-                        <td style="border: 1px solid #000; padding: 4px; width: 40%; text-align: right;">AMOUNT (৳)</td>
+                        <td style="border: 1px solid #000; padding: 4px; width: 40%; text-align: center;">AMOUNT (৳)</td>
                     </tr>
                     ${snap.cash_inventory_details.map(i => `
                         <tr>
@@ -3735,18 +3737,23 @@ window.renderDailyClosingReportView = function(snap) {
                             <td style="border: 1px solid #000; padding: 3px 10px; text-align:right;">${fmt(i.amount)}</td>
                         </tr>
                     `).join('')}
+                    <!-- ক্যাশ টোটাল রো -->
+                    <tr style="font-weight: bold; background: #f9f9f9;">
+                        <td colspan="2" style="border: 1px solid #000; padding: 4px 10px; text-transform: uppercase;">TOTAL CASH INVENTORY</td>
+                        <td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">${fmt(snap.total_cash_inventory)}</td>
+                    </tr>
                 </table>
             </div>` : ''}
 
-            <!-- কার্ড ডিটেইলস (ফিক্সড কলাম) -->
+            <!-- কার্ড ইনভেন্টরি বিস্তারিত -->
             ${snap.card_inventory_details && snap.card_inventory_details.length > 0 ? `
             <div style="border: 1px solid #000; margin-bottom: 10px;">
                 <div style="background: #eee; padding: 4px 10px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">CARD INVENTORY DETAILS</div>
                 <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
                     <tr style="background:#f9f9f9; font-weight:bold; text-align:center;">
-                        <td style="border: 1px solid #000; padding: 4px; width: 45%; text-align: left;">CARD NAME</td>
+                        <td style="border: 1px solid #000; padding: 4px; width: 45%; text-align: center;">CARD NAME</td>
                         <td style="border: 1px solid #000; padding: 4px; width: 15%;">QTY</td>
-                        <td style="border: 1px solid #000; padding: 4px; width: 40%; text-align: right;">TOTAL (৳)</td>
+                        <td style="border: 1px solid #000; padding: 4px; width: 40%; text-align: center;">TOTAL (৳)</td>
                     </tr>
                     ${snap.card_inventory_details.map(c => `
                         <tr>
@@ -3755,6 +3762,11 @@ window.renderDailyClosingReportView = function(snap) {
                             <td style="border: 1px solid #000; padding: 3px 10px; text-align:right;">${fmt(c.total)}</td>
                         </tr>
                     `).join('')}
+                    <!-- কার্ড টোটাল রো -->
+                    <tr style="font-weight: bold; background: #f9f9f9;">
+                        <td colspan="2" style="border: 1px solid #000; padding: 4px 10px; text-transform: uppercase;">TOTAL CARD INVENTORY</td>
+                        <td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">${fmt(snap.total_card_inventory)}</td>
+                    </tr>
                 </table>
             </div>` : ''}
         </div>`;
@@ -3765,8 +3777,12 @@ window.renderDailyClosingReportView = function(snap) {
         <div style="border: 1px solid #000; margin-bottom: 10px;">
             <div style="background: #eee; padding: 4px 10px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">${title}</div>
             <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-                ${arr.map(a => `<tr><td style="border: 1px solid #000; padding: 3px 10px; width: 70%;">${a.name}</td><td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">${fmt(a.balance)}</td></tr>`).join('')}
-                <tr style="font-weight: bold; background: #f9f9f9;"><td style="border: 1px solid #000; padding: 4px 10px;">TOTAL ${title}</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">${fmt(sum)}</td></tr>
+                <tr style="background:#f9f9f9; font-weight:bold; text-align:center;">
+                    <td style="border: 1px solid #000; padding: 3px; width: 70%; text-align: center;">ACCOUNT NAME</td>
+                    <td style="border: 1px solid #000; padding: 3px; text-align: center;">BALANCE (৳)</td>
+                </tr>
+                ${arr.map(a => `<tr><td style="border: 1px solid #000; padding: 3px 10px;">${a.name}</td><td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">${fmt(a.balance)}</td></tr>`).join('')}
+                <tr style="font-weight: bold; background: #f9f9f9;"><td style="border: 1px solid #000; padding: 4px 10px; text-transform: uppercase;">TOTAL ${title}</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">${fmt(sum)}</td></tr>
             </table>
         </div>`;
     }
