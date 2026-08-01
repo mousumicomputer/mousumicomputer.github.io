@@ -4918,70 +4918,120 @@ window.downloadDailyClosingPDF = function() {
         XLSX.writeFile(wb, 'Daily_Closing_Report.xlsx');
     };
 // --- প্রোফাইল পপ-আপ ওপেন করার ফাংশন ---
+// --- আধুনিক প্রোফাইল, ট্যাব এবং পাসওয়ার্ড ম্যানেজমেন্ট ইঞ্জিন ---
+
+// ১. প্রোফাইল পপ-আপ ওপেন করা (তথ্য লোডসহ)
 window.openProfileModal = function() {
-    // আগের সেভ করা তথ্যগুলো বক্সে বসানো হচ্ছে
-    document.getElementById('profNameInput').value = profileSettings.fullName || 'Rabbi Hosen';
-    document.getElementById('profRoleInput').value = profileSettings.role || 'Admin';
-    document.getElementById('profCompanyInput').value = profileSettings.companyName || 'Mousumi Computer';
-    document.getElementById('profPhoneInput').value = profileSettings.phone || '';
-    document.getElementById('profAvatarInput').value = profileSettings.avatarUrl || '';
+    const d = profileSettings || {};
+    // বক্সে তথ্যগুলো বসানো হচ্ছে (নতুন ID অনুযায়ী)
+    document.getElementById('profNameInp').value = d.fullName || '';
+    document.getElementById('profPhoneInp').value = d.phone || '';
+    document.getElementById('profIdInp').value = d.employeeId || 'MC-' + Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('profGenderInp').value = d.gender || 'Male';
+    document.getElementById('profRoleInp').value = d.role || '';
+    document.getElementById('profCompanyInp').value = d.companyName || '';
+    document.getElementById('profNidInp').value = d.nid || '';
+    document.getElementById('profBloodInp').value = d.bloodGroup || '';
     
-    // পপ-আপটি দেখানো হচ্ছে
+    // ডিফল্টভাবে Basic ট্যাব ওপেন হবে
+    window.switchProfileTab('basic'); 
     document.getElementById('profileModal').style.display = 'flex';
 };
 
-// --- পপ-আপ বন্ধ করার ফাংশন ---
 window.closeProfileModal = function() {
     document.getElementById('profileModal').style.display = 'none';
 };
 
-// --- প্রোফাইল তথ্য সেভ করার কোড ---
+// ২. প্রোফাইল মোডালের ভেতরে ট্যাব পরিবর্তন (Screenshot 2 এর লজিক)
+window.switchProfileTab = function(tabName) {
+    // সব ট্যাব থেকে স্টাইল সরানো হচ্ছে
+    document.querySelectorAll('.prof-tab').forEach(t => {
+        t.style.opacity = "0.7";
+        t.style.borderBottom = "none";
+    });
+    // সব ট্যাব কন্টেন্ট লুকানো হচ্ছে
+    document.querySelectorAll('.tab-content').forEach(c => c.style.display = "none");
+
+    // নির্দিষ্ট ট্যাব একটিভ করা
+    const activeTabId = 'tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1);
+    const activeContentId = 'content' + tabName.charAt(0).toUpperCase() + tabName.slice(1);
+    
+    const activeTab = document.getElementById(activeTabId);
+    const activeContent = document.getElementById(activeContentId);
+    
+    if(activeTab) {
+        activeTab.style.opacity = "1";
+        activeTab.style.borderBottom = "4px solid #fff";
+    }
+    if(activeContent) activeContent.style.display = "block";
+};
+
+// ৩. প্রোফাইল তথ্য Firebase-এ সেভ করা
 document.getElementById('enhancedProfileForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    showLoader("Saving Profile Changes...");
+    showLoader("সংরক্ষণ করা হচ্ছে...");
 
-    // নতুন তথ্যগুলো অবজেক্টে নেওয়া হচ্ছে
-    profileSettings.fullName = document.getElementById('profNameInput').value;
-    profileSettings.role = document.getElementById('profRoleInput').value;
-    profileSettings.companyName = document.getElementById('profCompanyInput').value;
-    profileSettings.phone = document.getElementById('profPhoneInput').value;
-    profileSettings.avatarUrl = document.getElementById('profAvatarInput').value;
+    // সব ইনপুট থেকে ডাটা নেওয়া হচ্ছে
+    profileSettings.fullName = document.getElementById('profNameInp').value;
+    profileSettings.phone = document.getElementById('profPhoneInp').value;
+    profileSettings.employeeId = document.getElementById('profIdInp').value;
+    profileSettings.gender = document.getElementById('profGenderInp').value;
+    profileSettings.role = document.getElementById('profRoleInp').value;
+    profileSettings.companyName = document.getElementById('profCompanyInp').value;
+    profileSettings.nid = document.getElementById('profNidInp').value;
+    profileSettings.bloodGroup = document.getElementById('profBloodInp').value;
 
     try {
-        // Firebase এ সেভ করা হচ্ছে
         await writeToFirebase('erp/settings', profileSettings);
         
-        // ড্যাশবোর্ডে নাম-ছবি আপডেট করা
-        if (typeof loadSavedProfile === 'function') loadSavedProfile();
+        // ড্যাশবোর্ডের টেক্সট আপডেট
+        document.getElementById('dropdownName').innerText = profileSettings.fullName;
+        document.getElementById('dropdownRole').innerText = profileSettings.role;
         
-        closeProfileModal();
+        window.closeProfileModal();
         hideLoader();
-        showToast("Profile settings updated successfully!", "success");
+        showToast("Profile Settings Saved Successfully!", "success");
     } catch(err) {
         hideLoader();
-        showToast("Failed to save settings.", "error");
+        showToast("Error updating settings.", "error");
     }
 });
 
-window.updateUserPassword = async function() {
-    const newPass = document.getElementById('profPassInput').value;
-    if (!newPass || newPass.length < 6) {
+// ৪. পাসওয়ার্ড পরিবর্তন মোডাল (Screenshot 3 এর লজিক)
+window.openPasswordModal = function() {
+    document.getElementById('passwordModal').style.display = 'flex';
+};
+
+window.closePasswordModal = function() {
+    document.getElementById('passwordModal').style.display = 'none';
+};
+
+window.confirmPasswordChange = async function() {
+    const p1 = document.getElementById('newPassInp').value;
+    const p2 = document.getElementById('rePassInp').value;
+
+    if (!p1 || p1.length < 6) {
         showToast("Password must be at least 6 characters!", "warning");
+        return;
+    }
+    if (p1 !== p2) {
+        showToast("Passwords do not match!", "error");
         return;
     }
 
     showLoader("Updating Security...");
     try {
-        const user = auth.currentUser;
-        if (user) {
-            await updatePassword(user, newPass);
-            document.getElementById('profPassInput').value = '';
+        if (auth.currentUser) {
+            await updatePassword(auth.currentUser, p1);
+            document.getElementById('newPassInp').value = '';
+            document.getElementById('rePassInp').value = '';
+            window.closePasswordModal();
             hideLoader();
-            showToast("Password changed successfully!", "success");
+            showToast("Password updated successfully!", "success");
         }
     } catch(err) {
         hideLoader();
-        showToast("Error: " + err.message, "error");
+        showToast("Security error: " + err.message, "error");
     }
 };
 </script>
