@@ -4478,46 +4478,77 @@ window.deleteDCRReport = function(reportId) {
         });
         // --- ট্যাব পরিবর্তনের মেইন ইঞ্জিন (শুধুমাত্র একবার থাকবে) ---
 // --- পেজ পরিবর্তন এবং মেনু কন্ট্রোল ইঞ্জিন ---
-window.switchMainTab = (tab) => {
+// ১. ট্যাব এবং পেজ পরিবর্তনের মেইন ইঞ্জিন
+window.switchMainTab = function(tabName) {
+    console.log("Switching to:", tabName);
+    
+    // সব ভিউ প্যানেল এবং মেনু একটিভ ক্লাস সরানো হচ্ছে
     document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
 
-    let viewId = tab;
-    if (!tab.endsWith('-view')) {
-        viewId = tab + '-view';
-    }
+    // সঠিক ID নির্ধারণ (যেমন: 'dashboard' থেকে 'dashboard-view')
+    let targetId = tabName.endsWith('-view') ? tabName : tabName + '-view';
+    const targetPanel = document.getElementById(targetId);
 
-    const p = document.getElementById(viewId); 
-    if(p) {
-        p.classList.add('active');
+    if (targetPanel) {
+        targetPanel.classList.add('active');
     } else {
-        const fallback = document.getElementById('balance-view');
-        if(fallback) fallback.classList.add('active');
+        // যদি ব্যালেন্স ট্যাব হয় তবে 'balance-view' দেখাবে
+        const balanceFallback = document.getElementById('balance-view');
+        if (balanceFallback) balanceFallback.classList.add('active');
     }
 
-    if(tab === 'cash-inventory') renderCashInventoryTable();
-    if(tab === 'card-inventory') renderAccordionInventory();
-    if(tab === 'daily-closing') renderDailyClosingHistory();
-    if(tab === 'reports' && typeof renderReportsView === 'function') renderReportsView();
+    // অটোমেটিক ডাটা লোড করা
+    if (tabName === 'cash-inventory') renderCashInventoryTable();
+    if (tabName === 'card-inventory') renderAccordionInventory();
+    if (tabName === 'daily-closing') renderDailyClosingHistory();
     
-    if(document.getElementById('profileDropdown')) {
-        document.getElementById('profileDropdown').classList.remove('active');
-    }
+    // মোবাইল বা ছোট স্ক্রিনে ড্রপডাউন বন্ধ করা
+    if (profileDropdown) profileDropdown.classList.remove('active');
 };
 
-// --- সাইডবার এবং ড্রপডাউন কন্ট্রোল ---
-if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+// ২. ক্যাটাগরি অনুযায়ী ফর্ম তৈরি করা
+window.openBalanceCategoryByName = function(name) {
+    const cat = categories.find(c => c.name.trim().toLowerCase() === name.trim().toLowerCase());
+    
+    if(!cat) {
+        showToast("Category not found!", "warning");
+        return;
+    }
+
+    currentActiveCatId = cat.id; 
+    document.getElementById('erpFormTitle').innerText = "Update " + cat.name;
+    const container = document.getElementById('formFieldsContainer');
+    container.innerHTML = '';
+
+    const catAccs = accounts.filter(a => a.catId === cat.id);
+    if(catAccs.length === 0) {
+        container.innerHTML = '<p style="color:red; padding:10px;">No accounts in this category.</p>';
+    }
+
+    catAccs.forEach(acc => {
+        const val = balanceStore[acc.id] || 0;
+        container.innerHTML += `
+            <div style="margin-bottom:15px; background:#f9f9f9; padding:10px; border-radius:8px; border:1px solid #eee;">
+                <label style="font-weight:700; display:block; margin-bottom:5px;">${acc.name}</label>
+                <input type="number" step="any" id="inp_${acc.id}" value="${val}" 
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+            </div>`;
+    });
+
+    window.switchMainTab('balance'); 
+};
+
+// ৩. সাইডবার এবং প্রোফাইল মেনু কন্ট্রোল (একবারই থাকবে)
+if (document.getElementById('sidebarToggle')) {
+    document.getElementById('sidebarToggle').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
 }
-if (profileTrigger) {
-    profileTrigger.addEventListener('click', (e) => {
+if (document.getElementById('profileTrigger')) {
+    document.getElementById('profileTrigger').addEventListener('click', (e) => {
         e.stopPropagation();
         profileDropdown.classList.toggle('active');
     });
-}
-document.addEventListener('click', () => {
-    if (profileDropdown) profileDropdown.classList.remove('active');
-});
+}     
         
 // এই অংশটুকু ডেইলি ক্লোজিং হিস্ট্রি টেবিল তৈরি করবে
 window.renderDailyClosingHistory = function() {
