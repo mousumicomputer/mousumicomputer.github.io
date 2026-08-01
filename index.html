@@ -1680,7 +1680,59 @@
                         </div>
                     </div>
                 </div>
+<!-- হারানো প্যানেলগুলো এখানে ফিরিয়ে আনা হলো -->
 
+                <!-- ১. ব্যালেন্স আপডেট করার প্যানেল -->
+                <div class="view-panel" id="balance-view">
+                    <div class="erp-form-card">
+                        <div class="erp-form-header">
+                            <span id="erpFormTitle"><i class="fa-solid fa-pen-to-square" style="color: #00a8ef;"></i> Update Category Balance</span>
+                        </div>
+                        <form id="balanceUpdateForm">
+                            <div id="formFieldsContainer"></div>
+                            <button type="submit" class="btn-submit" style="margin-top: 20px;">
+                                <i class="fa-solid fa-floppy-disk"></i> Save & Update Balance
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ২. ক্যাশ ইনভেন্টরি প্যানেল -->
+                <div class="view-panel" id="cash-inventory-view">
+                    <div class="erp-form-card">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-money-bill-wave" style="color: #00a8ef;"></i> Cash Inventory Management</span>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Denomination</th><th>Quantity</th><th>Amount</th></tr></thead>
+                                <tbody id="cashDenomTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top: 20px; font-size: 1.1rem; font-weight: 800;">
+                            Grand Total Physical Cash: <span id="grandTotalCashVal" style="color: #10b981;">৳ 0.00</span>
+                        </div>
+                        <button class="btn-submit" onclick="saveCashInventory()" style="background: #10b981; margin-top: 20px;">
+                            <i class="fa-solid fa-floppy-disk"></i> Save Cash Inventory
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ৩. কার্ড ইনভেন্টরি প্যানেল -->
+                <div class="view-panel" id="card-inventory-view">
+                    <div class="erp-form-card">
+                        <div class="erp-form-header">
+                            <span><i class="fa-solid fa-sim-card" style="color: #00a8ef;"></i> Daily Card Inventory Audit</span>
+                        </div>
+                        <div id="operatorAccordions" class="accordion-container"></div>
+                        <div style="margin-top: 20px; font-size: 1.1rem; font-weight: 800;">
+                            Total Card Value in Stock: <span id="grandTotalCardsVal" style="color: #10b981;">৳ 0.00</span>
+                        </div>
+                        <button class="btn-submit" onclick="saveTodayInventory()" style="background: #10b981; margin-top: 20px;">
+                            <i class="fa-solid fa-check-double"></i> Save Today's Inventory
+                        </button>
+                    </div>
+                </div>
                 <!-- ==================== VIEW 1: DASHBOARD ==================== -->
                 <div class="view-panel active" id="dashboard-view">
                     <div class="fintech-hero-card">
