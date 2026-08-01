@@ -4905,61 +4905,68 @@ window.downloadDailyClosingPDF = function() {
 // --- আধুনিক প্রোফাইল, ট্যাব এবং পাসওয়ার্ড ম্যানেজমেন্ট ইঞ্জিন ---
 
 // ১. প্রোফাইল পপ-আপ ওপেন করা (তথ্য লোডসহ)
+// --- আধুনিক প্রোফাইল, ট্যাব এবং সিকিউরিটি ইঞ্জিন ---
+
+// ১. প্রোফাইল মোডাল ওপেন করা (সব তথ্য লোডসহ)
 window.openProfileModal = function() {
+    console.log("Opening My Profile...");
     const d = profileSettings || {};
-    // বক্সে তথ্যগুলো বসানো হচ্ছে (নতুন ID অনুযায়ী)
-    document.getElementById('profNameInp').value = d.fullName || '';
-    document.getElementById('profPhoneInp').value = d.phone || '';
-    document.getElementById('profIdInp').value = d.employeeId || 'MC-' + Math.floor(1000 + Math.random() * 9000);
-    document.getElementById('profGenderInp').value = d.gender || 'Male';
-    document.getElementById('profRoleInp').value = d.role || '';
-    document.getElementById('profCompanyInp').value = d.companyName || '';
-    document.getElementById('profNidInp').value = d.nid || '';
-    document.getElementById('profBloodInp').value = d.bloodGroup || '';
     
-    // ডিফল্টভাবে Basic ট্যাব ওপেন হবে
-    window.switchProfileTab('basic'); 
-    document.getElementById('profileModal').style.display = 'flex';
+    // HTML এর ID অনুযায়ী তথ্যগুলো বক্সে বসানো হচ্ছে
+    if(document.getElementById('profNameInp')) document.getElementById('profNameInp').value = d.fullName || '';
+    if(document.getElementById('profPhoneInp')) document.getElementById('profPhoneInp').value = d.phone || '';
+    if(document.getElementById('profIdInp')) document.getElementById('profIdInp').value = d.employeeId || 'MC-8821';
+    if(document.getElementById('profGenderInp')) document.getElementById('profGenderInp').value = d.gender || 'Male';
+    if(document.getElementById('profRoleInp')) document.getElementById('profRoleInp').value = d.role || 'Admin';
+    if(document.getElementById('profCompanyInp')) document.getElementById('profCompanyInp').value = d.companyName || 'Mousumi Computer';
+    if(document.getElementById('profNidInp')) document.getElementById('profNidInp').value = d.nid || '';
+    if(document.getElementById('profBloodInp')) document.getElementById('profBloodInp').value = d.bloodGroup || '';
+    
+    // ডিফল্টভাবে Basic ট্যাব দেখাবে
+    window.switchProfileTab('basic');
+    
+    // মোডালটি প্রদর্শন করা
+    const modal = document.getElementById('profileModal');
+    if(modal) modal.style.display = 'flex';
 };
 
 window.closeProfileModal = function() {
-    document.getElementById('profileModal').style.display = 'none';
+    const modal = document.getElementById('profileModal');
+    if(modal) modal.style.display = 'none';
 };
 
-// ২. প্রোফাইল মোডালের ভেতরে ট্যাব পরিবর্তন (Screenshot 2 এর লজিক)
+// ২. প্রোফাইল মোডালের ভেতর ট্যাব পরিবর্তন (Screenshot 2 এর ডিজাইন)
 window.switchProfileTab = function(tabName) {
-    // সব ট্যাব থেকে স্টাইল সরানো হচ্ছে
+    // সব ট্যাব থেকে স্টাইল এবং কন্টেন্ট সরানো হচ্ছে
     document.querySelectorAll('.prof-tab').forEach(t => {
         t.style.opacity = "0.7";
         t.style.borderBottom = "none";
     });
-    // সব ট্যাব কন্টেন্ট লুকানো হচ্ছে
     document.querySelectorAll('.tab-content').forEach(c => c.style.display = "none");
 
-    // নির্দিষ্ট ট্যাব একটিভ করা
-    const activeTabId = 'tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1);
-    const activeContentId = 'content' + tabName.charAt(0).toUpperCase() + tabName.slice(1);
-    
-    const activeTab = document.getElementById(activeTabId);
-    const activeContent = document.getElementById(activeContentId);
-    
-    if(activeTab) {
-        activeTab.style.opacity = "1";
-        activeTab.style.borderBottom = "4px solid #fff";
+    // নির্দিষ্ট ট্যাবটি হাইলাইট এবং কন্টেন্ট শো করা
+    if(tabName === 'basic') {
+        document.getElementById('tabBasic').style.opacity = "1";
+        document.getElementById('tabBasic').style.borderBottom = "4px solid #fff";
+        document.getElementById('contentBasic').style.display = "block";
+    } else if(tabName === 'work') {
+        document.getElementById('tabWork').style.opacity = "1";
+        document.getElementById('tabWork').style.borderBottom = "4px solid #fff";
+        document.getElementById('contentWork').style.display = "block";
+    } else if(tabName === 'personal') {
+        document.getElementById('tabPersonal').style.opacity = "1";
+        document.getElementById('tabPersonal').style.borderBottom = "4px solid #fff";
+        document.getElementById('contentPersonal').style.display = "block";
     }
-    if(activeContent) activeContent.style.display = "block";
 };
 
-// ৩. প্রোফাইল তথ্য Firebase-এ সেভ করা
+// ৩. প্রোফাইল ডাটা সংরক্ষণ
 document.getElementById('enhancedProfileForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     showLoader("সংরক্ষণ করা হচ্ছে...");
 
-    // সব ইনপুট থেকে ডাটা নেওয়া হচ্ছে
     profileSettings.fullName = document.getElementById('profNameInp').value;
     profileSettings.phone = document.getElementById('profPhoneInp').value;
-    profileSettings.employeeId = document.getElementById('profIdInp').value;
-    profileSettings.gender = document.getElementById('profGenderInp').value;
     profileSettings.role = document.getElementById('profRoleInp').value;
     profileSettings.companyName = document.getElementById('profCompanyInp').value;
     profileSettings.nid = document.getElementById('profNidInp').value;
@@ -4967,27 +4974,28 @@ document.getElementById('enhancedProfileForm').addEventListener('submit', async 
 
     try {
         await writeToFirebase('erp/settings', profileSettings);
-        
-        // ড্যাশবোর্ডের টেক্সট আপডেট
+        // ড্যাশবোর্ডের নাম আপডেট
         document.getElementById('dropdownName').innerText = profileSettings.fullName;
         document.getElementById('dropdownRole').innerText = profileSettings.role;
         
         window.closeProfileModal();
         hideLoader();
-        showToast("Profile Settings Saved Successfully!", "success");
+        showToast("Profile Settings Updated!", "success");
     } catch(err) {
         hideLoader();
-        showToast("Error updating settings.", "error");
+        showToast("Error saving data.", "error");
     }
 });
 
-// ৪. পাসওয়ার্ড পরিবর্তন মোডাল (Screenshot 3 এর লজিক)
+// ৪. পাসওয়ার্ড রিসেট ফাংশন (Change Password এর জন্য)
 window.openPasswordModal = function() {
-    document.getElementById('passwordModal').style.display = 'flex';
+    const modal = document.getElementById('passwordModal');
+    if(modal) modal.style.display = 'flex';
 };
 
 window.closePasswordModal = function() {
-    document.getElementById('passwordModal').style.display = 'none';
+    const modal = document.getElementById('passwordModal');
+    if(modal) modal.style.display = 'none';
 };
 
 window.confirmPasswordChange = async function() {
@@ -4995,27 +5003,23 @@ window.confirmPasswordChange = async function() {
     const p2 = document.getElementById('rePassInp').value;
 
     if (!p1 || p1.length < 6) {
-        showToast("Password must be at least 6 characters!", "warning");
-        return;
+        showToast("Password must be 6+ chars", "warning"); return;
     }
     if (p1 !== p2) {
-        showToast("Passwords do not match!", "error");
-        return;
+        showToast("Passwords don't match", "error"); return;
     }
 
-    showLoader("Updating Security...");
+    showLoader("Security updating...");
     try {
         if (auth.currentUser) {
             await updatePassword(auth.currentUser, p1);
-            document.getElementById('newPassInp').value = '';
-            document.getElementById('rePassInp').value = '';
             window.closePasswordModal();
             hideLoader();
-            showToast("Password updated successfully!", "success");
+            showToast("Password Updated!", "success");
         }
     } catch(err) {
         hideLoader();
-        showToast("Security error: " + err.message, "error");
+        showToast("Auth Error: " + err.message, "error");
     }
 };
 </script>
