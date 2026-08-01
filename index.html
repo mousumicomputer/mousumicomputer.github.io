@@ -4917,21 +4917,25 @@ window.renderDailyClosingReportView = function(snap) {
 <!-- নিচের এই কোডটুকু আগের স্ক্রিপ্ট ট্যাগের বাইরে পেস্ট করুন -->
 <script>
     // ১. পিডিএফ ডাউনলোড করার সরাসরি ফাংশন
-    window.downloadDailyClosingPDF = function() {
-        console.log("PDF download triggered");
-        const element = document.getElementById('printable-closing-report');
-        if (!element) { alert("রিপোর্ট পাওয়া যায়নি!"); return; }
+    // পাতা ভাঙা রোধসহ পিডিএফ ডাউনলোড ফাংশন
+window.downloadDailyClosingPDF = function() {
+    console.log("PDF download starting with page-break fix...");
+    const element = document.getElementById('printable-closing-report');
+    if (!element) { alert("রিপোর্ট পাওয়া যায়নি!"); return; }
 
-        const opt = {
-            margin: 10,
-            filename: 'Daily_Closing_Report.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        html2pdf().set(opt).from(element).save();
+    const opt = {
+        margin:       10,
+        filename:     'Daily_Closing_Report.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        // এই অপশনটি টেবিলের মাঝখানে পাতা ভাঙা রোধ করবে
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
+    // সরাসরি ডাউনলোড শুরু হবে
+    html2pdf().set(opt).from(element).save();
+};
     // ২. এক্সেল ফাইল ডাউনলোড করার সরাসরি ফাংশন
     window.exportDailyClosingExcel = function() {
         console.log("Excel download triggered");
