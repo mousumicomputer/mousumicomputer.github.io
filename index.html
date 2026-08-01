@@ -9,6 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- SheetJS Library for Real Excel Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- PDF ডাউনলোডের জন্য লাইব্রেরি -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --primary-color: #00a8ef;
@@ -1970,7 +1972,9 @@
                             <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
                                 <span style="font-weight: 700; color: var(--primary-dark); font-size: 1.1rem;"><i class="fa-solid fa-file-invoice"></i> Financial Report View</span>
                                 <div style="display: flex; gap: 8px;">
-                                    <button class="btn-action btn-edit" onclick="printDailyClosingPDF()" style="padding: 8px 15px;"><i class="fa-solid fa-print"></i> Print</button>
+                                    <button class="btn-action btn-edit" onclick="downloadDailyClosingPDF()" style="padding: 8px 15px; background: #00a8ef; color: #fff;">
+    <i class="fa-solid fa-file-pdf"></i> Download PDF
+</button>
                                     <button class="btn-action btn-toggle" onclick="exportDailyClosingExcel()" style="background:#10b981; color:#fff; padding: 8px 15px;"><i class="fa-solid fa-file-excel"></i> Excel</button>
                                 </div>
                             </div>
@@ -4907,6 +4911,24 @@ window.renderDailyClosingReportView = function(snap) {
         </div>`;
     }
     container.innerHTML = html;
+};
+// সরাসরি পিডিএফ ডাউনলোড করার ফাংশন
+window.downloadDailyClosingPDF = function() {
+    const element = document.getElementById('printable-closing-report');
+    
+    // ফাইলটির নাম কী হবে তা ঠিক করা
+    const fileName = snap && snap.report_id ? snap.report_id + ".pdf" : "Daily_Closing_Report.pdf";
+
+    const opt = {
+        margin:       [10, 10, 10, 10], // চারপাশের খালি জায়গা
+        filename:     fileName,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 }, // ছবির কোয়ালিটি বাড়াতে
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' } // A4 সাইজ
+    };
+
+    // সরাসরি ডাউনলোড শুরু হবে
+    html2pdf().set(opt).from(element).save();
 };
 
 </script>
