@@ -4481,9 +4481,7 @@ window.switchMainTab = function(tabName) {
     document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
     document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
-
     const topTitle = document.getElementById('top-title');
-
     if (tabName === 'dashboard') {
         document.getElementById('dashboard-view').classList.add('active');
         document.getElementById('menu-dash').classList.add('active');
