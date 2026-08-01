@@ -1666,55 +1666,96 @@
                     </div>
                     
                     <!-- আধুনিক কাস্টমার সেন্টার (পূর্ণাঙ্গ মডিউল) -->
+<!-- আধুনিক কাস্টমার সেন্টার (পূর্ণাঙ্গ সংস্করণ) -->
 <div class="view-panel" id="customer-ledger-view">
     
     <!-- কাস্টমার সামারি কার্ডস -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
-        <div style="background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); border-left: 5px solid #00a8ef;">
-            <p style="font-size: 0.8rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Total Customers</p>
-            <h2 id="dueCardTotalCust" style="margin-top: 5px; color: #1e293b;">0</h2>
+        <div style="background: #fff; padding: 20px; border-radius: 15px; border-left: 5px solid #00a8ef; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+            <p style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Total Customers</p>
+            <h2 id="dueCardTotalCust" style="color: #1e293b;">0</h2>
         </div>
-        <div style="background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); border-left: 5px solid #ef4444;">
-            <p style="font-size: 0.8rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Total Outstanding Due</p>
-            <h2 id="dueCardTotalOutstanding" style="margin-top: 5px; color: #ef4444;">৳ 0.00</h2>
+        <div style="background: #fff; padding: 20px; border-radius: 15px; border-left: 5px solid #ef4444; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+            <p style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Total Outstanding Due</p>
+            <h2 id="dueCardTotalOutstanding" style="color: #ef4444;">৳ 0.00</h2>
         </div>
     </div>
 
-    <!-- কাস্টমার লিস্ট এবং সার্চ এরিয়া -->
-    <div style="background: #fff; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-            <h3 style="font-size: 1.2rem; color: #1e293b; font-weight: 800;">Customer Accounts</h3>
-            <div style="position: relative; width: 300px;">
-                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 15px; top: 12px; color: #94a3b8;"></i>
-                <input type="text" id="custSearchInput" placeholder="Search by Name or Phone..." oninput="renderCustomerListTable()" 
-                style="width: 100%; padding: 10px 15px 10px 40px; border-radius: 30px; border: 1.5px solid #f1f5f9; background: #f8fafc; outline: none; font-size: 0.9rem;">
+    <!-- কাস্টমার মেইন লিস্ট এরিয়া -->
+    <div id="cust-main-list-area" class="cust-sub-section">
+        <div style="background: #fff; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                <h3 style="font-size: 1.2rem; color: #1e293b; font-weight: 800;">Customer Accounts</h3>
+                <div style="position: relative; width: 300px;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 15px; top: 12px; color: #94a3b8;"></i>
+                    <input type="text" id="custSearchInput" placeholder="Search by Name or Phone..." oninput="renderCustomerListTable()" 
+                    style="width: 100%; padding: 10px 15px 10px 40px; border-radius: 30px; border: 1.5px solid #f1f5f9; background: #f8fafc; outline: none;">
+                </div>
+            </div>
+            <div id="customerListContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- এখানে কাস্টমার কার্ডগুলো লোড হবে -->
             </div>
         </div>
+    </div>
 
-        <!-- এখানে কাস্টমার লিস্ট (Card View) লোড হবে -->
-        <div id="customerListContainer" style="display: flex; flex-direction: column; gap: 10px;">
-            <div style="text-align: center; padding: 40px; color: #94a3b8;">Loading customers...</div>
+    <!-- নতুন কাস্টমার যোগ/এডিট করার সেকশন -->
+    <div id="cust-list-section" class="cust-sub-section" style="display:none;">
+        <div class="erp-form-card">
+            <div class="erp-form-header"><h3><i class="fa-solid fa-user-plus"></i> Customer Entry / Edit</h3></div>
+            <form id="customerMgmtForm" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                <input type="hidden" id="custEditId">
+                <div><label>Name</label><input type="text" id="custName" required style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;"></div>
+                <div><label>Phone</label><input type="text" id="custPhone" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;"></div>
+                <div><label>Opening Balance</label><input type="number" id="custOpeningBal" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;"></div>
+                <div><label>Status</label><select id="custStatus" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;"><option value="Active">Active</option><option value="Inactive">Inactive</option></select></div>
+                <div style="grid-column: span 2; display: flex; gap: 10px;">
+                    <button type="submit" class="btn-submit">Save Customer</button>
+                    <button type="button" class="btn-modal-cancel" onclick="switchCustomerSubSection('cust-main-list-area')">Back to List</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- নতুন কাস্টমার যোগ করার বাটন (FAB - Screenshot এর মতো) -->
+    <!-- লেনদেন (Transaction) ইনপুট করার সেকশন -->
+    <div id="cust-tx-section" class="cust-sub-section" style="display:none;">
+        <div class="erp-form-card">
+            <div class="erp-form-header"><h3><i class="fa-solid fa-money-bill-transfer"></i> Entry Transaction</h3></div>
+            <form id="transactionEntryForm" style="margin-top:15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div style="grid-column: span 2;">
+                    <label>Select Customer (Type name to search)</label>
+                    <select id="txCustSelect" required style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;"></select>
+                </div>
+                <div><label>Type</label><select id="txType" onchange="handleTxTypeChange()" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;"><option value="Debit">Debit (+ Due)</option><option value="Credit">Credit (- Payment)</option></select></div>
+                <div><label>Date</label><input type="date" id="txDate" required style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;"></div>
+                <div><label>Amount (৳)</label><input type="number" id="txDebit" placeholder="Amount" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;"></div>
+                <input type="hidden" id="txCredit" value="0">
+                <div style="grid-column: span 2;"><label>Description</label><input type="text" id="txDescription" placeholder="Note..." style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;"></div>
+                <div style="grid-column: span 2; display: flex; gap: 10px;">
+                    <button type="submit" class="btn-submit" style="background:#10b981;">Save Transaction</button>
+                    <button type="button" class="btn-modal-cancel" onclick="switchCustomerSubSection('cust-main-list-area')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- লেজার দেখার সেকশন -->
+    <div id="cust-ledger-section" class="cust-sub-section" style="display:none;">
+        <div class="erp-form-card">
+            <div class="erp-form-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 id="ledgerTitle">Customer Ledger</h3>
+                <button class="btn-modal-cancel" onclick="switchCustomerSubSection('cust-main-list-area')">Back</button>
+            </div>
+            <div id="printable-statement-area"></div>
+        </div>
+    </div>
+
+    <!-- কাস্টমার যোগ করার লাল বাটন -->
     <button onclick="switchCustomerSubSection('cust-list-section')" 
     style="position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: #ef4444; color: #fff; border: none; font-size: 1.5rem; cursor: pointer; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4); display: flex; align-items: center; justify-content: center; z-index: 100;">
         <i class="fa-solid fa-user-plus"></i>
     </button>
-
-    <!-- ট্রানজেকশন এবং এডিট করার সাব-সেকশনগুলো (ডিজাইন সচল রাখার জন্য) -->
-    <div id="cust-list-section" class="cust-sub-section" style="display:none;">
-        <!-- এখানে এডিট করার ফর্ম থাকবে -->
-    </div>
-    <div id="cust-tx-section" class="cust-sub-section" style="display:none;">
-        <!-- এখানে হিসাব ইনপুট এর প্যানেল থাকবে -->
-    </div>
-    <div id="cust-ledger-section" class="cust-sub-section" style="display:none;">
-        <!-- এখানে লেজার দেখা যাবে -->
-    </div>
 </div>
-                <!-- ==================== VIEW VIEW: DAILY CLOSING REPORT ==================== -->
+                    <!-- ==================== VIEW VIEW: DAILY CLOSING REPORT ==================== -->
                 <div class="view-panel" id="daily-closing-view">
 <!-- উপরের অ্যাকশন কার্ড -->
                     <div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px; border-left: 5px solid #059669;">
