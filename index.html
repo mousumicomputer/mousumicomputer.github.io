@@ -4631,17 +4631,7 @@ window.deleteDCRReport = function(reportId) {
                 handleTxTypeChange();
             }
         };
-
-        window.toggleParentMenu = function(parentId) {
-            const item = document.getElementById(parentId);
-            if (!item) return;
-            const submenu = item.querySelector('.submenu-list');
-            if (submenu) {
-                submenu.classList.toggle('show');
-                item.classList.toggle('open');
-            }
-        };
-
+        
         sidebarToggle.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
         });
