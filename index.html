@@ -3039,44 +3039,69 @@
             }
         });
 
-        window.renderCustomerListTable = function() {
-            const tbody = document.getElementById('customerTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
+// --- আধুনিক কাস্টমার লিস্ট (Card View) রেন্ডারার ---
+window.renderCustomerListTable = function() {
+    const container = document.getElementById('customerListContainer');
+    if (!container) return;
+    container.innerHTML = '';
 
-            const filterVal = (document.getElementById('custSearchInput').value || '').toLowerCase();
-            const filtered = customers.filter(c => 
-                (c.name || '').toLowerCase().includes(filterVal) ||
-                (c.phone || '').toLowerCase().includes(filterVal) ||
-                (c.id || '').toLowerCase().includes(filterVal)
-            );
+    const filterVal = (document.getElementById('custSearchInput').value || '').toLowerCase();
+    const filtered = customers.filter(c => 
+        (c.name || '').toLowerCase().includes(filterVal) ||
+        (c.phone || '').toLowerCase().includes(filterVal)
+    );
 
-            if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #9ca3af;">No customers matched.</td></tr>';
-                return;
-            }
+    if (filtered.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: #94a3b8;">No customers matched.</div>';
+        return;
+    }
 
-            filtered.forEach(c => {
-                const currentDue = calculateCustomerCurrentDue(c.id);
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><strong>${c.id}</strong></td>
-                    <td><strong>${c.name}</strong></td>
-                    <td>${c.phone || '-'}</td>
-                    <td>${c.address || '-'}</td>
-                    <td>৳ ${(parseFloat(c.openingBalance) || 0).toFixed(2)}</td>
-                    <td style="font-weight:700; color: ${currentDue > 0 ? '#e11d48' : '#10b981'};">৳ ${currentDue.toFixed(2)}</td>
-                    <td><span class="badge ${c.status === 'Active' ? 'badge-success' : 'badge-danger'}">${c.status}</span></td>
-                    <td style="text-align: center;">
-                        <button class="btn-action btn-edit" onclick="editCustomer('${c.id}')"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn-action btn-toggle" onclick="openCustomerLedgerDirect('${c.id}')"><i class="fa-solid fa-receipt"></i> Ledger</button>
-                        <button class="btn-action btn-delete" onclick="deleteCustomer('${c.id}')"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        };
+    // সামারি আপডেট
+    const totals = calculateCustomerTotals();
+    document.getElementById('dueCardTotalCust').innerText = totals.totalCustomers;
+    document.getElementById('dueCardTotalOutstanding').innerText = `৳ ${totals.totalOutstanding.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
+    filtered.forEach(c => {
+        const currentDue = calculateCustomerCurrentDue(c.id);
+        
+        // এভাটার এর জন্য নামের প্রথম ২ অক্ষর এবং র‍্যান্ডম কালার
+        const nameInitials = c.name ? c.name.split(' ').map(n => n[0]).join('').substring(0,2) : '??';
+        const colors = ['#dcfce7', '#fef2f2', '#eff6ff', '#fef9c3', '#f3e8ff'];
+        const textColors = ['#166534', '#991b1b', '#1e40af', '#854d0e', '#6b21a8'];
+        const randomIdx = c.id.charCodeAt(c.id.length - 1) % colors.length;
+
+        // কাস্টমার কার্ড তৈরি (আপনার ছবির মতো)
+        const card = document.createElement('div');
+        card.style.cssText = `
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 15px; background: #fff; border-radius: 15px;
+            cursor: pointer; transition: 0.2s; border: 1px solid #f1f5f9;
+        `;
+        card.onclick = () => openCustomerLedgerDirect(c.id);
+        card.onmouseover = () => card.style.background = '#f8fafc';
+        card.onmouseout = () => card.style.background = '#fff';
+
+        card.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: ${colors[randomIdx]}; color: ${textColors[randomIdx]}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; border: 1px solid rgba(0,0,0,0.05);">
+                    ${nameInitials}
+                </div>
+                <div>
+                    <h4 style="margin: 0; color: #1e293b; font-size: 1rem; font-weight: 700;">${c.name}</h4>
+                    <p style="margin: 3px 0 0 0; color: #64748b; font-size: 0.75rem;">${c.phone || 'No phone'} • ${c.address || 'No address'}</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="text-align: right;">
+                    <span style="display: block; font-size: 1.1rem; font-weight: 800; color: #ef4444;">${currentDue.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                </div>
+                <i class="fa-solid fa-chevron-right" style="color: #cbd5e1; font-size: 0.8rem;"></i>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+};
+        
         window.editCustomer = function(id) {
             const c = customers.find(item => item.id === id);
             if (!c) return;
