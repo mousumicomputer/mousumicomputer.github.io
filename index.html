@@ -4912,43 +4912,39 @@ window.renderDailyClosingReportView = function(snap) {
     }
     container.innerHTML = html;
 };
-// সংশোধিত পিডিএফ ডাউনলোড ফাংশন
+// সরাসরি পিডিএফ ডাউনলোড নিশ্চিত করার জন্য এই ফাংশন
 window.downloadDailyClosingPDF = function() {
-    // ১. চেক করা হচ্ছে লাইব্রেরিটি লোড হয়েছে কি না
+    console.log("PDF download starting...");
+
+    // লাইব্রেরি লোড হয়েছে কি না চেক করা
     if (typeof html2pdf === 'undefined') {
-        showToast("পিডিএফ লাইব্রেরিটি লোড হচ্ছে, দয়া করে কিছুক্ষণ অপেক্ষা করে আবার চেষ্টা করুন।", "warning");
+        alert("পিডিএফ লাইব্রেরিটি এখনো লোড হয়নি। দয়া করে ৫ সেকেন্ড অপেক্ষা করে আবার চেষ্টা করুন। (ইন্টারনেট কানেকশন চেক করুন)");
         return;
     }
 
     const element = document.getElementById('printable-closing-report');
     if (!element) {
-        showToast("রিপোর্টটি খুঁজে পাওয়া যায়নি।", "error");
+        alert("রিপোর্ট এলাকা খুঁজে পাওয়া যায়নি!");
         return;
     }
 
-    // ২. ফাইলের নাম নির্ধারণ (activeViewingReport ব্যবহার করা হয়েছে)
-    const reportData = activeViewingReport || {};
-    const fileName = reportData.report_id ? reportData.report_id + ".pdf" : "Mousumi_Computer_Report.pdf";
+    // রিপোর্টের নাম ঠিক করা (সরাসরি আইডি থেকে নেওয়া হচ্ছে)
+    let fileName = "Mousumi_Computer_Report.pdf";
+    if (typeof activeViewingReport !== 'undefined' && activeViewingReport && activeViewingReport.report_id) {
+        fileName = activeViewingReport.report_id + ".pdf";
+    }
 
-    const opt = {
-        margin:       [10, 10, 10, 10],
-        filename:     fileName,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true }, 
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    const options = {
+        margin: [10, 10, 10, 10],
+        filename: fileName,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // ৩. সরাসরি ডাউনলোড শুরু হবে
-    html2pdf().set(opt).from(element).save()
-    .then(() => {
-        showToast("পিডিএফ ডাউনলোড সম্পন্ন হয়েছে।", "success");
-    })
-    .catch((err) => {
-        console.error("PDF Error: ", err);
-        showToast("ডাউনলোড করতে সমস্যা হয়েছে।", "error");
-    });
+    // সরাসরি ডাউনলোড শুরু হবে
+    html2pdf().set(options).from(element).save();
 };
-
 </script>
 </body>
 </html>
