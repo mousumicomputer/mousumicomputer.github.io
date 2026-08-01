@@ -4246,7 +4246,6 @@ window.renderDailyClosingReportView = function(snap) {
             document.getElementById('navAvatar').src = avatar;
             document.getElementById('dropdownHeaderImg').src = avatar;
             document.getElementById('fullProfileImg').src = avatar;
-        }
 
         document.getElementById('fullProfileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -4656,7 +4655,7 @@ window.deleteDCRReport = function(reportId) {
             if (profileDropdown) profileDropdown.classList.remove('active');
         });
 
-   gle('show');
+submenu.classList.toggle('show');
                 item.classList.toggle('open');
             }
         };
