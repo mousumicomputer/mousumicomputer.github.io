@@ -4367,7 +4367,76 @@ window.renderDailyClosingReportView = function(snap) {
 
             if (profileDropdown) profileDropdown.classList.remove('active');
         };
+// --- ডেইলি ক্লোজিং রিপোর্ট ইঞ্জিন শুরু ---
+window.renderDailyClosingHistory = function() {
+    const tbody = document.getElementById('dailyClosingHistoryTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
 
+    const filterDate = document.getElementById('dcrFromDate') ? document.getElementById('dcrFromDate').value : '';
+    let reports = dailyClosingReports || [];
+
+    if (filterDate) {
+        reports = reports.filter(r => r.report_date === filterDate);
+    }
+
+    if (reports.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #9ca3af; padding: 20px;">কোনো রেকর্ড পাওয়া যায়নি।</td></tr>';
+        return;
+    }
+
+    reports.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${r.report_date}</td>
+            <td>${r.closing_time}</td>
+            <td><strong>${r.report_id}</strong></td>
+            <td style="font-weight:700; color:#059669;">৳ ${(r.total_net_balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            <td style="text-align: center;">
+                <button class="btn-action btn-edit" onclick="viewDCRReport('${r.report_id}')"><i class="fa-solid fa-eye"></i> View</button>
+                <button class="btn-action btn-delete" onclick="deleteDCRReport('${r.report_id}')"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+};
+
+window.viewDCRReport = function(reportId) {
+    const report = dailyClosingReports.find(r => r.report_id === reportId);
+    if (!report) return;
+    activeViewingReport = report;
+    if (typeof renderDailyClosingReportView === 'function') {
+        renderDailyClosingReportView(report);
+    }
+    const modal = document.getElementById('dcrModal');
+    if(modal) modal.style.display = 'flex';
+};
+
+window.closeDCRModal = function() {
+    const modal = document.getElementById('dcrModal');
+    if(modal) modal.style.display = 'none';
+};
+
+window.deleteDCRReport = function(reportId) {
+    showConfirmModal({
+        title: "রিপোর্টটি কি মুছে ফেলবেন?",
+        message: "একবার মুছে ফেললে এটি আর ফিরে পাওয়া যাবে না।",
+        onConfirm: async () => {
+            showLoader("মুছে ফেলা হচ্ছে...");
+            try {
+                dailyClosingReports = dailyClosingReports.filter(r => r.report_id !== reportId);
+                await writeToFirebase('erp/dailyClosingReports', dailyClosingReports);
+                renderDailyClosingHistory();
+                hideLoader();
+                showToast("রিপোর্টটি মুছে ফেলা হয়েছে।", "success");
+            } catch (err) {
+                hideLoader();
+                showToast("Error deleting report.", "error");
+            }
+        }
+    });
+};
+// --- ডেইলি ক্লোজিং রিপোর্ট ইঞ্জিন শেষ ---
         window.switchCustomerSubSection = function(sectionId) {
             document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
             document.getElementById('customer-ledger-view').classList.add('active');
