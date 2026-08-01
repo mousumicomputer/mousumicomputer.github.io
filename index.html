@@ -3646,93 +3646,148 @@ window.renderDailyClosingReportView = function(snap) {
     const container = document.getElementById('printable-closing-report');
     if (!container) return;
 
+    // টাকা ফরম্যাট করার ফাংশন
     const fmt = (num) => (parseFloat(num) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    // সাব-টোটাল ক্যালকুলেশন
+    // প্রতিটি সেকশনের যোগফল বের করা
     const bankSum = (snap.bank_accounts || []).reduce((s, a) => s + (parseFloat(a.balance) || 0), 0);
     const persSum = (snap.personal_accounts || []).reduce((s, a) => s + (parseFloat(a.balance) || 0), 0);
     const agentSum = (snap.agent_accounts || []).reduce((s, a) => s + (parseFloat(a.balance) || 0), 0);
     const rechSum = (snap.recharge_accounts || []).reduce((s, a) => s + (parseFloat(a.balance) || 0), 0);
 
     let html = `
-        <div class="dcr-print-document" style="font-family: Arial, sans-serif; color: #000; padding: 20px; background: #fff; max-width: 800px; margin: auto; border: 1px solid #ddd;">
+        <div class="dcr-print-document" style="font-family: Arial, Helvetica, sans-serif; color: #000; padding: 20px; background: #fff; line-height: 1.2;">
             
-            <!-- রিপোর্ট হেডার (ছবির মতো) -->
-            <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 5px;">
-                <div style="font-size: 11px;">
+            <!-- রিপোর্ট হেডার (ছবির মতো ৩ কলাম লেআউট) -->
+            <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px;">
+                <div style="font-size: 10px; width: 30%;">
                     Report Date: ${snap.report_date}<br>
                     Closing Time: ${snap.closing_time}<br>
-                    Ref ID: REF-${snap.report_id.split('-')[1].substring(0,6)}
+                    Ref ID: REF-${snap.report_id.substring(4, 10)}
                 </div>
-                <div style="text-align: center;">
-                    <h2 style="margin: 0; font-size: 20px; text-transform: uppercase;">MOUSUMI COMPUTER</h2>
-                    <h4 style="margin: 5px 0; font-size: 14px; font-weight: bold;">DAILY CLOSING FINANCIAL STATEMENT</h4>
+                <div style="text-align: center; width: 40%;">
+                    <h2 style="margin: 0; font-size: 18px; font-weight: bold; text-transform: uppercase;">MOUSUMI COMPUTER</h2>
+                    <h4 style="margin: 2px 0; font-size: 12px; font-weight: bold;">DAILY CLOSING FINANCIAL STATEMENT</h4>
                 </div>
-                <div style="text-align: right; font-size: 11px;">
+                <div style="text-align: right; font-size: 10px; width: 30%;">
                     Report ID: ${snap.report_id}<br>
                     Date: ${snap.report_date}<br>
                     Page: 1 of 1
                 </div>
             </div>
 
-            <!-- সেকশন ১: এক্সিকিউটিভ সামারি (ছবির মতো টেবিল) -->
-            <div style="border: 1px solid #000; margin-bottom: 15px;">
-                <div style="background: #eee; padding: 4px 8px; font-weight: bold; border-bottom: 1px solid #000; font-size: 12px;">SECTION 1: EXECUTIVE FINANCIAL SUMMARY</div>
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                    <tr style="background: #fafafa; font-weight: bold; text-align: center;">
-                        <td style="border: 1px solid #000; padding: 4px; width: 60%;">FINANCIAL COMPONENT</td>
-                        <td style="border: 1px solid #000; padding: 4px;">TOTAL AMOUNT (৳)</td>
+            <!-- সেকশন ১: এক্সিকিউটিভ সামারি -->
+            <div style="border: 1px solid #000; margin-bottom: 10px;">
+                <div style="background: #eee; padding: 3px 8px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px; text-transform: uppercase;">SECTION 1: EXECUTIVE FINANCIAL SUMMARY</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                    <tr style="background: #f9f9f9; font-weight: bold; text-align: center;">
+                        <td style="border: 1px solid #000; padding: 3px; width: 65%;">FINANCIAL COMPONENT</td>
+                        <td style="border: 1px solid #000; padding: 3px;">TOTAL AMOUNT (৳)</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #000; padding: 4px 10px;">Total Cash Inventory</td>
-                        <td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.total_cash_inventory)}</td>
+                        <td style="border: 1px solid #000; padding: 3px 10px;">Total Cash Inventory</td>
+                        <td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">৳ ${fmt(snap.total_cash_inventory)}</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #000; padding: 4px 10px;">Total Card Inventory</td>
-                        <td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.total_card_inventory)}</td>
+                        <td style="border: 1px solid #000; padding: 3px 10px;">Total Card Inventory</td>
+                        <td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">৳ ${fmt(snap.total_card_inventory)}</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #000; padding: 4px 10px;">Total Customer Outstanding Due</td>
-                        <td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.total_customer_due)}</td>
+                        <td style="border: 1px solid #000; padding: 3px 10px;">Total Customer Outstanding Due</td>
+                        <td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">৳ ${fmt(snap.total_customer_due)}</td>
                     </tr>
                     <tr style="font-weight: bold; background: #eee;">
-                        <td style="border: 1px solid #000; padding: 6px 10px; text-transform: uppercase;">TOTAL NET FINANCIAL BALANCE</td>
-                        <td style="border: 1px solid #000; padding: 6px 10px; text-align: right;">৳ ${fmt(snap.total_net_balance)}</td>
+                        <td style="border: 1px solid #000; padding: 5px 10px; text-transform: uppercase;">TOTAL NET FINANCIAL BALANCE</td>
+                        <td style="border: 1px solid #000; padding: 5px 10px; text-align: right;">৳ ${fmt(snap.total_net_balance)}</td>
                     </tr>
                 </table>
             </div>
 
-            <!-- অন্যান্য অ্যাকাউন্ট সেকশন (ছবির স্টাইলে) -->
-            ${renderSection("BANK ACCOUNTS", snap.bank_accounts, bankSum)}
-            ${renderSection("PERSONAL ACCOUNTS", snap.personal_accounts, persSum)}
-            ${renderSection("AGENT ACCOUNTS", snap.agent_accounts, agentSum)}
-            ${renderSection("RECHARGE BALANCES", snap.recharge_accounts, rechSum)}
-
-        </div>`;
-    
-    // সেকশন রেন্ডার করার হেল্পার ফাংশন (কোড ছোট রাখার জন্য)
-    function renderSection(title, accounts, total) {
-        return `
-            <div style="border: 1px solid #000; margin-bottom: 15px;">
-                <div style="background: #eee; padding: 4px 8px; font-weight: bold; border-bottom: 1px solid #000; font-size: 12px;">${title}</div>
-                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                    <tr style="background: #fafafa; font-weight: bold; text-align: center;">
-                        <td style="border: 1px solid #000; padding: 3px; width: 60%;">ACCOUNT NAME</td>
+            <!-- ব্যাংক একাউন্ট টেবিল -->
+            <div style="border: 1px solid #000; margin-bottom: 10px;">
+                <div style="background: #eee; padding: 3px 8px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">BANK ACCOUNTS</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                    <tr style="background: #f9f9f9; font-weight: bold; text-align: center;">
+                        <td style="border: 1px solid #000; padding: 3px; width: 65%;">ACCOUNT NAME</td>
                         <td style="border: 1px solid #000; padding: 3px;">BALANCE (৳)</td>
                     </tr>
-                    ${(accounts || []).map(a => `
+                    ${(snap.bank_accounts || []).map(a => `
                         <tr>
-                            <td style="border: 1px solid #000; padding: 3px 10px;">${a.name}</td>
-                            <td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">${fmt(a.balance)}</td>
+                            <td style="border: 1px solid #000; padding: 2px 10px;">${a.name}</td>
+                            <td style="border: 1px solid #000; padding: 2px 10px; text-align: right;">${fmt(a.balance)}</td>
                         </tr>
                     `).join('')}
-                    <tr style="font-weight: bold; background: #fafafa;">
-                        <td style="border: 1px solid #000; padding: 4px 10px; text-transform: uppercase;">TOTAL ${title}</td>
-                        <td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">${fmt(total)}</td>
+                    <tr style="font-weight: bold; background: #f9f9f9;">
+                        <td style="border: 1px solid #000; padding: 3px 10px;">TOTAL BANK ACCOUNTS</td>
+                        <td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">${fmt(bankSum)}</td>
                     </tr>
                 </table>
-            </div>`;
-    }
+            </div>
+
+            <!-- পার্সোনাল একাউন্ট টেবিল -->
+            <div style="border: 1px solid #000; margin-bottom: 10px;">
+                <div style="background: #eee; padding: 3px 8px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">PERSONAL ACCOUNTS</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                    <tr style="background: #f9f9f9; font-weight: bold; text-align: center;">
+                        <td style="border: 1px solid #000; padding: 3px; width: 65%;">ACCOUNT NAME</td>
+                        <td style="border: 1px solid #000; padding: 3px;">BALANCE (৳)</td>
+                    </tr>
+                    ${(snap.personal_accounts || []).map(a => `
+                        <tr>
+                            <td style="border: 1px solid #000; padding: 2px 10px;">${a.name}</td>
+                            <td style="border: 1px solid #000; padding: 2px 10px; text-align: right;">${fmt(a.balance)}</td>
+                        </tr>
+                    `).join('')}
+                    <tr style="font-weight: bold; background: #f9f9f9;">
+                        <td style="border: 1px solid #000; padding: 3px 10px;">TOTAL PERSONAL ACCOUNTS</td>
+                        <td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">${fmt(persSum)}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- এজেন্ট একাউন্ট টেবিল -->
+            <div style="border: 1px solid #000; margin-bottom: 10px;">
+                <div style="background: #eee; padding: 3px 8px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">AGENT ACCOUNTS</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                    <tr style="background: #f9f9f9; font-weight: bold; text-align: center;">
+                        <td style="border: 1px solid #000; padding: 3px; width: 65%;">ACCOUNT NAME</td>
+                        <td style="border: 1px solid #000; padding: 3px;">BALANCE (৳)</td>
+                    </tr>
+                    ${(snap.agent_accounts || []).map(a => `
+                        <tr>
+                            <td style="border: 1px solid #000; padding: 2px 10px;">${a.name}</td>
+                            <td style="border: 1px solid #000; padding: 2px 10px; text-align: right;">${fmt(a.balance)}</td>
+                        </tr>
+                    `).join('')}
+                    <tr style="font-weight: bold; background: #f9f9f9;">
+                        <td style="border: 1px solid #000; padding: 3px 10px;">TOTAL AGENT ACCOUNTS</td>
+                        <td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">${fmt(agentSum)}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- রিচার্জ ব্যালেন্স টেবিল -->
+            <div style="border: 1px solid #000;">
+                <div style="background: #eee; padding: 3px 8px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">RECHARGE BALANCES</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                    <tr style="background: #f9f9f9; font-weight: bold; text-align: center;">
+                        <td style="border: 1px solid #000; padding: 3px; width: 65%;">ACCOUNT NAME</td>
+                        <td style="border: 1px solid #000; padding: 3px;">BALANCE (৳)</td>
+                    </tr>
+                    ${(snap.recharge_accounts || []).map(a => `
+                        <tr>
+                            <td style="border: 1px solid #000; padding: 2px 10px;">${a.name}</td>
+                            <td style="border: 1px solid #000; padding: 2px 10px; text-align: right;">${fmt(a.balance)}</td>
+                        </tr>
+                    `).join('')}
+                    <tr style="font-weight: bold; background: #f9f9f9;">
+                        <td style="border: 1px solid #000; padding: 3px 10px;">TOTAL RECHARGE BALANCES</td>
+                        <td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">${fmt(rechSum)}</td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>`;
 
     container.innerHTML = html;
 };
