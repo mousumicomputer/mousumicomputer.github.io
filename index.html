@@ -4477,79 +4477,48 @@ window.deleteDCRReport = function(reportId) {
             reader.readAsDataURL(file);
         });
         // --- ট্যাব পরিবর্তনের মেইন ইঞ্জিন (শুধুমাত্র একবার থাকবে) ---
+// --- পেজ পরিবর্তন এবং মেনু কন্ট্রোল ইঞ্জিন ---
 window.switchMainTab = (tab) => {
-    // সব প্যানেল হাইড করা
     document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
 
-    // যদি ব্যালেন্স আপডেট ট্যাব হয়
-    let targetTab = tab;
-    if (tab === 'balance') targetTab = 'balance'; // এটি balance-view কে টার্গেট করবে
+    let viewId = tab;
+    if (!tab.endsWith('-view')) {
+        viewId = tab + '-view';
+    }
 
-    const p = document.getElementById(targetTab + '-view'); 
+    const p = document.getElementById(viewId); 
     if(p) {
         p.classList.add('active');
     } else {
-        console.error("View not found:", targetTab + '-view');
+        const fallback = document.getElementById('balance-view');
+        if(fallback) fallback.classList.add('active');
     }
 
-    // ইনভেন্টরি লোড করা
     if(tab === 'cash-inventory') renderCashInventoryTable();
     if(tab === 'card-inventory') renderAccordionInventory();
     if(tab === 'daily-closing') renderDailyClosingHistory();
+    if(tab === 'reports' && typeof renderReportsView === 'function') renderReportsView();
     
-    document.getElementById('profileDropdown').classList.remove('active');
-};        
-        window.switchCustomerSubSection = function(sectionId) {
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-            document.getElementById('customer-ledger-view').classList.add('active');
+    if(document.getElementById('profileDropdown')) {
+        document.getElementById('profileDropdown').classList.remove('active');
+    }
+};
 
-            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-            document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
-
-            document.getElementById('menu-cust-parent').classList.add('active');
-
-            if (sectionId === 'cust-list-section') document.getElementById('sub-cust-list').classList.add('active');
-            if (sectionId === 'cust-tx-section') document.getElementById('sub-cust-tx').classList.add('active');
-            if (sectionId === 'cust-ledger-section') document.getElementById('sub-cust-ledger').classList.add('active');
-            if (sectionId === 'cust-due-section') document.getElementById('sub-cust-due').classList.add('active');
-            if (sectionId === 'cust-reports-section') document.getElementById('sub-cust-reports').classList.add('active');
-
-            document.querySelectorAll('.cust-sub-section').forEach(sec => sec.style.display = 'none');
-            const target = document.getElementById(sectionId);
-            if (target) target.style.display = 'block';
-
-            document.getElementById('top-title').innerText = "Customer Management & Ledger";
-
-            if (sectionId === 'cust-list-section') renderCustomerListTable();
-            if (sectionId === 'cust-due-section') renderDueSummarySection();
-            if (sectionId === 'cust-tx-section') {
-                document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('txTime').value = new Date().toTimeString().split(' ')[0].substring(0,5);
-                handleTxTypeChange();
-            }
-        };
+// --- সাইডবার এবং ড্রপডাউন কন্ট্রোল ---
+if (sidebarToggle) {
+    sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+}
+if (profileTrigger) {
+    profileTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileDropdown.classList.toggle('active');
+    });
+}
+document.addEventListener('click', () => {
+    if (profileDropdown) profileDropdown.classList.remove('active');
+});
         
-        sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-        });
-
-        profileTrigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            profileDropdown.classList.toggle('active');
-        });
-
-        document.addEventListener('click', () => {
-            if (profileDropdown) profileDropdown.classList.remove('active');
-        });
-
-        sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-        });
-       
-        document.addEventListener('click', () => {
-            if (profileDropdown) profileDropdown.classList.remove('active');
-        });
 // এই অংশটুকু ডেইলি ক্লোজিং হিস্ট্রি টেবিল তৈরি করবে
 window.renderDailyClosingHistory = function() {
     const tbody = document.getElementById('dailyClosingHistoryTableBody');
