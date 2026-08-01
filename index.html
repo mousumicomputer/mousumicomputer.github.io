@@ -2348,6 +2348,47 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
+        /* --- CRITICAL FUNCTION RESTORATION --- */
+        window.closeDCRModal = function() {
+            document.getElementById('dcrModal').style.display = 'none';
+        };
+
+        window.renderDailyClosingHistory = function() {
+            const tbody = document.getElementById('dailyClosingHistoryTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            // অকেজো ডাটা বাদ দিয়ে শুধু সঠিক রিপোর্টগুলো নেওয়া
+            const validList = (dailyClosingReports || []).filter(r => r && r.report_id && r.report_date);
+            if (validList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #9ca3af; padding: 20px;">কোনো রিপোর্ট পাওয়া যায়নি।</td></tr>';
+                return;
+            }
+            validList.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${r.report_date}</strong></td>
+                    <td>${r.closing_time}</td>
+                    <td style="font-size: 10px;">${r.report_id}</td>
+                    <td style="font-weight: 700; color: #00a8ef;">৳ ${(r.total_net_balance || 0).toLocaleString()}</td>
+                    <td style="text-align: center;">
+                        <button class="btn-action btn-edit" onclick="viewDailyClosingReport('${r.report_id}')"><i class="fa-solid fa-eye"></i></button>
+                        <button class="btn-action btn-delete" onclick="deleteDailyClosingReport('${r.report_id}')"><i class="fa-solid fa-box-archive"></i></button>
+                    </td>`;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.viewDailyClosingReport = function(id) {
+            const report = dailyClosingReports.find(r => r.report_id === id);
+            if (report) {
+                activeViewingReport = report;
+                if (typeof renderDailyClosingReportView === 'function') renderDailyClosingReportView(report);
+                document.getElementById('dcrModal').style.display = 'flex';
+            }
+        };
+
+        window.filterDailyClosingHistory = function() { renderDailyClosingHistory(); };
+        /* --- END OF RESTORATION --- */
         const adminEmail = "mousumicomputer.org@gmail.com";
         const OPERATORS_LIST = ['GP', 'Banglalink', 'Robi', 'Airtel'];
 
