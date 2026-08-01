@@ -4615,6 +4615,76 @@ window.renderDailyClosingReportView = function(snap) {
         document.addEventListener('click', () => {
             if (profileDropdown) profileDropdown.classList.remove('active');
         });
+// এই অংশটুকু ডেইলি ক্লোজিং হিস্ট্রি টেবিল তৈরি করবে
+window.renderDailyClosingHistory = function() {
+    const tbody = document.getElementById('dailyClosingHistoryTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const filterDate = document.getElementById('dcrFromDate') ? document.getElementById('dcrFromDate').value : '';
+    let reports = dailyClosingReports || [];
+
+    if (filterDate) {
+        reports = reports.filter(r => r.report_date === filterDate);
+    }
+
+    if (reports.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #9ca3af;">No reports found.</td></tr>';
+        return;
+    }
+
+    reports.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${r.report_date}</td>
+            <td>${r.closing_time}</td>
+            <td><strong>${r.report_id}</strong></td>
+            <td style="font-weight:700; color:var(--primary-color);">৳ ${(r.total_net_balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            <td style="text-align: center;">
+                <button class="btn-action btn-edit" onclick="viewDCRReport('${r.report_id}')"><i class="fa-solid fa-eye"></i> View</button>
+                <button class="btn-action btn-delete" onclick="deleteDCRReport('${r.report_id}')"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+};
+
+// নির্দিষ্ট রিপোর্ট দেখার জন্য এই ফাংশন
+window.viewDCRReport = function(reportId) {
+    const report = dailyClosingReports.find(r => r.report_id === reportId);
+    if (!report) return;
+    activeViewingReport = report;
+    renderDailyClosingReportView(report);
+    const modal = document.getElementById('dcrModal');
+    if(modal) modal.style.display = 'flex';
+};
+
+// রিপোর্ট মোডাল বন্ধ করার জন্য
+window.closeDCRModal = function() {
+    const modal = document.getElementById('dcrModal');
+    if(modal) modal.style.display = 'none';
+};
+
+// রিপোর্ট ডিলিট করার জন্য
+window.deleteDCRReport = function(reportId) {
+    showConfirmModal({
+        title: "Delete Report?",
+        message: "Are you sure you want to delete this historical report?",
+        onConfirm: async () => {
+            showLoader("Deleting Report...");
+            try {
+                dailyClosingReports = dailyClosingReports.filter(r => r.report_id !== reportId);
+                await writeToFirebase('erp/dailyClosingReports', dailyClosingReports);
+                renderDailyClosingHistory();
+                hideLoader();
+                showToast("Report deleted successfully.", "success");
+            } catch (err) {
+                hideLoader();
+                showToast("Error deleting report.", "error");
+            }
+        }
+    });
+};
 
     </script>
 </body>
