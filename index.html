@@ -3955,38 +3955,38 @@ window.renderDailyClosingReportView = function(snap) {
         });
 
         /* BALANCE UPDATE PANEL ENGINE */
-        window.openBalanceCategoryByName = function(catName) {
-            const cat = categories.find(c => c.name.toLowerCase() === catName.toLowerCase());
-            if (cat) openBalanceFormForCategory(cat.id);
-        };
+        window.openBalanceCategoryByName = (name) => {
+    // ক্যাটাগরি খোঁজা (বড় হাত-ছোট হাতের অক্ষরের পার্থক্য দূর করা হয়েছে)
+    const cat = categories.find(c => c.name.trim().toLowerCase() === name.trim().toLowerCase());
+    
+    if(!cat) {
+        showToast("Category '" + name + "' not found in database!", "warning");
+        return;
+    }
 
-        function openBalanceFormForCategory(catId) {
-            currentActiveCatId = catId;
-            const cat = categories.find(c => c.id === catId);
-            if (!cat) return;
+    currentActiveCatId = cat.id; 
+    document.getElementById('erpFormTitle').innerText = "Update " + cat.name;
+    const container = document.getElementById('formFieldsContainer');
+    container.innerHTML = '';
 
-            document.getElementById('erpFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square" style="color: #00a8ef;"></i> Update ${cat.name}`;
+    // একাউন্টগুলো খুঁজে ইনপুট তৈরি করা
+    const catAccs = accounts.filter(a => a.catId === cat.id);
+    if(catAccs.length === 0) {
+        container.innerHTML = '<p style="color:red; padding:10px;">এই ক্যাটাগরিতে কোনো একাউন্ট পাওয়া যায়নি।</p>';
+    }
 
-            const container = document.getElementById('formFieldsContainer');
-            container.innerHTML = '';
+    catAccs.forEach(acc => {
+        const val = balanceStore[acc.id] || 0;
+        container.innerHTML += `
+            <div style="margin-bottom:15px; background:#f9f9f9; padding:10px; border-radius:8px; border:1px solid #eee;">
+                <label style="font-weight:700; display:block; margin-bottom:5px;">${acc.name}</label>
+                <input type="number" step="any" id="inp_${acc.id}" value="${val}" 
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:1rem;">
+            </div>`;
+    });
 
-            const catAccs = accounts.filter(a => a.catId === catId && a.enabled !== false);
-            catAccs.forEach(acc => {
-                const currentVal = balanceStore[acc.id] !== undefined ? balanceStore[acc.id] : 0;
-                const fieldCard = document.createElement('div');
-                fieldCard.className = 'field-card';
-                fieldCard.innerHTML = `
-                    <div class="field-card-header">
-                        <label>${acc.name}</label>
-                        <span class="prev-bal">Current: <span>৳ ${parseFloat(currentVal).toLocaleString('en-US', {minimumFractionDigits: 2})}</span></span>
-                    </div>
-                    <input type="number" step="any" id="input_acc_${acc.id}" placeholder="0.00" value="${currentVal}">
-                `;
-                container.appendChild(fieldCard);
-            });
-
-            switchMainTab('balance-view');
-        }
+    switchMainTab('balance'); 
+};
 
         document.getElementById('balanceUpdateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
