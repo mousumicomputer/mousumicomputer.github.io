@@ -4612,173 +4612,172 @@ window.deleteDCRReport = function(reportId) {
         }
     });
 };
-// --- ডেইলি ক্লোজিং স্ন্যাপশট জেনারেটর (কার্ড ও ক্যাশ সেভ করার জন্য) ---
+// --- ডেইলি ক্লোজিং রিপোর্ট ইঞ্জিন (সম্পূর্ণ নিরাপদ সংস্করণ) ---
+
 window.generateDailyClosingSnapshot = async function() {
-    showLoader("Generating Daily Closing Snapshot...");
+    showLoader("হিসাব সংরক্ষণ করা হচ্ছে...");
     try {
         const now = new Date();
-        const reportDate = now.toISOString().split('T')[0];
-        const closingTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        const reportId = 'DCR-' + Date.now();
+        const rDate = now.toISOString().split('T')[0];
+        const rTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const rId = 'DCR-' + Date.now();
 
-        const custTotals = calculateCustomerTotals();
-        const cashTotal = calculateCashGrandTotal();
-        const cardTotal = calculateGrandCardInventoryValue();
+        // ১. প্রয়োজনীয় হিসাবগুলো সংগ্রহ
+        const cTotals = typeof calculateCustomerTotals === 'function' ? calculateCustomerTotals() : { totalOutstanding: 0 };
+        const cashSum = typeof calculateCashGrandTotal === 'function' ? calculateCashGrandTotal() : 0;
+        const cardSum = typeof calculateGrandCardInventoryValue === 'function' ? calculateGrandCardInventoryValue() : 0;
 
-        const bankAccountsList = [];
-        const personalAccountsList = [];
-        const agentAccountsList = [];
-        const rechargeAccountsList = [];
+        const bAccs = [];
+        const pAccs = [];
+        const aAccs = [];
+        const rAccs = [];
 
+        // ২. ক্যাটাগরি অনুযায়ী ব্যালেন্স সংগ্রহ
         categories.forEach(cat => {
-            const catAccs = accounts.filter(a => a.catId === cat.id && a.enabled !== false);
-            catAccs.forEach(acc => {
+            const accs = accounts.filter(a => a.catId === cat.id && a.enabled !== false);
+            accs.forEach(acc => {
                 const bal = parseFloat(balanceStore[acc.id]) || 0;
-                const item = { id: acc.id, name: acc.name, balance: bal };
-                if (cat.name.includes('Bank')) bankAccountsList.push(item);
-                else if (cat.name.includes('Personal')) personalAccountsList.push(item);
-                else if (cat.name.includes('Agent')) agentAccountsList.push(item);
-                else if (cat.name.includes('Recharge')) rechargeAccountsList.push(item);
+                const item = { name: acc.name, balance: bal };
+                if (cat.name.includes('Bank')) bAccs.push(item);
+                else if (cat.name.includes('Personal')) pAccs.push(item);
+                else if (cat.name.includes('Agent')) aAccs.push(item);
+                else if (cat.name.includes('Recharge')) rAccs.push(item);
             });
         });
 
-        // কার্ডের বিস্তারিত তালিকা
-        const cardInventoryDetails = [];
+        const sumB = bAccs.reduce((s, a) => s + a.balance, 0);
+        const sumP = pAccs.reduce((s, a) => s + a.balance, 0);
+        const sumA = aAccs.reduce((s, a) => s + a.balance, 0);
+        const sumR = rAccs.reduce((s, a) => s + a.balance, 0);
+
+        // ৩. কার্ড ও ক্যাশের বিস্তারিত তালিকা (NaN চেকসহ)
+        const cardDetails = [];
         OPERATORS_LIST.forEach(op => {
-            const opCards = cardConfig[op] || [];
-            const opQtys = cardQuantities[op] || {};
-            opCards.forEach(c => {
-                const q = parseInt(opQtys[c.id]) || 0;
+            const oCards = cardConfig[op] || [];
+            const oQtys = cardQuantities[op] || {};
+            oCards.forEach(c => {
+                const q = parseInt(oQtys[c.id]) || 0;
                 if (q > 0) {
-                    cardInventoryDetails.push({ name: `${op} ${c.name}`, qty: q, price: c.price, total: q * c.price });
+                    cardDetails.push({ name: `${op} ${c.name}`, qty: q, price: c.price || 0, total: q * (c.price || 0) });
                 }
             });
         });
 
-        // ক্যাশ নোটের বিস্তারিত তালিকা
-        const cashInventoryDetails = CASH_DENOMINATIONS.map(d => ({
+        const cashDetails = CASH_DENOMINATIONS.map(d => ({
             note: `৳ ${d} Notes`,
             qty: parseInt(cashQuantities[d]) || 0,
             amount: (parseInt(cashQuantities[d]) || 0) * d
         })).filter(i => i.qty > 0);
-        
-        if (cashOthersAmount > 0) {
-            cashInventoryDetails.push({ note: 'Others/Coins', qty: 1, amount: cashOthersAmount });
+
+        if (parseFloat(cashOthersAmount) > 0) {
+            cashDetails.push({ note: 'Others/Coins', qty: 1, amount: parseFloat(cashOthersAmount) });
         }
 
+        // ৪. ফাইনাল রিপোর্ট অবজেক্ট তৈরি
         const snapshot = {
-            company_name: profileSettings.companyName || 'Mousumi Computer',
-            report_date: reportDate,
-            closing_time: closingTime,
-            report_id: reportId,
-            total_cash_inventory: cashTotal,
-            total_card_inventory: cardTotal,
-            total_customer_due: custTotals.totalOutstanding,
-            total_net_balance: (bankAccountsList.concat(personalAccountsList, agentAccountsList, rechargeAccountsList).reduce((s, a) => s + a.balance, 0)) + cashTotal + cardTotal + custTotals.totalOutstanding,
-            bank_accounts: bankAccountsList,
-            personal_accounts: personalAccountsList,
-            agent_accounts: agentAccountsList,
-            recharge_accounts: rechargeAccountsList,
-            card_inventory_details: cardInventoryDetails,
-            cash_inventory_details: cashInventoryDetails
+            company_name: (profileSettings && profileSettings.companyName) ? profileSettings.companyName : 'Mousumi Computer',
+            report_date: rDate,
+            closing_time: rTime,
+            report_id: rId,
+            total_cash_inventory: cashSum,
+            total_card_inventory: cardSum,
+            total_customer_due: cTotals.totalOutstanding,
+            total_net_balance: sumB + sumP + sumA + sumR + cashSum + cardSum + cTotals.totalOutstanding,
+            bank_accounts: bAccs,
+            personal_accounts: pAccs,
+            agent_accounts: aAccs,
+            recharge_accounts: rAccs,
+            card_inventory_details: cardDetails,
+            cash_inventory_details: cashDetails
         };
 
+        // ৫. ডাটাবেজে সেভ করা
+        if (!Array.isArray(dailyClosingReports)) dailyClosingReports = [];
         dailyClosingReports.unshift(snapshot);
+        
         await writeToFirebase('erp/dailyClosingReports', dailyClosingReports);
-        renderDailyClosingHistory();
-        showToast("নতুন রিপোর্ট তৈরি হয়েছে!", "success");
+        
+        if (typeof renderDailyClosingHistory === 'function') renderDailyClosingHistory();
+        
         hideLoader();
+        showToast("আজকের রিপোর্ট সফলভাবে তৈরি হয়েছে!", "success");
     } catch (err) {
+        console.error(err);
         hideLoader();
-        showToast("Snapshot error.", "error");
+        showToast("হিসাব সংরক্ষণে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।", "error");
     }
 };
 
-// --- ডেইলি ক্লোজিং রিপোর্ট ভিউয়ার (ছবি অনুযায়ী ডিজাইন) ---
 window.renderDailyClosingReportView = function(snap) {
     const container = document.getElementById('printable-closing-report');
     if (!container) return;
-    const fmt = (num) => (parseFloat(num) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const bankSum = (snap.bank_accounts || []).reduce((s, a) => s + a.balance, 0);
-    const persSum = (snap.personal_accounts || []).reduce((s, a) => s + a.balance, 0);
-    const agentSum = (snap.agent_accounts || []).reduce((s, a) => s + a.balance, 0);
-    const rechSum = (snap.recharge_accounts || []).reduce((s, a) => s + a.balance, 0);
+
+    const fmt = (n) => (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const bSum = (snap.bank_accounts || []).reduce((s, a) => s + a.balance, 0);
+    const pSum = (snap.personal_accounts || []).reduce((s, a) => s + a.balance, 0);
+    const aSum = (snap.agent_accounts || []).reduce((s, a) => s + a.balance, 0);
+    const rSum = (snap.recharge_accounts || []).reduce((s, a) => s + a.balance, 0);
 
     let html = `
-        <div class="dcr-print-document" style="font-family: Arial, sans-serif; color: #000; padding: 20px; background: #fff;">
+        <div class="dcr-print-document" style="font-family: Arial, sans-serif; color: #000; padding: 20px; background: #fff; max-width: 800px; margin: auto;">
             <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px;">
-                <div style="font-size: 10px;">Date: ${snap.report_date}<br>Ref: REF-${snap.report_id.substring(4,10)}</div>
+                <div style="font-size: 10px;">Date: ${snap.report_date}<br>Time: ${snap.closing_time}</div>
                 <div style="text-align: center;">
-                    <h2 style="margin: 0; font-size: 18px; text-transform: uppercase;">MOUSUMI COMPUTER</h2>
-                    <h4 style="margin: 2px 0; font-size: 12px; font-weight: bold;">DAILY CLOSING FINANCIAL STATEMENT</h4>
+                    <h2 style="margin: 0; font-size: 20px;">${snap.company_name}</h2>
+                    <h4 style="margin: 2px 0; font-size: 13px; font-weight: bold;">DAILY CLOSING FINANCIAL STATEMENT</h4>
                 </div>
-                <div style="text-align: right; font-size: 10px;">ID: ${snap.report_id}<br>Page: 1 of 1</div>
+                <div style="text-align: right; font-size: 10px;">ID: ${snap.report_id}<br>Ref: REF-${snap.report_id.substring(4,10)}</div>
             </div>
 
-            <div style="border: 1px solid #000; margin-bottom: 10px;">
-                <div style="background: #eee; padding: 3px 8px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">SECTION 1: EXECUTIVE FINANCIAL SUMMARY</div>
+            <div style="border: 1px solid #000; margin-bottom: 12px;">
+                <div style="background: #eee; padding: 4px 10px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">SECTION 1: EXECUTIVE FINANCIAL SUMMARY</div>
                 <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                    <tr><td style="border: 1px solid #000; padding: 3px 10px;">Total Cash Inventory</td><td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">৳ ${fmt(snap.total_cash_inventory)}</td></tr>
-                    <tr><td style="border: 1px solid #000; padding: 3px 10px;">Total Card Inventory</td><td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">৳ ${fmt(snap.total_card_inventory)}</td></tr>
-                    <tr><td style="border: 1px solid #000; padding: 3px 10px;">Total Customer Outstanding Due</td><td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">৳ ${fmt(snap.total_customer_due)}</td></tr>
-                    <tr style="font-weight: bold; background: #eee;"><td style="border: 1px solid #000; padding: 5px 10px;">TOTAL NET FINANCIAL BALANCE</td><td style="border: 1px solid #000; padding: 5px 10px; text-align: right;">৳ ${fmt(snap.total_net_balance)}</td></tr>
+                    <tr><td style="border: 1px solid #000; padding: 4px 10px;">Total Cash Inventory</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.total_cash_inventory)}</td></tr>
+                    <tr><td style="border: 1px solid #000; padding: 4px 10px;">Total Card Inventory</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.total_card_inventory)}</td></tr>
+                    <tr><td style="border: 1px solid #000; padding: 4px 10px;">Total Customer Outstanding Due</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.total_customer_due)}</td></tr>
+                    <tr style="font-weight: bold; background: #eee; font-size: 12px;"><td style="border: 1px solid #000; padding: 6px 10px;">TOTAL NET FINANCIAL BALANCE</td><td style="border: 1px solid #000; padding: 6px 10px; text-align: right;">৳ ${fmt(snap.total_net_balance)}</td></tr>
                 </table>
             </div>
 
-            ${renderSubTable("BANK ACCOUNTS", snap.bank_accounts, bankSum)}
-            ${renderSubTable("PERSONAL ACCOUNTS", snap.personal_accounts, persSum)}
-            ${renderSubTable("AGENT ACCOUNTS", snap.agent_accounts, agentSum)}
-            ${renderSubTable("RECHARGE BALANCES", snap.recharge_accounts, rechSum)}
+            ${renderSub(snap.bank_accounts, "BANK ACCOUNTS", bSum)}
+            ${renderSub(snap.personal_accounts, "PERSONAL ACCOUNTS", pSum)}
+            ${renderSub(snap.agent_accounts, "AGENT ACCOUNTS", aSum)}
+            ${renderSub(snap.recharge_accounts, "RECHARGE BALANCES", rSum)}
 
-            <div style="border: 1px solid #000; margin-bottom: 10px;">
-                <div style="background: #eee; padding: 3px 8px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">CASH INVENTORY DETAILS</div>
+            <div style="border: 1px solid #000; margin-bottom: 12px;">
+                <div style="background: #eee; padding: 4px 10px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">CASH INVENTORY DETAILS</div>
                 <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-                    <tr style="background: #f9f9f9; font-weight: bold;">
-                        <td style="border: 1px solid #000; padding: 3px;">NOTES</td>
-                        <td style="border: 1px solid #000; padding: 3px; text-align:center;">QTY</td>
-                        <td style="border: 1px solid #000; padding: 3px; text-align:right;">AMOUNT (৳)</td>
+                    <tr style="background:#f9f9f9; font-weight:bold; text-align:center;">
+                        <td style="border: 1px solid #000; padding: 3px;">NOTES</td><td style="border: 1px solid #000; padding: 3px;">QTY</td><td style="border: 1px solid #000; padding: 3px;">AMOUNT (৳)</td>
                     </tr>
-                    ${(snap.cash_inventory_details || []).map(i => `
-                        <tr>
-                            <td style="border: 1px solid #000; padding: 2px 10px;">${i.note}</td>
-                            <td style="border: 1px solid #000; padding: 2px; text-align:center;">${i.qty}</td>
-                            <td style="border: 1px solid #000; padding: 2px 10px; text-align:right;">${fmt(i.amount)}</td>
-                        </tr>
-                    `).join('')}
+                    ${(snap.cash_inventory_details || []).map(i => `<tr><td style="border: 1px solid #000; padding: 2px 10px;">${i.note}</td><td style="border: 1px solid #000; padding: 2px; text-align:center;">${i.qty}</td><td style="border: 1px solid #000; padding: 2px 10px; text-align:right;">${fmt(i.amount)}</td></tr>`).join('')}
                 </table>
             </div>
 
             <div style="border: 1px solid #000;">
-                <div style="background: #eee; padding: 3px 8px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">CARD INVENTORY DETAILS</div>
+                <div style="background: #eee; padding: 4px 10px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">CARD INVENTORY DETAILS</div>
                 <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-                    <tr style="background: #f9f9f9; font-weight: bold;">
-                        <td style="border: 1px solid #000; padding: 3px;">CARD NAME</td>
-                        <td style="border: 1px solid #000; padding: 3px; text-align:center;">QTY</td>
-                        <td style="border: 1px solid #000; padding: 3px; text-align:right;">VALUE (৳)</td>
+                    <tr style="background:#f9f9f9; font-weight:bold; text-align:center;">
+                        <td style="border: 1px solid #000; padding: 3px;">CARD NAME</td><td style="border: 1px solid #000; padding: 3px;">QTY</td><td style="border: 1px solid #000; padding: 3px;">PRICE</td><td style="border: 1px solid #000; padding: 3px;">TOTAL (৳)</td>
                     </tr>
-                    ${(snap.card_inventory_details || []).map(c => `
-                        <tr>
-                            <td style="border: 1px solid #000; padding: 2px 10px;">${c.name}</td>
-                            <td style="border: 1px solid #000; padding: 2px; text-align:center;">${c.qty}</td>
-                            <td style="border: 1px solid #000; padding: 2px 10px; text-align:right;">${fmt(c.total)}</td>
-                        </tr>
-                    `).join('')}
+                    ${(snap.card_inventory_details || []).map(c => `<tr><td style="border: 1px solid #000; padding: 2px 8px;">${c.name}</td><td style="border: 1px solid #000; padding: 2px; text-align:center;">${c.qty}</td><td style="border: 1px solid #000; padding: 2px; text-align:right;">${fmt(c.price)}</td><td style="border: 1px solid #000; padding: 2px 8px; text-align:right;">${fmt(c.total)}</td></tr>`).join('')}
                 </table>
             </div>
         </div>`;
 
-    function renderSubTable(title, accs, total) {
+    function renderSub(arr, title, sum) {
         return `
-        <div style="border: 1px solid #000; margin-bottom: 10px;">
-            <div style="background: #eee; padding: 3px 8px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">${title}</div>
+        <div style="border: 1px solid #000; margin-bottom: 12px;">
+            <div style="background: #eee; padding: 4px 10px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">${title}</div>
             <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-                ${(accs || []).map(a => `<tr><td style="border: 1px solid #000; padding: 2px 10px; width:65%;">${a.name}</td><td style="border: 1px solid #000; padding: 2px 10px; text-align: right;">${fmt(a.balance)}</td></tr>`).join('')}
-                <tr style="font-weight: bold; background: #f9f9f9;"><td style="border: 1px solid #000; padding: 3px 10px;">TOTAL ${title}</td><td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">${fmt(total)}</td></tr>
+                ${(arr || []).map(a => `<tr><td style="border: 1px solid #000; padding: 2px 10px; width:65%;">${a.name}</td><td style="border: 1px solid #000; padding: 2px 10px; text-align: right;">${fmt(a.balance)}</td></tr>`).join('')}
+                <tr style="font-weight: bold; background: #f9f9f9;"><td style="border: 1px solid #000; padding: 4px 10px;">TOTAL ${title}</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">${fmt(sum)}</td></tr>
             </table>
         </div>`;
     }
     container.innerHTML = html;
 };
-    </script>
+
+</script>
 </body>
 </html>
