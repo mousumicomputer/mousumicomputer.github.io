@@ -4259,17 +4259,17 @@ window.deleteDCRReport = function(reportId) {
             }
         };
 // ==========================================
-// মাস্টার ন্যাভিগেশন এবং প্রোফাইল কন্ট্রোল ইঞ্জিন
+// মাস্টার লজিক ইঞ্জিন (সব এরর ফিক্সড)
 // ==========================================
 
-// ১. সাইডবার মেনু টগল (Parent Menu)
+// ১. সাইডবার মেনু টগল
 window.toggleParentMenu = (id) => {
     const m = document.getElementById(id);
-    const s = m.querySelector('.submenu-list');
+    const s = m ? m.querySelector('.submenu-list') : null;
     if(s) s.classList.toggle('show');
 };
 
-// ২. মেইন ট্যাব এবং পেজ পরিবর্তন ইঞ্জিন
+// ২. মেইন ট্যাব পরিবর্তন ইঞ্জিন
 window.switchMainTab = (tab) => {
     console.log("Switching to Page:", tab);
     document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
@@ -4284,11 +4284,11 @@ window.switchMainTab = (tab) => {
             document.getElementById('top-title').innerText = tab.replace('-', ' ').toUpperCase();
         }
     } else {
-        // ব্যালেন্স ট্যাব চেক
         const balView = document.getElementById('balance-view');
         if(balView) balView.classList.add('active');
     }
 
+    // টেবিলগুলো রেন্ডার করা
     if(tab === 'cash-inventory') renderCashInventoryTable();
     if(tab === 'card-inventory') renderAccordionInventory();
     if(tab === 'daily-closing') renderDailyClosingHistory();
@@ -4296,121 +4296,90 @@ window.switchMainTab = (tab) => {
     if(document.getElementById('profileDropdown')) document.getElementById('profileDropdown').classList.remove('active');
 };
 
-// ৩. প্রোফাইল মোডাল ওপেন করা (Screenshot 2 এর ডিজাইন)
-window.openProfileModal = function() {
-    const d = profileSettings || {};
-    document.getElementById('profNameInp').value = d.fullName || '';
-    document.getElementById('profPhoneInp').value = d.phone || '';
-    document.getElementById('profIdInp').value = d.employeeId || 'MC-8821';
-    document.getElementById('profGenderInp').value = d.gender || 'Male';
-    document.getElementById('profRoleInp').value = d.role || 'Admin';
-    document.getElementById('profCompanyInp').value = d.companyName || 'Mousumi Computer';
-    document.getElementById('profNidInp').value = d.nid || '';
-    document.getElementById('profBloodInp').value = d.bloodGroup || '';
-    
-    window.switchProfileTab('basic');
-    document.getElementById('profileModal').style.display = 'flex';
-};
+// ৩. আধুনিক কাস্টমার লিস্ট (Card View - ছবির মতো)
+window.renderCustomerListTable = function() {
+    const container = document.getElementById('customerListContainer');
+    if (!container) return;
+    container.innerHTML = '';
 
-window.closeProfileModal = () => document.getElementById('profileModal').style.display = 'none';
+    const filterVal = (document.getElementById('custSearchInput').value || '').toLowerCase();
+    const filtered = customers.filter(c => 
+        (c.name || '').toLowerCase().includes(filterVal) ||
+        (c.phone || '').toLowerCase().includes(filterVal)
+    );
 
-// ৪. প্রোফাইল ট্যাব সুইচিং (Basic/Professional/Personal)
-window.switchProfileTab = (tabName) => {
-    document.querySelectorAll('.prof-tab').forEach(t => {
-        t.style.opacity = "0.6";
-        t.style.borderBottom = "none";
+    if (filtered.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: #94a3b8;">No customers matched.</div>';
+        return;
+    }
+
+    // সামারি আপডেট
+    const totalDue = customers.reduce((sum, c) => sum + (typeof calculateCustomerCurrentDue === 'function' ? calculateCustomerCurrentDue(c.id) : 0), 0);
+    if(document.getElementById('dueCardTotalCust')) document.getElementById('dueCardTotalCust').innerText = customers.length;
+    if(document.getElementById('dueCardTotalOutstanding')) document.getElementById('dueCardTotalOutstanding').innerText = `৳ ${totalDue.toLocaleString()}`;
+
+    filtered.forEach(c => {
+        const currentDue = typeof calculateCustomerCurrentDue === 'function' ? calculateCustomerCurrentDue(c.id) : 0;
+        const nameInitials = c.name ? c.name.substring(0,2) : '??';
+        
+        const card = document.createElement('div');
+        card.style.cssText = `display: flex; align-items: center; justify-content: space-between; padding: 15px; background: #fff; border-radius: 15px; cursor: pointer; border: 1px solid #f1f5f9; margin-bottom:10px;`;
+        card.onclick = () => openCustomerLedgerDirect(c.id);
+
+        card.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 45px; height: 45px; border-radius: 50%; background: #eff6ff; color: #3b82f6; display: flex; align-items: center; justify-content: center; font-weight: 800;">${nameInitials}</div>
+                <div><h4 style="margin: 0; font-size: 0.95rem;">${c.name}</h4><p style="margin: 0; font-size: 0.75rem; color: #64748b;">${c.phone || 'No phone'}</p></div>
+            </div>
+            <div style="text-align: right;"><span style="font-weight: 800; color: #ef4444; font-size: 1rem;">${currentDue.toLocaleString()}</span></div>
+        `;
+        container.appendChild(card);
     });
-    document.querySelectorAll('.tab-content').forEach(c => c.style.display = "none");
-
-    const activeTab = document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
-    const activeContent = document.getElementById('content' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
-    
-    if(activeTab) {
-        activeTab.style.opacity = "1";
-        activeTab.style.borderBottom = "4px solid #fff";
-    }
-    if(activeContent) activeContent.style.display = "block";
 };
 
-// ৫. পাসওয়ার্ড মোডাল (Screenshot 3 এর ডিজাইন)
-window.openPasswordModal = () => document.getElementById('passwordModal').style.display = 'flex';
-window.closePasswordModal = () => document.getElementById('passwordModal').style.display = 'none';
-
-window.confirmPasswordChange = async function() {
-    const p1 = document.getElementById('newPassInp').value;
-    const p2 = document.getElementById('rePassInp').value;
-    if (p1 !== p2 || p1.length < 6) { alert("পাসওয়ার্ড সঠিক নয় বা মেলেনি!"); return; }
-    
-    showLoader("Updating...");
-    try {
-        if(auth.currentUser) await updatePassword(auth.currentUser, p1);
-        closePasswordModal();
-        hideLoader();
-        showToast("Password Updated!", "success");
-    } catch(e) { hideLoader(); alert(e.message); }
+// ৪. কাস্টমার সাব-ট্যাব কন্ট্রোল
+window.switchCustomerSubSection = (sectionId) => {
+    window.switchMainTab('customer-ledger');
+    document.querySelectorAll('.cust-sub-section').forEach(sec => sec.style.display = 'none');
+    const target = document.getElementById(sectionId);
+    if(target) target.style.display = 'block';
+    if(sectionId === 'cust-main-list-area' || sectionId === 'cust-list-section') renderCustomerListTable();
 };
 
-// ৬. সাইডবার এবং ক্লিক ইভেন্ট
-document.getElementById('sidebarToggle').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
-document.getElementById('profileTrigger').addEventListener('click', (e) => {
-    e.stopPropagation();
-    document.getElementById('profileDropdown').classList.toggle('active');
-});
-document.addEventListener('click', () => {
-    if(document.getElementById('profileDropdown')) document.getElementById('profileDropdown').classList.remove('active');
-});
-// উপরের ফাংশনটি (initSync) এখানে শেষ করা হলো
-} 
+// ৫. ব্যালেন্স ক্যাটাগরি ফর্ম তৈরি
+window.openBalanceCategoryByName = (name) => {
+    const cat = categories.find(c => c.name.trim().toLowerCase() === name.trim().toLowerCase());
+    if(!cat) return;
+    currentActiveCatId = cat.id;
+    document.getElementById('erpFormTitle').innerText = "Update " + cat.name;
+    const container = document.getElementById('formFieldsContainer');
+    container.innerHTML = '';
+    accounts.filter(a => a.catId === cat.id).forEach(acc => {
+        const val = balanceStore[acc.id] || 0;
+        container.innerHTML += `<div style="margin-bottom:12px;"><label style="font-weight:bold; font-size:0.8rem;">${acc.name}</label><input type="number" step="any" id="inp_${acc.id}" value="${val}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;"></div>`;
+    });
+    window.switchMainTab('balance');
+};
 
-// ৭. পিডিএফ এবং এক্সেল ডাউনলোড (নিখুঁত কোড)
+// ৬. সাইডবার এবং প্রোফাইল ইভেন্ট লিসনার (নিরাপদভাবে)
+setTimeout(() => {
+    const sBtn = document.getElementById('sidebarToggle');
+    const pBtn = document.getElementById('profileTrigger');
+    if(sBtn) sBtn.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+    if(pBtn) pBtn.addEventListener('click', (e) => { e.stopPropagation(); profileDropdown.classList.toggle('active'); });
+}, 1000);
+
+// ৭. পিডিএফ এবং এক্সেল ডাউনলোড
 window.downloadDailyClosingPDF = function() {
-    console.log("PDF download starting...");
     const element = document.getElementById('printable-closing-report');
-    if (!element) { 
-        alert("রিপোর্ট এলাকা খুঁজে পাওয়া যায়নি!"); 
-        return; 
-    }
-
-    const opt = {
-        margin:       10,
-        filename:     'Report.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-
-    // সরাসরি ডাউনলোড শুরু হবে
+    const opt = { margin:10, filename:'Report.pdf', html2canvas:{scale:2}, jsPDF:{unit:'mm', format:'a4', orientation:'portrait'}, pagebreak:{mode:['avoid-all']} };
     html2pdf().set(opt).from(element).save();
 };
 
 window.exportDailyClosingExcel = () => {
-    console.log("Excel download starting...");
     const t = document.querySelector('#printable-closing-report table');
-    if (!t) { 
-        alert("টেবিল পাওয়া যায়নি!"); 
-        return; 
-    }
-    const wb = XLSX.utils.table_to_book(t);
-    XLSX.writeFile(wb, 'Report.xlsx');
+    if(t) { const wb = XLSX.utils.table_to_book(t); XLSX.writeFile(wb, 'Report.xlsx'); }
 };
-
-// সাইডবার এবং প্রোফাইল ইভেন্ট লিসনার
-if (document.getElementById('sidebarToggle')) {
-    document.getElementById('sidebarToggle').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
-}
-if (document.getElementById('profileTrigger')) {
-    document.getElementById('profileTrigger').addEventListener('click', (e) => {
-        e.stopPropagation();
-        document.getElementById('profileDropdown').classList.toggle('active');
-    });
-}
-document.addEventListener('click', () => {
-    if (document.getElementById('profileDropdown')) {
-        document.getElementById('profileDropdown').classList.remove('active');
-    }
-});
-
     </script>
 </body>
 </html>
