@@ -4204,444 +4204,187 @@ window.renderDailyClosingReportView = function(snap) {
                 });
             }
         }
+/* ==========================================================================
+           REPAIR BLOCK: DAILY CLOSING, ARCHIVE & PROFILE ENGINE
+           ========================================================================== */
 
-        /* USER PROFILE MANAGEMENT ENGINE */
-        function loadSavedProfile() {
-            if (!profileSettings) return;
-            const fullName = profileSettings.fullName || 'Rabbi Hosen';
-            const role = profileSettings.role || 'Admin';
-            const avatar = profileSettings.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
-
-            document.getElementById('dropdownName').innerText = fullName;
-            document.getElementById('dropdownRole').innerText = role;
-            document.getElementById('fullProfileNameDisplay').innerText = fullName;
-            document.getElementById('fullProfileRoleDisplay').innerText = role;
-            document.getElementById('profFullName').value = fullName;
-            document.getElementById('profRole').value = role;
-            document.getElementById('profPhone').value = profileSettings.phone || '';
-
-            document.getElementById('navAvatar').src = avatar;
-            document.getElementById('dropdownHeaderImg').src = avatar;
-            document.getElementById('fullProfileImg').src = avatar;
+        // ১. ক্যাশ হিসাবের নিয়ম
+        function calculateCashGrandTotal() {
+            let sum = 0;
+            CASH_DENOMINATIONS.forEach(d => { sum += (parseInt(cashQuantities[d]) || 0) * d; });
+            return sum + (parseFloat(cashOthersAmount) || 0);
         }
 
-        document.getElementById('fullProfileForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            showLoader("Saving Profile...");
-
-            const fullName = document.getElementById('profFullName').value.trim();
-            const role = document.getElementById('profRole').value.trim();
-            const phone = document.getElementById('profPhone').value.trim();
-            const newPass = document.getElementById('profNewPass').value;
-
-            profileSettings.fullName = fullName;
-            profileSettings.role = role;
-            profileSettings.phone = phone;
-
+        // ২. ডেইলি ক্লোজিং রিপোর্ট তৈরির ইঞ্জিন (বিস্তারিত ২ নং ছবির মতো)
+        window.generateDailyClosingSnapshot = async function() {
+            showLoader("স্ন্যাপশট তৈরি হচ্ছে...");
             try {
-                if (newPass) {
-                    const user = auth.currentUser;
-                    if (user) {
-                        await updatePassword(user, newPass);
-                    }
-                }
+                const now = new Date();
+                const reportDate = now.toISOString().split('T')[0];
+                const closingTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const reportId = 'DCR-' + Date.now();
 
-                await writeToFirebase('erp/settings', profileSettings);
-                loadSavedProfile();
-                hideLoader();
-                showToast("Profile settings saved successfully!", "success");
-            } catch(err) {
-                hideLoader();
-                showToast("Failed to save profile settings: " + err.message, "error");
-            }
-        });
+                const custTotals = calculateCustomerTotals();
+                const cashTotal = calculateCashGrandTotal();
+                const cardTotal = calculateGrandCardInventoryValue();
 
-        document.getElementById('fullProfileImgInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+                let totalAllAccs = 0;
+                const bankList = [], personalList = [], agentList = [], rechargeList = [];
 
-            const reader = new FileReader();
-            reader.onload = async (evt) => {
-                const base64 = evt.target.result;
-                profileSettings.avatarUrl = base64;
-                try {
-                    await writeToFirebase('erp/settings', profileSettings);
-                    loadSavedProfile();
-                    showToast("Profile avatar updated!", "success");
-                } catch(err) {
-                    showToast("Error updating avatar.", "error");
-                }
-            };
-            reader.readAsDataURL(file);
-        });
+                categories.forEach(cat => {
+                    const accs = accounts.filter(a => a.catId === cat.id && a.enabled !== false);
+                    accs.forEach(acc => {
+                        const bal = parseFloat(balanceStore[acc.id]) || 0;
+                        totalAllAccs += bal;
+                        const item = { name: acc.name, balance: bal };
+                        if (cat.name.toLowerCase().includes('bank')) bankList.push(item);
+                        else if (cat.name.toLowerCase().includes('personal')) personalList.push(item);
+                        else if (cat.name.toLowerCase().includes('agent')) agentList.push(item);
+                        else if (cat.name.toLowerCase().includes('recharge')) rechargeList.push(item);
+                    });
+                });
 
-        /* NAVIGATION & TAB SWITCHING ENGINE */
-        window.switchMainTab = function(tabName) {
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-            document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
+                const snapshot = {
+                    company_name: profileSettings.companyName || 'MOUSUMI COMPUTER',
+                    report_date: reportDate,
+                    closing_time: closingTime,
+                    report_id: reportId,
+                    total_net_balance: totalAllAccs + custTotals.totalOutstanding + cashTotal + cardTotal,
+                    total_cash_inventory: cashTotal,
+                    total_card_inventory: cardTotal,
+                    total_customer_due: custTotals.totalOutstanding,
+                    bank_accounts: bankList,
+                    personal_accounts: personalList,
+                    agent_accounts: agentList,
+                    recharge_accounts: rechargeList,
+                    cash_inventory: CASH_DENOMINATIONS.map(d => ({ denomination: `৳ ${d} Notes`, quantity: parseInt(cashQuantities[d]) || 0, amount: (parseInt(cashQuantities[d]) || 0) * d })).filter(i => i.quantity > 0),
+                    card_inventory: []
+                };
 
-            const topTitle = document.getElementById('top-title');
+                OPERATORS_LIST.forEach(op => {
+                    (cardConfig[op] || []).forEach(c => {
+                        const q = parseInt(cardQuantities[op]?.[c.id]) || 0;
+                        if (q > 0) snapshot.card_inventory.push({ operator: op, cardName: c.name, quantity: q, amount: q * c.price });
+                    });
+                });
 
-            if (tabName === 'dashboard') {
-                document.getElementById('dashboard-view').classList.add('active');
-                document.getElementById('menu-dash').classList.add('active');
-                topTitle.innerText = "Dashboard Overview";
-                updateDashboardCards();
-            } else if (tabName === 'balance-view') {
-                document.getElementById('balance-view').classList.add('active');
-                topTitle.innerText = "Balance Management";
-            } else if (tabName === 'cash-inventory') {
-                document.getElementById('cash-inventory-view').classList.add('active');
-                document.getElementById('menu-inv-parent').classList.add('active');
-                document.getElementById('sub-cash-inv').classList.add('active');
-                topTitle.innerText = "Cash Inventory Audit";
-                renderCashInventoryTable();
-            } else if (tabName === 'card-inventory') {
-                document.getElementById('card-inventory-view').classList.add('active');
-                document.getElementById('menu-inv-parent').classList.add('active');
-                document.getElementById('sub-card-inv').classList.add('active');
-                topTitle.innerText = "Card Inventory Audit";
-                renderAccordionInventory();
-            } else if (tabName === 'daily-closing') {
-                document.getElementById('daily-closing-view').classList.add('active');
-                document.getElementById('menu-reports-parent').classList.add('active');
-                document.getElementById('sub-dcr-report').classList.add('active');
-                topTitle.innerText = "Daily Closing Financial Statement";
+                dailyClosingReports.unshift(snapshot);
+                await writeToFirebase('erp/dailyClosingReports', dailyClosingReports);
                 renderDailyClosingHistory();
-            } else if (tabName === 'category-mgmt') {
-                document.getElementById('category-mgmt-view').classList.add('active');
-                document.getElementById('menu-settings-parent').classList.add('active');
-                document.getElementById('sub-cat-mgmt').classList.add('active');
-                topTitle.innerText = "Category & Account Configuration";
-                renderCategoriesTable();
-                renderAccountsTable();
-            } else if (tabName === 'card-mgmt') {
-                document.getElementById('card-mgmt-view').classList.add('active');
-                document.getElementById('menu-settings-parent').classList.add('active');
-                document.getElementById('sub-card-mgmt').classList.add('active');
-                topTitle.innerText = "Master Card Configuration";
-                renderCardMasterView();
-            } else if (tabName === 'reports') {
-                document.getElementById('reports-view').classList.add('active');
-                document.getElementById('menu-reports-parent').classList.add('active');
-                document.getElementById('sub-tx-history').classList.add('active');
-                topTitle.innerText = "Audit History & Reports";
-                renderReportsView();
-            } else if (tabName === 'profile') {
-                document.getElementById('profile-view').classList.add('active');
-                document.getElementById('menu-settings-parent').classList.add('active');
-                document.getElementById('sub-profile').classList.add('active');
-                topTitle.innerText = "User Profile & Security";
-            }
-
-            if (profileDropdown) profileDropdown.classList.remove('active');
-        };
-
-        window.switchCustomerSubSection = function(sectionId) {
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-            document.getElementById('customer-ledger-view').classList.add('active');
-
-            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-            document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
-
-            document.getElementById('menu-cust-parent').classList.add('active');
-
-            if (sectionId === 'cust-list-section') document.getElementById('sub-cust-list').classList.add('active');
-            if (sectionId === 'cust-tx-section') document.getElementById('sub-cust-tx').classList.add('active');
-            if (sectionId === 'cust-ledger-section') document.getElementById('sub-cust-ledger').classList.add('active');
-            if (sectionId === 'cust-due-section') document.getElementById('sub-cust-due').classList.add('active');
-            if (sectionId === 'cust-reports-section') document.getElementById('sub-cust-reports').classList.add('active');
-
-            document.querySelectorAll('.cust-sub-section').forEach(sec => sec.style.display = 'none');
-            const target = document.getElementById(sectionId);
-            if (target) target.style.display = 'block';
-
-            document.getElementById('top-title').innerText = "Customer Management & Ledger";
-
-            if (sectionId === 'cust-list-section') renderCustomerListTable();
-            if (sectionId === 'cust-due-section') renderDueSummarySection();
-            if (sectionId === 'cust-tx-section') {
-                document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('txTime').value = new Date().toTimeString().split(' ')[0].substring(0,5);
-                handleTxTypeChange();
-            }
-        };
-
-        window.toggleParentMenu = function(parentId) {
-            const item = document.getElementById(parentId);
-            if (!item) return;
-            const submenu = item.querySelector('.submenu-list');
-            if (submenu) {
-                submenu.classList.toggle('show');
-                item.classList.toggle('open');
-            }
-        };
-
-        sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-        });
-
-        profileTrigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            profileDropdown.classList.toggle('active');
-        });
-
-        document.addEventListener('click', () => {
-            if (profileDropdown) profileDropdown.classList.remove('active');
-        });
-
-    </script>
-</body>
-</html>       document.getElementById('profPhone').value = profileSettings.phone || '';
-
-            document.getElementById('navAvatar').src = avatar;
-            document.getElementById('dropdownHeaderImg').src = avatar;
-            document.getElementById('fullProfileImg').src = avatar;
-        }
-
-        document.getElementById('fullProfileForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            showLoader("Saving Profile...");
-
-            const fullName = document.getElementById('profFullName').value.trim();
-            const role = document.getElementById('profRole').value.trim();
-            const phone = document.getElementById('profPhone').value.trim();
-            const newPass = document.getElementById('profNewPass').value;
-
-            profileSettings.fullName = fullName;
-            profileSettings.role = role;
-            profileSettings.phone = phone;
-
-            try {
-                if (newPass) {
-                    const user = auth.currentUser;
-                    if (user) {
-                        await updatePassword(user, newPass);
-                    }
-                }
-
-                await writeToFirebase('erp/settings', profileSettings);
-                loadSavedProfile();
                 hideLoader();
-                showToast("Profile settings saved successfully!", "success");
-            } catch(err) {
-                hideLoader();
-                showToast("Failed to save profile settings: " + err.message, "error");
-            }
-        });
-
-        document.getElementById('fullProfileImgInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = async (evt) => {
-                const base64 = evt.target.result;
-                profileSettings.avatarUrl = base64;
-                try {
-                    await writeToFirebase('erp/settings', profileSettings);
-                    loadSavedProfile();
-                    showToast("Profile avatar updated!", "success");
-                } catch(err) {
-                    showToast("Error updating avatar.", "error");
-                }
-            };
-            reader.readAsDataURL(file);
-        });
-
-        /* NAVIGATION & TAB SWITCHING ENGINE */
-        window.switchMainTab = function(tabName) {
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-            document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
-
-            const topTitle = document.getElementById('top-title');
-
-            if (tabName === 'dashboard') {
-                document.getElementById('dashboard-view').classList.add('active');
-                document.getElementById('menu-dash').classList.add('active');
-                topTitle.innerText = "Dashboard Overview";
-                updateDashboardCards();
-            } else if (tabName === 'balance-view') {
-                document.getElementById('balance-view').classList.add('active');
-                topTitle.innerText = "Balance Management";
-            } else if (tabName === 'cash-inventory') {
-                document.getElementById('cash-inventory-view').classList.add('active');
-                document.getElementById('menu-inv-parent').classList.add('active');
-                document.getElementById('sub-cash-inv').classList.add('active');
-                topTitle.innerText = "Cash Inventory Audit";
-                renderCashInventoryTable();
-            } else if (tabName === 'card-inventory') {
-                document.getElementById('card-inventory-view').classList.add('active');
-                document.getElementById('menu-inv-parent').classList.add('active');
-                document.getElementById('sub-card-inv').classList.add('active');
-                topTitle.innerText = "Card Inventory Audit";
-                renderAccordionInventory();
-            } else if (tabName === 'daily-closing') {
-                document.getElementById('daily-closing-view').classList.add('active');
-                document.getElementById('menu-reports-parent').classList.add('active');
-                document.getElementById('sub-dcr-report').classList.add('active');
-                topTitle.innerText = "Daily Closing Financial Statement";
-                renderDailyClosingHistory();
-            } else if (tabName === 'category-mgmt') {
-                document.getElementById('category-mgmt-view').classList.add('active');
-                document.getElementById('menu-settings-parent').classList.add('active');
-                document.getElementById('sub-cat-mgmt').classList.add('active');
-                topTitle.innerText = "Category & Account Configuration";
-                renderCategoriesTable();
-                renderAccountsTable();
-            } else if (tabName === 'card-mgmt') {
-                document.getElementById('card-mgmt-view').classList.add('active');
-                document.getElementById('menu-settings-parent').classList.add('active');
-                document.getElementById('sub-card-mgmt').classList.add('active');
-                topTitle.innerText = "Master Card Configuration";
-                renderCardMasterView();
-            } else if (tabName === 'reports') {
-                document.getElementById('reports-view').classList.add('active');
-                document.getElementById('menu-reports-parent').classList.add('active');
-                document.getElementById('sub-tx-history').classList.add('active');
-                topTitle.innerText = "Audit History & Reports";
-                renderReportsView();
-            } else if (tabName === 'profile') {
-                document.getElementById('profile-view').classList.add('active');
-                document.getElementById('menu-settings-parent').classList.add('active');
-                document.getElementById('sub-profile').classList.add('active');
-                topTitle.innerText = "User Profile & Security";
-            }
-
-            if (profileDropdown) profileDropdown.classList.remove('active');
+                showToast("বিস্তারিত স্ন্যাপশট সংরক্ষিত!", "success");
+            } catch (err) { hideLoader(); showToast("Error: " + err.message, "error"); }
         };
 
-        window.switchCustomerSubSection = function(sectionId) {
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-            document.getElementById('customer-ledger-view').classList.add('active');
-
-            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-            document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
-
-            document.getElementById('menu-cust-parent').classList.add('active');
-
-            if (sectionId === 'cust-list-section') document.getElementById('sub-cust-list').classList.add('active');
-            if (sectionId === 'cust-tx-section') document.getElementById('sub-cust-tx').classList.add('active');
-            if (sectionId === 'cust-ledger-section') document.getElementById('sub-cust-ledger').classList.add('active');
-            if (sectionId === 'cust-due-section') document.getElementById('sub-cust-due').classList.add('active');
-            if (sectionId === 'cust-reports-section') document.getElementById('sub-cust-reports').classList.add('active');
-
-            document.querySelectorAll('.cust-sub-section').forEach(sec => sec.style.display = 'none');
-            const target = document.getElementById(sectionId);
-            if (target) target.style.display = 'block';
-
-            document.getElementById('top-title').innerText = "Customer Management & Ledger";
-
-            if (sectionId === 'cust-list-section') renderCustomerListTable();
-            if (sectionId === 'cust-due-section') renderDueSummarySection();
-            if (sectionId === 'cust-tx-section') {
-                document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('txTime').value = new Date().toTimeString().split(' ')[0].substring(0,5);
-                handleTxTypeChange();
-            }
+        // ৩. রিপোর্ট পপ-আপে দেখানোর নিয়ম
+        window.renderDailyClosingReportView = function(snap) {
+            const container = document.getElementById('printable-closing-report');
+            if (!container) return;
+            const fmt = (num) => (parseFloat(num) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
+            
+            container.innerHTML = `
+                <div class="dcr-print-document" style="font-family: Arial; padding: 10px; color: #000;">
+                    <div style="text-align:center; border-bottom:2px solid #000; padding-bottom:10px; margin-bottom:15px;">
+                        <h2 style="margin:0;">${snap.company_name}</h2>
+                        <h4 style="margin:5px 0;">DAILY CLOSING FINANCIAL STATEMENT</h4>
+                        <div style="display:flex; justify-content:space-between; font-size:11px; margin-top:10px;">
+                            <span>Date: ${snap.report_date}</span> <span>ID: ${snap.report_id}</span>
+                        </div>
+                    </div>
+                    <table style="width:100%; border-collapse:collapse; border:1px solid #000; margin-bottom:15px;">
+                        <tr style="background:#e5e7eb; font-weight:bold; font-size:14px;"><td style="padding:8px; border:1px solid #000;">TOTAL NET BALANCE</td><td style="text-align:right; padding:8px; border:1px solid #000;">৳ ${fmt(snap.total_net_balance)}</td></tr>
+                    </table>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11px;">
+                        <div style="border:1px solid #000; padding:5px;"><strong>BANK ACCOUNTS</strong><br>${(snap.bank_accounts || []).map(a => `${a.name}: ${fmt(a.balance)}<br>`).join('')}</div>
+                        <div style="border:1px solid #000; padding:5px;"><strong>PERSONAL ACCOUNTS</strong><br>${(snap.personal_accounts || []).map(a => `${a.name}: ${fmt(a.balance)}<br>`).join('')}</div>
+                    </div>
+                </div>`;
         };
 
-        window.toggleParentMenu = function(parentId) {
-            const item = document.getElementById(parentId);
-            if (!item) return;
-            const submenu = item.querySelector('.submenu-list');
-            if (submenu) {
-                submenu.classList.toggle('show');
-                item.classList.toggle('open');
-            }
-        };
-
-        sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-        });
-
-        profileTrigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            profileDropdown.classList.toggle('active');
-        });
-
-        document.addEventListener('click', () => {
-            if (profileDropdown) profileDropdown.classList.remove('active');
-        });
-
-    </script>
-</body>
-</html>gle('show');
-                item.classList.toggle('open');
-            }
-        };
-
-        sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-        });
-
-        profileTrigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            profileDropdown.classList.toggle('active');
-        });
-
-        document.addEventListener('click', () => {
-            if (profileDropdown) profileDropdown.classList.remove('active');
-        });
-
-/* --- DAILY CLOSING MODULE FUNCTIONS --- */
-        
-        // ১. পপ-আপ বন্ধ করার নিয়ম
-        window.closeDCRModal = function() {
-            document.getElementById('dcrModal').style.display = 'none';
-        };
-
-        // ২. হিস্ট্রি টেবিল তৈরি করার নিয়ম (এটিই মিসিং ছিল)
+        // ৪. হিস্ট্রি টেবিল রেন্ডারার (এটিই আপনার এরর ছিল)
         window.renderDailyClosingHistory = function() {
             const tbody = document.getElementById('dailyClosingHistoryTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
-
-            // undefined ডাটা ফিল্টার করে বাদ দেওয়া
-            if (!Array.isArray(dailyClosingReports)) dailyClosingReports = [];
-            const validList = dailyClosingReports.filter(r => r && r.report_id && r.report_date);
-
-            if (validList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #9ca3af; padding: 20px;">No valid records found.</td></tr>';
-                return;
-            }
-
+            const validList = dailyClosingReports.filter(r => r && r.report_id);
+            if (validList.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No records</td></tr>'; return; }
             validList.forEach(r => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><strong>${r.report_date}</strong></td>
-                    <td>${r.closing_time}</td>
-                    <td style="font-size: 10px;">${r.report_id}</td>
-                    <td style="font-weight: 700; color: #00a8ef;">৳ ${(r.total_net_balance || 0).toLocaleString()}</td>
-                    <td style="text-align: center;">
-                        <button class="btn-action btn-edit" onclick="viewDailyClosingReport('${r.report_id}')" title="View"><i class="fa-solid fa-eye"></i></button>
-                        <button class="btn-action btn-delete" onclick="deleteDailyClosingReport('${r.report_id}')" title="Archive"><i class="fa-solid fa-box-archive"></i></button>
-                    </td>
-                `;
+                tr.innerHTML = `<td><strong>${r.report_date}</strong></td><td>${r.closing_time}</td><td>${r.report_id}</td><td>৳ ${(r.total_net_balance || 0).toLocaleString()}</td><td style="text-align:center;"><button class="btn-action btn-edit" onclick="viewDailyClosingReport('${r.report_id}')"><i class="fa-solid fa-eye"></i></button><button class="btn-action btn-delete" onclick="deleteDailyClosingReport('${r.report_id}')"><i class="fa-solid fa-box-archive"></i></button></td>`;
                 tbody.appendChild(tr);
             });
         };
 
-        // ৩. ভিউ বাটন ক্লিক করলে যা হবে
         window.viewDailyClosingReport = function(id) {
-            const report = dailyClosingReports.find(r => r.report_id === id);
-            if (report) {
-                activeViewingReport = report;
-                if (typeof renderDailyClosingReportView === 'function') {
-                    renderDailyClosingReportView(report);
-                    document.getElementById('dcrModal').style.display = 'flex';
+            const r = dailyClosingReports.find(x => x.report_id === id);
+            if (r) { activeViewingReport = r; renderDailyClosingReportView(r); document.getElementById('dcrModal').style.display = 'flex'; }
+        };
+
+        window.closeDCRModal = () => document.getElementById('dcrModal').style.display = 'none';
+
+        // ৫. আর্কাইভ সিস্টেম
+        window.deleteDailyClosingReport = function(id) {
+            showConfirmModal({ title: "আর্কাইভে সরান?", message: "এটি আর্কাইভ সেন্টারে জমা থাকবে।", onConfirm: async () => {
+                const idx = dailyClosingReports.findIndex(r => r.report_id === id);
+                if (idx !== -1) {
+                    const deleted = dailyClosingReports[idx];
+                    if (!window.archiveStore) window.archiveStore = [];
+                    archiveStore.unshift({ type: 'Daily Closing', details: `Date: ${deleted.report_date}`, deletedDate: new Date().toLocaleString(), data: deleted });
+                    dailyClosingReports.splice(idx, 1);
+                    await writeToFirebase('erp/dailyClosingReports', dailyClosingReports);
+                    await writeToFirebase('erp/archiveStore', archiveStore);
+                    renderDailyClosingHistory();
                 }
+            }});
+        };
+
+        window.renderArchiveCenter = function() {
+            const tbody = document.getElementById('archiveTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = (archiveStore || []).map((item, index) => `<tr><td>${item.type}</td><td>${item.details}</td><td>${item.deletedDate}</td><td style="text-align:center;"><button class="btn-action btn-edit" onclick="restoreFromArchive(${index})">Restore</button></td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center;">আর্কাইভ খালি।</td></tr>';
+        };
+
+        window.restoreFromArchive = async function(index) {
+            const item = archiveStore[index];
+            if (item.type === 'Daily Closing') dailyClosingReports.unshift(item.data);
+            archiveStore.splice(index, 1);
+            await writeToFirebase('erp/dailyClosingReports', dailyClosingReports);
+            await writeToFirebase('erp/archiveStore', archiveStore);
+            renderArchiveCenter();
+            showToast("রিস্টোর হয়েছে!", "success");
+        };
+
+        // ৬. নেভিগেশন ও প্রোফাইল
+        const originalSwitchMainTab = window.switchMainTab;
+        window.switchMainTab = function(tabName) {
+            if (tabName === 'archive-center') {
+                document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById('archive-center-view').classList.add('active');
+                document.getElementById('top-title').innerText = "System Archive Center";
+                renderArchiveCenter();
+            } else if (typeof originalSwitchMainTab === 'function') {
+                originalSwitchMainTab(tabName);
             }
         };
 
-        // ৪. ফিল্টার বাটন কাজ করানোর নিয়ম
-        window.filterDailyClosingHistory = function() {
-            renderDailyClosingHistory();
+        window.loadSavedProfile = function() {
+            if (profileSettings && profileSettings.fullName) {
+                document.getElementById('dropdownName').innerText = profileSettings.fullName;
+                document.getElementById('fullProfileNameDisplay').innerText = profileSettings.fullName;
+            }
         };
 
-        /* --- END OF DAILY CLOSING FUNCTIONS --- */
+        // ৭. লিসেনারস
+        sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+        profileTrigger.addEventListener('click', (e) => { e.stopPropagation(); profileDropdown.classList.toggle('active'); });
+        document.addEventListener('click', () => profileDropdown.classList.remove('active'));
+
+        // ৮. স্টাব ফাংশন (এরর এড়াতে)
+        window.filterDailyClosingHistory = () => renderDailyClosingHistory();
+        window.printDailyClosingPDF = () => window.print();
+        window.exportDailyClosingExcel = () => {};
+
     </script>
 </body>
 </html>
+        
