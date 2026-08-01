@@ -4297,68 +4297,6 @@ window.renderDailyClosingReportView = function(snap) {
             reader.readAsDataURL(file);
         });
 
-        /* NAVIGATION & TAB SWITCHING ENGINE */
-        window.switchMainTab = function(tabName) {
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-            document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
-
-            const topTitle = document.getElementById('top-title');
-
-            if (tabName === 'dashboard') {
-                document.getElementById('dashboard-view').classList.add('active');
-                document.getElementById('menu-dash').classList.add('active');
-                topTitle.innerText = "Dashboard Overview";
-                updateDashboardCards();
-            } else if (tabName === 'balance-view') {
-                document.getElementById('balance-view').classList.add('active');
-                topTitle.innerText = "Balance Management";
-            } else if (tabName === 'cash-inventory') {
-                document.getElementById('cash-inventory-view').classList.add('active');
-                document.getElementById('menu-inv-parent').classList.add('active');
-                document.getElementById('sub-cash-inv').classList.add('active');
-                topTitle.innerText = "Cash Inventory Audit";
-                renderCashInventoryTable();
-            } else if (tabName === 'card-inventory') {
-                document.getElementById('card-inventory-view').classList.add('active');
-                document.getElementById('menu-inv-parent').classList.add('active');
-                document.getElementById('sub-card-inv').classList.add('active');
-                topTitle.innerText = "Card Inventory Audit";
-                renderAccordionInventory();
-            } else if (tabName === 'daily-closing') {
-                document.getElementById('daily-closing-view').classList.add('active');
-                document.getElementById('menu-reports-parent').classList.add('active');
-                document.getElementById('sub-dcr-report').classList.add('active');
-                topTitle.innerText = "Daily Closing Financial Statement";
-                renderDailyClosingHistory();
-            } else if (tabName === 'category-mgmt') {
-                document.getElementById('category-mgmt-view').classList.add('active');
-                document.getElementById('menu-settings-parent').classList.add('active');
-                document.getElementById('sub-cat-mgmt').classList.add('active');
-                topTitle.innerText = "Category & Account Configuration";
-                renderCategoriesTable();
-                renderAccountsTable();
-            } else if (tabName === 'card-mgmt') {
-                document.getElementById('card-mgmt-view').classList.add('active');
-                document.getElementById('menu-settings-parent').classList.add('active');
-                document.getElementById('sub-card-mgmt').classList.add('active');
-                topTitle.innerText = "Master Card Configuration";
-                renderCardMasterView();
-            } else if (tabName === 'reports') {
-                document.getElementById('reports-view').classList.add('active');
-                document.getElementById('menu-reports-parent').classList.add('active');
-                document.getElementById('sub-tx-history').classList.add('active');
-                topTitle.innerText = "Audit History & Reports";
-                renderReportsView();
-            } else if (tabName === 'profile') {
-                document.getElementById('profile-view').classList.add('active');
-                document.getElementById('menu-settings-parent').classList.add('active');
-                document.getElementById('sub-profile').classList.add('active');
-                topTitle.innerText = "User Profile & Security";
-            }
-
-            if (profileDropdown) profileDropdown.classList.remove('active');
-        };
 // --- ডেইলি ক্লোজিং রিপোর্ট ইঞ্জিন শুরু ---
 window.renderDailyClosingHistory = function() {
     const tbody = document.getElementById('dailyClosingHistoryTableBody');
@@ -4538,70 +4476,65 @@ window.deleteDCRReport = function(reportId) {
             };
             reader.readAsDataURL(file);
         });
+        // --- ট্যাব পরিবর্তনের মেইন ইঞ্জিন (শুধুমাত্র একবার থাকবে) ---
+window.switchMainTab = function(tabName) {
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
 
-        /* NAVIGATION & TAB SWITCHING ENGINE */
-        window.switchMainTab = function(tabName) {
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-            document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
+    const topTitle = document.getElementById('top-title');
 
-            const topTitle = document.getElementById('top-title');
+    if (tabName === 'dashboard') {
+        document.getElementById('dashboard-view').classList.add('active');
+        document.getElementById('menu-dash').classList.add('active');
+        topTitle.innerText = "Dashboard Overview";
+        if (typeof updateDashboardCards === 'function') updateDashboardCards();
+    } else if (tabName === 'balance-view') {
+        document.getElementById('balance-view').classList.add('active');
+        topTitle.innerText = "Balance Management";
+    } else if (tabName === 'cash-inventory') {
+        document.getElementById('cash-inventory-view').classList.add('active');
+        document.getElementById('menu-inv-parent').classList.add('active');
+        document.getElementById('sub-cash-inv').classList.add('active');
+        topTitle.innerText = "Cash Inventory Audit";
+        if (typeof renderCashInventoryTable === 'function') renderCashInventoryTable();
+    } else if (tabName === 'card-inventory') {
+        document.getElementById('card-inventory-view').classList.add('active');
+        document.getElementById('menu-inv-parent').classList.add('active');
+        document.getElementById('sub-card-inv').classList.add('active');
+        topTitle.innerText = "Card Inventory Audit";
+        if (typeof renderAccordionInventory === 'function') renderAccordionInventory();
+    } else if (tabName === 'daily-closing') {
+        document.getElementById('daily-closing-view').classList.add('active');
+        document.getElementById('menu-reports-parent').classList.add('active');
+        document.getElementById('sub-dcr-report').classList.add('active');
+        topTitle.innerText = "Daily Closing Financial Statement";
+        if (typeof renderDailyClosingHistory === 'function') renderDailyClosingHistory();
+    } else if (tabName === 'category-mgmt') {
+        document.getElementById('category-mgmt-view').classList.add('active');
+        document.getElementById('menu-settings-parent').classList.add('active');
+        document.getElementById('sub-cat-mgmt').classList.add('active');
+        topTitle.innerText = "Category & Account Configuration";
+    } else if (tabName === 'card-mgmt') {
+        document.getElementById('card-mgmt-view').classList.add('active');
+        document.getElementById('menu-settings-parent').classList.add('active');
+        document.getElementById('sub-card-mgmt').classList.add('active');
+        topTitle.innerText = "Master Card Configuration";
+    } else if (tabName === 'reports') {
+        document.getElementById('reports-view').classList.add('active');
+        document.getElementById('menu-reports-parent').classList.add('active');
+        document.getElementById('sub-tx-history').classList.add('active');
+        topTitle.innerText = "Audit History & Reports";
+        if (typeof renderReportsView === 'function') renderReportsView();
+    } else if (tabName === 'profile') {
+        document.getElementById('profile-view').classList.add('active');
+        document.getElementById('menu-settings-parent').classList.add('active');
+        document.getElementById('sub-profile').classList.add('active');
+        topTitle.innerText = "User Profile & Security";
+    }
 
-            if (tabName === 'dashboard') {
-                document.getElementById('dashboard-view').classList.add('active');
-                document.getElementById('menu-dash').classList.add('active');
-                topTitle.innerText = "Dashboard Overview";
-                updateDashboardCards();
-            } else if (tabName === 'balance-view') {
-                document.getElementById('balance-view').classList.add('active');
-                topTitle.innerText = "Balance Management";
-            } else if (tabName === 'cash-inventory') {
-                document.getElementById('cash-inventory-view').classList.add('active');
-                document.getElementById('menu-inv-parent').classList.add('active');
-                document.getElementById('sub-cash-inv').classList.add('active');
-                topTitle.innerText = "Cash Inventory Audit";
-                renderCashInventoryTable();
-            } else if (tabName === 'card-inventory') {
-                document.getElementById('card-inventory-view').classList.add('active');
-                document.getElementById('menu-inv-parent').classList.add('active');
-                document.getElementById('sub-card-inv').classList.add('active');
-                topTitle.innerText = "Card Inventory Audit";
-                renderAccordionInventory();
-            } else if (tabName === 'daily-closing') {
-                document.getElementById('daily-closing-view').classList.add('active');
-                document.getElementById('menu-reports-parent').classList.add('active');
-                document.getElementById('sub-dcr-report').classList.add('active');
-                topTitle.innerText = "Daily Closing Financial Statement";
-                renderDailyClosingHistory();
-            } else if (tabName === 'category-mgmt') {
-                document.getElementById('category-mgmt-view').classList.add('active');
-                document.getElementById('menu-settings-parent').classList.add('active');
-                document.getElementById('sub-cat-mgmt').classList.add('active');
-                topTitle.innerText = "Category & Account Configuration";
-                renderCategoriesTable();
-                renderAccountsTable();
-            } else if (tabName === 'card-mgmt') {
-                document.getElementById('card-mgmt-view').classList.add('active');
-                document.getElementById('menu-settings-parent').classList.add('active');
-                document.getElementById('sub-card-mgmt').classList.add('active');
-                topTitle.innerText = "Master Card Configuration";
-                renderCardMasterView();
-            } else if (tabName === 'reports') {
-                document.getElementById('reports-view').classList.add('active');
-                document.getElementById('menu-reports-parent').classList.add('active');
-                document.getElementById('sub-tx-history').classList.add('active');
-                topTitle.innerText = "Audit History & Reports";
-                renderReportsView();
-            } else if (tabName === 'profile') {
-                document.getElementById('profile-view').classList.add('active');
-                document.getElementById('menu-settings-parent').classList.add('active');
-                document.getElementById('sub-profile').classList.add('active');
-                topTitle.innerText = "User Profile & Security";
-            }
-
-            if (profileDropdown) profileDropdown.classList.remove('active');
-        };
-
+    if (profileDropdown) profileDropdown.classList.remove('active');
+};
         window.switchCustomerSubSection = function(sectionId) {
             document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
             document.getElementById('customer-ledger-view').classList.add('active');
