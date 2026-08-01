@@ -4586,6 +4586,62 @@ window.renderDailyClosingReportView = function(snap) {
             if (profileDropdown) profileDropdown.classList.remove('active');
         });
 
+/* --- DAILY CLOSING MODULE FUNCTIONS --- */
+        
+        // ১. পপ-আপ বন্ধ করার নিয়ম
+        window.closeDCRModal = function() {
+            document.getElementById('dcrModal').style.display = 'none';
+        };
+
+        // ২. হিস্ট্রি টেবিল তৈরি করার নিয়ম (এটিই মিসিং ছিল)
+        window.renderDailyClosingHistory = function() {
+            const tbody = document.getElementById('dailyClosingHistoryTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            // undefined ডাটা ফিল্টার করে বাদ দেওয়া
+            if (!Array.isArray(dailyClosingReports)) dailyClosingReports = [];
+            const validList = dailyClosingReports.filter(r => r && r.report_id && r.report_date);
+
+            if (validList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #9ca3af; padding: 20px;">No valid records found.</td></tr>';
+                return;
+            }
+
+            validList.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${r.report_date}</strong></td>
+                    <td>${r.closing_time}</td>
+                    <td style="font-size: 10px;">${r.report_id}</td>
+                    <td style="font-weight: 700; color: #00a8ef;">৳ ${(r.total_net_balance || 0).toLocaleString()}</td>
+                    <td style="text-align: center;">
+                        <button class="btn-action btn-edit" onclick="viewDailyClosingReport('${r.report_id}')" title="View"><i class="fa-solid fa-eye"></i></button>
+                        <button class="btn-action btn-delete" onclick="deleteDailyClosingReport('${r.report_id}')" title="Archive"><i class="fa-solid fa-box-archive"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        // ৩. ভিউ বাটন ক্লিক করলে যা হবে
+        window.viewDailyClosingReport = function(id) {
+            const report = dailyClosingReports.find(r => r.report_id === id);
+            if (report) {
+                activeViewingReport = report;
+                if (typeof renderDailyClosingReportView === 'function') {
+                    renderDailyClosingReportView(report);
+                    document.getElementById('dcrModal').style.display = 'flex';
+                }
+            }
+        };
+
+        // ৪. ফিল্টার বাটন কাজ করানোর নিয়ম
+        window.filterDailyClosingHistory = function() {
+            renderDailyClosingHistory();
+        };
+
+        /* --- END OF DAILY CLOSING FUNCTIONS --- */
     </script>
 </body>
 </html>
