@@ -1653,138 +1653,98 @@
                     <div class="navbar-right">
                         <!-- Profile Dropdown Trigger -->
                         <div class="profile-dropdown-wrapper">
-                            <div class="user-profile-trigger" id="profileTrigger">
+                            <div class="user-profile-trigger" id="profileTrigger" style="cursor:pointer; display:flex; align-items:center; gap:10px;">
                                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="navAvatar" class="user-profile-avatar" />
                                 <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; color: #6b7280;"></i>
                             </div>
+                            
                             <!-- আধুনিক প্রোফাইল ড্রপডাউন -->
-<div class="profile-dropdown-menu" id="profileDropdown">
-    <div style="background: linear-gradient(135deg, #00bdff 0%, #0088e8 100%); padding: 15px; color: #fff; text-align: center; border-radius: 12px 12px 0 0;">
-        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="dropdownHeaderImg" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #fff; margin-bottom: 5px;">
-        <h4 id="dropdownName" style="margin: 0;">Rabbi Hosen</h4>
-        <p id="dropdownRole" style="font-size: 0.75rem; opacity: 0.9; margin: 0;">Administrator</p>
-    </div>
-    <ul style="list-style: none; padding: 10px 0; margin: 0;">
-        <li style="padding: 10px 20px; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: #4b5563;" onclick="openProfileModal()">
-            <i class="fa-solid fa-user-gear" style="margin-right: 10px; color: #00a8ef;"></i> My Profile & Security
-        </li>
-        <li style="padding: 10px 20px; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: #4b5563;" onclick="switchMainTab('daily-closing')">
-            <i class="fa-solid fa-file-invoice-dollar" style="margin-right: 10px; color: #10b981;"></i> Financial Logs
-        </li>
-        <li style="padding: 10px 20px; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: #4b5563;" onclick="alert('Support: 017xx-xxxxxx')">
-            <i class="fa-solid fa-circle-info" style="margin-right: 10px; color: #f97316;"></i> System Support
-        </li>
-    </ul>
-    <div style="padding: 10px; border-top: 1px solid #eee;">
-        <button id="logoutBtn" style="width:100%; padding:10px; border:none; background:#e11d48; color:#fff; cursor:pointer; border-radius:8px; font-weight: 700;">
-            <i class="fa-solid fa-right-from-bracket"></i> Logout Account
-        </button>
-    </div>
-</div>
-
-<!-- আধুনিক প্রোফাইল সেটিংস পপ-আপ (Modal) -->
-<div id="profileModal" class="modal-overlay">
-    <div class="modal-card" style="max-width: 500px; text-align: left;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
-            <h3 style="color: var(--primary-dark);"><i class="fa-solid fa-id-card"></i> Profile & Security Settings</h3>
-            <button onclick="closeProfileModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #9ca3af;">&times;</button>
-        </div>
-        
-        <form id="enhancedProfileForm">
-            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
-                <div style="flex: 1;">
-                    <label style="font-size: 0.8rem; font-weight: 700; color: #6b7280; display: block; margin-bottom: 5px;">Full Name</label>
-                    <input type="text" id="profNameInput" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-                </div>
-                <div style="flex: 1;">
-                    <label style="font-size: 0.8rem; font-weight: 700; color: #6b7280; display: block; margin-bottom: 5px;">Designation</label>
-                    <input type="text" id="profRoleInput" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-                </div>
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label style="font-size: 0.8rem; font-weight: 700; color: #6b7280; display: block; margin-bottom: 5px;">Shop/Company Name (For Reports)</label>
-                <input type="text" id="profCompanyInput" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-            </div>
-
-            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
-                <div style="flex: 1;">
-                    <label style="font-size: 0.8rem; font-weight: 700; color: #6b7280; display: block; margin-bottom: 5px;">Phone Number</label>
-                    <input type="text" id="profPhoneInput" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-                </div>
-                <div style="flex: 1;">
-                    <label style="font-size: 0.8rem; font-weight: 700; color: #6b7280; display: block; margin-bottom: 5px;">Avatar/Photo URL</label>
-                    <input type="text" id="profAvatarInput" placeholder="Image link..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-                </div>
-            </div>
-
-            <div style="background: #fff9f0; padding: 15px; border-radius: 10px; border: 1px solid #ffedd5;">
-                <h4 style="font-size: 0.9rem; color: #9a3412; margin-bottom: 10px;"><i class="fa-solid fa-lock"></i> Security (Change Password)</h4>
-                <div style="display: flex; gap: 10px;">
-                    <input type="password" id="profPassInput" placeholder="Enter new password" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-                    <button type="button" class="btn-submit" onclick="updateUserPassword()" style="width: auto; padding: 0 15px; background: #9a3412; font-size: 0.85rem;">Update Pass</button>
-                </div>
-                <p style="font-size: 0.7rem; color: #b45309; margin-top: 5px;">খালি রাখলে পাসওয়ার্ড পরিবর্তন হবে না।</p>
-            </div>
-
-            <div style="margin-top: 25px; display: flex; gap: 10px;">
-                <button type="button" class="btn-modal-cancel" onclick="closeProfileModal()">Cancel</button>
-                <button type="submit" class="btn-submit" style="background: #00a8ef;"><i class="fa-solid fa-floppy-disk"></i> Save All Changes</button>
-            </div>
-        </form>
-    </div>
-</div>
-<!-- হারানো প্যানেলগুলো এখানে ফিরিয়ে আনা হলো -->
-
-                <!-- ১. ব্যালেন্স আপডেট করার প্যানেল -->
-                <div class="view-panel" id="balance-view">
-                    <div class="erp-form-card">
-                        <div class="erp-form-header">
-                            <span id="erpFormTitle"><i class="fa-solid fa-pen-to-square" style="color: #00a8ef;"></i> Update Category Balance</span>
+                            <div class="profile-dropdown-menu" id="profileDropdown">
+                                <div style="background: linear-gradient(135deg, #00bdff 0%, #0088e8 100%); padding: 15px; color: #fff; text-align: center; border-radius: 12px 12px 0 0;">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="dropdownHeaderImg" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #fff; margin-bottom: 5px;">
+                                    <h4 id="dropdownName" style="margin: 0;">Rabbi Hosen</h4>
+                                    <p id="dropdownRole" style="font-size: 0.75rem; opacity: 0.9; margin: 0;">Admin</p>
+                                </div>
+                                <ul style="list-style: none; padding: 10px 0; margin: 0;">
+                                    <li style="padding: 10px 20px; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: #4b5563;" onclick="openProfileModal()">
+                                        <i class="fa-solid fa-user-gear" style="margin-right: 10px; color: #00a8ef;"></i> My Profile & Security
+                                    </li>
+                                </ul>
+                                <div style="padding: 10px; border-top: 1px solid #eee;">
+                                    <button id="logoutBtn" style="width:100%; padding:10px; border:none; background:#e11d48; color:#fff; cursor:pointer; border-radius:8px; font-weight: 700;">
+                                        <i class="fa-solid fa-right-from-bracket"></i> Logout Account
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <form id="balanceUpdateForm">
-                            <div id="formFieldsContainer"></div>
-                            <button type="submit" class="btn-submit" style="margin-top: 20px;">
-                                <i class="fa-solid fa-floppy-disk"></i> Save & Update Balance
-                            </button>
+                    </div>
+                </div>
+
+                <!-- প্রোফাইল সেটিংস পপ-আপ (Modal) -->
+                <div id="profileModal" class="modal-overlay">
+                    <div class="modal-card" style="max-width: 500px; text-align: left;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
+                            <h3 style="color: var(--primary-dark);"><i class="fa-solid fa-id-card"></i> Profile Settings</h3>
+                            <button onclick="closeProfileModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                        </div>
+                        <form id="enhancedProfileForm">
+                            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                                <div style="flex: 1;">
+                                    <label style="font-size: 0.8rem; font-weight: 700; color: #6b7280;">Full Name</label>
+                                    <input type="text" id="profNameInput" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="font-size: 0.8rem; font-weight: 700; color: #6b7280;">Designation</label>
+                                    <input type="text" id="profRoleInput" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label style="font-size: 0.8rem; font-weight: 700; color: #6b7280;">Shop Name</label>
+                                <input type="text" id="profCompanyInput" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
+                            </div>
+                            <div style="background: #fff9f0; padding: 10px; border-radius: 10px; border: 1px solid #ffedd5;">
+                                <label style="font-size: 0.8rem; font-weight: 700;">Change Password</label>
+                                <div style="display: flex; gap: 5px; margin-top: 5px;">
+                                    <input type="password" id="profPassInput" placeholder="New Password" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
+                                    <button type="button" class="btn-submit" onclick="updateUserPassword()" style="width: auto; padding: 0 10px; background: #9a3412;">Update</button>
+                                </div>
+                            </div>
+                            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                                <button type="button" class="btn-modal-cancel" onclick="closeProfileModal()">Cancel</button>
+                                <button type="submit" class="btn-submit" style="background: #00a8ef;">Save All</button>
+                            </div>
                         </form>
                     </div>
                 </div>
 
-                <!-- ২. ক্যাশ ইনভেন্টরি প্যানেল -->
-                <div class="view-panel" id="cash-inventory-view">
+                <!-- হারানো প্যানেলগুলো এখানে ফিরিয়ে আনা হলো -->
+                <div class="view-panel" id="balance-view">
                     <div class="erp-form-card">
                         <div class="erp-form-header">
-                            <span><i class="fa-solid fa-money-bill-wave" style="color: #00a8ef;"></i> Cash Inventory Management</span>
+                            <span id="erpFormTitle"><i class="fa-solid fa-pen-to-square" style="color: #00a8ef;"></i> Update Balance</span>
                         </div>
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th>Denomination</th><th>Quantity</th><th>Amount</th></tr></thead>
-                                <tbody id="cashDenomTableBody"></tbody>
-                            </table>
-                        </div>
-                        <div style="margin-top: 20px; font-size: 1.1rem; font-weight: 800;">
-                            Grand Total Physical Cash: <span id="grandTotalCashVal" style="color: #10b981;">৳ 0.00</span>
-                        </div>
-                        <button class="btn-submit" onclick="saveCashInventory()" style="background: #10b981; margin-top: 20px;">
-                            <i class="fa-solid fa-floppy-disk"></i> Save Cash Inventory
-                        </button>
+                        <form id="balanceUpdateForm">
+                            <div id="formFieldsContainer"></div>
+                            <button type="submit" class="btn-submit" style="margin-top: 20px;">Save Balance</button>
+                        </form>
                     </div>
                 </div>
 
-                <!-- ৩. কার্ড ইনভেন্টরি প্যানেল -->
+                <div class="view-panel" id="cash-inventory-view">
+                    <div class="erp-form-card">
+                        <div class="erp-form-header"><span>Cash Inventory Management</span></div>
+                        <div class="table-container"><table><thead><tr><th>Denomination</th><th>Quantity</th><th>Amount</th></tr></thead><tbody id="cashDenomTableBody"></tbody></table></div>
+                        <div style="margin-top: 20px; font-weight: 800;">Grand Total: <span id="grandTotalCashVal">৳ 0.00</span></div>
+                        <button class="btn-submit" onclick="saveCashInventory()" style="background: #10b981; margin-top: 10px;">Save Cash Inventory</button>
+                    </div>
+                </div>
+
                 <div class="view-panel" id="card-inventory-view">
                     <div class="erp-form-card">
-                        <div class="erp-form-header">
-                            <span><i class="fa-solid fa-sim-card" style="color: #00a8ef;"></i> Daily Card Inventory Audit</span>
-                        </div>
-                        <div id="operatorAccordions" class="accordion-container"></div>
-                        <div style="margin-top: 20px; font-size: 1.1rem; font-weight: 800;">
-                            Total Card Value in Stock: <span id="grandTotalCardsVal" style="color: #10b981;">৳ 0.00</span>
-                        </div>
-                        <button class="btn-submit" onclick="saveTodayInventory()" style="background: #10b981; margin-top: 20px;">
-                            <i class="fa-solid fa-check-double"></i> Save Today's Inventory
-                        </button>
+                        <div class="erp-form-header"><span>Card Inventory Audit</span></div>
+                        <div id="operatorAccordions"></div>
+                        <div style="margin-top: 20px; font-weight: 800;">Total Card Value: <span id="grandTotalCardsVal">৳ 0.00</span></div>
+                        <button class="btn-submit" onclick="saveTodayInventory()" style="background: #10b981; margin-top: 10px;">Save Card Inventory</button>
                     </div>
                 </div>
                 <!-- ==================== VIEW 1: DASHBOARD ==================== -->
