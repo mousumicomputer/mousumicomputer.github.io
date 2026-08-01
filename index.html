@@ -4912,39 +4912,35 @@ window.renderDailyClosingReportView = function(snap) {
     }
     container.innerHTML = html;
 };
-// সরাসরি পিডিএফ ডাউনলোড নিশ্চিত করার জন্য এই ফাংশন
-window.downloadDailyClosingPDF = function() {
-    console.log("PDF download starting...");
 
-    // লাইব্রেরি লোড হয়েছে কি না চেক করা
-    if (typeof html2pdf === 'undefined') {
-        alert("পিডিএফ লাইব্রেরিটি এখনো লোড হয়নি। দয়া করে ৫ সেকেন্ড অপেক্ষা করে আবার চেষ্টা করুন। (ইন্টারনেট কানেকশন চেক করুন)");
-        return;
-    }
+</script>
+<!-- নিচের এই কোডটুকু আগের স্ক্রিপ্ট ট্যাগের বাইরে পেস্ট করুন -->
+<script>
+    // ১. পিডিএফ ডাউনলোড করার সরাসরি ফাংশন
+    window.downloadDailyClosingPDF = function() {
+        console.log("PDF download triggered");
+        const element = document.getElementById('printable-closing-report');
+        if (!element) { alert("রিপোর্ট পাওয়া যায়নি!"); return; }
 
-    const element = document.getElementById('printable-closing-report');
-    if (!element) {
-        alert("রিপোর্ট এলাকা খুঁজে পাওয়া যায়নি!");
-        return;
-    }
-
-    // রিপোর্টের নাম ঠিক করা (সরাসরি আইডি থেকে নেওয়া হচ্ছে)
-    let fileName = "Mousumi_Computer_Report.pdf";
-    if (typeof activeViewingReport !== 'undefined' && activeViewingReport && activeViewingReport.report_id) {
-        fileName = activeViewingReport.report_id + ".pdf";
-    }
-
-    const options = {
-        margin: [10, 10, 10, 10],
-        filename: fileName,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        const opt = {
+            margin: 10,
+            filename: 'Daily_Closing_Report.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save();
     };
 
-    // সরাসরি ডাউনলোড শুরু হবে
-    html2pdf().set(options).from(element).save();
-};
+    // ২. এক্সেল ফাইল ডাউনলোড করার সরাসরি ফাংশন
+    window.exportDailyClosingExcel = function() {
+        console.log("Excel download triggered");
+        const table = document.querySelector('#printable-closing-report table');
+        if (!table) { alert("টেবিল পাওয়া যায়নি!"); return; }
+        
+        const wb = XLSX.utils.table_to_book(table);
+        XLSX.writeFile(wb, 'Daily_Closing_Report.xlsx');
+    };
 </script>
 </body>
 </html>
