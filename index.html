@@ -2585,16 +2585,16 @@
         };
 
         // DOM ELEMENTS
-        const loginForm = ('loginForm');
-        const loginSection = ('login-section');
-        const dashboardSection = ('dashboard-section');
-        const errorMsg = ('errorMsg');
-        const successMsg = ('successMsg');
-        const sidebar = ('sidebar');
-        const sidebarToggle = ('sidebarToggle');
-        const profileTrigger = ('profileTrigger');
-        const profileDropdown = ('profileDropdown');
-
+        const loginForm = document.getElementById('loginForm');
+        const loginSection = document.getElementById('login-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const profileTrigger = document.getElementById('profileTrigger');
+        const profileDropdown = document.getElementById('profileDropdown');
+        
         /* SAFE JSON PARSER */
         function safeJsonParse(str, fallback = null) {
             try { return str ? JSON.parse(str) : fallback; } catch (e) { return fallback; }
