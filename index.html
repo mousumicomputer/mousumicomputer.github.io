@@ -2627,7 +2627,7 @@
             if (user) {
                 loginSection.style.display = 'none';
                 dashboardSection.style.display = 'block';
-                ('profEmail').value = user.email || adminEmail;
+                document.getElementById('profEmail').value = user.email || adminEmail;
                 initRealtimeSync();
             } else {
                 dashboardSection.style.display = 'none';
@@ -2638,8 +2638,8 @@
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const usernameVal = ('username').value.trim();
-            const passwordVal = ('password').value;
+            const usernameVal = document.getElementById('username').value.trim();
+            const passwordVal = document.getElementById('password').value;
             errorMsg.style.display = 'none';
 
             let emailToAuth = usernameVal;
