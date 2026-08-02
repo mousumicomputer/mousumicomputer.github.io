@@ -2488,7 +2488,7 @@
         };
 
         window.hideLoader = function() {
-            const loader = ('loader');
+            const loader = document.getElementById('loader');
             if (loader) loader.style.display = 'none';
         };
 
@@ -2657,7 +2657,7 @@
             }
         });
 
-        ('btn-forgot-pass').addEventListener('click', async (e) => {
+        document.getElementById('btn-forgot-pass').addEventListener('click', async (e) => {
             e.preventDefault();
             showLoader("Sending reset email...");
             try {
@@ -2671,7 +2671,7 @@
             }
         });
 
-        ('logoutBtn').addEventListener('click', async () => {
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
             showLoader("Logging out...");
             try {
                 await signOut(auth);
