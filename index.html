@@ -2488,7 +2488,7 @@
         };
 
         window.hideLoader = function() {
-            const loader = document.getElementById('loader');
+            const loader = ('loader');
             if (loader) loader.style.display = 'none';
         };
 
@@ -2585,15 +2585,15 @@
         };
 
         // DOM ELEMENTS
-        const loginForm = document.getElementById('loginForm');
-        const loginSection = document.getElementById('login-section');
-        const dashboardSection = document.getElementById('dashboard-section');
-        const errorMsg = document.getElementById('errorMsg');
-        const successMsg = document.getElementById('successMsg');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const profileTrigger = document.getElementById('profileTrigger');
-        const profileDropdown = document.getElementById('profileDropdown');
+        const loginForm = ('loginForm');
+        const loginSection = ('login-section');
+        const dashboardSection = ('dashboard-section');
+        const errorMsg = ('errorMsg');
+        const successMsg = ('successMsg');
+        const sidebar = ('sidebar');
+        const sidebarToggle = ('sidebarToggle');
+        const profileTrigger = ('profileTrigger');
+        const profileDropdown = ('profileDropdown');
 
         /* SAFE JSON PARSER */
         function safeJsonParse(str, fallback = null) {
@@ -2627,7 +2627,7 @@
             if (user) {
                 loginSection.style.display = 'none';
                 dashboardSection.style.display = 'block';
-                document.getElementById('profEmail').value = user.email || adminEmail;
+                ('profEmail').value = user.email || adminEmail;
                 initRealtimeSync();
             } else {
                 dashboardSection.style.display = 'none';
@@ -2638,8 +2638,8 @@
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const usernameVal = document.getElementById('username').value.trim();
-            const passwordVal = document.getElementById('password').value;
+            const usernameVal = ('username').value.trim();
+            const passwordVal = ('password').value;
             errorMsg.style.display = 'none';
 
             let emailToAuth = usernameVal;
@@ -2657,7 +2657,7 @@
             }
         });
 
-        document.getElementById('btn-forgot-pass').addEventListener('click', async (e) => {
+        ('btn-forgot-pass').addEventListener('click', async (e) => {
             e.preventDefault();
             showLoader("Sending reset email...");
             try {
@@ -2671,7 +2671,7 @@
             }
         });
 
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
+        ('logoutBtn').addEventListener('click', async () => {
             showLoader("Logging out...");
             try {
                 await signOut(auth);
@@ -2695,7 +2695,7 @@
                 customers = data ? toArray(data) : [];
                 populateCustomerSelectDropdowns();
                 updateDashboardCards();
-                if (document.getElementById('customer-ledger-view').classList.contains('active')) {
+                if (('customer-ledger-view').classList.contains('active')) {
                     renderCustomerListTable();
                     renderDueSummarySection();
                 }
@@ -2706,7 +2706,7 @@
                 const data = snapshot.val();
                 customerTransactions = data ? toArray(data) : [];
                 updateDashboardCards();
-                if (activeViewingCustomerId && document.getElementById('customer-ledger-view').classList.contains('active')) {
+                if (activeViewingCustomerId && ('customer-ledger-view').classList.contains('active')) {
                     renderCustomerStatement(activeViewingCustomerId);
                 }
             });
@@ -4069,7 +4069,7 @@ window.renderDailyClosingReportView = function(snap) {
             const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
 
             catAccs.forEach(acc => {
-                const inputEl = document.getElementById(`input_acc_${acc.id}`);
+                const inputEl = document.getElementById(`inp_${acc.id}`);
                 if (inputEl) {
                     const newBal = parseFloat(inputEl.value) || 0;
                     const prevBal = balanceStore[acc.id] || 0;
