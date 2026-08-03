@@ -4916,6 +4916,107 @@ window.getCustomerColor = function(name) {
     const index = Math.abs(hash) % colors.length;
     return colors[index];
 };
+let currentTxType = null;
+let activeTxCustId = null;
+
+// ১. পপ-আপ খোলা
+window.openQuickTxModal = function(custId) {
+    const cust = customers.find(c => c.id === custId);
+    if (!cust) return;
+
+    activeTxCustId = custId;
+    currentTxType = null; // শুরুতে কিছুই সিলেক্ট থাকবে না
+
+    // তথ্য বসানো
+    document.getElementById('txModalName').innerText = cust.name;
+    document.getElementById('txModalPhone').innerText = cust.phone || 'No Number';
+    document.getElementById('txModalDue').innerText = '৳ ' + calculateCustomerCurrentDue(custId).toLocaleString();
+    
+    // প্রোফাইল আইকন ও কালার সেট করা
+    const firstLetter = cust.name ? cust.name.charAt(0).toUpperCase() : '?';
+    const avatarEl = document.getElementById('txModalAvatar');
+    avatarEl.innerText = firstLetter;
+    avatarEl.style.background = typeof getCustomerColor === 'function' ? getCustomerColor(cust.name) : '#e11d48';
+
+    // ইনপুট রিসেট করা
+    document.getElementById('txAmountInput').value = '';
+    document.getElementById('txNoteInput').value = '';
+    document.getElementById('typeDebit').classList.remove('active-debit');
+    document.getElementById('typeCredit').classList.remove('active-credit');
+    document.getElementById('btnConfirmTx').classList.remove('active');
+
+    document.getElementById('txModal').style.display = 'flex';
+};
+
+// ২. পপ-আপ বন্ধ করা
+window.closeTxModal = function() {
+    document.getElementById('txModal').style.display = 'none';
+};
+
+// ৩. দিলাম বা পেলাম নির্বাচন করা
+window.selectTxType = function(type) {
+    currentTxType = type;
+    const btnDebit = document.getElementById('typeDebit');
+    const btnCredit = document.getElementById('typeCredit');
+
+    if (type === 'Debit') {
+        btnDebit.classList.add('active-debit');
+        btnCredit.classList.remove('active-credit');
+    } else {
+        btnCredit.classList.add('active-credit');
+        btnDebit.classList.remove('active-debit');
+    }
+    checkTxReady();
+};
+
+// ৪. নিশ্চিত বাটন কালার চেঞ্জ
+window.checkTxReady = function() {
+    const amount = document.getElementById('txAmountInput').value;
+    const btn = document.getElementById('btnConfirmTx');
+    if (amount > 0 && currentTxType) {
+        btn.classList.add('active');
+    } else {
+        btn.classList.remove('active');
+    }
+};
+
+// ৫. ডাটাবেজে হিসাব সেভ করা
+window.saveQuickTransaction = async function() {
+    const amount = parseFloat(document.getElementById('txAmountInput').value);
+    const note = document.getElementById('txNoteInput').value.trim();
+
+    if (!amount || amount <= 0 || !currentTxType) {
+        showToast("টাকার পরিমাণ এবং লেনদেনের ধরন সঠিক নয়!", "warning");
+        return;
+    }
+
+    showLoader("হিসাব রাখা হচ্ছে...");
+
+    const now = new Date();
+    const txObj = {
+        id: 'tx_' + Date.now(),
+        customerId: activeTxCustId,
+        type: currentTxType,
+        debit: currentTxType === 'Debit' ? amount : 0,
+        credit: currentTxType === 'Credit' ? amount : 0,
+        date: now.toISOString().split('T')[0],
+        time: now.toTimeString().split(' ')[0].substring(0, 5),
+        description: note || (currentTxType === 'Debit' ? "দিলাম/বেচা" : "পেলাম")
+    };
+
+    try {
+        customerTransactions.push(txObj);
+        await writeToFirebase('erp/transactions', customerTransactions);
+        
+        hideLoader();
+        showToast("হিসাব নিশ্চিত করা হয়েছে!", "success");
+        closeTxModal();
+        renderCustomerListTable(); // মেইন লিস্ট আপডেট
+    } catch (err) {
+        hideLoader();
+        showToast("সেভ করতে সমস্যা হয়েছে!", "error");
+    }
+};
     </script>
 <!-- FLOATING ADD CUSTOMER BUTTON -->
 <button class="fab-add-cust" onclick="openAddCustomerModal()">
