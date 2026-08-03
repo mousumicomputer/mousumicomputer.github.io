@@ -1452,6 +1452,95 @@
     font-weight: bold;
     z-index: 10;
     }
+/* MODERN CUSTOMER CARD DESIGN */
+        .cust-card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .cust-modern-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            border: 1px solid #f1f5f9;
+        }
+
+        .cust-modern-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border-color: var(--primary-color);
+        }
+
+        .cust-card-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .cust-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #f0fdf4;
+            color: #16a34a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .cust-details h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 2px;
+        }
+
+        .cust-details p {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .cust-card-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .cust-amount {
+            text-align: right;
+        }
+
+        .cust-amount .due-label {
+            display: block;
+            font-size: 0.65rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        .cust-amount .due-value {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #e11d48; /* লাল রঙ বকেয়ার জন্য */
+        }
+
+        .cust-arrow {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -1815,25 +1904,13 @@
                                     <input type="text" id="custSearchInput" class="dcr-filter-input" placeholder="Search by Name, Phone, or ID..." oninput="renderCustomerListTable()" style="width:100%;">
                                 </div>
                             </div>
-                            <div class="table-container">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Customer ID</th>
-                                            <th>Name</th>
-                                            <th>Phone</th>
-                                            <th>Address</th>
-                                            <th>Opening Bal</th>
-                                            <th>Current Due</th>
-                                            <th>Status</th>
-                                            <th style="text-align: center;">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="customerTableBody">
-                                        <tr><td colspan="8" style="text-align: center; color: #9ca3af;">No customers registered yet.</td></tr>
-                                    </tbody>
-                                </table>
+<!-- MODERN CARD LIST CONTAINER -->
+                        <div class="cust-card-list" id="customerCardList">
+                            <div style="text-align: center; color: #9ca3af; padding: 40px;">
+                                <i class="fa-solid fa-users-viewfinder" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                                Loading customer list...
                             </div>
+                        </div>
                         </div>
                     </div>
 
@@ -3315,10 +3392,10 @@
             }
         });
 
-        window.renderCustomerListTable = function() {
-            const tbody = document.getElementById('customerTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
+window.renderCustomerListTable = function() {
+            const cardContainer = document.getElementById('customerCardList');
+            if (!cardContainer) return;
+            cardContainer.innerHTML = '';
 
             const filterVal = (document.getElementById('custSearchInput').value || '').toLowerCase();
             const filtered = customers.filter(c => 
@@ -3328,28 +3405,40 @@
             );
 
             if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #9ca3af;">No customers matched.</td></tr>';
+                cardContainer.innerHTML = '<div style="text-align: center; color: #9ca3af; padding: 40px;">No customers found matching your search.</div>';
                 return;
             }
 
             filtered.forEach(c => {
                 const currentDue = calculateCustomerCurrentDue(c.id);
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><strong>${c.id}</strong></td>
-                    <td><strong>${c.name}</strong></td>
-                    <td>${c.phone || '-'}</td>
-                    <td>${c.address || '-'}</td>
-                    <td>৳ ${(parseFloat(c.openingBalance) || 0).toFixed(2)}</td>
-                    <td style="font-weight:700; color: ${currentDue > 0 ? '#e11d48' : '#10b981'};">৳ ${currentDue.toFixed(2)}</td>
-                    <td><span class="badge ${c.status === 'Active' ? 'badge-success' : 'badge-danger'}">${c.status}</span></td>
-                    <td style="text-align: center;">
-                        <button class="btn-action btn-edit" onclick="editCustomer('${c.id}')"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn-action btn-toggle" onclick="openCustomerLedgerDirect('${c.id}')"><i class="fa-solid fa-receipt"></i> Ledger</button>
-                        <button class="btn-action btn-delete" onclick="deleteCustomer('${c.id}')"><i class="fa-solid fa-trash"></i></button>
-                    </td>
+                const firstLetter = c.name ? c.name.charAt(0).toUpperCase() : '?';
+
+                // কার্ড তৈরি করা
+                const card = document.createElement('div');
+                card.className = 'cust-modern-card';
+                
+                // কার্ডে ক্লিক করলে সরাসরি লেজার (হিসাব খাতা) খুলবে
+                card.onclick = () => openCustomerLedgerDirect(c.id);
+
+                card.innerHTML = `
+                    <div class="cust-card-left">
+                        <div class="cust-avatar">${firstLetter}</div>
+                        <div class="cust-details">
+                            <h4>${c.name}</h4>
+                            <p>${c.phone || 'No Phone Number'}</p>
+                        </div>
+                    </div>
+                    <div class="cust-card-right">
+                        <div class="cust-amount">
+                            <span class="due-label">Current Due</span>
+                            <span class="due-value">৳ ${currentDue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                        <div class="cust-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
                 `;
-                tbody.appendChild(tr);
+                cardContainer.appendChild(card);
             });
         };
 
