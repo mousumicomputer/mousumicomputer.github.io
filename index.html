@@ -4794,6 +4794,20 @@ document.getElementById('newCustomerQuickForm').addEventListener('submit', async
         showToast("সেভ করতে সমস্যা হয়েছে!", "error");
     }
 });
+// কাস্টমারের নামের ওপর ভিত্তি করে সুন্দর রঙিন ব্যাকগ্রাউন্ড তৈরি করার ফাংশন
+window.getCustomerColor = function(name) {
+    const colors = [
+        '#1e40af', '#b91c1c', '#047857', '#d97706', 
+        '#6d28d9', '#be185d', '#0369a1', '#4338ca'
+    ];
+    let hash = 0;
+    const n = name || "C";
+    for (let i = 0; i < n.length; i++) {
+        hash = n.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+};
     </script>
 <!-- FLOATING ADD CUSTOMER BUTTON -->
 <button class="fab-add-cust" onclick="openAddCustomerModal()">
