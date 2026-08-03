@@ -2892,16 +2892,21 @@ const custRef = ref(db, 'erp/customers');
         }
 
         /* CARD CALCULATIONS & RENDERERS */
-        function calculateOperatorTotals(opKey) {
+function calculateOperatorTotals(opKey) {
             let totalQty = 0;
             let totalVal = 0;
-            const opCards = cardConfig[opKey] || [];
+            
+            // ডাটাবেজ থেকে ডাটা নিয়ে সেটিকে নিরাপদ তালিকায় (Array) রূপান্তর করা
+            const rawCards = cardConfig[opKey];
+            const opCards = toArray(rawCards); 
             const opQtys = cardQuantities[opKey] || {};
 
             opCards.forEach(c => {
-                const qty = parseInt(opQtys[c.id]) || 0;
-                totalQty += qty;
-                totalVal += (qty * (c.price || 0));
+                if (c && c.id) {
+                    const qty = parseInt(opQtys[c.id]) || 0;
+                    totalQty += qty;
+                    totalVal += (qty * (c.price || 0));
+                }
             });
 
             return { totalQty, totalVal };
