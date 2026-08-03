@@ -3398,7 +3398,7 @@ window.resetCustomerForm = function() {
             document.getElementById('newCustAddress').value = '';
             document.getElementById('newCustOpening').value = '';
         };
-     
+
 window.renderCustomerListTable = function() {
             const cardContainer = document.getElementById('customerCardList');
             if (!cardContainer) return;
@@ -3412,24 +3412,25 @@ window.renderCustomerListTable = function() {
             );
 
             if (filtered.length === 0) {
-                cardContainer.innerHTML = '<div style="text-align: center; color: #9ca3af; padding: 40px;">No customers found matching your search.</div>';
+                cardContainer.innerHTML = '<div style="text-align: center; color: #9ca3af; padding: 40px;">No customers found.</div>';
                 return;
             }
 
             filtered.forEach(c => {
                 const currentDue = calculateCustomerCurrentDue(c.id);
                 const firstLetter = c.name ? c.name.charAt(0).toUpperCase() : '?';
+                
+                // এখানে কাস্টমারের নামের ওপর ভিত্তি করে আলাদা রঙ নেওয়া হচ্ছে
+                const avatarColor = getCustomerColor(c.name);
 
-                // কার্ড তৈরি করা
                 const card = document.createElement('div');
                 card.className = 'cust-modern-card';
-                
-                // কার্ডে ক্লিক করলে সরাসরি লেজার (হিসাব খাতা) খুলবে
                 card.onclick = () => openCustomerLedgerDirect(c.id);
 
                 card.innerHTML = `
                     <div class="cust-card-left">
-                        <div class="cust-avatar">${firstLetter}</div>
+                        <!-- এখানে style="background: ${avatarColor}" যোগ করা হয়েছে -->
+                        <div class="cust-avatar" style="background: ${avatarColor}">${firstLetter}</div>
                         <div class="cust-details">
                             <h4>${c.name}</h4>
                             <p>${c.phone || 'No Phone Number'}</p>
