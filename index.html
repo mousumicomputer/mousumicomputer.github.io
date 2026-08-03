@@ -3432,51 +3432,7 @@ function calculateOperatorTotals(opKey) {
             document.getElementById('customerMgmtForm').reset();
             document.getElementById('customerFormTitle').innerHTML = '<i class="fa-solid fa-user-plus" style="color: #00a8ef;"></i> Add New Customer';
         };
-
-        document.getElementById('customerMgmtForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            showLoader("Saving Customer...");
-
-            const editId = document.getElementById('custEditId').value;
-            const name = document.getElementById('custName').value.trim();
-            const phone = document.getElementById('custPhone').value.trim();
-            const address = document.getElementById('custAddress').value.trim();
-            const openingBalance = parseFloat(document.getElementById('custOpeningBal').value) || 0;
-            const status = document.getElementById('custStatus').value;
-
-            try {
-                if (editId) {
-                    const idx = customers.findIndex(c => c.id === editId);
-                    if (idx !== -1) {
-                        customers[idx].name = name;
-                        customers[idx].phone = phone;
-                        customers[idx].address = address;
-                        customers[idx].openingBalance = openingBalance;
-                        customers[idx].status = status;
-                    }
-                } else {
-                    const newCust = {
-                        id: 'cust_' + Date.now(),
-                        name,
-                        phone,
-                        address,
-                        openingBalance,
-                        status
-                    };
-                    customers.push(newCust);
-                }
-
-                await writeToFirebase('erp/customers', customers);
-                resetCustomerForm();
-                renderCustomerListTable();
-                hideLoader();
-                showToast("Customer saved successfully!", "success");
-            } catch (err) {
-                hideLoader();
-                showToast("Failed to save customer.", "error");
-            }
-        });
-
+     
 window.renderCustomerListTable = function() {
             const cardContainer = document.getElementById('customerCardList');
             if (!cardContainer) return;
