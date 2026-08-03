@@ -3526,7 +3526,7 @@ window.renderCustomerListTable = function() {
         // ৩. কার্ড তৈরি করা
         const card = document.createElement('div');
         card.className = 'cust-modern-card';
-        card.onclick = () => openCustomerLedgerDirect(c.id);
+        card.onclick = () => openQuickTxModal(c.id);
 
         card.innerHTML = `
             <div class="cust-card-left">
