@@ -4951,5 +4951,59 @@ window.getCustomerColor = function(name) {
         </form>
     </div>
 </div>
+<!-- LEDGER TRANSACTION MODAL (টালিখাতা স্টাইল পপ-আপ) -->
+<div id="txModal" class="modal-overlay">
+    <div class="tx-modal-card">
+        <!-- হেডার: ব্যাক বাটন, অ্যাভাটার ও নাম -->
+        <div class="tx-modal-header">
+            <button class="btn-back" onclick="closeTxModal()">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <div id="txModalAvatar" class="ledger-avatar" style="width: 40px; height: 40px; font-size: 1rem;">?</div>
+            <div class="tx-cust-details">
+                <h4 id="txModalName">কাস্টমারের নাম</h4>
+                <p><i class="fa-solid fa-phone" style="font-size: 0.7rem;"></i> <span id="txModalPhone">01700000000</span></p>
+            </div>
+        </div>
+
+        <div class="tx-body">
+            <!-- বর্তমান ব্যালেন্স দেখানোর বার -->
+            <div class="balance-info-bar">
+                <div style="text-align: left;">
+                    <span style="font-size: 0.8rem; color: #64748b; font-weight: 700;">পাওয়া যাবে</span><br>
+                    <span id="txModalDue" style="color: #e11d48; font-weight: 800; font-size: 1.2rem;">৳ 0.00</span>
+                </div>
+            </div>
+
+            <!-- "দিলাম" ও "পেলাম" বক্স -->
+            <div class="tx-type-grid">
+                <div id="typeDebit" class="type-box" onclick="selectTxType('Debit')">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                    <span>৳ দিলাম/বেচা</span>
+                </div>
+                <div id="typeCredit" class="type-box" onclick="selectTxType('Credit')">
+                    <i class="fa-solid fa-money-bill-trend-up"></i>
+                    <span>৳ পেলাম</span>
+                </div>
+            </div>
+
+            <!-- টাকার পরিমাণ ও বিবরণ ইনপুট -->
+            <div class="modern-tx-input">
+                <i class="fa-solid fa-bangladeshi-taka-sign"></i>
+                <input type="number" id="txAmountInput" placeholder="টাকার পরিমাণ লিখুন" oninput="checkTxReady()">
+            </div>
+
+            <div class="modern-tx-input">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <input type="text" id="txNoteInput" placeholder="বিবরণ (ঐচ্ছিক)">
+            </div>
+
+            <!-- নিশ্চিত বাটন -->
+            <button id="btnConfirmTx" class="btn-confirm-tx" onclick="saveQuickTransaction()">
+                নিশ্চিত
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
