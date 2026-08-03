@@ -2897,9 +2897,9 @@ function calculateOperatorTotals(opKey) {
             let totalVal = 0;
             
             // ডাটাবেজ থেকে ডাটা নিয়ে সেটিকে নিরাপদ তালিকায় (Array) রূপান্তর করা
-            const rawCards = cardConfig[opKey];
+            const rawCards = cardConfig ? cardConfig[opKey] : null;
             const opCards = toArray(rawCards); 
-            const opQtys = cardQuantities[opKey] || {};
+            const opQtys = cardQuantities ? (cardQuantities[opKey] || {}) : {};
 
             opCards.forEach(c => {
                 if (c && c.id) {
@@ -2911,7 +2911,6 @@ function calculateOperatorTotals(opKey) {
 
             return { totalQty, totalVal };
         }
-
         function calculateGrandCardInventoryValue() {
             let grandVal = 0;
             OPERATORS_LIST.forEach(op => {
