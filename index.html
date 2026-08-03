@@ -3613,22 +3613,32 @@ window.renderCustomerListTable = function() {
 
             let runningBalance = parseFloat(cust.openingBalance) || 0;
 
-            let html = `
-                <div style="text-align:center; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;">
-                    <h2 style="font-size: 1.4rem; color: var(--primary-dark);">MOUSUMI COMPUTER</h2>
-                    <p style="font-size: 0.85rem; color: #6b7280;">Customer Account Statement & Ledger</p>
-                </div>
-                <div style="display:flex; justify-content:space-between; margin-bottom: 20px; background:#f9fafb; padding: 12px 16px; border-radius: 8px;">
-                    <div>
-                        <strong style="font-size: 1.05rem; color: var(--primary-dark);">${cust.name}</strong><br>
-                        <span style="font-size: 0.85rem; color: #6b7280;">ID: ${cust.id} | Phone: ${cust.phone || 'N/A'}</span><br>
-                        <span style="font-size: 0.85rem; color: #6b7280;">Address: ${cust.address || 'N/A'}</span>
+const firstLetter = cust.name ? cust.name.charAt(0).toUpperCase() : '?';
+                const currentDue = calculateCustomerCurrentDue(cust.id);
+
+                let html = `
+                    <!-- MODERN LEDGER HEADER -->
+                    <div class="ledger-header no-print">
+                        <button class="btn-back" onclick="switchCustomerSubSection('cust-list-section')">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                        <div class="ledger-avatar">${firstLetter}</div>
+                        <div class="ledger-cust-info">
+                            <h3>${cust.name}</h3>
+                            <p>ID: ${cust.id} | Phone: ${cust.phone || 'N/A'}</p>
+                        </div>
                     </div>
-                    <div style="text-align: right;">
-                        <span style="font-size: 0.8rem; color: #6b7280;">Opening Balance: <strong>৳ ${runningBalance.toFixed(2)}</strong></span><br>
-                        <span style="font-size: 0.8rem; color: #6b7280;">Current Due: <strong style="color:#e11d48; font-size: 1.1rem;">৳ ${calculateCustomerCurrentDue(cust.id).toFixed(2)}</strong></span>
+
+                    <!-- DUE STATUS BOX (নমুনা-২ এর মতো) -->
+                    <div class="ledger-due-box">
+                        <div style="text-align: left;">
+                            <span style="font-size: 0.8rem; color: #64748b; font-weight: 700;">পাওয়া যাবে</span><br>
+                            <span class="due-text">৳ ${currentDue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                        <div style="text-align: right; font-size: 0.75rem; color: #94a3b8; font-weight: 600;">
+                            ঠিকানা: ${cust.address || 'N/A'}
+                        </div>
                     </div>
-                </div>
                 <div class="table-container">
                     <table>
                         <thead>
