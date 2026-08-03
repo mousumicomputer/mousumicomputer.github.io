@@ -1541,6 +1541,45 @@
             color: #cbd5e1;
             font-size: 0.9rem;
         }
+/* MODERN LEDGER HEADER & BUTTONS */
+        .ledger-header {
+            background: #fff;
+            padding: 15px 20px;
+            border-bottom: 1.5px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .btn-back {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: none;
+            background: #f1f5f9;
+            color: #1e293b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: 0.2s;
+        }
+        .btn-back:hover { background: #e2e8f0; }
+        
+        .ledger-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #f97316; /* আপনি চাইলে অন্য রঙ দিতে পারেন */
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+        .ledger-cust-info h3 { font-size: 1.1rem; color: #1e293b; margin: 0; }
+        .ledger-cust-info p { font-size: 0.8rem; color: #64748b; margin: 0; }
     </style>
 </head>
 <body>
