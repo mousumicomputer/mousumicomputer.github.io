@@ -2763,8 +2763,8 @@
         async function initRealtimeSync() {
             showLoader("Synchronizing Firebase...");
             const erpRef = ref(db, 'erp');
-            const custRef = ref(db, 'customers');
-            const txRef = ref(db, 'transactions');
+const custRef = ref(db, 'erp/customers');
+            const txRef = ref(db, 'erp/transactions');
 
             // SUBSCRIBE TO CUSTOMERS COLLECTION
             onValue(custRef, (snapshot) => {
@@ -2772,7 +2772,7 @@
                 customers = data ? toArray(data) : [];
                 populateCustomerSelectDropdowns();
                 updateDashboardCards();
-                if (('customer-ledger-view').classList.contains('active')) {
+                if (document.getElementById('customer-ledger-view').classList.contains('active')) {
                     renderCustomerListTable();
                     renderDueSummarySection();
                 }
@@ -2783,11 +2783,10 @@
                 const data = snapshot.val();
                 customerTransactions = data ? toArray(data) : [];
                 updateDashboardCards();
-                if (activeViewingCustomerId && ('customer-ledger-view').classList.contains('active')) {
+                if (activeViewingCustomerId && document.getElementById('customer-ledger-view').classList.contains('active')) {
                     renderCustomerStatement(activeViewingCustomerId);
                 }
-            });
-            
+            });            
             try {
                 const initialSnapshot = await get(erpRef);
                 if (initialSnapshot.exists()) {
@@ -3381,7 +3380,7 @@
                     customers.push(newCust);
                 }
 
-                await writeToFirebase('customers', customers);
+                await writeToFirebase('erp/customers', customers);
                 resetCustomerForm();
                 renderCustomerListTable();
                 hideLoader();
@@ -3465,7 +3464,7 @@ window.renderCustomerListTable = function() {
                     showLoader("Deleting Customer...");
                     try {
                         customers = customers.filter(c => c.id !== id);
-                        await writeToFirebase('customers', customers);
+                        await writeToFirebase('erp/customers', customers);
                         renderCustomerListTable();
                         hideLoader();
                         showToast("Customer deleted.", "success");
@@ -3527,7 +3526,7 @@ window.renderCustomerListTable = function() {
 
             try {
                 customerTransactions.push(txObj);
-                await writeToFirebase('transactions', customerTransactions);
+                await writeToFirebase('erp/transactions', customerTransactions);
 
                 document.getElementById('transactionEntryForm').reset();
                 document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
