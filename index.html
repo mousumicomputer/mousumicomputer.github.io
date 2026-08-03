@@ -1580,6 +1580,84 @@
         }
         .ledger-cust-info h3 { font-size: 1.1rem; color: #1e293b; margin: 0; }
         .ledger-cust-info p { font-size: 0.8rem; color: #64748b; margin: 0; }
+/* FLOATING ACTION BUTTON (FAB) */
+        .fab-add-cust {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 65px;
+            height: 65px;
+            background: #e11d48;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 10px 25px rgba(225, 29, 72, 0.4);
+            cursor: pointer;
+            z-index: 999;
+            transition: 0.3s;
+            border: none;
+        }
+        .fab-add-cust:hover { transform: scale(1.1); }
+
+        /* LEDGER TRANSACTION INPUTS (নমুনা-৩ এর মতো) */
+        .tx-input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .tx-box {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .tx-box i { font-size: 1.2rem; margin-bottom: 8px; display: block; }
+        .tx-box span { font-weight: 700; color: #475569; font-size: 0.95rem; }
+        .tx-box.active-debit { border-color: #e11d48; background: #fff1f2; }
+        .tx-box.active-credit { border-color: #10b981; background: #f0fdf4; }
+
+        .modern-input-group {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .modern-input-group i { color: #94a3b8; font-size: 1.1rem; }
+        .modern-input-group input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        /* BOTTOM CONFIRM BUTTON (নিশ্চিত বাটন) */
+        .btn-nishchit {
+            width: 100%;
+            background: #fecaca; /* হালকা লাল/পিঙ্ক */
+            color: #fff;
+            border: none;
+            padding: 18px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+        .btn-nishchit.ready { background: #e11d48; }
     </style>
 </head>
 <body>
@@ -1897,42 +1975,7 @@
                     
                     <!-- SECTION 1: CUSTOMER LIST (Directory, Add, Edit, Disable, Search) -->
                     <div id="cust-list-section" class="cust-sub-section">
-                        <div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px;">
-                            <div class="erp-form-header">
-                                <span id="customerFormTitle"><i class="fa-solid fa-user-plus" style="color: #00a8ef;"></i> Add New Customer</span>
-                            </div>
-                            <form id="customerMgmtForm" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-                                <input type="hidden" id="custEditId" value="" />
-                                <div>
-                                    <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Customer Name</label>
-                                    <input type="text" id="custName" placeholder="Full Name" required style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" />
-                                </div>
-                                <div>
-                                    <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Phone Number</label>
-                                    <input type="text" id="custPhone" placeholder="01700000000" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" />
-                                </div>
-                                <div>
-                                    <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Address</label>
-                                    <input type="text" id="custAddress" placeholder="Address Details" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" />
-                                </div>
-                                <div>
-                                    <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Opening Balance (৳)</label>
-                                    <input type="number" step="any" id="custOpeningBal" placeholder="0.00" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" />
-                                </div>
-                                <div>
-                                    <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Status</label>
-                                    <select id="custStatus" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;">
-                                        <option value="Active">Active</option>
-                                        <option value="Inactive">Inactive</option>
-                                    </select>
-                                </div>
-                                <div style="grid-column: 1 / -1; display:flex; justify-content: flex-end; gap:10px; margin-top:5px;">
-                                    <button type="button" class="btn-secondary" onclick="resetCustomerForm()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
-                                    <button type="submit" class="btn-submit" style="width:auto; padding: 10px 24px;"><i class="fa-solid fa-floppy-disk"></i> Save Customer</button>
-                                </div>
-                            </form>
-                        </div>
-
+                        
                         <div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px;">
                             <div class="erp-form-header">
                                 <span><i class="fa-solid fa-address-book" style="color: #00a8ef;"></i> Customer Directory</span>
@@ -4763,5 +4806,9 @@ document.addEventListener('click', () => {
 });
 
     </script>
+<!-- FLOATING ADD CUSTOMER BUTTON -->
+<button class="fab-add-cust" onclick="openAddCustomerModal()">
+    <i class="fa-solid fa-user-plus"></i>
+</button>
 </body>
 </html>
