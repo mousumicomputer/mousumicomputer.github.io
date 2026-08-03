@@ -3427,10 +3427,11 @@ function calculateOperatorTotals(opKey) {
             });
         }
 
-        window.resetCustomerForm = function() {
-            document.getElementById('custEditId').value = '';
-            document.getElementById('customerMgmtForm').reset();
-            document.getElementById('customerFormTitle').innerHTML = '<i class="fa-solid fa-user-plus" style="color: #00a8ef;"></i> Add New Customer';
+window.resetCustomerForm = function() {
+            document.getElementById('newCustName').value = '';
+            document.getElementById('newCustPhone').value = '';
+            document.getElementById('newCustAddress').value = '';
+            document.getElementById('newCustOpening').value = '';
         };
      
 window.renderCustomerListTable = function() {
@@ -3482,22 +3483,19 @@ window.renderCustomerListTable = function() {
                 cardContainer.appendChild(card);
             });
         };
-
-        window.editCustomer = function(id) {
+window.editCustomer = function(id) {
             const c = customers.find(item => item.id === id);
             if (!c) return;
 
-            document.getElementById('custEditId').value = c.id;
-            document.getElementById('custName').value = c.name;
-            document.getElementById('custPhone').value = c.phone || '';
-            document.getElementById('custAddress').value = c.address || '';
-            document.getElementById('custOpeningBal').value = c.openingBalance || 0;
-            document.getElementById('custStatus').value = c.status || 'Active';
+            // আমাদের নতুন পপ-আপের ইনপুট বক্সে কাস্টমারের ডাটা বসানো
+            document.getElementById('newCustName').value = c.name;
+            document.getElementById('newCustPhone').value = c.phone || '';
+            document.getElementById('newCustAddress').value = c.address || '';
+            document.getElementById('newCustOpening').value = c.openingBalance || 0;
 
-            document.getElementById('customerFormTitle').innerHTML = '<i class="fa-solid fa-user-pen" style="color: #00a8ef;"></i> Edit Customer Information';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // পপ-আপটি স্ক্রিনে দেখানো
+            window.openAddCustomerModal();
         };
-
         window.deleteCustomer = function(id) {
             showConfirmModal({
                 title: "Delete Customer?",
