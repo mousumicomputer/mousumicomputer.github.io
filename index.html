@@ -4669,6 +4669,10 @@ window.switchMainTab = (tab) => {
     document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
 
+    // ফ্লোটিং বাটন লুকিয়ে ফেলা (যাতে অন্য ট্যাবে এটা না দেখা যায়)
+    const fab = document.querySelector('.fab-add-cust');
+    if (fab) fab.style.display = 'none';
+
     let viewId = tab.endsWith('-view') ? tab : tab + '-view';
     const panel = document.getElementById(viewId);
     
@@ -4678,7 +4682,6 @@ window.switchMainTab = (tab) => {
             document.getElementById('top-title').innerText = tab.replace('-', ' ').toUpperCase();
         }
     } else {
-        // ব্যালেন্স ট্যাব চেক
         const balView = document.getElementById('balance-view');
         if(balView) balView.classList.add('active');
     }
@@ -4689,7 +4692,6 @@ window.switchMainTab = (tab) => {
     
     if(document.getElementById('profileDropdown')) document.getElementById('profileDropdown').classList.remove('active');
 };
-
 // ৩. প্রোফাইল মোডাল ওপেন করা (Screenshot 2 এর ডিজাইন)
 window.openProfileModal = function() {
     const d = profileSettings || {};
