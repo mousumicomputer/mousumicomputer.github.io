@@ -4778,11 +4778,93 @@ document.addEventListener('click', () => {
         document.getElementById('profileDropdown').classList.remove('active');
     }
 });
+// ১. কাস্টমার যোগ করার পপ-আপ খোলা এবং বন্ধ করা
+window.openAddCustomerModal = function() {
+    const modal = document.getElementById('addCustomerModal');
+    if (modal) modal.style.display = 'flex';
+};
 
+window.closeAddCustomerModal = function() {
+    const modal = document.getElementById('addCustomerModal');
+    if (modal) modal.style.display = 'none';
+};
+
+// ২. পপ-আপ ফরম থেকে কাস্টমার সেভ করার নিয়ম
+document.getElementById('newCustomerQuickForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const name = document.getElementById('newCustName').value.trim();
+    const phone = document.getElementById('newCustPhone').value.trim();
+    const address = document.getElementById('newCustAddress').value.trim();
+    const openingBal = parseFloat(document.getElementById('newCustOpening').value) || 0;
+
+    if (!name) {
+        showToast("দয়া করে কাস্টমারের নাম লিখুন!", "warning");
+        return;
+    }
+
+    showLoader("সংরক্ষণ করা হচ্ছে...");
+
+    const newCust = {
+        id: 'cust_' + Date.now(),
+        name: name,
+        phone: phone,
+        address: address,
+        openingBalance: openingBal,
+        status: 'Active'
+    };
+
+    try {
+        // ডাটাবেজে সেভ করা (erp ফোল্ডারের ভেতরে)
+        customers.push(newCust);
+        await writeToFirebase('erp/customers', customers);
+        
+        // সেভ হওয়ার পর পপ-আপ বন্ধ করা এবং লিস্ট আপডেট করা
+        closeAddCustomerModal();
+        document.getElementById('newCustomerQuickForm').reset();
+        renderCustomerListTable();
+        
+        hideLoader();
+        showToast("নতুন কাস্টমার সফলভাবে যোগ হয়েছে!", "success");
+    } catch (err) {
+        hideLoader();
+        showToast("সেভ করতে সমস্যা হয়েছে!", "error");
+    }
+});
     </script>
 <!-- FLOATING ADD CUSTOMER BUTTON -->
 <button class="fab-add-cust" onclick="openAddCustomerModal()">
     <i class="fa-solid fa-user-plus"></i>
 </button>
+<!-- ADD CUSTOMER MODAL (নমুনা ছবির মতো পপ-আপ) -->
+<div id="addCustomerModal" class="modal-overlay">
+    <div class="modal-card">
+        <div style="background: #e11d48; color: #fff; padding: 15px; border-radius: 15px 15px 0 0; font-weight: 800;">
+            নতুন কাস্টমার যোগ করুন
+        </div>
+        <form id="newCustomerQuickForm" style="padding: 20px; text-align: left;">
+            <div class="modern-input-group">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" id="newCustName" placeholder="কাস্টমারের নাম" required>
+            </div>
+            <div class="modern-input-group">
+                <i class="fa-solid fa-phone"></i>
+                <input type="text" id="newCustPhone" placeholder="মোবাইল নম্বর">
+            </div>
+            <div class="modern-input-group">
+                <i class="fa-solid fa-location-dot"></i>
+                <input type="text" id="newCustAddress" placeholder="ঠিকানা">
+            </div>
+            <div class="modern-input-group">
+                <i class="fa-solid fa-money-bill"></i>
+                <input type="number" id="newCustOpening" placeholder="ওপেনিং ব্যালেন্স (ঐচ্ছিক)">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" onclick="closeAddCustomerModal()" style="flex:1; padding:12px; border-radius:25px; border:1px solid #ddd; background:#f1f5f9; font-weight:700; cursor:pointer;">বাতিল</button>
+                <button type="submit" style="flex:1; padding:12px; border-radius:25px; border:none; background:#10b981; color:#fff; font-weight:700; cursor:pointer;">সংরক্ষণ করুন</button>
+            </div>
+        </form>
+    </div>
+</div>
 </body>
 </html>
