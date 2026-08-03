@@ -2044,30 +2044,7 @@
                     <!-- SECTION 3: CUSTOMER LEDGER STATEMENT -->
                     <div id="cust-ledger-section" class="cust-sub-section" style="display:none;">
                         <div id="customerStatementCard" class="erp-form-card" style="max-width: 100%;">
-                            <div class="erp-form-header">
-                                <span><i class="fa-solid fa-file-invoice" style="color: #00a8ef;"></i> Customer Statement & Ledger</span>
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <select id="ledgerSelectCustomer" onchange="openCustomerLedgerDirect(this.value)" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-weight: 600; font-size: 0.85rem;"></select>
-                                    <div class="no-print" style="display:flex; gap:8px;">
-                                        <button class="btn-action btn-edit" onclick="printCustomerStatementPDF()"><i class="fa-solid fa-print"></i> Print / PDF</button>
-                                        <button class="btn-action btn-toggle" onclick="exportCustomerStatementExcel()" style="background:#10b981; color:#fff;"><i class="fa-solid fa-file-excel"></i> Excel</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="dcr-filter-bar no-print">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <label>From Date:</label>
-                                    <input type="date" id="stmtFromDate" class="dcr-filter-input">
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <label>To Date:</label>
-                                    <input type="date" id="stmtToDate" class="dcr-filter-input">
-                                </div>
-                                <button class="dcr-btn-filter" onclick="filterCustomerStatement()"><i class="fa-solid fa-filter"></i> Apply Filter</button>
-                                <button class="dcr-btn-reset" onclick="resetCustomerStatementFilter()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
-                            </div>
-
+                            
                             <div id="printable-statement-area">
                                 <div style="text-align: center; color: #9ca3af; padding: 40px;">Select a customer to view ledger statement.</div>
                             </div>
