@@ -1484,22 +1484,7 @@
             align-items: center;
             gap: 15px;
         }
-
-        .cust-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: #f0fdf4;
-            color: #16a34a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 1.1rem;
-            border: 2px solid #ffffff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
+        
         .cust-details h4 {
             font-size: 1rem;
             font-weight: 700;
@@ -1512,7 +1497,22 @@
             color: #64748b;
             font-weight: 600;
         }
-
+/* MODERN MULTI-COLOR AVATAR STYLE */
+        .cust-avatar, .ledger-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            color: #ffffff !important; /* লেখা সবসময় সাদা থাকবে */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border: 2px solid #ffffff;
+            background: #6366f1; /* ডিফল্ট রঙ হিসেবে বেগুনী (পরে জাভাস্ক্রিপ্ট দিয়ে পরিবর্তন হবে) */
+        }
         .cust-card-right {
             display: flex;
             align-items: center;
@@ -1565,19 +1565,7 @@
             transition: 0.2s;
         }
         .btn-back:hover { background: #e2e8f0; }
-        
-        .ledger-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: #f97316; /* আপনি চাইলে অন্য রঙ দিতে পারেন */
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            font-weight: 800;
-        }
+                
         .ledger-cust-info h3 { font-size: 1.1rem; color: #1e293b; margin: 0; }
         .ledger-cust-info p { font-size: 0.8rem; color: #64748b; margin: 0; }
 /* FLOATING ACTION BUTTON (FAB) */
