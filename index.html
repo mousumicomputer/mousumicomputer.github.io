@@ -1664,7 +1664,6 @@
                     </li>
                 </ul>
             </div>
-
 <!-- MAIN CONTENT WRAPPER -->
     <div class="main-wrapper">
         <!-- টপ ন্যাভবার -->
@@ -1683,6 +1682,7 @@
                         <div style="background: linear-gradient(135deg, #00d2ff, #3a7bd5); padding: 20px; text-align: center;">
                             <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="dropdownHeaderImg" style="width: 65px; height: 65px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.4);">
                             <h4 id="dropdownName" style="color: #fff; margin: 10px 0 2px 0; font-size: 1.1rem;">User</h4>
+                            <p id="dropdownRole" style="color: rgba(255,255,255,0.8); margin: 0; font-size: 0.8rem;">Admin</p>
                         </div>
                         <div style="padding: 15px; border-top: 1px solid #f1f5f9;">
                             <button id="logoutBtn" style="width: 100%; background: #ef4444; color: #fff; border: none; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;"><i class="fa-solid fa-power-off"></i> Logout Account</button>
@@ -1691,6 +1691,7 @@
                 </div>
             </div>
         </div>
+            
     <!-- আধুনিক প্রোফাইল মোডাল (Screenshot 2) -->
     <div id="profileModal" class="modal-overlay">
         <div class="modal-card" style="max-width: 800px; width: 95%; padding: 0; overflow: hidden; border-radius: 20px;">
@@ -4342,25 +4343,31 @@ window.renderDailyClosingReportView = function(snap) {
             }
         }
 
-        /* USER PROFILE MANAGEMENT ENGINE */
+/* USER PROFILE MANAGEMENT ENGINE */
         function loadSavedProfile() {
             if (!profileSettings) return;
             const fullName = profileSettings.fullName || 'Rabbi Hosen';
             const role = profileSettings.role || 'Admin';
             const avatar = profileSettings.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
 
-            document.getElementById('dropdownName').innerText = fullName;
-            document.getElementById('dropdownRole').innerText = role;
-            document.getElementById('fullProfileNameDisplay').innerText = fullName;
-            document.getElementById('fullProfileRoleDisplay').innerText = role;
-            document.getElementById('profFullName').value = fullName;
-            document.getElementById('profRole').value = role;
-            document.getElementById('profPhone').value = profileSettings.phone || '';
+            // আইডিগুলো চেক করে ডাটা বসানো হচ্ছে (যাতে এরর না আসে)
+            const setT = (id, txt) => { if(document.getElementById(id)) document.getElementById(id).innerText = txt; };
+            const setV = (id, val) => { if(document.getElementById(id)) document.getElementById(id).value = val; };
+            const setS = (id, src) => { if(document.getElementById(id)) document.getElementById(id).src = src; };
 
-            document.getElementById('navAvatar').src = avatar;
-            document.getElementById('dropdownHeaderImg').src = avatar;
-            document.getElementById('fullProfileImg').src = avatar;
+            setT('dropdownName', fullName);
+            setT('dropdownRole', role);
+            setT('fullProfileNameDisplay', fullName);
+            setT('fullProfileRoleDisplay', role);
+            
+            setV('profFullName', fullName);
+            setV('profRole', role);
+            setV('profPhone', profileSettings.phone || '');
 
+            setS('navAvatar', avatar);
+            setS('dropdownHeaderImg', avatar);
+            setS('fullProfileImg', avatar);
+        }
         document.getElementById('fullProfileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             showLoader("Saving Profile...");
