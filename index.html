@@ -3281,7 +3281,7 @@ const logoutBtn = document.getElementById('logoutBtn');
             document.getElementById('customerFormTitle').innerHTML = '<i class="fa-solid fa-user-plus" style="color: #00a8ef;"></i> Add New Customer';
         };
 
-const custForm = document.getElementById('customerMgmtForm');
+        const custForm = document.getElementById('customerMgmtForm');
         if (custForm) {
             custForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -3300,38 +3300,28 @@ const custForm = document.getElementById('customerMgmtForm');
                             customers[idx] = { ...customers[idx], name, phone, address, openingBalance, status };
                         }
                     } else {
-                        customers.push({ id: 'cust_' + Date.now(), name, phone, address, openingBalance, status });
+                        const newCust = {
+                            id: 'cust_' + Date.now(),
+                            name,
+                            phone,
+                            address,
+                            openingBalance,
+                            status
+                        };
+                        customers.push(newCust);
                     }
+                    
                     await writeToFirebase('customers', customers);
                     resetCustomerForm();
                     renderCustomerListTable();
                     hideLoader();
                     showToast("Customer saved successfully!", "success");
-                } catch (err) { hideLoader(); showToast("Error saving customer.", "error"); }
+                } catch (err) {
+                    hideLoader();
+                    showToast("Failed to save customer.", "error");
+                }
             });
         }
-                    const newCust = {
-                        id: 'cust_' + Date.now(),
-                        name,
-                        phone,
-                        address,
-                        openingBalance,
-                        status
-                    };
-                    customers.push(newCust);
-                }
-
-                await writeToFirebase('customers', customers);
-                resetCustomerForm();
-                renderCustomerListTable();
-                hideLoader();
-                showToast("Customer saved successfully!", "success");
-            } catch (err) {
-                hideLoader();
-                showToast("Failed to save customer.", "error");
-            }
-        });
-
 window.renderCustomerListTable = function() {
             const tbody = document.getElementById('customerTableBody');
             if (!tbody) return;
