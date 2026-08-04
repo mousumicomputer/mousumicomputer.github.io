@@ -3281,28 +3281,35 @@ const logoutBtn = document.getElementById('logoutBtn');
             document.getElementById('customerFormTitle').innerHTML = '<i class="fa-solid fa-user-plus" style="color: #00a8ef;"></i> Add New Customer';
         };
 
-        document.getElementById('customerMgmtForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            showLoader("Saving Customer...");
+const custForm = document.getElementById('customerMgmtForm');
+        if (custForm) {
+            custForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                showLoader("Saving Customer...");
+                const editId = document.getElementById('custEditId').value;
+                const name = document.getElementById('custName').value.trim();
+                const phone = document.getElementById('custPhone').value.trim();
+                const address = document.getElementById('custAddress').value.trim();
+                const openingBalance = parseFloat(document.getElementById('custOpeningBal').value) || 0;
+                const status = document.getElementById('custStatus').value;
 
-            const editId = document.getElementById('custEditId').value;
-            const name = document.getElementById('custName').value.trim();
-            const phone = document.getElementById('custPhone').value.trim();
-            const address = document.getElementById('custAddress').value.trim();
-            const openingBalance = parseFloat(document.getElementById('custOpeningBal').value) || 0;
-            const status = document.getElementById('custStatus').value;
-
-            try {
-                if (editId) {
-                    const idx = customers.findIndex(c => c.id === editId);
-                    if (idx !== -1) {
-                        customers[idx].name = name;
-                        customers[idx].phone = phone;
-                        customers[idx].address = address;
-                        customers[idx].openingBalance = openingBalance;
-                        customers[idx].status = status;
+                try {
+                    if (editId) {
+                        const idx = customers.findIndex(c => c.id === editId);
+                        if (idx !== -1) {
+                            customers[idx] = { ...customers[idx], name, phone, address, openingBalance, status };
+                        }
+                    } else {
+                        customers.push({ id: 'cust_' + Date.now(), name, phone, address, openingBalance, status });
                     }
-                } else {
+                    await writeToFirebase('customers', customers);
+                    resetCustomerForm();
+                    renderCustomerListTable();
+                    hideLoader();
+                    showToast("Customer saved successfully!", "success");
+                } catch (err) { hideLoader(); showToast("Error saving customer.", "error"); }
+            });
+        }
                     const newCust = {
                         id: 'cust_' + Date.now(),
                         name,
@@ -4667,7 +4674,28 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
                 window.renderCustomerListTable();
             }
         }
+// হারানো মেনু ফাংশনগুলো পুনরুদ্ধার
+        window.toggleParentMenu = (id) => {
+            const m = document.getElementById(id);
+            if(m) {
+                const s = m.querySelector('.submenu-list');
+                if(s) s.classList.toggle('show');
+                m.classList.toggle('open');
+            }
+        };
 
+        window.switchMainTab = (tab) => {
+            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+            
+            const panel = document.getElementById(tab + '-view');
+            if(panel) panel.classList.add('active');
+            
+            if(document.getElementById('top-title')) {
+                document.getElementById('top-title').innerText = tab.replace('-', ' ').toUpperCase();
+            }
+            if(tab === 'daily-closing') renderDailyClosingHistory();
+        };
         // পেজ পুরোপুরি তৈরি হলে সব ফাংশন চালু হবে
         window.addEventListener('DOMContentLoaded', initGlobalActions);
     </script>
