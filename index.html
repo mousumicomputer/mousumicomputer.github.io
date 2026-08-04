@@ -4613,13 +4613,11 @@ window.confirmPasswordChange = async function() {
 document.getElementById('sidebarToggle').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
 document.getElementById('profileTrigger').addEventListener('click', (e) => {
     e.stopPropagation();
-    document.getElementById('profileDropdown').classList.toggle('active');
 });
-document.addEventListener('click', () => {
-    if(document.getElementById('profileDropdown')) document.getElementById('profileDropdown').classList.remove('active');
-});
-// উপরের ফাংশনটি (initSync) এখানে শেষ করা হলো 
-// ৭. পিডিএফ এবং এক্সেল ডাউনলোড (নিখুঁত কোড)
+            });
+        } 
+
+        // ৭. পিডিএফ এবং এক্সেল ডাউনলোড (নিখুঁত কোড)
         window.downloadDailyClosingPDF = function() {
             const element = document.getElementById('printable-closing-report');
             if (!element) { alert("রিপোর্ট এলাকা খুঁজে পাওয়া যায়নি!"); return; }
