@@ -3801,7 +3801,17 @@ window.renderCustomerListTable = function() {
             document.getElementById('stmtAvatar').innerText = cust.name.charAt(0).toUpperCase();
             
             // ডিফল্ট আজকের তারিখ সেট করা
-            document.getElementById('txDateInput').value = new Date().toISOString().split('T')[0];
+// সঠিক লোকাল তারিখ সেট করার কোড (টাইমজোন সমস্যা সমাধান)
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const localToday = `${year}-${month}-${day}`;
+        
+        const dateInput = document.getElementById('txDateInput');
+        if (dateInput && !dateInput.value) {
+            dateInput.value = localToday;
+        }
             
             const currentDue = calculateCustomerCurrentDue(cust.id);
             document.getElementById('stmtDueAmount').innerText = '৳ ' + toBN(currentDue.toLocaleString('en-US'));
