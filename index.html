@@ -1790,77 +1790,77 @@
 
                 <!-- ==================== MODULAR CUSTOMER MANAGEMENT MODULE ==================== -->
                 <div class="view-panel" id="customer-ledger-view">
-                    
-                    <!-- SECTION 1: CUSTOMER LIST (Directory, Add, Edit, Disable, Search) -->
+
+<!-- SECTION 1: CUSTOMER LIST (Screenshot 2 Design) -->
                     <div id="cust-list-section" class="cust-sub-section">
-                        <div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px;">
-                            <div class="erp-form-header">
-                                <span id="customerFormTitle"><i class="fa-solid fa-user-plus" style="color: #00a8ef;"></i> Add New Customer</span>
+                        
+                        <!-- ৪টি সামারি কার্ড -->
+                        <div class="mc-summary-grid">
+                            <div class="mc-summary-card">
+                                <div class="mc-summary-icon" style="background: #eef2ff; color: #4f46e5;"><i class="fa-solid fa-users"></i></div>
+                                <div class="mc-summary-info">
+                                    <p>মোট গ্রাহক</p>
+                                    <h3 id="statTotalCust">০</h3>
+                                    <span>সর্বমোট</span>
+                                </div>
                             </div>
-                            <form id="customerMgmtForm" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-                                <input type="hidden" id="custEditId" value="" />
-                                <div>
-                                    <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Customer Name</label>
-                                    <input type="text" id="custName" placeholder="Full Name" required style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            <div class="mc-summary-card">
+                                <div class="mc-summary-icon" style="background: #fff1f2; color: #e11d48;"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                                <div class="mc-summary-info">
+                                    <p>মোট পাওনা</p>
+                                    <h3 id="statTotalDue">৳ ০.০০</h3>
+                                    <span>সর্বমোট</span>
                                 </div>
-                                <div>
-                                    <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Phone Number</label>
-                                    <input type="text" id="custPhone" placeholder="01700000000" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            </div>
+                            <div class="mc-summary-card">
+                                <div class="mc-summary-icon" style="background: #f0fdf4; color: #16a34a;"><i class="fa-solid fa-calendar-check"></i></div>
+                                <div class="mc-summary-info">
+                                    <p>আজকে আদায়</p>
+                                    <h3 id="statTodayCollection">৳ ০.০০</h3>
+                                    <span>আজকের মোট</span>
                                 </div>
-                                <div>
-                                    <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Address</label>
-                                    <input type="text" id="custAddress" placeholder="Address Details" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" />
+                            </div>
+                            <div class="mc-summary-card">
+                                <div class="mc-summary-icon" style="background: #fffbeb; color: #d97706;"><i class="fa-solid fa-user-clock"></i></div>
+                                <div class="mc-summary-info">
+                                    <p>বকেয়া গ্রাহক</p>
+                                    <h3 id="statDueCustomers">০</h3>
+                                    <span>সর্বমোট</span>
                                 </div>
-                                <div>
-                                    <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Opening Balance (৳)</label>
-                                    <input type="number" step="any" id="custOpeningBal" placeholder="0.00" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" />
-                                </div>
-                                <div>
-                                    <label style="font-size:0.8rem; font-weight:700; color:#4b5563;">Status</label>
-                                    <select id="custStatus" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;">
-                                        <option value="Active">Active</option>
-                                        <option value="Inactive">Inactive</option>
-                                    </select>
-                                </div>
-                                <div style="grid-column: 1 / -1; display:flex; justify-content: flex-end; gap:10px; margin-top:5px;">
-                                    <button type="button" class="btn-secondary" onclick="resetCustomerForm()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
-                                    <button type="submit" class="btn-submit" style="width:auto; padding: 10px 24px;"><i class="fa-solid fa-floppy-disk"></i> Save Customer</button>
-                                </div>
-                            </form>
+                            </div>
                         </div>
 
-                        <div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px;">
-                            <div class="erp-form-header">
-                                <span><i class="fa-solid fa-address-book" style="color: #00a8ef;"></i> Customer Directory</span>
+                        <!-- সার্চ এবং অ্যাকশন বার -->
+                        <div class="mc-action-bar">
+                            <div class="mc-search-box">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="custSearchInput" placeholder="গ্রাহকের নাম বা মোবাইল নাম্বার দিয়ে খুঁজুন..." oninput="renderCustomerListTable()">
                             </div>
-                            <div class="dcr-filter-bar">
-                                <div style="flex:1; min-width: 200px;">
-                                    <label><i class="fa-solid fa-magnifying-glass"></i> Search Customers:</label>
-                                    <input type="text" id="custSearchInput" class="dcr-filter-input" placeholder="Search by Name, Phone, or ID..." oninput="renderCustomerListTable()" style="width:100%;">
-                                </div>
+                            <div class="mc-actions">
+                                <button class="mc-btn-outline"><i class="fa-solid fa-filter"></i> ফিল্টার</button>
+                                <button class="mc-btn-outline" onclick="exportOutstandingDueExcel()"><i class="fa-solid fa-file-export"></i> এক্সপোর্ট</button>
+                                <button class="mc-btn-primary" onclick="openAddCustomerModal()"><i class="fa-solid fa-plus"></i> নতুন গ্রাহক</button>
                             </div>
-                            <div class="table-container">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Customer ID</th>
-                                            <th>Name</th>
-                                            <th>Phone</th>
-                                            <th>Address</th>
-                                            <th>Opening Bal</th>
-                                            <th>Current Due</th>
-                                            <th>Status</th>
-                                            <th style="text-align: center;">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="customerTableBody">
-                                        <tr><td colspan="8" style="text-align: center; color: #9ca3af;">No customers registered yet.</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                        </div>
+
+                        <!-- কাস্টমার টেবিল -->
+                        <div class="table-container" style="background: transparent; border: none;">
+                            <table class="mc-table">
+                                <thead>
+                                    <tr>
+                                        <th>গ্রাহক</th>
+                                        <th>মোবাইল</th>
+                                        <th>সময়কাল</th>
+                                        <th>মোট পাওনা</th>
+                                        <th style="text-align: right;">অ্যাকশন</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customerTableBody">
+                                    <!-- জাভাস্ক্রিপ্ট এর মাধ্যমে এখানে ডাটা আসবে -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-
                     <!-- SECTION 2: NEW TRANSACTION ENTRY -->
                     <div id="cust-tx-section" class="cust-sub-section" style="display:none;">
                         <div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px;">
@@ -3339,7 +3339,7 @@
             }
         });
 
-        window.renderCustomerListTable = function() {
+window.renderCustomerListTable = function() {
             const tbody = document.getElementById('customerTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
@@ -3351,32 +3351,65 @@
                 (c.id || '').toLowerCase().includes(filterVal)
             );
 
+            // স্ট্যাটিসটিকস ক্যালকুলেশন
+            let totalDue = 0;
+            let dueCount = 0;
+            let todayColl = 0;
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            customers.forEach(c => {
+                const currentDue = calculateCustomerCurrentDue(c.id);
+                if (currentDue > 0) {
+                    totalDue += currentDue;
+                    dueCount++;
+                }
+            });
+
+            // আজকে আদায়ের হিসাব
+            customerTransactions.filter(t => t.date === todayStr).forEach(t => {
+                todayColl += (parseFloat(t.credit) || 0);
+            });
+
+            // সামারি কার্ডে ডাটা বসানো
+            if(document.getElementById('statTotalCust')) document.getElementById('statTotalCust').innerText = customers.length;
+            if(document.getElementById('statTotalDue')) document.getElementById('statTotalDue').innerText = '৳ ' + totalDue.toLocaleString('bn-BD', { minimumFractionDigits: 2 });
+            if(document.getElementById('statTodayCollection')) document.getElementById('statTodayCollection').innerText = '৳ ' + todayColl.toLocaleString('bn-BD', { minimumFractionDigits: 2 });
+            if(document.getElementById('statDueCustomers')) document.getElementById('statDueCustomers').innerText = dueCount;
+
             if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #9ca3af;">No customers matched.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #9ca3af; padding: 20px;">কোনো গ্রাহক পাওয়া যায়নি।</td></tr>';
                 return;
             }
 
             filtered.forEach(c => {
                 const currentDue = calculateCustomerCurrentDue(c.id);
+                const firstLetter = (c.name || 'G').charAt(0).toUpperCase();
+                
+                // অ্যাভাটারের জন্য সুন্দর কালার সেট
+                const colors = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${c.id}</strong></td>
-                    <td><strong>${c.name}</strong></td>
-                    <td>${c.phone || '-'}</td>
-                    <td>${c.address || '-'}</td>
-                    <td>৳ ${(parseFloat(c.openingBalance) || 0).toFixed(2)}</td>
-                    <td style="font-weight:700; color: ${currentDue > 0 ? '#e11d48' : '#10b981'};">৳ ${currentDue.toFixed(2)}</td>
-                    <td><span class="badge ${c.status === 'Active' ? 'badge-success' : 'badge-danger'}">${c.status}</span></td>
-                    <td style="text-align: center;">
-                        <button class="btn-action btn-edit" onclick="editCustomer('${c.id}')"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn-action btn-toggle" onclick="openCustomerLedgerDirect('${c.id}')"><i class="fa-solid fa-receipt"></i> Ledger</button>
-                        <button class="btn-action btn-delete" onclick="deleteCustomer('${c.id}')"><i class="fa-solid fa-trash"></i></button>
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <div class="mc-avatar" style="background: ${randomColor}15; color: ${randomColor}; border: 1.5px solid ${randomColor}30;">${firstLetter}</div>
+                            <div style="font-family: 'Tiro Bangla', serif;">
+                                <div style="font-weight: 800; color: #1e293b;">${c.name}</div>
+                                <div style="font-size: 0.75rem; color: #94a3b8;">ID: ${c.id}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="color: #64748b; font-weight: 600;">${c.phone || '-'}</td>
+                    <td style="color: #64748b;">-</td> 
+                    <td style="font-weight: 800; color: ${currentDue > 0 ? '#e11d48' : '#1e293b'};">৳ ${currentDue.toLocaleString('bn-BD', { minimumFractionDigits: 2 })}</td>
+                    <td style="text-align: right;">
+                        <button class="mc-btn-details" onclick="openCustomerLedgerDirect('${c.id}')">বিস্তারিত <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem; margin-left: 5px;"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         };
-
         window.editCustomer = function(id) {
             const c = customers.find(item => item.id === id);
             if (!c) return;
