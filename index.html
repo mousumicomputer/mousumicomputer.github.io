@@ -2106,10 +2106,10 @@
                         </div>
                     </div>
 
-<!-- SECTION 3: CUSTOMER LEDGER (PERFECT DESIGN MATCH) -->
+<!-- SECTION 3: CUSTOMER LEDGER (FINAL REFINED DESIGN) -->
                     <div id="cust-ledger-section" class="cust-sub-section" style="display:none;">
                         
-                        <!-- প্রোফাইল হেডার (স্লিম ডিজাইন) -->
+                        <!-- প্রোফাইল হেডার -->
                         <div class="mc-form-card" style="padding: 15px 20px; margin-bottom: 15px;">
                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                 <div style="display: flex; align-items: center; gap: 12px;">
@@ -2117,18 +2117,18 @@
                                     <div class="mc-avatar" id="stmtAvatar" style="width: 50px; height: 50px; background: #eef2ff; color: #4f46e5; border: 1.5px solid #e2e8f0;">R</div>
                                     <div>
                                         <h2 id="stmtName" style="font-family: 'Tiro Bangla', serif; font-size: 1.2rem; color: #1e293b; margin: 0;">লোড হচ্ছে...</h2>
-                                        <p id="stmtPhone" style="font-size: 0.85rem; color: #64748b; margin: 0;">+৮৮০ </p>
+                                        <p id="stmtPhone" style="font-size: 0.85rem; color: #64748b; margin: 0; font-family: 'Tiro Bangla', serif;">+৮৮০ </p>
                                     </div>
                                 </div>
                                 <button class="btn-action btn-edit" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; width: 35px; height: 35px; border-radius: 8px;"><i class="fa-solid fa-ellipsis-v"></i></button>
                             </div>
                         </div>
 
-                        <!-- ব্যালেন্স কার্ড (২ নম্বর ছবির স্টাইল) -->
+                        <!-- ব্যালেন্স কার্ড -->
                         <div class="mc-form-card" style="padding: 15px 25px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
                             <div>
-                                <h3 style="font-family: 'Tiro Bangla', serif; font-size: 1.2rem; color: #1e293b; margin: 0;">পাবে <span id="stmtDueAmount" style="color: #e11d48; font-size: 1.4rem; font-weight: 800; margin-left: 10px;">৳ ০.০০</span></h3>
-                                <span style="font-size: 0.8rem; color: #94a3b8; font-weight: 600;">(০ দিন আগে)</span>
+                                <h3 style="font-family: 'Tiro Bangla', serif; font-size: 1.2rem; color: #1e293b; margin: 0;">পাবে <span id="stmtDueAmount" style="color: #e11d48; font-size: 1.5rem; font-weight: 800; margin-left: 10px;">৳ ০</span></h3>
+                                <span id="stmtDayCount" style="font-size: 0.8rem; color: #94a3b8; font-weight: 600; font-family: 'Tiro Bangla', serif;">(০ দিন আগে)</span>
                             </div>
                             <div style="display: flex; gap: 10px;">
                                 <button class="mc-btn-outline" style="background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe; padding: 8px 15px;"><i class="fa-solid fa-bell"></i> রিমাইন্ডার</button>
@@ -2136,42 +2136,44 @@
                             </div>
                         </div>
 
-                        <!-- লেনদেন এন্ট্রি এরিয়া (হুবহু ২ নম্বর ছবির মাপ) -->
-                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 20px; margin-bottom: 20px; padding: 25px; background: #fff; border-radius: 20px; border: 1.5px solid #f1f5f9; position: relative;">
-                            <!-- বাম পাশ: দিলাম -->
-                            <div>
-                                <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #ef4444; margin-bottom: 8px; font-family: 'Tiro Bangla', serif;">৳ দিলাম/বেচা</label>
-                                <input type="number" id="txDebit" placeholder="৳" style="width: 100%; height: 55px; font-size: 1.2rem; font-weight: 700; border: 1.5px solid #fee2e2; border-radius: 10px; padding: 0 15px; color: #ef4444; outline: none;" oninput="handleDualInput('debit')">
-                                <textarea id="txDescDebit" placeholder="বিবরণ লিখুন..." style="width: 100%; height: 60px; margin-top: 10px; border: 1.5px solid #f1f5f9; border-radius: 10px; padding: 10px; font-family: 'Tiro Bangla', serif; resize: none; font-size: 0.9rem; outline: none;"></textarea>
-                            </div>
-
-                            <!-- মাঝখানের বা -->
-                            <div style="width: 40px; height: 40px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #94a3b8; position: relative; top: 35px;">বা</div>
-
-                            <!-- ডান পাশ: পেলাম -->
-                            <div>
-                                <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #22c55e; margin-bottom: 8px; font-family: 'Tiro Bangla', serif;">৳ পেলাম</label>
-                                <input type="number" id="txCredit" placeholder="৳" style="width: 100%; height: 55px; font-size: 1.2rem; font-weight: 700; border: 1.5px solid #dcfce7; border-radius: 10px; padding: 0 15px; color: #22c55e; outline: none;" oninput="handleDualInput('credit')">
-                                <textarea id="txDescCredit" placeholder="বিবরণ লিখুন..." style="width: 100%; height: 60px; margin-top: 10px; border: 1.5px solid #f1f5f9; border-radius: 10px; padding: 10px; font-family: 'Tiro Bangla', serif; resize: none; font-size: 0.9rem; outline: none;"></textarea>
+                        <!-- লেনদেন এন্ট্রি এরিয়া -->
+                        <div style="background: #fff; border-radius: 20px; border: 1.5px solid #f1f5f9; padding: 25px; margin-bottom: 25px;">
+                            <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 20px; margin-bottom: 20px;">
+                                <div>
+                                    <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #ef4444; margin-bottom: 8px; font-family: 'Tiro Bangla', serif;">৳ দিলাম/বেচা</label>
+                                    <input type="number" id="txDebit" placeholder="৳" style="width: 100%; height: 55px; font-size: 1.2rem; font-weight: 700; border: 1.5px solid #fee2e2; border-radius: 10px; padding: 0 15px; color: #000; outline: none;" oninput="handleDualInput('debit')">
+                                </div>
+                                <div style="width: 40px; height: 40px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #94a3b8;">বা</div>
+                                <div>
+                                    <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #22c55e; margin-bottom: 8px; font-family: 'Tiro Bangla', serif;">৳ পেলাম</label>
+                                    <input type="number" id="txCredit" placeholder="৳" style="width: 100%; height: 55px; font-size: 1.2rem; font-weight: 700; border: 1.5px solid #dcfce7; border-radius: 10px; padding: 0 15px; color: #000; outline: none;" oninput="handleDualInput('credit')">
+                                </div>
                             </div>
                             
-                            <!-- নিচের কন্ট্রোল রো -->
-                            <div style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 20px;">
-                                <div style="background: #f8fafc; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1.5px solid #e2e8f0; color: #64748b; font-weight: 600; cursor: pointer; gap: 8px;">
-                                    <i class="fa-solid fa-calendar-alt"></i> <span id="txCurrentDate">০৪ আগস্ট ২০২৪</span>
+                            <!-- মার্চ করা বিবরণ বক্স -->
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #64748b; margin-bottom: 8px; font-family: 'Tiro Bangla', serif;">বিবরণ লিখুন</label>
+                                <textarea id="txCommonDesc" placeholder="লেনদেনের বিবরণ এখানে লিখুন..." style="width: 100%; height: 60px; border: 1.5px solid #f1f5f9; border-radius: 12px; padding: 15px; font-family: 'Tiro Bangla', serif; resize: none; font-size: 0.95rem; outline: none;"></textarea>
+                            </div>
+
+                            <!-- নিচে কন্ট্রোল বাটনসমূহ -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                                <div style="position: relative; background: #f8fafc; border-radius: 12px; border: 1.5px solid #e2e8f0; padding: 0 15px; height: 50px; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-calendar-alt" style="color: #64748b;"></i>
+                                    <input type="date" id="txDateInput" style="border: none; background: transparent; color: #64748b; font-weight: 700; font-size: 0.9rem; outline: none; width: 100%; cursor: pointer;">
                                 </div>
                                 <div style="background: #f8fafc; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1.5px solid #e2e8f0; color: #64748b; font-weight: 600; gap: 10px;">
                                     SMS রিমাইন্ডার <input type="checkbox" id="txSmsNotify" style="width: 18px; height: 18px; accent-color: #4f46e5;">
                                 </div>
                                 <div style="background: #f8fafc; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1.5px solid #e2e8f0; color: #64748b; font-weight: 600; cursor: pointer; gap: 8px;">
-                                    <i class="fa-solid fa-camera"></i> ছবি / রশিদ আপলোড
+                                    <i class="fa-solid fa-camera"></i> ছবি আপলোড
                                 </div>
-                                <button class="mc-btn-primary" onclick="submitModernTransaction()" style="grid-column: 1 / -1; height: 55px; font-size: 1.1rem; background: #4f46e5; border-radius: 12px; margin-top: 10px; box-shadow: 0 8px 15px rgba(79, 70, 229, 0.2);">
+                                <button class="mc-btn-primary" onclick="submitModernTransaction()" style="grid-column: 1 / -1; height: 55px; font-size: 1.1rem; background: #4f46e5; border-radius: 15px; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);">
                                     <i class="fa-solid fa-circle-check"></i> নিশ্চিত করুন
                                 </button>
                             </div>
-                        </div>                    
-
+                        </div>
+                    
                     <!-- সাম্প্রতিক লেনদেন টেবিল -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                             <h3 style="font-family: 'Tiro Bangla', serif; font-size: 1.1rem; color: #1e293b;">সাম্প্রতিক লেনদেনসমূহ</h3>
@@ -3759,25 +3761,30 @@ window.renderCustomerListTable = function() {
             renderCustomerStatement(custId);
         };
 
-// ১. ডুয়াল ইনপুট হ্যান্ডলার (একটি লিখলে অন্যটি লক হবে)
+// ১. ইংরেজি সংখ্যাকে বাংলা সংখ্যায় রূপান্তর করার ফাংশন
+        const toBN = (num) => {
+            if(num === undefined || num === null) return '০';
+            const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+            return num.toString().replace(/\d/g, i => bnDigits[i]);
+        };
+
+        // ২. ডুয়াল ইনপুট লক করার লজিক
         window.handleDualInput = function(type) {
             const debit = document.getElementById('txDebit');
             const credit = document.getElementById('txCredit');
-            const descDebit = document.getElementById('txDescDebit');
-            const descCredit = document.getElementById('txDescCredit');
-
-            if (type === 'debit') {
-                credit.disabled = debit.value.length > 0;
-                descCredit.disabled = debit.value.length > 0;
-                if (debit.value.length > 0) { credit.value = ''; descCredit.value = ''; }
+            if (type === 'debit' && debit.value.length > 0) {
+                credit.value = '';
+                credit.disabled = true;
+            } else if (type === 'credit' && credit.value.length > 0) {
+                debit.value = '';
+                debit.disabled = true;
             } else {
-                debit.disabled = credit.value.length > 0;
-                descDebit.disabled = credit.value.length > 0;
-                if (credit.value.length > 0) { debit.value = ''; descDebit.value = ''; }
+                debit.disabled = false;
+                credit.disabled = false;
             }
         };
 
-        // ২. আধুনিক লেজার রেন্ডার ফাংশন
+        // ৩. আধুনিক লেজার রেন্ডার ফাংশন (বাংলা ডিজিট ও মোবাইল ফরম্যাট ফিক্স)
         window.renderCustomerStatement = function(custId) {
             const area = document.getElementById('modern-statement-table-area');
             if (!area) return;
@@ -3785,18 +3792,22 @@ window.renderCustomerListTable = function() {
             const cust = customers.find(c => c.id === custId);
             if (!cust) return;
 
-            // হেডার ডাটা আপডেট
+            // মোবাইল নাম্বার থেকে ডাবল জিরো সমস্যা সমাধান
+            let cleanPhone = cust.phone || '';
+            if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
+
             document.getElementById('stmtName').innerText = cust.name;
-            document.getElementById('stmtPhone').innerHTML = `<i class="fa-solid fa-phone" style="font-size: 0.7rem;"></i> +৮৮০ ${cust.phone || ''}`;
+            document.getElementById('stmtPhone').innerText = '+৮৮০ ' + toBN(cleanPhone);
             document.getElementById('stmtAvatar').innerText = cust.name.charAt(0).toUpperCase();
             
+            // ডিফল্ট আজকের তারিখ সেট করা
+            document.getElementById('txDateInput').value = new Date().toISOString().split('T')[0];
+            
             const currentDue = calculateCustomerCurrentDue(cust.id);
-            document.getElementById('stmtDueAmount').innerText = '৳ ' + currentDue.toLocaleString('bn-BD', { minimumFractionDigits: 2 });
-            document.getElementById('txCurrentDate').innerText = new Date().toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('stmtDueAmount').innerText = '৳ ' + toBN(currentDue.toLocaleString('en-US'));
 
-            // ট্রানজ্যাকশন টেবিল তৈরি
             let txs = customerTransactions.filter(t => t.customerId === custId);
-            txs.sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time)).reverse(); // নতুনগুলো উপরে
+            txs.sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time)).reverse();
 
             let html = `
                 <table class="mc-table">
@@ -3814,10 +3825,10 @@ window.renderCustomerListTable = function() {
             txs.forEach(t => {
                 html += `
                     <tr>
-                        <td style="font-size: 0.85rem; color: #64748b;">${new Date(t.date).toLocaleDateString('bn-BD')}</td>
+                        <td style="font-size: 0.85rem; color: #64748b; font-family: 'Tiro Bangla', serif;">${toBN(new Date(t.date).toLocaleDateString('bn-BD'))}</td>
                         <td style="font-weight: 600; color: #1e293b;">${t.description || '-'}</td>
-                        <td style="font-weight: 800; color: #ef4444;">${t.debit > 0 ? '৳ ' + t.debit.toLocaleString('bn-BD') : '-'}</td>
-                        <td style="font-weight: 800; color: #22c55e;">${t.credit > 0 ? '৳ ' + t.credit.toLocaleString('bn-BD') : '-'}</td>
+                        <td style="font-weight: 800; color: #ef4444;">${t.debit > 0 ? '৳ ' + toBN(t.debit.toLocaleString()) : '-'}</td>
+                        <td style="font-weight: 800; color: #22c55e;">${t.credit > 0 ? '৳ ' + toBN(t.credit.toLocaleString()) : '-'}</td>
                     </tr>
                 `;
             });
@@ -3826,14 +3837,18 @@ window.renderCustomerListTable = function() {
             area.innerHTML = txs.length > 0 ? html : '<div style="text-align:center; padding: 30px; color: #94a3b8;">কোনো লেনদেন পাওয়া যায়নি।</div>';
         };
 
-        // ৩. নতুন লেনদেন সেভ করার ফাংশন
+        // ৪. নতুন লেনদেন সেভ করার লজিক (এরর ফিক্সড)
         window.submitModernTransaction = async function() {
-            const debitVal = parseFloat(document.getElementById('txDebit').value) || 0;
-            const creditVal = parseFloat(document.getElementById('txCredit').value) || 0;
-            const descVal = debitVal > 0 ? document.getElementById('txDescDebit').value : document.getElementById('txDescCredit').value;
+            const debitInp = document.getElementById('txDebit');
+            const creditInp = document.getElementById('txCredit');
+            const descInp = document.getElementById('txCommonDesc');
+            const dateInp = document.getElementById('txDateInput');
+
+            const debitVal = parseFloat(debitInp.value) || 0;
+            const creditVal = parseFloat(creditInp.value) || 0;
 
             if (debitVal === 0 && creditVal === 0) {
-                showToast("টাকার অংক লিখুন!", "warning");
+                showToast("টাকার অংক লিখুন!", "error");
                 return;
             }
 
@@ -3845,28 +3860,28 @@ window.renderCustomerListTable = function() {
                 type: debitVal > 0 ? 'Debit' : 'Credit',
                 debit: debitVal,
                 credit: creditVal,
-                date: now.toISOString().split('T')[0],
+                date: dateInp.value || now.toISOString().split('T')[0],
                 time: now.toTimeString().split(' ')[0].substring(0,5),
-                description: descVal || (debitVal > 0 ? 'পণ্য বিক্রয়/ধার' : 'টাকা গ্রহণ')
+                description: descInp.value.trim() || (debitVal > 0 ? 'পণ্য বিক্রয়/ধার' : 'টাকা গ্রহণ')
             };
 
             try {
                 customerTransactions.push(txObj);
                 await writeToFirebase('transactions', customerTransactions);
                 
-                // ইনপুট রিসেট
-                document.getElementById('txDebit').value = '';
-                document.getElementById('txCredit').value = '';
-                document.getElementById('txDescDebit').value = '';
-                document.getElementById('txDescCredit').value = '';
-                handleDualInput('debit'); // লক আনলক করা
+                // সব রিসেট করা
+                debitInp.value = '';
+                creditInp.value = '';
+                descInp.value = '';
+                debitInp.disabled = false;
+                creditInp.disabled = false;
 
                 renderCustomerStatement(activeViewingCustomerId);
                 hideLoader();
                 showToast("লেনদেন সফলভাবে সংরক্ষিত হয়েছে!", "success");
             } catch(err) { hideLoader(); showToast("Error!", "error"); }
         };
-
+        
         window.filterCustomerStatement = function() {
             if (activeViewingCustomerId) renderCustomerStatement(activeViewingCustomerId);
         };
