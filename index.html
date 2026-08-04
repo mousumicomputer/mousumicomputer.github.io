@@ -3374,23 +3374,25 @@ const logoutBtn = document.getElementById('logoutBtn');
                 accordionItem.className = `accordion-item ${idx === 0 ? 'active' : ''}`;
                 accordionItem.id = `acc-item-${op}`;
 
-                let rowsHtml = '';
-                opCards.forEach(card => {
-                    const q = parseInt(opQtys[card.id]) || 0;
-                    const lineVal = q * (card.price || 0);
+let rowsHtml = '';
+// opCards অ্যারে কি না চেক করে নিরাপদ করা হলো
+const safeCards = Array.isArray(opCards) ? opCards : Object.values(opCards || {});
 
-                    rowsHtml += `
-                        <tr>
-                            <td><strong>${card.name}</strong> <span class="badge badge-success">${card.type}</span></td>
-                            <td>৳ ${card.price}</td>
-                            <td>
-                                <input type="number" min="0" class="inv-qty-input" value="${q}" oninput="updateCardQuantity('${op}', '${card.id}', this.value)">
-                            </td>
-                            <td style="text-align: right; font-weight: 700;" id="line-val-${card.id}">৳ ${lineVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                        </tr>
-                    `;
-                });
+safeCards.forEach(card => {
+    const q = parseInt(opQtys[card.id]) || 0;
+    const lineVal = q * (card.price || 0);
 
+    rowsHtml += `
+        <tr>
+            <td><strong>${card.name}</strong> <span class="badge badge-success">${card.type}</span></td>
+            <td>৳ ${card.price}</td>
+            <td>
+                <input type="number" min="0" class="inv-qty-input" value="${q}" oninput="updateCardQuantity('${op}', '${card.id}', this.value)">
+            </td>
+            <td style="text-align: right; font-weight: 700;" id="line-val-${card.id}">৳ ${lineVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+        </tr>
+    `;
+});
                 accordionItem.innerHTML = `
                     <div class="accordion-header" onclick="toggleAccordion('${op}')">
                         <div class="accordion-title-box">
