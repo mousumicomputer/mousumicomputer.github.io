@@ -1525,6 +1525,89 @@
         transition: 0.3s;
     }
     .mc-btn-details:hover { background: #4f46e5; color: #fff; }
+/* নতুন গ্রাহক ফরমের ডিজাইন */
+    .mc-form-card {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        margin-bottom: 25px;
+    }
+    .mc-section-title {
+        font-family: 'Tiro Bangla', serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #4f46e5;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #f1f5f9;
+        padding-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .mc-form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    .mc-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .mc-input-group label {
+        font-family: 'Tiro Bangla', serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #475569;
+    }
+    .mc-input-group label span { color: #ef4444; } /* লাল স্টার (*) জন্য */
+
+    .mc-form-control {
+        width: 100%;
+        height: 50px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0 15px;
+        font-size: 1rem;
+        color: #1e293b;
+        outline: none;
+        transition: 0.3s;
+        background: #fcfdfe;
+    }
+    .mc-form-control:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        background: #fff;
+    }
+    
+    /* বড় টেক্সট বক্সের জন্য */
+    textarea.mc-form-control {
+        height: auto;
+        padding: 15px;
+        min-height: 100px;
+        resize: none;
+    }
+
+    /* নিচের অ্যাকশন বাটন */
+    .mc-form-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #f1f5f9;
+    }
+    .mc-btn-cancel {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        padding: 12px 30px;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+    }
     
     .mc-avatar { width: 35px; height: 35px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; font-size: 0.9rem; }
     .mc-btn-details { background: #f8fafc; border: 1px solid #e2e8f0; color: #4f46e5; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'Tiro Bangla', serif; font-size: 0.9rem; }
