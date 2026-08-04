@@ -3838,17 +3838,25 @@ window.renderCustomerListTable = function() {
         };
 
         // ৪. নতুন লেনদেন সেভ করার লজিক (এরর ফিক্সড)
-        window.submitModernTransaction = async function() {
-            const debitInp = document.getElementById('txDebit');
-            const creditInp = document.getElementById('txCredit');
-            const descInp = document.getElementById('txCommonDesc');
-            const dateInp = document.getElementById('txDateInput');
+window.submitModernTransaction = async function() {
+            // সরাসরি আইডি থেকে ভ্যালু সংগ্রহ
+            const dElement = document.getElementById('txDebit');
+            const cElement = document.getElementById('txCredit');
+            const descElement = document.getElementById('txCommonDesc');
+            const dateElement = document.getElementById('txDateInput');
 
-            const debitVal = parseFloat(debitInp.value) || 0;
-            const creditVal = parseFloat(creditInp.value) || 0;
+            // ভ্যালুগুলোকে সংখ্যায় রূপান্তর
+            const dValue = parseFloat(dElement.value) || 0;
+            const cValue = parseFloat(cElement.value) || 0;
 
-            if (debitVal === 0 && creditVal === 0) {
+            // চেক করা হচ্ছে কোনো টাকা লেখা হয়েছে কিনা
+            if (dValue === 0 && cValue === 0) {
                 showToast("টাকার অংক লিখুন!", "error");
+                return;
+            }
+
+            if (!activeViewingCustomerId) {
+                showToast("গ্রাহক নির্বাচন করা হয়নি!", "error");
                 return;
             }
 
@@ -3857,29 +3865,35 @@ window.renderCustomerListTable = function() {
             const txObj = {
                 id: 'tx_' + Date.now(),
                 customerId: activeViewingCustomerId,
-                type: debitVal > 0 ? 'Debit' : 'Credit',
-                debit: debitVal,
-                credit: creditVal,
-                date: dateInp.value || now.toISOString().split('T')[0],
+                type: dValue > 0 ? 'Debit' : 'Credit',
+                debit: dValue,
+                credit: cValue,
+                date: dateElement.value || now.toISOString().split('T')[0],
                 time: now.toTimeString().split(' ')[0].substring(0,5),
-                description: descInp.value.trim() || (debitVal > 0 ? 'পণ্য বিক্রয়/ধার' : 'টাকা গ্রহণ')
+                description: descElement.value.trim() || (dValue > 0 ? 'পণ্য বিক্রয়/ধার' : 'টাকা গ্রহণ')
             };
 
             try {
                 customerTransactions.push(txObj);
                 await writeToFirebase('transactions', customerTransactions);
                 
-                // সব রিসেট করা
-                debitInp.value = '';
-                creditInp.value = '';
-                descInp.value = '';
-                debitInp.disabled = false;
-                creditInp.disabled = false;
+                // ইনপুট বক্স এবং অবস্থা রিসেট
+                dElement.value = '';
+                cElement.value = '';
+                descElement.value = '';
+                dElement.disabled = false;
+                cElement.disabled = false;
 
+                // টেবিল এবং সামারি আপডেট
                 renderCustomerStatement(activeViewingCustomerId);
+                renderCustomerListTable(); 
+                
                 hideLoader();
                 showToast("লেনদেন সফলভাবে সংরক্ষিত হয়েছে!", "success");
-            } catch(err) { hideLoader(); showToast("Error!", "error"); }
+            } catch(err) { 
+                hideLoader(); 
+                showToast("Error: " + err.message, "error"); 
+            }
         };
         
         window.filterCustomerStatement = function() {
