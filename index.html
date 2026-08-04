@@ -7,7 +7,7 @@
     <!-- FontAwesome Icons & Google Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
     <!-- SheetJS Library for Real Excel Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- PDF ডাউনলোডের জন্য লাইব্রেরি -->
@@ -1453,6 +1453,29 @@
     font-weight: bold;
     z-index: 10;
     }
+/* --- NEW CUSTOMER UI CSS --- */
+    .mc-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; font-family: 'Tiro Bangla', serif; }
+    .mc-summary-card { background: #fff; border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); border: 1px solid #f1f5f9; }
+    .mc-summary-icon { width: 45px; height: 45px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+    .mc-summary-info p { font-size: 0.9rem; color: #64748b; margin-bottom: 3px; font-weight: bold; }
+    .mc-summary-info h3 { font-size: 1.4rem; color: #0f172a; font-weight: bold; margin: 0; }
+    .mc-summary-info span { font-size: 0.8rem; color: #94a3b8; }
+    
+    .mc-action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; font-family: 'Tiro Bangla', serif; }
+    .mc-search-box { display: flex; align-items: center; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 15px; flex: 1; max-width: 400px; }
+    .mc-search-box input { border: none; outline: none; padding-left: 10px; width: 100%; font-family: 'Tiro Bangla', serif; font-size: 1rem; }
+    .mc-actions { display: flex; gap: 10px; }
+    .mc-btn-outline { background: #fff; border: 1px solid #e2e8f0; padding: 8px 15px; border-radius: 8px; color: #475569; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-family: 'Tiro Bangla', serif; font-size: 1rem;}
+    .mc-btn-primary { background: #4f46e5; border: none; padding: 8px 15px; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-family: 'Tiro Bangla', serif; font-size: 1rem;}
+    
+    .mc-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; font-family: 'Tiro Bangla', serif; }
+    .mc-table th { color: #64748b; font-weight: bold; font-size: 1rem; text-align: left; padding: 10px 15px; border-bottom: 1px solid #e2e8f0; }
+    .mc-table td { background: #fff; padding: 12px 15px; font-weight: bold; color: #334155; font-size: 1rem; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9;}
+    .mc-table td:first-child { border-radius: 10px 0 0 10px; border-left: 1px solid #f1f5f9; }
+    .mc-table td:last-child { border-radius: 0 10px 10px 0; border-right: 1px solid #f1f5f9; text-align: right; }
+    
+    .mc-avatar { width: 35px; height: 35px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; font-size: 0.9rem; }
+    .mc-btn-details { background: #f8fafc; border: 1px solid #e2e8f0; color: #4f46e5; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'Tiro Bangla', serif; font-size: 0.9rem; }
     </style>
 </head>
 <body>
