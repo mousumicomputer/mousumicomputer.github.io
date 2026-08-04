@@ -4758,26 +4758,24 @@ window.deleteDCRReport = function(reportId) {
     });
 };
 // --- ডেইলি ক্লোজিং রিপোর্ট ইঞ্জিন শেষ ---
+
+// ১. সাব-সেকশন পরিবর্তন করার উন্নত ফাংশন
         window.switchCustomerSubSection = function(sectionId) {
             document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
             document.getElementById('customer-ledger-view').classList.add('active');
 
+            // সাইডবার মেনু হাইলাইট
             document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-            document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
+            if(document.getElementById('menu-cust-parent')) document.getElementById('menu-cust-parent').classList.add('active');
 
-            document.getElementById('menu-cust-parent').classList.add('active');
-
-            if (sectionId === 'cust-list-section') document.getElementById('sub-cust-list').classList.add('active');
-            if (sectionId === 'cust-tx-section') document.getElementById('sub-cust-tx').classList.add('active');
-            if (sectionId === 'cust-ledger-section') document.getElementById('sub-cust-ledger').classList.add('active');
-            if (sectionId === 'cust-due-section') document.getElementById('sub-cust-due').classList.add('active');
-            if (sectionId === 'cust-reports-section') document.getElementById('sub-cust-reports').classList.add('active');
-
+            // সব সাব-সেকশন হাইড করা
             document.querySelectorAll('.cust-sub-section').forEach(sec => sec.style.display = 'none');
+            
+            // টার্গেট সেকশন শো করা
             const target = document.getElementById(sectionId);
             if (target) target.style.display = 'block';
 
-            document.getElementById('top-title').innerText = "Customer Management & Ledger";
+            document.getElementById('top-title').innerText = "গ্রাহক ব্যবস্থাপনা";
 
             if (sectionId === 'cust-list-section') renderCustomerListTable();
             if (sectionId === 'cust-due-section') renderDueSummarySection();
@@ -4787,6 +4785,51 @@ window.deleteDCRReport = function(reportId) {
                 handleTxTypeChange();
             }
         };
+
+        // ২. নতুন গ্রাহক ফরম খোলার ফাংশন
+        window.openAddCustomerModal = function() {
+            switchCustomerSubSection('cust-add-section');
+            document.getElementById('newCustomerModernForm').reset();
+            document.getElementById('mCustJoinDate').value = new Date().toISOString().split('T')[0];
+        };
+
+        // ৩. আধুনিক ফরম থেকে ডাটা সেভ করার লজিক
+        const modernCustForm = document.getElementById('newCustomerModernForm');
+        if (modernCustForm) {
+            modernCustForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                showLoader("গ্রাহক তথ্য সংরক্ষণ করা হচ্ছে...");
+
+                const newCust = {
+                    id: 'cust_' + Date.now(),
+                    name: document.getElementById('mCustName').value.trim(),
+                    phone: document.getElementById('mCustPhone').value.trim(),
+                    phoneAlt: document.getElementById('mCustPhoneAlt').value.trim(),
+                    fatherName: document.getElementById('mCustFather').value.trim(),
+                    address: document.getElementById('mCustAddress').value.trim(),
+                    area: document.getElementById('mCustArea').value.trim(),
+                    joinDate: document.getElementById('mCustJoinDate').value,
+                    type: document.getElementById('mCustType').value,
+                    creditLimit: parseFloat(document.getElementById('mCustLimit').value) || 0,
+                    openingBalance: parseFloat(document.getElementById('mCustOpening').value) || 0,
+                    note: document.getElementById('mCustNote').value.trim(),
+                    status: 'Active'
+                };
+
+                try {
+                    customers.push(newCust);
+                    await writeToFirebase('customers', customers);
+                    
+                    showToast("নতুন গ্রাহক সফলভাবে যুক্ত হয়েছে!", "success");
+                    switchCustomerSubSection('cust-list-section');
+                    hideLoader();
+                } catch (err) {
+                    hideLoader();
+                    showToast("তথ্য সংরক্ষণে সমস্যা হয়েছে!", "error");
+                }
+            });
+        }
+        
 // ==========================================
 // মাস্টার ন্যাভিগেশন এবং প্রোফাইল কন্ট্রোল ইঞ্জিন
 // ==========================================
