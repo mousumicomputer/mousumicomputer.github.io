@@ -1577,6 +1577,11 @@
             <h2 id="top-title" style="font-size: 1.2rem; font-weight: 700;">Dashboard Overview</h2>
         </div>
         <div class="navbar-right">
+<!-- ভাষা পরিবর্তনের বাটন (Language Switcher) -->
+            <button id="langSwitcher" onclick="toggleLanguage()" style="padding: 7px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px; background: #fff; cursor: pointer; font-weight: 700; color: var(--primary-color); display: flex; align-items: center; gap: 6px; transition: 0.2s;">
+                <i class="fa-solid fa-language" style="font-size: 1.1rem;"></i>
+                <span id="langText" style="font-size: 0.85rem;">BN</span>
+            </button>
             <!-- প্রোফাইল ড্রপডাউন ট্র্রিগার -->
             <div class="profile-dropdown-wrapper">
                 <div class="user-profile-trigger" id="profileTrigger" style="cursor:pointer; display:flex; align-items:center; gap:8px;">
@@ -4655,6 +4660,58 @@ window.saveQuickTransaction = async function() {
         showToast("সেভ করতে সমস্যা হয়েছে!", "error");
     }
 };
+// ভাষা পরিবর্তনের ফাংশন
+        window.toggleLanguage = function() {
+            const body = document.body;
+            const langText = document.getElementById('langText');
+            
+            // ভাষা পরিবর্তন করা (Toggle)
+            body.classList.toggle('lang-bn');
+
+            if (body.classList.contains('lang-bn')) {
+                langText.innerText = "EN"; // বাটন তখন ইংলিশ অপশন দেখাবে
+                updateLanguageUI('bn');
+            } else {
+                langText.innerText = "BN"; // বাটন তখন বাংলা অপশন দেখাবে
+                updateLanguageUI('en');
+            }
+        };
+
+        // এই ফাংশনটি পুরো সাইটের লেখাগুলো পরিবর্তন করবে
+        function updateLanguageUI(lang) {
+            const translations = {
+                'en': {
+                    'dash': 'Dashboard',
+                    'cust': 'Customer Management',
+                    'cust-list': 'Customer List',
+                    'reports': 'Reports & History',
+                    'settings': 'Settings'
+                },
+                'bn': {
+                    'dash': 'ড্যাশবোর্ড',
+                    'cust': 'গ্রাহক ব্যবস্থাপনা',
+                    'cust-list': 'গ্রাহক তালিকা',
+                    'reports': 'রিপোর্ট ও ইতিহাস',
+                    'settings': 'সেটিংস'
+                }
+            };
+
+            // সাইডবার মেনু আপডেট (আইডি অনুযায়ী)
+            const menuDash = document.querySelector('#menu-dash span span');
+            if(menuDash) menuDash.innerText = translations[lang]['dash'];
+
+            const menuCust = document.querySelector('#menu-cust-parent span span');
+            if(menuCust) menuCust.innerText = translations[lang]['cust'];
+
+            const subCustList = document.querySelector('#sub-cust-list span');
+            if(subCustList) subCustList.innerText = translations[lang]['cust-list'];
+            
+            const menuReports = document.querySelector('#menu-reports-parent span span');
+            if(menuReports) menuReports.innerText = translations[lang]['reports'];
+            
+            const menuSettings = document.querySelector('#menu-settings-parent span span');
+            if(menuSettings) menuSettings.innerText = translations[lang]['settings'];
+        }
     </script>
 <!-- FLOATING ADD CUSTOMER BUTTON -->
 <button class="fab-add-cust" onclick="openAddCustomerModal()">
