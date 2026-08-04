@@ -1980,6 +1980,87 @@
                             </table>
                         </div>
                     </div>
+<!-- SECTION: ADD NEW CUSTOMER (Screenshot Design) -->
+                    <div id="cust-add-section" class="cust-sub-section" style="display:none;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px;">
+                            <div>
+                                <h2 style="font-family: 'Tiro Bangla', serif; font-size: 1.5rem; color: #1e293b; font-weight: 800;">নতুন গ্রাহক যুক্ত করুন</h2>
+                                <p style="font-size: 0.9rem; color: #64748b; font-weight: 600;">গ্রাহক লিস্ট <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem; margin: 0 5px;"></i> নতুন গ্রাহক</p>
+                            </div>
+                        </div>
+
+                        <form id="newCustomerModernForm">
+                            <!-- ব্যক্তিগত তথ্য সেকশন -->
+                            <div class="mc-form-card">
+                                <div class="mc-section-title"><i class="fa-solid fa-user-circle"></i> ব্যক্তিগত তথ্য</div>
+                                <div class="mc-form-grid">
+                                    <div class="mc-input-group">
+                                        <label>গ্রাহকের নাম <span>*</span></label>
+                                        <input type="text" id="mCustName" class="mc-form-control" placeholder="গ্রাহকের নাম লিখুন" required>
+                                    </div>
+                                    <div class="mc-input-group">
+                                        <label>মোবাইল নম্বর <span>*</span></label>
+                                        <input type="text" id="mCustPhone" class="mc-form-control" placeholder="মোবাইল নম্বর লিখুন" required>
+                                    </div>
+                                    <div class="mc-input-group">
+                                        <label>বিকল্প মোবাইল নম্বর</label>
+                                        <input type="text" id="mCustPhoneAlt" class="mc-form-control" placeholder="বিকল্প মোবাইল নম্বর লিখুন">
+                                    </div>
+                                    <div class="mc-input-group">
+                                        <label>পিতার/স্বামীর নাম</label>
+                                        <input type="text" id="mCustFather" class="mc-form-control" placeholder="পিতার/স্বামীর নাম লিখুন">
+                                    </div>
+                                    <div class="mc-input-group">
+                                        <label>ঠিকানা <span>*</span></label>
+                                        <input type="text" id="mCustAddress" class="mc-form-control" placeholder="ঠিকানা লিখুন" required>
+                                    </div>
+                                    <div class="mc-input-group">
+                                        <label>এলাকা/থানা</label>
+                                        <input type="text" id="mCustArea" class="mc-form-control" placeholder="এলাকা/থানা লিখুন">
+                                    </div>
+                                    <div class="mc-input-group">
+                                        <label>যোগদানের তারিখ <span>*</span></label>
+                                        <input type="date" id="mCustJoinDate" class="mc-form-control" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ব্যবসায়িক তথ্য সেকশন -->
+                            <div class="mc-form-card">
+                                <div class="mc-section-title"><i class="fa-solid fa-briefcase"></i> ব্যবসায়িক তথ্য</div>
+                                <div class="mc-form-grid">
+                                    <div class="mc-input-group">
+                                        <label>গ্রাহকের ধরন <span>*</span></label>
+                                        <select id="mCustType" class="mc-form-control" required>
+                                            <option value="">ধরন নির্বাচন করুন</option>
+                                            <option value="Regular">নিয়মিত (Regular)</option>
+                                            <option value="Wholesale">পাইকারি (Wholesale)</option>
+                                        </select>
+                                    </div>
+                                    <div class="mc-input-group">
+                                        <label>ক্রেডিট লিমিট</label>
+                                        <input type="number" id="mCustLimit" class="mc-form-control" placeholder="৳ ক্রেডিট লিমিট লিখুন">
+                                    </div>
+                                    <div class="mc-input-group">
+                                        <label>প্রারম্ভিক বকেয়া</label>
+                                        <input type="number" id="mCustOpening" class="mc-form-control" placeholder="৳ 0.00">
+                                    </div>
+                                    <div class="mc-input-group" style="grid-column: span 1;">
+                                        <label>রেফারেন্স/নোট</label>
+                                        <textarea id="mCustNote" class="mc-form-control" placeholder="রেফারেন্স বা নোট লিখুন (ঐচ্ছিক)"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- বাটন সেকশন -->
+                            <div class="mc-form-footer">
+                                <button type="button" class="mc-btn-cancel" onclick="switchCustomerSubSection('cust-list-section')">বাতিল করুন</button>
+                                <button type="submit" class="mc-btn-primary" style="padding: 15px 50px; border-radius: 12px; background: #4f46e5;">
+                                    <i class="fa-solid fa-check-circle"></i> সংরক্ষণ করুন
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                     <!-- SECTION 2: NEW TRANSACTION ENTRY -->
                     <div id="cust-tx-section" class="cust-sub-section" style="display:none;">
                         <div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px;">
