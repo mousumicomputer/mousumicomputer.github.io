@@ -4688,6 +4688,10 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
         };
         // পেজ পুরোপুরি তৈরি হলে সব ফাংশন চালু হবে
         window.addEventListener('DOMContentLoaded', initGlobalActions);
+document.getElementById('sidebarToggle').addEventListener('click', function() {
+    document.querySelector('.sidebar').classList.toggle('collapsed');
+    console.log("Button clicked! Sidebar toggled.");
+});
     </script>
 </body>
 </html>
