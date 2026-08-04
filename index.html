@@ -3086,19 +3086,21 @@ const logoutBtn = document.getElementById('logoutBtn');
             });
         }
 
-        /* CARD CALCULATIONS & RENDERERS */
-function calculateOperatorTotals(opKey) {
+/* CARD CALCULATIONS & RENDERERS */
+        function calculateOperatorTotals(opKey) {
             let totalQty = 0;
             let totalVal = 0;
             const rawCards = cardConfig[opKey] || [];
             const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
             const opQtys = cardQuantities[opKey] || {};
 
-            opCards.forEach(c => {
-                const qty = parseInt(opQtys[c.id]) || 0;
-                totalQty += qty;
-                totalVal += (qty * (c.price || 0));
-            });
+            if (typeof opCards.forEach === 'function') {
+                opCards.forEach(c => {
+                    const qty = parseInt(opQtys[c.id]) || 0;
+                    totalQty += qty;
+                    totalVal += (qty * (c.price || 0));
+                });
+            }
 
             return { totalQty, totalVal };
         }
@@ -3106,36 +3108,42 @@ function calculateOperatorTotals(opKey) {
         function calculateGrandCardInventoryValue() {
             let grandVal = 0;
             const safeOpList = Array.isArray(OPERATORS_LIST) ? OPERATORS_LIST : Object.values(OPERATORS_LIST || {});
-            safeOpList.forEach(op => {
-                const { totalVal } = calculateOperatorTotals(op);
-                grandVal += totalVal;
-            });
+            if (typeof safeOpList.forEach === 'function') {
+                safeOpList.forEach(op => {
+                    const { totalVal } = calculateOperatorTotals(op);
+                    grandVal += totalVal;
+                });
+            }
             return grandVal;
         }
 
         function calculateCashGrandTotal() {
             let denomSum = 0;
             const safeDenominations = Array.isArray(CASH_DENOMINATIONS) ? CASH_DENOMINATIONS : Object.values(CASH_DENOMINATIONS || {});
-            safeDenominations.forEach(d => {
-                const q = parseInt(cashQuantities[d]) || 0;
-                denomSum += (q * d);
-            });
+            if (typeof safeDenominations.forEach === 'function') {
+                safeDenominations.forEach(d => {
+                    const q = parseInt(cashQuantities[d]) || 0;
+                    denomSum += (q * d);
+                });
+            }
             return denomSum + (window.cashOthersAmount || 0);
         }
 
         function calculateCustomerTotals() {
-            let totalCustomers = customers ? customers.length : 0;
+            let totalCustomers = Array.isArray(customers) ? customers.length : (customers ? Object.keys(customers).length : 0);
             let totalOutstanding = 0;
             let custWithDue = 0;
 
             const safeCustomers = Array.isArray(customers) ? customers : Object.values(customers || {});
-            safeCustomers.forEach(c => {
-                const due = calculateCustomerCurrentDue(c.id);
-                if (due > 0) {
-                    custWithDue++;
-                    totalOutstanding += due;
-                }
-            });
+            if (typeof safeCustomers.forEach === 'function') {
+                safeCustomers.forEach(c => {
+                    const due = calculateCustomerCurrentDue(c.id);
+                    if (due > 0) {
+                        custWithDue++;
+                        totalOutstanding += due;
+                    }
+                });
+            }
 
             return { totalCustomers, custWithDue, totalOutstanding };
         }
@@ -3148,13 +3156,16 @@ function calculateOperatorTotals(opKey) {
 
             const safeTxs = Array.isArray(customerTransactions) ? customerTransactions : Object.values(customerTransactions || {});
             const txs = safeTxs.filter(t => t.customerId === custId);
-            txs.forEach(t => {
-                due += (parseFloat(t.debit) || 0);
-                due -= (parseFloat(t.credit) || 0);
-            });
+            if (typeof txs.forEach === 'function') {
+                txs.forEach(t => {
+                    due += (parseFloat(t.debit) || 0);
+                    due -= (parseFloat(t.credit) || 0);
+                });
+            }
 
             return due;
-        }    
+        }
+        
         /* DASHBOARD SUMMARY ENGINE */
         function updateDashboardCards() {
             const grid = document.getElementById('dashboardSummaryGrid');
