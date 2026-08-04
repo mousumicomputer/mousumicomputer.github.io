@@ -13,21 +13,25 @@
     <!-- PDF ডাউনলোডের জন্য লাইব্রেরি -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        :root {
-            --primary-color: #00a8ef;
-            --primary-dark: #0b1a2c;
+:root {
+            --primary-color: #4f46e5; /* বেগুনি কালার */
+            --primary-dark: #1e1b4b;
             --sidebar-width: 260px;
-            --bg-color: #f4f6f9;
+            --bg-color: #f8fafc; /* স্ক্রিনশটের মতো হালকা ব্যাকগ্রাউন্ড */
             --card-bg: #ffffff;
-            --text-color: #1f2937;
-            --border-color: #e5e7eb;
-            --border-radius: 12px;
-            --red: #e11d48;
-            --green: #10b981;
-            --warning: #f97316;
-            --info: #00a8ef;
+            --text-color: #1e293b;
+            --border-color: #f1f5f9;
+            --border-radius: 16px;
+            --red: #ef4444;
+            --green: #22c55e;
+            --warning: #f59e0b;
+            --info: #3b82f6;
         }
 
+        /* পুরো ড্যাশবোর্ডে তিরো বাংলা ফন্ট সেট করা */
+        body, h1, h2, h3, h4, span, div, table, input, button {
+            font-family: 'Plus Jakarta Sans', 'Tiro Bangla', serif !important;
+        }
         * {
             box-sizing: border-box;
             margin: 0;
