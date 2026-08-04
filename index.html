@@ -4627,55 +4627,44 @@ document.addEventListener('click', () => {
 });
 // উপরের ফাংশনটি (initSync) এখানে শেষ করা হলো
 } 
-
 // ৭. পিডিএফ এবং এক্সেল ডাউনলোড (নিখুঁত কোড)
-window.downloadDailyClosingPDF = function() {
-    console.log("PDF download starting...");
-    const element = document.getElementById('printable-closing-report');
-    if (!element) { 
-        alert("রিপোর্ট এলাকা খুঁজে পাওয়া যায়নি!"); 
-        return; 
-    }
+        window.downloadDailyClosingPDF = function() {
+            const element = document.getElementById('printable-closing-report');
+            if (!element) { alert("রিপোর্ট এলাকা খুঁজে পাওয়া যায়নি!"); return; }
+            const opt = {
+                margin: 10,
+                filename: 'Report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+            html2pdf().set(opt).from(element).save();
+        };
 
-    const opt = {
-        margin:       10,
-        filename:     'Report.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-    };
+        window.exportDailyClosingExcel = () => {
+            const t = document.querySelector('#printable-closing-report table');
+            if (!t) { alert("টেবিল পাওয়া যায়নি!"); return; }
+            const wb = XLSX.utils.table_to_book(t);
+            XLSX.writeFile(wb, 'Report.xlsx');
+        };
 
-    // সরাসরি ডাউনলোড শুরু হবে
-    html2pdf().set(opt).from(element).save();
-};
-
-window.exportDailyClosingExcel = () => {
-    console.log("Excel download starting...");
-    const t = document.querySelector('#printable-closing-report table');
-    if (!t) { 
-        alert("টেবিল পাওয়া যায়নি!"); 
-        return; 
-    }
-    const wb = XLSX.utils.table_to_book(t);
-    XLSX.writeFile(wb, 'Report.xlsx');
-};
-// সাইডবার এবং প্রোফাইল টগল মেরামত
-        document.addEventListener('DOMContentLoaded', () => {
+        // সাইডবার এবং লেআউট সচল করার ফাংশন
+        function initGlobalActions() {
             const sidebarBtn = document.getElementById('sidebarToggle');
             const sidebarEl = document.getElementById('sidebar');
             const profTrigger = document.getElementById('profileTrigger');
             const profDropdown = document.getElementById('profileDropdown');
 
             if (sidebarBtn && sidebarEl) {
-                sidebarBtn.onclick = function(e) {
+                sidebarBtn.onclick = (e) => {
                     e.preventDefault();
                     sidebarEl.classList.toggle('collapsed');
                 };
             }
 
             if (profTrigger && profDropdown) {
-                profTrigger.onclick = function(e) {
+                profTrigger.onclick = (e) => {
                     e.stopPropagation();
                     profDropdown.classList.toggle('active');
                 };
@@ -4684,7 +4673,15 @@ window.exportDailyClosingExcel = () => {
             document.addEventListener('click', () => {
                 if(profDropdown) profDropdown.classList.remove('active');
             });
-        });
+
+            // কাস্টমার লিস্ট রেন্ডার করা
+            if(typeof window.renderCustomerListTable === 'function') {
+                window.renderCustomerListTable();
+            }
+        }
+
+        // পেজ পুরোপুরি তৈরি হলে সব ফাংশন চালু হবে
+        window.addEventListener('DOMContentLoaded', initGlobalActions);
     </script>
 </body>
 </html>
