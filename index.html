@@ -3129,24 +3129,31 @@ const logoutBtn = document.getElementById('logoutBtn');
             return denomSum + (window.cashOthersAmount || 0);
         }
 
-        function calculateCustomerTotals() {
-            let totalCustomers = Array.isArray(customers) ? customers.length : (customers ? Object.keys(customers).length : 0);
-            let totalOutstanding = 0;
-            let custWithDue = 0;
+function calculateCustomerTotals() {
+    let totalCustomers = Array.isArray(customers) ? customers.length : 0;
+    let totalReceivable = 0; // আমরা পাব (পাওনা)
+    let totalPayable = 0;    // আমরা দেব (দেনা/অগ্রিম)
+    let dueCount = 0;
 
-            const safeCustomers = Array.isArray(customers) ? customers : Object.values(customers || {});
-            if (typeof safeCustomers.forEach === 'function') {
-                safeCustomers.forEach(c => {
-                    const due = calculateCustomerCurrentDue(c.id);
-                    if (due > 0) {
-                        custWithDue++;
-                        totalOutstanding += due;
-                    }
-                });
-            }
-
-            return { totalCustomers, custWithDue, totalOutstanding };
+    const safeCustomers = Array.isArray(customers) ? customers : Object.values(customers || {});
+    safeCustomers.forEach(c => {
+        const bal = calculateCustomerCurrentDue(c.id);
+        if (bal > 0) {
+            totalReceivable += bal;
+            dueCount++;
+        } else if (bal < 0) {
+            totalPayable += Math.abs(bal); // মাইনাস ভ্যালুকে প্লাস করে যোগ করা হচ্ছে
         }
+    });
+
+    return { 
+        totalCustomers, 
+        dueCount, 
+        totalReceivable, 
+        totalPayable,
+        netCustomerBalance: totalReceivable - totalPayable // নিট পাওনা
+    };
+}
 
         function calculateCustomerCurrentDue(custId) {
             const safeCustomers = Array.isArray(customers) ? customers : Object.values(customers || {});
@@ -3167,44 +3174,34 @@ const logoutBtn = document.getElementById('logoutBtn');
         }
         
         /* DASHBOARD SUMMARY ENGINE */
-        function updateDashboardCards() {
-            const grid = document.getElementById('dashboardSummaryGrid');
-            if (!grid) return;
-            grid.innerHTML = '';
+// ... existing code in updateDashboardCards ...
 
-            let grandTotalNetBalance = 0;
+const custTotals = calculateCustomerTotals();
+// নিট ব্যালেন্স থেকে গ্রাহকের কাছে আপনার দেনা বিয়োগ হবে
+grandTotalNetBalance += custTotals.netCustomerBalance; 
 
-            categories.filter(c => c.enabled !== false).sort((a,b) => a.order - b.order).forEach(cat => {
-                const catAccs = accounts.filter(a => a.catId === cat.id && a.enabled !== false);
-                let catSum = 0;
+// পাওনা কার্ড (আমরা পাব)
+const receivableCard = document.createElement('div');
+receivableCard.className = 'fintech-card';
+receivableCard.innerHTML = `
+    <div class="card-icon" style="background: #fee2e2; color: #e11d48;"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+    <h4>Total Receivable (পাওনা)</h4>
+    <div class="amount" style="color: #e11d48;">৳ ${custTotals.totalReceivable.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+`;
+grid.appendChild(receivableCard);
 
-                catAccs.forEach(acc => {
-                    catSum += (parseFloat(balanceStore[acc.id]) || 0);
-                });
-
-                grandTotalNetBalance += catSum;
-
-                const card = document.createElement('div');
-                card.className = 'fintech-card';
-                card.innerHTML = `
-                    <div class="card-icon"><i class="fa-solid fa-wallet"></i></div>
-                    <h4>${cat.name}</h4>
-                    <div class="amount">৳ ${catSum.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
-                `;
-                grid.appendChild(card);
-            });
-
-            const custTotals = calculateCustomerTotals();
-            grandTotalNetBalance += custTotals.totalOutstanding;
-
-            const custCard = document.createElement('div');
-            custCard.className = 'fintech-card';
-            custCard.innerHTML = `
-                <div class="card-icon" style="background: #fee2e2; color: #e11d48;"><i class="fa-solid fa-users"></i></div>
-                <h4>Total Customer Due</h4>
-                <div class="amount" style="color: #e11d48;">৳ ${custTotals.totalOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
-            `;
-            grid.appendChild(custCard);
+// দেনা কার্ড (গ্রাহক আমাদের কাছে পাবে)
+if (custTotals.totalPayable > 0) {
+    const payableCard = document.createElement('div');
+    payableCard.className = 'fintech-card';
+    payableCard.innerHTML = `
+        <div class="card-icon" style="background: #dcfce7; color: #16a34a;"><i class="fa-solid fa-hand-holding-hand"></i></div>
+        <h4>Total Payable (দেনা)</h4>
+        <div class="amount" style="color: #16a34a;">৳ ${custTotals.totalPayable.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+    `;
+    grid.appendChild(payableCard);
+}
+// ... rest of the code ...
 // --- Cash Inventory Card ---
         let cashInventoryTotal = 0;
         try {
@@ -3613,19 +3610,23 @@ window.renderCustomerListTable = function() {
                 (c.id || '').toLowerCase().includes(filterVal)
             );
 
-            // স্ট্যাটিসটিকস ক্যালকুলেশন
-            let totalDue = 0;
-            let dueCount = 0;
-            let todayColl = 0;
-            const todayStr = new Date().toISOString().split('T')[0];
+// স্ট্যাটিসটিকস ক্যালকুলেশন
+let totalReceivable = 0;
+let totalPayable = 0;
+let dueCount = 0;
+let todayColl = 0;
+const todayStr = new Date().toISOString().split('T')[0];
 
-            customers.forEach(c => {
-                const currentDue = calculateCustomerCurrentDue(c.id);
-                if (currentDue > 0) {
-                    totalDue += currentDue;
-                    dueCount++;
-                }
-            });
+customers.forEach(c => {
+    const currentDue = calculateCustomerCurrentDue(c.id);
+
+    if (currentDue > 0) {
+        totalReceivable += currentDue;
+        dueCount++;
+    } else if (currentDue < 0) {
+        totalPayable += Math.abs(currentDue);
+    }
+});
 
             // আজকে আদায়ের হিসাব
             customerTransactions.filter(t => t.date === todayStr).forEach(t => {
@@ -3634,7 +3635,9 @@ window.renderCustomerListTable = function() {
 
             // সামারি কার্ডে ডাটা বসানো
             if(document.getElementById('statTotalCust')) document.getElementById('statTotalCust').innerText = customers.length;
-            if(document.getElementById('statTotalDue')) document.getElementById('statTotalDue').innerText = '৳ ' + totalDue.toLocaleString('bn-BD', { minimumFractionDigits: 2 });
+if(document.getElementById('statTotalDue'))
+    document.getElementById('statTotalDue').innerText =
+        '৳ ' + totalReceivable.toLocaleString('bn-BD', { minimumFractionDigits: 2 });
             if(document.getElementById('statTodayCollection')) document.getElementById('statTodayCollection').innerText = '৳ ' + todayColl.toLocaleString('bn-BD', { minimumFractionDigits: 2 });
             if(document.getElementById('statDueCustomers')) document.getElementById('statDueCustomers').innerText = dueCount;
 
