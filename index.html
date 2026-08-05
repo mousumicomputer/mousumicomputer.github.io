@@ -3988,53 +3988,60 @@ window.generateDailyClosingSnapshot = async function() {
         const rTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const rId = 'DCR-' + Date.now();
 
-        // ২. ওপেনিং ক্যাশ ব্যালেন্স খোঁজা (সিলেক্ট করা তারিখের আগের সর্বশেষ রিপোর্ট থেকে)
-        let sortedReports = [...dailyClosingReports].sort((a,b) => b.report_date.localeCompare(a.report_date));
+        // ২. ওপেনিং ক্যাশ ব্যালেন্স খোঁজা (নিরাপদভাবে)
+        // এখানে filter ব্যবহার করা হয়েছে যাতে অসম্পূর্ণ ডাটা এরর না দেয়
+        let safeReports = (dailyClosingReports || []).filter(r => r && r.report_date && r.reconciliation);
+        let sortedReports = safeReports.sort((a,b) => (b.report_date || "").localeCompare(a.report_date || ""));
+        
         let prevReport = sortedReports.find(r => r.report_date < rDate);
-        let openingCash = prevReport ? parseFloat(prevReport.reconciliation.actual_cash) : 0;
+        let openingCash = prevReport ? parseFloat(prevReport.reconciliation.actual_cash || 0) : 0;
 
-        // ৩. কাস্টমার ট্রানজ্যাকশন থেকে ওই তারিখের ইনফ্লো-আউটফ্লো
+        // ৩. কাস্টমার ট্রানজ্যাকশন থেকে ওই তারিখের ডাটা
         let todayInflow = 0;
         let todayOutflow = 0;
-        customerTransactions.filter(t => t.date === rDate).forEach(t => {
-            todayInflow += (parseFloat(t.credit) || 0);
-            todayOutflow += (parseFloat(t.debit) || 0);
-        });
+        if (Array.isArray(customerTransactions)) {
+            customerTransactions.filter(t => t.date === rDate).forEach(t => {
+                todayInflow += (parseFloat(t.credit) || 0);
+                todayOutflow += (parseFloat(t.debit) || 0);
+            });
+        }
 
-        // ৪. ক্যালকুলেশন
-        const actualCash = calculateCashGrandTotal();
+        // ৪. গাণিতিক ক্যালকুলেশন
+        const actualCash = calculateCashGrandTotal() || 0;
         const calculatedCash = (openingCash + todayInflow) - todayOutflow;
         const dailyProfit = actualCash - calculatedCash;
 
         // ৫. একাউন্ট ব্যালেন্স ডাটা প্রসেসিং
         const bAccs = [], pAccs = [], aAccs = [], rAccs = [];
-        categories.forEach(cat => {
-            const accs = accounts.filter(a => a.catId === cat.id && a.enabled !== false);
-            accs.forEach(acc => {
-                const bal = parseFloat(balanceStore[acc.id]) || 0;
-                const item = { name: acc.name, balance: bal };
-                const n = cat.name.toLowerCase();
-                if (n.includes('bank')) bAccs.push(item);
-                else if (n.includes('personal')) pAccs.push(item);
-                else if (n.includes('agent')) aAccs.push(item);
-                else if (n.includes('recharge')) rAccs.push(item);
+        if (Array.isArray(categories)) {
+            categories.forEach(cat => {
+                const accs = accounts.filter(a => a.catId === cat.id && a.enabled !== false);
+                accs.forEach(acc => {
+                    const bal = parseFloat(balanceStore[acc.id]) || 0;
+                    const item = { name: acc.name, balance: bal };
+                    const n = cat.name.toLowerCase();
+                    if (n.includes('bank')) bAccs.push(item);
+                    else if (n.includes('personal')) pAccs.push(item);
+                    else if (n.includes('agent')) aAccs.push(item);
+                    else if (n.includes('recharge')) rAccs.push(item);
+                });
             });
-        });
+        }
 
         const bSum = bAccs.reduce((s, a) => s + a.balance, 0);
         const pSum = pAccs.reduce((s, a) => s + a.balance, 0);
         const aSum = aAccs.reduce((s, a) => s + a.balance, 0);
         const rSum = rAccs.reduce((s, a) => s + a.balance, 0);
 
-        const cardSum = calculateGrandCardInventoryValue();
-        const custTotals = calculateCustomerTotals();
+        const cardSum = calculateGrandCardInventoryValue() || 0;
+        const custTotals = calculateCustomerTotals() || { totalReceivable: 0, totalPayable: 0, netCustomerBalance: 0 };
 
-        // ৬. স্ন্যাপশট অবজেক্ট তৈরি
+        // ৬. স্ন্যাপশট অবজেক্ট
         const snapshot = {
             report_id: rId,
             report_date: rDate,
             closing_time: rTime,
-            company_name: profileSettings.companyName || 'Mousumi Computer',
+            company_name: (profileSettings && profileSettings.companyName) ? profileSettings.companyName : 'Mousumi Computer',
             reconciliation: {
                 opening_cash: openingCash,
                 inflow: todayInflow,
@@ -4056,20 +4063,28 @@ window.generateDailyClosingSnapshot = async function() {
                 agent: aAccs, a_sum: aSum,
                 recharge: rAccs, r_sum: rSum
             },
-            cash_details: CASH_DENOMINATIONS.map(d => ({ note: `৳ ${d} Notes`, qty: cashQuantities[d] || 0, amount: (cashQuantities[d] || 0) * d })).filter(i => i.qty > 0),
+            cash_details: (CASH_DENOMINATIONS || []).map(d => ({ 
+                note: `৳ ${d} Notes`, 
+                qty: (cashQuantities && cashQuantities[d]) ? cashQuantities[d] : 0, 
+                amount: ((cashQuantities && cashQuantities[d]) ? cashQuantities[d] : 0) * d 
+            })).filter(i => i.qty > 0),
             card_details: []
         };
 
-        OPERATORS_LIST.forEach(op => {
-            const oCards = cardConfig[op] || [];
-            const oQtys = cardQuantities[op] || {};
-            oCards.forEach(c => {
-                const q = oQtys[c.id] || 0;
-                if(q > 0) snapshot.card_details.push({ name: `${op} ${c.name}`, qty: q, total: q * c.price });
+        // কার্ড ডিটেইলস সংগ্রহ
+        if (typeof OPERATORS_LIST !== 'undefined') {
+            OPERATORS_LIST.forEach(op => {
+                const oCards = cardConfig[op] || [];
+                const oQtys = cardQuantities[op] || {};
+                oCards.forEach(c => {
+                    const q = oQtys[c.id] || 0;
+                    if(q > 0) snapshot.card_details.push({ name: `${op} ${c.name}`, qty: q, total: q * (c.price || 0) });
+                });
             });
-        });
+        }
 
-        // ৭. ফায়ারবেসে সেভ করা
+        // ৭. ফায়ারবেসে সেভ
+        if (!Array.isArray(dailyClosingReports)) dailyClosingReports = [];
         dailyClosingReports.unshift(snapshot);
         await writeToFirebase('erp/dailyClosingReports', dailyClosingReports);
         
@@ -4077,6 +4092,7 @@ window.generateDailyClosingSnapshot = async function() {
         hideLoader();
         showToast(`${rDate} তারিখের রিপোর্ট সফলভাবে তৈরি হয়েছে!`, "success");
     } catch (err) {
+        console.error("DCR Error:", err);
         hideLoader();
         showToast("Error: " + err.message, "error");
     }
