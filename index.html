@@ -3173,105 +3173,93 @@ function calculateCustomerTotals() {
             return due;
         }
         
-        /* DASHBOARD SUMMARY ENGINE */
-// ... existing code in updateDashboardCards ...
+/* ড্যাশবোর্ড সামারি ইঞ্জিন - সম্পূর্ণ এবং আপডেটেড */
+function updateDashboardCards() {
+    const grid = document.getElementById('dashboardSummaryGrid');
+    if (!grid) return;
+    grid.innerHTML = ''; // আগের সব কার্ড পরিষ্কার করা
 
-const custTotals = calculateCustomerTotals();
-// নিট ব্যালেন্স থেকে গ্রাহকের কাছে আপনার দেনা বিয়োগ হবে
-grandTotalNetBalance += custTotals.netCustomerBalance; 
+    let grandTotalNetBalance = 0;
 
-// পাওনা কার্ড (আমরা পাব)
-const receivableCard = document.createElement('div');
-receivableCard.className = 'fintech-card';
-receivableCard.innerHTML = `
-    <div class="card-icon" style="background: #fee2e2; color: #e11d48;"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-    <h4>Total Receivable (পাওনা)</h4>
-    <div class="amount" style="color: #e11d48;">৳ ${custTotals.totalReceivable.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
-`;
-grid.appendChild(receivableCard);
+    // ১. সব একাউন্ট ক্যাটাগরি (Bank, Agent, Personal ইত্যাদি) প্রসেস করা
+    categories.filter(c => c.enabled !== false).sort((a,b) => a.order - b.order).forEach(cat => {
+        const catAccs = accounts.filter(a => a.catId === cat.id && a.enabled !== false);
+        let catSum = 0;
 
-// দেনা কার্ড (গ্রাহক আমাদের কাছে পাবে)
-if (custTotals.totalPayable > 0) {
-    const payableCard = document.createElement('div');
-    payableCard.className = 'fintech-card';
-    payableCard.innerHTML = `
-        <div class="card-icon" style="background: #dcfce7; color: #16a34a;"><i class="fa-solid fa-hand-holding-hand"></i></div>
-        <h4>Total Payable (দেনা)</h4>
-        <div class="amount" style="color: #16a34a;">৳ ${custTotals.totalPayable.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+        catAccs.forEach(acc => {
+            catSum += (parseFloat(balanceStore[acc.id]) || 0);
+        });
+
+        grandTotalNetBalance += catSum;
+
+        const card = document.createElement('div');
+        card.className = 'fintech-card';
+        card.innerHTML = `
+            <div class="card-icon"><i class="fa-solid fa-wallet"></i></div>
+            <h4>${cat.name}</h4>
+            <div class="amount">৳ ${catSum.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+        `;
+        grid.appendChild(card);
+    });
+
+    // ২. কাস্টমার পাওনা এবং দেনা হিসাব করা
+    const custTotals = calculateCustomerTotals();
+    // নিট ব্যালেন্স আপডেট (পাওনা যোগ হবে, দেনা বিয়োগ হবে)
+    grandTotalNetBalance += custTotals.netCustomerBalance;
+
+    // পাওনা কার্ড (Receivable)
+    const receivableCard = document.createElement('div');
+    receivableCard.className = 'fintech-card';
+    receivableCard.innerHTML = `
+        <div class="card-icon" style="background: #fee2e2; color: #e11d48;"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+        <h4>Total Customer Due (পাওনা)</h4>
+        <div class="amount" style="color: #e11d48;">৳ ${custTotals.totalReceivable.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
     `;
-    grid.appendChild(payableCard);
+    grid.appendChild(receivableCard);
+
+    // দেনা কার্ড (Payable) - শুধুমাত্র যদি দেনা ০ এর বেশি হয় তবেই দেখাবে
+    if (custTotals.totalPayable > 0) {
+        const payableCard = document.createElement('div');
+        payableCard.className = 'fintech-card';
+        payableCard.innerHTML = `
+            <div class="card-icon" style="background: #dcfce7; color: #16a34a;"><i class="fa-solid fa-hand-holding-hand"></i></div>
+            <h4>Total Advance (দেনা)</h4>
+            <div class="amount" style="color: #16a34a;">৳ ${custTotals.totalPayable.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+        `;
+        grid.appendChild(payableCard);
+    }
+
+    // ৩. ক্যাশ ইনভেন্টরি কার্ড
+    let cashInventoryTotal = calculateCashGrandTotal();
+    const cashCard = document.createElement('div');
+    cashCard.className = 'fintech-card';
+    cashCard.innerHTML = `
+        <div class="card-icon" style="background: #dcfce7; color: #15803d;"><i class="fa-solid fa-money-bill-wave"></i></div>
+        <h4>Cash Inventory</h4>
+        <div class="amount" style="color: #15803d;">৳ ${cashInventoryTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+    `;
+    grid.appendChild(cashCard);
+    grandTotalNetBalance += cashInventoryTotal;
+
+    // ৪. কার্ড ইনভেন্টরি কার্ড
+    let cardInventoryTotal = calculateGrandCardInventoryValue();
+    const cardStockCard = document.createElement('div');
+    cardStockCard.className = 'fintech-card';
+    cardStockCard.innerHTML = `
+        <div class="card-icon" style="background: #fef3c7; color: #b45309;"><i class="fa-solid fa-sim-card"></i></div>
+        <h4>Card Inventory Stock</h4>
+        <div class="amount" style="color: #b45309;">৳ ${cardInventoryTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+    `;
+    grid.appendChild(cardStockCard);
+    grandTotalNetBalance += cardInventoryTotal;
+
+    // ৫. সর্বমোট নিট ব্যালেন্স (Hero Section) আপডেট
+    const totalEl = document.getElementById('totalAllBalance');
+    if (totalEl) {
+        totalEl.innerText = `৳ ${grandTotalNetBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+    }
 }
-// ... rest of the code ...
-// --- Cash Inventory Card ---
-        let cashInventoryTotal = 0;
-        try {
-            if (typeof cashQuantities !== 'undefined' && typeof CASH_DENOMINATIONS !== 'undefined') {
-                CASH_DENOMINATIONS.forEach(denom => {
-                    const qty = Number(cashQuantities[denom] || 0);
-                    cashInventoryTotal += qty * denom;
-                });
-                if (typeof cashOthersAmount !== 'undefined') {
-                    cashInventoryTotal += Number(cashOthersAmount || 0);
-                }
-            } else if (window.cashInventoryData) {
-                cashInventoryTotal = Object.values(window.cashInventoryData).reduce((a, b) => a + Number(b || 0), 0);
-            }
-        } catch (e) {
-            console.error("Cash inventory calculation error:", e);
-        }
 
-        const cashCard = document.createElement('div');
-        cashCard.className = 'fintech-card';
-        cashCard.innerHTML = `
-            <div class="card-icon" style="background: #dcfce7; color: #15803d;"><i class="fa-solid fa-money-bill-wave"></i></div>
-            <h4>Cash Inventory</h4>
-            <div class="amount" style="color: #15803d;">৳ ${cashInventoryTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
-        `;
-        grid.appendChild(cashCard);
-        grandTotalNetBalance += cashInventoryTotal;
-
-// --- Card Inventory Stock Card ---
-        let cardInventoryTotal = 0;
-        try {
-            // ১. মূল ফাংশন থেকে সরাসরি সঠিক অডিট ভ্যালু নেওয়া
-            if (typeof calculateGrandCardInventoryValue === 'function') {
-                cardInventoryTotal = calculateGrandCardInventoryValue() || 0;
-            } 
-            // ২. বিকল্প হিসেবে ব্যাকগ্রাউন্ডে থাকলে balanceStore বা গ্লোবাল অবজেক্ট থেকে নেওয়া
-            else if (typeof getCardInventoryAccount === 'function' && typeof balanceStore !== 'undefined') {
-                const cardAcc = getCardInventoryAccount();
-                if (cardAcc && balanceStore[cardAcc.id] !== undefined) {
-                    cardInventoryTotal = Number(balanceStore[cardAcc.id] || 0);
-                }
-            }
-
-            // ৩. যদি কোনো কারণে ওপরের ২টি না কাজ করে, তবে ডম থেকে রিড
-            if (!cardInventoryTotal || cardInventoryTotal === 0) {
-                const grandValEl = document.getElementById('grandTotalCardsVal');
-                if (grandValEl) {
-                    const text = grandValEl.innerText.replace(/[^0-9.]/g, '');
-                    cardInventoryTotal = Number(text || 0);
-                }
-            }
-        } catch (e) {
-            console.error("Card inventory calculation error:", e);
-        }
-            
-            const cardStockCard = document.createElement('div');
-        cardStockCard.className = 'fintech-card';
-        cardStockCard.innerHTML = `
-            <div class="card-icon" style="background: #fef3c7; color: #b45309;"><i class="fa-solid fa-sim-card"></i></div>
-            <h4>Card Inventory Stock</h4>
-            <div class="amount" style="color: #b45309;">৳ ${cardInventoryTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
-        `;
-        grid.appendChild(cardStockCard);
-        grandTotalNetBalance += cardInventoryTotal;
-
-        const totalEl = document.getElementById('totalAllBalance');
-        if (totalEl) {
-            totalEl.innerText = `৳ ${grandTotalNetBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
-        }
-            }
         /* CASH INVENTORY RENDERER & ACTIONS */
         window.renderCashInventoryTable = function() {
             const tbody = document.getElementById('cashDenomTableBody');
