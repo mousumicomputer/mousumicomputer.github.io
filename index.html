@@ -5057,18 +5057,30 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
             }
         };
 
-        window.switchMainTab = (tab) => {
+window.switchMainTab = (tab) => {
             document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
             
-            const panel = document.getElementById(tab + '-view');
+            let panelId = tab.endsWith('-view') ? tab : tab + '-view';
+            const panel = document.getElementById(panelId);
             if(panel) panel.classList.add('active');
             
             if(document.getElementById('top-title')) {
                 document.getElementById('top-title').innerText = tab.replace('-', ' ').toUpperCase();
             }
-            if(tab === 'daily-closing') renderDailyClosingHistory();
+
+            // এই লজিকটি ক্যাশ এবং কার্ড ইনভেন্টরি অটো-লোড করবে
+            if(tab === 'cash-inventory') {
+                if(typeof renderCashInventoryTable === 'function') renderCashInventoryTable();
+            }
+            if(tab === 'card-inventory') {
+                if(typeof renderAccordionInventory === 'function') renderAccordionInventory();
+            }
+            if(tab === 'daily-closing') {
+                if(typeof renderDailyClosingHistory === 'function') renderDailyClosingHistory();
+            }
         };
+        
         // পেজ পুরোপুরি তৈরি হলে সব ফাংশন চালু হবে
         window.addEventListener('DOMContentLoaded', initGlobalActions);
 document.getElementById('sidebarToggle').addEventListener('click', function() {
