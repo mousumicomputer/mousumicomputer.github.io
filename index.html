@@ -3786,14 +3786,6 @@ window.renderCustomerListTable = function() {
             return num.toString().replace(/\d/g, i => bnDigits[i]);
         };
 
-        // ২. ডুয়াল ইনপুট লক করার লজিক
-// ১. সংখ্যাকে বাংলায় রূপান্তর করার ফাংশন
-        const toBN = (num) => {
-            if(num === undefined || num === null) return '০';
-            const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-            return num.toString().replace(/\d/g, i => bnDigits[i]);
-        };
-
         // ২. ডুয়াল ইনপুট হ্যান্ডলার (আইডি আপডেটসহ)
         window.handleDualInput = function(type) {
             const d = document.getElementById('modernTxDebit');
