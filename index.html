@@ -3787,23 +3787,29 @@ window.renderCustomerListTable = function() {
         };
 
         // ২. ডুয়াল ইনপুট লক করার লজিক
-window.handleDualInput = function(type) {
-            const debit = document.getElementById('modernTxDebit');
-            const credit = document.getElementById('modernTxCredit');
-            if (!debit || !credit) return;
+// ১. সংখ্যাকে বাংলায় রূপান্তর করার ফাংশন
+        const toBN = (num) => {
+            if(num === undefined || num === null) return '০';
+            const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+            return num.toString().replace(/\d/g, i => bnDigits[i]);
+        };
 
-            if (type === 'debit' && debit.value.length > 0) {
-                credit.value = '';
-                credit.disabled = true;
-            } else if (type === 'credit' && credit.value.length > 0) {
-                debit.value = '';
-                debit.disabled = true;
+        // ২. ডুয়াল ইনপুট হ্যান্ডলার (আইডি আপডেটসহ)
+        window.handleDualInput = function(type) {
+            const d = document.getElementById('modernTxDebit');
+            const c = document.getElementById('modernTxCredit');
+            if (!d || !c) return;
+
+            if (type === 'debit' && d.value.length > 0) {
+                c.value = ''; c.disabled = true;
+            } else if (type === 'credit' && c.value.length > 0) {
+                d.value = ''; d.disabled = true;
             } else {
-                debit.disabled = false;
-                credit.disabled = false;
+                d.disabled = false; c.disabled = false;
             }
         };
 
+        // ৩. আধুনিক লেজার রেন্ডার ফাংশন (মোবাইল এবং বাংলা ডিজিট ফিক্সড)
         window.renderCustomerStatement = function(custId) {
             const area = document.getElementById('modern-statement-table-area');
             if (!area) return;
@@ -3817,10 +3823,9 @@ window.handleDualInput = function(type) {
             document.getElementById('stmtPhone').innerText = '+৮৮০ ' + toBN(cleanPhone);
             document.getElementById('stmtAvatar').innerText = cust.name.charAt(0).toUpperCase();
             
-            const d = new Date();
-            const localToday = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            const dateInput = document.getElementById('txDateInput');
-            if (dateInput) dateInput.value = localToday;
+            const now = new Date();
+            const localToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            if (document.getElementById('txDateInput')) document.getElementById('txDateInput').value = localToday;
             
             const currentDue = calculateCustomerCurrentDue(cust.id);
             document.getElementById('stmtDueAmount').innerText = '৳ ' + toBN(currentDue.toLocaleString('en-US'));
@@ -3828,7 +3833,7 @@ window.handleDualInput = function(type) {
             let txs = customerTransactions.filter(t => t.customerId === custId);
             txs.sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time)).reverse();
 
-            let html = `<table class="mc-table"><thead><tr><th>তারিখ</th><th>বিবরণ</th><th style="color: #ef4444;">দিলাম (+)</th><th style="color: #22c55e;">পেলাম (-)</th></tr></thead><tbody>`;
+            let html = `<table class="mc-table"><thead><tr><th>তারিখ</th><th>বিবরণ</th><th style="color:#ef4444;">দিলাম (+)</th><th style="color:#22c55e;">পেলাম (-)</th></tr></thead><tbody>`;
             txs.forEach(t => {
                 html += `<tr>
                     <td style="font-size: 0.85rem; color: #64748b; font-family: 'Tiro Bangla', serif;">${toBN(new Date(t.date).toLocaleDateString('bn-BD'))}</td>
@@ -3841,6 +3846,7 @@ window.handleDualInput = function(type) {
             area.innerHTML = txs.length > 0 ? html : '<div style="text-align:center; padding: 30px; color: #94a3b8;">কোনো লেনদেন পাওয়া যায়নি।</div>';
         };
 
+        // ৪. লেনদেন নিশ্চিত করার ফাংশন (এরর সলভড)
         window.submitModernTransaction = async function() {
             const dElement = document.getElementById('modernTxDebit');
             const cElement = document.getElementById('modernTxCredit');
@@ -3876,17 +3882,17 @@ window.handleDualInput = function(type) {
                 renderCustomerStatement(activeViewingCustomerId);
                 renderCustomerListTable(); 
                 hideLoader();
-                showToast("লেনদেন সফলভাবে সংরক্ষিত হয়েছে!", "success");
+                showToast("লেনদেন সংরক্ষিত হয়েছে!", "success");
             } catch(err) { hideLoader(); showToast("Error!", "error"); }
         };
-        
+
         window.filterCustomerStatement = function() {
             if (activeViewingCustomerId) renderCustomerStatement(activeViewingCustomerId);
         };
 
         window.resetCustomerStatementFilter = function() {
-            document.getElementById('stmtFromDate').value = '';
-            document.getElementById('stmtToDate').value = '';
+            if(document.getElementById('stmtFromDate')) document.getElementById('stmtFromDate').value = '';
+            if(document.getElementById('stmtToDate')) document.getElementById('stmtToDate').value = '';
             if (activeViewingCustomerId) renderCustomerStatement(activeViewingCustomerId);
         };
 
@@ -3911,11 +3917,13 @@ window.handleDualInput = function(type) {
 
         window.renderDueSummarySection = function() {
             const totals = calculateCustomerTotals();
-            document.getElementById('dueCardTotalCust').innerText = totals.totalCustomers;
-            document.getElementById('dueCardCustWithDue').innerText = totals.custWithDue;
-            document.getElementById('dueCardTotalOutstanding').innerText = `৳ ${totals.totalOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+            if(document.getElementById('dueCardTotalCust')) document.getElementById('dueCardTotalCust').innerText = totals.totalCustomers;
+            if(document.getElementById('dueCardCustWithDue')) document.getElementById('dueCardCustWithDue').innerText = totals.custWithDue;
+            if(document.getElementById('dueCardTotalOutstanding')) {
+                document.getElementById('dueCardTotalOutstanding').innerText = `৳ ${totals.totalOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+            }
         };
-            const tbody = document.getElementById('highestDueTableBody');
+        const tbody = document.getElementById('highestDueTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
 
