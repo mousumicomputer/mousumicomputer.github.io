@@ -3922,7 +3922,6 @@ window.renderCustomerListTable = function() {
             if(document.getElementById('dueCardTotalOutstanding')) {
                 document.getElementById('dueCardTotalOutstanding').innerText = `৳ ${totals.totalOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
             }
-        };
         const tbody = document.getElementById('highestDueTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
