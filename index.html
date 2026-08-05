@@ -2263,6 +2263,16 @@
                 <div class="view-panel" id="daily-closing-view">
 <!-- উপরের অ্যাকশন কার্ড -->
                     <div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px; border-left: 5px solid #059669;">
+<!-- তারিখ সিলেকশন বক্স -->
+<div style="margin-bottom: 20px; background: #ecfdf5; padding: 15px; border-radius: 12px; border: 1.5px solid #10b981; display: flex; align-items: center; gap: 15px;">
+    <div style="width: 45px; height: 45px; background: #10b981; color: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+        <i class="fa-solid fa-calendar-day"></i>
+    </div>
+    <div style="flex: 1;">
+        <label style="display: block; font-size: 0.8rem; font-weight: 800; color: #065f46; margin-bottom: 5px; text-transform: uppercase;">রিপোর্টের তারিখ নির্বাচন করুন</label>
+        <input type="date" id="selectedReportDate" style="width: 100%; padding: 8px; border: 1px solid #10b981; border-radius: 8px; font-weight: 700; font-size: 1rem; outline: none;">
+    </div>
+</div>
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                             <div>
                                 <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--primary-dark);">Daily Closing Engine</h3>
@@ -3964,50 +3974,50 @@ if(document.getElementById('statTotalDue'))
 // --- ডেইলি ক্লোজিং রিপোর্ট ইঞ্জিন (সবচেয়ে নিরাপদ এবং ছবির মতো ডিজাইন) ---
 
 window.generateDailyClosingSnapshot = async function() {
-    showLoader("হিসাব সমন্বয় করা হচ্ছে...");
+    // ১. তারিখ যাচাই করা
+    const dateInput = document.getElementById('selectedReportDate').value;
+    if (!dateInput) {
+        showToast("দয়া করে ক্যালেন্ডার থেকে একটি তারিখ সিলেক্ট করুন!", "warning");
+        return;
+    }
+
+    showLoader(`${dateInput} তারিখের হিসাব তৈরি হচ্ছে...`);
     try {
+        const rDate = dateInput;
         const now = new Date();
-        const rDate = now.toISOString().split('T')[0];
         const rTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const rId = 'DCR-' + Date.now();
 
-        // ১. ওপেনিং ক্যাশ ব্যালেন্স (সর্বশেষ রিপোর্টের Actual Cash)
-        let openingCash = 0;
-        if (dailyClosingReports && dailyClosingReports.length > 0) {
-            openingCash = parseFloat(dailyClosingReports[0].total_cash_inventory) || 0;
-        }
+        // ২. ওপেনিং ক্যাশ ব্যালেন্স খোঁজা (সিলেক্ট করা তারিখের আগের সর্বশেষ রিপোর্ট থেকে)
+        let sortedReports = [...dailyClosingReports].sort((a,b) => b.report_date.localeCompare(a.report_date));
+        let prevReport = sortedReports.find(r => r.report_date < rDate);
+        let openingCash = prevReport ? parseFloat(prevReport.reconciliation.actual_cash) : 0;
 
-        // ২. কাস্টমার ট্রানজ্যাকশন থেকে ইনফ্লো এবং আউটফ্লো (আজকের)
+        // ৩. কাস্টমার ট্রানজ্যাকশন থেকে ওই তারিখের ইনফ্লো-আউটফ্লো
         let todayInflow = 0;
         let todayOutflow = 0;
         customerTransactions.filter(t => t.date === rDate).forEach(t => {
-            todayInflow += (parseFloat(t.credit) || 0); // পেলাম (Inflow)
-            todayOutflow += (parseFloat(t.debit) || 0); // দিলাম (Outflow)
+            todayInflow += (parseFloat(t.credit) || 0);
+            todayOutflow += (parseFloat(t.debit) || 0);
         });
 
-        // ৩. ক্যালকুলেটেড ক্লোজিং ক্যাশ (গাণিতিক হিসাব)
-        const calculatedCash = (openingCash + todayInflow) - todayOutflow;
-
-        // ৪. একচুয়াল ক্যাশ এবং অন্যান্য ডাটা
+        // ৪. ক্যালকুলেশন
         const actualCash = calculateCashGrandTotal();
-        const cardSum = calculateGrandCardInventoryValue();
-        const custTotals = calculateCustomerTotals();
-
-        // ৫. ডেইলি নিট প্রফিট (Actual Cash - Calculated Balance)
+        const calculatedCash = (openingCash + todayInflow) - todayOutflow;
         const dailyProfit = actualCash - calculatedCash;
 
-        // ৬. একাউন্ট ব্যালেন্স ক্যাটাগরি করা
+        // ৫. একাউন্ট ব্যালেন্স ডাটা প্রসেসিং
         const bAccs = [], pAccs = [], aAccs = [], rAccs = [];
         categories.forEach(cat => {
             const accs = accounts.filter(a => a.catId === cat.id && a.enabled !== false);
             accs.forEach(acc => {
                 const bal = parseFloat(balanceStore[acc.id]) || 0;
                 const item = { name: acc.name, balance: bal };
-                const cName = cat.name.toLowerCase();
-                if (cName.includes('bank')) bAccs.push(item);
-                else if (cName.includes('personal')) pAccs.push(item);
-                else if (cName.includes('agent')) aAccs.push(item);
-                else if (cName.includes('recharge')) rAccs.push(item);
+                const n = cat.name.toLowerCase();
+                if (n.includes('bank')) bAccs.push(item);
+                else if (n.includes('personal')) pAccs.push(item);
+                else if (n.includes('agent')) aAccs.push(item);
+                else if (n.includes('recharge')) rAccs.push(item);
             });
         });
 
@@ -4016,13 +4026,15 @@ window.generateDailyClosingSnapshot = async function() {
         const aSum = aAccs.reduce((s, a) => s + a.balance, 0);
         const rSum = rAccs.reduce((s, a) => s + a.balance, 0);
 
-        // ৭. স্ন্যাপশট ডাটা তৈরি
+        const cardSum = calculateGrandCardInventoryValue();
+        const custTotals = calculateCustomerTotals();
+
+        // ৬. স্ন্যাপশট অবজেক্ট তৈরি
         const snapshot = {
             report_id: rId,
             report_date: rDate,
             closing_time: rTime,
             company_name: profileSettings.companyName || 'Mousumi Computer',
-            
             reconciliation: {
                 opening_cash: openingCash,
                 inflow: todayInflow,
@@ -4031,7 +4043,6 @@ window.generateDailyClosingSnapshot = async function() {
                 actual_cash: actualCash,
                 profit: dailyProfit
             },
-            
             summary: {
                 total_cash: actualCash,
                 total_cards: cardSum,
@@ -4039,13 +4050,16 @@ window.generateDailyClosingSnapshot = async function() {
                 payable: custTotals.totalPayable,
                 net_balance: (bSum + pSum + aSum + rSum + actualCash + cardSum + custTotals.netCustomerBalance)
             },
-
-            accounts: { bank: bAccs, b_sum: bSum, personal: pAccs, p_sum: pSum, agent: aAccs, a_sum: aSum, recharge: rAccs, r_sum: rSum },
+            accounts: {
+                bank: bAccs, b_sum: bSum,
+                personal: pAccs, p_sum: pSum,
+                agent: aAccs, a_sum: aSum,
+                recharge: rAccs, r_sum: rSum
+            },
             cash_details: CASH_DENOMINATIONS.map(d => ({ note: `৳ ${d} Notes`, qty: cashQuantities[d] || 0, amount: (cashQuantities[d] || 0) * d })).filter(i => i.qty > 0),
-            card_details: [] 
+            card_details: []
         };
 
-        // কার্ড ডিটেইলস যোগ
         OPERATORS_LIST.forEach(op => {
             const oCards = cardConfig[op] || [];
             const oQtys = cardQuantities[op] || {};
@@ -4055,11 +4069,13 @@ window.generateDailyClosingSnapshot = async function() {
             });
         });
 
+        // ৭. ফায়ারবেসে সেভ করা
         dailyClosingReports.unshift(snapshot);
         await writeToFirebase('erp/dailyClosingReports', dailyClosingReports);
+        
         renderDailyClosingHistory();
         hideLoader();
-        showToast("সফলভাবে হিসাব সংরক্ষিত হয়েছে!", "success");
+        showToast(`${rDate} তারিখের রিপোর্ট সফলভাবে তৈরি হয়েছে!`, "success");
     } catch (err) {
         hideLoader();
         showToast("Error: " + err.message, "error");
