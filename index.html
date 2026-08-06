@@ -4799,88 +4799,92 @@ window.renderDailyClosingReportView = function(snap) {
     if (!container) return;
     const fmt = (n) => (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
     
-    // সাব-টেবিল হেল্পার (Bank, Agent, Personal details এর জন্য)
+    // সাব-টেবিল হেল্পার (Tiro Bangla ফন্ট ও অপ্টিমাইজড লেআউটসহ)
     function renderSubTable(arr, title, sum) {
         if (!arr || arr.length === 0) return '';
         return `
-        <div style="border: 1px solid #000; margin-bottom: 12px; page-break-inside: avoid;">
-            <div style="background: #eee; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #000;">${title}</div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-                <tr style="background:#f9f9f9; font-weight:bold; text-align:center;">
-                    <td style="border: 1px solid #000; padding: 3px; width: 70%;">ACCOUNT NAME</td>
-                    <td style="border: 1px solid #000; padding: 3px; text-align: right;">BALANCE (৳)</td>
+        <div style="border: 1.2px solid #000; margin-bottom: 10px; page-break-inside: avoid;">
+            <div style="background: #f1f5f9; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1.2px solid #000; font-family: 'Tiro Bangla', serif;">${title}</div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 10.5px; font-family: 'Tiro Bangla', serif;">
+                <tr style="background:#f8fafc; font-weight:bold; text-align:center;">
+                    <td style="border: 1px solid #000; padding: 3px; width: 65%;">একাউন্টের নাম</td>
+                    <td style="border: 1px solid #000; padding: 3px; text-align: right;">ব্যালেন্স (৳)</td>
                 </tr>
                 ${arr.map(a => `<tr><td style="border: 1px solid #000; padding: 3px 10px;">${a.name}</td><td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">${fmt(a.balance)}</td></tr>`).join('')}
-                <tr style="font-weight: bold; background: #f9f9f9;"><td style="border: 1px solid #000; padding: 4px 10px;">TOTAL ${title}</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">${fmt(sum)}</td></tr>
+                <tr style="font-weight: bold; background: #f1f5f9;"><td style="border: 1px solid #000; padding: 4px 10px;">মোট ${title}</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">${fmt(sum)}</td></tr>
             </table>
         </div>`;
     }
 
     let html = `
-    <div style="font-family: Arial, sans-serif; color: #000; padding: 20px; background: #fff;">
-        <!-- হেডার -->
-        <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 15px;">
-            <div style="font-size: 10px;">Date: ${snap.report_date}<br>Time: ${snap.closing_time}</div>
+    <div style="font-family: 'Tiro Bangla', Arial, serif; color: #000; padding: 10px 30px; background: #fff;">
+        <!-- রিপোর্ট হেডার -->
+        <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 12px;">
+            <div style="font-size: 10px; line-height: 1.4;">তারিখ: ${snap.report_date}<br>সময়: ${snap.closing_time}</div>
             <div style="text-align: center;">
-                <h2 style="margin: 0; font-size: 18px; text-transform: uppercase; font-weight: bold;">${snap.company_name}</h2>
-                <h4 style="margin: 2px 0; font-size: 11px; font-weight: bold;">DAILY WORKING CAPITAL RECONCILIATION</h4>
+                <h2 style="margin: 0; font-size: 20px; font-weight: 800; font-family: 'Arial', sans-serif;">${snap.company_name}</h2>
+                <h4 style="margin: 2px 0; font-size: 12px; font-weight: bold; font-family: 'Tiro Bangla', serif;">দৈনিক চলতি পুঁজি মিলকরণ ও আয়-ব্যয় বিবরণী</h4>
             </div>
-            <div style="text-align: right; font-size: 10px;">Report ID: ${snap.report_id}</div>
+            <div style="text-align: right; font-size: 10px;">রিপোর্ট আইডি: ${snap.report_id}</div>
         </div>
 
-        <!-- সেকশন ১: পুঁজি মিলকরণ টেবিল -->
-        <div style="border: 1px solid #000; margin-bottom: 15px;">
-            <div style="background: #eee; padding: 5px 10px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #000;">SECTION 1: CAPITAL RECONCILIATION (মিলকরণ)</div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                <tr style="background:#f5f5f5; font-weight:bold;">
-                    <td style="border: 1px solid #000; padding: 5px;">DESCRIPTION</td>
-                    <td style="border: 1px solid #000; padding: 5px; text-align: right;">AMOUNT (৳)</td>
+        <!-- বিভাগ ১: আপনার সেই ২ দিনের লজিক টেবিল (Capital Reconciliation) -->
+        <div style="border: 1.5px solid #000; margin-bottom: 15px;">
+            <div style="background: #e2e8f0; padding: 6px 10px; font-weight: bold; font-size: 12px; border-bottom: 1.5px solid #000; font-family: 'Tiro Bangla', serif;">বিভাগ ১: পুঁজি মিলকরণ (CAPITAL RECONCILIATION)</div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px; font-family: 'Tiro Bangla', serif;">
+                <tr style="background:#f1f5f9; font-weight:bold;">
+                    <td style="border: 1px solid #000; padding: 6px;">বিবরণ (Description)</td>
+                    <td style="border: 1px solid #000; padding: 6px; text-align: right; width: 35%;">টাকার পরিমাণ (৳)</td>
                 </tr>
-                <tr><td style="border: 1px solid #000; padding: 5px;">OPENING BALANCE (শুরুর মোট মূলধন)</td><td style="border: 1px solid #000; padding: 5px; text-align: right;">৳ ${fmt(snap.reconciliation.opening_cash)}</td></tr>
-                <tr><td style="border: 1px solid #000; padding: 5px;">+ Total Inflow (সারাদিনের মোট জমা/আদায়)</td><td style="border: 1px solid #000; padding: 5px; text-align: right;">৳ ${fmt(snap.reconciliation.inflow)}</td></tr>
-                <tr><td style="border: 1px solid #000; padding: 5px;">- Total Outflow (সারাদিনের মোট খরচ/বাকি)</td><td style="border: 1px solid #000; padding: 5px; text-align: right;">(৳ ${fmt(snap.reconciliation.outflow)})</td></tr>
-                <tr style="font-weight: bold; background: #f9fafb;"><td style="border: 1px solid #000; padding: 5px;">CALCULATED CLOSING BALANCE (হিসাবকৃত ক্লোজিং)</td><td style="border: 1px solid #000; padding: 5px; text-align: right;">৳ ${fmt(snap.reconciliation.calculated_cash)}</td></tr>
-                <tr style="font-weight: bold;"><td style="border: 1px solid #000; padding: 5px;">ACTUAL TOTAL BALANCE (দিনশেষে বাস্তব মোট সম্পদ)</td><td style="border: 1px solid #000; padding: 5px; text-align: right;">৳ ${fmt(snap.reconciliation.actual_cash)}</td></tr>
-                <tr style="font-weight: bold; background: #e5e7eb;"><td style="border: 1px solid #000; padding: 7px;">DAILY NET PROFIT / COMMISSION (আজকের নিট লাভ)</td><td style="border: 1px solid #000; padding: 7px; text-align: right;">৳ ${fmt(snap.reconciliation.profit)}</td></tr>
+                <tr><td style="border: 1px solid #000; padding: 5px 10px;">প্রারম্ভিক মূলধন (Opening Balance - Start of Day)</td><td style="border: 1px solid #000; padding: 5px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.opening_cash)}</td></tr>
+                <tr><td style="border: 1px solid #000; padding: 5px 10px;">(+) মোট জমা/আদায় (Total Cash Inflow)</td><td style="border: 1px solid #000; padding: 5px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.inflow)}</td></tr>
+                <tr><td style="border: 1px solid #000; padding: 5px 10px;">(-) মোট খরচ/বাকি (Total Cash Outflow)</td><td style="border: 1px solid #000; padding: 5px 10px; text-align: right;">(৳ ${fmt(snap.reconciliation.outflow)})</td></tr>
+                <tr style="font-weight: bold; background: #f8fafc;"><td style="border: 1px solid #000; padding: 6px 10px;">হিসাবকৃত ক্লোজিং ব্যালেন্স (Calculated Closing Balance)</td><td style="border: 1px solid #000; padding: 6px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.calculated_cash)}</td></tr>
+                <tr style="font-weight: bold;"><td style="border: 1px solid #000; padding: 6px 10px;">দিনশেষে বাস্তব মোট সম্পদ (Actual Total Balance)</td><td style="border: 1px solid #000; padding: 6px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.actual_cash)}</td></tr>
+                <tr style="font-weight: bold; background: #cbd5e1; font-size: 12px;"><td style="border: 1px solid #000; padding: 8px 10px;">আজকের নিট লাভ / কমিশন (Daily Net Profit)</td><td style="border: 1px solid #000; padding: 8px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.profit)}</td></tr>
             </table>
         </div>
 
-        <!-- সেকশন ২: সংক্ষিপ্ত সামারি -->
-        <div style="border: 1px solid #000; margin-bottom: 15px; page-break-inside: avoid;">
-            <div style="background: #eee; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #000;">SECTION 2: EXECUTIVE SUMMARY</div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                <tr><td style="border: 1px solid #000; padding: 4px 10px; width: 70%;">Total Outstanding Receivable (মোট পাওনা)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.summary.receivable)}</td></tr>
-                <tr><td style="border: 1px solid #000; padding: 4px 10px;">Total Advance Payable (মোট দেনা/অগ্রিম)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.summary.payable)}</td></tr>
-                <tr style="font-weight: bold; background: #eee;"><td style="border: 1px solid #000; padding: 5px 10px;">TOTAL NET FINANCIAL WORTH (সর্বমোট নিট সম্পদ)</td><td style="border: 1px solid #000; padding: 5px 10px; text-align: right;">৳ ${fmt(snap.summary.net_worth)}</td></tr>
+        <!-- বিভাগ ২: এক্সিকিউটিভ সামারি (পাওনা-দেনার হিসাব) -->
+        <div style="border: 1.5px solid #000; margin-bottom: 15px; page-break-inside: avoid;">
+            <div style="background: #e2e8f0; padding: 6px 10px; font-weight: bold; font-size: 12px; border-bottom: 1.5px solid #000; font-family: 'Tiro Bangla', serif;">বিভাগ ২: আর্থিক সারসংক্ষেপ (EXECUTIVE SUMMARY)</div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px; font-family: 'Tiro Bangla', serif;">
+                <tr><td style="border: 1px solid #000; padding: 5px 10px; width: 70%;">মোট গ্রাহক পাওনা (Total Outstanding Receivable)</td><td style="border: 1px solid #000; padding: 5px 10px; text-align: right;">৳ ${fmt(snap.summary.receivable)}</td></tr>
+                <tr><td style="border: 1px solid #000; padding: 5px 10px;">মোট অগ্রিম দেনা (Total Advance Payable)</td><td style="border: 1px solid #000; padding: 5px 10px; text-align: right;">৳ ${fmt(snap.summary.payable)}</td></tr>
+                <tr style="font-weight: bold; background: #e2e8f0; font-size: 12px;">
+                    <td style="border: 1px solid #000; padding: 8px 10px;">সর্বমোট নিট সম্পদ (TOTAL NET FINANCIAL WORTH)</td>
+                    <td style="border: 1px solid #000; padding: 8px 10px; text-align: right;">৳ ${fmt(snap.summary.net_worth || snap.summary.net_balance)}</td>
+                </tr>
             </table>
         </div>
 
-        <!-- বিস্তারিত তালিকা (Bank, Agent, Personal, Cash, Card details) -->
-        ${renderSubTable(snap.accounts.bank, "BANK ACCOUNTS", snap.accounts.b_sum)}
-        ${renderSubTable(snap.accounts.personal, "PERSONAL ACCOUNTS", snap.accounts.p_sum)}
-        ${renderSubTable(snap.accounts.agent, "AGENT ACCOUNTS", snap.accounts.a_sum)}
-        ${renderSubTable(snap.accounts.recharge, "RECHARGE BALANCES", snap.accounts.r_sum)}
+        <!-- বিস্তারিত তালিকাগুলি (Bank, Personal, Agent, Recharge) -->
+        ${renderSubTable(snap.accounts.bank, "ব্যাংক অ্যাকাউন্টস (BANK ACCOUNTS)", snap.accounts.b_sum)}
+        ${renderSubTable(snap.accounts.personal, "ব্যক্তিগত অ্যাকাউন্টস (PERSONAL ACCOUNTS)", snap.accounts.p_sum)}
+        ${renderSubTable(snap.accounts.agent, "এজেন্ট অ্যাকাউন্টস (AGENT ACCOUNTS)", snap.accounts.a_sum)}
+        ${renderSubTable(snap.accounts.recharge, "রিচার্জ ব্যালেন্স (RECHARGE BALANCES)", snap.accounts.r_sum)}
 
-        <div style="border: 1px solid #000; margin-bottom: 12px; page-break-inside: avoid;">
-            <div style="background: #eee; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #000;">CASH INVENTORY BREAKDOWN</div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+        <!-- ক্যাশ ও কার্ড বিস্তারিত তালিকা -->
+        <div style="border: 1.2px solid #000; margin-bottom: 10px; page-break-inside: avoid;">
+            <div style="background: #f1f5f9; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1.2px solid #000; font-family: 'Tiro Bangla', serif;">নগদ টাকার বিবরণ (CASH INVENTORY BREAKDOWN)</div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 10px; font-family: 'Tiro Bangla', serif;">
                 ${snap.cash_details.map(i => `<tr><td style="border: 1px solid #000; padding: 3px 10px;">${i.note}</td><td style="border: 1px solid #000; padding: 3px; text-align:center;">${i.qty}</td><td style="border: 1px solid #000; padding: 3px 10px; text-align:right;">৳ ${fmt(i.amount)}</td></tr>`).join('')}
             </table>
         </div>
 
-        <div style="border: 1px solid #000; margin-bottom: 12px; page-break-inside: avoid;">
-            <div style="background: #eee; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #000;">CARD STOCK BREAKDOWN</div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+        <div style="border: 1.2px solid #000; margin-bottom: 10px; page-break-inside: avoid;">
+            <div style="background: #f1f5f9; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1.2px solid #000; font-family: 'Tiro Bangla', serif;">সিম কার্ডের স্টক (CARD STOCK BREAKDOWN)</div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 10px; font-family: 'Tiro Bangla', serif;">
                 ${snap.card_details.map(c => `<tr><td style="border: 1px solid #000; padding: 3px 10px;">${c.name}</td><td style="border: 1px solid #000; padding: 3px; text-align:center;">${c.qty}</td><td style="border: 1px solid #000; padding: 3px 10px; text-align:right;">৳ ${fmt(c.total)}</td></tr>`).join('')}
             </table>
         </div>
 
-        <!-- স্বাক্ষর -->
-        <div style="margin-top: 60px; display: flex; justify-content: space-between; page-break-inside: avoid;">
-            <div style="text-align: center; width: 220px; border-top: 1px solid #000; padding-top: 5px; font-size: 11px; font-weight: bold;">Prepared By</div>
-            <div style="text-align: center; width: 220px; border-top: 1px solid #000; padding-top: 5px; font-size: 11px; font-weight: bold;">Authorized Signature</div>
+        <!-- স্বাক্ষর সেকশন (নিচে ফিক্সড) -->
+        <div style="margin-top: 50px; display: flex; justify-content: space-between; page-break-inside: avoid; font-family: 'Tiro Bangla', serif;">
+            <div style="text-align: center; width: 220px; border-top: 1.5px solid #000; padding-top: 5px; font-size: 12px; font-weight: bold;">প্রস্তুতকারী (Prepared By)</div>
+            <div style="text-align: center; width: 220px; border-top: 1.5px solid #000; padding-top: 5px; font-size: 12px; font-weight: bold;">কর্তৃপক্ষের স্বাক্ষর (Authorized)</div>
         </div>
-        <div style="font-size: 8px; color: #999; margin-top: 30px; text-align: center;">This is a system-generated financial summary for Mousumi Computer.</div>
+        <div style="font-size: 9px; color: #64748b; margin-top: 25px; text-align: center; font-family: 'Tiro Bangla', serif;">সফটওয়্যার দ্বারা স্বয়ংক্রিয়ভাবে তৈরি রিপোর্ট। মৌসুমি কম্পিউটার।</div>
     </div>`;
     container.innerHTML = html;
 };
