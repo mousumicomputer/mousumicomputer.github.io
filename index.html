@@ -4741,11 +4741,14 @@ window.renderDailyClosingHistory = function() {
 
     reports.forEach(r => {
         const tr = document.createElement('tr');
+        // এখানে চেক করা হচ্ছে পুরনো ডাটা নাকি নতুন ডাটা (summary.net_worth)
+        const displayBalance = (r.summary && r.summary.net_worth !== undefined) ? r.summary.net_worth : (r.total_net_balance || 0);
+
         tr.innerHTML = `
             <td>${r.report_date}</td>
             <td>${r.closing_time}</td>
             <td><strong>${r.report_id}</strong></td>
-            <td style="font-weight:700; color:#059669;">৳ ${(r.total_net_balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            <td style="font-weight:700; color:#059669;">৳ ${(parseFloat(displayBalance)).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
             <td style="text-align: center;">
                 <button class="btn-action btn-edit" onclick="viewDCRReport('${r.report_id}')"><i class="fa-solid fa-eye"></i> View</button>
                 <button class="btn-action btn-delete" onclick="deleteDCRReport('${r.report_id}')"><i class="fa-solid fa-trash"></i></button>
