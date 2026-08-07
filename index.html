@@ -4346,38 +4346,6 @@ window.openBalanceCategoryByName = (name) => {
 
     // ট্যাব পরিবর্তন করে ব্যালেন্স ভিউ দেখানো
     switchMainTab('balance');
-};
-        document.getElementById('balanceUpdateForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            showLoader("Updating Balances...");
-
-            const catAccs = accounts.filter(a => a.catId === currentActiveCatId && a.enabled !== false);
-            const now = new Date();
-            const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
-
-            catAccs.forEach(acc => {
-                const inputEl = document.getElementById(`input_acc_${acc.id}`);
-                if (inputEl) {
-                    const newBal = parseFloat(inputEl.value) || 0;
-                    const prevBal = balanceStore[acc.id] || 0;
-
-                    if (newBal !== prevBal) {
-                        const diff = newBal - prevBal;
-                        balanceStore[acc.id] = newBal;
-
-                        const cat = categories.find(c => c.id === acc.catId);
-                        historyLogs.unshift({
-                            date: dateStr,
-                            category: cat ? cat.name : 'Unknown',
-                            accountName: acc.name,
-                            previousBalance: prevBal,
-                            currentBalance: newBal,
-                            difference: diff
-                        });
-                    }
-                }
-            });
-
             try {
                 await writeToFirebase('erp/balances', balanceStore);
                 await writeToFirebase('erp/fintechHistory', historyLogs);
@@ -4914,32 +4882,76 @@ window.toggleParentMenu = (id) => {
 };
 
 // ২. মেইন ট্যাব এবং পেজ পরিবর্তন ইঞ্জিন
+// ১. মেইন নেভিগেশন ইঞ্জিন (ট্যাব পরিবর্তন)
 window.switchMainTab = (tab) => {
-    console.log("Switching to Page:", tab);
-    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    // সব প্যানেল হাইড করা
+    document.querySelectorAll('.view-panel').forEach(p => {
+        p.classList.remove('active');
+        p.style.display = 'none';
+    });
+
+    // মেনু হাইলাইট সরানো
     document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
 
-    let viewId = tab.endsWith('-view') ? tab : tab + '-view';
-    const panel = document.getElementById(viewId);
+    // টার্গেট প্যানেল শো করা
+    let viewId = tab.includes('-view') ? tab : tab + '-view';
+    const target = document.getElementById(viewId);
     
-    if(panel) {
-        panel.classList.add('active');
-        if(document.getElementById('top-title')) {
-            document.getElementById('top-title').innerText = tab.replace('-', ' ').toUpperCase();
-        }
-    } else {
-        // ব্যালেন্স ট্যাব চেক
-        const balView = document.getElementById('balance-view');
-        if(balView) balView.classList.add('active');
+    if (target) {
+        target.classList.add('active');
+        target.style.display = 'block';
+        
+        // টাইটেল আপডেট
+        const topTitle = document.getElementById('top-title');
+        if(topTitle) topTitle.innerText = tab.replace('-', ' ').toUpperCase();
     }
-
-    if(tab === 'cash-inventory') renderCashInventoryTable();
-    if(tab === 'card-inventory') renderAccordionInventory();
-    if(tab === 'daily-closing') renderDailyClosingHistory();
     
-    if(document.getElementById('profileDropdown')) document.getElementById('profileDropdown').classList.remove('active');
+    // ড্রপডাউন বন্ধ করা
+    if(document.getElementById('profileDropdown')) {
+        document.getElementById('profileDropdown').classList.remove('active');
+    }
 };
 
+// ২. ব্যালেন্স আপডেট করার সেভ বাটন লজিক (যা ৪৩৪৯ লাইনে ভুলভাবে ছিল)
+const balUpdateForm = document.getElementById('balanceUpdateForm');
+if (balUpdateForm) {
+    balUpdateForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        showLoader("Updating Balances...");
+        const catAccs = accounts.filter(a => a.catId === currentActiveCatId && a.enabled !== false);
+        const now = new Date();
+        const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+
+        catAccs.forEach(acc => {
+            const inputEl = document.getElementById(`input_acc_${acc.id}`);
+            if (inputEl) {
+                const newBal = parseFloat(inputEl.value) || 0;
+                const prevBal = balanceStore[acc.id] || 0;
+                if (newBal !== prevBal) {
+                    balanceStore[acc.id] = newBal;
+                    historyLogs.unshift({
+                        date: dateStr,
+                        accountName: acc.name,
+                        previousBalance: prevBal,
+                        currentBalance: newBal,
+                        difference: newBal - prevBal
+                    });
+                }
+            }
+        });
+
+        try {
+            await writeToFirebase('erp/balances', balanceStore);
+            await writeToFirebase('erp/fintechHistory', historyLogs);
+            updateDashboardCards();
+            hideLoader();
+            showToast("ব্যালেন্স আপডেট হয়েছে!", "success");
+        } catch (err) {
+            hideLoader();
+            showToast("সেভ করতে সমস্যা হয়েছে।", "error");
+        }
+    });
+}
 // ৩. প্রোফাইল মোডাল ওপেন করা (Screenshot 2 এর ডিজাইন)
 window.openProfileModal = function() {
     const d = profileSettings || {};
