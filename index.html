@@ -4468,7 +4468,7 @@ window.generateDailyClosingSnapshot = async function() {
             const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
 
             catAccs.forEach(acc => {
-                const inputEl = document.getElementById(inp_${acc.id});
+                const inputEl = document.getElementById(`input_acc_${acc.id}`);
                 if (inputEl) {
                     const newBal = parseFloat(inputEl.value) || 0;
                     const prevBal = balanceStore[acc.id] || 0;
