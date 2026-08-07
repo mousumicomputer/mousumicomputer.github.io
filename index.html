@@ -2384,22 +2384,29 @@
                     </div>
 
                 <!-- ==================== VIEW 2: BALANCE MANAGEMENT (ERP FORM) ==================== -->
-                <div class="view-panel" id="balance-view">
-                    <div class="erp-form-card">
-                        <div class="erp-form-header">
-                            <span id="erpFormTitle"><i class="fa-solid fa-pen-to-square" style="color: #00a8ef;"></i> Category Form</span>
-                        </div>
-                        <form id="balanceUpdateForm">
-                            <div id="formFieldsContainer"></div>
-                            <button type="submit" class="btn-submit" style="margin-top: 20px;">
-                                <i class="fa-solid fa-floppy-disk"></i> Save & Update Balance
-                            </button>
-                        <button type="button" class="btn-submit" onclick="openWizard()" style="margin-top: 10px; background: #1e1b4b;">
-    <i class="fa-solid fa-wand-magic-sparkles"></i> Guided Setup Wizard
-</button>
-                        </form>
-                    </div>
+            <!-- ১. পরিপূর্ণ ব্যালেন্স ভিউ পুনরুদ্ধার -->
+    <div class="view-panel" id="balance-view">
+        <div class="erp-form-card">
+            <div class="erp-form-header">
+                <span id="erpFormTitle"><i class="fa-solid fa-pen-to-square" style="color: #00a8ef;"></i> Update Balance</span>
+            </div>
+            <form id="balanceUpdateForm">
+                <!-- একাউন্টের ঘরগুলো এখানে আসবে -->
+                <div id="formFieldsContainer"></div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <!-- ম্যানুয়াল সেভ বাটন -->
+                    <button type="submit" class="btn-submit" style="flex: 1;">
+                        <i class="fa-solid fa-floppy-disk"></i> Save & Update Balance
+                    </button>
+                    <!-- উইজার্ড/শর্টকাট বাটন -->
+                    <button type="button" class="btn-submit" onclick="openWizard()" style="flex: 1; background: #1e1b4b;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Guided Setup Wizard
+                    </button>
                 </div>
+            </form>
+        </div>
+    </div>
 
                 <!-- ==================== VIEW: CASH INVENTORY MANAGEMENT ==================== -->
                 <div class="view-panel" id="cash-inventory-view">
