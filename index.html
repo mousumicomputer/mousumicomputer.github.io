@@ -1611,6 +1611,56 @@
     
     .mc-avatar { width: 35px; height: 35px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; font-size: 0.9rem; }
     .mc-btn-details { background: #f8fafc; border: 1px solid #e2e8f0; color: #4f46e5; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'Tiro Bangla', serif; font-size: 0.9rem; }
+    /* ব্যালেন্স উইজার্ডের ডিজাইন */
+.wizard-modal {
+    display: none;
+    position: fixed;
+    z-index: 100001;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    align-items: center; justify-content: center;
+}
+.wizard-content {
+    background: #fff; width: 95%; max-width: 700px;
+    border-radius: 16px; overflow: hidden; position: relative;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+}
+.wizard-header {
+    padding: 20px; border-bottom: 1px solid #eee; text-align: center;
+}
+.wizard-steps {
+    display: flex; justify-content: space-between; padding: 20px;
+    background: #f8fafc; border-bottom: 1px solid #eee;
+}
+.step-item {
+    display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1;
+}
+.step-circle {
+    width: 30px; height: 30px; border-radius: 50%; background: #e2e8f0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: bold; color: #64748b;
+}
+.step-item.active .step-circle { background: #4f46e5; color: #fff; }
+.step-label { font-size: 10px; color: #64748b; text-align: center; font-weight: 700; }
+
+.wizard-body { padding: 30px; max-height: 400px; overflow-y: auto; }
+.wizard-footer {
+    padding: 20px; background: #f8fafc; border-top: 1px solid #eee;
+    display: flex; justify-content: space-between;
+}
+.wizard-step-content { display: none; }
+.wizard-step-content.active { display: block; }
+
+/* রিপোর্ট প্রিন্ট ফিক্স (PDF cutting issue fix) */
+#printable-closing-report {
+    width: 190mm; /* A4 width standard */
+    margin: 0 auto;
+    padding: 10px;
+    background: white;
+}
+.dcr-table, .dcr-section-title {
+    page-break-inside: avoid; /* লেখা কেটে যাওয়া রোধ করবে */
+}
     </style>
 </head>
 <body>
@@ -2347,6 +2397,9 @@
                             <button type="submit" class="btn-submit" style="margin-top: 20px;">
                                 <i class="fa-solid fa-floppy-disk"></i> Save & Update Balance
                             </button>
+                        <button type="button" class="btn-submit" onclick="openWizard()" style="margin-top: 10px; background: #1e1b4b;">
+    <i class="fa-solid fa-wand-magic-sparkles"></i> Guided Setup Wizard
+</button>
                         </form>
                     </div>
                 </div>
@@ -4415,7 +4468,7 @@ window.generateDailyClosingSnapshot = async function() {
             const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
 
             catAccs.forEach(acc => {
-                const inputEl = document.getElementById(`input_acc_${acc.id}`);
+                const inputEl = document.getElementById(inp_${acc.id});
                 if (inputEl) {
                     const newBal = parseFloat(inputEl.value) || 0;
                     const prevBal = balanceStore[acc.id] || 0;
@@ -5156,6 +5209,95 @@ document.getElementById('sidebarToggle').addEventListener('click', function() {
     document.querySelector('.sidebar').classList.toggle('collapsed');
     console.log("Button clicked! Sidebar toggled.");
 });
+let currentStep = 1;
+window.openWizard = () => { currentStep = 1; updateWizardUI(); document.getElementById('balanceWizard').style.display='flex'; };
+window.closeWizard = () => { document.getElementById('balanceWizard').style.display='none'; };
+
+function updateWizardUI() {
+    document.querySelectorAll('.wizard-step-content, .step-item').forEach(el => el.classList.remove('active'));
+    document.getElementById('step-' + currentStep).classList.add('active');
+    document.getElementById('step-head-' + currentStep).classList.add('active');
+    document.getElementById('wizPrev').style.visibility = currentStep === 1 ? 'hidden' : 'visible';
+    document.getElementById('wizNext').innerText = currentStep === 6 ? 'Finish' : 'Next';
+    generateWizardFields();
+}
+
+window.moveWizard = async (dir) => {
+    if (dir === 1) {
+        const success = await saveWizardStepData(currentStep);
+        if (!success) return;
+        if (currentStep === 6) { window.closeWizard(); return; }
+        currentStep++;
+    } else { currentStep--; }
+    updateWizardUI();
+};
+
+function generateWizardFields() {
+    const container = document.getElementById('step-' + currentStep);
+    container.innerHTML = '';
+    const map = { 1:'Bank Accounts', 2:'Personal Accounts', 3:'Agent Accounts', 4:'Recharge Balances' };
+    if(currentStep <= 4) {
+        const cat = categories.find(c => c.name === map[currentStep]);
+        if(cat) {
+            accounts.filter(a => a.catId === cat.id).forEach(acc => {
+                container.innerHTML += `<div style="margin-bottom:12px;"><label style="font-size:12px; font-weight:700;">${acc.name}</label>
+                <input type="number" step="any" id="wiz_inp_${acc.id}" value="${balanceStore[acc.id] || 0}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;"></div>`;
+            });
+        }
+    } else if(currentStep === 5) {
+        CASH_DENOMINATIONS.forEach(d => {
+            container.innerHTML += `<div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;"><label>৳ ${d} Notes</label>
+            <input type="number" id="wiz_cash_${d}" value="${cashQuantities[d] || 0}" style="width:100px; padding:8px; border:1px solid #ddd; border-radius:8px;"></div>`;
+        });
+    } else if(currentStep === 6) {
+        container.innerHTML = `<div style="text-align:center; padding:20px;"><i class="fa-solid fa-circle-check" style="font-size:3rem; color:#10b981;"></i><p>সব তথ্য সিঙ্ক করা হয়েছে!</p></div>`;
+    }
+}
+
+async function saveWizardStepData(step) {
+    showLoader("Saving step " + step + "...");
+    try {
+        if (step <= 4) {
+            document.querySelectorAll(`#step-${step} input`).forEach(inp => {
+                balanceStore[inp.id.replace('wiz_inp_', '')] = parseFloat(inp.value) || 0;
+            });
+            await writeToFirebase('erp/balances', balanceStore);
+        } else if (step === 5) {
+            CASH_DENOMINATIONS.forEach(d => { cashQuantities[d] = parseInt(document.getElementById(`wiz_cash_${d}`).value) || 0; });
+            await writeToFirebase('erp/cashInventory', { quantities: cashQuantities, others: cashOthersAmount, grandTotal: calculateCashGrandTotal(), lastUpdated: new Date().toLocaleString() });
+        }
+        updateDashboardCards(); return true;
+    } catch (err) { alert(err.message); return false; } finally { hideLoader(); }
+}
     </script>
+<!-- Balance Quick Setup Wizard Modal -->
+<div id="balanceWizard" class="wizard-modal">
+    <div class="wizard-content">
+        <div class="wizard-header">
+            <h3 style="color: #1e293b;">Balance Quick Setup</h3>
+        </div>
+        <div class="wizard-steps" id="wizardStepsHeader">
+            <div class="step-item active" id="step-head-1"><div class="step-circle">1</div><div class="step-label">Bank</div></div>
+            <div class="step-item" id="step-head-2"><div class="step-circle">2</div><div class="step-label">Personal</div></div>
+            <div class="step-item" id="step-head-3"><div class="step-circle">3</div><div class="step-label">Agent</div></div>
+            <div class="step-item" id="step-head-4"><div class="step-circle">4</div><div class="step-label">Recharge</div></div>
+            <div class="step-item" id="step-head-5"><div class="step-circle">5</div><div class="step-label">Cash</div></div>
+            <div class="step-item" id="step-head-6"><div class="step-circle">6</div><div class="step-label">Card</div></div>
+        </div>
+        <div class="wizard-body">
+            <div id="step-1" class="wizard-step-content active"></div>
+            <div id="step-2" class="wizard-step-content"></div>
+            <div id="step-3" class="wizard-step-content"></div>
+            <div id="step-4" class="wizard-step-content"></div>
+            <div id="step-5" class="wizard-step-content"></div>
+            <div id="step-6" class="wizard-step-content"></div>
+        </div>
+        <div class="wizard-footer">
+            <button class="btn-secondary" id="wizPrev" onclick="moveWizard(-1)" style="visibility: hidden;">Previous</button>
+            <p style="font-size: 11px; color: #64748b; margin-top: 10px;">Data auto-saved on 'Next'</p>
+            <button class="mc-btn-primary" id="wizNext" onclick="moveWizard(1)">Next</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
