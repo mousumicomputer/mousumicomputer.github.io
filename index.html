@@ -1937,9 +1937,6 @@
     </div>
 
     <!-- ব্যালেন্স এবং ইনভেন্টরি প্যানেলগুলো -->
-    <div class="view-panel" id="balance-view">
-        <div class="erp-form-card"><div class="erp-form-header"><span id="erpFormTitle">Update Balance</span></div><form id="balanceUpdateForm"><div id="formFieldsContainer"></div><button type="submit" class="btn-submit" style="margin-top:20px;">Save Balance</button></form></div>
-    </div>
     <div class="view-panel" id="cash-inventory-view">
         <div class="erp-form-card"><div class="erp-form-header"><span>Cash Inventory Management</span></div><div class="table-container"><table><thead><tr><th>Denomination</th><th>Qty</th><th>Amount</th></tr></thead><tbody id="cashDenomTableBody"></tbody></table></div><div style="margin-top:20px; font-weight:800;">Grand Total: <span id="grandTotalCashVal">৳ 0.00</span></div><button class="btn-submit" onclick="saveCashInventory()" style="background:#10b981; margin-top:10px;">Save Cash</button></div>
     </div>
@@ -4468,7 +4465,7 @@ window.generateDailyClosingSnapshot = async function() {
             const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
 
             catAccs.forEach(acc => {
-                const inputEl = document.getElementById(`input_acc_${acc.id}`);
+                const inputEl = document.getElementById(`inp_${acc.id}`);
                 if (inputEl) {
                     const newBal = parseFloat(inputEl.value) || 0;
                     const prevBal = balanceStore[acc.id] || 0;
@@ -5228,7 +5225,7 @@ window.moveWizard = async (dir) => {
         if (!success) return;
         if (currentStep === 6) { window.closeWizard(); return; }
         currentStep++;
-    } else { currentStep--; }
+    } else { if (currentStep > 1) currentStep--; }
     updateWizardUI();
 };
 
@@ -5273,8 +5270,9 @@ async function saveWizardStepData(step) {
 <!-- Balance Quick Setup Wizard Modal -->
 <div id="balanceWizard" class="wizard-modal">
     <div class="wizard-content">
-        <div class="wizard-header">
-            <h3 style="color: #1e293b;">Balance Quick Setup</h3>
+<div class="wizard-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #eee;">
+            <h3 style="color: #1e293b; margin: 0;">Balance Quick Setup</h3>
+            <button type="button" onclick="closeWizard()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #94a3b8;">&times;</button>
         </div>
         <div class="wizard-steps" id="wizardStepsHeader">
             <div class="step-item active" id="step-head-1"><div class="step-circle">1</div><div class="step-label">Bank</div></div>
