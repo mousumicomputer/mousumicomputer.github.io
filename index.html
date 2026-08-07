@@ -4292,61 +4292,6 @@ window.generateDailyClosingSnapshot = async function() {
         });
 
         /* BALANCE UPDATE PANEL ENGINE */
-window.openBalanceCategoryByName = (name) => {
-    // ক্যাটাগরি খোঁজা
-    const cat = categories.find(
-        c => c.name.trim().toLowerCase() === name.trim().toLowerCase()
-    );
-
-    if (!cat) {
-        showToast("ক্যাটাগরি '" + name + "' পাওয়া যায়নি!", "warning");
-        return;
-    }
-
-    currentActiveCatId = cat.id;
-
-    // টাইটেল সেট করা
-    const titleEl = document.getElementById('erpFormTitle');
-    if (titleEl) {
-        titleEl.innerHTML = `<i class="fa-solid fa-pen-to-square" style="color: #00a8ef;"></i> Update ${cat.name}`;
-    }
-
-    const container = document.getElementById('formFieldsContainer');
-    if (!container) return;
-
-    container.innerHTML = ''; // কন্টেইনার খালি করা
-
-    // ওই ক্যাটাগরির একাউন্টগুলো ফিল্টার করা
-    const catAccs = accounts.filter(
-        a => a.catId === cat.id && a.enabled !== false
-    );
-
-    if (catAccs.length === 0) {
-        container.innerHTML = '<p style="color:#ef4444; padding:20px; text-align:center; font-weight:700;">এই ক্যাটাগরিতে কোনো একাউন্ট পাওয়া যায়নি।</p>';
-    } else {
-        // একাউন্ট ইনপুট ফিল্ড তৈরি (আপনার CSS ক্লাসের সাথে মিল রেখে)
-        catAccs.forEach(acc => {
-            const val = balanceStore[acc.id] || 0;
-            container.innerHTML += `
-                <div class="field-card" style="margin-bottom:15px;">
-                    <div class="field-card-header">
-                        <label>${acc.name}</label>
-                        <span class="prev-bal">Current: ৳ <span>${val.toLocaleString('en-US', {minimumFractionDigits: 2})}</span></span>
-                    </div>
-                    <input
-                        type="number"
-                        step="any"
-                        id="input_acc_${acc.id}"
-                        value="${val}"
-                        style="width:100%; padding:12px; border:1px solid #f1f5f9; border-radius:10px; font-weight:700; font-size:1.1rem;"
-                    >
-                </div>`;
-        });
-    }
-
-// ট্যাব পরিবর্তন করে ব্যালেন্স ভিউ দেখানো
-    switchMainTab('balance');
-}; // এটি হচ্ছে openBalanceCategoryByName ফাংশনটির সঠিক সমাপ্তি
 
 // এখন ব্যালেন্স আপডেট বাটন কাজ করানোর জন্য নিচের ফ্রেশ কোডটি এখানে থাকবে
 const balanceForm = document.getElementById('balanceUpdateForm');
@@ -4915,35 +4860,6 @@ window.toggleParentMenu = (id) => {
 
 // ২. মেইন ট্যাব এবং পেজ পরিবর্তন ইঞ্জিন
 // ১. মেইন নেভিগেশন ইঞ্জিন (ট্যাব পরিবর্তন)
-window.switchMainTab = (tab) => {
-    // সব প্যানেল হাইড করা
-    document.querySelectorAll('.view-panel').forEach(p => {
-        p.classList.remove('active');
-        p.style.display = 'none';
-    });
-
-    // মেনু হাইলাইট সরানো
-    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-
-    // টার্গেট প্যানেল শো করা
-    let viewId = tab.includes('-view') ? tab : tab + '-view';
-    const target = document.getElementById(viewId);
-    
-    if (target) {
-        target.classList.add('active');
-        target.style.display = 'block';
-        
-        // টাইটেল আপডেট
-        const topTitle = document.getElementById('top-title');
-        if(topTitle) topTitle.innerText = tab.replace('-', ' ').toUpperCase();
-    }
-    
-    // ড্রপডাউন বন্ধ করা
-    if(document.getElementById('profileDropdown')) {
-        document.getElementById('profileDropdown').classList.remove('active');
-    }
-};
-
 // ২. ব্যালেন্স আপডেট করার সেভ বাটন লজিক (যা ৪৩৪৯ লাইনে ভুলভাবে ছিল)
 const balUpdateForm = document.getElementById('balanceUpdateForm');
 if (balUpdateForm) {
@@ -5169,6 +5085,64 @@ async function saveWizardStepData(step) {
         updateDashboardCards(); return true;
     } catch (err) { alert(err.message); return false; } finally { hideLoader(); }
 }
+// ১. প্যানেল দেখানোর ইঞ্জিন (switchMainTab)
+window.switchMainTab = (tab) => {
+    console.log("চেষ্টা করছি এই প্যানেলটি দেখাতে:", tab);
+
+    // সব প্যানেল হাইড করা
+    document.querySelectorAll('.view-panel').forEach(p => {
+        p.classList.remove('active');
+        p.style.display = 'none'; 
+    });
+
+    let viewId = tab.includes('-view') ? tab : tab + '-view';
+    const panel = document.getElementById(viewId);
+    
+    if (panel) {
+        panel.classList.add('active');
+        panel.style.display = 'block'; // সরাসরি শো করা
+        console.log("প্যানেলটি সফলভাবে দেখানো হয়েছে:", viewId);
+    } else {
+        console.error("ভুল: এই আইডি দিয়ে কোনো প্যানেল পাওয়া যায়নি ->", viewId);
+    }
+};
+
+// ২. ক্যাটাগরি অনুযায়ী ডাটা লোড করা (openBalanceCategoryByName)
+window.openBalanceCategoryByName = (name) => {
+    console.log("ক্লিক করা হয়েছে ক্যাটাগরিতে:", name);
+
+    const cat = categories.find(c => c.name.trim().toLowerCase() === name.trim().toLowerCase());
+    
+    if (!cat) {
+        console.error("ডাটাবেসে এই নামে কোনো ক্যাটাগরি নেই:", name);
+        showToast("Category match failed!", "warning");
+        return;
+    }
+
+    currentActiveCatId = cat.id;
+    const container = document.getElementById('formFieldsContainer');
+    
+    if (!container) {
+        console.error("HTML-এ 'formFieldsContainer' খুঁজে পাওয়া যায়নি!");
+        return;
+    }
+
+    container.innerHTML = ''; // কন্টেইনার পরিষ্কার করা
+
+    const catAccs = accounts.filter(a => a.catId === cat.id && a.enabled !== false);
+    
+    catAccs.forEach(acc => {
+        const val = balanceStore[acc.id] || 0;
+        container.innerHTML += `
+            <div class="field-card" style="margin-bottom:15px; border-left: 5px solid #4f46e5; padding: 15px; background: #f9fafb;">
+                <label style="font-weight:700; display:block; margin-bottom:10px; color:#1e293b;">${acc.name}</label>
+                <input type="number" step="any" id="input_acc_${acc.id}" value="${val}" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:10px;">
+            </div>`;
+    });
+
+    // সব কাজ শেষ হলে প্যানেলটি শো করা
+    window.switchMainTab('balance');
+};
     </script>
 <!-- Balance Quick Setup Wizard Modal -->
 <div id="balanceWizard" class="wizard-modal">
