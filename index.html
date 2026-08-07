@@ -4293,62 +4293,60 @@ window.generateDailyClosingSnapshot = async function() {
 
         /* BALANCE UPDATE PANEL ENGINE */
 window.openBalanceCategoryByName = (name) => {
+    // ক্যাটাগরি খোঁজা
     const cat = categories.find(
         c => c.name.trim().toLowerCase() === name.trim().toLowerCase()
     );
 
     if (!cat) {
-        showToast("Category '" + name + "' not found!", "warning");
+        showToast("ক্যাটাগরি '" + name + "' পাওয়া যায়নি!", "warning");
         return;
     }
 
     currentActiveCatId = cat.id;
 
+    // টাইটেল সেট করা
     const titleEl = document.getElementById('erpFormTitle');
     if (titleEl) {
-        titleEl.innerText = "Update " + cat.name;
+        titleEl.innerHTML = `<i class="fa-solid fa-pen-to-square" style="color: #00a8ef;"></i> Update ${cat.name}`;
     }
 
     const container = document.getElementById('formFieldsContainer');
+    if (!container) return;
 
-    if (!container) {
-        console.error("formFieldsContainer not found!");
-        return;
-    }
+    container.innerHTML = ''; // কন্টেইনার খালি করা
 
-    container.innerHTML = '';
-
+    // ওই ক্যাটাগরির একাউন্টগুলো ফিল্টার করা
     const catAccs = accounts.filter(
         a => a.catId === cat.id && a.enabled !== false
     );
 
     if (catAccs.length === 0) {
-        container.innerHTML =
-            '<p style="color:red; padding:10px;">এই ক্যাটাগরিতে কোনো একাউন্ট পাওয়া যায়নি।</p>';
+        container.innerHTML = '<p style="color:#ef4444; padding:20px; text-align:center; font-weight:700;">এই ক্যাটাগরিতে কোনো একাউন্ট পাওয়া যায়নি।</p>';
+    } else {
+        // একাউন্ট ইনপুট ফিল্ড তৈরি (আপনার CSS ক্লাসের সাথে মিল রেখে)
+        catAccs.forEach(acc => {
+            const val = balanceStore[acc.id] || 0;
+            container.innerHTML += `
+                <div class="field-card" style="margin-bottom:15px;">
+                    <div class="field-card-header">
+                        <label>${acc.name}</label>
+                        <span class="prev-bal">Current: ৳ <span>${val.toLocaleString('en-US', {minimumFractionDigits: 2})}</span></span>
+                    </div>
+                    <input
+                        type="number"
+                        step="any"
+                        id="input_acc_${acc.id}"
+                        value="${val}"
+                        style="width:100%; padding:12px; border:1px solid #f1f5f9; border-radius:10px; font-weight:700; font-size:1.1rem;"
+                    >
+                </div>`;
+        });
     }
 
-    catAccs.forEach(acc => {
-        const val = balanceStore[acc.id] || 0;
-
-        container.innerHTML += `
-            <div style="margin-bottom:15px; background:#f9f9f9; padding:10px; border-radius:8px; border:1px solid #eee;">
-                <label style="font-weight:700; display:block; margin-bottom:5px;">
-                    ${acc.name}
-                </label>
-
-                <input
-                    type="number"
-                    step="any"
-                    id="input_acc_${acc.id}"
-                    value="${val}"
-                    style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:1rem;"
-                >
-            </div>`;
-    });
-
+    // ট্যাব পরিবর্তন করে ব্যালেন্স ভিউ দেখানো
     switchMainTab('balance');
 };
-
         document.getElementById('balanceUpdateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             showLoader("Updating Balances...");
