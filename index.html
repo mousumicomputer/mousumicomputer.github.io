@@ -4344,20 +4344,52 @@ window.openBalanceCategoryByName = (name) => {
         });
     }
 
-    // ট্যাব পরিবর্তন করে ব্যালেন্স ভিউ দেখানো
+// ট্যাব পরিবর্তন করে ব্যালেন্স ভিউ দেখানো
     switchMainTab('balance');
-            try {
-                await writeToFirebase('erp/balances', balanceStore);
-                await writeToFirebase('erp/fintechHistory', historyLogs);
-                updateDashboardCards();
-                hideLoader();
-                showToast("Balances updated successfully!", "success");
-            } catch (err) {
-                hideLoader();
-                showToast("Error updating balances.", "error");
+}; // এটি হচ্ছে openBalanceCategoryByName ফাংশনটির সঠিক সমাপ্তি
+
+// এখন ব্যালেন্স আপডেট বাটন কাজ করানোর জন্য নিচের ফ্রেশ কোডটি এখানে থাকবে
+const balanceForm = document.getElementById('balanceUpdateForm');
+if (balanceForm) {
+    balanceForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        showLoader("Updating Balances...");
+
+        const catAccs = accounts.filter(a => a.catId === currentActiveCatId && a.enabled !== false);
+        const now = new Date();
+        const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+
+        catAccs.forEach(acc => {
+            const inputEl = document.getElementById(`input_acc_${acc.id}`);
+            if (inputEl) {
+                const newBal = parseFloat(inputEl.value) || 0;
+                const prevBal = balanceStore[acc.id] || 0;
+
+                if (newBal !== prevBal) {
+                    balanceStore[acc.id] = newBal;
+                    historyLogs.unshift({
+                        date: dateStr,
+                        accountName: acc.name,
+                        previousBalance: prevBal,
+                        currentBalance: newBal,
+                        difference: newBal - prevBal
+                    });
+                }
             }
         });
 
+        try {
+            await writeToFirebase('erp/balances', balanceStore);
+            await writeToFirebase('erp/fintechHistory', historyLogs);
+            updateDashboardCards();
+            hideLoader();
+            showToast("ব্যালেন্স আপডেট সফল হয়েছে!", "success");
+        } catch (err) {
+            hideLoader();
+            showToast("সেভ করতে সমস্যা হয়েছে!", "error");
+        }
+    });
+}
         /* CARD MASTER CONFIGURATION VIEW */
         window.renderCardMasterView = function() {
             const container = document.getElementById('cardMasterTablesContainer');
