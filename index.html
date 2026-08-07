@@ -3184,30 +3184,31 @@ const logoutBtn = document.getElementById('logoutBtn');
 
 function calculateCustomerTotals() {
     let totalCustomers = Array.isArray(customers) ? customers.length : 0;
-    let totalReceivable = 0; // আমরা পাব (পাওনা)
-    let totalPayable = 0;    // আমরা দেব (দেনা/অগ্রিম)
+    let totalReceivable = 0;
+    let totalPayable = 0;
     let dueCount = 0;
 
-    const safeCustomers = Array.isArray(customers) ? customers : Object.values(customers || {});
+    const safeCustomers = Array.isArray(customers) ? customers : [];
+
     safeCustomers.forEach(c => {
         const bal = calculateCustomerCurrentDue(c.id);
+
         if (bal > 0) {
             totalReceivable += bal;
             dueCount++;
         } else if (bal < 0) {
-            totalPayable += Math.abs(bal); // মাইনাস ভ্যালুকে প্লাস করে যোগ করা হচ্ছে
+            totalPayable += Math.abs(bal);
         }
     });
 
-    return { 
-        totalCustomers, 
-        dueCount, 
-        totalReceivable, 
-        totalPayable,
-        netCustomerBalance: totalReceivable - totalPayable // নিট পাওনা
+    return {
+        totalCustomers,
+        dueCount: dueCount,
+        totalReceivable: totalReceivable || 0,
+        totalPayable: totalPayable || 0,
+        netCustomerBalance: (totalReceivable || 0) - (totalPayable || 0)
     };
 }
-
         function calculateCustomerCurrentDue(custId) {
             const safeCustomers = Array.isArray(customers) ? customers : Object.values(customers || {});
             const cust = safeCustomers.find(c => c.id === custId);
@@ -3951,43 +3952,59 @@ if(document.getElementById('statTotalDue'))
             XLSX.writeFile(wb, `${cust.name}_Statement.xlsx`);
         };
 
-        window.renderDueSummarySection = function() {
-            const totals = calculateCustomerTotals();
-            if(document.getElementById('dueCardTotalCust')) document.getElementById('dueCardTotalCust').innerText = totals.totalCustomers;
-            if(document.getElementById('dueCardCustWithDue')) document.getElementById('dueCardCustWithDue').innerText = totals.custWithDue;
-            if(document.getElementById('dueCardTotalOutstanding')) {
-                document.getElementById('dueCardTotalOutstanding').innerText = `৳ ${totals.totalOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
-            }
-        const tbody = document.getElementById('highestDueTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
+window.renderDueSummarySection = function() {
+    const totals = calculateCustomerTotals();
 
-            const dueList = customers.map(c => ({
-                ...c,
-                due: calculateCustomerCurrentDue(c.id)
-            })).filter(c => c.due > 0).sort((a,b) => b.due - a.due);
+    if (document.getElementById('dueCardTotalCust')) {
+        document.getElementById('dueCardTotalCust').innerText = totals.totalCustomers || 0;
+    }
 
-            if (dueList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No outstanding dues found.</td></tr>';
-                return;
-            }
+    if (document.getElementById('dueCardCustWithDue')) {
+        document.getElementById('dueCardCustWithDue').innerText = totals.dueCount || 0;
+    }
 
-            dueList.forEach((c, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><strong>#${index + 1}</strong></td>
-                    <td>${c.id}</td>
-                    <td><strong>${c.name}</strong></td>
-                    <td>${c.phone || '-'}</td>
-                    <td style="font-weight: 800; color: #e11d48;">৳ ${c.due.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                    <td style="text-align: center;">
-                        <button class="btn-action btn-edit" onclick="openCustomerLedgerDirect('${c.id}')"><i class="fa-solid fa-eye"></i> View Statement</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        };
+    if (document.getElementById('dueCardTotalOutstanding')) {
+        const amount = totals.totalReceivable || 0;
+        document.getElementById('dueCardTotalOutstanding').innerText =
+            `৳ ${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+    }
 
+    const tbody = document.getElementById('highestDueTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    const dueList = customers.map(c => ({
+        ...c,
+        due: calculateCustomerCurrentDue(c.id)
+    })).filter(c => c.due > 0).sort((a, b) => b.due - a.due);
+
+    if (dueList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No outstanding dues found.</td></tr>';
+        return;
+    }
+
+    dueList.forEach((c, index) => {
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
+            <td><strong>#${index + 1}</strong></td>
+            <td>${c.id}</td>
+            <td><strong>${c.name}</strong></td>
+            <td>${c.phone || '-'}</td>
+            <td style="font-weight: 800; color: #e11d48;">
+                ৳ ${c.due.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </td>
+            <td style="text-align: center;">
+                <button class="btn-action btn-edit" onclick="openCustomerLedgerDirect('${c.id}')">
+                    <i class="fa-solid fa-eye"></i> View Statement
+                </button>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+};
         window.exportOutstandingDueExcel = function() {
             const data = [
                 ["Mousumi Computer - Customer Due Report"],
@@ -5111,8 +5128,10 @@ window.switchMainTab = (tab) => {
 window.openBalanceCategoryByName = (name) => {
     console.log("ক্লিক করা হয়েছে ক্যাটাগরিতে:", name);
 
-    const cat = categories.find(c => c.name.trim().toLowerCase() === name.trim().toLowerCase());
-    
+    const cat = categories.find(c =>
+        c.name.trim().toLowerCase() === name.trim().toLowerCase()
+    );
+
     if (!cat) {
         console.error("ডাটাবেসে এই নামে কোনো ক্যাটাগরি নেই:", name);
         showToast("Category match failed!", "warning");
@@ -5120,30 +5139,81 @@ window.openBalanceCategoryByName = (name) => {
     }
 
     currentActiveCatId = cat.id;
+
     const container = document.getElementById('formFieldsContainer');
-    
+
     if (!container) {
         console.error("HTML-এ 'formFieldsContainer' খুঁজে পাওয়া যায়নি!");
         return;
     }
 
-    container.innerHTML = ''; // কন্টেইনার পরিষ্কার করা
+    // কন্টেইনার পরিষ্কার করা
+    container.innerHTML = '';
 
-    const catAccs = accounts.filter(a => a.catId === cat.id && a.enabled !== false);
-    
-    catAccs.forEach(acc => {
-        const val = balanceStore[acc.id] || 0;
-        container.innerHTML += `
-            <div class="field-card" style="margin-bottom:15px; border-left: 5px solid #4f46e5; padding: 15px; background: #f9fafb;">
-                <label style="font-weight:700; display:block; margin-bottom:10px; color:#1e293b;">${acc.name}</label>
-                <input type="number" step="any" id="input_acc_${acc.id}" value="${val}" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:10px;">
-            </div>`;
-    });
+    // এই ক্যাটাগরির Enabled account গুলো বের করা
+    const catAccs = accounts.filter(
+        a => a.catId === cat.id && a.enabled !== false
+    );
 
-    // সব কাজ শেষ হলে প্যানেলটি শো করা
+    // DEBUG: কতগুলো account পাওয়া গেছে তা Console-এ দেখাবে
+    console.log(`${name} ক্যাটাগরিতে একাউন্ট পাওয়া গেছে:`, catAccs.length);
+
+    // কোনো account না থাকলে স্পষ্টভাবে বার্তা দেখাবে
+    if (catAccs.length === 0) {
+        container.innerHTML = `
+            <div style="
+                padding:20px;
+                text-align:center;
+                color:orange;
+                background:#fff7ed;
+                border:1px solid #fed7aa;
+                border-radius:10px;
+            ">
+                এই ক্যাটাগরিতে কোনো একাউন্ট সেটআপ করা নেই!
+                <br>
+                Settings > Category & Accounts থেকে একাউন্ট যোগ করুন।
+            </div>
+        `;
+    } else {
+
+        // Account থাকলে Input Box তৈরি হবে
+        catAccs.forEach(acc => {
+            const val = balanceStore[acc.id] || 0;
+
+            container.innerHTML += `
+                <div class="field-card" style="
+                    margin-bottom:15px;
+                    border-left:5px solid #4f46e5;
+                    padding:15px;
+                    background:#f9fafb;
+                ">
+                    <label style="
+                        font-weight:700;
+                        display:block;
+                        margin-bottom:10px;
+                        color:#1e293b;
+                    ">${acc.name}</label>
+
+                    <input
+                        type="number"
+                        step="any"
+                        id="input_acc_${acc.id}"
+                        value="${val}"
+                        style="
+                            width:100%;
+                            padding:12px;
+                            border:1px solid #cbd5e1;
+                            border-radius:10px;
+                        "
+                    >
+                </div>
+            `;
+        });
+    }
+
+    // সব কাজ শেষ হলে Balance panel দেখাবে
     window.switchMainTab('balance');
-};
-    </script>
+};    </script>
 <!-- Balance Quick Setup Wizard Modal -->
 <div id="balanceWizard" class="wizard-modal">
     <div class="wizard-content">
