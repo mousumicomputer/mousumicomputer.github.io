@@ -4941,20 +4941,41 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
             const element = document.getElementById('printable-closing-report');
             if (!element) return;
 
-            // পিডিএফের নাম ঠিক করা
+            showLoader("পিডিএফ তৈরি হচ্ছে, দয়া করে অপেক্ষা করুন...");
+
             const now = new Date();
             const dateStr = now.toISOString().split('T')[0];
             const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).replace(/[:\s]/g, '-');
             const fileName = `Daily_Report_${dateStr}_${timeStr}.pdf`;
 
-            // সাময়িকভাবে এ৪ ডিজাইন সেট করা যাতে ওয়েবসাইট টেবিলকে চ্যাপ্টা না করতে পারে
-            const originalStyle = element.getAttribute('style') || "";
-            element.style.width = "210mm";
-            element.style.padding = "10mm";
-            element.style.margin = "0 auto";
-            element.style.background = "white";
-            element.style.color = "black";
+            // ১. একটি অদৃশ্য কন্টেইনার তৈরি করা
+            const pdfContainer = document.createElement('div');
+            pdfContainer.style.position = 'fixed';
+            pdfContainer.style.top = '0';
+            pdfContainer.style.left = '0';
+            pdfContainer.style.width = '210mm';
+            pdfContainer.style.zIndex = '-1'; // স্ক্রিনের পেছনে থাকবে
+            pdfContainer.style.backgroundColor = 'white';
 
+            // ২. আপনার ফাইলের সব স্টাইল (CSS) কপি করা যাতে সাদা পাতা না আসে
+            const allStyles = Array.from(document.querySelectorAll('style')).map(s => s.innerHTML).join('\n');
+            
+            // ৩. কন্টেইনারের ভেতর ডিজাইন এবং কন্টেন্ট বসানো
+            pdfContainer.innerHTML = `
+                <style>
+                    ${allStyles}
+                    body { background: white !important; }
+                    #printable-closing-report { display: block !important; width: 210mm !important; padding: 10mm !important; margin: 0 !important; }
+                    .no-print { display: none !important; }
+                    table { width: 100% !important; border-collapse: collapse !important; }
+                </style>
+                <div id="printable-closing-report">
+                    ${element.innerHTML}
+                </div>
+            `;
+            document.body.appendChild(pdfContainer);
+
+            // ৪. পিডিএফ অপশন
             const opt = {
                 margin: 0,
                 filename: fileName,
@@ -4963,23 +4984,26 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
                     scale: 2, 
                     useCORS: true, 
                     logging: false,
-                    scrollY: 0, // ওপরের গ্যাপ দূর করতে
-                    scrollX: 0,
-                    windowWidth: 794 // A4 standard width
+                    letterRendering: true,
+                    backgroundColor: '#ffffff'
                 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
 
-            // পিডিএফ জেনারেট শুরু
-            html2pdf().set(opt).from(element).toPdf().get('pdf').save(fileName).then(() => {
-                // পিডিএফ সেভ হয়ে গেলে ডিজাইন আগের অবস্থায় ফিরিয়ে আনা
-                element.setAttribute('style', originalStyle);
-                showToast("রিপোর্ট সফলভাবে ডাউনলোড হয়েছে", "success");
-            }).catch(err => {
-                element.setAttribute('style', originalStyle);
-                console.error("PDF Error:", err);
-            });
+            // ৫. পিডিএফ জেনারেট করা
+            setTimeout(() => { // ছোট একটি বিরতি যাতে ব্রাউজার ডিজাইনগুলো লোড করতে পারে
+                html2pdf().set(opt).from(pdfContainer).save().then(() => {
+                    document.body.removeChild(pdfContainer);
+                    hideLoader();
+                    showToast("রিপোর্ট সফলভাবে ডাউনলোড হয়েছে", "success");
+                }).catch(err => {
+                    document.body.removeChild(pdfContainer);
+                    hideLoader();
+                    console.error("PDF Error:", err);
+                    alert("পিডিএফ তৈরি করতে সমস্যা হয়েছে।");
+                });
+            }, 500);
         };
         window.exportDailyClosingExcel = () => {
             const t = document.querySelector('#printable-closing-report table');
