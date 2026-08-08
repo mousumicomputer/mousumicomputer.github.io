@@ -1188,47 +1188,53 @@
             cursor: pointer;
         }
 
-    /*--- PERMANENT A4 PRINT TEMPLATE ---*/
-        #printable-closing-report {
+    /*--- ROBUST A4 ISOLATED PRINT TEMPLATE ---*/
+        #pdf-isolated-template {
+            position: absolute;
+            left: -9999px; /* স্ক্রিনে দেখা যাবে না, পর্দার আড়ালে থাকবে */
+            top: 0;
+            width: 210mm; /* স্ট্যান্ডার্ড A4 উইডথ */
             background: #fff;
             padding: 0;
-            margin: 0;
-            width: 100%;
         }
 
-        .dcr-print-container {
-            font-family: 'Arial', sans-serif;
-            width: 185mm; 
+        .pdf-page {
+            font-family: Arial, sans-serif;
+            width: 190mm;
             margin: 0 auto;
+            padding: 10mm 0;
             color: #000;
         }
 
-        .dcr-table {
-            width: 100% !important;
-            border-collapse: collapse !important;
+        .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
             margin-bottom: 15px;
-            table-layout: fixed; /* টেবিল কখনোই সীমানা পার হবে না */
+            table-layout: fixed;
         }
 
-        .dcr-table th, .dcr-table td {
-            border: 1px solid #000 !important;
-            padding: 5px 8px !important;
+        .pdf-table th, .pdf-table td {
+            border: 0.5pt solid #000;
+            padding: 5px 8px;
             font-size: 10pt;
             word-wrap: break-word;
+            text-align: left;
         }
 
-        .dcr-section-header {
-            background: #f2f2f2;
+        .pdf-header-box {
+            text-align: center;
+            border-bottom: 2pt solid #000;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .pdf-section-title {
+            background: #f0f0f0;
             font-weight: bold;
             font-size: 11pt;
             padding: 6px;
             border: 1px solid #000;
-            border-bottom: none;
             text-transform: uppercase;
-        }
-
-        .dcr-page-break {
-            page-break-inside: avoid; /* টেবিলের মাঝখানে পাতা ভাঙবে না */
         }
         /* PRINT MEDIA STYLES - CUSTOMER STATEMENT & DAILY CLOSING REPORT */
         @media print {
@@ -4518,8 +4524,9 @@ window.renderDailyClosingHistory = function() {
             <td><strong>${r.report_id}</strong></td>
             <td style="font-weight:700; color:#059669;">৳ ${(parseFloat(displayBalance)).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
             <td style="text-align: center;">
-                <button class="btn-action btn-edit" onclick="viewDCRReport('${r.report_id}')"><i class="fa-solid fa-eye"></i> View</button>
-                <button class="btn-action btn-delete" onclick="deleteDCRReport('${r.report_id}')"><i class="fa-solid fa-trash"></i></button>
+                <button class="btn-action btn-edit" onclick="viewDCRReport('${r.report_id}')" title="View Report"><i class="fa-solid fa-eye"></i> View</button>
+                <button class="btn-action btn-toggle" onclick="downloadDailyClosingPDF('${r.report_id}')" style="background:#10b981; color:#fff;" title="Download PDF"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                <button class="btn-action btn-delete" onclick="deleteDCRReport('${r.report_id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -4823,29 +4830,103 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
 });
             
         // ৭. পিডিএফ এবং এক্সেল ডাউনলোড (নিখুঁত কোড)
-        window.downloadDailyClosingPDF = function() {
-    const element = document.getElementById('printable-closing-report');
-    if (!element) return;
+        window.downloadDailyClosingPDF = async function(reportId) {
+    // ১. ডাটা খুঁজে বের করা
+    let snap = activeViewingReport; 
+    if (reportId) {
+        snap = dailyClosingReports.find(r => r.report_id === reportId);
+    }
+    
+    if (!snap) {
+        showToast("রিপোর্ট ডাটা পাওয়া যায়নি!", "error");
+        return;
+    }
 
-    const dateStr = new Date().toISOString().split('T')[0];
-    const fileName = `Mousumi_Report_${dateStr}.pdf`;
+    showLoader("PDF জেনারেট হচ্ছে...");
 
+    // ২. অদৃশ্য টেমপ্লেট কন্টেইনার তৈরি (এটি ড্যাশবোর্ডের বাইরে থাকবে)
+    let pdfContainer = document.getElementById('pdf-isolated-template');
+    if (!pdfContainer) {
+        pdfContainer = document.createElement('div');
+        pdfContainer.id = 'pdf-isolated-template';
+        document.body.appendChild(pdfContainer);
+    }
+
+    const fmt = (n) => (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
+
+    // ৩. টেমপ্লেটের ভেতরে এ৪ সাইজ অনুযায়ী ডাটা সাজানো
+    pdfContainer.innerHTML = `
+    <div class="pdf-page">
+        <div class="pdf-header-box">
+            <h1 style="margin:0; font-size:22pt; text-transform: uppercase;">${snap.company_name}</h1>
+            <p style="margin:5px 0; font-size:12pt; font-weight:bold;">DAILY FINANCIAL CLOSING REPORT</p>
+            <div style="display:flex; justify-content:space-between; font-size:10pt; margin-top:10px; font-family: sans-serif;">
+                <span><b>Date:</b> ${snap.report_date}</span>
+                <span><b>Report ID:</b> ${snap.report_id}</span>
+                <span><b>Time:</b> ${snap.closing_time}</span>
+            </div>
+        </div>
+
+        <div class="pdf-section-title">SECTION 1: CAPITAL RECONCILIATION</div>
+        <table class="pdf-table">
+            <tr style="background:#f9f9f9; font-weight:bold;"><td>DESCRIPTION</td><td style="text-align:right; width:35%;">AMOUNT (৳)</td></tr>
+            <tr><td style="width:70%;">Opening Capital Balance (Start of Day)</td><td style="text-align:right;">${fmt(snap.reconciliation.opening_cash)}</td></tr>
+            <tr><td>(+) Total Cash Inflow (Collection)</td><td style="text-align:right;">${fmt(snap.reconciliation.inflow)}</td></tr>
+            <tr><td>(-) Total Cash Outflow (Due/Sales)</td><td style="text-align:right;">(${fmt(snap.reconciliation.outflow)})</td></tr>
+            <tr style="font-weight:bold;"><td>Calculated Closing Balance</td><td style="text-align:right;">${fmt(snap.reconciliation.calculated_cash)}</td></tr>
+            <tr style="font-weight:bold; background:#eee;"><td>ACTUAL TOTAL ASSETS (Physical Count)</td><td style="text-align:right;">${fmt(snap.reconciliation.actual_cash)}</td></tr>
+            <tr style="background:#000; color:#fff; font-weight:bold; font-size:12pt;"><td>DAILY NET PROFIT / COMMISSION</td><td style="text-align:right;">৳ ${fmt(snap.reconciliation.profit)}</td></tr>
+        </table>
+
+        <div class="pdf-section-title">SECTION 2: EXECUTIVE SUMMARY</div>
+        <table class="pdf-table">
+            <tr><td style="width:70%;">Total Outstanding Receivable (Due)</td><td style="text-align:right;">${fmt(snap.summary.receivable)}</td></tr>
+            <tr><td>Total Advance Payable (Advance)</td><td style="text-align:right;">${fmt(snap.summary.payable)}</td></tr>
+            <tr style="background:#ddd; font-weight:bold; font-size:12pt;"><td>TOTAL NET FINANCIAL WORTH</td><td style="text-align:right;">৳ ${fmt(snap.summary.net_worth || snap.summary.net_balance)}</td></tr>
+        </table>
+
+        <div class="pdf-section-title">DETAILED ACCOUNTS</div>
+        <table class="pdf-table">
+            <tr style="background:#f0f0f0; font-weight:bold;"><td>ACCOUNT NAME</td><td style="text-align:right; width:35%;">BALANCE (৳)</td></tr>
+            ${[...snap.accounts.bank, ...snap.accounts.personal, ...snap.accounts.agent, ...snap.accounts.recharge].map(a => `
+                <tr><td>${a.name}</td><td style="text-align:right;">${fmt(a.balance)}</td></tr>
+            `).join('')}
+        </table>
+
+        <div style="page-break-inside: avoid;">
+            <div class="pdf-section-title">CASH & CARD INVENTORY</div>
+            <table class="pdf-table">
+                <tr style="background:#f0f0f0; font-weight:bold;"><td>INVENTORY ITEM</td><td style="text-align:right; width:35%;">TOTAL (৳)</td></tr>
+                ${snap.cash_details.map(c => `<tr><td>${c.note} (x${c.qty})</td><td style="text-align:right;">${fmt(c.amount)}</td></tr>`).join('')}
+                ${snap.card_details.map(c => `<tr><td>${c.name} (x${c.qty})</td><td style="text-align:right;">${fmt(c.total)}</td></tr>`).join('')}
+            </table>
+        </div>
+
+        <div style="margin-top:60px; display:flex; justify-content:space-between; padding:0 40px; page-break-inside:avoid;">
+            <div style="text-align:center; border-top:1.5px solid #000; width:200px; padding-top:5px; font-weight:bold; font-size:11pt;">Prepared By</div>
+            <div style="text-align:center; border-top:1.5px solid #000; width:200px; padding-top:5px; font-weight:bold; font-size:11pt;">Authorized Signature</div>
+        </div>
+    </div>`;
+
+    // ৪. PDF তৈরি এবং সেভ করার সেটিংস
     const opt = {
-        margin: [10, 10, 10, 10], // উপরে, বামে, নিচে, ডানে ১০মিমি মার্জিন
-        filename: fileName,
+        margin: [10, 5, 10, 5],
+        filename: `Mousumi_Report_${snap.report_date}.pdf`,
         image: { type: 'jpeg', quality: 1 },
-        html2canvas: { 
-            scale: 2, 
-            useCORS: true, 
-            logging: false,
-            letterRendering: true,
-            windowWidth: 800 // এটি টেবিলকে ফিক্সড রাখতে সাহায্য করবে
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollX: 0, scrollY: 0 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(element).save();
+    try {
+        await html2pdf().set(opt).from(pdfContainer).save();
+        pdfContainer.innerHTML = ''; // কাজ শেষে মেমোরি ক্লিন করা
+        hideLoader();
+        showToast("PDF ডাউনলোড শুরু হয়েছে!", "success");
+    } catch (err) {
+        hideLoader();
+        console.error("PDF Error:", err);
+        showToast("PDF তৈরি করতে সমস্যা হয়েছে।", "error");
+    }
 };
         window.exportDailyClosingExcel = () => {
             const t = document.querySelector('#printable-closing-report table');
