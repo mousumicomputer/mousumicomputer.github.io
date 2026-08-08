@@ -1188,44 +1188,47 @@
             cursor: pointer;
         }
 
-    /*--- FIXED A4 PRINT CSS ---*/
-        .dcr-print-document {
-            font-family: 'Arial', 'Tiro Bangla', sans-serif;
-            width: 185mm; /* উইডথ কিছুটা কমানো হলো যেন সাইড না কাটে */
-            margin: 0 auto;
-            padding: 5mm;
-            color: #000;
+    /*--- PERMANENT A4 PRINT TEMPLATE ---*/
+        #printable-closing-report {
             background: #fff;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+        }
+
+        .dcr-print-container {
+            font-family: 'Arial', sans-serif;
+            width: 185mm; 
+            margin: 0 auto;
+            color: #000;
         }
 
         .dcr-table {
-            width: 100%;
+            width: 100% !important;
             border-collapse: collapse !important;
-            margin-bottom: 8px;
-            table-layout: fixed;
+            margin-bottom: 15px;
+            table-layout: fixed; /* টেবিল কখনোই সীমানা পার হবে না */
         }
 
         .dcr-table th, .dcr-table td {
-            border: 0.5pt solid #000 !important;
-            padding: 3px 5px !important;
-            font-size: 9pt; /* ফন্ট সাইজ ১ পয়েন্ট কমানো হলো */
-            word-wrap: break-word;
-            overflow: hidden;
-        }
-
-        .dcr-section-box {
-            border: 1pt solid #000;
-            margin-bottom: 12px;
-            page-break-inside: avoid;
-        }
-
-        .dcr-section-title {
-            background: #f0f0f0;
-            font-weight: bold;
+            border: 1px solid #000 !important;
+            padding: 5px 8px !important;
             font-size: 10pt;
-            padding: 4px;
-            border-bottom: 1pt solid #000;
+            word-wrap: break-word;
+        }
+
+        .dcr-section-header {
+            background: #f2f2f2;
+            font-weight: bold;
+            font-size: 11pt;
+            padding: 6px;
+            border: 1px solid #000;
+            border-bottom: none;
             text-transform: uppercase;
+        }
+
+        .dcr-page-break {
+            page-break-inside: avoid; /* টেবিলের মাঝখানে পাতা ভাঙবে না */
         }
         /* PRINT MEDIA STYLES - CUSTOMER STATEMENT & DAILY CLOSING REPORT */
         @media print {
@@ -4564,85 +4567,84 @@ window.renderDailyClosingReportView = function(snap) {
     if (!container) return;
     const fmt = (n) => (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
     
-    function renderSubTable(arr, title, sum) {
-        if (!arr || arr.length === 0) return '';
+    // সিঙ্গেল টেবিল রেন্ডারার
+    function drawTable(dataArr, title, totalVal, label1 = "NAME / ITEM", label2 = "BALANCE (৳)") {
+        if (!dataArr || dataArr.length === 0) return '';
         return `
-        <div class="dcr-section-box">
-            <div class="dcr-section-title">${title}</div>
+        <div class="dcr-page-break">
+            <div class="dcr-section-header">${title}</div>
             <table class="dcr-table">
-                <tr style="background:#f0f0f0; font-weight:bold;">
-                    <td style="width: 65%;">ITEM NAME</td>
-                    <td style="text-align: right;">AMOUNT (৳)</td>
+                <tr style="background:#eee; font-weight:bold;">
+                    <td style="width: 70%;">${label1}</td>
+                    <td style="text-align: right;">${label2}</td>
                 </tr>
-                ${arr.map(a => `<tr><td>${a.name}</td><td style="text-align: right;">${fmt(a.balance)}</td></tr>`).join('')}
-                <tr style="font-weight: bold; background: #f0f0f0;"><td>TOTAL ${title}</td><td style="text-align: right;">${fmt(sum)}</td></tr>
+                ${dataArr.map(a => `<tr><td>${a.name}</td><td style="text-align: right;">${fmt(a.balance || a.total || a.amount)}</td></tr>`).join('')}
+                <tr style="font-weight: bold; background: #f9f9f9;">
+                    <td style="text-align: right;">TOTAL ${title}</td>
+                    <td style="text-align: right;">৳ ${fmt(totalVal)}</td>
+                </tr>
             </table>
         </div>`;
     }
 
     let html = `
-    <div class="dcr-print-document">
-        <!-- HEADER -->
-        <div style="text-align: center; border-bottom: 2pt solid #000; padding-bottom: 10px; margin-bottom: 15px;">
-            <h1 style="margin: 0; font-size: 20pt; text-transform: uppercase; letter-spacing: 1px;">${snap.company_name}</h1>
-            <p style="margin: 3px 0; font-size: 11pt; font-weight: bold;">DAILY FINANCIAL CLOSING REPORT</p>
-            <div style="display: flex; justify-content: space-between; font-size: 9pt; margin-top: 10px;">
+    <div class="dcr-print-container">
+        <!-- TOP HEADER -->
+        <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
+            <h1 style="margin: 0; font-size: 22pt; font-weight: bold;">${snap.company_name}</h1>
+            <p style="margin: 5px 0; font-size: 11pt; font-weight: bold; letter-spacing: 1px;">DAILY CAPITAL RECONCILIATION & INCOME STATEMENT</p>
+            <div style="display: flex; justify-content: space-between; font-size: 10pt; margin-top: 10px;">
                 <span><b>Date:</b> ${snap.report_date}</span>
                 <span><b>Report ID:</b> ${snap.report_id}</span>
-                <span><b>Closing Time:</b> ${snap.closing_time}</span>
+                <span><b>Time:</b> ${snap.closing_time}</span>
             </div>
         </div>
 
-        <!-- SECTION 1 -->
-        <div class="dcr-section-box">
-            <div class="dcr-section-title">SECTION 1: CAPITAL RECONCILIATION</div>
+        <!-- RECONCILIATION BOX -->
+        <div class="dcr-page-break">
+            <div class="dcr-section-header">SECTION 1: CAPITAL RECONCILIATION</div>
             <table class="dcr-table">
-                <tr><td style="width: 70%;">Opening Capital Balance (Total Assets)</td><td style="text-align: right;">${fmt(snap.reconciliation.opening_cash)}</td></tr>
+                <tr><td style="width: 70%;">Opening Balance (Start of Day)</td><td style="text-align: right;">${fmt(snap.reconciliation.opening_cash)}</td></tr>
                 <tr><td>(+) Total Cash Inflow (Collection)</td><td style="text-align: right;">${fmt(snap.reconciliation.inflow)}</td></tr>
-                <tr><td>(-) Total Cash Outflow (Due/Sales)</td><td style="text-align: right;">(${fmt(snap.reconciliation.outflow)})</td></tr>
-                <tr style="font-weight:bold;"><td>Calculated Closing Balance</td><td style="text-align: right;">${fmt(snap.reconciliation.calculated_cash)}</td></tr>
-                <tr style="font-weight:bold; background:#eee;"><td>ACTUAL TOTAL ASSETS (Physical Count)</td><td style="text-align: right;">${fmt(snap.reconciliation.actual_cash)}</td></tr>
-                <tr style="background:#000; color:#fff; font-weight:bold; font-size: 11pt;"><td>DAILY NET PROFIT / COMMISSION</td><td style="text-align: right;">৳ ${fmt(snap.reconciliation.profit)}</td></tr>
+                <tr><td>(-) Total Cash Outflow (Credit/Expense)</td><td style="text-align: right;">(${fmt(snap.reconciliation.outflow)})</td></tr>
+                <tr style="font-weight: bold;"><td>Calculated Closing Balance</td><td style="text-align: right;">${fmt(snap.reconciliation.calculated_cash)}</td></tr>
+                <tr style="font-weight: bold; background: #eee;"><td>Actual Total Assets (End of Day)</td><td style="text-align: right;">${fmt(snap.reconciliation.actual_cash)}</td></tr>
+                <tr style="background: #000; color: #fff; font-weight: bold; font-size: 12pt;">
+                    <td>DAILY NET PROFIT / COMMISSION</td>
+                    <td style="text-align: right;">৳ ${fmt(snap.reconciliation.profit)}</td>
+                </tr>
             </table>
         </div>
 
-        <!-- SECTION 2 -->
-        <div class="dcr-section-box">
-            <div class="dcr-section-title">SECTION 2: FINANCIAL SUMMARY</div>
+        <!-- SUMMARY BOX -->
+        <div class="dcr-page-break">
+            <div class="dcr-section-header">SECTION 2: EXECUTIVE SUMMARY</div>
             <table class="dcr-table">
-                <tr><td style="width: 70%;">Total Outstanding Receivable (Customer Due)</td><td style="text-align: right;">${fmt(snap.summary.receivable)}</td></tr>
-                <tr><td>Total Advance Payable (Customer Credit)</td><td style="text-align: right;">${fmt(snap.summary.payable)}</td></tr>
-                <tr style="background:#e0e0e0; font-weight:bold;"><td>TOTAL NET FINANCIAL WORTH</td><td style="text-align: right;">৳ ${fmt(snap.summary.net_worth || snap.summary.net_balance)}</td></tr>
+                <tr><td style="width: 70%;">Total Outstanding Receivable (Due)</td><td style="text-align: right;">${fmt(snap.summary.receivable)}</td></tr>
+                <tr><td>Total Advance Payable (Advance)</td><td style="text-align: right;">${fmt(snap.summary.payable)}</td></tr>
+                <tr style="background: #ddd; font-weight: bold; font-size: 12pt;">
+                    <td>TOTAL NET FINANCIAL WORTH</td>
+                    <td style="text-align: right;">৳ ${fmt(snap.summary.net_worth || snap.summary.net_balance)}</td>
+                </tr>
             </table>
         </div>
 
-        <!-- DETAILS -->
-        ${renderSubTable(snap.accounts.bank, "BANK ACCOUNTS", snap.accounts.b_sum)}
-        ${renderSubTable(snap.accounts.personal, "PERSONAL ACCOUNTS", snap.accounts.p_sum)}
-        ${renderSubTable(snap.accounts.agent, "AGENT ACCOUNTS", snap.accounts.a_sum)}
-        ${renderSubTable(snap.accounts.recharge, "RECHARGE ACCOUNTS", snap.accounts.r_sum)}
+        <!-- ALL ACCOUNT CATEGORIES (One by One) -->
+        ${drawTable(snap.accounts.bank, "BANK ACCOUNTS", snap.accounts.b_sum)}
+        ${drawTable(snap.accounts.personal, "PERSONAL ACCOUNTS", snap.accounts.p_sum)}
+        ${drawTable(snap.accounts.agent, "AGENT ACCOUNTS", snap.accounts.a_sum)}
+        ${drawTable(snap.accounts.recharge, "RECHARGE BALANCES", snap.accounts.r_sum)}
 
-        <!-- CASH & CARDS (Stable 2-Column Table) -->
-        <table style="width: 100%; border-collapse: collapse; page-break-inside: avoid;">
-            <tr>
-                <td style="width: 49%; vertical-align: top; padding-right: 5px; border: none !important;">
-                    ${renderSubTable(snap.cash_details.map(c => ({name: c.note + ' (x'+c.qty+')', balance: c.amount})), "CASH DETAILS", snap.reconciliation.actual_cash)}
-                </td>
-                <td style="width: 49%; vertical-align: top; padding-left: 5px; border: none !important;">
-                    ${renderSubTable(snap.card_details.map(c => ({name: c.name + ' (x'+c.qty+')', balance: c.total})), "CARD STOCK", snap.summary.total_cards)}
-                </td>
-            </tr>
-        </table>
+        <!-- CASH & CARDS (Full Width) -->
+        ${drawTable(snap.cash_details.map(c => ({name: c.note + " (x" + c.qty + ")", balance: c.amount})), "CASH INVENTORY BREAKDOWN", snap.reconciliation.actual_cash)}
+        ${drawTable(snap.card_details.map(c => ({name: c.name + " (x" + c.qty + ")", balance: c.total})), "CARD STOCK BREAKDOWN", snap.summary.total_cards)}
 
-        <!-- SIGNATURE -->
-        <div style="margin-top: 40px; display: flex; justify-content: space-between; padding: 0 40px; page-break-inside: avoid;">
-            <div style="text-align: center;">
-                <div style="border-top: 1pt solid #000; width: 150px; font-size: 10pt; font-weight: bold; padding-top: 5px;">Prepared By</div>
-            </div>
-            <div style="text-align: center;">
-                <div style="border-top: 1pt solid #000; width: 150px; font-size: 10pt; font-weight: bold; padding-top: 5px;">Authorized Signature</div>
-            </div>
+        <!-- SIGNATURES -->
+        <div style="margin-top: 60px; display: flex; justify-content: space-between; padding: 0 40px; page-break-inside: avoid;">
+            <div style="text-align: center; border-top: 1.5px solid #000; width: 200px; padding-top: 5px; font-weight: bold;">Prepared By</div>
+            <div style="text-align: center; border-top: 1.5px solid #000; width: 200px; padding-top: 5px; font-weight: bold;">Authorized Signature</div>
         </div>
+        <div style="text-align: center; font-size: 8pt; color: #999; margin-top: 30px;">System generated report by Mousumi Computer ERP</div>
     </div>`;
     container.innerHTML = html;
 };
@@ -4825,18 +4827,19 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
     const element = document.getElementById('printable-closing-report');
     if (!element) return;
 
-    const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const fileName = `Financial_Report_${dateStr}.pdf`;
+    const dateStr = new Date().toISOString().split('T')[0];
+    const fileName = `Mousumi_Report_${dateStr}.pdf`;
 
     const opt = {
-        margin: [10, 10, 10, 10], // মার্জিন কিছুটা বাড়ানো হলো সৌন্দর্যের জন্য
+        margin: [10, 10, 10, 10], // উপরে, বামে, নিচে, ডানে ১০মিমি মার্জিন
         filename: fileName,
         image: { type: 'jpeg', quality: 1 },
         html2canvas: { 
             scale: 2, 
             useCORS: true, 
-            letterRendering: true
+            logging: false,
+            letterRendering: true,
+            windowWidth: 800 // এটি টেবিলকে ফিক্সড রাখতে সাহায্য করবে
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
