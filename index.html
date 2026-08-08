@@ -4946,40 +4946,54 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
             const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).replace(/[:\s]/g, '-');
             const fileName = `Daily_Report_${dateStr}_${timeStr}.pdf`;
 
-            // একটি অদৃশ্য ডামি কন্টেইনার তৈরি করা যাতে ব্লগারের স্টাইল কাজ না করে
+            // অদৃশ্য ডামি কন্টেইনার তৈরি এবং স্টাইল একদম ফ্রেশ করে দেওয়া
             const worker = document.createElement('div');
-            worker.style.position = 'fixed';
+            worker.style.position = 'absolute';
             worker.style.left = '-9999px';
             worker.style.top = '0';
-            worker.style.width = '210mm'; // ফিক্সড A4 সাইজ
-            worker.innerHTML = element.innerHTML;
+            worker.style.width = '210mm';
+            worker.style.margin = '0';
+            worker.style.padding = '0';
+            worker.style.background = 'white';
+
+            // ভেতরের কন্টেন্টকে একটি টাইট বক্সে রাখা যাতে ওপরের গ্যাপ না থাকে
+            worker.innerHTML = `
+                <div style="width: 210mm; padding: 10mm; margin: 0; box-sizing: border-box; font-family: Arial, sans-serif;">
+                    ${element.innerHTML}
+                </div>
+            `;
             document.body.appendChild(worker);
 
-            // ডামি কন্টেইনারের ভেতরের সব টেবিলকে ফিক্সড ডিজাইন দেওয়া
+            // টেবিলগুলোর উইডথ ঠিক করা
             const tables = worker.querySelectorAll('table');
             tables.forEach(table => {
                 table.style.width = '100%';
                 table.style.borderCollapse = 'collapse';
-                table.style.marginBottom = '10px';
+                table.style.margin = '0 0 10px 0';
             });
 
             const opt = {
-                margin: [10, 10, 10, 10], // উপরে, বামে, নিচে, ডানে ১০মিমি জায়গা
+                margin: 0, // এখানে ০ থাকবে কারণ আমরা ভেতরে ১০মিমি প্যাডিং দিয়েছি
                 filename: fileName,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
                     scale: 2, 
                     useCORS: true, 
-                    letterRendering: true 
+                    logging: false,
+                    scrollY: 0, // স্ক্রল পজিশন ০ করে দেওয়া যাতে ওপরের গ্যাপ না আসে
+                    letterRendering: true
                 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
 
-            // পিডিএফ তৈরি এবং ডামি কন্টেইনার মুছে ফেলা
+            // পিডিএফ সেভ এবং ক্লিনিং
             html2pdf().set(opt).from(worker).save().then(() => {
                 document.body.removeChild(worker);
                 showToast("রিপোর্ট সফলভাবে ডাউনলোড হয়েছে", "success");
+            }).catch(err => {
+                console.error("PDF Error:", err);
+                document.body.removeChild(worker);
             });
         };
         window.exportDailyClosingExcel = () => {
