@@ -4931,24 +4931,41 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
             
         // ৭. পিডিএফ এবং এক্সেল ডাউনলোড (নিখুঁত কোড)
         window.downloadDailyClosingPDF = function() {
-    const element = document.getElementById('printable-closing-report');
-    if (!element) return;
+            const element = document.getElementById('printable-closing-report');
+            if (!element) return;
 
-    // বর্তমান তারিখ এবং সময় দিয়ে ফাইলের নাম তৈরি
-    const now = new Date();
-    const dateStr = now.toISOString().split('T')[0]; // 2024-08-05
-    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).replace(/[:\s]/g, '-');
-    const fileName = `Daily_Report_${dateStr}_${timeStr}.pdf`;
+            // বর্তমান তারিখ এবং সময় দিয়ে ফাইলের নাম তৈরি
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).replace(/[:\s]/g, '-');
+            const fileName = `Daily_Report_${dateStr}_${timeStr}.pdf`;
 
-    const opt = {
-        margin: 10,
-        filename: fileName,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    html2pdf().set(opt).from(element).save();
-};
+            // ওয়েবসাইট থেকে ডাউনলোড করলে যাতে ডিজাইন না ভেঙে যায় সেজন্য এই বিশেষ সেটিংস
+            element.style.width = "210mm"; 
+            element.style.padding = "10mm";
+            element.style.background = "#ffffff";
+
+            const opt = {
+                margin: 0,
+                filename: fileName,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false,
+                    letterRendering: true
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            // পিডিএফ সেভ করার প্রসেস
+            html2pdf().set(opt).from(element).toPdf().get('pdf').save(fileName).then(() => {
+                // ডাউনলোড হয়ে গেলে স্ক্রিনের ভিউ আবার আগের মতো করে দেওয়া
+                element.style.width = "100%";
+                element.style.padding = "0";
+            });
+        };
         window.exportDailyClosingExcel = () => {
             const t = document.querySelector('#printable-closing-report table');
             if (!t) { alert("টেবিল পাওয়া যায়নি!"); return; }
