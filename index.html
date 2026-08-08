@@ -4675,7 +4675,56 @@ window.deleteDCRReport = function(reportId) {
     });
 };
 
-// --- ডেইলি ক্লোজিং রিপোর্ট রেন্ডার (২-পাতার পিডিএফ লেআউটসহ) ---
+// ==========================================
+// নেভিগেশন এবং মেনু কন্ট্রোল ফাংশন (এগুলো ডিলিট হয়েছিল)
+// ==========================================
+
+window.toggleParentMenu = (id) => {
+    const m = document.getElementById(id);
+    if(m) {
+        const s = m.querySelector('.submenu-list');
+        if(s) s.classList.toggle('show');
+        m.classList.toggle('open');
+    }
+};
+
+window.switchMainTab = (tab) => {
+    console.log("Switching to Page:", tab);
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+
+    let viewId = tab.endsWith('-view') ? tab : tab + '-view';
+    const panel = document.getElementById(viewId);
+    
+    if(panel) {
+        panel.classList.add('active');
+        const titleElement = document.getElementById('top-title');
+        if(titleElement) {
+            const cleanTitle = tab.replace(/-/g, ' ');
+            titleElement.innerText = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
+        }
+    }
+
+    // নির্দিষ্ট পেজ লোড হওয়ার সময় ডাটা রেন্ডার করা
+    if(tab === 'cash-inventory') renderCashInventoryTable();
+    if(tab === 'card-inventory') renderAccordionInventory();
+    if(tab === 'daily-closing') renderDailyClosingHistory();
+    
+    if(document.getElementById('profileDropdown')) document.getElementById('profileDropdown').classList.remove('active');
+};
+
+// --- কাস্টমার সাব-সেকশন পরিবর্তন ---
+window.switchCustomerSubSection = function(sectionId) {
+    document.querySelectorAll('.cust-sub-section').forEach(sec => sec.style.display = 'none');
+    const target = document.getElementById(sectionId);
+    if (target) target.style.display = 'block';
+    if (sectionId === 'cust-list-section') renderCustomerListTable();
+};
+
+// ==========================================
+// ডেইলি ক্লোজিং এবং পিডিএফ জেনারেশন (পেজ ব্রেকসহ)
+// ==========================================
+
 window.renderDailyClosingReportView = function(snap) {
     const container = document.getElementById('printable-closing-report');
     if (!container) return;
@@ -4723,7 +4772,7 @@ window.renderDailyClosingReportView = function(snap) {
         ${renderSubTable(snap.accounts.personal, "PERSONAL ACCOUNTS", snap.accounts.p_sum)}
         ${renderSubTable(snap.accounts.agent, "AGENT ACCOUNTS", snap.accounts.a_sum)}
         
-        <!-- পিডিএফ পেজ ব্রেক -->
+        <!-- পিডিএফ পেজ ব্রেক (২য় পাতা এখান থেকে শুরু হবে) -->
         <div class="pdf-page-break"></div>
 
         ${renderSubTable(snap.accounts.recharge, "RECHARGE BALANCES", snap.accounts.r_sum)}
@@ -4750,19 +4799,12 @@ window.renderDailyClosingReportView = function(snap) {
     container.innerHTML = html;
 };
 
-// --- পিডিএফ ডাউনলোড ফাংশন ---
 window.downloadDailyClosingPDF = function() {
     const element = document.getElementById('printable-closing-report');
     if (!element) return;
-
-    const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).replace(/[:\s]/g, '-');
-    const fileName = `Daily_Report_${dateStr}_${timeStr}.pdf`;
-
     const opt = {
         margin: 10,
-        filename: fileName,
+        filename: 'Daily_Report.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -4771,7 +4813,6 @@ window.downloadDailyClosingPDF = function() {
     html2pdf().set(opt).from(element).save();
 };
 
-// --- এক্সেল এক্সপোর্ট ফাংশন ---
 window.exportDailyClosingExcel = () => {
     const t = document.querySelector('#printable-closing-report table');
     if (!t) { alert("টেবিল পাওয়া যায়নি!"); return; }
@@ -4779,7 +4820,10 @@ window.exportDailyClosingExcel = () => {
     XLSX.writeFile(wb, 'Report.xlsx');
 };
 
-// --- গ্লোবাল অ্যাকশন এবং ইনিশিয়ালাইজেশন ---
+// ==========================================
+// গ্লোবাল ইনিশিয়ালাইজেশন
+// ==========================================
+
 function initGlobalActions() {
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebar = document.getElementById('sidebar');
@@ -4791,21 +4835,15 @@ function initGlobalActions() {
             sidebar.classList.toggle('collapsed');
         };
     }
-
     if (profileTrigger && profileDropdown) {
         profileTrigger.onclick = (e) => {
             e.stopPropagation();
             profileDropdown.classList.toggle('active');
         };
     }
-
     document.addEventListener('click', () => {
         if (profileDropdown) profileDropdown.classList.remove('active');
     });
-
-    if (typeof window.renderCustomerListTable === 'function') {
-        window.renderCustomerListTable();
-    }
 }
 
 window.addEventListener('DOMContentLoaded', initGlobalActions);
