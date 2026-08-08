@@ -1190,12 +1190,16 @@
 
     /*--- ROBUST A4 ISOLATED PRINT TEMPLATE ---*/
         #pdf-isolated-template {
-            position: absolute;
-            left: -9999px; /* স্ক্রিনে দেখা যাবে না, পর্দার আড়ালে থাকবে */
+            position: fixed; /* এখানে পরিবর্তন করা হয়েছে */
+            left: 0;
             top: 0;
-            width: 210mm; /* স্ট্যান্ডার্ড A4 উইডথ */
-            background: #fff;
-            padding: 0;
+            width: 210mm;
+            z-index: -1000; /* এটি ড্যাশবোর্ডের পেছনে চলে যাবে */
+            background: #ffffff;
+            opacity: 1;
+            visibility: visible;
+            overflow: hidden;
+            height: 0; /* স্ক্রিনে জায়গা দখল করবে না */
         }
 
         .pdf-page {
@@ -4830,8 +4834,7 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
 });
             
         // ৭. পিডিএফ এবং এক্সেল ডাউনলোড (নিখুঁত কোড)
-        window.downloadDailyClosingPDF = async function(reportId) {
-    // ১. ডাটা খুঁজে বের করা
+window.downloadDailyClosingPDF = async function(reportId) {
     let snap = activeViewingReport; 
     if (reportId) {
         snap = dailyClosingReports.find(r => r.report_id === reportId);
@@ -4842,9 +4845,8 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
         return;
     }
 
-    showLoader("PDF জেনারেট হচ্ছে...");
+    showLoader("পিডিএফ ফাইল তৈরি হচ্ছে...");
 
-    // ২. অদৃশ্য টেমপ্লেট কন্টেইনার তৈরি (এটি ড্যাশবোর্ডের বাইরে থাকবে)
     let pdfContainer = document.getElementById('pdf-isolated-template');
     if (!pdfContainer) {
         pdfContainer = document.createElement('div');
@@ -4852,15 +4854,17 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
         document.body.appendChild(pdfContainer);
     }
 
+    // পিডিফ কন্টেইনার সাময়িকভাবে বড় করা
+    pdfContainer.style.height = "auto";
+
     const fmt = (n) => (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
 
-    // ৩. টেমপ্লেটের ভেতরে এ৪ সাইজ অনুযায়ী ডাটা সাজানো
     pdfContainer.innerHTML = `
-    <div class="pdf-page">
+    <div class="pdf-page" style="background:#fff; padding: 20px;">
         <div class="pdf-header-box">
-            <h1 style="margin:0; font-size:22pt; text-transform: uppercase;">${snap.company_name}</h1>
-            <p style="margin:5px 0; font-size:12pt; font-weight:bold;">DAILY FINANCIAL CLOSING REPORT</p>
-            <div style="display:flex; justify-content:space-between; font-size:10pt; margin-top:10px; font-family: sans-serif;">
+            <h1 style="margin:0; font-size:22pt; text-transform: uppercase; color:#000;">${snap.company_name}</h1>
+            <p style="margin:5px 0; font-size:12pt; font-weight:bold; color:#000;">DAILY FINANCIAL CLOSING REPORT</p>
+            <div style="display:flex; justify-content:space-between; font-size:10pt; margin-top:10px; color:#000;">
                 <span><b>Date:</b> ${snap.report_date}</span>
                 <span><b>Report ID:</b> ${snap.report_id}</span>
                 <span><b>Time:</b> ${snap.closing_time}</span>
@@ -4869,12 +4873,12 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
 
         <div class="pdf-section-title">SECTION 1: CAPITAL RECONCILIATION</div>
         <table class="pdf-table">
-            <tr style="background:#f9f9f9; font-weight:bold;"><td>DESCRIPTION</td><td style="text-align:right; width:35%;">AMOUNT (৳)</td></tr>
-            <tr><td style="width:70%;">Opening Capital Balance (Start of Day)</td><td style="text-align:right;">${fmt(snap.reconciliation.opening_cash)}</td></tr>
+            <tr style="background:#f2f2f2; font-weight:bold;"><td>DESCRIPTION</td><td style="text-align:right;">AMOUNT (৳)</td></tr>
+            <tr><td style="width:70%;">Opening Balance (Total Assets)</td><td style="text-align:right;">${fmt(snap.reconciliation.opening_cash)}</td></tr>
             <tr><td>(+) Total Cash Inflow (Collection)</td><td style="text-align:right;">${fmt(snap.reconciliation.inflow)}</td></tr>
             <tr><td>(-) Total Cash Outflow (Due/Sales)</td><td style="text-align:right;">(${fmt(snap.reconciliation.outflow)})</td></tr>
             <tr style="font-weight:bold;"><td>Calculated Closing Balance</td><td style="text-align:right;">${fmt(snap.reconciliation.calculated_cash)}</td></tr>
-            <tr style="font-weight:bold; background:#eee;"><td>ACTUAL TOTAL ASSETS (Physical Count)</td><td style="text-align:right;">${fmt(snap.reconciliation.actual_cash)}</td></tr>
+            <tr style="font-weight:bold; background:#eee;"><td>ACTUAL TOTAL ASSETS (End of Day)</td><td style="text-align:right;">${fmt(snap.reconciliation.actual_cash)}</td></tr>
             <tr style="background:#000; color:#fff; font-weight:bold; font-size:12pt;"><td>DAILY NET PROFIT / COMMISSION</td><td style="text-align:right;">৳ ${fmt(snap.reconciliation.profit)}</td></tr>
         </table>
 
@@ -4887,7 +4891,7 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
 
         <div class="pdf-section-title">DETAILED ACCOUNTS</div>
         <table class="pdf-table">
-            <tr style="background:#f0f0f0; font-weight:bold;"><td>ACCOUNT NAME</td><td style="text-align:right; width:35%;">BALANCE (৳)</td></tr>
+            <tr style="background:#f0f0f0; font-weight:bold;"><td>ACCOUNT NAME</td><td style="text-align:right;">BALANCE (৳)</td></tr>
             ${[...snap.accounts.bank, ...snap.accounts.personal, ...snap.accounts.agent, ...snap.accounts.recharge].map(a => `
                 <tr><td>${a.name}</td><td style="text-align:right;">${fmt(a.balance)}</td></tr>
             `).join('')}
@@ -4896,35 +4900,42 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
         <div style="page-break-inside: avoid;">
             <div class="pdf-section-title">CASH & CARD INVENTORY</div>
             <table class="pdf-table">
-                <tr style="background:#f0f0f0; font-weight:bold;"><td>INVENTORY ITEM</td><td style="text-align:right; width:35%;">TOTAL (৳)</td></tr>
-                ${snap.cash_details.map(c => `<tr><td>${c.note} (x${c.qty})</td><td style="text-align:right;">${fmt(c.amount)}</td></tr>`).join('')}
-                ${snap.card_details.map(c => `<tr><td>${c.name} (x${c.qty})</td><td style="text-align:right;">${fmt(c.total)}</td></tr>`).join('')}
+                ${snap.cash_details.map(c => `<tr><td>${c.note} (x${c.qty})</td><td style="text-align:right; width:35%;">${fmt(c.amount)}</td></tr>`).join('')}
+                ${snap.card_details.map(c => `<tr><td>${c.name} (x${c.qty})</td><td style="text-align:right; width:35%;">${fmt(c.total)}</td></tr>`).join('')}
             </table>
         </div>
 
         <div style="margin-top:60px; display:flex; justify-content:space-between; padding:0 40px; page-break-inside:avoid;">
-            <div style="text-align:center; border-top:1.5px solid #000; width:200px; padding-top:5px; font-weight:bold; font-size:11pt;">Prepared By</div>
-            <div style="text-align:center; border-top:1.5px solid #000; width:200px; padding-top:5px; font-weight:bold; font-size:11pt;">Authorized Signature</div>
+            <div style="text-align:center; border-top:1.5px solid #000; width:200px; padding-top:5px; font-weight:bold; color:#000;">Prepared By</div>
+            <div style="text-align:center; border-top:1.5px solid #000; width:200px; padding-top:5px; font-weight:bold; color:#000;">Authorized Signature</div>
         </div>
     </div>`;
 
-    // ৪. PDF তৈরি এবং সেভ করার সেটিংস
+    // বিরতি দেওয়া যেন ব্রাউজার ডাটাগুলো আঁকতে পারে
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     const opt = {
-        margin: [10, 5, 10, 5],
-        filename: `Mousumi_Report_${snap.report_date}.pdf`,
+        margin: [10, 8, 10, 8],
+        filename: `Report_${snap.report_date}.pdf`,
         image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollX: 0, scrollY: 0 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            logging: false,
+            backgroundColor: '#ffffff'
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     try {
         await html2pdf().set(opt).from(pdfContainer).save();
-        pdfContainer.innerHTML = ''; // কাজ শেষে মেমোরি ক্লিন করা
+        pdfContainer.style.height = "0"; // আবার লুকিয়ে ফেলা
+        pdfContainer.innerHTML = '';
         hideLoader();
-        showToast("PDF ডাউনলোড শুরু হয়েছে!", "success");
+        showToast("PDF ডাউনলোড সফল হয়েছে!", "success");
     } catch (err) {
         hideLoader();
-        console.error("PDF Error:", err);
+        pdfContainer.style.height = "0";
         showToast("PDF তৈরি করতে সমস্যা হয়েছে।", "error");
     }
 };
