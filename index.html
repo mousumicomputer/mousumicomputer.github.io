@@ -4374,7 +4374,7 @@ window.generateDailyClosingSnapshot = async function() {
 
         /* BALANCE UPDATE PANEL ENGINE */
         window.openBalanceCategoryByName = (name) => {
-    // ক্যাটাগরি খোঁজা (বড় হাত-ছোট হাতের অক্ষরের পার্থক্য দূর করা হয়েছে)
+    // ক্যাটাগরি খোঁজা
     const cat = categories.find(c => c.name.trim().toLowerCase() === name.trim().toLowerCase());
     
     if(!cat) {
@@ -4387,7 +4387,7 @@ window.generateDailyClosingSnapshot = async function() {
     const container = document.getElementById('formFieldsContainer');
     container.innerHTML = '';
 
-    // একাউন্টগুলো খুঁজে ইনপুট তৈরি করা
+    // একাউন্টগুলো খুঁজে ইনপুট তৈরি করা (এখানে ID ঠিক করা হয়েছে)
     const catAccs = accounts.filter(a => a.catId === cat.id);
     if(catAccs.length === 0) {
         container.innerHTML = '<p style="color:red; padding:10px;">এই ক্যাটাগরিতে কোনো একাউন্ট পাওয়া যায়নি।</p>';
@@ -4398,14 +4398,13 @@ window.generateDailyClosingSnapshot = async function() {
         container.innerHTML += `
             <div style="margin-bottom:15px; background:#f9f9f9; padding:10px; border-radius:8px; border:1px solid #eee;">
                 <label style="font-weight:700; display:block; margin-bottom:5px;">${acc.name}</label>
-                <input type="number" step="any" id="inp_${acc.id}" value="${val}" 
+                <input type="number" step="any" id="input_acc_${acc.id}" value="${val}" 
                 style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:1rem;">
             </div>`;
     });
 
     switchMainTab('balance'); 
 };
-
         document.getElementById('balanceUpdateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             showLoader("Updating Balances...");
@@ -4415,10 +4414,11 @@ window.generateDailyClosingSnapshot = async function() {
             const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
 
             catAccs.forEach(acc => {
+                // ID খুঁজে নতুন ভ্যালু নেওয়া হচ্ছে
                 const inputEl = document.getElementById(`input_acc_${acc.id}`);
                 if (inputEl) {
                     const newBal = parseFloat(inputEl.value) || 0;
-                    const prevBal = balanceStore[acc.id] || 0;
+                    const prevBal = parseFloat(balanceStore[acc.id]) || 0;
 
                     if (newBal !== prevBal) {
                         const diff = newBal - prevBal;
@@ -4438,17 +4438,17 @@ window.generateDailyClosingSnapshot = async function() {
             });
 
             try {
+                // Firebase-এ ডেটা সেভ করা হচ্ছে
                 await writeToFirebase('erp/balances', balanceStore);
                 await writeToFirebase('erp/fintechHistory', historyLogs);
                 updateDashboardCards();
                 hideLoader();
-                showToast("Balances updated successfully!", "success");
+                showToast("ব্যালেন্স সফলভাবে সেভ হয়েছে!", "success");
             } catch (err) {
                 hideLoader();
-                showToast("Error updating balances.", "error");
+                showToast("ব্যালেন্স সেভ করতে সমস্যা হয়েছে।", "error");
             }
         });
-
         /* CARD MASTER CONFIGURATION VIEW */
         window.renderCardMasterView = function() {
             const container = document.getElementById('cardMasterTablesContainer');
