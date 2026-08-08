@@ -1191,9 +1191,9 @@
     /*--- FIXED A4 PRINT CSS ---*/
         .dcr-print-document {
             font-family: 'Arial', 'Tiro Bangla', sans-serif;
-            width: 190mm; /* A4 Width minus margins */
+            width: 185mm; /* উইডথ কিছুটা কমানো হলো যেন সাইড না কাটে */
             margin: 0 auto;
-            padding: 0;
+            padding: 5mm;
             color: #000;
             background: #fff;
         }
@@ -1201,28 +1201,29 @@
         .dcr-table {
             width: 100%;
             border-collapse: collapse !important;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             table-layout: fixed;
         }
 
         .dcr-table th, .dcr-table td {
             border: 0.5pt solid #000 !important;
-            padding: 4px 6px !important;
-            font-size: 10pt;
+            padding: 3px 5px !important;
+            font-size: 9pt; /* ফন্ট সাইজ ১ পয়েন্ট কমানো হলো */
             word-wrap: break-word;
+            overflow: hidden;
         }
 
         .dcr-section-box {
             border: 1pt solid #000;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             page-break-inside: avoid;
         }
 
         .dcr-section-title {
             background: #f0f0f0;
             font-weight: bold;
-            font-size: 11pt;
-            padding: 5px;
+            font-size: 10pt;
+            padding: 4px;
             border-bottom: 1pt solid #000;
             text-transform: uppercase;
         }
@@ -4570,8 +4571,8 @@ window.renderDailyClosingReportView = function(snap) {
             <div class="dcr-section-title">${title}</div>
             <table class="dcr-table">
                 <tr style="background:#f0f0f0; font-weight:bold;">
-                    <td style="width: 70%;">ACCOUNT NAME</td>
-                    <td style="text-align: right;">BALANCE (৳)</td>
+                    <td style="width: 65%;">ITEM NAME</td>
+                    <td style="text-align: right;">AMOUNT (৳)</td>
                 </tr>
                 ${arr.map(a => `<tr><td>${a.name}</td><td style="text-align: right;">${fmt(a.balance)}</td></tr>`).join('')}
                 <tr style="font-weight: bold; background: #f0f0f0;"><td>TOTAL ${title}</td><td style="text-align: right;">${fmt(sum)}</td></tr>
@@ -4583,35 +4584,35 @@ window.renderDailyClosingReportView = function(snap) {
     <div class="dcr-print-document">
         <!-- HEADER -->
         <div style="text-align: center; border-bottom: 2pt solid #000; padding-bottom: 10px; margin-bottom: 15px;">
-            <h1 style="margin: 0; font-size: 20pt; text-transform: uppercase;">${snap.company_name}</h1>
-            <p style="margin: 5px 0; font-size: 11pt; font-weight: bold;">DAILY FINANCIAL CLOSING REPORT</p>
-            <div style="display: flex; justify-content: space-between; font-size: 9pt; margin-top: 10px; font-family: sans-serif;">
+            <h1 style="margin: 0; font-size: 20pt; text-transform: uppercase; letter-spacing: 1px;">${snap.company_name}</h1>
+            <p style="margin: 3px 0; font-size: 11pt; font-weight: bold;">DAILY FINANCIAL CLOSING REPORT</p>
+            <div style="display: flex; justify-content: space-between; font-size: 9pt; margin-top: 10px;">
                 <span><b>Date:</b> ${snap.report_date}</span>
                 <span><b>Report ID:</b> ${snap.report_id}</span>
                 <span><b>Closing Time:</b> ${snap.closing_time}</span>
             </div>
         </div>
 
-        <!-- RECONCILIATION -->
+        <!-- SECTION 1 -->
         <div class="dcr-section-box">
             <div class="dcr-section-title">SECTION 1: CAPITAL RECONCILIATION</div>
             <table class="dcr-table">
                 <tr><td style="width: 70%;">Opening Capital Balance (Total Assets)</td><td style="text-align: right;">${fmt(snap.reconciliation.opening_cash)}</td></tr>
                 <tr><td>(+) Total Cash Inflow (Collection)</td><td style="text-align: right;">${fmt(snap.reconciliation.inflow)}</td></tr>
                 <tr><td>(-) Total Cash Outflow (Due/Sales)</td><td style="text-align: right;">(${fmt(snap.reconciliation.outflow)})</td></tr>
-                <tr style="font-weight:bold; background:#f9f9f9;"><td>Calculated Closing Balance</td><td style="text-align: right;">${fmt(snap.reconciliation.calculated_cash)}</td></tr>
+                <tr style="font-weight:bold;"><td>Calculated Closing Balance</td><td style="text-align: right;">${fmt(snap.reconciliation.calculated_cash)}</td></tr>
                 <tr style="font-weight:bold; background:#eee;"><td>ACTUAL TOTAL ASSETS (Physical Count)</td><td style="text-align: right;">${fmt(snap.reconciliation.actual_cash)}</td></tr>
-                <tr style="background:#000; color:#fff; font-weight:bold; font-size:12pt;"><td>DAILY NET PROFIT / COMMISSION</td><td style="text-align: right;">৳ ${fmt(snap.reconciliation.profit)}</td></tr>
+                <tr style="background:#000; color:#fff; font-weight:bold; font-size: 11pt;"><td>DAILY NET PROFIT / COMMISSION</td><td style="text-align: right;">৳ ${fmt(snap.reconciliation.profit)}</td></tr>
             </table>
         </div>
 
-        <!-- SUMMARY -->
+        <!-- SECTION 2 -->
         <div class="dcr-section-box">
             <div class="dcr-section-title">SECTION 2: FINANCIAL SUMMARY</div>
             <table class="dcr-table">
                 <tr><td style="width: 70%;">Total Outstanding Receivable (Customer Due)</td><td style="text-align: right;">${fmt(snap.summary.receivable)}</td></tr>
-                <tr><td>Total Advance Payable (Advance Payment)</td><td style="text-align: right;">${fmt(snap.summary.payable)}</td></tr>
-                <tr style="background:#e0e0e0; font-weight:bold; font-size:11pt;"><td>TOTAL NET FINANCIAL WORTH</td><td style="text-align: right;">৳ ${fmt(snap.summary.net_worth || snap.summary.net_balance)}</td></tr>
+                <tr><td>Total Advance Payable (Customer Credit)</td><td style="text-align: right;">${fmt(snap.summary.payable)}</td></tr>
+                <tr style="background:#e0e0e0; font-weight:bold;"><td>TOTAL NET FINANCIAL WORTH</td><td style="text-align: right;">৳ ${fmt(snap.summary.net_worth || snap.summary.net_balance)}</td></tr>
             </table>
         </div>
 
@@ -4621,20 +4622,26 @@ window.renderDailyClosingReportView = function(snap) {
         ${renderSubTable(snap.accounts.agent, "AGENT ACCOUNTS", snap.accounts.a_sum)}
         ${renderSubTable(snap.accounts.recharge, "RECHARGE ACCOUNTS", snap.accounts.r_sum)}
 
-        <!-- CASH & CARDS -->
-        <div style="display: flex; gap: 15px; page-break-inside: avoid;">
-            <div style="flex: 1;">
-                ${renderSubTable(snap.cash_details.map(c => ({name: c.note + ' (x'+c.qty+')', balance: c.amount})), "CASH DETAILS", snap.reconciliation.actual_cash)}
-            </div>
-            <div style="flex: 1;">
-                ${renderSubTable(snap.card_details.map(c => ({name: c.name + ' (x'+c.qty+')', balance: c.total})), "CARD STOCK", snap.summary.total_cards)}
-            </div>
-        </div>
+        <!-- CASH & CARDS (Stable 2-Column Table) -->
+        <table style="width: 100%; border-collapse: collapse; page-break-inside: avoid;">
+            <tr>
+                <td style="width: 49%; vertical-align: top; padding-right: 5px; border: none !important;">
+                    ${renderSubTable(snap.cash_details.map(c => ({name: c.note + ' (x'+c.qty+')', balance: c.amount})), "CASH DETAILS", snap.reconciliation.actual_cash)}
+                </td>
+                <td style="width: 49%; vertical-align: top; padding-left: 5px; border: none !important;">
+                    ${renderSubTable(snap.card_details.map(c => ({name: c.name + ' (x'+c.qty+')', balance: c.total})), "CARD STOCK", snap.summary.total_cards)}
+                </td>
+            </tr>
+        </table>
 
         <!-- SIGNATURE -->
-        <div style="margin-top: 50px; display: flex; justify-content: space-between; padding: 0 30px; page-break-inside: avoid;">
-            <div style="border-top: 1pt solid #000; width: 150px; text-align: center; font-size: 10pt; font-weight: bold;">Prepared By</div>
-            <div style="border-top: 1pt solid #000; width: 150px; text-align: center; font-size: 10pt; font-weight: bold;">Authorized Signature</div>
+        <div style="margin-top: 40px; display: flex; justify-content: space-between; padding: 0 40px; page-break-inside: avoid;">
+            <div style="text-align: center;">
+                <div style="border-top: 1pt solid #000; width: 150px; font-size: 10pt; font-weight: bold; padding-top: 5px;">Prepared By</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="border-top: 1pt solid #000; width: 150px; font-size: 10pt; font-weight: bold; padding-top: 5px;">Authorized Signature</div>
+            </div>
         </div>
     </div>`;
     container.innerHTML = html;
@@ -4823,23 +4830,17 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
     const fileName = `Financial_Report_${dateStr}.pdf`;
 
     const opt = {
-        margin: [8, 8, 8, 8], // Top, Left, Bottom, Right মার্জিন
+        margin: [10, 10, 10, 10], // মার্জিন কিছুটা বাড়ানো হলো সৌন্দর্যের জন্য
         filename: fileName,
         image: { type: 'jpeg', quality: 1 },
         html2canvas: { 
             scale: 2, 
             useCORS: true, 
-            letterRendering: true,
-            scrollX: 0,
-            scrollY: 0
+            letterRendering: true
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
-
-    // ডাউনলোড করার আগে এলিমেন্টটি যেন টপ-লেফটে থাকে তা নিশ্চিত করা
-    element.style.margin = "0";
-    element.style.padding = "0";
 
     html2pdf().set(opt).from(element).save();
 };
