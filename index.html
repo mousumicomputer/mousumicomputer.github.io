@@ -1611,6 +1611,19 @@
     
     .mc-avatar { width: 35px; height: 35px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; font-size: 0.9rem; }
     .mc-btn-details { background: #f8fafc; border: 1px solid #e2e8f0; color: #4f46e5; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'Tiro Bangla', serif; font-size: 0.9rem; }
+/* --- পিডিএফ ডাউনলোড লেআউট ফিক্স --- */
+.pdf-page-break {
+    display: block;
+    page-break-before: always;
+    clear: both;
+}
+
+/* টেবিল যাতে মাঝপথে না কাটে তার জন্য */
+.printable-closing-report table, 
+.printable-closing-report .dcr-table,
+.printable-closing-report div {
+    page-break-inside: avoid;
+}    
     </style>
 </head>
 <body>
@@ -4662,12 +4675,12 @@ window.deleteDCRReport = function(reportId) {
     });
 };
 
+// --- ডেইলি ক্লোজিং রিপোর্ট রেন্ডার (২-পাতার পিডিএফ লেআউটসহ) ---
 window.renderDailyClosingReportView = function(snap) {
     const container = document.getElementById('printable-closing-report');
     if (!container) return;
     const fmt = (n) => (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
     
-    // Optimized Helper for Compact Tables
     function renderSubTable(arr, title, sum) {
         if (!arr || arr.length === 0) return '';
         return `
@@ -4686,7 +4699,6 @@ window.renderDailyClosingReportView = function(snap) {
 
     let html = `
     <div style="font-family: 'Arial', sans-serif; color: #000; padding: 0px 10px; background: #fff; width: 100%; box-sizing: border-box;">
-        <!-- REPORT HEADER -->
         <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; align-items: flex-end;">
             <div style="font-size: 9px; line-height: 1.2;">Date: ${snap.report_date}<br>Time: ${snap.closing_time}</div>
             <div style="text-align: center;">
@@ -4696,247 +4708,55 @@ window.renderDailyClosingReportView = function(snap) {
             <div style="text-align: right; font-size: 9px;">Report ID: ${snap.report_id}</div>
         </div>
 
-        <!-- SECTION 1: CAPITAL RECONCILIATION -->
         <div style="border: 1.5px solid #000; margin-bottom: 12px;">
             <div style="background: #e5e7eb; padding: 5px 10px; font-weight: bold; font-size: 11px; border-bottom: 1.5px solid #000; text-transform: uppercase;">SECTION 1: CAPITAL RECONCILIATION</div>
             <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                <tr style="background:#f3f4f6; font-weight:bold;">
-                    <td style="border: 1px solid #000; padding: 5px 10px;">DESCRIPTION</td>
-                    <td style="border: 1px solid #000; padding: 5px 10px; text-align: right; width: 35%;">AMOUNT (৳)</td>
-                </tr>
                 <tr><td style="border: 1px solid #000; padding: 4px 10px;">Opening Balance (Start of Day)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.opening_cash)}</td></tr>
                 <tr><td style="border: 1px solid #000; padding: 4px 10px;">(+) Total Cash Inflow (Collection)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.inflow)}</td></tr>
                 <tr><td style="border: 1px solid #000; padding: 4px 10px;">(-) Total Cash Outflow (Credit/Expense)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">(৳ ${fmt(snap.reconciliation.outflow)})</td></tr>
-                <tr style="font-weight: bold; background: #f9fafb;"><td style="border: 1px solid #000; padding: 5px 10px;">Calculated Closing Balance</td><td style="border: 1px solid #000; padding: 5px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.calculated_cash)}</td></tr>
-                <tr style="font-weight: bold;"><td style="border: 1px solid #000; padding: 5px 10px;">Actual Total Assets (End of Day)</td><td style="border: 1px solid #000; padding: 5px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.actual_cash)}</td></tr>
+                <tr style="font-weight: bold;"><td style="border: 1px solid #000; padding: 5px 10px;">Calculated Closing Balance</td><td style="border: 1px solid #000; padding: 5px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.calculated_cash)}</td></tr>
                 <tr style="font-weight: bold; background: #d1d5db; font-size: 12px;"><td style="border: 1px solid #000; padding: 7px 10px;">DAILY NET PROFIT / COMMISSION</td><td style="border: 1px solid #000; padding: 7px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.profit)}</td></tr>
             </table>
         </div>
 
-        <!-- SECTION 2: EXECUTIVE SUMMARY -->
-        <div style="border: 1.5px solid #000; margin-bottom: 12px; page-break-inside: avoid;">
-            <div style="background: #e5e7eb; padding: 5px 10px; font-weight: bold; font-size: 11px; border-bottom: 1.5px solid #000; text-transform: uppercase;">SECTION 2: EXECUTIVE SUMMARY</div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                <tr><td style="border: 1px solid #000; padding: 4px 10px; width: 65%;">Total Outstanding Receivable (Due)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.summary.receivable)}</td></tr>
-                <tr><td style="border: 1px solid #000; padding: 4px 10px;">Total Advance Payable (Advance)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.summary.payable)}</td></tr>
-                <tr style="font-weight: bold; background: #d1d5db; font-size: 12px;">
-                    <td style="border: 1px solid #000; padding: 7px 10px;">TOTAL NET FINANCIAL WORTH</td>
-                    <td style="border: 1px solid #000; padding: 7px 10px; text-align: right;">৳ ${fmt(snap.summary.net_worth || snap.summary.net_balance)}</td>
-                </tr>
-            </table>
-        </div>
-
-        <!-- DETAILED ACCOUNTS BREAKDOWN -->
         ${renderSubTable(snap.accounts.bank, "BANK ACCOUNTS", snap.accounts.b_sum)}
         ${renderSubTable(snap.accounts.personal, "PERSONAL ACCOUNTS", snap.accounts.p_sum)}
         ${renderSubTable(snap.accounts.agent, "AGENT ACCOUNTS", snap.accounts.a_sum)}
+        
+        <!-- পিডিএফ পেজ ব্রেক -->
+        <div class="pdf-page-break"></div>
+
         ${renderSubTable(snap.accounts.recharge, "RECHARGE BALANCES", snap.accounts.r_sum)}
 
         <div style="border: 1px solid #000; margin-bottom: 8px; page-break-inside: avoid;">
             <div style="background: #f3f4f6; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #000; text-transform: uppercase;">CASH INVENTORY BREAKDOWN</div>
             <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-                ${snap.cash_details.map(i => `<tr><td style="border: 1px solid #000; padding: 2px 10px;">${i.note}</td><td style="border: 1px solid #000; padding: 2px; text-align:center; width: 15%;">${i.qty}</td><td style="border: 1px solid #000; padding: 2px 10px; text-align:right; width: 30%;">৳ ${fmt(i.amount)}</td></tr>`).join('')}
+                ${snap.cash_details.map(i => `<tr><td style="border: 1px solid #000; padding: 2px 10px;">${i.note}</td><td style="border: 1px solid #000; padding: 2px; text-align:center;">${i.qty}</td><td style="border: 1px solid #000; padding: 2px 10px; text-align:right;">৳ ${fmt(i.amount)}</td></tr>`).join('')}
             </table>
         </div>
 
         <div style="border: 1px solid #000; margin-bottom: 8px; page-break-inside: avoid;">
             <div style="background: #f3f4f6; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #000; text-transform: uppercase;">CARD STOCK BREAKDOWN</div>
             <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-                ${snap.card_details.map(c => `<tr><td style="border: 1px solid #000; padding: 2px 10px;">${c.name}</td><td style="border: 1px solid #000; padding: 2px; text-align:center; width: 15%;">${c.qty}</td><td style="border: 1px solid #000; padding: 2px 10px; text-align:right; width: 30%;">৳ ${fmt(c.total)}</td></tr>`).join('')}
+                ${snap.card_details.map(c => `<tr><td style="border: 1px solid #000; padding: 2px 10px;">${c.name}</td><td style="border: 1px solid #000; padding: 2px; text-align:center;">${c.qty}</td><td style="border: 1px solid #000; padding: 2px 10px; text-align:right;">৳ ${fmt(c.total)}</td></tr>`).join('')}
             </table>
         </div>
 
-        <!-- SIGNATURE AREA -->
         <div style="margin-top: 40px; display: flex; justify-content: space-between; page-break-inside: avoid; padding: 0 20px;">
             <div style="text-align: center; width: 200px; border-top: 1.5px solid #000; padding-top: 5px; font-size: 11px; font-weight: bold;">Prepared By</div>
             <div style="text-align: center; width: 200px; border-top: 1.5px solid #000; padding-top: 5px; font-size: 11px; font-weight: bold;">Authorized Signature</div>
         </div>
-        <div style="font-size: 8px; color: #9ca3af; margin-top: 20px; text-align: center;">System generated summary by Mousumi Computer ERP.</div>
     </div>`;
     container.innerHTML = html;
 };
 
-// --- ডেইলি ক্লোজিং রিপোর্ট ইঞ্জিন শেষ ---
-
-// ১. সাব-সেকশন পরিবর্তন করার উন্নত ফাংশন
-        window.switchCustomerSubSection = function(sectionId) {
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-            document.getElementById('customer-ledger-view').classList.add('active');
-
-            // সাইডবার মেনু হাইলাইট
-            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-            if(document.getElementById('menu-cust-parent')) document.getElementById('menu-cust-parent').classList.add('active');
-
-            // সব সাব-সেকশন হাইড করা
-            document.querySelectorAll('.cust-sub-section').forEach(sec => sec.style.display = 'none');
-            
-            // টার্গেট সেকশন শো করা
-            const target = document.getElementById(sectionId);
-            if (target) target.style.display = 'block';
-
-            document.getElementById('top-title').innerText = "গ্রাহক ব্যবস্থাপনা";
-
-            if (sectionId === 'cust-list-section') renderCustomerListTable();
-            if (sectionId === 'cust-due-section') renderDueSummarySection();
-            if (sectionId === 'cust-tx-section') {
-                document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('txTime').value = new Date().toTimeString().split(' ')[0].substring(0,5);
-                handleTxTypeChange();
-            }
-        };
-
-        // ২. নতুন গ্রাহক ফরম খোলার ফাংশন
-        window.openAddCustomerModal = function() {
-            switchCustomerSubSection('cust-add-section');
-            document.getElementById('newCustomerModernForm').reset();
-            document.getElementById('mCustJoinDate').value = new Date().toISOString().split('T')[0];
-        };
-
-        // ৩. আধুনিক ফরম থেকে ডাটা সেভ করার লজিক
-        const modernCustForm = document.getElementById('newCustomerModernForm');
-        if (modernCustForm) {
-            modernCustForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                showLoader("গ্রাহক তথ্য সংরক্ষণ করা হচ্ছে...");
-
-                const newCust = {
-                    id: 'cust_' + Date.now(),
-                    name: document.getElementById('mCustName').value.trim(),
-                    phone: document.getElementById('mCustPhone').value.trim(),
-                    phoneAlt: document.getElementById('mCustPhoneAlt').value.trim(),
-                    fatherName: document.getElementById('mCustFather').value.trim(),
-                    address: document.getElementById('mCustAddress').value.trim(),
-                    area: document.getElementById('mCustArea').value.trim(),
-                    joinDate: document.getElementById('mCustJoinDate').value,
-                    type: document.getElementById('mCustType').value,
-                    creditLimit: parseFloat(document.getElementById('mCustLimit').value) || 0,
-                    openingBalance: parseFloat(document.getElementById('mCustOpening').value) || 0,
-                    note: document.getElementById('mCustNote').value.trim(),
-                    status: 'Active'
-                };
-
-                try {
-                    customers.push(newCust);
-                    await writeToFirebase('customers', customers);
-                    
-                    showToast("নতুন গ্রাহক সফলভাবে যুক্ত হয়েছে!", "success");
-                    switchCustomerSubSection('cust-list-section');
-                    hideLoader();
-                } catch (err) {
-                    hideLoader();
-                    showToast("তথ্য সংরক্ষণে সমস্যা হয়েছে!", "error");
-                }
-            });
-        }
-        
-// ==========================================
-// মাস্টার ন্যাভিগেশন এবং প্রোফাইল কন্ট্রোল ইঞ্জিন
-// ==========================================
-
-// ১. সাইডবার মেনু টগল (Parent Menu)
-window.toggleParentMenu = (id) => {
-    const m = document.getElementById(id);
-    const s = m.querySelector('.submenu-list');
-    if(s) s.classList.toggle('show');
-};
-
-// ২. মেইন ট্যাব এবং পেজ পরিবর্তন ইঞ্জিন
-window.switchMainTab = (tab) => {
-    console.log("Switching to Page:", tab);
-    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-
-    let viewId = tab.endsWith('-view') ? tab : tab + '-view';
-    const panel = document.getElementById(viewId);
-    
-    if(panel) {
-        panel.classList.add('active');
-        const titleElement = document.getElementById('top-title');
-            if(titleElement) {
-                const cleanTitle = tab.replace(/-/g, ' ');
-                titleElement.innerText = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
-            }
-    } else {
-        // ব্যালেন্স ট্যাব চেক
-        const balView = document.getElementById('balance-view');
-        if(balView) balView.classList.add('active');
-    }
-
-    if(tab === 'cash-inventory') renderCashInventoryTable();
-    if(tab === 'card-inventory') renderAccordionInventory();
-    if(tab === 'daily-closing') renderDailyClosingHistory();
-    
-    if(document.getElementById('profileDropdown')) document.getElementById('profileDropdown').classList.remove('active');
-};
-
-// ৩. প্রোফাইল মোডাল ওপেন করা (Screenshot 2 এর ডিজাইন)
-window.openProfileModal = function() {
-    const d = profileSettings || {};
-    document.getElementById('profNameInp').value = d.fullName || '';
-    document.getElementById('profPhoneInp').value = d.phone || '';
-    document.getElementById('profIdInp').value = d.employeeId || 'MC-8821';
-    document.getElementById('profGenderInp').value = d.gender || 'Male';
-    document.getElementById('profRoleInp').value = d.role || 'Admin';
-    document.getElementById('profCompanyInp').value = d.companyName || 'Mousumi Computer';
-    document.getElementById('profNidInp').value = d.nid || '';
-    document.getElementById('profBloodInp').value = d.bloodGroup || '';
-    
-    window.switchProfileTab('basic');
-    document.getElementById('profileModal').style.display = 'flex';
-};
-
-window.closeProfileModal = () => document.getElementById('profileModal').style.display = 'none';
-
-// ৪. প্রোফাইল ট্যাব সুইচিং (Basic/Professional/Personal)
-window.switchProfileTab = (tabName) => {
-    document.querySelectorAll('.prof-tab').forEach(t => {
-        t.style.opacity = "0.6";
-        t.style.borderBottom = "none";
-    });
-    document.querySelectorAll('.tab-content').forEach(c => c.style.display = "none");
-
-    const activeTab = document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
-    const activeContent = document.getElementById('content' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
-    
-    if(activeTab) {
-        activeTab.style.opacity = "1";
-        activeTab.style.borderBottom = "4px solid #fff";
-    }
-    if(activeContent) activeContent.style.display = "block";
-};
-
-// ৫. পাসওয়ার্ড মোডাল (Screenshot 3 এর ডিজাইন)
-window.openPasswordModal = () => document.getElementById('passwordModal').style.display = 'flex';
-window.closePasswordModal = () => document.getElementById('passwordModal').style.display = 'none';
-
-window.confirmPasswordChange = async function() {
-    const p1 = document.getElementById('newPassInp').value;
-    const p2 = document.getElementById('rePassInp').value;
-    if (p1 !== p2 || p1.length < 6) { alert("পাসওয়ার্ড সঠিক নয় বা মেলেনি!"); return; }
-    
-    showLoader("Updating...");
-    try {
-        if(auth.currentUser) await updatePassword(auth.currentUser, p1);
-        closePasswordModal();
-        hideLoader();
-        showToast("Password Updated!", "success");
-    } catch(e) { hideLoader(); alert(e.message); }
-};
-
-// ৬. সাইডবার এবং ক্লিক ইভেন্ট
-document.getElementById('sidebarToggle').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
-document.getElementById('profileTrigger').addEventListener('click', (e) => {
-    e.stopPropagation();
-});
-            
-        // ৭. পিডিএফ এবং এক্সেল ডাউনলোড (নিখুঁত কোড)
-        window.downloadDailyClosingPDF = function() {
+// --- পিডিএফ ডাউনলোড ফাংশন ---
+window.downloadDailyClosingPDF = function() {
     const element = document.getElementById('printable-closing-report');
     if (!element) return;
 
-    // বর্তমান তারিখ এবং সময় দিয়ে ফাইলের নাম তৈরি
     const now = new Date();
-    const dateStr = now.toISOString().split('T')[0]; // 2024-08-05
+    const dateStr = now.toISOString().split('T')[0];
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).replace(/[:\s]/g, '-');
     const fileName = `Daily_Report_${dateStr}_${timeStr}.pdf`;
 
@@ -4945,90 +4765,51 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
         filename: fileName,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
     };
     html2pdf().set(opt).from(element).save();
 };
-        window.exportDailyClosingExcel = () => {
-            const t = document.querySelector('#printable-closing-report table');
-            if (!t) { alert("টেবিল পাওয়া যায়নি!"); return; }
-            const wb = XLSX.utils.table_to_book(t);
-            XLSX.writeFile(wb, 'Report.xlsx');
+
+// --- এক্সেল এক্সপোর্ট ফাংশন ---
+window.exportDailyClosingExcel = () => {
+    const t = document.querySelector('#printable-closing-report table');
+    if (!t) { alert("টেবিল পাওয়া যায়নি!"); return; }
+    const wb = XLSX.utils.table_to_book(t);
+    XLSX.writeFile(wb, 'Report.xlsx');
+};
+
+// --- গ্লোবাল অ্যাকশন এবং ইনিশিয়ালাইজেশন ---
+function initGlobalActions() {
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    const profileTrigger = document.getElementById('profileTrigger');
+    const profileDropdown = document.getElementById('profileDropdown');
+
+    if (sidebarToggle && sidebar) {
+        sidebarToggle.onclick = function() {
+            sidebar.classList.toggle('collapsed');
         };
+    }
 
-        // সাইডবার এবং লেআউট সচল করার ফাংশন
-        function initGlobalActions() {
-            const sidebarBtn = document.getElementById('sidebarToggle');
-            const sidebarEl = document.getElementById('sidebar');
-            const profTrigger = document.getElementById('profileTrigger');
-            const profDropdown = document.getElementById('profileDropdown');
-
-            if (sidebarBtn && sidebarEl) {
-                sidebarBtn.onclick = (e) => {
-                    e.preventDefault();
-                    sidebarEl.classList.toggle('collapsed');
-                };
-            }
-
-            if (profTrigger && profDropdown) {
-                profTrigger.onclick = (e) => {
-                    e.stopPropagation();
-                    profDropdown.classList.toggle('active');
-                };
-            }
-
-            document.addEventListener('click', () => {
-                if(profDropdown) profDropdown.classList.remove('active');
-            });
-
-            // কাস্টমার লিস্ট রেন্ডার করা
-            if(typeof window.renderCustomerListTable === 'function') {
-                window.renderCustomerListTable();
-            }
-        }
-// হারানো মেনু ফাংশনগুলো পুনরুদ্ধার
-        window.toggleParentMenu = (id) => {
-            const m = document.getElementById(id);
-            if(m) {
-                const s = m.querySelector('.submenu-list');
-                if(s) s.classList.toggle('show');
-                m.classList.toggle('open');
-            }
+    if (profileTrigger && profileDropdown) {
+        profileTrigger.onclick = (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('active');
         };
+    }
 
-window.switchMainTab = (tab) => {
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-            
-            let panelId = tab.endsWith('-view') ? tab : tab + '-view';
-            const panel = document.getElementById(panelId);
-            if(panel) panel.classList.add('active');
-            
-            const titleElement = document.getElementById('top-title');
-            if(titleElement) {
-                const cleanTitle = tab.replace(/-/g, ' ');
-                titleElement.innerText = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
-            }
-            // এই লজিকটি ক্যাশ এবং কার্ড ইনভেন্টরি অটো-লোড করবে
-            if(tab === 'cash-inventory') {
-                if(typeof renderCashInventoryTable === 'function') renderCashInventoryTable();
-            }
-            if(tab === 'card-inventory') {
-                if(typeof renderAccordionInventory === 'function') renderAccordionInventory();
-            }
-            if(tab === 'daily-closing') {
-                if(typeof renderDailyClosingHistory === 'function') renderDailyClosingHistory();
-            }
-        };
-        
-        // পেজ পুরোপুরি তৈরি হলে সব ফাংশন চালু হবে
-        window.addEventListener('DOMContentLoaded', initGlobalActions);
-// Sidebar Toggle for Mobile and Desktop
-        if (typeof sidebarToggle !== 'undefined' && sidebarToggle) {
-            sidebarToggle.onclick = function() {
-                sidebar.classList.toggle('collapsed');
-            };
-        }
-    </script>
+    document.addEventListener('click', () => {
+        if (profileDropdown) profileDropdown.classList.remove('active');
+    });
+
+    if (typeof window.renderCustomerListTable === 'function') {
+        window.renderCustomerListTable();
+    }
+}
+
+window.addEventListener('DOMContentLoaded', initGlobalActions);
+
+</script>
 </body>
 </html>
