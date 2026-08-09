@@ -4453,7 +4453,7 @@ window.renderDailyClosingReportView = function(snap) {
             const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
 
             catAccs.forEach(acc => {
-                const inputEl = document.getElementById(`input_acc_${acc.id}`);
+                const inputEl = document.getElementById(`inp_${acc.id}`);
                 if (inputEl) {
                     const newBal = parseFloat(inputEl.value) || 0;
                     const prevBal = balanceStore[acc.id] || 0;
@@ -5041,50 +5041,8 @@ document.getElementById('sidebarToggle').addEventListener('click', function() {
     console.log("Button clicked! Sidebar toggled.");
 });
 // ১. ডাউনলোড হিস্ট্রি টেবিল রেন্ডার করা
-window.renderReportDownloadTable = function() {
-    const tbody = document.getElementById('rdHistoryTableBody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    // ডেইলি ক্লোজিং রিপোর্টগুলো থেকে ডাটা নেওয়া
-    const reports = dailyClosingReports || [];
-    
-    if (reports.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">কোনো রিপোর্ট পাওয়া যায়নি</td></tr>';
-        return;
-    }
-
-    reports.forEach(r => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>Daily Closing Report</td>
-            <td>${r.report_date}</td>
-            <td><span class="rd-badge rd-badge-pdf">PDF</span></td>
-            <td>${r.report_date}, ${r.closing_time}</td>
-            <td style="text-align:right;">
-                <button class="rd-btn-table-dl" onclick="directDownloadPDF('${r.report_id}')">
-                    <i class="fa-solid fa-download"></i> Download
-                </button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-};
 
 // ২. সরাসরি পিডিএফ ডাউনলোড ফাংশন (কোনো মোডাল লাগবে না)
-window.directDownloadPDF = function(reportId) {
-    const report = dailyClosingReports.find(r => r.report_id === reportId);
-    if (!report) return;
-
-    // ব্যাকগ্রাউন্ডে রিপোর্টের ডিজাইন তৈরি করা
-    renderDailyClosingReportView(report);
-    
-    // ডিজাইন তৈরি হওয়ার পর পিডিএফ ডাউনলোড ট্রিগার করা
-    setTimeout(() => {
-        downloadDailyClosingPDF();
-        showToast("PDF ডাউনলোড শুরু হয়েছে...", "success");
-    }, 500);
-};
 
 // ৩. টপ ফিল্টার থেকে ম্যানুয়াল ডাউনলোড হ্যান্ডেলার
 window.handleManualDownload = function() {
