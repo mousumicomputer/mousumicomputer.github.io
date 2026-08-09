@@ -5107,32 +5107,30 @@ window.handleManualDownload = function() {
 // আপনার switchMainTab ফাংশনের ভেতর এটি যুক্ত করুন যাতে এই ট্যাবে গেলে টেবিল রেন্ডার হয়
 // মাস্টার ট্যাব সুইচিং ফাংশন (সব সমস্যার সমাধান)
 window.switchMainTab = (tab) => {
-    // ১. সব প্যানেল হাইড করা
+    // ১. আগের সব প্যানেল এবং মেনু হাইলাইট মুছে ফেলা
     document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
     
-    // ২. বর্তমান ট্যাব শো করা
+    // ২. নতুন পেজের আইডি সেট করা (যেমন: report-download-view)
     let panelId = tab.endsWith('-view') ? tab : tab + '-view';
     const panel = document.getElementById(panelId);
+    
     if(panel) {
-        panel.classList.add('active');
+        panel.classList.add('active'); // ৩. এই লাইনটি আপনার সাদা পেজ সমস্যার সমাধান করবে
         
-        // ৩. টাইটেল ঠিক করা
+        // ৪. উপরের হেডার টাইটেল পরিবর্তন করা
         const titleEl = document.getElementById('top-title');
-        if(titleEl) titleEl.innerText = tab.replace(/-/g, ' ').toUpperCase();
+        if(titleEl) {
+            titleEl.innerText = tab.replace(/-/g, ' ').toUpperCase();
+        }
 
-        // ৪. নির্দিষ্ট পেজের ডাটা লোড করা
+        // ৫. প্রতিটি পেজের প্রয়োজনীয় ডাটা রেন্ডার করা (হিসাব লোড করা)
         if(tab === 'report-download') renderReportDownloadTable();
         if(tab === 'cash-inventory') if(typeof renderCashInventoryTable === 'function') renderCashInventoryTable();
         if(tab === 'card-inventory') if(typeof renderAccordionInventory === 'function') renderAccordionInventory();
         if(tab === 'daily-closing') if(typeof renderDailyClosingHistory === 'function') renderDailyClosingHistory();
     }
-    
-    // ৫. মেনু ক্লোজ করা (মোবাইলের জন্য)
-    const sidebar = document.getElementById('sidebar');
-    if(window.innerWidth < 900 && sidebar) sidebar.classList.add('collapsed');
 };
-
 // ডাউনলোড টেবিল রেন্ডার ফাংশন
 window.renderReportDownloadTable = function() {
     const tbody = document.getElementById('rdHistoryTableBody');
