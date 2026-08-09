@@ -1370,8 +1370,10 @@
             /* রিচার্জ ব্যালেন্সের আগে জোরপূর্বক নতুন পাতা তৈরি */
             .html2pdf__page-break {
                 display: block;
-                page-break-before: always;
-                break-before: page;
+                height: 0;
+                page-break-before: always !important;
+                break-before: page !important;
+                clear: both;
             }
         }
 
@@ -4939,9 +4941,8 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
     const element = document.getElementById('printable-closing-report');
     if (!element) return;
 
-    // বর্তমান তারিখ এবং সময় দিয়ে ফাইলের নাম তৈরি
     const now = new Date();
-    const dateStr = now.toISOString().split('T')[0]; // 2024-08-05
+    const dateStr = now.toISOString().split('T')[0];
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).replace(/[:\s]/g, '-');
     const fileName = `Daily_Report_${dateStr}_${timeStr}.pdf`;
 
@@ -4949,8 +4950,10 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
         margin: 10,
         filename: fileName,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        // নিচের লাইনটি নতুন যোগ করা হয়েছে যা পেজ ব্রেক নিশ্চিত করবে
+        pagebreak: { mode: ['css', 'legacy'], before: '.html2pdf__page-break' }
     };
     html2pdf().set(opt).from(element).save();
 };
