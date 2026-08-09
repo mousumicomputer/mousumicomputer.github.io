@@ -1361,8 +1361,17 @@
             .no-print {
                 display: none !important;
             }
-            tr {
-                page-break-inside: avoid !important;
+            /* সেকশনগুলো যেন মাঝপথে না কাটে */
+            .dcr-section-container {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                margin-bottom: 10px;
+            }
+            /* রিচার্জ ব্যালেন্সের আগে জোরপূর্বক নতুন পাতা তৈরি */
+            .html2pdf__page-break {
+                display: block;
+                page-break-before: always;
+                break-before: page;
             }
         }
 
@@ -4667,11 +4676,11 @@ window.renderDailyClosingReportView = function(snap) {
     if (!container) return;
     const fmt = (n) => (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
     
-    // Optimized Helper for Compact Tables
+    // সাব-টেবিল হেল্পার ফাংশন
     function renderSubTable(arr, title, sum) {
         if (!arr || arr.length === 0) return '';
         return `
-        <div style="border: 1px solid #000; margin-bottom: 8px; page-break-inside: avoid;">
+        <div class="dcr-section-container" style="border: 1px solid #000; margin-bottom: 8px;">
             <div style="background: #f3f4f6; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #000; text-transform: uppercase;">${title}</div>
             <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
                 <tr style="background:#f9fafb; font-weight:bold; text-align:center;">
@@ -4685,40 +4694,32 @@ window.renderDailyClosingReportView = function(snap) {
     }
 
     let html = `
-    <div style="font-family: 'Arial', sans-serif; color: #000; padding: 0px 10px; background: #fff; width: 100%; box-sizing: border-box;">
-        <!-- REPORT HEADER -->
+    <div class="dcr-print-document" style="font-family: 'Arial', sans-serif; color: #000; padding: 0px 10px; background: #fff;">
+        <!-- HEADER -->
         <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; align-items: flex-end;">
             <div style="font-size: 9px; line-height: 1.2;">Date: ${snap.report_date}<br>Time: ${snap.closing_time}</div>
             <div style="text-align: center;">
                 <h2 style="margin: 0; font-size: 20px; font-weight: 800; text-transform: uppercase;">${snap.company_name}</h2>
-                <h4 style="margin: 2px 0; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;">DAILY CAPITAL RECONCILIATION & INCOME STATEMENT</h4>
+                <h4 style="margin: 2px 0; font-size: 11px; font-weight: bold;">DAILY CAPITAL RECONCILIATION & INCOME STATEMENT</h4>
             </div>
             <div style="text-align: right; font-size: 9px;">Report ID: ${snap.report_id}</div>
         </div>
 
-        <!-- SECTION 1: CAPITAL RECONCILIATION -->
-        <div style="border: 1.5px solid #000; margin-bottom: 12px;">
+        <!-- PAGE 1 CONTENT -->
+        <div class="dcr-section-container" style="border: 1.5px solid #000; margin-bottom: 12px;">
             <div style="background: #e5e7eb; padding: 5px 10px; font-weight: bold; font-size: 11px; border-bottom: 1.5px solid #000; text-transform: uppercase;">SECTION 1: CAPITAL RECONCILIATION</div>
             <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                <tr style="background:#f3f4f6; font-weight:bold;">
-                    <td style="border: 1px solid #000; padding: 5px 10px;">DESCRIPTION</td>
-                    <td style="border: 1px solid #000; padding: 5px 10px; text-align: right; width: 35%;">AMOUNT (৳)</td>
-                </tr>
                 <tr><td style="border: 1px solid #000; padding: 4px 10px;">Opening Balance (Start of Day)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.opening_cash)}</td></tr>
                 <tr><td style="border: 1px solid #000; padding: 4px 10px;">(+) Total Cash Inflow (Collection)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.inflow)}</td></tr>
-                <tr><td style="border: 1px solid #000; padding: 4px 10px;">(-) Total Cash Outflow (Credit/Expense)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">(৳ ${fmt(snap.reconciliation.outflow)})</td></tr>
-                <tr style="font-weight: bold; background: #f9fafb;"><td style="border: 1px solid #000; padding: 5px 10px;">Calculated Closing Balance</td><td style="border: 1px solid #000; padding: 5px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.calculated_cash)}</td></tr>
-                <tr style="font-weight: bold;"><td style="border: 1px solid #000; padding: 5px 10px;">Actual Total Assets (End of Day)</td><td style="border: 1px solid #000; padding: 5px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.actual_cash)}</td></tr>
-                <tr style="font-weight: bold; background: #d1d5db; font-size: 12px;"><td style="border: 1px solid #000; padding: 7px 10px;">DAILY NET PROFIT / COMMISSION</td><td style="border: 1px solid #000; padding: 7px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.profit)}</td></tr>
+                <tr><td style="border: 1px solid #000; padding: 4px 10px;">(-) Total Cash Outflow (Expense)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">(৳ ${fmt(snap.reconciliation.outflow)})</td></tr>
+                <tr style="font-weight: bold; background: #d1d5db;"><td style="border: 1px solid #000; padding: 5px 10px;">DAILY NET PROFIT / COMMISSION</td><td style="border: 1px solid #000; padding: 5px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.profit)}</td></tr>
             </table>
         </div>
 
-        <!-- SECTION 2: EXECUTIVE SUMMARY -->
-        <div style="border: 1.5px solid #000; margin-bottom: 12px; page-break-inside: avoid;">
+        <div class="dcr-section-container" style="border: 1.5px solid #000; margin-bottom: 12px;">
             <div style="background: #e5e7eb; padding: 5px 10px; font-weight: bold; font-size: 11px; border-bottom: 1.5px solid #000; text-transform: uppercase;">SECTION 2: EXECUTIVE SUMMARY</div>
             <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
                 <tr><td style="border: 1px solid #000; padding: 4px 10px; width: 65%;">Total Outstanding Receivable (Due)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.summary.receivable)}</td></tr>
-                <tr><td style="border: 1px solid #000; padding: 4px 10px;">Total Advance Payable (Advance)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.summary.payable)}</td></tr>
                 <tr style="font-weight: bold; background: #d1d5db; font-size: 12px;">
                     <td style="border: 1px solid #000; padding: 7px 10px;">TOTAL NET FINANCIAL WORTH</td>
                     <td style="border: 1px solid #000; padding: 7px 10px; text-align: right;">৳ ${fmt(snap.summary.net_worth || snap.summary.net_balance)}</td>
@@ -4726,36 +4727,40 @@ window.renderDailyClosingReportView = function(snap) {
             </table>
         </div>
 
-        <!-- DETAILED ACCOUNTS BREAKDOWN -->
         ${renderSubTable(snap.accounts.bank, "BANK ACCOUNTS", snap.accounts.b_sum)}
         ${renderSubTable(snap.accounts.personal, "PERSONAL ACCOUNTS", snap.accounts.p_sum)}
         ${renderSubTable(snap.accounts.agent, "AGENT ACCOUNTS", snap.accounts.a_sum)}
-        ${renderSubTable(snap.accounts.recharge, "RECHARGE BALANCES", snap.accounts.r_sum)}
 
-        <div style="border: 1px solid #000; margin-bottom: 8px; page-break-inside: avoid;">
-            <div style="background: #f3f4f6; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #000; text-transform: uppercase;">CASH INVENTORY BREAKDOWN</div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-                ${snap.cash_details.map(i => `<tr><td style="border: 1px solid #000; padding: 2px 10px;">${i.note}</td><td style="border: 1px solid #000; padding: 2px; text-align:center; width: 15%;">${i.qty}</td><td style="border: 1px solid #000; padding: 2px 10px; text-align:right; width: 30%;">৳ ${fmt(i.amount)}</td></tr>`).join('')}
-            </table>
-        </div>
+        <!-- এখানে FORCE PAGE BREAK হবে -->
+        <div class="html2pdf__page-break"></div>
 
-        <div style="border: 1px solid #000; margin-bottom: 8px; page-break-inside: avoid;">
-            <div style="background: #f3f4f6; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #000; text-transform: uppercase;">CARD STOCK BREAKDOWN</div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-                ${snap.card_details.map(c => `<tr><td style="border: 1px solid #000; padding: 2px 10px;">${c.name}</td><td style="border: 1px solid #000; padding: 2px; text-align:center; width: 15%;">${c.qty}</td><td style="border: 1px solid #000; padding: 2px 10px; text-align:right; width: 30%;">৳ ${fmt(c.total)}</td></tr>`).join('')}
-            </table>
-        </div>
+        <!-- PAGE 2 CONTENT STARTS -->
+        <div style="margin-top: 10px;">
+            ${renderSubTable(snap.accounts.recharge, "RECHARGE BALANCES", snap.accounts.r_sum)}
+            
+            <div class="dcr-section-container" style="border: 1px solid #000; margin-bottom: 8px;">
+                <div style="background: #f3f4f6; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #000; text-transform: uppercase;">CASH INVENTORY BREAKDOWN</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                    ${snap.cash_details.map(i => `<tr><td style="border: 1px solid #000; padding: 2px 10px;">${i.note}</td><td style="border: 1px solid #000; padding: 2px; text-align:center;">${i.qty}</td><td style="border: 1px solid #000; padding: 2px 10px; text-align:right;">৳ ${fmt(i.amount)}</td></tr>`).join('')}
+                </table>
+            </div>
 
-        <!-- SIGNATURE AREA -->
-        <div style="margin-top: 40px; display: flex; justify-content: space-between; page-break-inside: avoid; padding: 0 20px;">
-            <div style="text-align: center; width: 200px; border-top: 1.5px solid #000; padding-top: 5px; font-size: 11px; font-weight: bold;">Prepared By</div>
-            <div style="text-align: center; width: 200px; border-top: 1.5px solid #000; padding-top: 5px; font-size: 11px; font-weight: bold;">Authorized Signature</div>
+            <div class="dcr-section-container" style="border: 1px solid #000; margin-bottom: 8px;">
+                <div style="background: #f3f4f6; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #000; text-transform: uppercase;">CARD STOCK BREAKDOWN</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                    ${snap.card_details.map(c => `<tr><td style="border: 1px solid #000; padding: 2px 10px;">${c.name}</td><td style="border: 1px solid #000; padding: 2px; text-align:center;">${c.qty}</td><td style="border: 1px solid #000; padding: 2px 10px; text-align:right;">৳ ${fmt(c.total)}</td></tr>`).join('')}
+                </table>
+            </div>
+
+            <!-- SIGNATURE AREA -->
+            <div style="margin-top: 50px; display: flex; justify-content: space-between; padding: 0 20px; page-break-inside: avoid;">
+                <div style="text-align: center; width: 200px; border-top: 1.5px solid #000; padding-top: 5px; font-size: 11px; font-weight: bold;">Prepared By</div>
+                <div style="text-align: center; width: 200px; border-top: 1.5px solid #000; padding-top: 5px; font-size: 11px; font-weight: bold;">Authorized Signature</div>
+            </div>
         </div>
-        <div style="font-size: 8px; color: #9ca3af; margin-top: 20px; text-align: center;">System generated summary by Mousumi Computer ERP.</div>
     </div>`;
     container.innerHTML = html;
 };
-
 // --- ডেইলি ক্লোজিং রিপোর্ট ইঞ্জিন শেষ ---
 
 // ১. সাব-সেকশন পরিবর্তন করার উন্নত ফাংশন
