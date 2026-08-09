@@ -5147,23 +5147,58 @@ window.switchMainTab = (tab) => {
 window.renderReportDownloadTable = function() {
     const tbody = document.getElementById('rdHistoryTableBody');
     if (!tbody) return;
+
     tbody.innerHTML = '';
-    const reports = dailyClosingReports || [];
+
+    const reports = Array.isArray(dailyClosingReports)
+        ? dailyClosingReports
+        : [];
+
+    if (reports.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" style="text-align:center; padding:30px; color:#94a3b8;">
+                    কোনো রিপোর্ট পাওয়া যায়নি
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
     reports.forEach(r => {
         const tr = document.createElement('tr');
+
+        const netBalance = Number(
+            r.actual_total_assets ??
+            r.reconciliation?.actual ??
+            r.total_net_balance ??
+            r.summary?.net_worth ??
+            0
+        ) || 0;
+
         tr.innerHTML = `
-            <td>${r.report_date}</td>
-            <td style="color:#059669; font-weight:bold;">৳ ${(r.summary?.net_worth || 0).toLocaleString()}</td>
+            <td>${r.report_date || '-'}</td>
+
+            <td style="color:#059669; font-weight:bold;">
+                ৳ ${netBalance.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })}
+            </td>
+
             <td style="text-align:right;">
-                <button class="rd-btn-table-dl" onclick="directDownloadPDF('${r.report_id}')">
+                <button
+                    class="rd-btn-table-dl"
+                    onclick="directDownloadPDF('${r.report_id}')"
+                >
                     <i class="fa-solid fa-file-pdf"></i> PDF Download
                 </button>
             </td>
         `;
+
         tbody.appendChild(tr);
     });
 };
-
 window.directDownloadPDF = function(reportId) {
     const report = dailyClosingReports.find(r => r.report_id === reportId);
     if (!report) return;
