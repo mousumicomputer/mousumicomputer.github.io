@@ -2515,51 +2515,113 @@
                 </div>
 
 <!-- ==================== NEW VIEW: REPORT DOWNLOAD PAGE ==================== -->
+<!-- ==================== REPORT DOWNLOAD PAGE ==================== -->
+</div>
+
 <div class="view-panel" id="report-download-view">
     <div class="rd-container">
+
+        <!-- DOWNLOAD REPORT CARD -->
         <div class="rd-card">
             <div class="rd-header">
-                <div class="rd-icon-box"><i class="fa-solid fa-cloud-arrow-down"></i></div>
+                <div class="rd-icon-box">
+                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                </div>
+
                 <div>
-                    <h3 style="margin:0; font-size:1.2rem; color:#1e293b;">Download Report</h3>
-                    <p style="margin:0; font-size:0.85rem; color:#64748b;">প্রয়োজনীয় রিপোর্ট নির্বাচন করে ডাউনলোড করুন</p>
+                    <h3 style="margin:0; font-size:1.2rem; color:#1e293b;">
+                        Download Report
+                    </h3>
+
+                    <p style="margin:0; font-size:0.85rem; color:#64748b;">
+                        প্রয়োজনীয় রিপোর্ট নির্বাচন করে ডাউনলোড করুন
+                    </p>
                 </div>
             </div>
+
             <div class="rd-filter-grid">
+
                 <div class="rd-input-group">
                     <label>Report Type</label>
+
                     <select class="rd-select" id="rdType">
-                        <option value="Daily Closing Report">Daily Closing Report</option>
+                        <option value="Daily Closing Report">
+                            Daily Closing Report
+                        </option>
                     </select>
                 </div>
+
                 <div class="rd-input-group">
                     <label>Report Date</label>
-                    <input type="date" class="rd-input" id="rdFrom">
+
+                    <input
+                        type="date"
+                        class="rd-input"
+                        id="rdFrom"
+                    >
                 </div>
-                <button class="rd-btn-download" onclick="handleManualDownload()"><i class="fa-solid fa-download"></i> Download</button>
+
+                <button
+                    type="button"
+                    class="rd-btn-download"
+                    onclick="handleManualDownload()"
+                >
+                    <i class="fa-solid fa-download"></i>
+                    Download
+                </button>
+
             </div>
         </div>
+
+
+        <!-- DOWNLOAD HISTORY CARD -->
         <div class="rd-card">
+
             <div class="rd-header">
-                <div class="rd-icon-box" style="background:#fef3c7; color:#d97706;"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                <div>
-                    <h3 style="margin:0; font-size:1.2rem; color:#1e293b;">Download History</h3>
-                    <p style="margin:0; font-size:0.85rem; color:#64748b;">সম্প্রতি তৈরি করা ডেইলি ক্লোজিং রিপোর্ট সমূহ</p>
+
+                <div
+                    class="rd-icon-box"
+                    style="background:#fef3c7; color:#d97706;"
+                >
+                    <i class="fa-solid fa-clock-rotate-left"></i>
                 </div>
+
+                <div>
+                    <h3 style="margin:0; font-size:1.2rem; color:#1e293b;">
+                        Download History
+                    </h3>
+
+                    <p style="margin:0; font-size:0.85rem; color:#64748b;">
+                        সম্প্রতি তৈরি করা ডেইলি ক্লোজিং রিপোর্ট সমূহ
+                    </p>
+                </div>
+
             </div>
-            <div style="overflow-x: auto;">
+
+
+            <div style="overflow-x:auto;">
+
                 <table class="rd-table">
+
                     <thead>
                         <tr>
                             <th>Report Date</th>
                             <th>Net Balance</th>
-                            <th style="text-align:right;">Action</th>
+                            <th style="text-align:right;">
+                                Action
+                            </th>
                         </tr>
                     </thead>
-                    <tbody id="rdHistoryTableBody"></tbody>
+
+                    <tbody id="rdHistoryTableBody">
+                    </tbody>
+
                 </table>
+
             </div>
+
         </div>
+
     </div>
 </div>
                 <!-- ==================== VIEW 5: REPORTS & HISTORY MODULE ==================== -->
