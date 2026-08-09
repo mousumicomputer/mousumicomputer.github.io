@@ -5176,10 +5176,29 @@ window.handleManualDownload = function() {
 
 // ৪. ট্যাব সুইচিং ফাংশনে আপডেট
 // আপনার switchMainTab ফাংশনের ভেতর এটি যুক্ত করুন যাতে এই ট্যাবে গেলে টেবিল রেন্ডার হয়
-const originalSwitchTab = window.switchMainTab;
 window.switchMainTab = (tab) => {
-    if(tab === 'report-download') renderReportDownloadTable();
-    if(originalSwitchTab) originalSwitchTab(tab);
+    // ১. সব প্যানেল এবং মেনু থেকে active ক্লাস সরানো
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+
+    // ২. বর্তমান ট্যাবের আইডি খুঁজে বের করা (যেমন: report-download-view)
+    let panelId = tab.endsWith('-view') ? tab : tab + '-view';
+    const panel = document.getElementById(panelId);
+
+    if (panel) {
+        panel.classList.add('active'); // ৩. এই লাইনটি আপনার সাদা পেজ সমস্যার সমাধান করবে
+
+        // ৪. উপরের টাইটেল পরিবর্তন করা
+        const titleElement = document.getElementById('top-title');
+        if (titleElement) {
+            titleElement.innerText = tab.replace(/-/g, ' ').toUpperCase();
+        }
+
+        // ৫. যদি এটি ডাউনলোড পেজ হয়, তবে টেবিলটি লোড করা
+        if (tab === 'report-download') {
+            if (typeof renderReportDownloadTable === 'function') renderReportDownloadTable();
+        }
+    }
 };
     </script>
 </body>
