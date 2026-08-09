@@ -1361,19 +1361,8 @@
             .no-print {
                 display: none !important;
             }
-            /* সেকশনগুলো যেন মাঝপথে না কাটে */
-            .dcr-section-container {
-                page-break-inside: avoid;
-                break-inside: avoid;
-                margin-bottom: 10px;
-            }
-            /* রিচার্জ ব্যালেন্সের আগে জোরপূর্বক নতুন পাতা তৈরি */
-            .html2pdf__page-break {
-                display: block;
-                height: 0;
-                page-break-before: always !important;
-                break-before: page !important;
-                clear: both;
+            tr {
+                page-break-inside: avoid !important;
             }
         }
 
@@ -1622,6 +1611,28 @@
     
     .mc-avatar { width: 35px; height: 35px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; font-size: 0.9rem; }
     .mc-btn-details { background: #f8fafc; border: 1px solid #e2e8f0; color: #4f46e5; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'Tiro Bangla', serif; font-size: 0.9rem; }
+/* --- REPORT DOWNLOAD PAGE STYLES --- */
+.rd-container { font-family: 'Plus Jakarta Sans', sans-serif; }
+.rd-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 24px; border: 1px solid #f1f5f9; }
+.rd-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+.rd-icon-box { width: 45px; height: 45px; background: #eef2ff; color: #4f46e5; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+.rd-filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: flex-end; }
+.rd-input-group { display: flex; flex-direction: column; gap: 8px; }
+.rd-input-group label { font-size: 0.85rem; font-weight: 700; color: #475569; }
+.rd-select, .rd-input { padding: 10px 15px; border: 1.5px solid #e2e8f0; border-radius: 10px; outline: none; font-size: 0.95rem; background: #fcfdfe; transition: 0.3s; }
+.rd-select:focus, .rd-input:focus { border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+.rd-btn-download { background: #4f46e5; color: #fff; border: none; padding: 12px 25px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
+.rd-btn-download:hover { background: #4338ca; transform: translateY(-2px); }
+
+/* History Table */
+.rd-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.rd-table th { text-align: left; padding: 15px; color: #64748b; font-size: 0.85rem; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; }
+.rd-table td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b; font-size: 0.95rem; }
+.rd-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; }
+.rd-badge-pdf { background: #fee2e2; color: #ef4444; }
+.rd-badge-excel { background: #dcfce7; color: #16a34a; }
+.rd-btn-table-dl { background: #fff; border: 1.5px solid #e2e8f0; color: #4f46e5; padding: 8px 15px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.85rem; transition: 0.2s; }
+.rd-btn-table-dl:hover { background: #f5f3ff; border-color: #ddd6fe; }
     </style>
 </head>
 <body>
@@ -1785,6 +1796,9 @@
                                 <a onclick="switchMainTab('reports')"><i class="fa-solid fa-angle-right"></i> <span>Transaction History</span></a>
                             </li>
                             <li class="submenu-item" id="sub-export-center">
+                            <li class="submenu-item" id="sub-report-download">
+    <a onclick="switchMainTab('report-download')"><i class="fa-solid fa-cloud-arrow-down"></i> <span>Report Download</span></a>
+</li>
                                 <a onclick="switchCustomerSubSection('cust-reports-section')"><i class="fa-solid fa-angle-right"></i> <span>Export Center</span></a>
                             </li>
                         </ul>
@@ -2274,16 +2288,6 @@
                 <div class="view-panel" id="daily-closing-view">
 <!-- উপরের অ্যাকশন কার্ড -->
                     <div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px; border-left: 5px solid #059669;">
-<!-- তারিখ সিলেকশন বক্স -->
-<div style="margin-bottom: 20px; background: #ecfdf5; padding: 15px; border-radius: 12px; border: 1.5px solid #10b981; display: flex; align-items: center; gap: 15px;">
-    <div style="width: 45px; height: 45px; background: #10b981; color: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-        <i class="fa-solid fa-calendar-day"></i>
-    </div>
-    <div style="flex: 1;">
-        <label style="display: block; font-size: 0.8rem; font-weight: 800; color: #065f46; margin-bottom: 5px; text-transform: uppercase;">রিপোর্টের তারিখ নির্বাচন করুন</label>
-        <input type="date" id="selectedReportDate" style="width: 100%; padding: 8px; border: 1px solid #10b981; border-radius: 8px; font-weight: 700; font-size: 1rem; outline: none;">
-    </div>
-</div>
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                             <div>
                                 <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--primary-dark);">Daily Closing Engine</h3>
@@ -2510,6 +2514,74 @@
                     </div>
                 </div>
 
+<!-- ==================== NEW VIEW: REPORT DOWNLOAD PAGE ==================== -->
+<div class="view-panel" id="report-download-view">
+    <div class="rd-container">
+        <!-- Top Download Form -->
+        <div class="rd-card">
+            <div class="rd-header">
+                <div class="rd-icon-box"><i class="fa-solid fa-cloud-arrow-down"></i></div>
+                <div>
+                    <h3 style="margin:0; font-size:1.2rem; color:#1e293b;">Download Report</h3>
+                    <p style="margin:0; font-size:0.85rem; color:#64748b;">প্রয়োজনীয় রিপোর্ট নির্বাচন করে ডাউনলোড করুন</p>
+                </div>
+            </div>
+            <div class="rd-filter-grid">
+                <div class="rd-input-group">
+                    <label>Report Type</label>
+                    <select class="rd-select" id="rdType">
+                        <option value="Daily Closing Report">Daily Closing Report</option>
+                        <option value="Customer Ledger">Customer Ledger</option>
+                        <option value="Financial Summary">Financial Summary</option>
+                    </select>
+                </div>
+                <div class="rd-input-group">
+                    <label>From Date</label>
+                    <input type="date" class="rd-input" id="rdFrom">
+                </div>
+                <div class="rd-input-group">
+                    <label>To Date</label>
+                    <input type="date" class="rd-input" id="rdTo">
+                </div>
+                <div class="rd-input-group">
+                    <label>Format</label>
+                    <select class="rd-select" id="rdFormat">
+                        <option value="PDF">PDF</option>
+                        <option value="Excel">Excel</option>
+                    </select>
+                </div>
+                <button class="rd-btn-download" onclick="handleManualDownload()"><i class="fa-solid fa-download"></i> Download</button>
+            </div>
+        </div>
+
+        <!-- Download History Table -->
+        <div class="rd-card">
+            <div class="rd-header">
+                <div class="rd-icon-box" style="background:#fef3c7; color:#d97706;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                <div>
+                    <h3 style="margin:0; font-size:1.2rem; color:#1e293b;">Download History</h3>
+                    <p style="margin:0; font-size:0.85rem; color:#64748b;">সম্প্রতি তৈরি করা ডেইলি ক্লোজিং রিপোর্ট সমূহ</p>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="rd-table">
+                    <thead>
+                        <tr>
+                            <th>Report Type</th>
+                            <th>Report Date</th>
+                            <th>Format</th>
+                            <th>Generated On</th>
+                            <th style="text-align:right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rdHistoryTableBody">
+                        <!-- ডাটা এখান থেকে আসবে -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
                 <!-- ==================== VIEW 5: REPORTS & HISTORY MODULE ==================== -->
                 <div class="view-panel" id="reports-view">
 <!-- ১. আজকের হিসাবের ৩টি সামারি কার্ড -->
@@ -3978,117 +4050,224 @@ if(document.getElementById('statTotalDue'))
             XLSX.utils.book_append_sheet(wb, ws, "Outstanding Dues");
             XLSX.writeFile(wb, "Customer_Outstanding_Dues.xlsx");
         };
-        
-// --- ডেইলি ক্লোজিং রিপোর্ট ভিউয়ার (টোটাল রো এবং সেন্টার হেডার ফিক্সড) ---
+
+        /* ==========================================================================
+           DAILY CLOSING FINANCIAL STATEMENT ENGINE (NEW PRINT-READY A4 COMPACT DESIGN)
+           ========================================================================== */
+// --- ডেইলি ক্লোজিং রিপোর্ট ইঞ্জিন (সবচেয়ে নিরাপদ এবং ছবির মতো ডিজাইন) ---
 
 window.generateDailyClosingSnapshot = async function() {
-    const dateInput = document.getElementById('selectedReportDate').value;
-    if (!dateInput) {
-        showToast("দয়া করে ক্যালেন্ডার থেকে একটি তারিখ সিলেক্ট করুন!", "warning");
-        return;
-    }
-
-    showLoader(`${dateInput} তারিখের পুঁজি সমন্বয় হচ্ছে...`);
+    showLoader("হিসাব সংরক্ষণ করা হচ্ছে...");
     try {
-        const rDate = dateInput;
         const now = new Date();
-        const rTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const rDate = now.toISOString().split('T')[0];
+        const rTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         const rId = 'DCR-' + Date.now();
 
-        // ১. গতদিনের বাস্তব ক্লোজিং ব্যালেন্স খোঁজা (যা আজকের Opening)
-        let safeReports = (dailyClosingReports || []).filter(r => r && r.report_date && r.reconciliation);
-        let sortedReports = safeReports.sort((a,b) => (b.report_date || "").localeCompare(a.report_date || ""));
-        let prevReport = sortedReports.find(r => r.report_date < rDate);
-        
-        // গতদিনের (Cash + All Accounts + Card Stock) = আজকের Opening
-        let openingCapital = prevReport ? parseFloat(prevReport.reconciliation.actual_cash) : 0;
+        // ১. ব্যালেন্স সংগ্রহ
+        const cTotals = (typeof calculateCustomerTotals === 'function') ? calculateCustomerTotals() : { totalOutstanding: 0 };
+        const cashSum = (typeof calculateCashGrandTotal === 'function') ? calculateCashGrandTotal() : 0;
+        const cardSum = (typeof calculateGrandCardInventoryValue === 'function') ? calculateGrandCardInventoryValue() : 0;
 
-        // ২. আজকের কাস্টমার লেনদেন (Inflow & Outflow)
-        let todayInflow = 0;
-        let todayOutflow = 0;
-        customerTransactions.filter(t => t.date === rDate).forEach(t => {
-            todayInflow += (parseFloat(t.credit) || 0);  // কাস্টমার থেকে আদায়
-            todayOutflow += (parseFloat(t.debit) || 0);  // কাস্টমারকে দেওয়া/বাকি
-        });
+        const bAccs = [];
+        const pAccs = [];
+        const aAccs = [];
+        const rAccs = [];
 
-        // ৩. বিস্তারিত একাউন্ট ডাটা সংগ্রহ (যাতে বিস্তারিত তালিকা মুছে না যায়)
-        const bAccs = [], pAccs = [], aAccs = [], rAccs = [];
-        categories.forEach(cat => {
-            const accs = accounts.filter(a => a.catId === cat.id && a.enabled !== false);
-            accs.forEach(acc => {
-                const bal = parseFloat(balanceStore[acc.id]) || 0;
-                const item = { name: acc.name, balance: bal };
-                const n = cat.name.toLowerCase();
-                if (n.includes('bank')) bAccs.push(item);
-                else if (n.includes('personal')) pAccs.push(item);
-                else if (n.includes('agent')) aAccs.push(item);
-                else if (n.includes('recharge')) rAccs.push(item);
+        // ২. ক্যাটাগরি ডাটা প্রসেসিং
+        if (Array.isArray(categories)) {
+            categories.forEach(cat => {
+                const accs = accounts.filter(a => a.catId === cat.id && a.enabled !== false);
+                accs.forEach(acc => {
+                    const bal = parseFloat(balanceStore[acc.id]) || 0;
+                    const item = { name: acc.name, balance: bal };
+                    if (cat.name.toLowerCase().includes('bank')) bAccs.push(item);
+                    else if (cat.name.toLowerCase().includes('personal')) pAccs.push(item);
+                    else if (cat.name.toLowerCase().includes('agent')) aAccs.push(item);
+                    else if (cat.name.toLowerCase().includes('recharge')) rAccs.push(item);
+                });
             });
-        });
+        }
 
-        const bSum = bAccs.reduce((s, a) => s + a.balance, 0);
-        const pSum = pAccs.reduce((s, a) => s + a.balance, 0);
-        const aSum = aAccs.reduce((s, a) => s + a.balance, 0);
-        const rSum = rAccs.reduce((s, a) => s + a.balance, 0);
-        const cashSum = calculateCashGrandTotal() || 0;
-        const cardSum = calculateGrandCardInventoryValue() || 0;
+        const sumB = bAccs.reduce((s, a) => s + a.balance, 0);
+        const sumP = pAccs.reduce((s, a) => s + a.balance, 0);
+        const sumA = aAccs.reduce((s, a) => s + a.balance, 0);
+        const sumR = rAccs.reduce((s, a) => s + a.balance, 0);
 
-        // ৪. আপনার ২ দিনের লজিক অনুযায়ী ক্যালকুলেশন
-        // আজকের বাস্তব মোট পুঁজি (Actual Total Balance)
-        const actualTotalAssets = bSum + pSum + aSum + rSum + cashSum + cardSum;
-        
-        // গাণিতিক ক্লোজিং ব্যালেন্স (Calculated Closing Balance)
-        const calculatedClosing = (openingCapital + todayInflow) - todayOutflow;
-        
-        // দৈনিক নিট লাভ (Daily Net Profit)
-        const dailyProfit = actualTotalAssets - calculatedClosing;
+        // ৩. কার্ড ও ক্যাশ ডিটেইলস
+        const cardDetails = [];
+        if (typeof OPERATORS_LIST !== 'undefined') {
+            OPERATORS_LIST.forEach(op => {
+                const oCards = cardConfig[op] || [];
+                const oQtys = cardQuantities[op] || {};
+                oCards.forEach(c => {
+                    const q = parseInt(oQtys[c.id]) || 0;
+                    if (q > 0) {
+                        cardDetails.push({ name: `${op} ${c.name}`, qty: q, price: c.price || 0, total: q * (c.price || 0) });
+                    }
+                });
+            });
+        }
 
-        const custTotals = calculateCustomerTotals();
+        const cashDetails = (typeof CASH_DENOMINATIONS !== 'undefined') ? CASH_DENOMINATIONS.map(d => ({
+            note: `৳ ${d} Notes`,
+            qty: parseInt(cashQuantities[d]) || 0,
+            amount: (parseInt(cashQuantities[d]) || 0) * d
+        })).filter(i => i.qty > 0) : [];
 
+        if (parseFloat(cashOthersAmount) > 0) {
+            cashDetails.push({ note: 'Others/Coins', qty: 1, amount: parseFloat(cashOthersAmount) });
+        }
+
+        // ৪. স্ন্যাপশট অবজেক্ট
         const snapshot = {
-            report_id: rId,
+            company_name: (profileSettings && profileSettings.companyName) ? profileSettings.companyName : 'Mousumi Computer',
             report_date: rDate,
             closing_time: rTime,
-            company_name: (profileSettings && profileSettings.companyName) || 'Mousumi Computer',
-            reconciliation: {
-                opening_cash: openingCapital, // শুরুর মোট মূলধন
-                inflow: todayInflow,          // সারাদিনের মোট জমা
-                outflow: todayOutflow,        // সারাদিনের মোট খরচ/বাকি
-                calculated_cash: calculatedClosing, // হিসাবকৃত ক্লোজিং
-                actual_cash: actualTotalAssets,     // দিনশেষে বাস্তব মোট কাউন্ট
-                profit: dailyProfit           // দৈনিক নিট লাভ
-            },
-            summary: {
-                receivable: custTotals.totalReceivable,
-                payable: custTotals.totalPayable,
-                net_worth: (actualTotalAssets + custTotals.netCustomerBalance)
-            },
-            accounts: { bank: bAccs, b_sum: bSum, personal: pAccs, p_sum: pSum, agent: aAccs, a_sum: aSum, recharge: rAccs, r_sum: rSum },
-            cash_details: (CASH_DENOMINATIONS || []).map(d => ({ note: `৳ ${d} Notes`, qty: (cashQuantities && cashQuantities[d]) || 0, amount: ((cashQuantities && cashQuantities[d]) || 0) * d })).filter(i => i.qty > 0),
-            card_details: []
+            report_id: rId,
+            total_cash_inventory: Number(cashSum) || 0,
+            total_card_inventory: Number(cardSum) || 0,
+            total_customer_due: Number(cTotals.totalOutstanding) || 0,
+            total_net_balance: Number(sumB + sumP + sumA + sumR + cashSum + cardSum + cTotals.totalOutstanding) || 0,
+            bank_accounts: bAccs,
+            personal_accounts: pAccs,
+            agent_accounts: aAccs,
+            recharge_accounts: rAccs,
+            card_inventory_details: cardDetails,
+            cash_inventory_details: cashDetails
         };
 
-        // কার্ড বিস্তারিত তালিকা সংগ্রহ
-        OPERATORS_LIST.forEach(op => {
-            const oCards = cardConfig[op] || [];
-            const oQtys = cardQuantities[op] || {};
-            oCards.forEach(c => {
-                const q = oQtys[c.id] || 0;
-                if(q > 0) snapshot.card_details.push({ name: `${op} ${c.name}`, qty: q, total: q * c.price });
-            });
-        });
-
-        dailyClosingReports.unshift(snapshot);
-        await writeToFirebase('erp/dailyClosingReports', dailyClosingReports);
-        renderDailyClosingHistory();
+        // ৫. ফায়ারবেসে সেভ
+        let currentReports = dailyClosingReports || [];
+        if (!Array.isArray(currentReports)) currentReports = [];
+        currentReports.unshift(snapshot);
+        
+        await writeToFirebase('erp/dailyClosingReports', currentReports);
+        
+        if (typeof renderDailyClosingHistory === 'function') renderDailyClosingHistory();
+        
         hideLoader();
-        showToast(`${rDate} এর হিসাব সংরক্ষিত হয়েছে!`, "success");
+        showToast("আজকের রিপোর্ট সফলভাবে সংরক্ষিত হয়েছে!", "success");
     } catch (err) {
+        console.error("Save Error:", err);
         hideLoader();
         showToast("Error: " + err.message, "error");
     }
 };
 
+// --- ডেইলি ক্লোজিং রিপোর্ট ভিউয়ার (টেবিল এলাইনমেন্ট ফিক্স করা হয়েছে) ---
+
+// --- ডেইলি ক্লোজিং রিপোর্ট ভিউয়ার (টোটাল রো এবং সেন্টার হেডার ফিক্সড) ---
+
+window.renderDailyClosingReportView = function(snap) {
+    const container = document.getElementById('printable-closing-report');
+    if (!container) return;
+
+    const fmt = (n) => (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    
+    const bSum = (snap.bank_accounts || []).reduce((s, a) => s + a.balance, 0);
+    const pSum = (snap.personal_accounts || []).reduce((s, a) => s + a.balance, 0);
+    const aSum = (snap.agent_accounts || []).reduce((s, a) => s + a.balance, 0);
+    const rSum = (snap.recharge_accounts || []).reduce((s, a) => s + a.balance, 0);
+
+    let html = `
+        <div style="font-family: Arial, sans-serif; color: #000; padding: 15px; background: #fff; max-width: 800px; margin: auto; border: 1px solid #ddd;">
+            
+            <!-- রিপোর্ট হেডার -->
+            <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px;">
+                <div style="font-size: 10px; width: 30%;">Date: ${snap.report_date}<br>Time: ${snap.closing_time}</div>
+                <div style="text-align: center; width: 40%;">
+                    <h2 style="margin: 0; font-size: 18px; text-transform: uppercase; font-weight: bold;">${snap.company_name}</h2>
+                    <h4 style="margin: 2px 0; font-size: 12px; font-weight: bold;">DAILY CLOSING FINANCIAL STATEMENT</h4>
+                </div>
+                <div style="text-align: right; font-size: 10px; width: 30%;">Report ID: ${snap.report_id}<br>Ref: REF-${snap.report_id.slice(-6)}</div>
+            </div>
+
+            <!-- সেকশন ১: এক্সিকিউটিভ সামারি -->
+            <div style="border: 1px solid #000; margin-bottom: 10px;">
+                <div style="background: #eee; padding: 4px 10px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">SECTION 1: EXECUTIVE FINANCIAL SUMMARY</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                    <tr><td style="border: 1px solid #000; padding: 4px 10px; width: 70%;">Total Cash Inventory</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.total_cash_inventory)}</td></tr>
+                    <tr><td style="border: 1px solid #000; padding: 4px 10px;">Total Card Inventory</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.total_card_inventory)}</td></tr>
+                    <tr><td style="border: 1px solid #000; padding: 4px 10px;">Total Customer Outstanding Due</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.total_customer_due)}</td></tr>
+                    <tr style="font-weight: bold; background: #eee; font-size: 12px;"><td style="border: 1px solid #000; padding: 6px 10px;">TOTAL NET FINANCIAL BALANCE</td><td style="border: 1px solid #000; padding: 6px 10px; text-align: right;">৳ ${fmt(snap.total_net_balance)}</td></tr>
+                </table>
+            </div>
+
+            <!-- ক্যাটাগরি টেবিলগুলো -->
+            ${renderSubTable(snap.bank_accounts, "BANK ACCOUNTS", bSum)}
+            ${renderSubTable(snap.personal_accounts, "PERSONAL ACCOUNTS", pSum)}
+            ${renderSubTable(snap.agent_accounts, "AGENT ACCOUNTS", aSum)}
+            ${renderSubTable(snap.recharge_accounts, "RECHARGE BALANCES", rSum)}
+
+            <!-- ক্যাশ ইনভেন্টরি বিস্তারিত -->
+            ${snap.cash_inventory_details && snap.cash_inventory_details.length > 0 ? `
+            <div style="border: 1px solid #000; margin-bottom: 10px;">
+                <div style="background: #eee; padding: 4px 10px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">CASH INVENTORY DETAILS</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                    <tr style="background:#f9f9f9; font-weight:bold; text-align:center;">
+                        <td style="border: 1px solid #000; padding: 4px; width: 45%; text-align: center;">NOTES</td>
+                        <td style="border: 1px solid #000; padding: 4px; width: 15%;">QTY</td>
+                        <td style="border: 1px solid #000; padding: 4px; width: 40%; text-align: center;">AMOUNT (৳)</td>
+                    </tr>
+                    ${snap.cash_inventory_details.map(i => `
+                        <tr>
+                            <td style="border: 1px solid #000; padding: 3px 10px;">${i.note}</td>
+                            <td style="border: 1px solid #000; padding: 3px; text-align:center;">${i.qty}</td>
+                            <td style="border: 1px solid #000; padding: 3px 10px; text-align:right;">${fmt(i.amount)}</td>
+                        </tr>
+                    `).join('')}
+                    <!-- ক্যাশ টোটাল রো -->
+                    <tr style="font-weight: bold; background: #f9f9f9;">
+                        <td colspan="2" style="border: 1px solid #000; padding: 4px 10px; text-transform: uppercase;">TOTAL CASH INVENTORY</td>
+                        <td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">${fmt(snap.total_cash_inventory)}</td>
+                    </tr>
+                </table>
+            </div>` : ''}
+
+            <!-- কার্ড ইনভেন্টরি বিস্তারিত -->
+            ${snap.card_inventory_details && snap.card_inventory_details.length > 0 ? `
+            <div style="border: 1px solid #000; margin-bottom: 10px;">
+                <div style="background: #eee; padding: 4px 10px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">CARD INVENTORY DETAILS</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                    <tr style="background:#f9f9f9; font-weight:bold; text-align:center;">
+                        <td style="border: 1px solid #000; padding: 4px; width: 45%; text-align: center;">CARD NAME</td>
+                        <td style="border: 1px solid #000; padding: 4px; width: 15%;">QTY</td>
+                        <td style="border: 1px solid #000; padding: 4px; width: 40%; text-align: center;">TOTAL (৳)</td>
+                    </tr>
+                    ${snap.card_inventory_details.map(c => `
+                        <tr>
+                            <td style="border: 1px solid #000; padding: 3px 10px;">${c.name}</td>
+                            <td style="border: 1px solid #000; padding: 3px; text-align:center;">${c.qty}</td>
+                            <td style="border: 1px solid #000; padding: 3px 10px; text-align:right;">${fmt(c.total)}</td>
+                        </tr>
+                    `).join('')}
+                    <!-- কার্ড টোটাল রো -->
+                    <tr style="font-weight: bold; background: #f9f9f9;">
+                        <td colspan="2" style="border: 1px solid #000; padding: 4px 10px; text-transform: uppercase;">TOTAL CARD INVENTORY</td>
+                        <td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">${fmt(snap.total_card_inventory)}</td>
+                    </tr>
+                </table>
+            </div>` : ''}
+        </div>`;
+
+    function renderSubTable(arr, title, sum) {
+        if (!arr || arr.length === 0) return '';
+        return `
+        <div style="border: 1px solid #000; margin-bottom: 10px;">
+            <div style="background: #eee; padding: 4px 10px; font-weight: bold; border-bottom: 1px solid #000; font-size: 11px;">${title}</div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                <tr style="background:#f9f9f9; font-weight:bold; text-align:center;">
+                    <td style="border: 1px solid #000; padding: 3px; width: 70%; text-align: center;">ACCOUNT NAME</td>
+                    <td style="border: 1px solid #000; padding: 3px; text-align: center;">BALANCE (৳)</td>
+                </tr>
+                ${arr.map(a => `<tr><td style="border: 1px solid #000; padding: 3px 10px;">${a.name}</td><td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">${fmt(a.balance)}</td></tr>`).join('')}
+                <tr style="font-weight: bold; background: #f9f9f9;"><td style="border: 1px solid #000; padding: 4px 10px; text-transform: uppercase;">TOTAL ${title}</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">${fmt(sum)}</td></tr>
+            </table>
+        </div>`;
+    }
+    container.innerHTML = html;
+};
         /* CATEGORY & ACCOUNTS MANAGEMENT */
         window.renderCategoriesTable = function() {
             const tbody = document.getElementById('categoryTableBody');
@@ -4253,7 +4432,7 @@ window.generateDailyClosingSnapshot = async function() {
 
         /* BALANCE UPDATE PANEL ENGINE */
         window.openBalanceCategoryByName = (name) => {
-    // ক্যাটাগরি খোঁজা
+    // ক্যাটাগরি খোঁজা (বড় হাত-ছোট হাতের অক্ষরের পার্থক্য দূর করা হয়েছে)
     const cat = categories.find(c => c.name.trim().toLowerCase() === name.trim().toLowerCase());
     
     if(!cat) {
@@ -4266,7 +4445,7 @@ window.generateDailyClosingSnapshot = async function() {
     const container = document.getElementById('formFieldsContainer');
     container.innerHTML = '';
 
-    // একাউন্টগুলো খুঁজে ইনপুট তৈরি করা (এখানে ID ঠিক করা হয়েছে)
+    // একাউন্টগুলো খুঁজে ইনপুট তৈরি করা
     const catAccs = accounts.filter(a => a.catId === cat.id);
     if(catAccs.length === 0) {
         container.innerHTML = '<p style="color:red; padding:10px;">এই ক্যাটাগরিতে কোনো একাউন্ট পাওয়া যায়নি।</p>';
@@ -4277,13 +4456,14 @@ window.generateDailyClosingSnapshot = async function() {
         container.innerHTML += `
             <div style="margin-bottom:15px; background:#f9f9f9; padding:10px; border-radius:8px; border:1px solid #eee;">
                 <label style="font-weight:700; display:block; margin-bottom:5px;">${acc.name}</label>
-                <input type="number" step="any" id="input_acc_${acc.id}" value="${val}" 
+                <input type="number" step="any" id="inp_${acc.id}" value="${val}" 
                 style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:1rem;">
             </div>`;
     });
 
     switchMainTab('balance'); 
 };
+
         document.getElementById('balanceUpdateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             showLoader("Updating Balances...");
@@ -4293,11 +4473,10 @@ window.generateDailyClosingSnapshot = async function() {
             const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
 
             catAccs.forEach(acc => {
-                // ID খুঁজে নতুন ভ্যালু নেওয়া হচ্ছে
                 const inputEl = document.getElementById(`input_acc_${acc.id}`);
                 if (inputEl) {
                     const newBal = parseFloat(inputEl.value) || 0;
-                    const prevBal = parseFloat(balanceStore[acc.id]) || 0;
+                    const prevBal = balanceStore[acc.id] || 0;
 
                     if (newBal !== prevBal) {
                         const diff = newBal - prevBal;
@@ -4317,17 +4496,17 @@ window.generateDailyClosingSnapshot = async function() {
             });
 
             try {
-                // Firebase-এ ডেটা সেভ করা হচ্ছে
                 await writeToFirebase('erp/balances', balanceStore);
                 await writeToFirebase('erp/fintechHistory', historyLogs);
                 updateDashboardCards();
                 hideLoader();
-                showToast("ব্যালেন্স সফলভাবে সেভ হয়েছে!", "success");
+                showToast("Balances updated successfully!", "success");
             } catch (err) {
                 hideLoader();
-                showToast("ব্যালেন্স সেভ করতে সমস্যা হয়েছে।", "error");
+                showToast("Error updating balances.", "error");
             }
         });
+
         /* CARD MASTER CONFIGURATION VIEW */
         window.renderCardMasterView = function() {
             const container = document.getElementById('cardMasterTablesContainer');
@@ -4620,14 +4799,11 @@ window.renderDailyClosingHistory = function() {
 
     reports.forEach(r => {
         const tr = document.createElement('tr');
-        // এখানে চেক করা হচ্ছে পুরনো ডাটা নাকি নতুন ডাটা (summary.net_worth)
-        const displayBalance = (r.summary && r.summary.net_worth !== undefined) ? r.summary.net_worth : (r.total_net_balance || 0);
-
         tr.innerHTML = `
             <td>${r.report_date}</td>
             <td>${r.closing_time}</td>
             <td><strong>${r.report_id}</strong></td>
-            <td style="font-weight:700; color:#059669;">৳ ${(parseFloat(displayBalance)).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            <td style="font-weight:700; color:#059669;">৳ ${(r.total_net_balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
             <td style="text-align: center;">
                 <button class="btn-action btn-edit" onclick="viewDCRReport('${r.report_id}')"><i class="fa-solid fa-eye"></i> View</button>
                 <button class="btn-action btn-delete" onclick="deleteDCRReport('${r.report_id}')"><i class="fa-solid fa-trash"></i></button>
@@ -4671,97 +4847,6 @@ window.deleteDCRReport = function(reportId) {
             }
         }
     });
-};
-
-window.renderDailyClosingReportView = function(snap) {
-    const container = document.getElementById('printable-closing-report');
-    if (!container) return;
-    const fmt = (n) => (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
-    
-    // সাব-টেবিল হেল্পার ফাংশন
-    function renderSubTable(arr, title, sum) {
-        if (!arr || arr.length === 0) return '';
-        return `
-        <div class="dcr-section-container" style="border: 1px solid #000; margin-bottom: 8px;">
-            <div style="background: #f3f4f6; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #000; text-transform: uppercase;">${title}</div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-                <tr style="background:#f9fafb; font-weight:bold; text-align:center;">
-                    <td style="border: 1px solid #000; padding: 3px; width: 65%; text-align: left; padding-left: 10px;">ACCOUNT NAME</td>
-                    <td style="border: 1px solid #000; padding: 3px; text-align: right; padding-right: 10px;">BALANCE (৳)</td>
-                </tr>
-                ${arr.map(a => `<tr><td style="border: 1px solid #000; padding: 2px 10px;">${a.name}</td><td style="border: 1px solid #000; padding: 2px 10px; text-align: right;">${fmt(a.balance)}</td></tr>`).join('')}
-                <tr style="font-weight: bold; background: #f3f4f6;"><td style="border: 1px solid #000; padding: 3px 10px;">TOTAL ${title}</td><td style="border: 1px solid #000; padding: 3px 10px; text-align: right;">${fmt(sum)}</td></tr>
-            </table>
-        </div>`;
-    }
-
-    let html = `
-    <div class="dcr-print-document" style="font-family: 'Arial', sans-serif; color: #000; padding: 0px 10px; background: #fff;">
-        <!-- HEADER -->
-        <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; align-items: flex-end;">
-            <div style="font-size: 9px; line-height: 1.2;">Date: ${snap.report_date}<br>Time: ${snap.closing_time}</div>
-            <div style="text-align: center;">
-                <h2 style="margin: 0; font-size: 20px; font-weight: 800; text-transform: uppercase;">${snap.company_name}</h2>
-                <h4 style="margin: 2px 0; font-size: 11px; font-weight: bold;">DAILY CAPITAL RECONCILIATION & INCOME STATEMENT</h4>
-            </div>
-            <div style="text-align: right; font-size: 9px;">Report ID: ${snap.report_id}</div>
-        </div>
-
-        <!-- PAGE 1 CONTENT -->
-        <div class="dcr-section-container" style="border: 1.5px solid #000; margin-bottom: 12px;">
-            <div style="background: #e5e7eb; padding: 5px 10px; font-weight: bold; font-size: 11px; border-bottom: 1.5px solid #000; text-transform: uppercase;">SECTION 1: CAPITAL RECONCILIATION</div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                <tr><td style="border: 1px solid #000; padding: 4px 10px;">Opening Balance (Start of Day)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.opening_cash)}</td></tr>
-                <tr><td style="border: 1px solid #000; padding: 4px 10px;">(+) Total Cash Inflow (Collection)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.inflow)}</td></tr>
-                <tr><td style="border: 1px solid #000; padding: 4px 10px;">(-) Total Cash Outflow (Expense)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">(৳ ${fmt(snap.reconciliation.outflow)})</td></tr>
-                <tr style="font-weight: bold; background: #d1d5db;"><td style="border: 1px solid #000; padding: 5px 10px;">DAILY NET PROFIT / COMMISSION</td><td style="border: 1px solid #000; padding: 5px 10px; text-align: right;">৳ ${fmt(snap.reconciliation.profit)}</td></tr>
-            </table>
-        </div>
-
-        <div class="dcr-section-container" style="border: 1.5px solid #000; margin-bottom: 12px;">
-            <div style="background: #e5e7eb; padding: 5px 10px; font-weight: bold; font-size: 11px; border-bottom: 1.5px solid #000; text-transform: uppercase;">SECTION 2: EXECUTIVE SUMMARY</div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                <tr><td style="border: 1px solid #000; padding: 4px 10px; width: 65%;">Total Outstanding Receivable (Due)</td><td style="border: 1px solid #000; padding: 4px 10px; text-align: right;">৳ ${fmt(snap.summary.receivable)}</td></tr>
-                <tr style="font-weight: bold; background: #d1d5db; font-size: 12px;">
-                    <td style="border: 1px solid #000; padding: 7px 10px;">TOTAL NET FINANCIAL WORTH</td>
-                    <td style="border: 1px solid #000; padding: 7px 10px; text-align: right;">৳ ${fmt(snap.summary.net_worth || snap.summary.net_balance)}</td>
-                </tr>
-            </table>
-        </div>
-
-        ${renderSubTable(snap.accounts.bank, "BANK ACCOUNTS", snap.accounts.b_sum)}
-        ${renderSubTable(snap.accounts.personal, "PERSONAL ACCOUNTS", snap.accounts.p_sum)}
-        ${renderSubTable(snap.accounts.agent, "AGENT ACCOUNTS", snap.accounts.a_sum)}
-
-        <!-- এখানে FORCE PAGE BREAK হবে -->
-        <div class="html2pdf__page-break"></div>
-
-        <!-- PAGE 2 CONTENT STARTS -->
-        <div style="margin-top: 10px;">
-            ${renderSubTable(snap.accounts.recharge, "RECHARGE BALANCES", snap.accounts.r_sum)}
-            
-            <div class="dcr-section-container" style="border: 1px solid #000; margin-bottom: 8px;">
-                <div style="background: #f3f4f6; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #000; text-transform: uppercase;">CASH INVENTORY BREAKDOWN</div>
-                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-                    ${snap.cash_details.map(i => `<tr><td style="border: 1px solid #000; padding: 2px 10px;">${i.note}</td><td style="border: 1px solid #000; padding: 2px; text-align:center;">${i.qty}</td><td style="border: 1px solid #000; padding: 2px 10px; text-align:right;">৳ ${fmt(i.amount)}</td></tr>`).join('')}
-                </table>
-            </div>
-
-            <div class="dcr-section-container" style="border: 1px solid #000; margin-bottom: 8px;">
-                <div style="background: #f3f4f6; padding: 4px 10px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #000; text-transform: uppercase;">CARD STOCK BREAKDOWN</div>
-                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-                    ${snap.card_details.map(c => `<tr><td style="border: 1px solid #000; padding: 2px 10px;">${c.name}</td><td style="border: 1px solid #000; padding: 2px; text-align:center;">${c.qty}</td><td style="border: 1px solid #000; padding: 2px 10px; text-align:right;">৳ ${fmt(c.total)}</td></tr>`).join('')}
-                </table>
-            </div>
-
-            <!-- SIGNATURE AREA -->
-            <div style="margin-top: 50px; display: flex; justify-content: space-between; padding: 0 20px; page-break-inside: avoid;">
-                <div style="text-align: center; width: 200px; border-top: 1.5px solid #000; padding-top: 5px; font-size: 11px; font-weight: bold;">Prepared By</div>
-                <div style="text-align: center; width: 200px; border-top: 1.5px solid #000; padding-top: 5px; font-size: 11px; font-weight: bold;">Authorized Signature</div>
-            </div>
-        </div>
-    </div>`;
-    container.innerHTML = html;
 };
 // --- ডেইলি ক্লোজিং রিপোর্ট ইঞ্জিন শেষ ---
 
@@ -4858,11 +4943,9 @@ window.switchMainTab = (tab) => {
     
     if(panel) {
         panel.classList.add('active');
-        const titleElement = document.getElementById('top-title');
-            if(titleElement) {
-                const cleanTitle = tab.replace(/-/g, ' ');
-                titleElement.innerText = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
-            }
+        if(document.getElementById('top-title')) {
+            document.getElementById('top-title').innerText = tab.replace('-', ' ').toUpperCase();
+        }
     } else {
         // ব্যালেন্স ট্যাব চেক
         const balView = document.getElementById('balance-view');
@@ -4938,25 +5021,19 @@ document.getElementById('profileTrigger').addEventListener('click', (e) => {
             
         // ৭. পিডিএফ এবং এক্সেল ডাউনলোড (নিখুঁত কোড)
         window.downloadDailyClosingPDF = function() {
-    const element = document.getElementById('printable-closing-report');
-    if (!element) return;
+            const element = document.getElementById('printable-closing-report');
+            if (!element) { alert("রিপোর্ট এলাকা খুঁজে পাওয়া যায়নি!"); return; }
+            const opt = {
+                margin: 10,
+                filename: 'Report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+            html2pdf().set(opt).from(element).save();
+        };
 
-    const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).replace(/[:\s]/g, '-');
-    const fileName = `Daily_Report_${dateStr}_${timeStr}.pdf`;
-
-    const opt = {
-        margin: 10,
-        filename: fileName,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        // নিচের লাইনটি নতুন যোগ করা হয়েছে যা পেজ ব্রেক নিশ্চিত করবে
-        pagebreak: { mode: ['css', 'legacy'], before: '.html2pdf__page-break' }
-    };
-    html2pdf().set(opt).from(element).save();
-};
         window.exportDailyClosingExcel = () => {
             const t = document.querySelector('#printable-closing-report table');
             if (!t) { alert("টেবিল পাওয়া যায়নি!"); return; }
@@ -5012,11 +5089,10 @@ window.switchMainTab = (tab) => {
             const panel = document.getElementById(panelId);
             if(panel) panel.classList.add('active');
             
-            const titleElement = document.getElementById('top-title');
-            if(titleElement) {
-                const cleanTitle = tab.replace(/-/g, ' ');
-                titleElement.innerText = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
+            if(document.getElementById('top-title')) {
+                document.getElementById('top-title').innerText = tab.replace('-', ' ').toUpperCase();
             }
+
             // এই লজিকটি ক্যাশ এবং কার্ড ইনভেন্টরি অটো-লোড করবে
             if(tab === 'cash-inventory') {
                 if(typeof renderCashInventoryTable === 'function') renderCashInventoryTable();
@@ -5031,12 +5107,80 @@ window.switchMainTab = (tab) => {
         
         // পেজ পুরোপুরি তৈরি হলে সব ফাংশন চালু হবে
         window.addEventListener('DOMContentLoaded', initGlobalActions);
-// Sidebar Toggle for Mobile and Desktop
-        if (typeof sidebarToggle !== 'undefined' && sidebarToggle) {
-            sidebarToggle.onclick = function() {
-                sidebar.classList.toggle('collapsed');
-            };
+document.getElementById('sidebarToggle').addEventListener('click', function() {
+    document.querySelector('.sidebar').classList.toggle('collapsed');
+    console.log("Button clicked! Sidebar toggled.");
+});
+// ১. ডাউনলোড হিস্ট্রি টেবিল রেন্ডার করা
+window.renderReportDownloadTable = function() {
+    const tbody = document.getElementById('rdHistoryTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    // ডেইলি ক্লোজিং রিপোর্টগুলো থেকে ডাটা নেওয়া
+    const reports = dailyClosingReports || [];
+    
+    if (reports.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">কোনো রিপোর্ট পাওয়া যায়নি</td></tr>';
+        return;
+    }
+
+    reports.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>Daily Closing Report</td>
+            <td>${r.report_date}</td>
+            <td><span class="rd-badge rd-badge-pdf">PDF</span></td>
+            <td>${r.report_date}, ${r.closing_time}</td>
+            <td style="text-align:right;">
+                <button class="rd-btn-table-dl" onclick="directDownloadPDF('${r.report_id}')">
+                    <i class="fa-solid fa-download"></i> Download
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+};
+
+// ২. সরাসরি পিডিএফ ডাউনলোড ফাংশন (কোনো মোডাল লাগবে না)
+window.directDownloadPDF = function(reportId) {
+    const report = dailyClosingReports.find(r => r.report_id === reportId);
+    if (!report) return;
+
+    // ব্যাকগ্রাউন্ডে রিপোর্টের ডিজাইন তৈরি করা
+    renderDailyClosingReportView(report);
+    
+    // ডিজাইন তৈরি হওয়ার পর পিডিএফ ডাউনলোড ট্রিগার করা
+    setTimeout(() => {
+        downloadDailyClosingPDF();
+        showToast("PDF ডাউনলোড শুরু হয়েছে...", "success");
+    }, 500);
+};
+
+// ৩. টপ ফিল্টার থেকে ম্যানুয়াল ডাউনলোড হ্যান্ডেলার
+window.handleManualDownload = function() {
+    const type = document.getElementById('rdType').value;
+    const date = document.getElementById('rdFrom').value;
+    
+    if (type === "Daily Closing Report" && date) {
+        const report = dailyClosingReports.find(r => r.report_date === date);
+        if (report) {
+            directDownloadPDF(report.report_id);
+        } else {
+            showToast("নির্বাচিত তারিখে কোনো রিপোর্ট পাওয়া যায়নি!", "error");
         }
+    } else {
+        showToast("দয়া করে সঠিক রিপোর্ট এবং তারিখ সিলেক্ট করুন", "warning");
+    }
+};
+
+// ৪. ট্যাব সুইচিং ফাংশনে আপডেট
+// আপনার switchMainTab ফাংশনের ভেতর এটি যুক্ত করুন যাতে এই ট্যাবে গেলে টেবিল রেন্ডার হয়
+const originalSwitchTab = window.switchMainTab;
+window.switchMainTab = (tab) => {
+    if(tab === 'report-download') renderReportDownloadTable();
+    if(originalSwitchTab) originalSwitchTab(tab);
+};
     </script>
 </body>
 </html>
