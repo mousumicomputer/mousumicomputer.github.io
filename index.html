@@ -3907,26 +3907,43 @@ if(document.getElementById('statTotalDue'))
         /* ==========================================================================
            DAILY CLOSING FINANCIAL STATEMENT ENGINE (NEW PRINT-READY A4 COMPACT DESIGN)
            ========================================================================== */
-// --- ডেইলি ক্লোজিং রিপোর্ট ইঞ্জিন (সবচেয়ে নিরাপদ এবং ছবির মতো ডিজাইন) ---
+// ১. সাব-সেকশন (Close Today/History) পরিবর্তন করার ফাংশন
+window.switchDCRSubSection = function(sectionId) {
+    // মূল ট্যাবটি আগে এক্টিভ করে নিচ্ছে
+    switchMainTab('daily-closing'); 
+    
+    // সব সাব-সেকশন লুকিয়ে ফেলছে
+    document.querySelectorAll('.dcr-sub-section').forEach(sec => sec.style.display = 'none');
+    
+    // টার্গেট সেকশনটি দেখাচ্ছে
+    const target = document.getElementById(sectionId);
+    if(target) target.style.display = 'block';
+    
+    // যদি হিস্ট্রি সেকশন হয়, তবে টেবিল লোড করছে
+    if(sectionId === 'dcr-history-section') renderDailyClosingHistory();
+};
+
 window.generateDailyClosingSnapshot = async function() {
     const dateInput = document.getElementById('selectedReportDate');
-    if (!dateInput.value) {
-        showToast("দয়া করে তারিখ নির্বাচন করুন!", "warning");
+    const rDate = dateInput.value;
+    
+    if (!rDate) {
+        showToast("দয়া করে একটি তারিখ নির্বাচন করুন!", "warning");
         return;
     }
-    const rDate = dateInput.value;
+    
     showLoader("হিসাব সমন্বয় করা হচ্ছে...");
-
+    
     try {
-        // ১. প্রারম্ভিক পুঁজি (Opening Capital)
-        // আগের কোনো রিপোর্ট থাকলে তার 'Actual' ব্যালেন্সটাই আজকের ওপেনিং
+        // ১. প্রারম্ভিক পুঁজি (Opening Capital) বের করা
         let sortedReports = (dailyClosingReports || [])
             .filter(r => r.report_date < rDate)
             .sort((a, b) => b.report_date.localeCompare(a.report_date));
         
+        // আগের দিনের একচুয়াল ব্যালেন্সই আজকের ওপেনিং, না থাকলে ডিফল্ট ৫০,০০০
         const openingCapital = sortedReports.length > 0 ? parseFloat(sortedReports[0].actual_closing) : 50000;
 
-        // ২. আজকের লেনদেন (Pelam & Dilam)
+        // ২. ট্রানজ্যাকশন থেকে আজকের Pelam (+) এবং Dilam (-) বের করা
         let totalPelam = 0;
         let totalDilam = 0;
         customerTransactions.filter(t => t.date === rDate).forEach(t => {
@@ -3934,22 +3951,31 @@ window.generateDailyClosingSnapshot = async function() {
             totalDilam += parseFloat(t.debit) || 0;
         });
 
-        // ৩. এক্সপেক্টেড ক্লোজিং (Expected Closing)
+        // ৩. এক্সপেক্টেড ক্লোজিং হিসাব
         const expectedClosing = openingCapital + totalPelam - totalDilam;
 
-        // ৪. প্রকৃত ক্লোজিং (Actual Closing - ৬টি হেডের যোগফল)
+        // ৪. একচুয়াল ক্লোজিং (৬টি হেডের বর্তমান ব্যালেন্সের যোগফল)
         let actualSumHead = 0;
-        // ব্যাংক, এজেন্ট, পার্সোনাল একাউন্টস
+        // ব্যাংক, এজেন্ট, পার্সোনাল একাউন্টস (balanceStore থেকে)
         Object.values(balanceStore).forEach(val => actualSumHead += parseFloat(val) || 0);
-        // ক্যাশ ইনভেন্টরি
+        // ক্যাশ ইনভেন্টরি যোগফল
         actualSumHead += (typeof calculateCashGrandTotal === 'function') ? calculateCashGrandTotal() : 0;
-        // কার্ড ইনভেন্টরি
+        // কার্ড ইনভেন্টরি যোগফল
         actualSumHead += (typeof calculateGrandCardInventoryValue === 'function') ? calculateGrandCardInventoryValue() : 0;
 
-        // ৫. আজকের ইনকাম (Income)
+        // ৫. আজকের নিট ইনকাম
         const todaysIncome = actualSumHead - expectedClosing;
 
-        // ডেটা অবজেক্ট তৈরি
+        // ২ নং ছবির মতো ফরমের ডাটাগুলো আপডেট করা
+        document.getElementById('displayReportDate').innerText = rDate;
+        document.getElementById('viewOpening').innerText = '৳ ' + openingCapital.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('viewPelam').innerText = '৳ ' + totalPelam.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('viewDilam').innerText = '৳ ' + totalDilam.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('viewExpected').innerText = '৳ ' + expectedClosing.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('viewActual').innerText = '৳ ' + actualSumHead.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('viewIncome').innerText = '৳ ' + todaysIncome.toLocaleString('en-US', {minimumFractionDigits: 2});
+
+        // ফায়ারবেসে সেভ করার জন্য অবজেক্ট
         const snapshot = {
             report_id: 'DCR-' + Date.now(),
             report_date: rDate,
@@ -3959,32 +3985,32 @@ window.generateDailyClosingSnapshot = async function() {
             expected_closing: expectedClosing,
             actual_closing: actualSumHead,
             income: todaysIncome,
+            status: 'Closed',
             closing_time: new Date().toLocaleTimeString()
         };
 
-        // আগের একই তারিখের রিপোর্ট থাকলে রিপ্লেস করা
+        // ডাটা আপডেট এবং সেভ
         dailyClosingReports = dailyClosingReports.filter(r => r.report_date !== rDate);
         dailyClosingReports.unshift(snapshot);
-
         await writeToFirebase('erp/dailyClosingReports', dailyClosingReports);
-        renderDailyClosingHistory();
+        
         hideLoader();
-        showToast("ক্লোজিং সফল হয়েছে!", "success");
-
+        showToast("আজকের দিনটি সফলভাবে ক্লোজ করা হয়েছে!", "success");
+        
     } catch (err) {
         hideLoader();
         showToast("Error: " + err.message, "error");
     }
 };
 
-// হিস্ট্রি টেবিল রেন্ডার করার ফাংশন
+// ৩. ৩ নং ছবির মতো হিস্ট্রি টেবিল তৈরি করার ফাংশন
 window.renderDailyClosingHistory = function() {
     const tbody = document.getElementById('dailyClosingHistoryTableBody');
-    if (!tbody) return;
+    if(!tbody) return;
     tbody.innerHTML = '';
 
     if (dailyClosingReports.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">No records found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">কোনো রেকর্ড পাওয়া যায়নি।</td></tr>';
         return;
     }
 
@@ -3993,12 +4019,10 @@ window.renderDailyClosingHistory = function() {
         tr.innerHTML = `
             <td>${r.report_date}</td>
             <td>৳ ${r.opening_capital.toLocaleString()}</td>
-            <td class="text-plus">৳ ${r.total_pelam.toLocaleString()}</td>
-            <td class="text-minus">৳ ${r.total_dilam.toLocaleString()}</td>
-            <td class="text-bold">৳ ${r.expected_closing.toLocaleString()}</td>
-            <td class="text-bold" style="color: #4f46e5;">৳ ${r.actual_closing.toLocaleString()}</td>
-            <td class="${r.income >= 0 ? 'text-plus' : 'text-minus'}">৳ ${r.income.toLocaleString()}</td>
-            <td style="text-align: center;">
+            <td>৳ ${r.actual_closing.toLocaleString()}</td>
+            <td style="color: #10b981; font-weight: 700;">৳ ${r.income.toLocaleString()}</td>
+            <td style="text-align:center;"><span class="badge badge-success" style="padding: 5px 10px; border-radius: 20px;"><i class="fa-solid fa-check"></i> Closed</span></td>
+            <td style="text-align:center;">
                 <button class="btn-action btn-edit" onclick="viewDCRReport('${r.report_id}')"><i class="fa-solid fa-eye"></i> View</button>
             </td>
         `;
