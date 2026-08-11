@@ -1780,7 +1780,7 @@
                         </ul>
                     </li>
 
-                    <!-- PARENT MENU: DAILY CLOSING -->
+<!-- PARENT MENU: DAILY CLOSING -->
 <li class="menu-item" id="menu-closing-parent">
     <a onclick="toggleParentMenu('menu-closing-parent')">
         <span class="menu-link-inner"><i class="fa-solid fa-lock"></i> <span>Daily Closing</span></span>
@@ -1788,11 +1788,13 @@
     </a>
     <ul class="submenu-list">
         <li class="submenu-item">
-            <a onclick="switchMainTab('daily-closing')"><i class="fa-solid fa-angle-right"></i> <span>Close Today</span></a>
+            <a onclick="switchDCRSubSection('dcr-form-section')"><i class="fa-solid fa-angle-right"></i> <span>Close Today</span></a>
+        </li>
+        <li class="submenu-item">
+            <a onclick="switchDCRSubSection('dcr-history-section')"><i class="fa-solid fa-angle-right"></i> <span>History</span></a>
         </li>
     </ul>
-</li>
-                    
+</li>                    
                     <!-- PARENT MENU: SETTINGS & CONFIGURATION -->
                     <li class="menu-item" id="menu-settings-parent">
                         <a onclick="toggleParentMenu('menu-settings-parent')">
