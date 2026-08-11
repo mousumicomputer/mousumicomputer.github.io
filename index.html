@@ -4048,9 +4048,13 @@ window.renderDailyClosingHistory = function() {
     const tbody = document.getElementById('dailyClosingHistoryTableBody');
     if(!tbody) return;
     tbody.innerHTML = '';
+    
+    // সিলেক্ট অল চেক বক্স এবং ডিলেট বাটন রিসেট করা
+    document.getElementById('selectAllDCR').checked = false;
+    updateDCRDeleteButtonVisibility();
 
     if (dailyClosingReports.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #94a3b8;">কোনো হিস্ট্রি রেকর্ড পাওয়া যায়নি।</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px; color: #94a3b8;">কোনো হিস্ট্রি রেকর্ড পাওয়া যায়নি।</td></tr>';
         return;
     }
 
@@ -4059,6 +4063,7 @@ window.renderDailyClosingHistory = function() {
         const fmt = (val) => '৳ ' + (val || 0).toLocaleString('en-US', {minimumFractionDigits: 2});
         
         tr.innerHTML = `
+            <td style="padding: 15px;"><input type="checkbox" class="dcr-row-checkbox" value="${r.report_id}" onclick="updateDCRDeleteButtonVisibility()" style="width: 18px; height: 18px; cursor: pointer;"></td>
             <td style="color: #1e1b4b; font-weight: 700;">${r.report_date}</td>
             <td style="color: #64748b;">${fmt(r.opening_capital)}</td>
             <td style="color: #4f46e5; font-weight: 700;">${fmt(r.actual_closing)}</td>
@@ -4071,7 +4076,6 @@ window.renderDailyClosingHistory = function() {
         tbody.appendChild(tr);
     });
 };
-
 // ২. সরাসরি পিডিএফ ডাউনলোড ফাংশন (টেবিল ও ফর্ম উভয়ের জন্য)
 window.directDownloadPDF = function(reportId) {
     const report = dailyClosingReports.find(r => r.report_id === reportId);
