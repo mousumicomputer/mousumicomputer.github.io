@@ -1611,6 +1611,28 @@
     
     .mc-avatar { width: 35px; height: 35px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; font-size: 0.9rem; }
     .mc-btn-details { background: #f8fafc; border: 1px solid #e2e8f0; color: #4f46e5; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'Tiro Bangla', serif; font-size: 0.9rem; }
+/* Daily Closing Specific Styles */
+.closing-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+.closing-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.closing-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+}
+.closing-table tr:last-child td { border-bottom: none; }
+.text-plus { color: #10b981; font-weight: 700; } /* সবুজ */
+.text-minus { color: #ef4444; font-weight: 700; } /* লাল */
+.text-bold { font-weight: 800; color: #1e293b; }
+.bg-light { background-color: #f8fafc; }
 
     </style>
 </head>
@@ -1758,6 +1780,18 @@
                         </ul>
                     </li>
 
+                    <!-- PARENT MENU: DAILY CLOSING -->
+<li class="menu-item" id="menu-closing-parent">
+    <a onclick="toggleParentMenu('menu-closing-parent')">
+        <span class="menu-link-inner"><i class="fa-solid fa-lock"></i> <span>Daily Closing</span></span>
+        <i class="fa-solid fa-chevron-down chevron-icon"></i>
+    </a>
+    <ul class="submenu-list">
+        <li class="submenu-item">
+            <a onclick="switchMainTab('daily-closing')"><i class="fa-solid fa-angle-right"></i> <span>Close Today</span></a>
+        </li>
+    </ul>
+</li>
                     
                     <!-- PARENT MENU: SETTINGS & CONFIGURATION -->
                     <li class="menu-item" id="menu-settings-parent">
@@ -2241,83 +2275,61 @@
 
                 <!-- ==================== VIEW VIEW: DAILY CLOSING REPORT ==================== -->
                 <div class="view-panel" id="daily-closing-view">
-<!-- উপরের অ্যাকশন কার্ড -->
-<div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px; border-left: 5px solid #059669;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-        <div>
-            <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--primary-dark);">Daily Closing Engine</h3>
-            <p style="font-size: 0.85rem; color: #64748b;">যে তারিখের আর্থিক হিসাব লক করে রিপোর্ট তৈরি করতে চান, সেই তারিখ নির্বাচন করুন।</p>
+    <!-- তারিখ নির্বাচন এবং জেনারেট বাটন -->
+    <div class="erp-form-card" style="max-width: 100%; margin-bottom: 20px; border-left: 5px solid #4f46e5;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div>
+                <h3 style="font-family: 'Tiro Bangla', serif; font-size: 1.2rem; color: #1e1b4b;">Daily Financial Closing</h3>
+                <p style="font-size: 0.85rem; color: #64748b;">আজকের তারিখের হিসাব মিলিয়ে ক্লোজিং রিপোর্ট তৈরি করুন।</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="date" id="selectedReportDate" class="dcr-filter-input" style="height: 45px;">
+                <button class="btn-submit" onclick="generateDailyClosingSnapshot()" style="width: auto; padding: 0 25px; background: #4f46e5;">
+                    <i class="fa-solid fa-sync"></i> Calculate & Close
+                </button>
+            </div>
         </div>
+    </div>
 
-        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <input
-                type="date"
-                id="selectedReportDate"
-                style="padding: 11px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem;"
-            >
+    <!-- হিস্ট্রি টেবিল -->
+    <div class="erp-form-card" style="max-width: 100%;">
+        <div class="erp-form-header">
+            <span><i class="fa-solid fa-history"></i> Closing Records</span>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Opening Capital</th>
+                        <th>Pelam (+)</th>
+                        <th>Dilam (-)</th>
+                        <th>Expected</th>
+                        <th>Actual</th>
+                        <th>Income</th>
+                        <th style="text-align: center;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="dailyClosingHistoryTableBody">
+                    <tr><td colspan="8" style="text-align: center; color: #94a3b8; padding: 20px;">No records found.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-            <button
-                class="btn-submit"
-                onclick="generateDailyClosingSnapshot()"
-                style="width: auto; padding: 12px 24px; background: #059669;"
-            >
-                <i class="fa-solid fa-lock"></i> Generate Closing
-            </button>
+    <!-- রিপোর্ট দেখার মোডাল -->
+    <div id="dcrModal" class="dcr-modal-overlay">
+        <div class="dcr-modal-content">
+            <button class="close-dcr-modal" onclick="closeDCRModal()">×</button>
+            <div id="printable-closing-report"></div>
+            <div style="margin-top: 20px; text-align: right;" class="no-print">
+                <button class="btn-submit" onclick="downloadDailyClosingPDF()" style="width: auto; padding: 10px 20px; background: #ef4444;">
+                    <i class="fa-solid fa-file-pdf"></i> Download PDF
+                </button>
+            </div>
         </div>
     </div>
 </div>
-                    <!-- হিস্ট্রি টেবিল সেকশন -->
-                    <div class="erp-form-card" style="max-width: 100%;">
-                        <div class="erp-form-header">
-                            <span><i class="fa-solid fa-clock-rotate-left" style="color: #00a8ef;"></i> Closing History</span>
-                            <div style="display: flex; gap: 10px;">
-                                <input type="date" id="dcrFromDate" class="dcr-filter-input" style="padding: 5px 10px; border-radius: 6px; border: 1px solid #ddd;">
-                                <button class="dcr-btn-filter" onclick="filterDailyClosingHistory()" style="padding: 7px 15px; font-size: 0.8rem; background: var(--primary-color); color: white; border: none; border-radius: 6px;">Filter</button>
-                            </div>
-                        </div>
-
-                        <!-- স্ক্রলযোগ্য ছোট টেবিল -->
-                        <div class="dcr-history-container">
-                            <div class="table-container" style="max-height: 400px; overflow-y: auto;">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Time</th>
-                                            <th>Report ID</th>
-                                            <th>Net Balance</th>
-                                            <th style="text-align: center;">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="dailyClosingHistoryTableBody">
-                                        <tr><td colspan="5" style="text-align: center; color: #9ca3af;">Loading history...</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- রিপোর্ট দেখার পপ-আপ মোডাল -->
-                    <div id="dcrModal" class="dcr-modal-overlay">
-                        <div class="dcr-modal-content">
-                            <button class="close-dcr-modal" onclick="closeDCRModal()">×</button>
-                            
-                            <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-                                <span style="font-weight: 700; color: var(--primary-dark); font-size: 1.1rem;"><i class="fa-solid fa-file-invoice"></i> Financial Report View</span>
-                                <div style="display: flex; gap: 8px;">
-                                    <button class="btn-action btn-edit" onclick="downloadDailyClosingPDF()" style="padding: 8px 15px; background: #00a8ef; color: #fff;">
-    <i class="fa-solid fa-file-pdf"></i> Download PDF
-</button>
-                                    <button class="btn-action btn-toggle" onclick="exportDailyClosingExcel()" style="background:#10b981; color:#fff; padding: 8px 15px;"><i class="fa-solid fa-file-excel"></i> Excel</button>
-                                </div>
-                            </div>
-
-                            <div id="printable-closing-report">
-                                <!-- এখানে ডাটা লোড হবে -->
-                            </div>
-                        </div>
-                    </div>
-
                 <!-- ==================== VIEW 2: BALANCE MANAGEMENT (ERP FORM) ==================== -->
                 <div class="view-panel" id="balance-view">
                     <div class="erp-form-card">
@@ -3887,220 +3899,101 @@ if(document.getElementById('statTotalDue'))
 // --- ডেইলি ক্লোজিং রিপোর্ট ইঞ্জিন (সবচেয়ে নিরাপদ এবং ছবির মতো ডিজাইন) ---
 window.generateDailyClosingSnapshot = async function() {
     const dateInput = document.getElementById('selectedReportDate');
-
-    if (!dateInput || !dateInput.value) {
-        showToast("দয়া করে একটি রিপোর্ট তারিখ নির্বাচন করুন!", "warning");
+    if (!dateInput.value) {
+        showToast("দয়া করে তারিখ নির্বাচন করুন!", "warning");
         return;
     }
-
     const rDate = dateInput.value;
-
     showLoader("হিসাব সমন্বয় করা হচ্ছে...");
 
     try {
-        const now = new Date();
-        const rTime = now.toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        const rId = 'DCR-' + Date.now();
-
-        // ১. নির্বাচিত তারিখের আগের সর্বশেষ Closing Balance খোঁজা
+        // ১. প্রারম্ভিক পুঁজি (Opening Capital)
+        // আগের কোনো রিপোর্ট থাকলে তার 'Actual' ব্যালেন্সটাই আজকের ওপেনিং
         let sortedReports = (dailyClosingReports || [])
-            .filter(r => r.report_date && r.report_date < rDate)
+            .filter(r => r.report_date < rDate)
             .sort((a, b) => b.report_date.localeCompare(a.report_date));
+        
+        const openingCapital = sortedReports.length > 0 ? parseFloat(sortedReports[0].actual_closing) : 50000;
 
-        let prevReport = sortedReports.length > 0
-            ? sortedReports[0]
-            : null;
-
-        // আগের রিপোর্টের Actual Balance = আজকের Opening Balance
-        let openingCapital = 0;
-
-        if (prevReport) {
-            openingCapital =
-                parseFloat(prevReport.reconciliation?.actual) ||
-                parseFloat(prevReport.actual_total_assets) ||
-                0;
-        }
-
-        // ২. নির্বাচিত তারিখের Customer Inflow / Outflow
-        let todayInflow = 0;
-        let todayOutflow = 0;
-
-        (customerTransactions || [])
-            .filter(t => t.date === rDate)
-            .forEach(t => {
-                todayInflow += parseFloat(t.credit) || 0;
-                todayOutflow += parseFloat(t.debit) || 0;
-            });
-
-        // ৩. বিস্তারিত Account Data
-        const bAccs = [];
-        const pAccs = [];
-        const aAccs = [];
-        const rAccs = [];
-
-        (categories || []).forEach(cat => {
-            const accs = (accounts || []).filter(
-                a => a.catId === cat.id && a.enabled !== false
-            );
-
-            accs.forEach(acc => {
-                const bal = parseFloat(balanceStore[acc.id]) || 0;
-
-                const item = {
-                    name: acc.name,
-                    balance: bal
-                };
-
-                const catName = (cat.name || '').toLowerCase();
-
-                if (catName.includes('bank')) {
-                    bAccs.push(item);
-                } else if (catName.includes('personal')) {
-                    pAccs.push(item);
-                } else if (catName.includes('agent')) {
-                    aAccs.push(item);
-                } else if (catName.includes('recharge')) {
-                    rAccs.push(item);
-                }
-            });
+        // ২. আজকের লেনদেন (Pelam & Dilam)
+        let totalPelam = 0;
+        let totalDilam = 0;
+        customerTransactions.filter(t => t.date === rDate).forEach(t => {
+            totalPelam += parseFloat(t.credit) || 0;
+            totalDilam += parseFloat(t.debit) || 0;
         });
 
-        // ৪. Cash + Card Inventory
-        const cashSum =
-            typeof calculateCashGrandTotal === 'function'
-                ? calculateCashGrandTotal() || 0
-                : 0;
+        // ৩. এক্সপেক্টেড ক্লোজিং (Expected Closing)
+        const expectedClosing = openingCapital + totalPelam - totalDilam;
 
-        const cardSum =
-            typeof calculateGrandCardInventoryValue === 'function'
-                ? calculateGrandCardInventoryValue() || 0
-                : 0;
+        // ৪. প্রকৃত ক্লোজিং (Actual Closing - ৬টি হেডের যোগফল)
+        let actualSumHead = 0;
+        // ব্যাংক, এজেন্ট, পার্সোনাল একাউন্টস
+        Object.values(balanceStore).forEach(val => actualSumHead += parseFloat(val) || 0);
+        // ক্যাশ ইনভেন্টরি
+        actualSumHead += (typeof calculateCashGrandTotal === 'function') ? calculateCashGrandTotal() : 0;
+        // কার্ড ইনভেন্টরি
+        actualSumHead += (typeof calculateGrandCardInventoryValue === 'function') ? calculateGrandCardInventoryValue() : 0;
 
-        const sumAllAccs =
-            bAccs.reduce((s, a) => s + a.balance, 0) +
-            pAccs.reduce((s, a) => s + a.balance, 0) +
-            aAccs.reduce((s, a) => s + a.balance, 0) +
-            rAccs.reduce((s, a) => s + a.balance, 0);
+        // ৫. আজকের ইনকাম (Income)
+        const todaysIncome = actualSumHead - expectedClosing;
 
-        // ৫. Capital Reconciliation হিসাব
-        const actualTotalAssets =
-            sumAllAccs +
-            cashSum +
-            cardSum;
-
-        const calculatedClosing =
-            openingCapital +
-            todayInflow -
-            todayOutflow;
-
-        const dailyProfit =
-            actualTotalAssets -
-            calculatedClosing;
-
-        // ৬. Snapshot তৈরি
+        // ডেটা অবজেক্ট তৈরি
         const snapshot = {
-            report_id: rId,
+            report_id: 'DCR-' + Date.now(),
             report_date: rDate,
-            closing_time: rTime,
-
-            company_name:
-                (profileSettings && profileSettings.companyName) ||
-                'Mousumi Computer',
-
-            reconciliation: {
-                opening: Number(openingCapital) || 0,
-                inflow: Number(todayInflow) || 0,
-                outflow: Number(todayOutflow) || 0,
-                calculated: Number(calculatedClosing) || 0,
-                actual: Number(actualTotalAssets) || 0,
-                profit: Number(dailyProfit) || 0
-            },
-
-            actual_total_assets:
-                Number(actualTotalAssets) || 0,
-
-            accounts: {
-                bank: bAccs,
-                personal: pAccs,
-                agent: aAccs,
-                recharge: rAccs
-            },
-
-            cash_details:
-                (typeof CASH_DENOMINATIONS !== 'undefined'
-                    ? CASH_DENOMINATIONS
-                    : []
-                )
-                .map(d => ({
-                    note: `৳ ${d} Notes`,
-                    qty: parseInt(cashQuantities[d]) || 0,
-                    amount:
-                        (parseInt(cashQuantities[d]) || 0) * d
-                }))
-                .filter(i => i.qty > 0),
-
-            card_details: []
+            opening_capital: openingCapital,
+            total_pelam: totalPelam,
+            total_dilam: totalDilam,
+            expected_closing: expectedClosing,
+            actual_closing: actualSumHead,
+            income: todaysIncome,
+            closing_time: new Date().toLocaleTimeString()
         };
 
-        // ৭. Card Inventory Details
-        if (typeof OPERATORS_LIST !== 'undefined') {
-            OPERATORS_LIST.forEach(op => {
-                (cardConfig[op] || []).forEach(c => {
-                    const q =
-                        parseInt(cardQuantities[op]?.[c.id]) || 0;
-
-                    if (q > 0) {
-                        snapshot.card_details.push({
-                            name: `${op} ${c.name}`,
-                            qty: q,
-                            total: q * (c.price || 0)
-                        });
-                    }
-                });
-            });
-        }
-
-        // ৮. একই তারিখের পুরোনো রিপোর্ট থাকলে সেটি বাদ দিয়ে নতুন Snapshot রাখা
-        dailyClosingReports =
-            (dailyClosingReports || []).filter(
-                r => r.report_date !== rDate
-            );
-
+        // আগের একই তারিখের রিপোর্ট থাকলে রিপ্লেস করা
+        dailyClosingReports = dailyClosingReports.filter(r => r.report_date !== rDate);
         dailyClosingReports.unshift(snapshot);
 
-        // ৯. Firebase-এ Save
-        await writeToFirebase(
-            'erp/dailyClosingReports',
-            dailyClosingReports
-        );
-
-        // ১০. History Refresh
-        if (typeof renderDailyClosingHistory === 'function') {
-            renderDailyClosingHistory();
-        }
-
+        await writeToFirebase('erp/dailyClosingReports', dailyClosingReports);
+        renderDailyClosingHistory();
         hideLoader();
-
-        showToast(
-            `${rDate} তারিখের Closing Report সফলভাবে তৈরি হয়েছে!`,
-            "success"
-        );
+        showToast("ক্লোজিং সফল হয়েছে!", "success");
 
     } catch (err) {
-        console.error("Daily Closing Error:", err);
-
         hideLoader();
-
-        showToast(
-            "Error: " + err.message,
-            "error"
-        );
+        showToast("Error: " + err.message, "error");
     }
 };
 
+// হিস্ট্রি টেবিল রেন্ডার করার ফাংশন
+window.renderDailyClosingHistory = function() {
+    const tbody = document.getElementById('dailyClosingHistoryTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (dailyClosingReports.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">No records found.</td></tr>';
+        return;
+    }
+
+    dailyClosingReports.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${r.report_date}</td>
+            <td>৳ ${r.opening_capital.toLocaleString()}</td>
+            <td class="text-plus">৳ ${r.total_pelam.toLocaleString()}</td>
+            <td class="text-minus">৳ ${r.total_dilam.toLocaleString()}</td>
+            <td class="text-bold">৳ ${r.expected_closing.toLocaleString()}</td>
+            <td class="text-bold" style="color: #4f46e5;">৳ ${r.actual_closing.toLocaleString()}</td>
+            <td class="${r.income >= 0 ? 'text-plus' : 'text-minus'}">৳ ${r.income.toLocaleString()}</td>
+            <td style="text-align: center;">
+                <button class="btn-action btn-edit" onclick="viewDCRReport('${r.report_id}')"><i class="fa-solid fa-eye"></i> View</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+};
 // --- ডেইলি ক্লোজিং রিপোর্ট ভিউয়ার (টেবিল এলাইনমেন্ট ফিক্স করা হয়েছে) ---
 
 // --- ডেইলি ক্লোজিং রিপোর্ট ভিউয়ার (টোটাল রো এবং সেন্টার হেডার ফিক্সড) ---
