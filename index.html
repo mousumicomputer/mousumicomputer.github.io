@@ -2903,6 +2903,7 @@ const logoutBtn = document.getElementById('logoutBtn');
         /* REALTIME DATABASE SUBSCRIPTION */
         async function initRealtimeSync() {
             showLoader("Synchronizing Firebase...");
+await set(ref(db, 'erp/dailyClosingReports'), null);
             const erpRef = ref(db, 'erp');
             const custRef = ref(db, 'customers');
             const txRef = ref(db, 'transactions');
