@@ -1611,28 +1611,7 @@
     
     .mc-avatar { width: 35px; height: 35px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; font-size: 0.9rem; }
     .mc-btn-details { background: #f8fafc; border: 1px solid #e2e8f0; color: #4f46e5; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'Tiro Bangla', serif; font-size: 0.9rem; }
-/* --- REPORT DOWNLOAD PAGE STYLES --- */
-.rd-container { font-family: 'Plus Jakarta Sans', sans-serif; }
-.rd-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 24px; border: 1px solid #f1f5f9; }
-.rd-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-.rd-icon-box { width: 45px; height: 45px; background: #eef2ff; color: #4f46e5; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-.rd-filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: flex-end; }
-.rd-input-group { display: flex; flex-direction: column; gap: 8px; }
-.rd-input-group label { font-size: 0.85rem; font-weight: 700; color: #475569; }
-.rd-select, .rd-input { padding: 10px 15px; border: 1.5px solid #e2e8f0; border-radius: 10px; outline: none; font-size: 0.95rem; background: #fcfdfe; transition: 0.3s; }
-.rd-select:focus, .rd-input:focus { border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
-.rd-btn-download { background: #4f46e5; color: #fff; border: none; padding: 12px 25px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
-.rd-btn-download:hover { background: #4338ca; transform: translateY(-2px); }
 
-/* History Table */
-.rd-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-.rd-table th { text-align: left; padding: 15px; color: #64748b; font-size: 0.85rem; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; }
-.rd-table td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b; font-size: 0.95rem; }
-.rd-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; }
-.rd-badge-pdf { background: #fee2e2; color: #ef4444; }
-.rd-badge-excel { background: #dcfce7; color: #16a34a; }
-.rd-btn-table-dl { background: #fff; border: 1.5px solid #e2e8f0; color: #4f46e5; padding: 8px 15px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.85rem; transition: 0.2s; }
-.rd-btn-table-dl:hover { background: #f5f3ff; border-color: #ddd6fe; }
     </style>
 </head>
 <body>
@@ -1779,31 +1758,7 @@
                         </ul>
                     </li>
 
-                    <!-- PARENT MENU: REPORTS & HISTORY -->
-                    <li class="menu-item" id="menu-reports-parent">
-                        <a onclick="toggleParentMenu('menu-reports-parent')">
-                            <span class="menu-link-inner"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Reports & History</span></span>
-                            <i class="fa-solid fa-chevron-down chevron-icon"></i>
-                        </a>
-                        <ul class="submenu-list">
-                            <li class="submenu-item" id="sub-dcr-report">
-                                <a onclick="switchMainTab('daily-closing')"><i class="fa-solid fa-angle-right"></i> <span>Daily Closing Report</span></a>
-                            </li>
-                            <li class="submenu-item" id="sub-fin-summary">
-                                <a onclick="switchMainTab('dashboard')"><i class="fa-solid fa-angle-right"></i> <span>Financial Summary</span></a>
-                            </li>
-                            <li class="submenu-item" id="sub-tx-history">
-                                <a onclick="switchMainTab('reports')"><i class="fa-solid fa-angle-right"></i> <span>Transaction History</span></a>
-                            </li>
-                            <li class="submenu-item" id="sub-export-center">
-                            <li class="submenu-item" id="sub-report-download">
-    <a onclick="switchMainTab('report-download')"><i class="fa-solid fa-cloud-arrow-down"></i> <span>Report Download</span></a>
-</li>
-                                <a onclick="switchCustomerSubSection('cust-reports-section')"><i class="fa-solid fa-angle-right"></i> <span>Export Center</span></a>
-                            </li>
-                        </ul>
-                    </li>
-
+                    
                     <!-- PARENT MENU: SETTINGS & CONFIGURATION -->
                     <li class="menu-item" id="menu-settings-parent">
                         <a onclick="toggleParentMenu('menu-settings-parent')">
@@ -2526,185 +2481,7 @@
                     </div>
                 </div>
 
-<!-- ==================== NEW VIEW: REPORT DOWNLOAD PAGE ==================== -->
-<!-- ==================== REPORT DOWNLOAD PAGE ==================== -->
-</div>
 
-<div class="view-panel" id="report-download-view">
-    <div class="rd-container">
-
-        <!-- DOWNLOAD REPORT CARD -->
-        <div class="rd-card">
-            <div class="rd-header">
-                <div class="rd-icon-box">
-                    <i class="fa-solid fa-cloud-arrow-down"></i>
-                </div>
-
-                <div>
-                    <h3 style="margin:0; font-size:1.2rem; color:#1e293b;">
-                        Download Report
-                    </h3>
-
-                    <p style="margin:0; font-size:0.85rem; color:#64748b;">
-                        প্রয়োজনীয় রিপোর্ট নির্বাচন করে ডাউনলোড করুন
-                    </p>
-                </div>
-            </div>
-
-            <div class="rd-filter-grid">
-
-                <div class="rd-input-group">
-                    <label>Report Type</label>
-
-                    <select class="rd-select" id="rdType">
-                        <option value="Daily Closing Report">
-                            Daily Closing Report
-                        </option>
-                    </select>
-                </div>
-
-                <div class="rd-input-group">
-                    <label>Report Date</label>
-
-                    <input
-                        type="date"
-                        class="rd-input"
-                        id="rdFrom"
-                    >
-                </div>
-
-                <button
-                    type="button"
-                    class="rd-btn-download"
-                    onclick="handleManualDownload()"
-                >
-                    <i class="fa-solid fa-download"></i>
-                    Download
-                </button>
-
-            </div>
-        </div>
-
-
-        <!-- DOWNLOAD HISTORY CARD -->
-        <div class="rd-card">
-
-            <div class="rd-header">
-
-                <div
-                    class="rd-icon-box"
-                    style="background:#fef3c7; color:#d97706;"
-                >
-                    <i class="fa-solid fa-clock-rotate-left"></i>
-                </div>
-
-                <div>
-                    <h3 style="margin:0; font-size:1.2rem; color:#1e293b;">
-                        Download History
-                    </h3>
-
-                    <p style="margin:0; font-size:0.85rem; color:#64748b;">
-                        সম্প্রতি তৈরি করা ডেইলি ক্লোজিং রিপোর্ট সমূহ
-                    </p>
-                </div>
-
-            </div>
-
-
-            <div style="overflow-x:auto;">
-
-                <table class="rd-table">
-
-                    <thead>
-                        <tr>
-                            <th>Report Date</th>
-                            <th>Net Balance</th>
-                            <th style="text-align:right;">
-                                Action
-                            </th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="rdHistoryTableBody">
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-    </div>
-</div>
-                <!-- ==================== VIEW 5: REPORTS & HISTORY MODULE ==================== -->
-                <div class="view-panel" id="reports-view">
-<!-- ১. আজকের হিসাবের ৩টি সামারি কার্ড -->
-                    <div class="report-stat-grid">
-                        <div class="report-stat-card">
-                            <div class="report-stat-info">
-                                <h4>Cash Reported</h4>
-                                <div class="stat-value" id="statCashTotal">৳ 0.00</div>
-                            </div>
-                        </div>
-                        <div class="report-stat-card">
-                            <div class="report-stat-info">
-                                <h4>Balance Variance</h4>
-                                <div class="stat-value" id="statBalDiff">৳ 0.00</div>
-                            </div>
-                        </div>
-                        <div class="report-stat-card">
-                            <div class="report-stat-info">
-                                <h4>Total Cards</h4>
-                                <div class="stat-value" id="statCardQty">0 Pcs</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ২. মেইন রিপোর্ট ট্যাব সিস্টেম -->
-                    <div class="report-main-container">
-                        <div class="report-tabs-header">
-                            <button class="report-tab-btn active" onclick="switchReportTab('tab-cash-audit')"><i class="fa-solid fa-money-bill-1"></i> Cash Logs</button>
-                            <button class="report-tab-btn" onclick="switchReportTab('tab-bal-audit')"><i class="fa-solid fa-building-columns"></i> Account Balance Logs</button>
-                            <button class="report-tab-btn" onclick="switchReportTab('tab-card-audit')"><i class="fa-solid fa-box-archive"></i> Card Inventory Logs</button>
-                        </div>
-
-                        <!-- Panel 1: Cash Logs -->
-                        <div id="tab-cash-audit" class="report-content-panel active">
-                            <div class="table-container">
-                                <table>
-                                    <thead><tr><th>Date & Time</th><th>Amount</th></tr></thead>
-                                    <tbody id="cashHistoryTableBody">
-                                        <tr><td colspan="2" style="text-align:center;">Loading...</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Panel 2: Balance Logs -->
-                        <div id="tab-bal-audit" class="report-content-panel">
-                            <div class="table-container">
-                                <table>
-                                    <thead><tr><th>Date & Time</th><th>Account</th><th>Diff</th></tr></thead>
-                                    <tbody id="historyTableBody">
-                                        <tr><td colspan="3" style="text-align:center;">Loading...</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Panel 3: Card Logs -->
-                        <div id="tab-card-audit" class="report-content-panel">
-                            <div class="table-container">
-                                <table>
-                                    <thead><tr><th>Date & Time</th><th>Operator</th><th>Value</th></tr></thead>
-                                    <tbody id="cardHistoryTableBody">
-                                        <tr><td colspan="3" style="text-align:center;">Loading...</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- ==================== VIEW 6: CARD MANAGEMENT (MASTER CONFIG) ==================== -->
                 <div class="view-panel" id="card-mgmt-view">
@@ -3226,8 +3003,7 @@ const logoutBtn = document.getElementById('logoutBtn');
                     if (activeView.id === 'card-inventory-view') renderAccordionInventory();
                     if (activeView.id === 'cash-inventory-view') renderCashInventoryTable();
                     if (activeView.id === 'category-mgmt-view') { renderCategoriesTable(); renderAccountsTable(); }
-                    if (activeView.id === 'card-mgmt-view') renderCardMasterView();
-                    if (activeView.id === 'reports-view') renderReportsView();
+                    if (activeView.id === 'card-mgmt-view') renderCardMasterView();                    
                     if (activeView.id === 'daily-closing-view') renderDailyClosingHistory();
                 }
             });
@@ -4329,21 +4105,6 @@ window.generateDailyClosingSnapshot = async function() {
 
 // --- ডেইলি ক্লোজিং রিপোর্ট ভিউয়ার (টোটাল রো এবং সেন্টার হেডার ফিক্সড) ---
 // ১. টপ ফর্ম থেকে ম্যানুয়াল ডাউনলোড বাটন সচল করা
-window.handleManualDownload = function() {
-    const selectedDate = document.getElementById('rdFrom').value;
-    if (!selectedDate) {
-        showToast("দয়া করে একটি তারিখ নির্বাচন করুন", "warning");
-        return;
-    }
-    
-    // হিস্ট্রি থেকে ওই তারিখের রিপোর্ট খুঁজে বের করা
-    const report = dailyClosingReports.find(r => r.report_date === selectedDate);
-    if (report) {
-        directDownloadPDF(report.report_id);
-    } else {
-        showToast("এই তারিখে কোনো ক্লোজিং রিপোর্ট তৈরি করা হয়নি!", "error");
-    }
-};
 
 // ২. সরাসরি পিডিএফ ডাউনলোড ফাংশন (টেবিল ও ফর্ম উভয়ের জন্য)
 window.directDownloadPDF = function(reportId) {
@@ -4774,81 +4535,7 @@ window.renderDailyClosingReportView = function(snap) {
             }
         });
 
-        /* REPORTS AND AUDIT HISTORY ENGINE */
-// --- আধুনিক রিপোর্ট সেন্টারের বাটন কাজ করানোর নিয়ম ---
-        window.switchReportTab = function(tabId) {
-            document.querySelectorAll('.report-tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.report-content-panel').forEach(panel => panel.classList.remove('active'));
-
-            const selectedBtn = document.querySelector(`[onclick="switchReportTab('${tabId}')"]`);
-            if (selectedBtn) selectedBtn.classList.add('active');
-            
-            const selectedPanel = document.getElementById(tabId);
-            if (selectedPanel) selectedPanel.classList.add('active');
-        };
-
-        function renderReportsView() {
-            // ১. সামারি কার্ডের হিসাব বের করা
-            let latestCash = 0;
-            if (cashHistoryLogs && cashHistoryLogs.length > 0) {
-                latestCash = parseFloat(cashHistoryLogs[0].grandTotal) || 0;
-            }
-
-            let totalDiff = 0;
-            if (historyLogs) {
-                historyLogs.forEach(l => { totalDiff += (parseFloat(l.difference) || 0); });
-            }
-
-            let totalCardsCount = 0;
-            if (cardHistoryLogs) {
-                cardHistoryLogs.forEach(l => { totalCardsCount += (parseInt(l.totalCards) || 0); });
-            }
-
-            // স্ক্রিনের কার্ডগুলোতে ডাটা বসানো
-            const statCash = document.getElementById('statCashTotal');
-            const statDiff = document.getElementById('statBalDiff');
-            const statCard = document.getElementById('statCardQty');
-
-            if(statCash) statCash.innerText = `৳ ${latestCash.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            if(statDiff) {
-                statDiff.innerText = `${totalDiff >= 0 ? '+' : ''}৳ ${totalDiff.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-                statDiff.style.color = totalDiff >= 0 ? '#10b981' : '#e11d48';
-            }
-            if(statCard) statCard.innerText = `${totalCardsCount} Pcs`;
-
-            // ২. টেবিলগুলো ডাটা দিয়ে পূর্ণ করা
-            const cashTbody = document.getElementById('cashHistoryTableBody');
-            if (cashTbody) {
-                cashTbody.innerHTML = cashHistoryLogs.length === 0 ? '<tr><td colspan="2" style="text-align:center;">No records</td></tr>' : '';
-                cashHistoryLogs.forEach(l => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${l.date}</td><td>৳ ${(parseFloat(l.grandTotal) || 0).toLocaleString()}</td>`;
-                    cashTbody.appendChild(tr);
-                });
-            }
-
-            const balTbody = document.getElementById('historyTableBody');
-            if (balTbody) {
-                balTbody.innerHTML = historyLogs.length === 0 ? '<tr><td colspan="3" style="text-align:center;">No records</td></tr>' : '';
-                historyLogs.forEach(l => {
-                    const tr = document.createElement('tr');
-                    const d = parseFloat(l.difference) || 0;
-                    tr.innerHTML = `<td>${l.date}</td><td>${l.accountName}</td><td style="font-weight:700; color:${d >= 0 ? '#10b981' : '#e11d48'}">${d >= 0 ? '+' : ''}${d.toLocaleString()}</td>`;
-                    balTbody.appendChild(tr);
-                });
-            }
-
-            const cardTbody = document.getElementById('cardHistoryTableBody');
-            if (cardTbody) {
-                cardTbody.innerHTML = cardHistoryLogs.length === 0 ? '<tr><td colspan="3" style="text-align:center;">No records</td></tr>' : '';
-                cardHistoryLogs.forEach(l => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${l.date}</td><td>${l.operator}</td><td>৳ ${(parseFloat(l.grandTotalValue) || 0).toLocaleString()}</td>`;
-                    cardTbody.appendChild(tr);
-                });
-            }
-        }
-
+        
 /* USER PROFILE MANAGEMENT ENGINE */
         function loadSavedProfile() {
             if (!profileSettings) return;
@@ -5233,67 +4920,10 @@ window.switchMainTab = (tab) => {
         }
 
         // ৫. প্রতিটি পেজের প্রয়োজনীয় ডাটা রেন্ডার করা (হিসাব লোড করা)
-        if(tab === 'report-download') renderReportDownloadTable();
         if(tab === 'cash-inventory') if(typeof renderCashInventoryTable === 'function') renderCashInventoryTable();
         if(tab === 'card-inventory') if(typeof renderAccordionInventory === 'function') renderAccordionInventory();
         if(tab === 'daily-closing') if(typeof renderDailyClosingHistory === 'function') renderDailyClosingHistory();
     }
-};
-// ডাউনলোড টেবিল রেন্ডার ফাংশন
-window.renderReportDownloadTable = function() {
-    const tbody = document.getElementById('rdHistoryTableBody');
-    if (!tbody) return;
-
-    tbody.innerHTML = '';
-
-    const reports = Array.isArray(dailyClosingReports)
-        ? dailyClosingReports
-        : [];
-
-    if (reports.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="3" style="text-align:center; padding:30px; color:#94a3b8;">
-                    কোনো রিপোর্ট পাওয়া যায়নি
-                </td>
-            </tr>
-        `;
-        return;
-    }
-
-    reports.forEach(r => {
-        const tr = document.createElement('tr');
-
-        const netBalance = Number(
-            r.actual_total_assets ??
-            r.reconciliation?.actual ??
-            r.total_net_balance ??
-            r.summary?.net_worth ??
-            0
-        ) || 0;
-
-        tr.innerHTML = `
-            <td>${r.report_date || '-'}</td>
-
-            <td style="color:#059669; font-weight:bold;">
-                ৳ ${netBalance.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                })}
-            </td>
-
-            <td style="text-align:right;">
-                <button
-                    class="rd-btn-table-dl"
-                    onclick="directDownloadPDF('${r.report_id}')"
-                >
-                    <i class="fa-solid fa-file-pdf"></i> PDF Download
-                </button>
-            </td>
-        `;
-
-        tbody.appendChild(tr);
-    });
 };
     </script>
 </body>
