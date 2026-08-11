@@ -4076,6 +4076,26 @@ window.renderDailyClosingHistory = function() {
         tbody.appendChild(tr);
     });
 };
+<div id="dcr-history-section" class="dcr-sub-section" style="display:none;">
+    <div class="erp-form-card" style="max-width: 100%;">
+        <div class="erp-form-header"><span>CLOSING HISTORY RECORDS</span></div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr style="background: #f8fafc;">
+                        <th>DATE</th>
+                        <th>OPENING</th>
+                        <th>ACTUAL ASSETS</th>
+                        <th>NET INCOME</th>
+                        <th style="text-align: center;">STATUS</th>
+                        <th style="text-align: center;">ACTION</th>
+                    </tr>
+                </thead>
+                <tbody id="dailyClosingHistoryTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
 // ২. সরাসরি পিডিএফ ডাউনলোড ফাংশন (টেবিল ও ফর্ম উভয়ের জন্য)
 window.directDownloadPDF = function(reportId) {
     const report = dailyClosingReports.find(r => r.report_id === reportId);
