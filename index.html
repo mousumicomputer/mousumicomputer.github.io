@@ -2332,29 +2332,36 @@
         </div>
     </div>
 
-    <!-- সেকশন ২: হিস্ট্রি রেকর্ডস (ছবি ৪ এর মতো কলাম ডিজাইন) -->
-    <div id="dcr-history-section" class="dcr-sub-section" style="display:none;">
-        <div class="erp-form-card" style="max-width: 100%;">
-            <div class="erp-form-header" style="font-family: 'Tiro Bangla', serif; font-weight: 800;">CLOSING HISTORY RECORDS</div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr style="background: #f8fafc;">
-                            <th style="padding: 15px;">DATE</th>
-                            <th style="padding: 15px;">OPENING</th>
-                            <th style="padding: 15px;">CLOSING</th>
-                            <th style="padding: 15px;">NET INCOME</th>
-                            <th style="padding: 15px; text-align: center;">STATUS</th>
-                            <th style="padding: 15px; text-align: center;">ACTION</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dailyClosingHistoryTableBody">
-                        <!-- জাভাস্ক্রিপ্ট এর মাধ্যমে এখানে ডাটা আসবে -->
-                    </tbody>
-                </table>
-            </div>
+<div id="dcr-history-section" class="dcr-sub-section" style="display:none;">
+    <div class="erp-form-card" style="max-width: 100%;">
+        <div class="erp-form-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-family: 'Tiro Bangla', serif; font-weight: 800;">CLOSING HISTORY RECORDS</span>
+            
+            <!-- সুন্দর শেইপের ডিলেট বাটন -->
+            <button id="btnBulkDeleteDCR" onclick="deleteSelectedDCR()" style="display: none; background: #ef4444; color: #fff; border: none; padding: 8px 20px; border-radius: 30px; font-weight: 700; cursor: pointer; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); transition: 0.3s;">
+                <i class="fa-solid fa-trash-can"></i> Delete Selected
+            </button>
+        </div>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr style="background: #f8fafc;">
+                        <!-- অল সিলেক্ট চেক বক্স -->
+                        <th style="padding: 15px; width: 50px;"><input type="checkbox" id="selectAllDCR" onclick="toggleSelectAllDCR(this)" style="width: 18px; height: 18px; cursor: pointer;"></th>
+                        <th style="padding: 15px;">DATE</th>
+                        <th style="padding: 15px;">OPENING</th>
+                        <th style="padding: 15px;">CLOSING</th>
+                        <th style="padding: 15px;">NET INCOME</th>
+                        <th style="padding: 15px; text-align: center;">STATUS</th>
+                        <th style="padding: 15px; text-align: center;">ACTION</th>
+                    </tr>
+                </thead>
+                <tbody id="dailyClosingHistoryTableBody"></tbody>
+            </table>
         </div>
     </div>
+</div>
 
     <!-- রিপোর্ট মোডাল -->
     <div id="dcrModal" class="dcr-modal-overlay">
