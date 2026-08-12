@@ -2931,27 +2931,41 @@ const logoutBtn = document.getElementById('logoutBtn');
             const txRef = ref(db, 'transactions');
 
             // SUBSCRIBE TO CUSTOMERS COLLECTION
-            onValue(custRef, (snapshot) => {
-                const data = snapshot.val();
-                customers = data ? toArray(data) : [];
-                window.customers = customers;
-                populateCustomerSelectDropdowns();
-                updateDashboardCards();
-                if (document.getElementById('customer-ledger-view').classList.contains('active')) {
-                    renderCustomerListTable();
-                    renderDueSummarySection();
-                }
-            });
+            // এই অংশটি খুঁজুন (কাস্টমার লিস্টের জন্য)
+onValue(custRef, (snapshot) => {
+    const data = snapshot.val();
+    const loadedCustomers = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+    
+    // মূল অ্যাপের জন্য ভ্যারিয়েবল সেট
+    customers = loadedCustomers; 
+    
+    // রিপোর্ট মডিউলের জন্য গ্লোবাল এক্সপোজার (এটি নিরাপদভাবে করা হয়েছে)
+    window.customers = loadedCustomers; 
 
-            // SUBSCRIBE TO TRANSACTIONS COLLECTION
-            onValue(txRef, (snapshot) => {
-                const data = snapshot.val();
-                window.customerTransactions = customerTransactions;
-                updateDashboardCards();
-                if (activeViewingCustomerId && document.getElementById('customer-ledger-view').classList.contains('active')) {
-                    renderCustomerStatement(activeViewingCustomerId);
-                }
-            });
+    populateCustomerSelectDropdowns();
+    updateDashboardCards();
+    if (document.getElementById('customer-ledger-view').classList.contains('active')) {
+        renderCustomerListTable();
+        renderDueSummarySection();
+    }
+});
+
+// এই অংশটি খুঁজুন (লেনদেনের জন্য)
+onValue(txRef, (snapshot) => {
+    const data = snapshot.val();
+    const loadedTxs = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+    
+    // মূল অ্যাপের জন্য ভ্যারিয়েবল সেট
+    customerTransactions = loadedTxs;
+    
+    // রিপোর্ট মডিউলের জন্য গ্লোবাল এক্সপোজার
+    window.customerTransactions = loadedTxs;
+
+    updateDashboardCards();
+    if (activeViewingCustomerId && document.getElementById('customer-ledger-view').classList.contains('active')) {
+        renderCustomerStatement(activeViewingCustomerId);
+    }
+});
             
             try {
                 const initialSnapshot = await get(erpRef);
