@@ -1,6 +1,6 @@
 /**
- * Mousumi Computer - Final Unified Report Module
- * ২ নং ছবির হুবহু ডিজাইন (Pixel Perfect Bengali Layout)
+ * Mousumi Computer - Perfect PDF Module
+ * আপনার দেওয়া HTML/CSS টেমপ্লেট অনুযায়ী হুবহু ডিজাইন।
  */
 
 (function() {
@@ -27,8 +27,8 @@
         };
     };
 
-    // ৩. পিডিএফ জেনারেশন ইঞ্জিন (২ নং ছবির হুবহু ডিজাইন)
-    const generateMousumiPDF = (reportData, startDate, endDate) => {
+    // ৩. আপনার দেওয়া HTML টেমপ্লেট অনুযায়ী PDF জেনারেশন ফাংশন
+    const generateMousumiPDF = (reportData, startDate) => {
         const startParts = getBnDate(new Date(startDate));
         
         let tableRows = '';
@@ -39,6 +39,7 @@
             const amount = parseFloat(t.debit) || parseFloat(t.credit) || 0;
             const type = t.debit > 0 ? "বাকী দিলাম" : "বাকী পেলাম";
             totalAmount += amount;
+            // প্রতিটি ট্রানজ্যাকশনের শেষে অবশিষ্ট বাকী দেখানোর জন্য
             finalBalance = t.runningBalance || 0;
 
             tableRows += `
@@ -53,30 +54,87 @@
             `;
         });
 
+        // আপনার দেওয়া HTML এবং CSS হুবহু এখানে বসানো হয়েছে
         const elementHTML = `
         <!DOCTYPE html>
-        <html>
+        <html lang="bn">
         <head>
+            <meta charset="UTF-8">
             <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;700&display=swap" rel="stylesheet">
             <style>
                 @page { size: A4; margin: 15mm 12mm; }
-                body { font-family: 'Noto Serif Bengali', serif; color: #000; margin: 0; padding: 0; line-height: 1.2; background-color: #fff; }
-                .header { text-align: center; margin-bottom: 25px; }
-                .header h1 { font-family: 'Times New Roman', serif; font-size: 32pt; font-weight: bold; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
-                .header h2 { font-size: 18pt; margin: 5px 0 0 0; font-weight: normal; }
-                .date-bar-container { width: 100%; margin-bottom: 12px; font-size: 11.5pt; display: block; overflow: hidden; }
+                body {
+                    font-family: 'Noto Serif Bengali', serif;
+                    font-size: 11pt;
+                    color: #000;
+                    background-color: #fff;
+                    margin: 0;
+                    padding: 0;
+                    line-height: 1.2;
+                }
+                .header {
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+                .header h1 {
+                    font-family: 'Times New Roman', serif;
+                    font-size: 24pt;
+                    font-weight: bold;
+                    margin: 0 0 6px 0;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                }
+                .header h2 {
+                    font-size: 15pt;
+                    margin: 0;
+                    font-weight: normal;
+                }
+                .date-bar-container {
+                    width: 100%;
+                    margin-bottom: 12px;
+                    font-size: 11.5pt;
+                }
                 .date-left { float: left; }
                 .bar-right { float: right; }
                 .clear { clear: both; }
-                table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-                th, td { border: 1px solid #000; padding: 8px 10px; font-size: 11pt; }
-                th { background-color: #f2f2f2; font-weight: bold; text-align: center; color: #000; }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 5px;
+                }
+                th, td {
+                    border: 1px solid #000;
+                    padding: 6px 8px;
+                    font-size: 11pt;
+                    white-space: nowrap;
+                }
+                th {
+                    font-weight: bold;
+                    background-color: #f2f2f2;
+                    text-align: center;
+                }
                 .text-right { text-align: right; }
                 .text-center { text-align: center; }
-                .total-row td { font-weight: bold; background-color: #fafafa; }
-                .footer-signature { margin-top: 80px; width: 100%; display: block; }
-                .sig-box { float: right; width: 230px; text-align: center; font-size: 11pt; font-family: 'Times New Roman', serif; }
-                .sig-line { border-top: 1px solid #000; margin-bottom: 6px; }
+                .text-left { text-align: left; }
+                .total-row td {
+                    font-weight: bold;
+                    background-color: #fafafa;
+                }
+                .footer-signature {
+                    margin-top: 65px;
+                    width: 100%;
+                }
+                .sig-box {
+                    float: right;
+                    width: 210px;
+                    text-align: center;
+                    font-size: 11pt;
+                    font-family: 'Times New Roman', serif;
+                }
+                .sig-line {
+                    border-top: 1px solid #000;
+                    margin-bottom: 6px;
+                }
             </style>
         </head>
         <body>
@@ -84,16 +142,18 @@
                 <h1>MOUSUMI COMPUTER</h1>
                 <h2>লেনদেন এর তালিকা</h2>
             </div>
+
             <div class="date-bar-container">
                 <div class="date-left">তারিখ: ${startParts.date} ${startParts.month} ${startParts.year}</div>
                 <div class="bar-right">বার: ${startParts.day}</div>
                 <div class="clear"></div>
             </div>
+            
             <table>
                 <thead>
                     <tr>
                         <th style="width: 10%;">ক্রমিক</th>
-                        <th style="width: 15%;">সময়</th>
+                        <th style="width: 15%;">সময়</th>
                         <th>কাস্টমার</th>
                         <th style="width: 18%;">লেনদেন</th>
                         <th style="width: 18%;">টাকা</th>
@@ -109,6 +169,7 @@
                     </tr>
                 </tbody>
             </table>
+
             <div class="footer-signature">
                 <div class="sig-box">
                     <div class="sig-line"></div>
@@ -243,7 +304,7 @@
                     };
                 });
 
-                generateMousumiPDF(reportData, start, end);
+                generateMousumiPDF(reportData, start);
             }
         };
     };
