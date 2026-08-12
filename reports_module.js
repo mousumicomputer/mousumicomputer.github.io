@@ -76,6 +76,21 @@
 
 
     // =========================================================
+    // নিরাপদ HTML TEXT
+    // =========================================================
+
+    const escapeHTML = (value) => {
+
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
+
+    // =========================================================
     // ৩. ১২ ঘণ্টার সময় ফরম্যাট
     // =========================================================
 
@@ -159,7 +174,7 @@
     // =========================================================
 
     const generateMousumiPDF =
-        (reportData, startDate) => {
+        async (reportData, startDate) => {
 
         const startParts =
             getBnDate(
@@ -211,11 +226,13 @@
             // =================================================
 
             const description =
-                t.description ||
-                t.details ||
-                t.note ||
-                t.remark ||
-                "";
+                String(
+                    t.description ??
+                    t.details ??
+                    t.note ??
+                    t.remark ??
+                    ""
+                ).trim();
 
 
             // =================================================
@@ -266,7 +283,7 @@
                             padding-left:10px;
                         "
                     >
-                        ${t.customerName}
+                        ${escapeHTML(t.customerName || "Unknown")}
                     </td>
 
 
@@ -284,12 +301,13 @@
                     <!-- বিবরণ -->
 
                     <td
+                        class="description-cell"
                         style="
                             text-align:left;
                             padding-left:8px;
                         "
                     >
-                        ${description}
+                        ${escapeHTML(description || "—")}
                     </td>
 
 
@@ -337,7 +355,7 @@
             <meta charset="UTF-8">
 
 
-            <!-- Tiro Bangla Font -->
+            <!-- Tiro Bangla Font: PDF তৈরির আগে document.fonts.ready দিয়ে load নিশ্চিত করা হবে -->
 
             <link
                 href="https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap"
@@ -346,6 +364,20 @@
 
 
             <style>
+
+                /* =================================================
+                   Tiro Bangla - FONT CONTROL
+                   ================================================= */
+
+                html, body, table, thead, tbody, tr, th, td,
+                .main-header, .main-header h2, .date-bar,
+                .transaction-table, .transaction-table * {
+                    font-family: 'Tiro Bangla', serif !important;
+                }
+
+                .main-header h1 {
+                    font-family: Arial, 'Helvetica Neue', sans-serif !important;
+                }
 
                 /* =================================================
                    PAGE
@@ -395,9 +427,7 @@
 
                 .main-header h1 {
 
-                    font-family:
-                        'Times New Roman',
-                        serif;
+                    font-family: Arial, 'Helvetica Neue', sans-serif !important;
 
                     font-size: 29pt;
 
@@ -540,6 +570,22 @@
                     font-weight:
                         normal;
 
+                    overflow-wrap: anywhere;
+
+                    word-break: break-word;
+
+                }
+
+                tr {
+                    page-break-inside: avoid;
+                }
+
+                .description-cell {
+                    text-align: left !important;
+                    padding-left: 8px !important;
+                    white-space: normal !important;
+                    overflow-wrap: anywhere;
+                    word-break: break-word;
                 }
 
 
@@ -593,9 +639,7 @@
                     padding-top:
                         5px;
 
-                    font-family:
-                        'Times New Roman',
-                        serif;
+                    font-family: Arial, 'Helvetica Neue', sans-serif !important;
 
                     font-weight:
                         normal;
@@ -660,7 +704,7 @@
                  TRANSACTION TABLE
                  ================================================= -->
 
-            <table>
+            <table class="transaction-table">
 
                 <thead>
 
@@ -669,14 +713,14 @@
 
                         <!-- ক্রমিক -->
 
-                        <th style="width:7%;">
+                        <th style="width:6%;">
                             ক্রমিক
                         </th>
 
 
                         <!-- সময় -->
 
-                        <th style="width:11%;">
+                        <th style="width:10%;">
                             সময়
                         </th>
 
@@ -697,21 +741,21 @@
 
                         <!-- বিবরণ -->
 
-                        <th style="width:18%;">
+                        <th style="width:20%;">
                             বিবরণ
                         </th>
 
 
                         <!-- টাকা -->
 
-                        <th style="width:15%;">
+                        <th style="width:14%;">
                             টাকা
                         </th>
 
 
                         <!-- অবশিষ্ট বাকী -->
 
-                        <th style="width:18%;">
+                        <th style="width:19%;">
                             অবশিষ্ট বাকী
                         </th>
 
@@ -821,47 +865,71 @@
                 `Mousumi_Report_${startDate}.pdf`,
 
             image: {
-
                 type: 'jpeg',
-
                 quality: 0.98
-
             },
 
             html2canvas: {
-
                 scale: 3,
-
                 useCORS: true,
-
-                letterRendering: true
-
+                allowTaint: false,
+                backgroundColor: '#ffffff',
+                letterRendering: true,
+                logging: false
             },
 
             jsPDF: {
-
                 unit: 'mm',
-
                 format: 'a4',
-
                 orientation: 'portrait'
+            },
 
+            pagebreak: {
+                mode: ['css', 'legacy']
             }
-
         };
 
 
         // =========================================================
-        // SAVE PDF
+        // IMPORTANT: FONT + DOM READY
         // =========================================================
 
-        html2pdf()
+        const pdfHost = document.createElement('div');
 
-            .set(opt)
+        pdfHost.id = 'mousumi-pdf-render-host';
 
-            .from(elementHTML)
+        pdfHost.style.position = 'fixed';
+        pdfHost.style.left = '-100000px';
+        pdfHost.style.top = '0';
+        pdfHost.style.width = '210mm';
+        pdfHost.style.background = '#fff';
+        pdfHost.style.zIndex = '-999999';
+        pdfHost.innerHTML = elementHTML;
 
-            .save();
+        document.body.appendChild(pdfHost);
+
+        try {
+
+            // Browser-এ Tiro Bangla font সম্পূর্ণ load না হওয়া পর্যন্ত অপেক্ষা
+            if (document.fonts) {
+                await document.fonts.ready;
+                await document.fonts.load("16px 'Tiro Bangla'");
+            }
+
+            // Google Font render হওয়ার জন্য সামান্য সময়
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            await html2pdf()
+                .set(opt)
+                .from(pdfHost)
+                .save();
+
+        } finally {
+
+            if (pdfHost && pdfHost.parentNode) {
+                pdfHost.parentNode.removeChild(pdfHost);
+            }
+        }
 
     };
 
@@ -993,7 +1061,7 @@
 
         document.getElementById(
             'rc-download-btn'
-        ).onclick = () => {
+        ).onclick = async () => {
 
 
             const start =
@@ -1145,7 +1213,7 @@
             // GENERATE PDF
             // =================================================
 
-            generateMousumiPDF(
+            await generateMousumiPDF(
                 reportData,
                 start
             );
