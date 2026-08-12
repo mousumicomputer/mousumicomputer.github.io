@@ -1,41 +1,38 @@
 /**
- * Mousumi Computer - Pro PDF Module (Final Complete Fix)
- * ফিক্সড: বার কাটা ফিক্স, সর্বমোট লাইনের লজিক ফিক্স, মাইনাস সাইন ফিক্স ও ক্লিন টেবিল বর্ডার।
+ * Mousumi Computer - Pro PDF Module (Fixed to Match Image 1)
  */
 
 (function() {
-    // ১. সংখ্যাকে বাংলা করা (টাকা ও মাইনাস চিহ্ন হ্যান্ডলিং সহ)
+    // ১. সংখ্যাকে বাংলা করা (মাইনাস চিহ্ন ছাড়া)
     const toBn = (num) => {
         if (num === undefined || num === null || isNaN(num)) return "০.০০";
-        const isNegative = num < 0;
+        // ১ নং ছবিতে মাইনাস চিহ্ন নেই, তাই Absolute ভ্যালু ব্যবহার করা হয়েছে
         let formatted = new Intl.NumberFormat('en-IN', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         }).format(Math.abs(num));
         
         const digits = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
-        let bnNum = formatted.replace(/\d/g, d => digits[d]);
-        return isNegative ? `-${bnNum}` : bnNum;
+        return formatted.replace(/\d/g, d => digits[d]);
     };
 
-    // ২. বছরের জন্য বাংলা সংখ্যা (কমা ছাড়া)
+    // ২. বছরের জন্য বাংলা সংখ্যা
     const toBnYear = (num) => {
         const digits = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
         return num.toString().replace(/\d/g, d => digits[d]);
     };
 
-    // ৩. সময়কে ১২ ঘণ্টার ফরম্যাটে (AM/PM) রূপান্তর
+    // ৩. সময় ফরম্যাট
     const format12h = (timeStr) => {
         if (!timeStr) return '--:-- --';
         let [hours, minutes] = timeStr.split(':');
         hours = parseInt(hours);
         const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12;
-        hours = hours ? hours : 12;
+        hours = hours % 12 || 12;
         return `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
     };
 
-    // ৪. বাংলা তারিখ ও বার জেনারেশন
+    // ৪. বাংলা তারিখ ও বার
     const getBnDate = (dateObj) => {
         const days = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
         const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
@@ -47,17 +44,21 @@
         };
     };
 
-    // ৫. পিডিএফ জেনারেশন ফাংশন
+    // ৫. পিডিএফ জেনারেশন
     const generateMousumiPDF = (reportData, startDate) => {
         const startParts = getBnDate(new Date(startDate));
         
         let tableRows = '';
         let totalAmount = 0;
+        let totalRemainingSum = 0; // অবশিষ্ট বাকী কলামের যোগফলের জন্য
 
         reportData.forEach((t, index) => {
             const amount = parseFloat(t.debit) || parseFloat(t.credit) || 0;
             const type = t.debit > 0 ? "বাকী দিলাম" : "বাকী পেলাম";
+            const balance = parseFloat(t.runningBalanceAtTime) || 0;
+            
             totalAmount += amount;
+            totalRemainingSum += balance; // প্রতি সারির ব্যালেন্স যোগ হচ্ছে ১ নং ছবির মতো
 
             tableRows += `
                 <tr>
@@ -66,7 +67,7 @@
                     <td class="text-left">${t.customerName}</td>
                     <td class="text-center">${type}</td>
                     <td class="text-right">${toBn(amount)}</td>
-                    <td class="text-right">${toBn(t.runningBalanceAtTime)}</td>
+                    <td class="text-right">${toBn(balance)}</td>
                 </tr>
             `;
         });
@@ -76,61 +77,63 @@
         <html>
         <head>
             <meta charset="UTF-8">
-            <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&display=swap" rel="stylesheet">
+            <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&display=swap" rel="stylesheet">
             <style>
-                @page { size: A4; margin: 12mm 10mm; }
-                * { box-sizing: border-box; }
+                @page { size: A4; margin: 15mm 10mm; }
                 body {
                     font-family: 'Noto Sans Bengali', sans-serif;
-                    font-size: 11pt;
+                    font-size: 12pt;
                     color: #000;
-                    margin: 0;
-                    padding: 0;
-                    line-height: 1.3;
+                    margin: 0; padding: 0;
                 }
-                .header { text-align: center; margin-bottom: 15px; }
+                .header { text-align: center; margin-bottom: 25px; }
                 .header h1 {
                     font-family: 'Times New Roman', serif;
-                    font-size: 26pt;
+                    font-size: 32pt;
                     font-weight: bold;
                     margin: 0;
-                    letter-spacing: 1px;
+                    text-transform: uppercase;
                 }
                 .header h2 { 
-                    font-size: 15pt; 
-                    margin: 4px 0 0 0; 
-                    font-weight: 600; 
-                    border-bottom: 1px solid #000; 
-                    display: inline-block; 
-                    padding: 0 12px 2px 12px; 
+                    font-size: 16pt; 
+                    margin: 5px 0; 
+                    font-weight: bold; 
+                    text-decoration: underline;
+                    text-underline-offset: 5px;
                 }
                 
-                .date-bar-container {
-                    width: 100%;
-                    margin-top: 15px;
-                    margin-bottom: 8px;
+                .info-bar {
                     display: flex;
                     justify-content: space-between;
-                    font-size: 11pt;
+                    margin-bottom: 10px;
                     font-weight: bold;
-                    padding: 0 5px; /* কাটা পড়া রোধে প্যাডিং */
+                    font-size: 11pt;
                 }
 
-                table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+                table { width: 100%; border-collapse: collapse; }
                 th, td { 
-                    border: 1px solid #444; 
-                    padding: 6px 8px; 
-                    font-size: 10pt; 
+                    border: 1px solid #000; 
+                    padding: 8px 10px; 
+                    font-size: 11pt; 
                 }
-                th { background-color: #f5f5f5; font-weight: bold; text-align: center; }
+                th { background-color: #fcfcfc; font-weight: bold; }
                 
                 .text-right { text-align: right; }
                 .text-center { text-align: center; }
-                .text-left { text-align: left; }
-                .total-row td { font-weight: bold; background-color: #fafafa; }
+                .total-row { font-weight: bold; }
 
-                .footer-signature { margin-top: 50px; width: 100%; display: flex; justify-content: flex-end; }
-                .sig-box { width: 200px; text-align: center; border-top: 1px solid #000; padding-top: 4px; font-weight: bold; font-size: 10pt; }
+                .signature-section {
+                    margin-top: 60px;
+                    display: flex;
+                    justify-content: flex-end;
+                }
+                .signature-box {
+                    width: 250px;
+                    border-top: 1px solid #000;
+                    text-align: center;
+                    padding-top: 5px;
+                    font-size: 11pt;
+                }
             </style>
         </head>
         <body>
@@ -139,18 +142,18 @@
                 <h2>লেনদেন এর তালিকা</h2>
             </div>
 
-            <div class="date-bar-container">
+            <div class="info-bar">
                 <div>তারিখ: ${startParts.date} ${startParts.month} ${startParts.year}</div>
-                <div style="padding-right: 15px;">বার: ${startParts.day}</div>
+                <div>বার: ${startParts.day}</div>
             </div>
             
             <table>
                 <thead>
                     <tr>
                         <th style="width: 8%;">ক্রমিক</th>
-                        <th style="width: 16%;">সময়</th>
+                        <th style="width: 15%;">সময়</th>
                         <th>কাস্টমার</th>
-                        <th style="width: 16%;">লেনদেন</th>
+                        <th style="width: 18%;">লেনদেন</th>
                         <th style="width: 18%;">টাকা</th>
                         <th style="width: 20%;">অবশিষ্ট বাকী</th>
                     </tr>
@@ -160,27 +163,29 @@
                     <tr class="total-row">
                         <td colspan="4" class="text-right">সর্বমোট (Total):</td>
                         <td class="text-right">${toBn(totalAmount)}</td>
-                        <td class="text-center">-</td>
+                        <td class="text-right">${toBn(totalRemainingSum)}</td>
                     </tr>
                 </tbody>
             </table>
 
-            <div class="footer-signature">
-                <div class="sig-box">Authorized Signature</div>
+            <div class="signature-section">
+                <div class="signature-box">Authorized Signature</div>
             </div>
         </body>
         </html>
         `;
 
-        html2pdf().set({
-            margin: 5,
+        const opt = {
+            margin: 10,
             filename: `Mousumi_Report_${startDate}.pdf`,
-            html2canvas: { scale: 2.5, useCORS: true, letterRendering: true },
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 3, useCORS: true },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        }).from(elementHTML).save();
+        };
+        html2pdf().set(opt).from(elementHTML).save();
     };
 
-    // ৬. রিপোর্ট সেন্টার UI জেনারেশন
+    // ৬. রিপোর্ট সেন্টার UI জেনারেশন (অপরিবর্তিত)
     const initReportUI = () => {
         const container = document.getElementById('cust-reports-section');
         if (!container) return;
@@ -189,26 +194,23 @@
         <div style="background:#fff; border-radius:12px; padding:25px; border:1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:15px; margin-bottom:20px;">
                 <h3 style="font-size:18px; font-weight:700; color:#0f172a; margin:0;"><i class="fa-solid fa-file-invoice"></i> Report Download Center</h3>
-                <div style="display:flex; gap:8px;">
-                    <button class="rc-btn" onclick="document.getElementById('rc-start').value=new Date().toISOString().split('T')[0];" style="padding:6px 12px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; font-weight:600;">Today</button>
-                </div>
+                <button class="rc-btn" onclick="document.getElementById('rc-start').value=new Date().toISOString().split('T')[0];" style="padding:6px 12px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer;">Today</button>
             </div>
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:15px; margin-bottom:20px;">
                 <div>
-                    <label style="font-weight:600; font-size:13px; color:#334155; display:block; margin-bottom:8px;">Date Range</label>
+                    <label style="font-weight:600; font-size:13px; display:block; margin-bottom:8px;">তারিখ নির্বাচন করুন</label>
                     <input type="date" id="rc-start" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
                 </div>
                 <div>
-                    <label style="font-weight:600; font-size:13px; color:#334155; display:block; margin-bottom:8px;">Format</label>
+                    <label style="font-weight:600; font-size:13px; display:block; margin-bottom:8px;">ফরম্যাট</label>
                     <select id="rc-format" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
                         <option value="pdf">PDF Document (.pdf)</option>
-                        <option value="excel">Excel Spreadsheet (.xlsx)</option>
                     </select>
                 </div>
             </div>
-                <button id="rc-download-btn" style="background:#2563eb; color:#fff; border:none; padding:12px 25px; border-radius:8px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; margin-left:auto;">
-                    <i class="fa-solid fa-download"></i> Generate & Download
-                </button>
+            <button id="rc-download-btn" style="background:#2563eb; color:#fff; border:none; padding:12px 25px; border-radius:8px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; margin-left:auto;">
+                <i class="fa-solid fa-download"></i> Generate PDF
+            </button>
         </div>
         `;
 
@@ -216,42 +218,26 @@
 
         document.getElementById('rc-download-btn').onclick = () => {
             const start = document.getElementById('rc-start').value;
-            const format = document.getElementById('rc-format').value;
-
             const allTxs = window.customerTransactions || [];
             const allCusts = window.customers || [];
 
-            if (allTxs.length === 0) return alert("তথ্য লোড হচ্ছে...");
+            let filtered = allTxs.filter(t => t.date === start);
+            if (filtered.length === 0) return alert("এই তারিখে কোনো লেনদেন নেই!");
 
-            if (format === 'excel') {
-                if (typeof window.exportOutstandingDueExcel === 'function') window.exportOutstandingDueExcel();
-            } else {
-                let filtered = allTxs.filter(t => t.date === start);
-                
-                if (filtered.length === 0) return alert("এই তারিখে কোনো লেনদেন নেই!");
+            const reportData = filtered.map(t => {
+                const cust = allCusts.find(x => x.id === t.customerId);
+                let balanceAtTime = parseFloat(cust ? cust.openingBalance : 0);
+                const history = allTxs.filter(x => x.customerId === t.customerId)
+                                     .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+                for (let entry of history) {
+                    balanceAtTime += (parseFloat(entry.debit) || 0);
+                    balanceAtTime -= (parseFloat(entry.credit) || 0);
+                    if (entry.id === t.id) break;
+                }
+                return { ...t, customerName: cust ? cust.name : "Unknown", runningBalanceAtTime: balanceAtTime };
+            });
 
-                const reportData = filtered.map(t => {
-                    const cust = allCusts.find(x => x.id === t.customerId);
-                    let balanceAtTime = parseFloat(cust ? cust.openingBalance : 0);
-                    
-                    const history = allTxs.filter(x => x.customerId === t.customerId)
-                                         .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
-                    
-                    for (let entry of history) {
-                        balanceAtTime += (parseFloat(entry.debit) || 0);
-                        balanceAtTime -= (parseFloat(entry.credit) || 0);
-                        if (entry.id === t.id) break;
-                    }
-
-                    return {
-                        ...t,
-                        customerName: cust ? cust.name : "Unknown",
-                        runningBalanceAtTime: balanceAtTime
-                    };
-                });
-
-                generateMousumiPDF(reportData, start);
-            }
+            generateMousumiPDF(reportData, start);
         };
     };
 
