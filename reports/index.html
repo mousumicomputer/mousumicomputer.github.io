@@ -215,7 +215,7 @@
 
         <!-- Action Buttons -->
         <div class="btn-group">
-            <button type="button" class="btn btn-preview" onclick="alert('Generating live preview...')">
+            <button type="button" class="btn btn-preview" onclick="previewFirebaseReport()">
                 <i class="fa-regular fa-eye"></i> Preview
             </button>
             <button type="button" class="btn btn-download" onclick="testFirebaseReport()">
@@ -224,42 +224,60 @@
         </div>
     </div>
 
-    <!-- JavaScript for Dynamic Date Selection -->
+
+    <!-- Report Module JavaScript -->
     <script>
+        // ---------------------------------------------------------
+        // DATE HELPERS
+        // ---------------------------------------------------------
         function formatDate(date) {
-            return date.toISOString().split('T')[0];
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
 
         function setPreset(type, element) {
-            // Active Button Style Toggle
-            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
-            element.classList.add('active');
+            document.querySelectorAll('.preset-btn')
+                .forEach(btn => btn.classList.remove('active'));
+
+            if (element) element.classList.add('active');
 
             const today = new Date();
-            const startDateObj = new Date();
+            const startDateObj = new Date(today);
 
             if (type === 'today') {
                 document.getElementById('startDate').value = formatDate(today);
                 document.getElementById('endDate').value = formatDate(today);
+
             } else if (type === 'week') {
+                // Sunday -> today
                 const dayOfWeek = today.getDay();
-                startDateObj.setDate(today.getDate() - dayOfWeek); // Start of week (Sunday)
+                startDateObj.setDate(today.getDate() - dayOfWeek);
+
                 document.getElementById('startDate').value = formatDate(startDateObj);
                 document.getElementById('endDate').value = formatDate(today);
+
             } else if (type === 'month') {
-                startDateObj.setDate(1); // First day of month
+                startDateObj.setDate(1);
+
                 document.getElementById('startDate').value = formatDate(startDateObj);
                 document.getElementById('endDate').value = formatDate(today);
             }
         }
 
-        // Initialize with Today's Date
         document.addEventListener('DOMContentLoaded', () => {
-            setPreset('today', document.querySelector('.preset-btn.active'));
+            const todayButton = document.querySelector('.preset-btn.active');
+            setPreset('today', todayButton);
         });
     </script>
-    <!-- Firebase Report Module -->
+
+
+    <!-- =========================================================
+         FIREBASE REPORT MODULE
+         ========================================================= -->
     <script type="module">
+
         import { initializeApp }
             from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 
@@ -275,10 +293,9 @@
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 
-        // =========================================================
-        // MOUSUMI COMPUTER - FIREBASE CONFIG
-        // =========================================================
-
+        // ---------------------------------------------------------
+        // FIREBASE CONFIG
+        // ---------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyA1PhRiTkICNCd8sA4he3ZxKjHtIzM0d5E",
             authDomain: "mousumi-computer.firebaseapp.com",
@@ -291,76 +308,152 @@
         };
 
 
-        // Firebase initialize
-        const reportApp = initializeApp(
-            firebaseConfig,
-            "mousumiReportApp"
-        );
-
+        // IMPORTANT:
+        // Use the DEFAULT Firebase app name.
+        // This allows the Report page to use the same Firebase Auth
+        // persistence as the main Mousumi Computer page.
+        const reportApp = initializeApp(firebaseConfig);
         const reportAuth = getAuth(reportApp);
         const reportDB = getDatabase(reportApp);
 
 
-        // =========================================================
-        // CURRENT USER
-        // =========================================================
-
+        // ---------------------------------------------------------
+        // WAIT UNTIL FIREBASE AUTH STATE IS KNOWN
+        // ---------------------------------------------------------
         let reportCurrentUser = null;
 
+        const authReady = new Promise((resolve) => {
 
-        onAuthStateChanged(reportAuth, (user) => {
+            let resolved = false;
 
-            reportCurrentUser = user || null;
+            onAuthStateChanged(reportAuth, (user) => {
 
-            if (user) {
+                reportCurrentUser = user || null;
+
                 console.log(
-                    "Report Module Firebase Login:",
-                    user.email
+                    "Report Module Auth State:",
+                    user ? user.email : "NOT LOGGED IN"
                 );
-            } else {
-                console.log(
-                    "Report Module: User is not logged in."
-                );
-            }
+
+                if (!resolved) {
+                    resolved = true;
+                    resolve(user || null);
+                }
+
+            });
 
         });
 
 
-        // =========================================================
-        // TEST FIREBASE REPORT
-        // =========================================================
+        // ---------------------------------------------------------
+        // HELPERS
+        // ---------------------------------------------------------
+        function toArray(value) {
 
+            if (Array.isArray(value)) {
+                return value.filter(Boolean);
+            }
+
+            if (value && typeof value === "object") {
+                return Object.values(value).filter(Boolean);
+            }
+
+            return [];
+        }
+
+
+        function money(value) {
+            return (parseFloat(value) || 0).toFixed(2);
+        }
+
+
+        function setDownloadButtonLoading(isLoading) {
+
+            const button = document.querySelector(".btn-download");
+
+            if (!button) return;
+
+            button.disabled = isLoading;
+
+            if (isLoading) {
+                button.innerHTML =
+                    '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
+            } else {
+                button.innerHTML =
+                    '<i class="fa-solid fa-download"></i> Download Report';
+            }
+        }
+
+
+        // ---------------------------------------------------------
+        // TEST / FIRST LIVE REPORT DATA LOAD
+        // ---------------------------------------------------------
         window.testFirebaseReport = async function () {
 
             try {
 
-                // Login check
-                if (!reportCurrentUser) {
+                setDownloadButtonLoading(true);
+
+
+                // Wait for Firebase to finish checking the saved login.
+                const user = await authReady;
+
+
+                if (!user) {
+
+                    setDownloadButtonLoading(false);
 
                     alert(
-                        "Firebase Login পাওয়া যায়নি।\n\n" +
-                        "প্রথমে মূল Mousumi Computer সফটওয়্যারে Login করুন, " +
-                        "তারপর Report Module খুলুন।"
+                        "Firebase Login পাওয়া যায়নি। ❌\n\n" +
+                        "প্রথমে Mousumi Computer-এর মূল সফটওয়্যারে Login করুন।\n" +
+                        "তারপর Reports page খুলে আবার চেষ্টা করুন।"
                     );
 
                     return;
                 }
 
 
-                // Loading message
-                const button = document.querySelector(".btn-download");
+                // -------------------------------------------------
+                // SELECTED DATE RANGE
+                // -------------------------------------------------
+                const startDate =
+                    document.getElementById("startDate").value;
 
-                if (button) {
-                    button.disabled = true;
-                    button.innerHTML =
-                        '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
+                const endDate =
+                    document.getElementById("endDate").value;
+
+                const reportType =
+                    document.getElementById("reportType").value;
+
+                const fileFormat =
+                    document.getElementById("fileFormat").value;
+
+
+                if (!startDate || !endDate) {
+
+                    setDownloadButtonLoading(false);
+
+                    alert("Start Date এবং End Date নির্বাচন করুন।");
+
+                    return;
                 }
 
 
-                // =================================================
-                // GET TRANSACTIONS
-                // =================================================
+                if (startDate > endDate) {
 
+                    setDownloadButtonLoading(false);
+
+                    alert(
+                        "Start Date, End Date-এর পরে হতে পারবে না।"
+                    );
+
+                    return;
+                }
+
+
+                // -------------------------------------------------
+                // GET TRANSACTIONS
+                // -------------------------------------------------
                 const transactionSnapshot =
                     await get(ref(reportDB, "transactions"));
 
@@ -369,11 +462,13 @@
                         ? transactionSnapshot.val()
                         : {};
 
+                const transactions =
+                    toArray(transactionData);
 
-                // =================================================
+
+                // -------------------------------------------------
                 // GET CUSTOMERS
-                // =================================================
-
+                // -------------------------------------------------
                 const customerSnapshot =
                     await get(ref(reportDB, "customers"));
 
@@ -382,71 +477,78 @@
                         ? customerSnapshot.val()
                         : {};
 
-
-                // Object / Array দুই ধরনের ডেটা সামলাবে
-                const transactions =
-                    Array.isArray(transactionData)
-                        ? transactionData
-                        : Object.values(transactionData || {});
-
-
                 const customers =
-                    Array.isArray(customerData)
-                        ? customerData
-                        : Object.values(customerData || {});
+                    toArray(customerData);
 
 
-                // =================================================
-                // TODAY FILTER
-                // =================================================
+                // -------------------------------------------------
+                // DATE FILTER
+                // -------------------------------------------------
+                const filteredTransactions =
+                    transactions.filter((tx) => {
 
-                const today =
-                    new Date().toISOString().split("T")[0];
+                        if (!tx || !tx.date) return false;
+
+                        return (
+                            tx.date >= startDate &&
+                            tx.date <= endDate
+                        );
+
+                    });
 
 
-                const todayTransactions =
-                    transactions.filter(t => t && t.date === today);
-
-
-                // =================================================
-                // TOTAL
-                // =================================================
-
+                // -------------------------------------------------
+                // TOTALS
+                // -------------------------------------------------
                 let totalDebit = 0;
                 let totalCredit = 0;
 
-
-                todayTransactions.forEach(t => {
+                filteredTransactions.forEach((tx) => {
 
                     totalDebit +=
-                        parseFloat(t.debit) || 0;
+                        parseFloat(tx.debit) || 0;
 
                     totalCredit +=
-                        parseFloat(t.credit) || 0;
+                        parseFloat(tx.credit) || 0;
 
                 });
 
 
-                // =================================================
+                // -------------------------------------------------
+                // CUSTOMER NAME CHECK
+                // -------------------------------------------------
+                const customerMap = new Map();
+
+                customers.forEach((customer) => {
+
+                    if (!customer) return;
+
+                    const id =
+                        customer.id ??
+                        customer.customerId;
+
+                    if (id !== undefined && id !== null) {
+                        customerMap.set(String(id), customer);
+                    }
+
+                });
+
+
+                // -------------------------------------------------
                 // RESTORE BUTTON
-                // =================================================
-
-                if (button) {
-
-                    button.disabled = false;
-
-                    button.innerHTML =
-                        '<i class="fa-solid fa-download"></i> Download Report';
-
-                }
+                // -------------------------------------------------
+                setDownloadButtonLoading(false);
 
 
-                // =================================================
+                // -------------------------------------------------
                 // TEST RESULT
-                // =================================================
-
+                // -------------------------------------------------
                 alert(
                     "Firebase Connection সফল! ✅\n\n" +
+
+                    "Login: " +
+                    (user.email || "Authenticated User") +
+                    "\n\n" +
 
                     "Customer পাওয়া গেছে: " +
                     customers.length +
@@ -456,33 +558,53 @@
                     transactions.length +
                     "\n\n" +
 
-                    "আজকের Transaction: " +
-                    todayTransactions.length +
+                    "নির্বাচিত সময়ের Transaction: " +
+                    filteredTransactions.length +
                     "\n\n" +
 
-                    "আজকের Debit: " +
-                    totalDebit.toFixed(2) +
+                    "Total Debit: " +
+                    money(totalDebit) +
                     "\n\n" +
 
-                    "আজকের Credit: " +
-                    totalCredit.toFixed(2)
+                    "Total Credit: " +
+                    money(totalCredit) +
+                    "\n\n" +
+
+                    "Report Type: " +
+                    reportType +
+                    "\n\n" +
+
+                    "File Format: " +
+                    fileFormat
                 );
 
 
-                // Console-এ আসল ডেটাও দেখা যাবে
+                // -------------------------------------------------
+                // CONSOLE DATA FOR NEXT STEP
+                // -------------------------------------------------
+                console.log(
+                    "REPORT MODULE - USER:",
+                    user
+                );
+
                 console.log(
                     "REPORT MODULE - CUSTOMERS:",
                     customers
                 );
 
                 console.log(
-                    "REPORT MODULE - TRANSACTIONS:",
+                    "REPORT MODULE - CUSTOMER MAP:",
+                    customerMap
+                );
+
+                console.log(
+                    "REPORT MODULE - ALL TRANSACTIONS:",
                     transactions
                 );
 
                 console.log(
-                    "REPORT MODULE - TODAY TRANSACTIONS:",
-                    todayTransactions
+                    "REPORT MODULE - FILTERED TRANSACTIONS:",
+                    filteredTransactions
                 );
 
 
@@ -493,23 +615,77 @@
                     error
                 );
 
-
-                const button =
-                    document.querySelector(".btn-download");
-
-                if (button) {
-
-                    button.disabled = false;
-
-                    button.innerHTML =
-                        '<i class="fa-solid fa-download"></i> Download Report';
-
-                }
-
+                setDownloadButtonLoading(false);
 
                 alert(
                     "Firebase থেকে ডেটা আনা যায়নি। ❌\n\n" +
                     "Error:\n" +
+                    (error?.message || error)
+                );
+
+            }
+
+        };
+
+
+        // ---------------------------------------------------------
+        // PREVIEW - TEMPORARY TEST
+        // ---------------------------------------------------------
+        window.previewFirebaseReport = async function () {
+
+            try {
+
+                const user = await authReady;
+
+                if (!user) {
+                    alert(
+                        "Firebase Login পাওয়া যায়নি।\n\n" +
+                        "প্রথমে মূল সফটওয়্যারে Login করুন।"
+                    );
+                    return;
+                }
+
+                const startDate =
+                    document.getElementById("startDate").value;
+
+                const endDate =
+                    document.getElementById("endDate").value;
+
+                const snapshot =
+                    await get(ref(reportDB, "transactions"));
+
+                const data =
+                    snapshot.exists()
+                        ? snapshot.val()
+                        : {};
+
+                const transactions = toArray(data);
+
+                const filtered =
+                    transactions.filter(tx =>
+                        tx &&
+                        tx.date &&
+                        tx.date >= startDate &&
+                        tx.date <= endDate
+                    );
+
+                alert(
+                    "Preview data ready! ✅\n\n" +
+                    "Selected transactions: " +
+                    filtered.length
+                );
+
+                console.log(
+                    "REPORT PREVIEW:",
+                    filtered
+                );
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Preview তৈরি করা যায়নি। ❌\n\n" +
                     error.message
                 );
 
@@ -518,5 +694,6 @@
         };
 
     </script>
+
 </body>
 </html>
