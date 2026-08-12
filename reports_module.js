@@ -894,41 +894,47 @@
         // IMPORTANT: FONT + DOM READY
         // =========================================================
 
-        const pdfHost = document.createElement('div');
-
-        pdfHost.id = 'mousumi-pdf-render-host';
-
-        pdfHost.style.position = 'fixed';
-        pdfHost.style.left = '-100000px';
-        pdfHost.style.top = '0';
-        pdfHost.style.width = '210mm';
-        pdfHost.style.background = '#fff';
-        pdfHost.style.zIndex = '-999999';
-        pdfHost.innerHTML = elementHTML;
-
-        document.body.appendChild(pdfHost);
-
         try {
 
-            // Browser-এ Tiro Bangla font সম্পূর্ণ load না হওয়া পর্যন্ত অপেক্ষা
-            if (document.fonts) {
-                await document.fonts.ready;
-                await document.fonts.load("16px 'Tiro Bangla'");
+            // =====================================================
+            // Tiro Bangla FONT LOAD
+            // =====================================================
+            // PDF-এ font ব্যবহার করার আগে মূল document-এ font link
+            // নিশ্চিত করা হচ্ছে।
+            let tiroLink = document.getElementById('mousumi-tiro-bangla-font');
+
+            if (!tiroLink) {
+                tiroLink = document.createElement('link');
+                tiroLink.id = 'mousumi-tiro-bangla-font';
+                tiroLink.rel = 'stylesheet';
+                tiroLink.href = 'https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap';
+                document.head.appendChild(tiroLink);
             }
 
-            // Google Font render হওয়ার জন্য সামান্য সময়
-            await new Promise(resolve => setTimeout(resolve, 300));
+            if (document.fonts) {
+                await document.fonts.load("16px 'Tiro Bangla'");
+                await document.fonts.ready;
+            }
 
+            // Font render হওয়ার জন্য সামান্য সময়
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // =====================================================
+            // IMPORTANT
+            // elementHTML সরাসরি html2pdf-এ দেওয়া হচ্ছে।
+            // আগের fixed version-এর off-screen DOM host-এর কারণে
+            // html2canvas blank page তৈরি করছিল।
+            // =====================================================
             await html2pdf()
                 .set(opt)
-                .from(pdfHost)
+                .from(elementHTML)
                 .save();
 
-        } finally {
+        } catch (error) {
 
-            if (pdfHost && pdfHost.parentNode) {
-                pdfHost.parentNode.removeChild(pdfHost);
-            }
+            console.error('Mousumi PDF generation error:', error);
+            alert('PDF তৈরি করা যায়নি। Browser Console-এ Error দেখুন।');
+
         }
 
     };
