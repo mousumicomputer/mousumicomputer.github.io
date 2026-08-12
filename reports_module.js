@@ -1,108 +1,125 @@
 /* 
-   Mousumi Computer - Report Center Upgrade Module
-   এই ফাইলটি মূল index.html এর রিপোর্ট সেকশনকে আপডেট করবে।
+   Mousumi Computer - PDF Report Generator Module
+   আপনার দেওয়া টেমপ্লেট অনুযায়ী এটি কাজ করবে।
 */
 
-const upgradeReportSection = () => {
-    const reportContainer = document.getElementById('cust-reports-section');
-    if (!reportContainer) return;
+// ১. সংখ্যাকে বাংলা সংখ্যায় রূপান্তর এবং কমা ফরম্যাট করার ফাংশন
+const formatBengaliAmount = (num) => {
+    if (num === undefined || num === null) return "০.০০";
+    
+    // ইংরেজি ফরম্যাটে কমা ও ২ দশমিক সেট করা
+    let formatted = new Intl.NumberFormat('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(num);
 
-    // নতুন ডিজাইনের HTML এবং CSS
-    reportContainer.innerHTML = `
-    <style>
-        .report-card-new { background: #ffffff; width: 100%; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; font-family: 'Inter', sans-serif; }
-        .brand-header-new { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-        .brand-title-new h2 { color: #0f172a; font-size: 18px; font-weight: 700; margin:0; }
-        .date-presets-new { display: flex; gap: 5px; }
-        .preset-btn-new { background: #f8fafc; border: 1px solid #cbd5e1; padding: 6px 12px; font-size: 11px; font-weight: 600; border-radius: 6px; cursor: pointer; }
-        .preset-btn-new.active { background: #2563eb; color: white; border-color: #2563eb; }
-        .grid-row-new { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .form-group-new { display: flex; flex-direction: column; gap: 5px; }
-        .form-group-new label { font-weight: 600; color: #475569; font-size: 12px; }
-        .form-control-new { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; }
-        .btn-group-new { display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid #f1f5f9; padding-top: 15px; }
-        .btn-new { padding: 10px 20px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 7px; }
-        .btn-download-new { background-color: #2563eb; color: white; }
-    </style>
-
-    <div class="report-card-new">
-        <div class="brand-header-new">
-            <div class="brand-title-new">
-                <h2><i class="fa-solid fa-file-invoice" style="color: #2563eb;"></i> Report Download Center</h2>
-            </div>
-            <div class="date-presets-new">
-                <button type="button" class="preset-btn-new active" id="btn-today">Today</button>
-                <button type="button" class="preset-btn-new" id="btn-week">Week</button>
-                <button type="button" class="preset-btn-new" id="btn-month">Month</button>
-            </div>
-        </div>
-
-        <div class="grid-row-new">
-            <div class="form-group-new">
-                <label>Date Range</label>
-                <div style="display:flex; align-items:center; gap:5px;">
-                    <input type="date" id="repStartDate" class="form-control-new">
-                    <span style="font-size:11px; color:#94a3b8;">to</span>
-                    <input type="date" id="repEndDate" class="form-control-new">
-                </div>
-            </div>
-            <div class="form-group-new">
-                <label>Report Type</label>
-                <select id="repType" class="form-control-new">
-                    <option value="due">Outstanding Due Report</option>
-                    <option value="statement">Individual Customer Statement</option>
-                    <option value="closing">Daily Closing History</option>
-                </select>
-            </div>
-            <div class="form-group-new">
-                <label>Format</label>
-                <select id="repFormat" class="form-control-new">
-                    <option value="excel">Excel Spreadsheet (.xlsx)</option>
-                    <option value="pdf">PDF Document (.pdf)</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="btn-group-new">
-            <button type="button" class="btn-new btn-download-new" id="btn-main-download">
-                <i class="fa-solid fa-download"></i> Generate & Download
-            </button>
-        </div>
-    </div>
-    `;
-
-    // ডেট ফিল্টার লজিক
-    const setDates = (days) => {
-        const end = new Date();
-        const start = new Date();
-        start.setDate(end.getDate() - days);
-        document.getElementById('repStartDate').value = start.toISOString().split('T')[0];
-        document.getElementById('repEndDate').value = end.toISOString().split('T')[0];
-    };
-
-    setDates(0); // ডিফল্ট আজকের তারিখ
-
-    document.getElementById('btn-today').onclick = () => setDates(0);
-    document.getElementById('btn-week').onclick = () => setDates(7);
-    document.getElementById('btn-month').onclick = () => setDates(30);
-
-    // ডাউনলোড বাটন লজিক (আপনার মূল অ্যাপের ফাংশনের সাথে কানেক্ট করা)
-    document.getElementById('btn-main-download').onclick = () => {
-        const type = document.getElementById('repType').value;
-        
-        if(type === 'due') {
-            if(typeof window.exportOutstandingDueExcel === 'function') {
-                window.exportOutstandingDueExcel();
-            } else {
-                alert("Export function not found!");
-            }
-        } else if(type === 'statement') {
-            alert("Please go to Customer Ledger to export individual statements.");
-        } else {
-            alert("Generating " + type + " report...");
-        }
-    };
+    // ইংরেজি ডিজিটকে বাংলা ডিজিটে রূপান্তর
+    const digits = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
+    return formatted.replace(/\d/g, d => digits[d]);
 };
 
-// যখন পেজ লোড হবে তখন এটি রান করবে
-setTimeout(upgradeReportSection, 1000);
+// ২. পিডিএফ জেনারেট করার মূল ফাংশন
+window.generateMousumiPDF = function(reportData) {
+    const now = new Date();
+    const days = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
+    const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+    
+    const todayDate = `${formatBengaliAmount(now.getDate()).split('.')[0]} ${months[now.getMonth()]} ${formatBengaliAmount(now.getFullYear()).split('.')[0]}`;
+    const todayDay = days[now.getDay()];
+
+    // টেবিলের বডি ডায়নামিকভাবে তৈরি
+    let tableRows = '';
+    let totalAmount = 0;
+    let finalBalance = 0;
+
+    reportData.forEach((t, index) => {
+        const amount = parseFloat(t.debit) || parseFloat(t.credit) || 0;
+        const type = t.debit > 0 ? "বাকী দিলাম" : "বাকী পেলাম";
+        totalAmount += amount;
+        finalBalance = t.runningBalance || 0; // যদি ব্যালেন্স থাকে
+
+        tableRows += `
+            <tr>
+                <td class="text-center">${formatBengaliAmount(index + 1).split('.')[0]}।</td>
+                <td class="text-center">${t.time}</td>
+                <td class="text-left">${t.customerName}</td>
+                <td class="text-center">${type}</td>
+                <td class="text-right">${formatBengaliAmount(amount)}</td>
+                <td class="text-right">${formatBengaliAmount(finalBalance)}</td>
+            </tr>
+        `;
+    });
+
+    // আপনার দেওয়া HTML/CSS টেমপ্লেট
+    const elementHTML = `
+    <html>
+    <head>
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;700&display=swap" rel="stylesheet">
+        <style>
+            body { font-family: 'Noto Serif Bengali', serif; font-size: 11pt; color: #000; margin: 0; padding: 0; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .header h1 { font-size: 24pt; font-weight: bold; margin: 0; text-transform: uppercase; }
+            .header h2 { font-size: 15pt; margin: 5px 0 0 0; font-weight: normal; }
+            .date-bar { width: 100%; margin-bottom: 12px; font-size: 11.5pt; display: flex; justify-content: space-between; }
+            table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+            th, td { border: 1px solid #000; padding: 6px 8px; font-size: 11pt; }
+            th { background-color: #f2f2f2; font-weight: bold; text-align: center; }
+            .text-right { text-align: right; }
+            .text-center { text-align: center; }
+            .total-row { font-weight: bold; background-color: #fafafa; }
+            .footer-signature { margin-top: 65px; text-align: right; }
+            .sig-box { display: inline-block; width: 210px; text-align: center; }
+            .sig-line { border-top: 1px solid #000; margin-bottom: 6px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>MOUSUMI COMPUTER</h1>
+            <h2>লেনদেন এর তালিকা</h2>
+        </div>
+        <div class="date-bar">
+            <span>তারিখ: ${todayDate}</span>
+            <span>বার: ${todayDay}</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 10%;">ক্রমিক</th>
+                    <th style="width: 15%;">সময়</th>
+                    <th>কাস্টমার</th>
+                    <th style="width: 18%;">লেনদেন</th>
+                    <th style="width: 18%;">টাকা</th>
+                    <th style="width: 20%;">অবশিষ্ট বাকী</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${tableRows}
+                <tr class="total-row">
+                    <td colspan="4" class="text-right">সর্বমোট (Total):</td>
+                    <td class="text-right">${formatBengaliAmount(totalAmount)}</td>
+                    <td class="text-right">${formatBengaliAmount(finalBalance)}</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="footer-signature">
+            <div class="sig-box">
+                <div class="sig-line"></div>
+                <div>Authorized Signature</div>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+
+    // html2pdf অপশন
+    const opt = {
+        margin: [15, 12, 15, 12],
+        filename: `Mousumi_Report_${now.toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // পিডিএফ জেনারেশন শুরু
+    html2pdf().set(opt).from(elementHTML).save();
+};
