@@ -2934,6 +2934,7 @@ const logoutBtn = document.getElementById('logoutBtn');
             onValue(custRef, (snapshot) => {
                 const data = snapshot.val();
                 customers = data ? toArray(data) : [];
+                window.customers = customers;
                 populateCustomerSelectDropdowns();
                 updateDashboardCards();
                 if (document.getElementById('customer-ledger-view').classList.contains('active')) {
@@ -2945,7 +2946,7 @@ const logoutBtn = document.getElementById('logoutBtn');
             // SUBSCRIBE TO TRANSACTIONS COLLECTION
             onValue(txRef, (snapshot) => {
                 const data = snapshot.val();
-                customerTransactions = data ? toArray(data) : [];
+                window.customerTransactions = customerTransactions;
                 updateDashboardCards();
                 if (activeViewingCustomerId && document.getElementById('customer-ledger-view').classList.contains('active')) {
                     renderCustomerStatement(activeViewingCustomerId);
