@@ -1,8 +1,11 @@
+--- START OF FILE reports_module.js ---
+
 /**
  * Mousumi Computer - Professional Document Engine
  * PDF Design + Tiro Bangla Font + বিবরণ Column
- *
- * হিসাবের মূল Logic অপরিবর্তিত রাখা হয়েছে।
+ * 
+ * ১নং নমুনা ছবির ডিজাইন ও ফন্ট অনুসরণ করা হয়েছে।
+ * হিসাবের মূল Logic আপনার আগের কোডের মতোই অপরিবর্তিত রাখা হয়েছে।
  */
 
 (function() {
@@ -212,10 +215,6 @@
                     : "বাকী পেলাম";
 
 
-            // =================================================
-            // বিবরণ
-            // =================================================
-
             const description =
                 String(
                     t.description ??
@@ -267,26 +266,26 @@
 
 
         // =========================================================
-        // PDF HTML
+        // PDF HTML (Design Matched to Image 1)
         // =========================================================
 
         const elementHTML = `
         <div class="mousumi-pdf-page">
 
             <div class="main-header">
-                <h1>MOUSUMI COMPUTER</h1>
-                <h2>লেনদেন এর তালিকা</h2>
+                <h1 class="tiro-font">MOUSUMI COMPUTER</h1>
+                <h2 class="tiro-font">লেনদেন এর তালিকা</h2>
             </div>
 
             <div class="date-bar">
-                <div>
+                <div class="tiro-font">
                     তারিখ:
                     ${startParts.date}
                     ${startParts.month}
                     ${startParts.year}
                 </div>
 
-                <div>
+                <div class="tiro-font">
                     বার:
                     ${startParts.day}
                 </div>
@@ -319,7 +318,7 @@
                     ${tableRows}
 
                     <tr class="total-row">
-                        <td colspan="5" class="total-label">
+                        <td colspan="5" class="total-label tiro-font">
                             সর্বমোট (Total):
                         </td>
 
@@ -345,7 +344,7 @@
 
 
         // =========================================================
-        // CSS
+        // CSS (Exact Layout Match Image 1)
         // =========================================================
 
         const css = `
@@ -369,37 +368,38 @@
                 width: 794px;
                 min-height: 1123px;
                 box-sizing: border-box;
-                padding: 25px 52px 0 52px;
+                padding: 45px 55px;
                 background: #ffffff;
                 color: #000000;
                 font-family: 'Tiro Bangla', serif !important;
-                overflow: hidden;
+                -webkit-font-smoothing: antialiased;
+            }
+
+            .tiro-font {
+                font-family: 'Tiro Bangla', serif !important;
             }
 
             .main-header {
                 width: 100%;
                 text-align: center;
-                margin: 0 0 23px 0;
-                padding: 0;
+                margin-bottom: 25px;
             }
 
             .main-header h1 {
                 margin: 0;
                 padding: 0;
-                font-family: Arial, 'Helvetica Neue', sans-serif !important;
-                font-size: 29px;
-                line-height: 1.08;
+                font-family: 'Tiro Bangla', serif !important;
+                font-size: 34px;
                 font-weight: 700;
-                letter-spacing: 0.7px;
+                letter-spacing: 0.5px;
                 color: #000;
+                text-transform: uppercase;
             }
 
             .main-header h2 {
                 margin: 4px 0 0 0;
-                padding: 0;
                 font-family: 'Tiro Bangla', serif !important;
-                font-size: 14px;
-                line-height: 1.25;
+                font-size: 18px;
                 font-weight: 700;
                 color: #000;
             }
@@ -408,138 +408,74 @@
                 width: 100%;
                 display: flex;
                 justify-content: space-between;
-                align-items: center;
-                margin: 0 0 17px 0;
-                padding: 0;
-                font-family: 'Tiro Bangla', serif !important;
-                font-size: 10px;
-                line-height: 1.25;
+                font-size: 14px;
                 font-weight: 700;
+                margin-bottom: 12px;
                 color: #000;
             }
 
             .transaction-table {
                 width: 100%;
-                margin: 0;
-                padding: 0;
                 border-collapse: collapse;
-                border-spacing: 0;
+                border: 1px solid #000;
                 table-layout: fixed;
-                border: 1px solid #111;
-                font-family: 'Tiro Bangla', serif !important;
-                color: #000;
             }
 
             .transaction-table th,
             .transaction-table td {
-                border: 1px solid #111;
-                box-sizing: border-box;
-                font-family: 'Tiro Bangla', serif !important;
-                font-size: 9.4px;
+                border: 1px solid #000;
+                font-size: 13.5px;
                 line-height: 1.25;
                 vertical-align: middle;
-                padding: 5px 5px;
+                padding: 8px 6px;
+                color: #000;
             }
 
             .transaction-table th {
-                height: 30px;
-                padding: 4px 3px;
-                background: #f3f3f3;
-                text-align: center;
+                background: #f4f4f4;
                 font-weight: 700;
-                white-space: nowrap;
-            }
-
-            .transaction-table td {
-                min-height: 28px;
-                font-weight: 400;
-                white-space: normal;
-                overflow-wrap: break-word;
-                word-break: normal;
-            }
-
-            .transaction-table .col-no {
                 text-align: center;
-                padding-left: 2px;
-                padding-right: 2px;
+                border-bottom: 1.5px solid #000;
             }
 
-            .transaction-table .col-time {
+            .col-no, .col-time, .col-type {
                 text-align: center;
-                direction: ltr;
-                white-space: nowrap;
-                padding-left: 2px;
-                padding-right: 2px;
-                font-family: 'Tiro Bangla', serif !important;
             }
 
-            .transaction-table .col-customer {
+            .col-customer, .col-description {
                 text-align: left;
-                padding-left: 7px;
-                padding-right: 5px;
+                padding-left: 10px;
             }
 
-            .transaction-table .col-type {
-                text-align: center;
-                padding-left: 3px;
-                padding-right: 3px;
-            }
-
-            .transaction-table .col-description {
-                text-align: left;
-                padding-left: 7px;
-                padding-right: 5px;
-                white-space: normal;
-                overflow-wrap: break-word;
-                word-break: normal;
-            }
-
-            .transaction-table .col-money,
-            .transaction-table .col-balance {
+            .col-money, .col-balance {
                 text-align: right;
-                padding-left: 4px;
-                padding-right: 7px;
-                white-space: nowrap;
-            }
-
-            .transaction-table tr {
-                page-break-inside: avoid;
-                break-inside: avoid;
+                padding-right: 12px;
             }
 
             .total-row td {
-                height: 29px;
-                background: #fff;
                 font-weight: 700 !important;
+                height: 38px;
             }
 
             .total-label {
                 text-align: right !important;
-                padding-right: 9px !important;
-                white-space: nowrap;
-            }
-
-            .total-number {
-                font-weight: 700 !important;
+                padding-right: 15px !important;
             }
 
             .sig-container {
                 width: 100%;
                 display: flex;
                 justify-content: flex-end;
-                margin-top: 68px;
-                padding: 0;
+                margin-top: 100px;
             }
 
             .sig-box {
-                width: 235px;
-                padding-top: 5px;
-                border-top: 1px solid #111;
+                width: 250px;
+                border-top: 1px solid #000;
                 text-align: center;
-                font-family: Arial, 'Helvetica Neue', sans-serif !important;
-                font-size: 10px;
-                line-height: 1.2;
-                font-weight: 400;
+                font-family: Arial, sans-serif;
+                font-size: 13px;
+                padding-top: 6px;
             }
         `;
 
@@ -551,10 +487,6 @@
         let renderHost = null;
 
         try {
-
-            // -----------------------------------------------------
-            // মূল document-এ Tiro Bangla font load করানো
-            // -----------------------------------------------------
 
             let tiroLink =
                 document.getElementById(
@@ -573,7 +505,7 @@
                     'stylesheet';
 
                 tiroLink.href =
-                    'https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap';
+                    'https://fonts.googleapis.com/css2?family=Tiro+Bangla&display=swap';
 
                 document.head.appendChild(
                     tiroLink
@@ -582,22 +514,10 @@
 
 
             if (document.fonts) {
-
-                await document.fonts.load(
-                    "16px 'Tiro Bangla'"
-                );
-
+                await document.fonts.load("16px 'Tiro Bangla'");
                 await document.fonts.ready;
-
             }
 
-
-            // -----------------------------------------------------
-            // বাস্তব DOM element
-            //
-            // display:none / visibility:hidden ব্যবহার করা হয়নি।
-            // html2canvas যেন element দেখতে পারে।
-            // -----------------------------------------------------
 
             renderHost =
                 document.createElement('div');
@@ -609,28 +529,7 @@
                 'fixed';
 
             renderHost.style.left =
-                '0px';
-
-            renderHost.style.top =
-                '0px';
-
-            renderHost.style.width =
-                '794px';
-
-            renderHost.style.minHeight =
-                '1123px';
-
-            renderHost.style.background =
-                '#ffffff';
-
-            renderHost.style.zIndex =
-                '2147483647';
-
-            renderHost.style.margin =
-                '0';
-
-            renderHost.style.padding =
-                '0';
+                '-10000px';
 
             renderHost.innerHTML = `
                 <style>${css}</style>
@@ -640,21 +539,6 @@
             document.body.appendChild(
                 renderHost
             );
-
-
-            // -----------------------------------------------------
-            // Font rendering নিশ্চিত করা
-            // -----------------------------------------------------
-
-            if (document.fonts) {
-
-                await document.fonts.load(
-                    "16px 'Tiro Bangla'"
-                );
-
-                await document.fonts.ready;
-
-            }
 
             await new Promise(
                 resolve =>
@@ -667,9 +551,9 @@
             );
 
 
-            // -----------------------------------------------------
-            // PDF options
-            // -----------------------------------------------------
+            // =========================================================
+            // PDF options (Higher Scale for Image 1 Clarity)
+            // =========================================================
 
             const opt = {
 
@@ -680,18 +564,14 @@
 
                 image: {
                     type: 'jpeg',
-                    quality: 0.98
+                    quality: 1.0
                 },
 
                 html2canvas: {
-                    scale: 2.5,
+                    scale: 3.5,
                     useCORS: true,
-                    allowTaint: false,
-                    backgroundColor: '#ffffff',
                     letterRendering: true,
-                    logging: false,
-                    width: 794,
-                    windowWidth: 794
+                    backgroundColor: '#ffffff'
                 },
 
                 jsPDF: {
@@ -699,17 +579,9 @@
                     format: 'a4',
                     orientation: 'portrait',
                     compress: true
-                },
-
-                pagebreak: {
-                    mode: ['css', 'legacy']
                 }
             };
 
-
-            // -----------------------------------------------------
-            // PDF তৈরি
-            // -----------------------------------------------------
 
             await html2pdf()
                 .set(opt)
@@ -720,32 +592,15 @@
                 )
                 .save();
 
-        } catch (error) {
-
-            console.error(
-                'Mousumi PDF generation error:',
-                error
-            );
-
-            alert(
-                'PDF তৈরি করা যায়নি। Browser Console-এ Error দেখুন।'
-            );
-
         } finally {
-
-            // -----------------------------------------------------
-            // Temporary DOM পরিষ্কার
-            // -----------------------------------------------------
 
             if (
                 renderHost &&
                 renderHost.parentNode
             ) {
-
                 renderHost.parentNode.removeChild(
                     renderHost
                 );
-
             }
 
         }
@@ -778,93 +633,34 @@
                 border-radius:12px;
                 padding:25px;
                 border:1px solid #e2e8f0;
-                box-shadow:
-                    0 4px 20px
-                    rgba(0,0,0,0.05);
+                box-shadow: 0 4px 20px rgba(0,0,0,0.05);
             "
         >
 
-            <h3
-                style="
-                    margin-top:0;
-                    font-size:18px;
-                "
-            >
-                Download Report
-            </h3>
+            <h3 style="margin-top:0;">Download Report</h3>
 
+            <div style="margin-bottom:20px;">
+                <label style="display:block; margin-bottom:5px; font-weight:600;">
+                    তারিখ নির্বাচন করুন
+                </label>
 
-            <div
-                style="
-                    display:flex;
-                    gap:15px;
-                    margin-bottom:20px;
-                "
-            >
-
-                <div
-                    style="
-                        flex:1;
-                    "
+                <input
+                    type="date"
+                    id="rc-start"
+                    style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px;"
                 >
-
-                    <label
-                        style="
-                            display:block;
-                            margin-bottom:5px;
-                            font-weight:600;
-                        "
-                    >
-                        তারিখ নির্বাচন করুন
-                    </label>
-
-
-                    <input
-                        type="date"
-                        id="rc-start"
-
-                        style="
-                            width:100%;
-                            padding:10px;
-                            border:
-                                1px solid
-                                #cbd5e1;
-                            border-radius:8px;
-                        "
-                    >
-
-                </div>
-
             </div>
-
 
             <button
                 id="rc-download-btn"
-
-                style="
-                    background:#000;
-                    color:#fff;
-                    border:none;
-                    padding:
-                        12px 25px;
-                    border-radius:8px;
-                    font-weight:700;
-                    cursor:pointer;
-                "
+                style="background:#000; color:#fff; border:none; padding:12px 25px; border-radius:8px; font-weight:700; cursor:pointer; width:100%;"
             >
-
                 Generate PDF Report
-
             </button>
 
         </div>
-
         `;
 
-
-        // =====================================================
-        // DEFAULT DATE
-        // =====================================================
 
         document.getElementById(
             'rc-start'
@@ -873,10 +669,6 @@
                 .toISOString()
                 .split('T')[0];
 
-
-        // =====================================================
-        // DOWNLOAD BUTTON
-        // =====================================================
 
         document.getElementById(
             'rc-download-btn'
@@ -899,10 +691,6 @@
                 [];
 
 
-            // =================================================
-            // DATE FILTER
-            // =================================================
-
             let filtered =
                 allTxs.filter(
                     t =>
@@ -913,17 +701,11 @@
             if (
                 filtered.length === 0
             ) {
-
                 return alert(
                     "এই তারিখে কোনো লেনদেন নেই!"
                 );
-
             }
 
-
-            // =================================================
-            // REPORT DATA
-            // =================================================
 
             const reportData =
                 filtered.map(
@@ -946,10 +728,6 @@
                         );
 
 
-                    // =========================================
-                    // CUSTOMER HISTORY
-                    // =========================================
-
                     const history =
                         allTxs
 
@@ -970,10 +748,6 @@
                                     )
                             );
 
-
-                    // =========================================
-                    // RUNNING BALANCE
-                    // =========================================
 
                     for (
                         let entry of history
@@ -999,38 +773,24 @@
                             entry.id ===
                             t.id
                         ) {
-
                             break;
-
                         }
 
                     }
 
 
-                    // =========================================
-                    // RETURN REPORT OBJECT
-                    // =========================================
-
                     return {
-
                         ...t,
-
                         customerName:
                             cust
                                 ? cust.name
                                 : "Unknown",
-
                         runningBalanceAtTime:
                             balanceAtTime
-
                     };
 
                 });
 
-
-            // =================================================
-            // GENERATE PDF
-            // =================================================
 
             await generateMousumiPDF(
                 reportData,
@@ -1041,10 +801,6 @@
 
     };
 
-
-    // =========================================================
-    // INITIALIZE
-    // =========================================================
 
     setTimeout(
         initReportUI,
