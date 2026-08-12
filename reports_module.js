@@ -1,6 +1,6 @@
 /**
  * Mousumi Computer - Final Unified Report Module
- * ডিজাইন ও লেআউট: ২নং ছবির হুবহু ডিজাইন (Bengali PDF)
+ * ২ নং ছবির হুবহু ডিজাইন (Pixel Perfect Bengali Layout)
  */
 
 (function() {
@@ -27,7 +27,7 @@
         };
     };
 
-    // ৩. পিডিএফ জেনারেশন ইঞ্জিন (আপনার দেওয়া PDF.html টেমপ্লেট অনুযায়ী)
+    // ৩. পিডিএফ জেনারেশন ইঞ্জিন (২ নং ছবির হুবহু ডিজাইন)
     const generateMousumiPDF = (reportData, startDate, endDate) => {
         const startParts = getBnDate(new Date(startDate));
         
@@ -59,19 +59,24 @@
         <head>
             <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;700&display=swap" rel="stylesheet">
             <style>
-                body { font-family: 'Noto Serif Bengali', serif; color: #000; margin: 0; padding: 0; line-height: 1.2; }
-                .header { text-align: center; margin-bottom: 20px; }
-                .header h1 { font-size: 24pt; font-weight: bold; margin: 0; text-transform: uppercase; }
-                .header h2 { font-size: 15pt; margin: 5px 0 0 0; font-weight: normal; }
-                .date-bar { width: 100%; margin-bottom: 12px; font-size: 11.5pt; display: flex; justify-content: space-between; }
+                @page { size: A4; margin: 15mm 12mm; }
+                body { font-family: 'Noto Serif Bengali', serif; color: #000; margin: 0; padding: 0; line-height: 1.2; background-color: #fff; }
+                .header { text-align: center; margin-bottom: 25px; }
+                .header h1 { font-family: 'Times New Roman', serif; font-size: 32pt; font-weight: bold; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+                .header h2 { font-size: 18pt; margin: 5px 0 0 0; font-weight: normal; }
+                .date-bar-container { width: 100%; margin-bottom: 12px; font-size: 11.5pt; display: block; overflow: hidden; }
+                .date-left { float: left; }
+                .bar-right { float: right; }
+                .clear { clear: both; }
                 table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-                th, td { border: 1px solid #000; padding: 6px 8px; font-size: 11pt; }
-                th { background-color: #f2f2f2; font-weight: bold; text-align: center; }
+                th, td { border: 1px solid #000; padding: 8px 10px; font-size: 11pt; }
+                th { background-color: #f2f2f2; font-weight: bold; text-align: center; color: #000; }
                 .text-right { text-align: right; }
                 .text-center { text-align: center; }
-                .total-row { font-weight: bold; background-color: #fafafa; }
-                .footer-signature { margin-top: 65px; text-align: right; }
-                .sig-box { display: inline-block; width: 210px; text-align: center; border-top: 1px solid #000; padding-top: 5px; }
+                .total-row td { font-weight: bold; background-color: #fafafa; }
+                .footer-signature { margin-top: 80px; width: 100%; display: block; }
+                .sig-box { float: right; width: 230px; text-align: center; font-size: 11pt; font-family: 'Times New Roman', serif; }
+                .sig-line { border-top: 1px solid #000; margin-bottom: 6px; }
             </style>
         </head>
         <body>
@@ -79,9 +84,10 @@
                 <h1>MOUSUMI COMPUTER</h1>
                 <h2>লেনদেন এর তালিকা</h2>
             </div>
-            <div class="date-bar">
-                <span>তারিখ: ${startParts.date} ${startParts.month} ${startParts.year}</span>
-                <span>বার: ${startParts.day}</span>
+            <div class="date-bar-container">
+                <div class="date-left">তারিখ: ${startParts.date} ${startParts.month} ${startParts.year}</div>
+                <div class="bar-right">বার: ${startParts.day}</div>
+                <div class="clear"></div>
             </div>
             <table>
                 <thead>
@@ -97,37 +103,41 @@
                 <tbody>
                     ${tableRows}
                     <tr class="total-row">
-                        <td colspan="4" class="text-right">সর্বমোট (Total):</td>
+                        <td colspan="4" style="text-align: right;">সর্বমোট (Total):</td>
                         <td class="text-right">${toBn(totalAmount)}</td>
                         <td class="text-right">${toBn(finalBalance)}</td>
                     </tr>
                 </tbody>
             </table>
             <div class="footer-signature">
-                <div class="sig-box">Authorized Signature</div>
+                <div class="sig-box">
+                    <div class="sig-line"></div>
+                    <div>Authorized Signature</div>
+                </div>
+                <div class="clear"></div>
             </div>
         </body>
         </html>
         `;
 
         const opt = {
-            margin: [15, 12, 15, 12],
+            margin: 0,
             filename: `Mousumi_Report_${startDate}.pdf`,
-            html2canvas: { scale: 3, useCORS: true },
+            html2canvas: { scale: 3, useCORS: true, letterRendering: true },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
         html2pdf().set(opt).from(elementHTML).save();
     };
 
-    // ৪. ইউআই (UI) ইনজেকশন ফাংশন (Update.html ডিজাইন অনুযায়ী)
+    // ৪. ইউআই (UI) ইনজেকশন ফাংশন
     const initReportUI = () => {
         const reportContainer = document.getElementById('cust-reports-section');
         if (!reportContainer) return;
 
         reportContainer.innerHTML = `
         <style>
-            .rc-card { background: #fff; border-radius: 12px; padding: 25px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+            .rc-card { background: #fff; border-radius: 12px; padding: 25px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.03); font-family: sans-serif; }
             .rc-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 20px; }
             .rc-title { font-size: 18px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 10px; }
             .rc-presets { display: flex; gap: 6px; }
@@ -201,7 +211,6 @@
             const end = document.getElementById('rc-end').value;
             const format = document.getElementById('rc-format').value;
 
-            // ডাটা সোর্স রিড করা (window object থেকে)
             const allTxs = window.customerTransactions || [];
             const allCusts = window.customers || [];
 
@@ -217,7 +226,6 @@
                     alert("Excel ফাংশনটি পাওয়া যায়নি!");
                 }
             } else {
-                // PDF জেনারেশন লজিক
                 let filtered = allTxs.filter(t => t.date >= start && t.date <= end);
                 
                 if (filtered.length === 0) {
@@ -227,7 +235,6 @@
 
                 const reportData = filtered.map(t => {
                     const c = allCusts.find(x => x.id === t.customerId);
-                    // মূল অ্যাপের ব্যালেন্স ফাংশন ব্যবহারের চেষ্টা
                     const currentDue = typeof window.calculateCustomerCurrentDue === 'function' ? window.calculateCustomerCurrentDue(t.customerId) : 0;
                     return {
                         ...t,
@@ -241,6 +248,5 @@
         };
     };
 
-    // অ্যাপ লোড হওয়ার ১.৫ সেকেন্ড পর ইউআই ইনজেক্ট হবে (নিরাপত্তার জন্য)
     setTimeout(initReportUI, 1500);
 })();
