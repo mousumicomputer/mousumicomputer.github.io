@@ -258,5 +258,265 @@
             setPreset('today', document.querySelector('.preset-btn.active'));
         });
     </script>
+    <!-- Firebase Report Module -->
+    <script type="module">
+        import { initializeApp }
+            from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
+        import {
+            getAuth,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        import {
+            getDatabase,
+            ref,
+            get
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+
+        // =========================================================
+        // MOUSUMI COMPUTER - FIREBASE CONFIG
+        // =========================================================
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1PhRiTkICNCd8sA4he3ZxKjHtIzM0d5E",
+            authDomain: "mousumi-computer.firebaseapp.com",
+            databaseURL: "https://mousumi-computer-default-rtdb.firebaseio.com",
+            projectId: "mousumi-computer",
+            storageBucket: "mousumi-computer.firebasestorage.app",
+            messagingSenderId: "104820462623",
+            appId: "1:104820462623:web:e3abae9533cc841463712a",
+            measurementId: "G-EPYJ70W97Z"
+        };
+
+
+        // Firebase initialize
+        const reportApp = initializeApp(
+            firebaseConfig,
+            "mousumiReportApp"
+        );
+
+        const reportAuth = getAuth(reportApp);
+        const reportDB = getDatabase(reportApp);
+
+
+        // =========================================================
+        // CURRENT USER
+        // =========================================================
+
+        let reportCurrentUser = null;
+
+
+        onAuthStateChanged(reportAuth, (user) => {
+
+            reportCurrentUser = user || null;
+
+            if (user) {
+                console.log(
+                    "Report Module Firebase Login:",
+                    user.email
+                );
+            } else {
+                console.log(
+                    "Report Module: User is not logged in."
+                );
+            }
+
+        });
+
+
+        // =========================================================
+        // TEST FIREBASE REPORT
+        // =========================================================
+
+        window.testFirebaseReport = async function () {
+
+            try {
+
+                // Login check
+                if (!reportCurrentUser) {
+
+                    alert(
+                        "Firebase Login পাওয়া যায়নি।\n\n" +
+                        "প্রথমে মূল Mousumi Computer সফটওয়্যারে Login করুন, " +
+                        "তারপর Report Module খুলুন।"
+                    );
+
+                    return;
+                }
+
+
+                // Loading message
+                const button = document.querySelector(".btn-download");
+
+                if (button) {
+                    button.disabled = true;
+                    button.innerHTML =
+                        '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
+                }
+
+
+                // =================================================
+                // GET TRANSACTIONS
+                // =================================================
+
+                const transactionSnapshot =
+                    await get(ref(reportDB, "transactions"));
+
+                const transactionData =
+                    transactionSnapshot.exists()
+                        ? transactionSnapshot.val()
+                        : {};
+
+
+                // =================================================
+                // GET CUSTOMERS
+                // =================================================
+
+                const customerSnapshot =
+                    await get(ref(reportDB, "customers"));
+
+                const customerData =
+                    customerSnapshot.exists()
+                        ? customerSnapshot.val()
+                        : {};
+
+
+                // Object / Array দুই ধরনের ডেটা সামলাবে
+                const transactions =
+                    Array.isArray(transactionData)
+                        ? transactionData
+                        : Object.values(transactionData || {});
+
+
+                const customers =
+                    Array.isArray(customerData)
+                        ? customerData
+                        : Object.values(customerData || {});
+
+
+                // =================================================
+                // TODAY FILTER
+                // =================================================
+
+                const today =
+                    new Date().toISOString().split("T")[0];
+
+
+                const todayTransactions =
+                    transactions.filter(t => t && t.date === today);
+
+
+                // =================================================
+                // TOTAL
+                // =================================================
+
+                let totalDebit = 0;
+                let totalCredit = 0;
+
+
+                todayTransactions.forEach(t => {
+
+                    totalDebit +=
+                        parseFloat(t.debit) || 0;
+
+                    totalCredit +=
+                        parseFloat(t.credit) || 0;
+
+                });
+
+
+                // =================================================
+                // RESTORE BUTTON
+                // =================================================
+
+                if (button) {
+
+                    button.disabled = false;
+
+                    button.innerHTML =
+                        '<i class="fa-solid fa-download"></i> Download Report';
+
+                }
+
+
+                // =================================================
+                // TEST RESULT
+                // =================================================
+
+                alert(
+                    "Firebase Connection সফল! ✅\n\n" +
+
+                    "Customer পাওয়া গেছে: " +
+                    customers.length +
+                    "\n\n" +
+
+                    "মোট Transaction: " +
+                    transactions.length +
+                    "\n\n" +
+
+                    "আজকের Transaction: " +
+                    todayTransactions.length +
+                    "\n\n" +
+
+                    "আজকের Debit: " +
+                    totalDebit.toFixed(2) +
+                    "\n\n" +
+
+                    "আজকের Credit: " +
+                    totalCredit.toFixed(2)
+                );
+
+
+                // Console-এ আসল ডেটাও দেখা যাবে
+                console.log(
+                    "REPORT MODULE - CUSTOMERS:",
+                    customers
+                );
+
+                console.log(
+                    "REPORT MODULE - TRANSACTIONS:",
+                    transactions
+                );
+
+                console.log(
+                    "REPORT MODULE - TODAY TRANSACTIONS:",
+                    todayTransactions
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Report Firebase Error:",
+                    error
+                );
+
+
+                const button =
+                    document.querySelector(".btn-download");
+
+                if (button) {
+
+                    button.disabled = false;
+
+                    button.innerHTML =
+                        '<i class="fa-solid fa-download"></i> Download Report';
+
+                }
+
+
+                alert(
+                    "Firebase থেকে ডেটা আনা যায়নি। ❌\n\n" +
+                    "Error:\n" +
+                    error.message
+                );
+
+            }
+
+        };
+
+    </script>
 </body>
 </html>
