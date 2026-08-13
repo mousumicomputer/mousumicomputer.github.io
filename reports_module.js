@@ -1,13 +1,49 @@
 /**
- * Mousumi Computer - Professional Document Engine
- * Final Version
- * Fixed: White PDF Issue + A4 Layout + Compact Professional Design
+ * Mousumi Computer
+ * Transaction Report PDF Module
+ *
+ * Design:
+ * - Tiro Bangla
+ * - Thin borders
+ * - Compact table spacing
+ * - Clean A4 layout
+ * - Modern PDF filename
+ * - White PDF issue fixed
  */
 
 (function () {
 
     // =========================================================
-    // ১. সংখ্যাকে বাংলা করা
+    // 1. বাংলা সংখ্যা
+    // =========================================================
+
+    const bnDigits = {
+        '0': '০',
+        '1': '১',
+        '2': '২',
+        '3': '৩',
+        '4': '৪',
+        '5': '৫',
+        '6': '৬',
+        '7': '৭',
+        '8': '৮',
+        '9': '৯'
+    };
+
+
+    const toBnSimple = (value) => {
+
+        return String(value ?? '')
+            .replace(
+                /\d/g,
+                d => bnDigits[d]
+            );
+
+    };
+
+
+    // =========================================================
+    // 2. টাকা বাংলা ফরম্যাট
     // =========================================================
 
     const toBn = (num) => {
@@ -17,79 +53,48 @@
             num === null ||
             isNaN(num)
         ) {
-            return "০.০০";
+            return '০.০০';
         }
 
-        let formatted = new Intl.NumberFormat('en-IN', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).format(Math.abs(Number(num)));
+        const formatted =
+            new Intl.NumberFormat('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(
+                Math.abs(Number(num))
+            );
 
-        const digits = {
-            '0': '০',
-            '1': '১',
-            '2': '২',
-            '3': '৩',
-            '4': '৪',
-            '5': '৫',
-            '6': '৬',
-            '7': '৭',
-            '8': '৮',
-            '9': '৯'
-        };
-
-        return formatted.replace(/\d/g, d => digits[d]);
-    };
-
-
-    // =========================================================
-    // ২. সাধারণ বাংলা সংখ্যা
-    // =========================================================
-
-    const toBnSimple = (num) => {
-
-        const digits = {
-            '0': '০',
-            '1': '১',
-            '2': '২',
-            '3': '৩',
-            '4': '৪',
-            '5': '৫',
-            '6': '৬',
-            '7': '৭',
-            '8': '৮',
-            '9': '৯'
-        };
-
-        return String(num ?? '').replace(
+        return formatted.replace(
             /\d/g,
-            d => digits[d]
-        );
-    };
-
-
-    // =========================================================
-    // ৩. HTML নিরাপদ করা
-    // =========================================================
-
-    const escapeHTML = (val) => {
-
-        return String(val ?? '').replace(
-            /[&<>"']/g,
-            m => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": "&#039;"
-            }[m])
+            d => bnDigits[d]
         );
 
     };
 
 
     // =========================================================
-    // ৪. ১২ ঘণ্টার সময় ফরম্যাট
+    // 3. HTML Escape
+    // =========================================================
+
+    const escapeHTML = (value) => {
+
+        return String(value ?? '')
+            .replace(
+                /[&<>"']/g,
+                character => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[character])
+            );
+
+    };
+
+
+    // =========================================================
+    // 4. 12 Hour Time
     // =========================================================
 
     const format12hBn = (timeStr) => {
@@ -98,11 +103,14 @@
             return '--:--';
         }
 
-        let parts = String(timeStr).split(':');
+        const parts =
+            String(timeStr).split(':');
 
-        let hours = parseInt(parts[0], 10);
+        let hours =
+            parseInt(parts[0], 10);
 
-        let minutes = parts[1] || '00';
+        const minutes =
+            parts[1] || '00';
 
         if (isNaN(hours)) {
             return '--:--';
@@ -116,14 +124,13 @@
         hours =
             hours % 12 || 12;
 
-        const hourText =
-            String(hours).padStart(2, '0');
-
         return (
-            toBnSimple(hourText) +
-            ":" +
+            toBnSimple(
+                String(hours).padStart(2, '0')
+            ) +
+            ':' +
             toBnSimple(minutes) +
-            " " +
+            ' ' +
             ampm
         );
 
@@ -131,7 +138,7 @@
 
 
     // =========================================================
-    // ৫. বাংলা তারিখ ও বার
+    // 5. বাংলা তারিখ
     // =========================================================
 
     const getBnDate = (dateObj) => {
@@ -164,9 +171,7 @@
         return {
 
             day:
-                days[
-                    dateObj.getDay()
-                ],
+                days[dateObj.getDay()],
 
             date:
                 toBnSimple(
@@ -189,7 +194,100 @@
 
 
     // =========================================================
-    // ৬. PDF GENERATION ENGINE
+    // 6. Tiro Bangla Font নিশ্চিত করা
+    // =========================================================
+
+    const ensureTiroBangla = async () => {
+
+        try {
+
+            // যদি আগে থেকেই Tiro Bangla loaded থাকে
+            if (
+                document.fonts &&
+                document.fonts.check(
+                    "16px 'Tiro Bangla'"
+                )
+            ) {
+
+                await document.fonts.ready;
+
+                return;
+
+            }
+
+
+            // Google Font link আছে কিনা দেখা
+            let fontLink =
+                document.getElementById(
+                    'mousumi-tiro-bangla-font'
+                );
+
+
+            if (!fontLink) {
+
+                fontLink =
+                    document.createElement('link');
+
+                fontLink.id =
+                    'mousumi-tiro-bangla-font';
+
+                fontLink.rel =
+                    'stylesheet';
+
+                fontLink.href =
+                    'https://fonts.googleapis.com/css2?family=Tiro+Bangla&display=swap';
+
+                document.head.appendChild(
+                    fontLink
+                );
+
+            }
+
+
+            // Font load হওয়ার জন্য অপেক্ষা
+            if (
+                document.fonts &&
+                document.fonts.load
+            ) {
+
+                await document.fonts.load(
+                    "16px 'Tiro Bangla'"
+                );
+
+                await document.fonts.ready;
+
+            }
+
+        } catch (error) {
+
+            console.warn(
+                'Tiro Bangla font loading warning:',
+                error
+            );
+
+        }
+
+    };
+
+
+    // =========================================================
+    // 7. Modern Filename
+    // =========================================================
+
+    const makePDFFileName = (date) => {
+
+        return (
+            'Mousumi-Computer-' +
+            'Transaction-Report-' +
+            date +
+            '.pdf'
+        );
+
+    };
+
+
+    // =========================================================
+    // 8. PDF Generation
     // =========================================================
 
     const generateMousumiPDF =
@@ -199,41 +297,44 @@
         ) => {
 
             // -------------------------------------------------
-            // html2pdf আছে কিনা
+            // html2pdf check
             // -------------------------------------------------
 
             if (
-                typeof html2pdf !==
-                'function'
+                typeof html2pdf !== 'function'
             ) {
 
                 alert(
-                    "PDF তৈরি করার লাইব্রেরি পাওয়া যাচ্ছে না।\n\n" +
-                    "দয়া করে html2pdf.js সঠিকভাবে লোড হয়েছে কিনা পরীক্ষা করুন।"
+                    'PDF তৈরি করার লাইব্রেরি পাওয়া যাচ্ছে না।'
                 );
 
                 return;
+
             }
+
+
+            // -------------------------------------------------
+            // Tiro Bangla load
+            // -------------------------------------------------
+
+            await ensureTiroBangla();
 
 
             // -------------------------------------------------
             // Date
             // -------------------------------------------------
 
-            const dateObject =
+            const dateObj =
                 new Date(
-                    startDate +
-                    "T00:00:00"
+                    startDate + 'T00:00:00'
                 );
 
-            const startParts =
-                getBnDate(
-                    dateObject
-                );
+            const dateInfo =
+                getBnDate(dateObj);
 
 
             // -------------------------------------------------
-            // Table
+            // Table rows
             // -------------------------------------------------
 
             let tableRows = '';
@@ -244,17 +345,17 @@
 
 
             reportData.forEach(
-                (t, index) => {
+                (transaction, index) => {
 
                     const debit =
                         parseFloat(
-                            t.debit
+                            transaction.debit
                         ) || 0;
 
 
                     const credit =
                         parseFloat(
-                            t.credit
+                            transaction.credit
                         ) || 0;
 
 
@@ -266,23 +367,20 @@
 
                     const balance =
                         parseFloat(
-                            t.runningBalanceAtTime
+                            transaction.runningBalanceAtTime
                         ) || 0;
 
 
-                    const type =
+                    const transactionType =
                         debit > 0
-                            ? "বাকী দিলাম"
-                            : "বাকী পেলাম";
+                            ? 'বাকী দিলাম'
+                            : 'বাকী পেলাম';
 
 
                     totalMoney +=
-                        Math.abs(
-                            amount
-                        );
+                        Math.abs(amount);
 
 
-                    // সর্বশেষ লেনদেনের balance
                     finalBalance =
                         balance;
 
@@ -296,20 +394,24 @@
                             </td>
 
                             <td class="time">
-                                ${format12hBn(t.time)}
+                                ${format12hBn(
+                                    transaction.time
+                                )}
                             </td>
 
                             <td class="customer">
                                 ${escapeHTML(
-                                    t.customerName
+                                    transaction.customerName
                                 )}
                             </td>
 
-                            <td class="transaction">
-                                ${escapeHTML(type)}
+                            <td class="transaction-type">
+                                ${escapeHTML(
+                                    transactionType
+                                )}
                             </td>
 
-                            <td class="money">
+                            <td class="amount">
                                 ${toBn(amount)}
                             </td>
 
@@ -329,73 +431,96 @@
             // REPORT HTML
             // =================================================
 
-            const elementHTML = `
+            const reportHTML = `
 
                 <div class="mousumi-report">
 
-                    <!-- HEADER -->
+                    <!-- =====================================
+                         HEADER
+                    ====================================== -->
 
-                    <div class="header">
+                    <div class="report-header">
 
-                        <h1>
-                            MOUSUMI COMPUTER
-                        </h1>
+                        <div class="shop-name">
+                            মৌসুমি কম্পিউটার
+                        </div>
 
-                        <h2>
+                        <div class="report-title">
                             লেনদেন এর তালিকা
-                        </h2>
+                        </div>
 
                     </div>
 
 
-                    <!-- DATE -->
+                    <!-- =====================================
+                         DATE / DAY
+                    ====================================== -->
 
-                    <div class="date-bar">
+                    <div class="report-meta">
 
-                        <div>
+                        <div class="date">
                             তারিখ:
-                            ${startParts.date}
-                            ${startParts.month}
-                            ${startParts.year}
+                            ${dateInfo.date}
+                            ${dateInfo.month}
+                            ${dateInfo.year}
                         </div>
 
-                        <div>
+                        <div class="day">
                             বার:
-                            ${startParts.day}
+                            ${dateInfo.day}
                         </div>
 
                     </div>
 
 
-                    <!-- TABLE -->
+                    <!-- =====================================
+                         TABLE
+                    ====================================== -->
 
-                    <table>
+                    <table class="transaction-table">
+
+                        <colgroup>
+
+                            <col style="width:10%;">
+
+                            <col style="width:15%;">
+
+                            <col style="width:22%;">
+
+                            <col style="width:18%;">
+
+                            <col style="width:17%;">
+
+                            <col style="width:18%;">
+
+                        </colgroup>
+
 
                         <thead>
 
                             <tr>
 
-                                <th class="col-serial">
+                                <th>
                                     ক্রমিক
                                 </th>
 
-                                <th class="col-time">
+                                <th>
                                     সময়
                                 </th>
 
-                                <th class="col-customer">
+                                <th>
                                     কাস্টমার
                                 </th>
 
-                                <th class="col-type">
+                                <th>
                                     লেনদেন
                                 </th>
 
-                                <th class="col-money">
+                                <th>
                                     টাকা
                                 </th>
 
-                                <th class="col-balance">
+                                <th>
                                     অবশিষ্ট বাকী
                                 </th>
 
@@ -413,10 +538,7 @@
 
                                     <td
                                         colspan="6"
-                                        style="
-                                            text-align:center;
-                                            padding:10px;
-                                        "
+                                        class="empty-row"
                                     >
                                         কোনো লেনদেন নেই
                                     </td>
@@ -437,11 +559,11 @@
                                     সর্বমোট (Total):
                                 </td>
 
-                                <td class="total-money">
+                                <td class="amount">
                                     ${toBn(totalMoney)}
                                 </td>
 
-                                <td class="total-balance">
+                                <td class="balance">
                                     ${toBn(finalBalance)}
                                 </td>
 
@@ -452,13 +574,15 @@
                     </table>
 
 
-                    <!-- SIGNATURE -->
+                    <!-- =====================================
+                         SIGNATURE
+                    ====================================== -->
 
-                    <div class="footer-signature">
+                    <div class="signature-area">
 
-                        <div class="sig-box">
+                        <div class="signature-box">
 
-                            <div class="sig-line"></div>
+                            <div class="signature-line"></div>
 
                             <div class="signature-text">
                                 Authorized Signature
@@ -475,16 +599,26 @@
 
             // =================================================
             // CSS
-            // ২ নম্বর ছবির মতো Compact Professional Design
             // =================================================
 
-            const style = `
+            const reportCSS = `
 
                 <style>
 
                     /*
                      * =========================================
-                     * BASIC RESET
+                     * Tiro Bangla
+                     * =========================================
+                     */
+
+                    @import url(
+                        'https://fonts.googleapis.com/css2?family=Tiro+Bangla&display=swap'
+                    );
+
+
+                    /*
+                     * =========================================
+                     * RESET
                      * =========================================
                      */
 
@@ -495,7 +629,7 @@
 
                     /*
                      * =========================================
-                     * REPORT CONTAINER
+                     * REPORT
                      * =========================================
                      */
 
@@ -505,7 +639,11 @@
 
                         margin: 0 auto;
 
-                        padding: 16px 18px 14px 18px;
+                        padding:
+                            18px
+                            18px
+                            12px
+                            18px;
 
                         background: #ffffff;
 
@@ -513,80 +651,72 @@
 
                         font-family:
                             'Tiro Bangla',
-                            'Noto Sans Bengali',
-                            'Nirmala UI',
-                            Arial,
-                            sans-serif;
+                            serif;
 
-                        font-size: 11px;
+                        font-size: 10px;
 
-                        line-height: 1.25;
-
-                        box-sizing: border-box;
+                        line-height: 1.15;
 
                     }
 
 
                     /*
                      * =========================================
-                     * HEADER
+                     * SHOP NAME
                      * =========================================
                      */
 
-                    .header {
+                    .report-header {
 
                         text-align: center;
 
-                        margin: 0 0 15px 0;
+                        margin: 0 0 18px 0;
 
                         padding: 0;
 
                     }
 
 
-                    .header h1 {
+                    .shop-name {
+
+                        font-family:
+                            'Tiro Bangla',
+                            serif;
+
+                        font-size: 27px;
+
+                        font-weight: normal;
+
+                        line-height: 1.15;
 
                         margin: 0;
 
                         padding: 0;
 
-                        font-family:
-                            Georgia,
-                            'Times New Roman',
-                            serif;
-
-                        font-size: 27px;
-
-                        line-height: 1.1;
-
-                        font-weight: 700;
-
-                        letter-spacing: 0.5px;
-
-                        color: #000000;
+                        letter-spacing: 0;
 
                     }
 
 
-                    .header h2 {
+                    /*
+                     * =========================================
+                     * REPORT TITLE
+                     * =========================================
+                     */
 
-                        margin: 5px 0 0 0;
-
-                        padding: 0;
+                    .report-title {
 
                         font-family:
                             'Tiro Bangla',
-                            'Noto Sans Bengali',
-                            'Nirmala UI',
-                            sans-serif;
+                            serif;
 
-                        font-size: 12px;
-
-                        line-height: 1.2;
+                        font-size: 13px;
 
                         font-weight: normal;
 
-                        color: #000000;
+                        line-height: 1.1;
+
+                        margin-top: 3px;
 
                     }
 
@@ -597,35 +727,33 @@
                      * =========================================
                      */
 
-                    .date-bar {
+                    .report-meta {
 
                         display: flex;
 
-                        justify-content: space-between;
+                        justify-content:
+                            space-between;
 
-                        align-items: center;
+                        align-items:
+                            center;
 
                         width: 100%;
 
-                        margin: 0 0 5px 0;
+                        margin:
+                            0 0 5px 0;
 
-                        padding: 0 2px 5px 2px;
-
-                        border-bottom: 1px solid #dddddd;
+                        padding:
+                            0 2px 4px 2px;
 
                         font-family:
                             'Tiro Bangla',
-                            'Noto Sans Bengali',
-                            'Nirmala UI',
-                            sans-serif;
+                            serif;
 
                         font-size: 10px;
 
-                        line-height: 1.2;
+                        font-weight: normal;
 
-                        font-weight: bold;
-
-                        color: #000000;
+                        line-height: 1.1;
 
                     }
 
@@ -636,69 +764,26 @@
                      * =========================================
                      */
 
-                    table {
+                    .transaction-table {
 
                         width: 100%;
 
-                        border-collapse: collapse;
+                        border-collapse:
+                            collapse;
 
                         border-spacing: 0;
 
                         table-layout: fixed;
 
-                        background: #ffffff;
-
-                        border: 1px solid #000000;
-
                         margin: 0;
 
-                    }
+                        padding: 0;
 
+                        background:
+                            #ffffff;
 
-                    /*
-                     * =========================================
-                     * COLUMN WIDTH
-                     * =========================================
-                     */
-
-                    .col-serial {
-
-                        width: 10%;
-
-                    }
-
-
-                    .col-time {
-
-                        width: 15%;
-
-                    }
-
-
-                    .col-customer {
-
-                        width: 22%;
-
-                    }
-
-
-                    .col-type {
-
-                        width: 18%;
-
-                    }
-
-
-                    .col-money {
-
-                        width: 17%;
-
-                    }
-
-
-                    .col-balance {
-
-                        width: 18%;
+                        border:
+                            0.6px solid #222222;
 
                     }
 
@@ -709,55 +794,57 @@
                      * =========================================
                      */
 
-                    th,
-                    td {
+                    .transaction-table th,
+                    .transaction-table td {
 
-                        border: 1px solid #000000;
-
-                        padding: 4px 5px;
-
-                        height: 25px;
+                        border:
+                            0.6px solid #333333;
 
                         font-family:
                             'Tiro Bangla',
-                            'Noto Sans Bengali',
-                            'Nirmala UI',
-                            sans-serif;
+                            serif;
 
-                        font-size: 10px;
+                        font-size: 9.5px;
 
-                        line-height: 1.25;
+                        line-height: 1.05;
 
                         color: #000000;
 
-                        vertical-align: middle;
+                        vertical-align:
+                            middle;
 
-                        background: #ffffff;
+                        padding:
+                            2px 4px;
 
-                        overflow-wrap: break-word;
+                        height: 23px;
 
                     }
 
 
                     /*
                      * =========================================
-                     * TABLE HEADER
+                     * HEADER CELLS
                      * =========================================
                      */
 
-                    th {
+                    .transaction-table th {
 
-                        height: 28px;
+                        height: 25px;
 
-                        padding: 5px 4px;
+                        padding:
+                            3px 3px;
 
-                        background: #f2f2f2;
+                        background:
+                            #f7f7f7;
 
-                        font-weight: bold;
+                        text-align:
+                            center;
 
-                        text-align: center;
+                        font-weight:
+                            normal;
 
-                        white-space: nowrap;
+                        white-space:
+                            nowrap;
 
                     }
 
@@ -770,9 +857,11 @@
 
                     .serial {
 
-                        text-align: center;
+                        text-align:
+                            center;
 
-                        white-space: nowrap;
+                        white-space:
+                            nowrap;
 
                     }
 
@@ -785,9 +874,11 @@
 
                     .time {
 
-                        text-align: center;
+                        text-align:
+                            center;
 
-                        white-space: nowrap;
+                        white-space:
+                            nowrap;
 
                     }
 
@@ -800,43 +891,51 @@
 
                     .customer {
 
-                        text-align: left;
+                        text-align:
+                            left;
 
-                        white-space: normal;
+                        white-space:
+                            nowrap;
 
-                        word-break: break-word;
+                        overflow:
+                            hidden;
 
-                    }
-
-
-                    /*
-                     * =========================================
-                     * TRANSACTION
-                     * =========================================
-                     */
-
-                    .transaction {
-
-                        text-align: center;
-
-                        white-space: normal;
-
-                        word-break: break-word;
+                        text-overflow:
+                            ellipsis;
 
                     }
 
 
                     /*
                      * =========================================
-                     * MONEY
+                     * TRANSACTION TYPE
                      * =========================================
                      */
 
-                    .money {
+                    .transaction-type {
 
-                        text-align: right;
+                        text-align:
+                            center;
 
-                        white-space: nowrap;
+                        white-space:
+                            nowrap;
+
+                    }
+
+
+                    /*
+                     * =========================================
+                     * AMOUNT
+                     * =========================================
+                     */
+
+                    .amount {
+
+                        text-align:
+                            right;
+
+                        white-space:
+                            nowrap;
 
                     }
 
@@ -849,55 +948,60 @@
 
                     .balance {
 
-                        text-align: right;
+                        text-align:
+                            right;
 
-                        white-space: nowrap;
+                        white-space:
+                            nowrap;
 
                     }
 
 
                     /*
                      * =========================================
-                     * TOTAL ROW
+                     * TOTAL
                      * =========================================
                      */
 
                     .total-row td {
 
-                        height: 27px;
+                        height: 25px;
 
-                        padding: 5px 5px;
+                        padding:
+                            3px 4px;
 
-                        background: #ffffff;
+                        font-weight:
+                            bold;
 
-                        font-weight: bold;
+                        background:
+                            #ffffff;
 
-                        font-size: 10px;
+                        font-size:
+                            9.5px;
 
                     }
 
 
                     .total-label {
 
-                        text-align: right;
+                        text-align:
+                            right;
 
                     }
 
 
-                    .total-money {
+                    /*
+                     * =========================================
+                     * EMPTY
+                     * =========================================
+                     */
 
-                        text-align: right;
+                    .empty-row {
 
-                        white-space: nowrap;
+                        text-align:
+                            center;
 
-                    }
-
-
-                    .total-balance {
-
-                        text-align: right;
-
-                        white-space: nowrap;
+                        height: 30px;
 
                     }
 
@@ -908,44 +1012,47 @@
                      * =========================================
                      */
 
-                    .footer-signature {
+                    .signature-area {
 
-                        width: 100%;
+                        display:
+                            flex;
 
-                        display: flex;
+                        justify-content:
+                            flex-end;
 
-                        justify-content: flex-end;
+                        margin-top:
+                            48px;
 
-                        margin-top: 48px;
-
-                        padding-right: 5px;
-
-                    }
-
-
-                    .sig-box {
-
-                        width: 180px;
-
-                        text-align: center;
-
-                        font-family:
-                            Arial,
-                            sans-serif;
+                        padding-right:
+                            2px;
 
                     }
 
 
-                    .sig-line {
+                    .signature-box {
 
-                        width: 100%;
+                        width:
+                            180px;
+
+                        text-align:
+                            center;
+
+                    }
+
+
+                    .signature-line {
+
+                        width:
+                            100%;
 
                         border-top:
-                            1px solid #555555;
+                            0.7px solid #444444;
 
-                        margin: 0 0 5px 0;
+                        height:
+                            1px;
 
-                        height: 1px;
+                        margin-bottom:
+                            5px;
 
                     }
 
@@ -956,24 +1063,25 @@
                             Arial,
                             sans-serif;
 
-                        font-size: 10px;
+                        font-size:
+                            10px;
 
-                        line-height: 1.2;
-
-                        color: #000000;
+                        line-height:
+                            1.1;
 
                     }
 
 
                     /*
                      * =========================================
-                     * AVOID TABLE BREAK
+                     * PAGE BREAK
                      * =========================================
                      */
 
                     tr {
 
-                        page-break-inside: avoid;
+                        page-break-inside:
+                            avoid;
 
                     }
 
@@ -986,9 +1094,11 @@
 
                     @page {
 
-                        size: A4 portrait;
+                        size:
+                            A4 portrait;
 
-                        margin: 8mm;
+                        margin:
+                            8mm;
 
                     }
 
@@ -1008,10 +1118,8 @@
 
 
             /*
-             * IMPORTANT:
-             *
-             * এখানে z-index:-1 ব্যবহার করা হয়নি।
-             * html2canvas যেন element দেখতে পারে।
+             * Negative z-index ব্যবহার করা হয়নি।
+             * এতে আবার সাদা PDF হওয়ার সম্ভাবনা থাকে।
              */
 
             worker.style.position =
@@ -1025,15 +1133,6 @@
 
             worker.style.width =
                 '800px';
-
-            worker.style.minHeight =
-                '100px';
-
-            worker.style.padding =
-                '0';
-
-            worker.style.margin =
-                '0';
 
             worker.style.background =
                 '#ffffff';
@@ -1051,14 +1150,10 @@
                 '999999';
 
 
-            // HTML বসানো
-
             worker.innerHTML =
-                style +
-                elementHTML;
+                reportCSS +
+                reportHTML;
 
-
-            // Body-তে যোগ
 
             document.body.appendChild(
                 worker
@@ -1066,7 +1161,7 @@
 
 
             // =================================================
-            // REPORT ELEMENT
+            // Report element
             // =================================================
 
             const reportElement =
@@ -1077,12 +1172,10 @@
 
             if (!reportElement) {
 
-                document.body.removeChild(
-                    worker
-                );
+                worker.remove();
 
                 alert(
-                    "রিপোর্ট তৈরি করা যায়নি।"
+                    'রিপোর্ট তৈরি করা যায়নি।'
                 );
 
                 return;
@@ -1091,7 +1184,7 @@
 
 
             // =================================================
-            // FONT LOAD
+            // Font ready
             // =================================================
 
             try {
@@ -1105,10 +1198,21 @@
 
                 }
 
+                if (
+                    document.fonts &&
+                    document.fonts.load
+                ) {
+
+                    await document.fonts.load(
+                        "16px 'Tiro Bangla'"
+                    );
+
+                }
+
             } catch (fontError) {
 
                 console.warn(
-                    "Font loading warning:",
+                    'Font ready warning:',
                     fontError
                 );
 
@@ -1116,14 +1220,14 @@
 
 
             // =================================================
-            // RENDER DELAY
+            // Render delay
             // =================================================
 
             await new Promise(
                 resolve =>
                     setTimeout(
                         resolve,
-                        300
+                        400
                     )
             );
 
@@ -1132,7 +1236,7 @@
             // PDF OPTIONS
             // =================================================
 
-            const opt = {
+            const pdfOptions = {
 
                 margin: [
                     7,
@@ -1142,51 +1246,67 @@
                 ],
 
                 filename:
-                    `Mousumi_Report_${startDate}.pdf`,
+                    makePDFFileName(
+                        startDate
+                    ),
 
                 image: {
 
-                    type: 'jpeg',
+                    type:
+                        'jpeg',
 
-                    quality: 0.98
+                    quality:
+                        0.98
 
                 },
 
                 html2canvas: {
 
-                    scale: 3,
+                    scale:
+                        3,
 
-                    useCORS: true,
+                    useCORS:
+                        true,
 
-                    allowTaint: false,
+                    allowTaint:
+                        false,
 
                     backgroundColor:
                         '#ffffff',
 
-                    logging: false,
+                    logging:
+                        false,
 
-                    letterRendering: true,
+                    letterRendering:
+                        true,
 
                     imageTimeout:
                         15000,
 
-                    scrollX: 0,
+                    scrollX:
+                        0,
 
-                    scrollY: 0,
+                    scrollY:
+                        0,
 
-                    windowWidth: 800
+                    windowWidth:
+                        800
 
                 },
 
                 jsPDF: {
 
-                    unit: 'mm',
+                    unit:
+                        'mm',
 
-                    format: 'a4',
+                    format:
+                        'a4',
 
-                    orientation: 'portrait',
+                    orientation:
+                        'portrait',
 
-                    compress: true
+                    compress:
+                        true
 
                 },
 
@@ -1203,26 +1323,25 @@
 
 
             // =================================================
-            // PDF GENERATE
+            // Generate PDF
             // =================================================
 
             try {
 
                 await html2pdf()
-                    .set(opt)
+                    .set(pdfOptions)
                     .from(reportElement)
                     .save();
 
             } catch (error) {
 
                 console.error(
-                    "Mousumi PDF Error:",
+                    'Mousumi PDF Error:',
                     error
                 );
 
                 alert(
-                    "PDF তৈরি করতে সমস্যা হয়েছে।\n\n" +
-                    "Error: " +
+                    'PDF তৈরি করতে সমস্যা হয়েছে।\n\n' +
                     (
                         error.message ||
                         error
@@ -1231,16 +1350,15 @@
 
             } finally {
 
-                // Temporary container remove
-
                 if (
                     worker &&
                     worker.parentNode
                 ) {
 
-                    worker.parentNode.removeChild(
-                        worker
-                    );
+                    worker.parentNode
+                        .removeChild(
+                            worker
+                        );
 
                 }
 
@@ -1250,7 +1368,7 @@
 
 
     // =========================================================
-    // ৭. UI INITIALIZATION
+    // 9. REPORT UI
     // =========================================================
 
     const initUI = () => {
@@ -1262,15 +1380,9 @@
 
 
         if (!container) {
-
             return;
-
         }
 
-
-        // =====================================================
-        // REPORT DOWNLOAD UI
-        // =====================================================
 
         container.innerHTML = `
 
@@ -1292,9 +1404,7 @@
                     style="
                         font-family:
                             'Tiro Bangla',
-                            'Noto Sans Bengali',
-                            'Nirmala UI',
-                            sans-serif;
+                            serif;
 
                         font-size:22px;
 
@@ -1321,9 +1431,7 @@
                         style="
                             font-family:
                                 'Tiro Bangla',
-                                'Noto Sans Bengali',
-                                'Nirmala UI',
-                                sans-serif;
+                                serif;
 
                             font-weight:bold;
                         "
@@ -1367,9 +1475,7 @@
 
                             font-family:
                                 'Tiro Bangla',
-                                'Noto Sans Bengali',
-                                'Nirmala UI',
-                                sans-serif;
+                                serif;
                         "
                     >
                         ডাউনলোড PDF
@@ -1383,7 +1489,7 @@
 
 
         // =====================================================
-        // TODAY DATE
+        // Today
         // =====================================================
 
         const dateInput =
@@ -1396,34 +1502,20 @@
             new Date();
 
 
-        const localYear =
-            today.getFullYear();
-
-
-        const localMonth =
+        dateInput.value =
+            today.getFullYear() +
+            '-' +
             String(
                 today.getMonth() + 1
-            ).padStart(
-                2,
-                '0'
-            );
-
-
-        const localDay =
+            ).padStart(2, '0') +
+            '-' +
             String(
                 today.getDate()
-            ).padStart(
-                2,
-                '0'
-            );
-
-
-        dateInput.value =
-            `${localYear}-${localMonth}-${localDay}`;
+            ).padStart(2, '0');
 
 
         // =====================================================
-        // DOWNLOAD BUTTON
+        // Download
         // =====================================================
 
         const downloadButton =
@@ -1436,15 +1528,13 @@
             async () => {
 
                 const date =
-                    document.getElementById(
-                        'rc-date'
-                    ).value;
+                    dateInput.value;
 
 
                 if (!date) {
 
                     alert(
-                        "দয়া করে একটি তারিখ নির্বাচন করুন।"
+                        'দয়া করে একটি তারিখ নির্বাচন করুন।'
                     );
 
                     return;
@@ -1452,9 +1542,9 @@
                 }
 
 
-                // ------------------------------------------------
-                // Transaction data
-                // ------------------------------------------------
+                // ---------------------------------------------
+                // Transactions
+                // ---------------------------------------------
 
                 const txs =
                     Array.isArray(
@@ -1464,11 +1554,11 @@
                         : [];
 
 
-                // ------------------------------------------------
-                // Customer data
-                // ------------------------------------------------
+                // ---------------------------------------------
+                // Customers
+                // ---------------------------------------------
 
-                const custs =
+                const customers =
                     Array.isArray(
                         window.customers
                     )
@@ -1476,9 +1566,9 @@
                         : [];
 
 
-                // ------------------------------------------------
+                // ---------------------------------------------
                 // Selected date
-                // ------------------------------------------------
+                // ---------------------------------------------
 
                 const filtered =
                     txs.filter(
@@ -1493,7 +1583,7 @@
                 ) {
 
                     alert(
-                        "এই তারিখে কোনো লেনদেন নেই!"
+                        'এই তারিখে কোনো লেনদেন নেই!'
                     );
 
                     return;
@@ -1502,23 +1592,25 @@
 
 
                 // =================================================
-                // REPORT DATA
+                // Prepare report data
                 // =================================================
 
                 const reportData =
                     filtered.map(
-                        t => {
+                        transaction => {
 
                             // -------------------------------------
                             // Customer
                             // -------------------------------------
 
                             const customer =
-                                custs.find(
-                                    x =>
-                                        String(x.id) ===
+                                customers.find(
+                                    customerItem =>
                                         String(
-                                            t.customerId
+                                            customerItem.id
+                                        ) ===
+                                        String(
+                                            transaction.customerId
                                         )
                                 );
 
@@ -1536,45 +1628,41 @@
 
 
                             // -------------------------------------
-                            // Customer history
+                            // History
                             // -------------------------------------
 
                             const history =
                                 txs
                                     .filter(
-                                        x =>
+                                        item =>
                                             String(
-                                                x.customerId
+                                                item.customerId
                                             ) ===
                                             String(
-                                                t.customerId
+                                                transaction.customerId
                                             )
                                     )
                                     .sort(
                                         (a, b) => {
 
-                                            const dateA =
+                                            const keyA =
                                                 String(
-                                                    a.date ||
-                                                    ''
+                                                    a.date || ''
                                                 ) +
                                                 String(
-                                                    a.time ||
-                                                    ''
+                                                    a.time || ''
                                                 );
 
-                                            const dateB =
+                                            const keyB =
                                                 String(
-                                                    b.date ||
-                                                    ''
+                                                    b.date || ''
                                                 ) +
                                                 String(
-                                                    b.time ||
-                                                    ''
+                                                    b.time || ''
                                                 );
 
-                                            return dateA.localeCompare(
-                                                dateB
+                                            return keyA.localeCompare(
+                                                keyB
                                             );
 
                                         }
@@ -1586,19 +1674,19 @@
                             // -------------------------------------
 
                             for (
-                                const entry
+                                const item
                                 of history
                             ) {
 
                                 const debit =
                                     parseFloat(
-                                        entry.debit
+                                        item.debit
                                     ) || 0;
 
 
                                 const credit =
                                     parseFloat(
-                                        entry.credit
+                                        item.credit
                                     ) || 0;
 
 
@@ -1608,11 +1696,9 @@
 
 
                                 if (
+                                    String(item.id) ===
                                     String(
-                                        entry.id
-                                    ) ===
-                                    String(
-                                        t.id
+                                        transaction.id
                                     )
                                 ) {
 
@@ -1623,18 +1709,14 @@
                             }
 
 
-                            // -------------------------------------
-                            // Return data
-                            // -------------------------------------
-
                             return {
 
-                                ...t,
+                                ...transaction,
 
                                 customerName:
                                     customer
                                         ? customer.name
-                                        : "Unknown",
+                                        : 'Unknown',
 
                                 runningBalanceAtTime:
                                     balance
@@ -1646,7 +1728,7 @@
 
 
                 // =================================================
-                // GENERATE PDF
+                // Generate
                 // =================================================
 
                 await generateMousumiPDF(
@@ -1660,13 +1742,12 @@
 
 
     // =========================================================
-    // ৮. START UI
+    // 10. Start
     // =========================================================
 
     setTimeout(
         initUI,
         2000
     );
-
 
 })();
