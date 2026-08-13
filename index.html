@@ -4,75 +4,94 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mousumi Computer - IT & Digital Service</title>
+  
+  <!-- FontAwesome Icons -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+  
+  <!-- Tiro Bangla & Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla&display=swap" rel="stylesheet"/>
 
   <style>
-    body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f2f4f7; }
+    /* ১. গ্লোবাল ডিজাইন */
+    body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; background-color: #f2f4f7; color: #333; }
+    a { text-decoration: none; }
     .site-wrapper { max-width: 1200px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
     .tiro-text { font-family: 'Tiro Bangla', serif !important; }
 
-    /* টপ বার */
+    /* ২. টপ বার */
     .ticker-top-bar { background-color: #2176ff; padding: 8px 20px; color: #ffffff; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
     .top-social-icons { display: flex; gap: 12px; }
     .top-social-icons a { color: #ffffff; font-size: 13px; }
 
-    /* হেডার */
-    .middle-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eaeaea; }
-    .logo-area { display: flex; align-items: center; gap: 12px; }
-    .logo-text h1 { margin: 0; font-size: 26px; color: #003366; }
-    .logo-text p { margin: 0; font-size: 24px; color: #2e8b57; line-height: 1; font-weight: bold; }
-    .contact-details { font-size: 14px; color: #444; font-weight: 500; }
-    .cart-box { background-color: #2176ff; color: #ffffff; padding: 8px 18px; border-radius: 30px; display: flex; align-items: center; gap: 10px; font-weight: bold; }
+    /* ৩. মিডল হেডার */
+    .middle-header { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; background: #ffffff; border-bottom: 1px solid #eaeaea; }
+    .logo-area { display: flex; align-items: center; gap: 15px; }
+    .logo-icon { color: #0f52ba; font-size: 40px; }
+    .logo-text h1 { margin: 0; font-size: 28px; color: #003366; font-weight: bold; }
+    .logo-text p { margin: 0; font-size: 26px; color: #2e8b57; font-weight: bold; line-height: 1; }
+    .contact-details { font-size: 14px; color: #444; font-weight: 500; text-align: right; }
+    .cart-box { background-color: #2176ff; color: #ffffff; padding: 10px 20px; border-radius: 30px; display: flex; align-items: center; gap: 10px; font-weight: bold; }
 
-    /* মেনু ও অ্যাডমিন বাটন */
-    .nav-container { background-color: #2176ff; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+    /* ৪. নেভিগেশন ও অ্যাডমিন বাটন */
+    .nav-container { background-color: #2176ff; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; }
     .main-menu { display: flex; list-style: none; margin: 0; padding: 0; }
-    .main-menu li a { color: #ffffff; padding: 15px 18px; display: block; font-size: 15px; }
-    .nav-admin-btn { background-color: #0d233a; color: #ffffff; padding: 8px 16px; border-radius: 4px; font-weight: bold; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .main-menu li a { color: #ffffff; display: block; padding: 15px 20px; font-size: 15px; font-weight: 500; }
+    .nav-admin-btn { background-color: #0d233a; color: #ffffff; padding: 8px 16px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
 
-    /* স্লাইডার */
-    .slider-container { width: 100%; position: relative; overflow: hidden; aspect-ratio: 16 / 5.2; }
+    /* ৫. ইমেজ স্লাইডার */
+    .slider-container { width: 100%; position: relative; overflow: hidden; aspect-ratio: 16 / 5.2; background-color: #f0f0f0; }
     .mySlides { display: none; width: 100%; height: 100%; }
     .mySlides img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* সার্ভিস কার্ড */
-    .services-section { padding: 40px 20px; text-align: center; }
-    .services-title { font-size: 26px; color: #003366; margin-bottom: 30px; font-weight: bold; }
-    .services-grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
-    .service-card { background: #ffffff; border: 1px solid #eaeaea; border-radius: 10px; padding: 25px; width: 320px; text-align: left; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .service-icon-wrapper { text-align: center; margin-bottom: 10px; color: #2176ff; font-size: 40px; }
-    .service-card h3 { font-size: 19px; text-align: center; border-bottom: 2px solid #2176ff; padding-bottom: 8px; margin-bottom: 15px; }
-    .service-card ul { list-style: none; padding: 0; }
-    .service-card ul li { padding: 5px 0; font-size: 14.5px; display: flex; align-items: center; gap: 8px; }
-    .service-card ul li i { color: #2176ff; font-size: 12px; }
+    /* ৬. আমাদের সেবাসমূহ (ডেস্কটপে ৩টি এক লাইনে রাখার জন্য Grid ব্যবহার) */
+    .services-section { padding: 50px 40px; background-color: #ffffff; text-align: center; }
+    .services-title { font-size: 28px; color: #003366; margin-bottom: 40px; font-weight: bold; }
+    .services-grid { 
+      display: grid; 
+      grid-template-columns: repeat(3, 1fr); /* ডেস্কটপে ৩টি সমান কলাম */
+      gap: 25px; 
+      max-width: 1120px; 
+      margin: 0 auto; 
+    }
+    .service-card {
+      background: #ffffff; border: 1px solid #eaeaea; border-radius: 12px; padding: 30px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: left;
+    }
+    .service-icon-wrapper { text-align: center; margin-bottom: 15px; color: #2176ff; font-size: 45px; }
+    .service-card h3 { font-size: 20px; color: #111; margin: 10px 0; text-align: center; border-bottom: 2px solid #2176ff; padding-bottom: 8px; font-weight: bold; white-space: nowrap; }
+    .service-card ul { list-style: none; padding: 0; margin: 15px 0 0 0; }
+    .service-card ul li { font-size: 15px; color: #444; padding: 6px 0; display: flex; align-items: center; gap: 8px; }
+    .service-card ul li i { color: #2176ff; font-size: 14px; }
 
-    /* Latest Products নীল বৃত্ত */
-    .section-title { font-size: 22px; color: #003366; display: flex; align-items: center; gap: 10px; padding-left: 20px; }
-    .section-title::before { content: ''; width: 10px; height: 10px; background: #2176ff; border-radius: 50%; display: inline-block; }
+    /* ৭. লেটেস্ট প্রোডাক্ট টাইটেল */
+    .section-title { font-size: 24px; color: #003366; display: flex; align-items: center; gap: 12px; margin: 40px 0 20px 40px; font-weight: bold; }
+    .section-title::before { content: ''; width: 12px; height: 12px; background: #2176ff; border-radius: 50%; display: inline-block; }
 
-    /* ফুটার - ব্লকস্টাইল হলুদ টাইটেল */
-    .site-footer { background-color: #2176ff; color: #ffffff; padding: 40px 20px 20px 20px; border-top: 4px solid #0d233a; }
-    .footer-container { max-width: 1160px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 30px; }
-    .footer-title { font-size: 17px; color: #ffcc00; font-weight: bold; margin-bottom: 15px; display: block; border-bottom: 2px solid rgba(255,255,255,0.2); padding-bottom: 5px; }
+    /* ৮. ফুটার ডিজাইন */
+    .site-footer { background-color: #2176ff; color: #ffffff; padding: 40px 40px 20px 40px; border-top: 4px solid #0d233a; }
+    .footer-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; }
+    .footer-title { font-size: 17px; color: #ffcc00; font-weight: bold; margin-bottom: 15px; display: inline-block; border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 5px; }
     .footer-links { list-style: none; padding: 0; }
-    .footer-links li { margin-bottom: 10px; font-size: 13.5px; display: flex; align-items: center; gap: 10px; }
-    .footer-links i { color: #ffcc00; width: 15px; }
+    .footer-links li { margin-bottom: 10px; font-size: 13.5px; display: flex; align-items: center; gap: 10px; color: #f0f5ff; }
+    .footer-links i { color: #ffcc00; width: 18px; text-align: center; }
 
-    /* হোয়াটসঅ্যাপ চ্যাট - সঠিক ব্লগার ডিজাইন */
-    .ws-chat-popup { display: none; width: 310px; background: white; border-radius: 10px; position: fixed; bottom: 85px; right: 20px; z-index: 1000; box-shadow: 0 5px 20px rgba(0,0,0,0.2); overflow: hidden; }
-    .ws-chat-header { background: #075e54; color: white; padding: 12px 15px; display: flex; align-items: center; gap: 10px; }
-    .ws-admin-img { width: 35px; height: 35px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffcc00; }
-    .ws-chat-body { padding: 15px; background: #e5ddd5; font-size: 14px; color: #333; }
-    .ws-chat-footer { padding: 10px; background: #f0f0f0; display: flex; gap: 5px; }
-    .ws-chat-footer input { flex: 1; border-radius: 20px; border: 1px solid #ccc; padding: 8px 15px; outline: none; }
-    .ws-chat-footer button { background: #075e54; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; }
-    .ws-toggle-btn { position: fixed; bottom: 20px; right: 20px; background: #25d366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+    /* ৯. হোয়াটসঅ্যাপ চ্যাট */
+    .ws-chat-popup { display: none; width: 310px; background: white; border-radius: 12px; position: fixed; bottom: 90px; right: 20px; z-index: 10000; box-shadow: 0 5px 25px rgba(0,0,0,0.2); overflow: hidden; }
+    .ws-chat-header { background: #075e54; color: white; padding: 15px; display: flex; align-items: center; gap: 12px; }
+    .ws-admin-img { width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffcc00; font-size: 20px; }
+    .ws-chat-body { padding: 20px; background: #e5ddd5; font-size: 14px; color: #333; line-height: 1.5; }
+    .ws-chat-footer { padding: 10px; background: #f0f0f0; display: flex; gap: 8px; border-top: 1px solid #ddd; }
+    .ws-chat-footer input { flex: 1; border-radius: 20px; border: 1px solid #ccc; padding: 10px 15px; outline: none; }
+    .ws-chat-footer button { background: #075e54; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .ws-toggle-btn { position: fixed; bottom: 20px; right: 20px; background: #25d366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 9999; }
 
-    @media (max-width: 768px) {
-      .services-grid { flex-direction: column; align-items: center; }
-      .nav-container { flex-direction: column; padding: 10px; }
+    /* ১০. রেসপন্সিভ মোবাইল ডিজাইন */
+    @media (max-width: 900px) {
+      .services-grid { grid-template-columns: 1fr; } /* মোবাইলে একটি করে কার্ড */
+      .middle-header, .nav-container { padding: 15px 20px; flex-direction: column; text-align: center; }
+      .contact-details { text-align: center; margin: 10px 0; }
       .nav-admin-btn { width: 100%; margin-top: 10px; justify-content: center; }
+      .logo-area { flex-direction: column; }
     }
   </style>
 </head>
@@ -87,13 +106,15 @@
       <a href="#"><i class="fa-brands fa-instagram"></i></a>
       <a href="#"><i class="fa-brands fa-pinterest-p"></i></a>
     </div>
-    <marquee>Welcome to Mousumi Computer! পাবেন সব ধরণের কম্পিউটার এক্সেসরিজ এবং গ্যাজেট।</marquee>
+    <marquee behavior="scroll" direction="left" scrollamount="6">
+      Welcome to Mousumi Computer! পাবেন সব ধরণের কম্পিউটার এক্সেসরিজ এবং ডিজিটাল অনলাইন সেবা।
+    </marquee>
   </div>
 
-  <!-- হেডার -->
+  <!-- মিডল হেডার -->
   <div class="middle-header">
     <div class="logo-area">
-      <i class="fa-solid fa-desktop" style="font-size: 35px; color: #0f52ba;"></i>
+      <div class="logo-icon"><i class="fa-solid fa-desktop"></i></div>
       <div class="logo-text">
         <h1 class="tiro-text">Mousumi</h1>
         <p class="tiro-text">Computer</p>
@@ -104,41 +125,45 @@
       <span><i class="fa-solid fa-phone" style="color: #0f52ba;"></i> +8801608314552</span>
     </div>
     <div class="cart-box">
-      <i class="fa-solid fa-basket-shopping"></i> <span style="background: rgba(255,255,255,0.2); padding: 0 8px; border-radius: 10px;">0</span>
+      <i class="fa-solid fa-basket-shopping"></i>
+      <span style="background: rgba(255,255,255,0.2); padding: 0 10px; border-radius: 10px;">0</span>
     </div>
   </div>
 
-  <!-- মেনু -->
+  <!-- নেভিগেশন বার -->
   <div class="nav-container">
-    <ul class="main-menu">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="#">Offer Zone</a></li>
-      <li><a href="#">Today's Deals</a></li>
-      <li><a href="#">Blog</a></li>
-      <li><a href="#">Contact Us</a></li>
-    </ul>
-    <a href="admin.html" class="nav-admin-btn">
+    <nav class="main-nav">
+      <ul class="main-menu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="#">Offer Zone</a></li>
+        <li><a href="#">Today's Deals</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Contact Us</a></li>
+      </ul>
+    </nav>
+    <a class="nav-admin-btn" href="admin.html">
       <i class="fa-solid fa-lock" style="color: #ff9f1c;"></i> Admin Login
     </a>
   </div>
 
-  <!-- স্লাইডার -->
+  <!-- স্লাইডার সেকশন -->
   <div class="slider-container">
     <div class="mySlides fade"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhyuEHGvl0OWkhwhEQazgWS2iI0Tnqu-rxsBnd5VD13ZsOfCiIImD34UCa7UW6gco_7lSqElNNow_Rij5JnmqPov3qjypkMR9bjLF_Wnk3MKYmELNgjDuTcCEBCo_alw096bcs-KJ9iBsoVI7g8ewYsww0SG7R47U9DJKLCsJcaYICsISoyvNTb-TTS_ZKg/s1600/thumbnail.jfif"></div>
     <div class="mySlides fade"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiOBjonLmNzoJ-79JR7zuG34oybjvqZwEH8qLwM0HSKKPIEevysVa4U8YqpjsA_9lv4SZYMu8xF0lPBM3pud4K5YJ1n7XOcp1-7K0PrOri1k65GQmhEV0urrANFZP_bc9MssMCu3KuhONyDTQImK7ahg5ezvfdNNreG4-GI0QlT85VxvKP08hfyQnPd2Rxc/s1600/unnamed%20%282%29.jpg"></div>
+    <div class="mySlides fade"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjDRbRHiH_t4ZetPs1KztsKGjz6k7EFvgqUNVZYAP2O4VTO_-4Z07NgOjpKpo0WSaEfnagQMR4kqxgtZJxun83jD0m7LBlAWStbqzazYfzwaqb8mdRytxt3wlNVcKGo5CR__1RZHaFEreQBy6z_nN76RVLuKHj_v3lYAYeraO-A6KYgl1Mi6fKGf6Vak33S/s1600/Gemini_Generated_Image_4jooca4jooca4joo.png"></div>
     <script>
-      let sIdx = 0; showS();
-      function showS() {
+      let slideIndex = 0; showSlides();
+      function showSlides() {
         let slides = document.getElementsByClassName("mySlides");
         for (let i = 0; i < slides.length; i++) slides[i].style.display = "none";
-        sIdx++; if (sIdx > slides.length) sIdx = 1;
-        slides[sIdx-1].style.display = "block";
-        setTimeout(showS, 5000);
+        slideIndex++; if (slideIndex > slides.length) slideIndex = 1;
+        slides[slideIndex-1].style.display = "block";
+        setTimeout(showSlides, 5000);
       }
     </script>
   </div>
 
-  <!-- সার্ভিস সেকশন -->
+  <!-- আমাদের সেবাসমূহ (ডেস্কটপে ৩টি এক লাইনে থাকবে) -->
   <div class="services-section">
     <h2 class="services-title tiro-text">আমাদের সেবাসমূহ (Our Services)</h2>
     <div class="services-grid">
@@ -155,7 +180,7 @@
         <div class="service-icon-wrapper"><i class="fa-solid fa-print"></i></div>
         <h3 class="tiro-text">প্রিন্টিং ও ডকুমেন্টস</h3>
         <ul class="tiro-text">
-          <li><i class="fa-solid fa-circle-check"></i> কম্পিউটার টাইপ ও কম্পোজ</li>
+          <li><i class="fa-solid fa-circle-check"></i> কম্পিউটার টাইপিং ও কম্পোজ</li>
           <li><i class="fa-solid fa-circle-check"></i> প্রিন্ট, কপি ও লেমিনেটিং</li>
           <li><i class="fa-solid fa-circle-check"></i> স্ক্যান ও ডকুমেন্টস তৈরি</li>
         </ul>
@@ -174,9 +199,9 @@
 
   <!-- লেটেস্ট প্রোডাক্ট টাইটেল -->
   <h2 class="section-title tiro-text">Latest Products</h2>
-  <p style="padding-left: 40px; color: #777;">No results found</p>
+  <p style="padding-left: 55px; color: #777;">No results found</p>
 
-  <!-- ফুটার -->
+  <!-- ফুটার ডিজাইন -->
   <footer class="site-footer">
     <div class="footer-container">
       <div class="footer-column">
@@ -201,39 +226,48 @@
       </div>
       <div class="footer-column">
         <h3 class="footer-title tiro-text">সোশ্যাল লিংক (Social Link)</h3>
-        <div style="display: flex; gap: 10px;">
-          <a href="#" style="background: rgba(255,255,255,0.1); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fa-brands fa-facebook-f"></i></a>
-          <a href="#" style="background: rgba(255,255,255,0.1); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fa-brands fa-youtube"></i></a>
+        <div style="display: flex; gap: 10px; margin-top: 5px;">
+          <a href="#" style="background: rgba(255,255,255,0.15); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" style="background: rgba(255,255,255,0.15); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fa-brands fa-youtube"></i></a>
         </div>
       </div>
     </div>
-    <div style="text-align: center; margin-top: 30px; font-size: 12px; opacity: 0.8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+    <div style="text-align: center; margin-top: 35px; font-size: 12px; opacity: 0.8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
       &copy; 2026 Mousumi Computer. All Rights Reserved. Designed by You.
     </div>
   </footer>
 </div>
 
-<!-- হোয়াটসঅ্যাপ চ্যাট -->
+<!-- হোয়াটসঅ্যাপ চ্যাট বক্‌স -->
 <div id="wsChatPopup" class="ws-chat-popup">
   <div class="ws-chat-header">
     <div class="ws-admin-img"><i class="fa-solid fa-user-gear"></i></div>
     <div style="flex: 1;">
       <h4 style="margin: 0; font-size: 15px;">Mousumi Computer</h4>
-      <p style="margin: 0; font-size: 11px; opacity: 0.8;">● Online</p>
+      <p style="margin: 0; font-size: 11px; color: #cfdfdb;">● Online</p>
     </div>
-    <button onclick="tgWs()" style="background:none; border:none; color:white; font-size: 20px; cursor:pointer;">&times;</button>
+    <button onclick="toggleWs()" style="background:none; border:none; color:white; font-size: 22px; cursor:pointer;">&times;</button>
   </div>
-  <div class="ws-chat-body tiro-text">আসসালামু আলাইকুম! মৌসুমি কম্পিউটারে আপনাকে স্বাগতম। আমরা কীভাবে আপনাকে সাহায্য করতে পারি?</div>
+  <div class="ws-chat-body tiro-text">আসসালামু আলাইকুম! মৌসুমি কম্পিউটারে আপনাকে স্বাগতম। আমরা কীভাবে আপনাকে সাহায্য করতে পারি? নিচে আপনার মেসেজটি লিখুন।</div>
   <div class="ws-chat-footer">
-    <input type="text" id="wsM" placeholder="মেসেজ লিখুন...">
+    <input type="text" id="wsInput" placeholder="এখানে মেসেজ লিখুন...">
     <button onclick="sendW()"><i class="fa-solid fa-paper-plane"></i></button>
   </div>
 </div>
-<div class="ws-toggle-btn" onclick="tgWs()"><i class="fa-brands fa-whatsapp"></i></div>
+<div class="ws-toggle-btn" onclick="toggleWs()"><i class="fa-brands fa-whatsapp"></i></div>
 
 <script>
-  function tgWs() { let p = document.getElementById('wsChatPopup'); p.style.display = (p.style.display==='block')?'none':'block'; }
-  function sendW() { let m = document.getElementById('wsM').value; if(m) window.open("https://wa.me/8801608314552?text="+encodeURIComponent(m)); }
+  function toggleWs() { 
+    let p = document.getElementById('wsChatPopup'); 
+    p.style.display = (p.style.display === 'block') ? 'none' : 'block'; 
+  }
+  function sendW() { 
+    let m = document.getElementById('wsInput').value; 
+    if(m) {
+      window.open("https://wa.me/8801608314552?text=" + encodeURIComponent(m), '_blank'); 
+      document.getElementById('wsInput').value = '';
+    }
+  }
 </script>
 
 </body>
