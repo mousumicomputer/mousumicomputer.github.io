@@ -1,6 +1,7 @@
 /**
  * Mousumi Computer - Professional Document Engine
  * Fixed: White PDF Issue, A4 Alignment, Tiro Bangla Font & Rendering
+ * Border Updated: Thin & Clean PDF Table Borders
  */
 
 (function () {
@@ -256,6 +257,7 @@
             <div class="mousumi-report">
 
                 <!-- HEADER -->
+
                 <div class="header">
 
                     <h1>
@@ -270,6 +272,7 @@
 
 
                 <!-- DATE BAR -->
+
                 <div class="date-bar">
 
                     <div>
@@ -288,6 +291,7 @@
 
 
                 <!-- TABLE -->
+
                 <table>
 
                     <thead>
@@ -339,6 +343,7 @@
 
 
                         <!-- TOTAL -->
+
                         <tr class="total-row">
 
                             <td
@@ -368,6 +373,7 @@
 
 
                 <!-- SIGNATURE -->
+
                 <div class="footer-signature">
 
                     <div class="sig-box">
@@ -511,7 +517,7 @@
 
                     margin-bottom: 10px;
 
-                    border-bottom: 1px solid #dddddd;
+                    border-bottom: 0.7px solid #dddddd;
 
                     padding-bottom: 7px;
 
@@ -522,6 +528,17 @@
                  * ==================================================
                  * TABLE
                  * ==================================================
+                 *
+                 * BORDER THIN & CLEAN
+                 *
+                 * আগের:
+                 * table = 1.5px
+                 * th/td = 1px
+                 *
+                 * এখন:
+                 * table = 0.7px
+                 * th/td = 0.7px
+                 *
                  */
 
                 table {
@@ -530,7 +547,7 @@
 
                     border-collapse: collapse;
 
-                    border: 1.5px solid #000000;
+                    border: 0.7px solid #000000;
 
                     table-layout: fixed;
 
@@ -542,7 +559,7 @@
                 th,
                 td {
 
-                    border: 1px solid #000000;
+                    border: 0.7px solid #000000;
 
                     padding: 8px 6px;
 
@@ -677,7 +694,7 @@
 
                 .sig-line {
 
-                    border-top: 1.5px solid #000000;
+                    border-top: 0.7px solid #000000;
 
                     margin-bottom: 5px;
 
