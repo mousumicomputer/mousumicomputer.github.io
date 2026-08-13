@@ -4,151 +4,75 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mousumi Computer - IT & Digital Service</title>
-  
-  <!-- FontAwesome Icons -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
-  
-  <!-- Tiro Bangla & Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla&display=swap" rel="stylesheet"/>
 
   <style>
-    /* ========================================================
-       ১. গ্লোবাল ডিজাইন
-       ======================================================== */
-    body {
-      margin: 0; padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f2f4f7;
-      color: #333;
-    }
-    a { text-decoration: none; }
+    body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f2f4f7; }
+    .site-wrapper { max-width: 1200px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+    .tiro-text { font-family: 'Tiro Bangla', serif !important; }
 
-    .site-wrapper {
-      max-width: 1200px; margin: 0 auto;
-      background-color: #ffffff; box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    }
-
-    .tiro-text {
-      font-family: 'Tiro Bangla', serif !important;
-    }
-
-    /* ========================================================
-       ২. টপ বার (সোশ্যাল ও নোটিশ)
-       ======================================================== */
-    .ticker-top-bar {
-      background-color: #2176ff; padding: 8px 20px; color: #ffffff; font-size: 15px; font-weight: 500; display: flex; justify-content: space-between; align-items: center; gap: 15px;
-    }
+    /* টপ বার */
+    .ticker-top-bar { background-color: #2176ff; padding: 8px 20px; color: #ffffff; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
     .top-social-icons { display: flex; gap: 12px; }
-    .top-social-icons a { color: #ffffff; font-size: 14px; transition: opacity 0.2s; }
-    .top-social-icons a:hover { opacity: 0.8; }
-    .ticker-top-bar marquee { flex: 1; margin: 0; display: block; }
+    .top-social-icons a { color: #ffffff; font-size: 13px; }
 
-    /* ========================================================
-       ৩. মিডল হেডার (লোগো ও কন্টাক্ট)
-       ======================================================== */
-    .middle-header {
-      padding: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; background: #ffffff; border-bottom: 1px solid #eaeaea; gap: 15px;
-    }
-    .logo-area { display: flex; align-items: center; gap: 15px; }
-    .logo-icon { color: #0f52ba; font-size: 40px; }
-    .logo-text h1 { margin: 0; font-size: 24px; color: #003366; font-weight: bold; }
-    .logo-text p { margin: 0; font-size: 22px; color: #2e8b57; font-weight: bold; line-height: 1; }
+    /* হেডার */
+    .middle-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eaeaea; }
+    .logo-area { display: flex; align-items: center; gap: 12px; }
+    .logo-text h1 { margin: 0; font-size: 26px; color: #003366; }
+    .logo-text p { margin: 0; font-size: 24px; color: #2e8b57; line-height: 1; font-weight: bold; }
+    .contact-details { font-size: 14px; color: #444; font-weight: 500; }
+    .cart-box { background-color: #2176ff; color: #ffffff; padding: 8px 18px; border-radius: 30px; display: flex; align-items: center; gap: 10px; font-weight: bold; }
 
-    .header-center-info { display: flex; justify-content: center; align-items: center; }
-    .contact-details { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; font-size: 14px; color: #444; font-weight: 500; }
-    .contact-details span i { color: #0f52ba; margin-right: 6px; }
+    /* মেনু ও অ্যাডমিন বাটন */
+    .nav-container { background-color: #2176ff; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+    .main-menu { display: flex; list-style: none; margin: 0; padding: 0; }
+    .main-menu li a { color: #ffffff; padding: 15px 18px; display: block; font-size: 15px; }
+    .nav-admin-btn { background-color: #0d233a; color: #ffffff; padding: 8px 16px; border-radius: 4px; font-weight: bold; text-decoration: none; display: flex; align-items: center; gap: 8px; }
 
-    .cart-box {
-      background-color: #2176ff; color: #ffffff; padding: 10px 20px; border-radius: 30px; display: flex; align-items: center; gap: 15px; font-weight: bold; cursor: pointer;
-    }
-    .cart-count { background: rgba(255,255,255,0.2); padding: 2px 10px; border-radius: 20px; }
-
-    /* ========================================================
-       ৪. নেভিগেশন ও অ্যাডমিন বাটন
-       ======================================================== */
-    .nav-container {
-      background-color: #2176ff; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; position: relative;
-    }
-    .main-nav { overflow-x: auto; white-space: nowrap; flex: 1; }
-    .main-menu { display: flex; list-style: none; margin: 0; padding: 0; align-items: center; }
-    .main-menu li a {
-      color: #ffffff; display: block; padding: 15px 20px; font-size: 15px; font-weight: 500; transition: background 0.2s;
-    }
-    .main-menu li a:hover { background-color: rgba(255,255,255,0.1); }
-    
-    .nav-admin-btn {
-      background-color: #0d233a;
-      color: #ffffff !important;
-      padding: 8px 16px !important;
-      border-radius: 4px;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-left: 15px;
-      transition: background-color 0.3s ease;
-    }
-    .nav-admin-btn:hover { background-color: #1a3a5c !important; }
-
-    /* ========================================================
-       ৫. ইমেজ স্লাইডার
-       ======================================================== */
-    .slider-container {
-      width: 100%; position: relative; margin: 0 auto; overflow: hidden; aspect-ratio: 16 / 5; background-color: #f0f0f0;
-    }
+    /* স্লাইডার */
+    .slider-container { width: 100%; position: relative; overflow: hidden; aspect-ratio: 16 / 5.2; }
     .mySlides { display: none; width: 100%; height: 100%; }
     .mySlides img { width: 100%; height: 100%; object-fit: cover; }
-    
-    .prev, .next {
-      cursor: pointer; position: absolute; top: 50%; transform: translateY(-50%); width: auto; padding: 15px 20px; color: white; font-weight: bold; font-size: 20px; transition: 0.3s ease; background-color: rgba(0, 0, 0, 0.4); z-index: 10;
-    }
-    .next { right: 0; }
-    .prev:hover, .next:hover { background-color: rgba(0, 0, 0, 0.8); }
-    .fade { animation-name: fade; animation-duration: 1.5s; }
-    @keyframes fade { from {opacity: .4} to {opacity: 1} }
 
-    /* ========================================================
-       ৬. সেবাসমূহ (Services)
-       ======================================================== */
-    .services-section { padding: 40px 20px; background-color: #ffffff; text-align: center; }
-    .services-title { font-size: 28px; color: #003366; margin-bottom: 30px; font-weight: bold; }
-    .services-grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; max-width: 1160px; margin: 0 auto; }
-    .service-card {
-      background: #ffffff; border: 1px solid #eaeaea; border-radius: 12px; padding: 25px 20px; width: 300px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: left;
-    }
-    .service-icon-wrapper { text-align: center; margin-bottom: 15px; }
-    .service-icon-wrapper i { font-size: 45px; color: #2176ff; }
-    .service-card h3 { font-size: 19px; color: #111; margin: 10px 0; text-align: center; border-bottom: 2px solid #2176ff; padding-bottom: 8px; font-weight: bold; }
-    .service-card ul { list-style: none; padding: 0; margin: 15px 0 0 0; }
-    .service-card ul li { font-size: 15px; color: #444; padding: 6px 0; display: flex; align-items: center; gap: 8px; }
-    .service-card ul li i { color: #2176ff; font-size: 14px; }
+    /* সার্ভিস কার্ড */
+    .services-section { padding: 40px 20px; text-align: center; }
+    .services-title { font-size: 26px; color: #003366; margin-bottom: 30px; font-weight: bold; }
+    .services-grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+    .service-card { background: #ffffff; border: 1px solid #eaeaea; border-radius: 10px; padding: 25px; width: 320px; text-align: left; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .service-icon-wrapper { text-align: center; margin-bottom: 10px; color: #2176ff; font-size: 40px; }
+    .service-card h3 { font-size: 19px; text-align: center; border-bottom: 2px solid #2176ff; padding-bottom: 8px; margin-bottom: 15px; }
+    .service-card ul { list-style: none; padding: 0; }
+    .service-card ul li { padding: 5px 0; font-size: 14.5px; display: flex; align-items: center; gap: 8px; }
+    .service-card ul li i { color: #2176ff; font-size: 12px; }
 
-    /* ফুটার ডিজাইন */
-    .site-footer { background-color: #2176ff; color: #ffffff; padding: 30px 20px 15px 20px; margin-top: 40px; border-top: 4px solid #0d233a; }
-    .footer-container { max-width: 1160px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; }
-    .footer-title { font-size: 17px; color: #ffcc00; margin-bottom: 12px; font-weight: bold; border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 6px; display: inline-block; }
-    .footer-text { font-size: 13.5px; line-height: 1.5; }
-    .footer-socials { display: flex; gap: 10px; margin-top: 10px; }
-    .footer-socials a { width: 34px; height: 34px; background: rgba(255,255,255,0.15); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
-    .footer-bottom { text-align: center; margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.15); font-size: 12px; }
+    /* Latest Products নীল বৃত্ত */
+    .section-title { font-size: 22px; color: #003366; display: flex; align-items: center; gap: 10px; padding-left: 20px; }
+    .section-title::before { content: ''; width: 10px; height: 10px; background: #2176ff; border-radius: 50%; display: inline-block; }
 
-    /* হোয়াটসঅ্যাপ চ্যাট */
-    .ws-chat-box-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 10000; }
-    .ws-toggle-btn { width: 60px; height: 60px; background-color: #25d366; color: white; border: none; border-radius: 50%; font-size: 32px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
-    .ws-chat-popup { display: none; width: 300px; background: white; border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.2); position: absolute; bottom: 75px; right: 0; overflow: hidden; }
-    .ws-chat-header { background: #075e54; color: white; padding: 15px; display: flex; align-items: center; gap: 10px; }
-    .ws-chat-body { padding: 15px; background: #e5ddd5; font-size: 14px; }
-    .ws-chat-footer { padding: 10px; background: #f0f0f0; display: flex; gap: 8px; }
-    .ws-chat-footer input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 20px; outline: none; }
-    .ws-chat-footer button { background: #075e54; color: white; border: none; padding: 8px 12px; border-radius: 50%; cursor: pointer; }
+    /* ফুটার - ব্লকস্টাইল হলুদ টাইটেল */
+    .site-footer { background-color: #2176ff; color: #ffffff; padding: 40px 20px 20px 20px; border-top: 4px solid #0d233a; }
+    .footer-container { max-width: 1160px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 30px; }
+    .footer-title { font-size: 17px; color: #ffcc00; font-weight: bold; margin-bottom: 15px; display: block; border-bottom: 2px solid rgba(255,255,255,0.2); padding-bottom: 5px; }
+    .footer-links { list-style: none; padding: 0; }
+    .footer-links li { margin-bottom: 10px; font-size: 13.5px; display: flex; align-items: center; gap: 10px; }
+    .footer-links i { color: #ffcc00; width: 15px; }
 
-    @media (max-width: 767px) {
-      .slider-container { aspect-ratio: 16 / 9; }
+    /* হোয়াটসঅ্যাপ চ্যাট - সঠিক ব্লগার ডিজাইন */
+    .ws-chat-popup { display: none; width: 310px; background: white; border-radius: 10px; position: fixed; bottom: 85px; right: 20px; z-index: 1000; box-shadow: 0 5px 20px rgba(0,0,0,0.2); overflow: hidden; }
+    .ws-chat-header { background: #075e54; color: white; padding: 12px 15px; display: flex; align-items: center; gap: 10px; }
+    .ws-admin-img { width: 35px; height: 35px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffcc00; }
+    .ws-chat-body { padding: 15px; background: #e5ddd5; font-size: 14px; color: #333; }
+    .ws-chat-footer { padding: 10px; background: #f0f0f0; display: flex; gap: 5px; }
+    .ws-chat-footer input { flex: 1; border-radius: 20px; border: 1px solid #ccc; padding: 8px 15px; outline: none; }
+    .ws-chat-footer button { background: #075e54; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; }
+    .ws-toggle-btn { position: fixed; bottom: 20px; right: 20px; background: #25d366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+
+    @media (max-width: 768px) {
       .services-grid { flex-direction: column; align-items: center; }
-      .service-card { width: 100%; }
       .nav-container { flex-direction: column; padding: 10px; }
-      .nav-admin-btn { margin: 10px 0; width: 100%; justify-content: center; }
+      .nav-admin-btn { width: 100%; margin-top: 10px; justify-content: center; }
     }
   </style>
 </head>
@@ -161,156 +85,155 @@
       <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
       <a href="#"><i class="fa-brands fa-twitter"></i></a>
       <a href="#"><i class="fa-brands fa-instagram"></i></a>
+      <a href="#"><i class="fa-brands fa-pinterest-p"></i></a>
     </div>
-    <marquee behavior="scroll" direction="left">
-      স্বাগতম মৌসুমি কম্পিউটারে! এখানে পাবেন সব ধরণের কম্পিউটার এক্সেসরিজ এবং ডিজিটাল অনলাইন সেবা।
-    </marquee>
+    <marquee>Welcome to Mousumi Computer! পাবেন সব ধরণের কম্পিউটার এক্সেসরিজ এবং গ্যাজেট।</marquee>
   </div>
 
-  <!-- মিডল হেডার -->
+  <!-- হেডার -->
   <div class="middle-header">
     <div class="logo-area">
-      <div class="logo-icon"><i class="fa-solid fa-desktop"></i></div>
+      <i class="fa-solid fa-desktop" style="font-size: 35px; color: #0f52ba;"></i>
       <div class="logo-text">
-        <h1>Mousumi</h1>
-        <p>Computer</p>
+        <h1 class="tiro-text">Mousumi</h1>
+        <p class="tiro-text">Computer</p>
       </div>
     </div>
-    <div class="header-center-info">
-      <div class="contact-details">
-        <span><i class="fa-solid fa-envelope"></i> mousumicomputer.org@gmail.com</span>
-        <span><i class="fa-solid fa-phone"></i> +8801608314552</span>
-      </div>
+    <div class="contact-details">
+      <span><i class="fa-solid fa-envelope" style="color: #0f52ba;"></i> mousumicomputer.org@gmail.com</span><br>
+      <span><i class="fa-solid fa-phone" style="color: #0f52ba;"></i> +8801608314552</span>
     </div>
     <div class="cart-box">
-      <i class="fa-solid fa-basket-shopping"></i>
-      <span class="cart-count">0</span>
+      <i class="fa-solid fa-basket-shopping"></i> <span style="background: rgba(255,255,255,0.2); padding: 0 8px; border-radius: 10px;">0</span>
     </div>
   </div>
 
-  <!-- নেভিগেশন বার -->
+  <!-- মেনু -->
   <div class="nav-container">
-    <nav class="main-nav">
-      <ul class="main-menu">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="#">Offer Zone</a></li>
-        <li><a href="#">Today's Deals</a></li>
-        <li><a href="#">Blog</a></li>
-        <li><a href="#">Contact Us</a></li>
-      </ul>
-    </nav>
-    <!-- অ্যাডমিন লগইন বাটন (admin.html এ লিংক করা) -->
-    <a class="nav-admin-btn" href="admin.html">
+    <ul class="main-menu">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="#">Offer Zone</a></li>
+      <li><a href="#">Today's Deals</a></li>
+      <li><a href="#">Blog</a></li>
+      <li><a href="#">Contact Us</a></li>
+    </ul>
+    <a href="admin.html" class="nav-admin-btn">
       <i class="fa-solid fa-lock" style="color: #ff9f1c;"></i> Admin Login
     </a>
   </div>
 
-  <!-- স্লাইডার সেকশন -->
+  <!-- স্লাইডার -->
   <div class="slider-container">
     <div class="mySlides fade"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhyuEHGvl0OWkhwhEQazgWS2iI0Tnqu-rxsBnd5VD13ZsOfCiIImD34UCa7UW6gco_7lSqElNNow_Rij5JnmqPov3qjypkMR9bjLF_Wnk3MKYmELNgjDuTcCEBCo_alw096bcs-KJ9iBsoVI7g8ewYsww0SG7R47U9DJKLCsJcaYICsISoyvNTb-TTS_ZKg/s1600/thumbnail.jfif"></div>
     <div class="mySlides fade"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiOBjonLmNzoJ-79JR7zuG34oybjvqZwEH8qLwM0HSKKPIEevysVa4U8YqpjsA_9lv4SZYMu8xF0lPBM3pud4K5YJ1n7XOcp1-7K0PrOri1k65GQmhEV0urrANFZP_bc9MssMCu3KuhONyDTQImK7ahg5ezvfdNNreG4-GI0QlT85VxvKP08hfyQnPd2Rxc/s1600/unnamed%20%282%29.jpg"></div>
-    <div class="mySlides fade"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjDRbRHiH_t4ZetPs1KztsKGjz6k7EFvgqUNVZYAP2O4VTO_-4Z07NgOjpKpo0WSaEfnagQMR4kqxgtZJxun83jD0m7LBlAWStbqzazYfzwaqb8mdRytxt3wlNVcKGo5CR__1RZHaFEreQBy6z_nN76RVLuKHj_v3lYAYeraO-A6KYgl1Mi6fKGf6Vak33S/s1600/Gemini_Generated_Image_4jooca4jooca4joo.png"></div>
-    <a class="prev" onclick="plusSlides(-1)"><i class="fa-solid fa-chevron-left"></i></a>
-    <a class="next" onclick="plusSlides(1)"><i class="fa-solid fa-chevron-right"></i></a>
+    <script>
+      let sIdx = 0; showS();
+      function showS() {
+        let slides = document.getElementsByClassName("mySlides");
+        for (let i = 0; i < slides.length; i++) slides[i].style.display = "none";
+        sIdx++; if (sIdx > slides.length) sIdx = 1;
+        slides[sIdx-1].style.display = "block";
+        setTimeout(showS, 5000);
+      }
+    </script>
   </div>
 
-  <!-- আমাদের সেবাসমূহ -->
+  <!-- সার্ভিস সেকশন -->
   <div class="services-section">
     <h2 class="services-title tiro-text">আমাদের সেবাসমূহ (Our Services)</h2>
     <div class="services-grid">
       <div class="service-card">
         <div class="service-icon-wrapper"><i class="fa-solid fa-file-invoice"></i></div>
-        <h3 class="tiro-text">অনলাইন সেবা</h3>
+        <h3 class="tiro-text">অনলাইন ও সরকারি সেবা</h3>
         <ul class="tiro-text">
           <li><i class="fa-solid fa-circle-check"></i> অনলাইন ফরম ফিলাপ</li>
           <li><i class="fa-solid fa-circle-check"></i> এনআইডি ও সরকারি আবেদন</li>
+          <li><i class="fa-solid fa-circle-check"></i> রেজাল্ট ও চাকরির আবেদন</li>
         </ul>
       </div>
       <div class="service-card">
         <div class="service-icon-wrapper"><i class="fa-solid fa-print"></i></div>
-        <h3 class="tiro-text">প্রিন্টিং ও টাইপিং</h3>
+        <h3 class="tiro-text">প্রিন্টিং ও ডকুমেন্টস</h3>
         <ul class="tiro-text">
           <li><i class="fa-solid fa-circle-check"></i> কম্পিউটার টাইপ ও কম্পোজ</li>
-          <li><i class="fa-solid fa-circle-check"></i> ফটোকপি ও লেমিনেটিং</li>
+          <li><i class="fa-solid fa-circle-check"></i> প্রিন্ট, কপি ও লেমিনেটিং</li>
+          <li><i class="fa-solid fa-circle-check"></i> স্ক্যান ও ডকুমেন্টস তৈরি</li>
         </ul>
       </div>
       <div class="service-card">
         <div class="service-icon-wrapper"><i class="fa-solid fa-mobile-screen-button"></i></div>
-        <h3 class="tiro-text">ডিজিটাল ব্যাংকিং</h3>
+        <h3 class="tiro-text">ডিজিটাল রিচার্জ ও ব্যাংকিং</h3>
         <ul class="tiro-text">
           <li><i class="fa-solid fa-circle-check"></i> মোবাইল রিচার্জ সুবিধা</li>
-          <li><i class="fa-solid fa-circle-check"></i> বিকাশ ও নগদ লেনদেন</li>
+          <li><i class="fa-solid fa-circle-check"></i> বিকাশ ও নগদ ক্যাশ-ইন/আউট</li>
+          <li><i class="fa-solid fa-circle-check"></i> ইউটিলিটি বিল পরিশোধ</li>
         </ul>
       </div>
     </div>
   </div>
+
+  <!-- লেটেস্ট প্রোডাক্ট টাইটেল -->
+  <h2 class="section-title tiro-text">Latest Products</h2>
+  <p style="padding-left: 40px; color: #777;">No results found</p>
 
   <!-- ফুটার -->
   <footer class="site-footer">
     <div class="footer-container">
       <div class="footer-column">
-        <h3 class="footer-title tiro-text">আমাদের সম্পর্কে</h3>
-        <p class="footer-text tiro-text">মৌসুমি কম্পিউটার একটি বিশ্বস্ত আইটি ও সেবা কেন্দ্র। আমরা দক্ষতার সাথে যাবতীয় ডিজিটাল সেবা দিয়ে থাকি।</p>
+        <h3 class="footer-title tiro-text">আমাদের সম্পর্কে (About Us)</h3>
+        <p class="tiro-text" style="font-size: 13.5px; line-height: 1.6;">মৌসুমি কম্পিউটার (Mousumi Computer) একটি বিশ্বস্ত আইটি ও সেবা কেন্দ্র। আমরা দক্ষতার সাথে যাবতীয় ডিজিটাল সেবা দিয়ে থাকি।</p>
       </div>
       <div class="footer-column">
-        <h3 class="footer-title tiro-text">যোগাযোগ</h3>
-        <p class="footer-text"><i class="fa-solid fa-phone"></i> +8801608314552</p>
-        <p class="footer-text"><i class="fa-solid fa-envelope"></i> mousumicomputer.org@gmail.com</p>
+        <h3 class="footer-title tiro-text">যোগাযোগ (Contact Us)</h3>
+        <ul class="footer-links tiro-text">
+          <li><i class="fa-solid fa-location-dot"></i> লালমনিরহাট, রংপুর, বাংলাদেশ।</li>
+          <li><i class="fa-solid fa-phone"></i> +8801608314552</li>
+          <li><i class="fa-solid fa-envelope"></i> mousumicomputer.org@gmail.com</li>
+        </ul>
       </div>
       <div class="footer-column">
-        <h3 class="footer-title tiro-text">সোশ্যাল লিংক</h3>
-        <div class="footer-socials">
-          <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
-          <a href="#"><i class="fa-brands fa-youtube"></i></a>
+        <h3 class="footer-title tiro-text">সময়সূচী (Our Hours)</h3>
+        <ul class="footer-links tiro-text">
+          <li><i class="fa-solid fa-clock"></i> সকাল ০৯:০০ টা - রাত ১০:০০ টা</li>
+          <li><i class="fa-solid fa-calendar-days"></i> শনি - বৃহস্পতিবার (খোলা)</li>
+          <li><i class="fa-solid fa-calendar-xmark" style="color: #ffcccc;"></i> শুক্রবার (সাপ্তাহিক বন্ধ)</li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3 class="footer-title tiro-text">সোশ্যাল লিংক (Social Link)</h3>
+        <div style="display: flex; gap: 10px;">
+          <a href="#" style="background: rgba(255,255,255,0.1); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" style="background: rgba(255,255,255,0.1); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fa-brands fa-youtube"></i></a>
         </div>
       </div>
     </div>
-    <div class="footer-bottom">
-      <p>&copy; 2026 Mousumi Computer. All Rights Reserved.</p>
+    <div style="text-align: center; margin-top: 30px; font-size: 12px; opacity: 0.8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+      &copy; 2026 Mousumi Computer. All Rights Reserved. Designed by You.
     </div>
   </footer>
 </div>
 
 <!-- হোয়াটসঅ্যাপ চ্যাট -->
-<div class="ws-chat-box-wrapper">
-  <div class="ws-chat-popup" id="wsChatPopup">
-    <div class="ws-chat-header">
-      <div class="ws-admin-info"><h4>Mousumi Computer</h4><p>Online</p></div>
-      <button style="background:none; border:none; color:white; cursor:pointer;" onclick="toggleWsChat()">X</button>
+<div id="wsChatPopup" class="ws-chat-popup">
+  <div class="ws-chat-header">
+    <div class="ws-admin-img"><i class="fa-solid fa-user-gear"></i></div>
+    <div style="flex: 1;">
+      <h4 style="margin: 0; font-size: 15px;">Mousumi Computer</h4>
+      <p style="margin: 0; font-size: 11px; opacity: 0.8;">● Online</p>
     </div>
-    <div class="ws-chat-body">আসসালামু আলাইকুম! আমরা কীভাবে আপনাকে সাহায্য করতে পারি?</div>
-    <div class="ws-chat-footer">
-      <input id="wsUserMessage" placeholder="মেসেজ লিখুন..." type="text">
-      <button onclick="sendWsMessage()"><i class="fa-solid fa-paper-plane"></i></button>
-    </div>
+    <button onclick="tgWs()" style="background:none; border:none; color:white; font-size: 20px; cursor:pointer;">&times;</button>
   </div>
-  <button class="ws-toggle-btn" onclick="toggleWsChat()"><i class="fa-brands fa-whatsapp"></i></button>
+  <div class="ws-chat-body tiro-text">আসসালামু আলাইকুম! মৌসুমি কম্পিউটারে আপনাকে স্বাগতম। আমরা কীভাবে আপনাকে সাহায্য করতে পারি?</div>
+  <div class="ws-chat-footer">
+    <input type="text" id="wsM" placeholder="মেসেজ লিখুন...">
+    <button onclick="sendW()"><i class="fa-solid fa-paper-plane"></i></button>
+  </div>
 </div>
+<div class="ws-toggle-btn" onclick="tgWs()"><i class="fa-brands fa-whatsapp"></i></div>
 
 <script>
-  let slideIndex = 1;
-  showSlides(slideIndex);
-  function plusSlides(n) { showSlides(slideIndex += n); }
-  function showSlides(n) {
-    let i;
-    let slides = document.getElementsByClassName("mySlides");
-    if (n > slides.length) {slideIndex = 1}    
-    if (n < 1) {slideIndex = slides.length}
-    for (i = 0; i < slides.length; i++) { slides[i].style.display = "none"; }
-    slides[slideIndex-1].style.display = "block";  
-  }
-  setInterval(() => { plusSlides(1); }, 5000);
-
-  function toggleWsChat() {
-    let popup = document.getElementById('wsChatPopup');
-    popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
-  }
-  function sendWsMessage() {
-    let msg = document.getElementById('wsUserMessage').value;
-    if (msg.trim() !== '') {
-      window.open("https://wa.me/8801608314552?text=" + encodeURIComponent(msg), '_blank');
-    }
-  }
+  function tgWs() { let p = document.getElementById('wsChatPopup'); p.style.display = (p.style.display==='block')?'none':'block'; }
+  function sendW() { let m = document.getElementById('wsM').value; if(m) window.open("https://wa.me/8801608314552?text="+encodeURIComponent(m)); }
 </script>
 
 </body>
