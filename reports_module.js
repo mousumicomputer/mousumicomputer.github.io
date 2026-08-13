@@ -1,10 +1,10 @@
 /**
- * Mousumi Computer - Final Professional Document Engine
- * Fixed: 7 Columns, Proper Date, Day & Real Time Formatting
+ * Mousumi Computer - Professional Document Engine
+ * Fixed: Layout, White Page Issue, and Proper A4 Alignment
  */
 
 (function() {
-    // ১. সংখ্যাকে বাংলা করা (কমা ও দশমিক সহ)
+    // ১. সংখ্যাকে বাংলা করা
     const toBn = (num) => {
         if (num === undefined || num === null || isNaN(num)) return "০.০০";
         let formatted = new Intl.NumberFormat('en-IN', {
@@ -22,7 +22,7 @@
 
     const escapeHTML = (val) => String(val ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m]));
 
-    // ২. ১২ ঘণ্টার সময় ফরম্যাট (English AM/PM to Bengali)
+    // ২. ১২ ঘণ্টার সময় ফরম্যাট
     const format12hBn = (timeStr) => {
         if (!timeStr) return '--:--';
         let [hours, minutes] = timeStr.split(':');
@@ -44,7 +44,7 @@
         };
     };
 
-    // ৪. PDF GENERATION
+    // ৪. PDF GENERATION ENGINE
     const generateMousumiPDF = async (reportData, startDate) => {
         const startParts = getBnDate(new Date(startDate));
         let tableRows = '';
@@ -55,88 +55,101 @@
             const amount = parseFloat(t.debit) || parseFloat(t.credit) || 0;
             const balance = Math.abs(parseFloat(t.runningBalanceAtTime) || 0);
             const type = parseFloat(t.debit) > 0 ? "বাকী দিলাম" : "বাকী পেলাম";
-            const description = String(t.description ?? t.details ?? "").trim();
 
             totalMoney += amount;
             totalBalance += balance;
 
             tableRows += `
                 <tr>
-                    <td style="text-align:center;">${toBnSimple(index + 1)}</td>
+                    <td style="text-align:center;">${toBnSimple(index + 1)}।</td>
                     <td style="text-align:center;">${format12hBn(t.time)}</td>
-                    <td style="text-align:left; padding-left:5px;">${escapeHTML(t.customerName)}</td>
+                    <td style="text-align:left;">${escapeHTML(t.customerName)}</td>
                     <td style="text-align:center;">${escapeHTML(type)}</td>
-                    <td style="text-align:left; padding-left:5px;">${escapeHTML(description || "—")}</td>
-                    <td style="text-align:right; padding-right:5px;">${toBn(amount)}</td>
-                    <td style="text-align:right; padding-right:5px;">${toBn(balance)}</td>
+                    <td style="text-align:right;">${toBn(amount)}</td>
+                    <td style="text-align:right;">${toBn(balance)}</td>
                 </tr>`;
         });
 
         const elementHTML = `
-        <div class="pdf-container">
+        <div class="mousumi-report">
             <div class="header">
                 <h1>MOUSUMI COMPUTER</h1>
-                <p class="subtitle">লেনদেন এর তালিকা</p>
+                <h2>লেনদেন এর তালিকা</h2>
             </div>
-            <div class="meta-info">
-                <span>তারিখ: ${startParts.date} ${startParts.month}, ${startParts.year}</span>
-                <span>বার: ${startParts.day}</span>
+
+            <div class="date-bar">
+                <div>তারিখ: ${startParts.date} ${startParts.month} ${startParts.year}</div>
+                <div>বার: ${startParts.day}</div>
             </div>
-            <table class="report-table">
+            
+            <table>
                 <thead>
                     <tr>
-                        <th style="width:6%">ক্রমিক</th>
-                        <th style="width:12%">সময়</th>
-                        <th style="width:18%">কাস্টমার</th>
-                        <th style="width:12%">লেনদেন</th>
-                        <th style="width:22%">বিবরণ</th>
-                        <th style="width:14%">টাকা</th>
-                        <th style="width:16%">অবশিষ্ট বাকী</th>
+                        <th style="width: 10%;">ক্রমিক</th>
+                        <th style="width: 15%;">সময়</th>
+                        <th>কাস্টমার</th>
+                        <th style="width: 18%;">লেনদেন</th>
+                        <th style="width: 18%;">টাকা</th>
+                        <th style="width: 20%;">অবশিষ্ট বাকী</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${tableRows}
-                    <tr class="footer-row">
-                        <td colspan="5">সর্বমোট (Total):</td>
-                        <td>${toBn(totalMoney)}</td>
-                        <td>${toBn(totalBalance)}</td>
+                    <tr class="total-row">
+                        <td colspan="4" style="text-align:right;">সর্বমোট (Total):</td>
+                        <td style="text-align:right;">${toBn(totalMoney)}</td>
+                        <td style="text-align:right;">${toBn(totalBalance)}</td>
                     </tr>
                 </tbody>
             </table>
-            <div class="signature-section">
-                <p class="sig-line">Authorized Signature</p>
+
+            <div class="footer-signature">
+                <div class="sig-box">
+                    <div class="sig-line"></div>
+                    <div>Authorized Signature</div>
+                </div>
             </div>
         </div>`;
 
         const style = `
             <style>
-                .pdf-container { width: 794px; padding: 40px 50px; background: #fff; color: #000; font-family: 'Tiro Bangla', serif; }
+                .mousumi-report { width: 700px; margin: 0 auto; background: #fff; padding: 20px; color: #000; font-family: 'Tiro Bangla', serif; }
                 .header { text-align: center; margin-bottom: 25px; }
-                .header h1 { font-family: Arial, sans-serif; font-size: 28px; margin: 0; font-weight: bold; }
-                .header .subtitle { font-size: 16px; font-weight: bold; margin: 5px 0; border-bottom: 1px solid #000; display: inline-block; padding-bottom: 2px; }
-                .meta-info { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 10px; }
-                .report-table { width: 100%; border-collapse: collapse; border: 1.5px solid #000; }
-                .report-table th, .report-table td { border: 1px solid #000; padding: 6px 3px; font-size: 11.5px; }
-                .report-table th { background: #f0f0f0; font-weight: bold; }
-                .footer-row { font-weight: bold; background: #f9f9f9; text-align: right; }
-                .footer-row td { padding-right: 5px; }
-                .signature-section { margin-top: 80px; text-align: right; }
-                .sig-line { display: inline-block; border-top: 1px solid #000; width: 200px; padding-top: 5px; font-size: 12px; font-family: Arial; }
+                .header h1 { font-family: 'Times New Roman', serif; font-size: 32px; margin: 0; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+                .header h2 { font-size: 18px; margin: 5px 0; font-weight: normal; }
+                .date-bar { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+                table { width: 100%; border-collapse: collapse; border: 1.5px solid #000; }
+                th, td { border: 1px solid #000; padding: 8px 6px; font-size: 13px; }
+                th { background-color: #f2f2f2; font-weight: bold; text-align: center; }
+                .total-row td { font-weight: bold; background-color: #fafafa; }
+                .footer-signature { margin-top: 70px; display: flex; justify-content: flex-end; }
+                .sig-box { width: 220px; text-align: center; font-family: 'Times New Roman', serif; font-size: 14px; }
+                .sig-line { border-top: 1.5px solid #000; margin-bottom: 5px; }
             </style>`;
 
+        // সাদা পাতা সমস্যা সমাধানের জন্য এখানে টেম্পোরারি কন্টেইনার তৈরি করা হয়েছে
         const worker = document.createElement('div');
-        worker.style.position = 'fixed'; worker.style.left = '-9999px';
+        worker.style.position = 'absolute';
+        worker.style.top = '0';
+        worker.style.left = '0';
+        worker.style.width = '100%';
+        worker.style.zIndex = '-1'; // স্ক্রিনে দেখা যাবে না কিন্তু ব্রাউজার রিড করতে পারবে
         worker.innerHTML = style + elementHTML;
         document.body.appendChild(worker);
 
-        await html2pdf().set({
-            margin: 0, filename: `Mousumi_Report_${startDate}.pdf`,
+        const opt = {
+            margin: 10,
+            filename: `Mousumi_Report_${startDate}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2.5, useCORS: true },
+            html2canvas: { scale: 3, useCORS: true, letterRendering: true },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        }).from(worker).save();
+        };
 
-        document.body.removeChild(worker);
+        try {
+            await html2pdf().set(opt).from(worker).save();
+        } finally {
+            document.body.removeChild(worker); // কাজ শেষ হলে ডিলিট করে দিবে
+        }
     };
 
     // ৫. UI INITIALIZATION
@@ -145,11 +158,11 @@
         if (!container) return;
         container.innerHTML = `
             <div style="background:#fff; border-radius:15px; padding:30px; border:1.5px solid #e2e8f0; box-shadow:0 10px 30px rgba(0,0,0,0.05); max-width:600px; margin:0 auto;">
-                <h2 style="font-family:'Tiro Bangla', serif; font-size:22px; color:#2176ff; margin-bottom:20px; text-align:center; border-bottom:2px solid #f1f5f9; padding-bottom:10px;">রিপোর্ট সেন্টার</h2>
+                <h2 style="font-family:'Tiro Bangla', serif; font-size:22px; color:#2176ff; margin-bottom:20px; text-align:center;">রিপোর্ট ডাউনলোড সেন্টার</h2>
                 <div style="display:flex; flex-direction:column; gap:15px;">
-                    <label style="font-weight:bold; color:#475569;">তারিখ নির্বাচন করুন:</label>
-                    <input type="date" id="rc-date" style="padding:12px; border:1.5px solid #cbd5e1; border-radius:10px; font-size:16px;">
-                    <button id="rc-btn" style="background:#2176ff; color:#fff; border:none; padding:15px; border-radius:10px; font-weight:bold; font-size:16px; cursor:pointer; transition:0.3s;">PDF রিপোর্ট তৈরি করুন</button>
+                    <label style="font-weight:bold;">তারিখ নির্বাচন করুন:</label>
+                    <input type="date" id="rc-date" style="padding:12px; border:1.5px solid #cbd5e1; border-radius:10px;">
+                    <button id="rc-btn" style="background:#2176ff; color:#fff; border:none; padding:15px; border-radius:10px; font-weight:bold; cursor:pointer;">ডাউনলোড PDF</button>
                 </div>
             </div>`;
         document.getElementById('rc-date').value = new Date().toISOString().split('T')[0];
@@ -158,7 +171,7 @@
             const txs = window.customerTransactions || [];
             const custs = window.customers || [];
             let filtered = txs.filter(t => t.date === date);
-            if (!filtered.length) return alert("এই তারিখে কোনো লেনদেন পাওয়া যায়নি!");
+            if (!filtered.length) return alert("এই তারিখে কোনো লেনদেন নেই!");
             const reportData = filtered.map(t => {
                 const c = custs.find(x => x.id === t.customerId);
                 let bal = parseFloat(c ? c.openingBalance : 0);
