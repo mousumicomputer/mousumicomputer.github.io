@@ -1,6 +1,6 @@
 /**
  * Mousumi Computer - Professional Document Engine
- * Fixed: White PDF Issue, A4 Alignment, Tiro Bangla Font & Rendering
+ * Fixed: White PDF Issue, A4 Alignment, Tiro Bangla Font & Thin Borders
  */
 
 (function () {
@@ -10,7 +10,12 @@
     // =========================================================
 
     const toBn = (num) => {
-        if (num === undefined || num === null || isNaN(num)) {
+
+        if (
+            num === undefined ||
+            num === null ||
+            isNaN(num)
+        ) {
             return "০.০০";
         }
 
@@ -41,6 +46,7 @@
     // =========================================================
 
     const toBnSimple = (num) => {
+
         const digits = {
             '0': '০',
             '1': '১',
@@ -54,7 +60,10 @@
             '9': '৯'
         };
 
-        return String(num ?? '').replace(/\d/g, d => digits[d]);
+        return String(num ?? '').replace(
+            /\d/g,
+            d => digits[d]
+        );
     };
 
 
@@ -63,6 +72,7 @@
     // =========================================================
 
     const escapeHTML = (val) => {
+
         return String(val ?? '').replace(
             /[&<>"']/g,
             m => ({
@@ -155,7 +165,10 @@
     // ৬. PDF GENERATION ENGINE
     // =========================================================
 
-    const generateMousumiPDF = async (reportData, startDate) => {
+    const generateMousumiPDF = async (
+        reportData,
+        startDate
+    ) => {
 
         // -----------------------------------------------------
         // html2pdf আছে কিনা পরীক্ষা
@@ -176,9 +189,11 @@
         // তারিখ
         // -----------------------------------------------------
 
-        const dateObject = new Date(startDate + "T00:00:00");
+        const dateObject =
+            new Date(startDate + "T00:00:00");
 
-        const startParts = getBnDate(dateObject);
+        const startParts =
+            getBnDate(dateObject);
 
 
         // -----------------------------------------------------
@@ -194,14 +209,19 @@
 
         reportData.forEach((t, index) => {
 
-            const debit = parseFloat(t.debit) || 0;
+            const debit =
+                parseFloat(t.debit) || 0;
 
-            const credit = parseFloat(t.credit) || 0;
+            const credit =
+                parseFloat(t.credit) || 0;
 
-            const amount = debit > 0 ? debit : credit;
+            const amount =
+                debit > 0 ? debit : credit;
 
             const balance =
-                parseFloat(t.runningBalanceAtTime) || 0;
+                parseFloat(
+                    t.runningBalanceAtTime
+                ) || 0;
 
 
             const type =
@@ -332,10 +352,14 @@
                             tableRows ||
                             `
                             <tr>
-                                <td colspan="6"
-                                    style="text-align:center;">
+
+                                <td
+                                    colspan="6"
+                                    style="text-align:center;"
+                                >
                                     কোনো লেনদেন নেই
                                 </td>
+
                             </tr>
                             `
                         }
@@ -388,6 +412,7 @@
                 </div>
 
             </div>
+
         `;
 
 
@@ -516,7 +541,8 @@
 
                     margin-bottom: 10px;
 
-                    border-bottom: 0.5pt solid #dddddd;
+                    border-bottom:
+                        0.5px solid #dddddd;
 
                     padding-bottom: 7px;
 
@@ -528,8 +554,10 @@
                  * TABLE
                  * ==================================================
                  *
-                 * Single solid line
-                 * 1/2 pt
+                 * এখানে ইচ্ছাকৃতভাবে 0.5px ব্যবহার করা হয়েছে।
+                 *
+                 * html2canvas-এর কারণে 0.5pt তুলনামূলক মোটা
+                 * দেখা যাচ্ছিল।
                  *
                  * ==================================================
                  */
@@ -540,7 +568,8 @@
 
                     border-collapse: collapse;
 
-                    border: 0.5pt solid #000000;
+                    border:
+                        0.5px solid #000000;
 
                     table-layout: fixed;
 
@@ -552,7 +581,8 @@
                 th,
                 td {
 
-                    border: 0.5pt solid #000000;
+                    border:
+                        0.5px solid #000000;
 
                     padding: 8px 6px;
 
@@ -687,7 +717,8 @@
 
                 .sig-line {
 
-                    border-top: 0.5pt solid #000000;
+                    border-top:
+                        0.5px solid #000000;
 
                     margin-bottom: 5px;
 
@@ -718,6 +749,7 @@
                 }
 
             </style>
+
         `;
 
 
@@ -725,18 +757,9 @@
         // TEMPORARY PDF CONTAINER
         // =====================================================
 
-        const worker = document.createElement('div');
+        const worker =
+            document.createElement('div');
 
-
-        /*
-         * গুরুত্বপূর্ণ:
-         *
-         * এখানে আগে zIndex = -1 ছিল।
-         * সেটি সরানো হয়েছে।
-         *
-         * html2canvas যেন element দেখতে পারে,
-         * তাই element-কে শুধু screen-এর বাইরে রাখা হচ্ছে।
-         */
 
         worker.style.position = 'fixed';
 
@@ -780,7 +803,9 @@
         // =====================================================
 
         const reportElement =
-            worker.querySelector('.mousumi-report');
+            worker.querySelector(
+                '.mousumi-report'
+            );
 
 
         if (!reportElement) {
@@ -853,7 +878,14 @@
 
             html2canvas: {
 
-                scale: 3,
+                /*
+                 * 3 থেকে 2 করা হয়েছে।
+                 *
+                 * এতে 0.5px border অতিরিক্ত মোটা
+                 * দেখানোর সম্ভাবনা কমে।
+                 */
+
+                scale: 2,
 
                 useCORS: true,
 
@@ -904,8 +936,11 @@
         try {
 
             await html2pdf()
+
                 .set(opt)
+
                 .from(reportElement)
+
                 .save();
 
         } catch (error) {
@@ -956,9 +991,7 @@
 
 
         if (!container) {
-
             return;
-
         }
 
 
@@ -969,88 +1002,131 @@
         container.innerHTML = `
 
             <div
+
                 style="
                     background:#fff;
+
                     border-radius:15px;
+
                     padding:30px;
+
                     border:1.5px solid #e2e8f0;
+
                     box-shadow:
                         0 10px 30px
                         rgba(0,0,0,0.05);
+
                     max-width:600px;
+
                     margin:0 auto;
                 "
+
             >
 
                 <h2
+
                     style="
                         font-family:
                             'Tiro Bangla',
                             'Noto Sans Bengali',
                             'Nirmala UI',
                             sans-serif;
+
                         font-size:22px;
+
                         color:#2176ff;
+
                         margin-bottom:20px;
+
                         text-align:center;
                     "
+
                 >
+
                     রিপোর্ট ডাউনলোড সেন্টার
+
                 </h2>
 
 
                 <div
+
                     style="
                         display:flex;
+
                         flex-direction:column;
+
                         gap:15px;
                     "
+
                 >
 
                     <label
+
                         style="
                             font-family:
                                 'Tiro Bangla',
                                 'Noto Sans Bengali',
                                 'Nirmala UI',
                                 sans-serif;
+
                             font-weight:bold;
                         "
+
                     >
+
                         তারিখ নির্বাচন করুন:
+
                     </label>
 
 
                     <input
+
                         type="date"
+
                         id="rc-date"
+
                         style="
                             padding:12px;
+
                             border:
                                 1.5px solid #cbd5e1;
+
                             border-radius:10px;
                         "
+
                     />
 
 
                     <button
+
                         id="rc-btn"
+
                         style="
                             background:#2176ff;
+
                             color:#fff;
+
                             border:none;
+
                             padding:15px;
+
                             border-radius:10px;
+
                             font-weight:bold;
+
                             cursor:pointer;
+
                             font-family:
                                 'Tiro Bangla',
                                 'Noto Sans Bengali',
                                 'Nirmala UI',
                                 sans-serif;
                         "
+
                     >
+
                         ডাউনলোড PDF
+
                     </button>
 
                 </div>
@@ -1065,7 +1141,9 @@
         // =====================================================
 
         const dateInput =
-            document.getElementById('rc-date');
+            document.getElementById(
+                'rc-date'
+            );
 
 
         const today =
@@ -1097,7 +1175,9 @@
         // =====================================================
 
         const downloadButton =
-            document.getElementById('rc-btn');
+            document.getElementById(
+                'rc-btn'
+            );
 
 
         downloadButton.onclick =
@@ -1116,7 +1196,6 @@
                     );
 
                     return;
-
                 }
 
 
@@ -1163,7 +1242,6 @@
                     );
 
                     return;
-
                 }
 
 
@@ -1224,6 +1302,7 @@
                                                 a.time || ''
                                             );
 
+
                                         const dateB =
                                             String(
                                                 b.date || ''
@@ -1231,6 +1310,7 @@
                                             String(
                                                 b.time || ''
                                             );
+
 
                                         return dateA.localeCompare(
                                             dateB
