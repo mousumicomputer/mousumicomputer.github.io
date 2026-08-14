@@ -3,10 +3,18 @@
  * MOUSUMI COMPUTER
  * SIMPLE TRANSACTION REPORT
  *
- * NEW PDF ENGINE
+ * FINAL REVISED VERSION
+ * ============================================================
+ *
+ * REPORT COLUMNS:
+ *
+ * ক্রমিক | সময় | কাস্টমার | লেনদেন | বিস্তারিত | টাকা | মন্তব্য
+ *
  * ------------------------------------------------------------
+ * PDF ENGINE:
+ * Native Browser Print / Save as PDF
+ *
  * html2canvas ব্যবহার করা হয়নি।
- * Native Browser Print / Save as PDF ব্যবহার করা হয়েছে।
  * ============================================================
  */
 
@@ -38,7 +46,7 @@
         return String(value ?? "")
             .replace(
                 /\d/g,
-                d => BN_DIGITS[d]
+                digit => BN_DIGITS[digit]
             );
 
     };
@@ -68,14 +76,14 @@
 
         return formatted.replace(
             /\d/g,
-            d => BN_DIGITS[d]
+            digit => BN_DIGITS[digit]
         );
 
     };
 
 
     // ============================================================
-    // ৩. HTML Escape
+    // ৩. HTML নিরাপদ করা
     // ============================================================
 
     const escapeHTML = (value) => {
@@ -104,13 +112,15 @@
 
 
     // ============================================================
-    // ৪. সময়
+    // ৪. সময় ফরম্যাট
     // ============================================================
 
     const formatTime = (time) => {
 
         if (!time) {
+
             return "--:--";
+
         }
 
 
@@ -125,7 +135,7 @@
             );
 
 
-        let minute =
+        const minute =
             String(
                 parts[1] || "00"
             ).padStart(
@@ -153,27 +163,49 @@
             hour % 12 || 12;
 
 
+        const hourText =
+            String(hour).padStart(
+                2,
+                "0"
+            );
+
+
         return (
+
             toBnSimple(
-                String(hour).padStart(
-                    2,
-                    "0"
-                )
-            ) +
-            ":" +
-            toBnSimple(minute) +
-            " " +
+                hourText
+            )
+
+            +
+
+            ":"
+
+            +
+
+            toBnSimple(
+                minute
+            )
+
+            +
+
+            " "
+
+            +
+
             ampm
+
         );
 
     };
 
 
     // ============================================================
-    // ৫. তারিখ
+    // ৫. বাংলা তারিখ
     // ============================================================
 
-    const getBanglaDate = (dateString) => {
+    const getBanglaDate = (
+        dateString
+    ) => {
 
         const date =
             new Date(
@@ -220,15 +252,18 @@
                     date.getDay()
                 ],
 
+
             date:
                 toBnSimple(
                     date.getDate()
                 ),
 
+
             month:
                 months[
                     date.getMonth()
                 ],
+
 
             year:
                 toBnSimple(
@@ -241,7 +276,7 @@
 
 
     // ============================================================
-    // ৬. REPORT PRINT ENGINE
+    // ৬. রিপোর্ট PRINT ENGINE
     // ============================================================
 
     const printMousumiReport = (
@@ -262,8 +297,6 @@
 
         let totalAmount = 0;
 
-        let lastBalance = 0;
-
 
         // ========================================================
         // TABLE ROWS
@@ -273,7 +306,10 @@
 
 
         reportData.forEach(
-            (transaction, index) => {
+            (
+                transaction,
+                index
+            ) => {
 
 
                 const debit =
@@ -288,11 +324,19 @@
                     ) || 0;
 
 
+                // ------------------------------------------------
+                // Amount
+                // ------------------------------------------------
+
                 const amount =
                     debit > 0
                         ? debit
                         : credit;
 
+
+                // ------------------------------------------------
+                // Transaction Type
+                // ------------------------------------------------
 
                 const transactionType =
                     debit > 0
@@ -300,61 +344,108 @@
                         : "বাকী পেলাম";
 
 
-                const balance =
-                    Number(
-                        transaction.runningBalanceAtTime
-                    ) || 0;
+                // ------------------------------------------------
+                // Description
+                //
+                // আপনার মূল কোডে transaction.description
+                // হিসেবে সংরক্ষিত হয়।
+                // ------------------------------------------------
 
+                const description =
+                    transaction.description ||
+                    "";
+
+
+                // ------------------------------------------------
+                // Comment
+                //
+                // বর্তমানে আপনার ডাটায় comment field নেই।
+                // তাই থাকলে দেখাবে, না থাকলে খালি থাকবে।
+                // ------------------------------------------------
+
+                const comment =
+                    transaction.comment ||
+                    "";
+
+
+                // ------------------------------------------------
+                // Total
+                // ------------------------------------------------
 
                 totalAmount +=
-                    Math.abs(amount);
+                    Math.abs(
+                        amount
+                    );
 
 
-                lastBalance =
-                    balance;
-
+                // ------------------------------------------------
+                // ROW
+                // ------------------------------------------------
 
                 rowsHTML += `
 
                     <tr>
 
                         <td class="serial">
-                            ${toBnSimple(index + 1)}।
+
+                            ${toBnSimple(
+                                index + 1
+                            )}।
+
                         </td>
 
 
                         <td class="time">
+
                             ${formatTime(
                                 transaction.time
                             )}
+
                         </td>
 
 
                         <td class="customer">
+
                             ${escapeHTML(
                                 transaction.customerName
                             )}
+
                         </td>
 
 
                         <td class="type">
+
                             ${escapeHTML(
                                 transactionType
                             )}
+
+                        </td>
+
+
+                        <td class="details">
+
+                            ${escapeHTML(
+                                description
+                            )}
+
                         </td>
 
 
                         <td class="money">
+
                             ${toBnMoney(
                                 amount
                             )}
+
                         </td>
 
 
-                        <td class="balance">
-                            ${toBnMoney(
-                                balance
+                        <td class="comment">
+
+                            ${escapeHTML(
+                                comment
                             )}
+
                         </td>
 
                     </tr>
@@ -363,6 +454,34 @@
 
             }
         );
+
+
+        // ========================================================
+        // NO DATA
+        // ========================================================
+
+        if (
+            !rowsHTML
+        ) {
+
+            rowsHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="7"
+                        class="no-data"
+                    >
+
+                        কোনো লেনদেন নেই
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        }
 
 
         // ========================================================
@@ -378,6 +497,12 @@
 <head>
 
 <meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
 
 <title>
     Mousumi Computer Transaction Report
@@ -395,10 +520,10 @@
     size: A4 portrait;
 
     margin:
-        10mm
-        10mm
+        9mm
+        8mm
         12mm
-        10mm;
+        8mm;
 
 }
 
@@ -421,6 +546,8 @@ body {
 
     padding: 0;
 
+    width: 100%;
+
     background: #ffffff;
 
     color: #000000;
@@ -436,7 +563,7 @@ body {
         "Nirmala UI",
         sans-serif;
 
-    font-size: 12px;
+    font-size: 11px;
 
 }
 
@@ -464,7 +591,7 @@ body {
 
     text-align: center;
 
-    margin-bottom: 10px;
+    margin-bottom: 9px;
 
 }
 
@@ -483,10 +610,18 @@ body {
 
     margin: 0;
 
+    padding: 0;
+
 }
 
 
 .report-title {
+
+    font-family:
+        "Tiro Bangla",
+        "Noto Sans Bengali",
+        "Nirmala UI",
+        sans-serif;
 
     font-size: 16px;
 
@@ -508,11 +643,13 @@ body {
     justify-content:
         space-between;
 
+    align-items: center;
+
     width: 100%;
 
     margin-bottom: 6px;
 
-    font-size: 12px;
+    font-size: 11px;
 
 }
 
@@ -520,17 +657,6 @@ body {
 /* ============================================================
    TABLE
    ============================================================ */
-
-/*
- * IMPORTANT
- *
- * এখানে কোনো html2canvas নেই।
- *
- * Browser সরাসরি এই border PDF-এ
- * render করবে।
- *
- * 0.5px = চিকন single solid line
- */
 
 .transaction-table {
 
@@ -554,6 +680,10 @@ body {
    TABLE CELLS
    ============================================================ */
 
+/*
+ * পাতলা single solid border
+ */
+
 .transaction-table th,
 .transaction-table td {
 
@@ -561,7 +691,7 @@ body {
         0.5px solid #000000;
 
     padding:
-        4px 5px;
+        4px 4px;
 
     font-family:
         "Tiro Bangla",
@@ -569,7 +699,7 @@ body {
         "Nirmala UI",
         sans-serif;
 
-    font-size: 11.5px;
+    font-size: 10.5px;
 
     line-height: 1.25;
 
@@ -599,50 +729,104 @@ body {
 
 
 /* ============================================================
-   COLUMN WIDTH
+   COLUMN WIDTHS
    ============================================================ */
+
+/*
+ * মোট 100%
+ *
+ * ক্রমিক     7%
+ * সময়        12%
+ * কাস্টমার   18%
+ * লেনদেন     15%
+ * বিস্তারিত   25%
+ * টাকা        11%
+ * মন্তব্য     12%
+ *
+ * TOTAL = 100%
+ */
+
+
+/* ------------------------------------------------------------
+   ক্রমিক
+------------------------------------------------------------- */
 
 .serial {
 
-    width: 10%;
+    width: 7%;
 
     text-align: center;
 
 }
 
 
+/* ------------------------------------------------------------
+   সময়
+------------------------------------------------------------- */
+
 .time {
+
+    width: 12%;
+
+    text-align: center;
+
+    white-space: nowrap;
+
+}
+
+
+/* ------------------------------------------------------------
+   কাস্টমার
+------------------------------------------------------------- */
+
+.customer {
+
+    width: 18%;
+
+    text-align: left;
+
+    word-break: break-word;
+
+}
+
+
+/* ------------------------------------------------------------
+   লেনদেন
+------------------------------------------------------------- */
+
+.type {
 
     width: 15%;
 
     text-align: center;
 
-    white-space: nowrap;
+    word-break: break-word;
 
 }
 
 
-.customer {
+/* ------------------------------------------------------------
+   বিস্তারিত
+------------------------------------------------------------- */
 
-    width: 22%;
+.details {
+
+    width: 25%;
 
     text-align: left;
 
-}
-
-
-.type {
-
-    width: 18%;
-
-    text-align: center;
+    word-break: break-word;
 
 }
 
+
+/* ------------------------------------------------------------
+   টাকা
+------------------------------------------------------------- */
 
 .money {
 
-    width: 17.5%;
+    width: 11%;
 
     text-align: right;
 
@@ -651,26 +835,31 @@ body {
 }
 
 
-.balance {
+/* ------------------------------------------------------------
+   মন্তব্য
+------------------------------------------------------------- */
 
-    width: 17.5%;
+.comment {
 
-    text-align: right;
+    width: 12%;
 
-    white-space: nowrap;
+    text-align: left;
+
+    word-break: break-word;
 
 }
 
 
 /* ============================================================
-   TOTAL
+   TOTAL ROW
    ============================================================ */
 
 .total-row td {
 
     font-weight: bold;
 
-    background: #ffffff;
+    background:
+        #ffffff;
 
 }
 
@@ -685,12 +874,26 @@ body {
 
 
 /* ============================================================
+   NO DATA
+   ============================================================ */
+
+.no-data {
+
+    text-align: center;
+
+    padding:
+        10px !important;
+
+}
+
+
+/* ============================================================
    SIGNATURE
    ============================================================ */
 
 .signature-area {
 
-    margin-top: 45px;
+    margin-top: 42px;
 
     display: flex;
 
@@ -701,7 +904,7 @@ body {
 
 .signature {
 
-    width: 190px;
+    width: 180px;
 
     text-align: center;
 
@@ -726,13 +929,13 @@ body {
         "Times New Roman",
         serif;
 
-    font-size: 11px;
+    font-size: 10.5px;
 
 }
 
 
 /* ============================================================
-   PRINT
+   PRINT RULES
    ============================================================ */
 
 @media print {
@@ -749,30 +952,35 @@ body {
 
     .transaction-table {
 
-        page-break-inside: auto;
+        page-break-inside:
+            auto;
 
     }
 
 
     .transaction-table tr {
 
-        page-break-inside: avoid;
+        page-break-inside:
+            avoid;
 
-        page-break-after: auto;
+        page-break-after:
+            auto;
 
     }
 
 
     .transaction-table thead {
 
-        display: table-header-group;
+        display:
+            table-header-group;
 
     }
 
 
     .signature-area {
 
-        page-break-inside: avoid;
+        page-break-inside:
+            avoid;
 
     }
 
@@ -795,14 +1003,20 @@ body {
 
     <div class="header">
 
+
         <div class="shop-name">
+
             MOUSUMI COMPUTER
+
         </div>
 
 
         <div class="report-title">
+
             লেনদেনের রিপোর্ট
+
         </div>
+
 
     </div>
 
@@ -813,102 +1027,125 @@ body {
 
     <div class="info">
 
+
         <div>
+
             তারিখ:
+
             ${dateInfo.date}
+
             ${dateInfo.month}
+
             ${dateInfo.year}
+
         </div>
 
 
         <div>
+
             বার:
+
             ${dateInfo.day}
+
         </div>
+
 
     </div>
 
 
     <!-- ========================================================
-         TABLE
+         TRANSACTION TABLE
     ========================================================= -->
 
     <table
         class="transaction-table"
     >
 
+
         <thead>
+
 
             <tr>
 
+
                 <th class="serial">
+
                     ক্রমিক
+
                 </th>
 
 
                 <th class="time">
+
                     সময়
+
                 </th>
 
 
                 <th class="customer">
+
                     কাস্টমার
+
                 </th>
 
 
                 <th class="type">
+
                     লেনদেন
+
+                </th>
+
+
+                <th class="details">
+
+                    বিস্তারিত
+
                 </th>
 
 
                 <th class="money">
+
                     টাকা
+
                 </th>
 
 
-                <th class="balance">
-                    অবশিষ্ট বাকী
+                <th class="comment">
+
+                    মন্তব্য
+
                 </th>
+
 
             </tr>
+
 
         </thead>
 
 
         <tbody>
 
-            ${
-                rowsHTML ||
-                `
-                <tr>
 
-                    <td
-                        colspan="6"
-                        style="
-                            text-align:center;
-                            padding:10px;
-                        "
-                    >
-                        কোনো লেনদেন নেই
-                    </td>
-
-                </tr>
-                `
-            }
+            ${rowsHTML}
 
 
-            <!-- =================================================
+            <!-- ================================================
                  TOTAL
-            ================================================== -->
+            ================================================= -->
 
-            <tr class="total-row">
+
+            <tr
+                class="total-row"
+            >
 
 
                 <td
-                    colspan="4"
+                    colspan="5"
                     class="total-label"
                 >
-                    সর্বমোট (Total):
+
+                    সর্বমোট:
+
                 </td>
 
 
@@ -921,17 +1158,14 @@ body {
                 </td>
 
 
-                <td class="balance">
+                <td class="comment"></td>
 
-                    ${toBnMoney(
-                        lastBalance
-                    )}
-
-                </td>
 
             </tr>
 
+
         </tbody>
+
 
     </table>
 
@@ -942,15 +1176,22 @@ body {
 
     <div class="signature-area">
 
+
         <div class="signature">
+
 
             <div class="signature-line"></div>
 
+
             <div class="signature-text">
+
                 Authorized Signature
+
             </div>
 
+
         </div>
+
 
     </div>
 
@@ -961,18 +1202,25 @@ body {
 <script>
 
 /*
- * Print dialog automatically open হবে।
+ * ============================================================
+ * PRINT
+ * ============================================================
  *
- * Chrome থেকে:
+ * Browser-এর native print system ব্যবহার করা হচ্ছে।
+ *
+ * Chrome:
  *
  * Destination
- *     ↓
+ *      ↓
  * Save to PDF
- *     ↓
+ *      ↓
  * Save
+ *
+ * ============================================================
  */
 
 window.onload = function () {
+
 
     setTimeout(
         function () {
@@ -982,13 +1230,14 @@ window.onload = function () {
             window.print();
 
         },
-        300
+        350
     );
 
 };
 
 
 window.onafterprint = function () {
+
 
     setTimeout(
         function () {
@@ -1012,7 +1261,7 @@ window.onafterprint = function () {
 
 
         // ========================================================
-        // NEW WINDOW
+        // OPEN PRINT WINDOW
         // ========================================================
 
         const printWindow =
@@ -1023,11 +1272,18 @@ window.onafterprint = function () {
             );
 
 
-        if (!printWindow) {
+        if (
+            !printWindow
+        ) {
 
             alert(
-                "নতুন Print Window খোলা যায়নি।\n\n" +
-                "Browser-এর popup blocked থাকলে Allow করুন।"
+
+                "Print Window খোলা যায়নি।\n\n" +
+
+                "Browser-এর Popup Blocked থাকলে " +
+
+                "এই সাইটের জন্য Popup Allow করুন।"
+
             );
 
             return;
@@ -1057,6 +1313,10 @@ window.onafterprint = function () {
     ) => {
 
 
+        // ========================================================
+        // TRANSACTIONS
+        // ========================================================
+
         const transactions =
             Array.isArray(
                 window.customerTransactions
@@ -1064,6 +1324,10 @@ window.onafterprint = function () {
                 ? window.customerTransactions
                 : [];
 
+
+        // ========================================================
+        // CUSTOMERS
+        // ========================================================
 
         const customers =
             Array.isArray(
@@ -1073,19 +1337,22 @@ window.onafterprint = function () {
                 : [];
 
 
-        // --------------------------------------------------------
-        // Selected date
-        // --------------------------------------------------------
+        // ========================================================
+        // SELECTED DATE
+        // ========================================================
 
         const selectedTransactions =
             transactions.filter(
                 transaction =>
+
                     String(
                         transaction.date
                     ) ===
+
                     String(
                         selectedDate
                     )
+
             );
 
 
@@ -1098,144 +1365,71 @@ window.onafterprint = function () {
         }
 
 
-        // --------------------------------------------------------
-        // Prepare each transaction
-        // --------------------------------------------------------
+        // ========================================================
+        // REPORT DATA
+        // ========================================================
 
         const reportData =
             selectedTransactions.map(
                 transaction => {
 
 
-                    // --------------------------------------------
-                    // Customer
-                    // --------------------------------------------
+                    // ==================================================
+                    // CUSTOMER
+                    // ==================================================
 
                     const customer =
                         customers.find(
                             item =>
+
                                 String(
                                     item.id
                                 ) ===
+
                                 String(
                                     transaction.customerId
                                 )
+
                         );
 
 
-                    // --------------------------------------------
-                    // Opening balance
-                    // --------------------------------------------
-
-                    let balance =
-                        Number(
-                            customer
-                                ? customer.openingBalance
-                                : 0
-                        ) || 0;
-
-
-                    // --------------------------------------------
-                    // Customer history
-                    // --------------------------------------------
-
-                    const history =
-                        transactions
-                            .filter(
-                                item =>
-                                    String(
-                                        item.customerId
-                                    ) ===
-                                    String(
-                                        transaction.customerId
-                                    )
-                            )
-                            .sort(
-                                (a, b) => {
-
-
-                                    const aKey =
-                                        String(
-                                            a.date || ""
-                                        ) +
-                                        " " +
-                                        String(
-                                            a.time || ""
-                                        );
-
-
-                                    const bKey =
-                                        String(
-                                            b.date || ""
-                                        ) +
-                                        " " +
-                                        String(
-                                            b.time || ""
-                                        );
-
-
-                                    return aKey.localeCompare(
-                                        bKey
-                                    );
-
-                                }
-                            );
-
-
-                    // --------------------------------------------
-                    // Running balance
-                    // --------------------------------------------
-
-                    for (
-                        const item
-                        of history
-                    ) {
-
-
-                        const debit =
-                            Number(
-                                item.debit
-                            ) || 0;
-
-
-                        const credit =
-                            Number(
-                                item.credit
-                            ) || 0;
-
-
-                        balance +=
-                            debit -
-                            credit;
-
-
-                        if (
-                            String(
-                                item.id
-                            ) ===
-                            String(
-                                transaction.id
-                            )
-                        ) {
-
-                            break;
-
-                        }
-
-                    }
-
+                    // ==================================================
+                    // REPORT ITEM
+                    // ==================================================
+                    //
+                    // এখানে description সরাসরি transaction থেকে
+                    // নেওয়া হচ্ছে।
+                    //
+                    // comment থাকলে সেটিও নেওয়া হবে।
+                    //
+                    // ==================================================
 
                     return {
 
                         ...transaction,
 
+
                         customerName:
+
                             customer
+
                                 ? customer.name
+
                                 : "Unknown",
 
-                        runningBalanceAtTime:
-                            balance
+
+                        description:
+
+                            transaction.description ||
+
+                            "",
+
+
+                        comment:
+
+                            transaction.comment ||
+
+                            ""
 
                     };
 
@@ -1261,90 +1455,161 @@ window.onafterprint = function () {
             );
 
 
-        if (!container) {
+        if (
+            !container
+        ) {
 
             return;
 
         }
 
 
+        // ========================================================
+        // REPORT CONTROL
+        // ========================================================
+
         container.innerHTML = `
 
             <div
+
                 style="
+
                     width:100%;
+
                     max-width:500px;
+
                     margin:0 auto;
+
                     padding:20px;
+
                     background:#ffffff;
+
                     border:1px solid #ddd;
+
                     font-family:
+
                         'Tiro Bangla',
+
                         'Noto Sans Bengali',
+
                         'Nirmala UI',
+
                         sans-serif;
+
                 "
+
             >
 
+
                 <div
+
                     style="
+
                         text-align:center;
+
                         font-size:20px;
+
                         font-weight:bold;
+
                         margin-bottom:18px;
+
                     "
+
                 >
+
                     লেনদেনের রিপোর্ট
+
                 </div>
 
 
                 <label
+
                     for="rc-date"
+
                     style="
+
                         display:block;
+
                         margin-bottom:7px;
+
                         font-weight:bold;
+
                     "
+
                 >
+
                     তারিখ নির্বাচন করুন:
+
                 </label>
 
 
                 <input
+
                     type="date"
+
                     id="rc-date"
+
                     style="
+
                         width:100%;
+
                         height:42px;
+
                         padding:8px;
+
                         border:1px solid #bbb;
+
                         font-size:14px;
+
                         margin-bottom:12px;
+
                     "
+
                 />
 
 
                 <button
+
                     type="button"
+
                     id="rc-btn"
+
                     style="
+
                         width:100%;
+
                         height:44px;
+
                         border:1px solid #222;
+
                         background:#222;
+
                         color:#fff;
+
                         cursor:pointer;
+
                         font-size:14px;
+
                         font-weight:bold;
+
                         font-family:
+
                             'Tiro Bangla',
+
                             'Noto Sans Bengali',
+
                             'Nirmala UI',
+
                             sans-serif;
+
                     "
+
                 >
+
                     PDF রিপোর্ট তৈরি করুন
+
                 </button>
+
 
             </div>
 
@@ -1352,7 +1617,7 @@ window.onafterprint = function () {
 
 
         // ========================================================
-        // TODAY
+        // TODAY DATE
         // ========================================================
 
         const dateInput =
@@ -1365,16 +1630,20 @@ window.onafterprint = function () {
             new Date();
 
 
-        dateInput.value =
-            today.getFullYear() +
-            "-" +
+        const localYear =
+            today.getFullYear();
+
+
+        const localMonth =
             String(
                 today.getMonth() + 1
             ).padStart(
                 2,
                 "0"
-            ) +
-            "-" +
+            );
+
+
+        const localDay =
             String(
                 today.getDate()
             ).padStart(
@@ -1383,29 +1652,42 @@ window.onafterprint = function () {
             );
 
 
+        dateInput.value =
+            `${localYear}-${localMonth}-${localDay}`;
+
+
         // ========================================================
-        // BUTTON
+        // DOWNLOAD / PRINT BUTTON
         // ========================================================
 
-        const button =
+        const downloadButton =
             document.getElementById(
                 "rc-btn"
             );
 
 
-        button.addEventListener(
-            "click",
-            function () {
+        downloadButton.onclick =
+            () => {
 
+
+                // ==================================================
+                // SELECTED DATE
+                // ==================================================
 
                 const selectedDate =
-                    dateInput.value;
+                    document.getElementById(
+                        "rc-date"
+                    ).value;
 
 
-                if (!selectedDate) {
+                if (
+                    !selectedDate
+                ) {
 
                     alert(
+
                         "দয়া করে একটি তারিখ নির্বাচন করুন।"
+
                     );
 
                     return;
@@ -1413,9 +1695,9 @@ window.onafterprint = function () {
                 }
 
 
-                // -----------------------------------------------
-                // Prepare
-                // -----------------------------------------------
+                // ==================================================
+                // PREPARE REPORT
+                // ==================================================
 
                 const reportData =
                     prepareReportData(
@@ -1429,7 +1711,9 @@ window.onafterprint = function () {
                 ) {
 
                     alert(
+
                         "এই তারিখে কোনো লেনদেন নেই!"
+
                     );
 
                     return;
@@ -1437,23 +1721,25 @@ window.onafterprint = function () {
                 }
 
 
-                // -----------------------------------------------
-                // PRINT
-                // -----------------------------------------------
+                // ==================================================
+                // PRINT REPORT
+                // ==================================================
 
                 printMousumiReport(
+
                     reportData,
+
                     selectedDate
+
                 );
 
-            }
-        );
+            };
 
     };
 
 
     // ============================================================
-    // ৯. START
+    // ৯. INITIALIZE
     // ============================================================
 
     setTimeout(
