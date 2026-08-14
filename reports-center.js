@@ -1,78 +1,108 @@
-/* ============================================================
+/* =========================================================
    MOUSUMI COMPUTER
-   REPORTS CENTER MODULE
-   ------------------------------------------------------------
-   Standalone Report Center
+   REPORT CENTER MODULE
+   ---------------------------------------------------------
+   Version : 1.0
+   Purpose : Central Report Center
+   Current Report:
+            Customer Transaction Report
 
    IMPORTANT:
-   - Existing accounting logic is NOT modified.
-   - Existing Firebase data is only READ.
-   - Existing modules remain untouched.
-   - Reports are generated from existing Firebase data.
-   - PDF uses Browser Native Print -> Save as PDF.
-   ============================================================ */
+   - This module does NOT modify customer transaction data.
+   - This module only reads:
+       window.customers
+       window.customerTransactions
+   - Future reports can be added to REPORT_TYPES.
+   ========================================================= */
 
 (function () {
 
     "use strict";
 
 
-    /* ============================================================
+    /* =========================================================
        CONFIGURATION
-       ============================================================ */
+       ========================================================= */
 
-    const REPORTS_CONFIG = {
+    const CONFIG = {
 
-        firebase: {
-            apiKey: "AIzaSyA1PhRiTkICNCd8sA4he3ZxKjHtIzM0d5E",
-            authDomain: "mousumi-computer.firebaseapp.com",
-            databaseURL: "https://mousumi-computer-default-rtdb.firebaseio.com",
-            projectId: "mousumi-computer",
-            storageBucket: "mousumi-computer.firebasestorage.app",
-            messagingSenderId: "104820462623",
-            appId: "1:104820462623:web-e3abae9533cc841463712a"
-        },
+        companyName: "MOUSUMI COMPUTER",
 
-        shopName: "MOUSUMI COMPUTER"
+        reportTitle: "Customer Transaction Report",
 
-    };
+        currency: "৳",
 
+        fontFamily:
+            "'Tiro Bangla', 'Noto Sans Bengali', 'Nirmala UI', sans-serif",
 
-    /* ============================================================
-       FIREBASE MODULE REFERENCES
-       ============================================================ */
+        pdfFileName:
+            "Mousumi_Customer_Transaction_Report",
 
-    let firebaseDB = null;
-    let firebaseAuth = null;
-
-    let reportDataCache = {
-
-        customers: [],
-        transactions: [],
-        erp: {}
-
-    };
-
-
-    /* ============================================================
-       BASIC HELPERS
-       ============================================================ */
-
-    function toArray(value) {
-
-        if (Array.isArray(value)) {
-
-            return value;
-
+        colors: {
+            primary: "#2176ff",
+            primaryDark: "#172554",
+            border: "#d6d9de",
+            lightBorder: "#e5e7eb",
+            headerBg: "#f4f5f7",
+            pageBg: "#f8fafc",
+            text: "#1f2937",
+            muted: "#6b7280",
+            green: "#059669",
+            red: "#dc2626",
+            white: "#ffffff"
         }
 
-        if (
-            value &&
-            typeof value === "object"
-        ) {
+    };
 
-            return Object.values(value);
 
+    /* =========================================================
+       REPORT TYPES
+       ---------------------------------------------------------
+       ভবিষ্যতে নতুন রিপোর্ট এখানে যোগ করা যাবে।
+       ========================================================= */
+
+    const REPORT_TYPES = [
+
+        {
+            id: "customer-transaction",
+            title: "Customer Transaction Report",
+            banglaTitle: "কাস্টমার লেনদেন রিপোর্ট",
+            available: true
+        }
+
+        /*
+        ভবিষ্যতে যেমন:
+
+        {
+            id: "customer-ledger",
+            title: "Customer Ledger",
+            banglaTitle: "কাস্টমার লেজার",
+            available: false
+        },
+
+        {
+            id: "due-report",
+            title: "Outstanding Due Report",
+            banglaTitle: "বকেয়া রিপোর্ট",
+            available: false
+        }
+        */
+
+    ];
+
+
+    /* =========================================================
+       HELPER
+       ========================================================= */
+
+    function getCustomers() {
+
+        if (Array.isArray(window.customers)) {
+            return window.customers;
+        }
+
+        if (Array.isArray(window.customerList)) {
+            return window.customerList;
         }
 
         return [];
@@ -80,38 +110,74 @@
     }
 
 
-    function escapeHTML(value) {
+    function getTransactions() {
 
-        return String(value ?? "")
-            .replace(
-                /[&<>"']/g,
-                function (character) {
+        if (Array.isArray(window.customerTransactions)) {
+            return window.customerTransactions;
+        }
 
-                    const map = {
-
-                        "&": "&amp;",
-                        "<": "&lt;",
-                        ">": "&gt;",
-                        '"': "&quot;",
-                        "'": "&#039;"
-
-                    };
-
-                    return map[character];
-
-                }
-            );
+        return [];
 
     }
 
 
-    function money(value) {
+    /* =========================================================
+       BANGLA NUMBER
+       ========================================================= */
 
-        const amount =
-            Number(value) || 0;
+    function toBanglaNumber(value) {
+
+        const digits = [
+            "০",
+            "১",
+            "২",
+            "৩",
+            "৪",
+            "৫",
+            "৬",
+            "৭",
+            "৮",
+            "৯"
+        ];
+
+        return String(value ?? "")
+            .replace(/\d/g, function (digit) {
+                return digits[Number(digit)];
+            });
+
+    }
 
 
-        return amount.toLocaleString(
+    /* =========================================================
+       BANGLA DIGIT REVERSE
+       ========================================================= */
+
+    function toEnglishNumber(value) {
+
+        const bn = "০১২৩৪৫৬৭৮৯";
+        const en = "0123456789";
+
+        return String(value ?? "")
+            .replace(/[০-৯]/g, function (digit) {
+                return en[bn.indexOf(digit)];
+            });
+
+    }
+
+
+    /* =========================================================
+       MONEY FORMAT
+       ========================================================= */
+
+    function formatMoney(value, bangla = true) {
+
+        let number = Number(value);
+
+        if (!Number.isFinite(number)) {
+            number = 0;
+        }
+
+        const formatted = number.toLocaleString(
             "en-US",
             {
                 minimumFractionDigits: 2,
@@ -119,1198 +185,1794 @@
             }
         );
 
+        return CONFIG.currency +
+            " " +
+            (
+                bangla
+                    ? toBanglaNumber(formatted)
+                    : formatted
+            );
+
     }
 
 
-    function moneyBD(value) {
+    /* =========================================================
+       DATE FORMAT
+       ========================================================= */
 
-        return "৳ " + money(value);
-
-    }
-
-
-    function formatDate(dateValue) {
+    function formatDate(dateValue, bangla = true) {
 
         if (!dateValue) {
-
             return "-";
-
         }
 
+        const value = String(dateValue);
 
-        const date =
-            new Date(
-                String(dateValue).length === 10
-                    ? String(dateValue) + "T00:00:00"
-                    : dateValue
-            );
+        const parts = value.split("-");
 
-
-        if (
-            Number.isNaN(
-                date.getTime()
-            )
-        ) {
-
-            return escapeHTML(
-                dateValue
-            );
-
+        if (parts.length !== 3) {
+            return bangla
+                ? toBanglaNumber(value)
+                : value;
         }
 
+        const formatted =
+            `${parts[2]}/${parts[1]}/${parts[0]}`;
 
-        return date.toLocaleDateString(
-            "en-GB",
-            {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric"
-            }
-        );
+        return bangla
+            ? toBanglaNumber(formatted)
+            : formatted;
 
     }
 
 
-    function todayString() {
+    /* =========================================================
+       GET LOCAL TODAY
+       ========================================================= */
 
-        const date =
-            new Date();
+    function getToday() {
 
+        const now = new Date();
 
         const year =
-            date.getFullYear();
-
+            now.getFullYear();
 
         const month =
-            String(
-                date.getMonth() + 1
-            ).padStart(
-                2,
-                "0"
-            );
-
+            String(now.getMonth() + 1)
+                .padStart(2, "0");
 
         const day =
-            String(
-                date.getDate()
-            ).padStart(
-                2,
-                "0"
-            );
+            String(now.getDate())
+                .padStart(2, "0");
 
-
-        return (
-            year +
-            "-" +
-            month +
-            "-" +
-            day
-        );
+        return `${year}-${month}-${day}`;
 
     }
 
 
-    function setDefaultDates() {
+    /* =========================================================
+       HTML ESCAPE
+       ========================================================= */
 
-        const today =
-            todayString();
-
-
-        const first =
-            new Date();
-
-
-        first.setDate(1);
-
-
-        const firstMonth =
-            String(
-                first.getMonth() + 1
-            ).padStart(
-                2,
-                "0"
-            );
-
-
-        const firstDay =
-            String(
-                first.getDate()
-            ).padStart(
-                2,
-                "0"
-            );
-
-
-        return {
-
-            from:
-                first.getFullYear() +
-                "-" +
-                firstMonth +
-                "-" +
-                firstDay,
-
-            to:
-                today
-
-        };
-
-    }
-
-
-    /* ============================================================
-       FIREBASE INITIALIZATION
-       ============================================================ */
-
-    async function initializeReportsFirebase() {
+    function escapeHtml(value) {
 
         if (
-            firebaseDB &&
-            firebaseAuth
+            value === null ||
+            value === undefined
         ) {
-
-            return true;
-
+            return "";
         }
 
-
-        try {
-
-            const firebaseAppModule =
-                await import(
-                    "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"
-                );
-
-
-            const firebaseAuthModule =
-                await import(
-                    "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"
-                );
-
-
-            const firebaseDatabaseModule =
-                await import(
-                    "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"
-                );
-
-
-            const {
-
-                initializeApp,
-                getApps,
-                getApp
-
-            } =
-                firebaseAppModule;
-
-
-            const {
-
-                getAuth
-
-            } =
-                firebaseAuthModule;
-
-
-            const {
-
-                getDatabase,
-                ref,
-                get
-
-            } =
-                firebaseDatabaseModule;
-
-
-            let app;
-
-
-            if (
-                getApps().length > 0
-            ) {
-
-                app =
-                    getApp();
-
-            } else {
-
-                app =
-                    initializeApp(
-                        REPORTS_CONFIG.firebase
-                    );
-
-            }
-
-
-            firebaseAuth =
-                getAuth(
-                    app
-                );
-
-
-            firebaseDB =
-                getDatabase(
-                    app
-                );
-
-
-            window.__MOUSUMI_REPORTS_FIREBASE__ = {
-
-                ref,
-                get
-
-            };
-
-
-            return true;
-
-        } catch (error) {
-
-            console.error(
-                "Reports Firebase initialization failed:",
-                error
-            );
-
-
-            return false;
-
-        }
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
 
     }
 
 
-    /* ============================================================
-       LOAD REPORT DATA
-       ============================================================ */
+    /* =========================================================
+       FIND CUSTOMER
+       ========================================================= */
 
-    async function loadReportData() {
+    function findCustomer(customerId) {
 
-        const initialized =
-            await initializeReportsFirebase();
+        const list = getCustomers();
 
+        return list.find(function (customer) {
 
-        if (!initialized) {
+            return String(
+                customer.customerId
+            ) === String(customerId);
 
-            throw new Error(
-                "Firebase could not be initialized."
-            );
-
-        }
-
-
-        const {
-
-            ref,
-            get
-
-        } =
-            window.__MOUSUMI_REPORTS_FIREBASE__;
-
-
-        const customersSnapshot =
-            await get(
-                ref(
-                    firebaseDB,
-                    "customers"
-                )
-            );
-
-
-        const transactionsSnapshot =
-            await get(
-                ref(
-                    firebaseDB,
-                    "transactions"
-                )
-            );
-
-
-        const erpSnapshot =
-            await get(
-                ref(
-                    firebaseDB,
-                    "erp"
-                )
-            );
-
-
-        reportDataCache.customers =
-            customersSnapshot.exists()
-                ? toArray(
-                    customersSnapshot.val()
-                )
-                : [];
-
-
-        reportDataCache.transactions =
-            transactionsSnapshot.exists()
-                ? toArray(
-                    transactionsSnapshot.val()
-                )
-                : [];
-
-
-        reportDataCache.erp =
-            erpSnapshot.exists()
-                ? erpSnapshot.val()
-                : {};
-
-
-        return reportDataCache;
+        }) || null;
 
     }
 
 
-    /* ============================================================
-       CUSTOMER HELPER
-       ============================================================ */
+    /* =========================================================
+       GET CUSTOMER NAME
+       ========================================================= */
 
-    function getCustomer(
-        customerId
-    ) {
-
-        return reportDataCache.customers.find(
-            function (customer) {
-
-                return String(
-                    customer.customerId
-                ) ===
-                String(
-                    customerId
-                );
-
-            }
-        );
-
-    }
-
-
-    /* ============================================================
-       CUSTOMER DUE
-       ============================================================ */
-
-    function calculateCustomerDue(
-        customerId
-    ) {
+    function getCustomerName(customerId) {
 
         const customer =
-            getCustomer(
-                customerId
-            );
-
+            findCustomer(customerId);
 
         if (!customer) {
+            return "Unknown Customer";
+        }
 
+        return customer.name ||
+            "Unnamed Customer";
+
+    }
+
+
+    /* =========================================================
+       GET CUSTOMER PHONE
+       ========================================================= */
+
+    function getCustomerPhone(customerId) {
+
+        const customer =
+            findCustomer(customerId);
+
+        if (!customer) {
+            return "-";
+        }
+
+        return customer.phone || "-";
+
+    }
+
+
+    /* =========================================================
+       GET CUSTOMER OPENING BALANCE
+       ========================================================= */
+
+    function getOpeningBalance(customerId) {
+
+        const customer =
+            findCustomer(customerId);
+
+        if (!customer) {
             return 0;
-
         }
-
-
-        const transactions =
-            reportDataCache.transactions
-                .filter(
-                    function (transaction) {
-
-                        return String(
-                            transaction.customerId
-                        ) ===
-                        String(
-                            customerId
-                        );
-
-                    }
-                )
-                .sort(
-                    function (a, b) {
-
-                        return new Date(
-                            a.createdAt || (
-                                a.date +
-                                " " +
-                                a.time
-                            )
-                        ) -
-                        new Date(
-                            b.createdAt || (
-                                b.date +
-                                " " +
-                                b.time
-                            )
-                        );
-
-                    }
-                );
-
-
-        if (
-            transactions.length === 0
-        ) {
-
-            return Number(
-                customer.openingBalance
-            ) || 0;
-
-        }
-
-
-        const last =
-            transactions[
-                transactions.length - 1
-            ];
-
 
         return Number(
-            last.runningBalance
+            customer.openingBalance
         ) || 0;
 
     }
 
 
-    function calculateTotalDue() {
+    /* =========================================================
+       SORT TRANSACTIONS
+       ========================================================= */
 
-        let total = 0;
+    function sortTransactions(list) {
 
+        return [...list].sort(function (a, b) {
 
-        reportDataCache.customers
-            .filter(
-                function (customer) {
+            const dateA =
+                String(a.date || "");
 
-                    return (
-                        customer.status ===
-                        "Active"
-                    );
+            const dateB =
+                String(b.date || "");
 
-                }
-            )
-            .forEach(
-                function (customer) {
+            if (dateA !== dateB) {
+                return dateA.localeCompare(dateB);
+            }
 
-                    total +=
-                        calculateCustomerDue(
-                            customer.customerId
-                        );
+            const timeA =
+                String(a.time || "");
 
-                }
-            );
+            const timeB =
+                String(b.time || "");
 
+            return timeA.localeCompare(timeB);
 
-        return total;
+        });
 
     }
 
 
-    /* ============================================================
-       REPORT CENTER CSS
-       ============================================================ */
+    /* =========================================================
+       CALCULATE RUNNING BALANCE
+       ---------------------------------------------------------
+       Formula used by the existing customer system:
 
-    function injectReportCSS() {
+       Opening Balance
+       + Debit
+       - Credit
+       ========================================================= */
+
+    function calculateRunningBalances() {
+
+        const transactions =
+            sortTransactions(getTransactions());
+
+        const customers =
+            getCustomers();
+
+        const balances = {};
+
+        customers.forEach(function (customer) {
+
+            const id =
+                customer.customerId;
+
+            balances[id] =
+                Number(customer.openingBalance) || 0;
+
+        });
+
+
+        const result = new Map();
+
+
+        transactions.forEach(function (transaction) {
+
+            const customerId =
+                transaction.customerId;
+
+            if (
+                !Object.prototype.hasOwnProperty
+                    .call(balances, customerId)
+            ) {
+
+                balances[customerId] = 0;
+
+            }
+
+
+            const debit =
+                Number(transaction.debit) || 0;
+
+            const credit =
+                Number(transaction.credit) || 0;
+
+
+            balances[customerId] +=
+                debit - credit;
+
+
+            result.set(
+                String(transaction.id),
+                balances[customerId]
+            );
+
+        });
+
+
+        return result;
+
+    }
+
+
+    /* =========================================================
+       GET FILTERED TRANSACTIONS
+       ========================================================= */
+
+    function getFilteredTransactions() {
+
+        const all =
+            getTransactions();
+
+
+        const dateMode =
+            document.getElementById(
+                "mc-report-date-mode"
+            )?.value || "range";
+
+
+        const fromDate =
+            document.getElementById(
+                "mc-report-from-date"
+            )?.value || "";
+
+
+        const toDate =
+            document.getElementById(
+                "mc-report-to-date"
+            )?.value || "";
+
+
+        const customerId =
+            document.getElementById(
+                "mc-report-customer"
+            )?.value || "all";
+
+
+        let filtered =
+            [...all];
+
+
+        /* -----------------------------------------------------
+           CUSTOMER FILTER
+           ----------------------------------------------------- */
+
+        if (customerId !== "all") {
+
+            filtered =
+                filtered.filter(function (transaction) {
+
+                    return String(
+                        transaction.customerId
+                    ) === String(customerId);
+
+                });
+
+        }
+
+
+        /* -----------------------------------------------------
+           DATE FILTER
+           ----------------------------------------------------- */
+
+        if (dateMode === "single") {
+
+            if (!fromDate) {
+                return [];
+            }
+
+            filtered =
+                filtered.filter(function (transaction) {
+
+                    return String(transaction.date) ===
+                        String(fromDate);
+
+                });
+
+        }
+
+
+        if (dateMode === "range") {
+
+            if (fromDate) {
+
+                filtered =
+                    filtered.filter(function (transaction) {
+
+                        return String(transaction.date) >=
+                            String(fromDate);
+
+                    });
+
+            }
+
+
+            if (toDate) {
+
+                filtered =
+                    filtered.filter(function (transaction) {
+
+                        return String(transaction.date) <=
+                            String(toDate);
+
+                    });
+
+            }
+
+        }
+
+
+        return sortTransactions(filtered);
+
+    }
+
+
+    /* =========================================================
+       REPORT CSS
+       ========================================================= */
+
+    function injectStyles() {
 
         if (
             document.getElementById(
-                "mousumi-reports-center-css"
+                "mousumi-report-center-style"
             )
         ) {
-
             return;
-
         }
 
 
         const style =
-            document.createElement(
-                "style"
-            );
-
+            document.createElement("style");
 
         style.id =
-            "mousumi-reports-center-css";
+            "mousumi-report-center-style";
 
 
         style.textContent = `
 
-/* ============================================================
-   REPORT CENTER
-   ============================================================ */
+        /* =====================================================
+           REPORT CENTER
+           ===================================================== */
+
+        #cust-reports-section {
+            font-family:
+                ${CONFIG.fontFamily};
+        }
+
+
+        .mc-report-wrapper {
+            width:100%;
+            box-sizing:border-box;
+        }
+
+
+        .mc-report-card {
+            width:100%;
+            background:#ffffff;
+            border:1px solid ${CONFIG.colors.border};
+            border-radius:12px;
+            overflow:hidden;
+            box-shadow:
+                0 3px 12px rgba(0,0,0,0.035);
+        }
+
+
+        /* -----------------------------------------------------
+           HEADER
+           ----------------------------------------------------- */
+
+        .mc-report-header {
+            padding:20px 22px;
+            border-bottom:1px solid ${CONFIG.colors.lightBorder};
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:15px;
+        }
+
+
+        .mc-report-header-left {
+            display:flex;
+            align-items:center;
+            gap:12px;
+        }
+
+
+        .mc-report-icon {
+            width:42px;
+            height:42px;
+            border-radius:9px;
+            background:#eff6ff;
+            color:${CONFIG.colors.primary};
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:18px;
+        }
+
+
+        .mc-report-header-title {
+            margin:0;
+            font-size:19px;
+            line-height:1.2;
+            font-weight:800;
+            color:${CONFIG.colors.primaryDark};
+        }
+
+
+        .mc-report-header-subtitle {
+            margin:4px 0 0;
+            font-size:12px;
+            color:${CONFIG.colors.muted};
+            font-weight:400;
+        }
+
+
+        /* -----------------------------------------------------
+           FILTER AREA
+           ----------------------------------------------------- */
+
+        .mc-report-filter {
+            padding:20px 22px;
+            background:#fbfcfd;
+            border-bottom:1px solid ${CONFIG.colors.lightBorder};
+        }
+
+
+        .mc-report-grid {
+            display:grid;
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+            gap:15px;
+        }
+
+
+        .mc-report-field {
+            min-width:0;
+        }
+
 
-#reports-center-view {
+        .mc-report-field label {
+            display:block;
+            margin-bottom:6px;
+            font-size:12px;
+            font-weight:700;
+            color:#374151;
+        }
+
+
+        .mc-report-field label i {
+            color:${CONFIG.colors.primary};
+            margin-right:5px;
+        }
+
+
+        .mc-report-field input,
+        .mc-report-field select {
+            width:100%;
+            height:40px;
+            box-sizing:border-box;
+            padding:0 11px;
+            border:1px solid #cfd5dc;
+            border-radius:7px;
+            background:#ffffff;
+            color:#1f2937;
+            font-family:${CONFIG.fontFamily};
+            font-size:12px;
+            outline:none;
+            transition:
+                border-color .15s,
+                box-shadow .15s;
+        }
 
-    width: 100%;
 
-}
+        .mc-report-field input:focus,
+        .mc-report-field select:focus {
+            border-color:${CONFIG.colors.primary};
+            box-shadow:
+                0 0 0 3px rgba(33,118,255,0.08);
+        }
 
 
-.mrc-header {
+        .mc-report-actions {
+            margin-top:17px;
+            display:flex;
+            align-items:center;
+            justify-content:flex-end;
+            gap:9px;
+            flex-wrap:wrap;
+        }
 
-    display: flex;
 
-    justify-content: space-between;
+        .mc-report-btn {
+            height:39px;
+            padding:0 16px;
+            border-radius:7px;
+            border:1px solid transparent;
+            font-family:${CONFIG.fontFamily};
+            font-size:12px;
+            font-weight:700;
+            cursor:pointer;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            gap:7px;
+            transition:all .15s;
+        }
 
-    align-items: center;
 
-    gap: 20px;
+        .mc-report-btn-primary {
+            background:${CONFIG.colors.primary};
+            color:#ffffff;
+        }
 
-    margin-bottom: 20px;
 
-    flex-wrap: wrap;
+        .mc-report-btn-primary:hover {
+            background:#1268e8;
+        }
 
-}
 
+        .mc-report-btn-secondary {
+            background:#ffffff;
+            color:#374151;
+            border-color:#d5d9df;
+        }
 
-.mrc-title {
 
-    margin: 0;
+        .mc-report-btn-secondary:hover {
+            background:#f3f4f6;
+        }
 
-    font-size: 1.35rem;
 
-    font-weight: 800;
+        .mc-report-btn-pdf {
+            background:#111827;
+            color:#ffffff;
+        }
 
-    color: var(--primary-dark, #172554);
 
-}
+        .mc-report-btn-pdf:hover {
+            background:#000000;
+        }
 
 
-.mrc-subtitle {
+        .mc-report-message {
+            display:none;
+            margin-top:12px;
+            padding:9px 11px;
+            border-radius:7px;
+            font-size:12px;
+            font-weight:600;
+        }
 
-    margin: 5px 0 0;
 
-    color: #64748b;
+        .mc-report-message.show {
+            display:block;
+        }
+
 
-    font-size: 0.86rem;
+        .mc-report-message.error {
+            background:#fef2f2;
+            color:#b91c1c;
+            border:1px solid #fecaca;
+        }
+
+
+        .mc-report-message.success {
+            background:#ecfdf5;
+            color:#047857;
+            border:1px solid #a7f3d0;
+        }
 
-}
+
+        .mc-report-message.info {
+            background:#eff6ff;
+            color:#1d4ed8;
+            border:1px solid #bfdbfe;
+        }
 
 
-.mrc-refresh {
+        /* -----------------------------------------------------
+           PREVIEW
+           ----------------------------------------------------- */
 
-    border: 1px solid #dbe3ee;
+        .mc-report-preview {
+            display:none;
+            padding:22px;
+        }
+
+
+        .mc-report-preview.show {
+            display:block;
+        }
 
-    background: #ffffff;
 
-    color: #334155;
+        .mc-preview-toolbar {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            margin-bottom:15px;
+        }
 
-    padding: 9px 14px;
 
-    border-radius: 8px;
+        .mc-preview-title {
+            margin:0;
+            color:${CONFIG.colors.primaryDark};
+            font-size:14px;
+            font-weight:800;
+        }
 
-    cursor: pointer;
 
-    font-weight: 700;
+        .mc-preview-count {
+            color:${CONFIG.colors.muted};
+            font-size:11px;
+        }
+
 
-}
+        /* -----------------------------------------------------
+           REPORT PAPER
+           ----------------------------------------------------- */
 
+        .mc-report-paper {
+            background:#ffffff;
+            border:1px solid ${CONFIG.colors.lightBorder};
+            padding:24px;
+            box-sizing:border-box;
+            overflow:hidden;
+        }
+
+
+        .mc-paper-heading {
+            text-align:center;
+            margin-bottom:17px;
+        }
+
+
+        .mc-paper-company {
+            margin:0;
+            font-family:
+                Arial,
+                "Times New Roman",
+                sans-serif;
+            font-size:23px;
+            line-height:1.2;
+            font-weight:800;
+            color:#111111;
+            letter-spacing:.2px;
+        }
 
-.mrc-refresh:hover {
 
-    background: #f8fafc;
+        .mc-paper-title {
+            margin:5px 0 0;
+            font-size:15px;
+            font-weight:700;
+            color:#222222;
+        }
 
-}
 
+        .mc-paper-meta {
+            margin:8px 0 0;
+            font-size:10.5px;
+            color:#555555;
+            line-height:1.7;
+        }
 
-.mrc-grid {
 
-    display: grid;
+        .mc-paper-info {
+            display:grid;
+            grid-template-columns:
+                repeat(3, minmax(0,1fr));
+            gap:8px;
+            margin-bottom:15px;
+        }
 
-    grid-template-columns:
-        repeat(
-            auto-fit,
-            minmax(
-                250px,
-                1fr
-            )
-        );
 
-    gap: 16px;
+        .mc-paper-info-box {
+            border:1px solid #d9dde2;
+            padding:7px 9px;
+            background:#fafafa;
+            min-width:0;
+        }
 
-}
 
+        .mc-paper-info-label {
+            display:block;
+            font-size:9px;
+            color:#777777;
+            margin-bottom:2px;
+        }
 
-.mrc-card {
 
-    background: #ffffff;
+        .mc-paper-info-value {
+            display:block;
+            font-size:10px;
+            font-weight:700;
+            color:#222222;
+            word-break:break-word;
+        }
 
-    border: 1px solid #e5e7eb;
 
-    border-radius: 12px;
+        /* -----------------------------------------------------
+           TABLE
+           ----------------------------------------------------- */
 
-    padding: 20px;
+        .mc-table-wrap {
+            width:100%;
+            overflow-x:auto;
+        }
 
-    transition:
-        transform .15s ease,
-        box-shadow .15s ease;
 
-}
+        .mc-report-table {
+            width:100%;
+            border-collapse:collapse;
+            table-layout:fixed;
+        }
 
 
-.mrc-card:hover {
+        .mc-report-table th,
+        .mc-report-table td {
+            border:1px solid #222222;
+            padding:6px 6px;
+            font-family:${CONFIG.fontFamily};
+            font-size:10px;
+            line-height:1.35;
+            vertical-align:middle;
+            word-wrap:break-word;
+            overflow-wrap:anywhere;
+        }
 
-    transform:
-        translateY(-2px);
 
-    box-shadow:
-        0 8px 22px
-        rgba(
-            15,
-            23,
-            42,
-            0.08
-        );
+        .mc-report-table th {
+            background:#f2f2f2;
+            color:#111111;
+            font-weight:700;
+            text-align:center;
+        }
 
-}
 
+        .mc-report-table td {
+            color:#222222;
+        }
 
-.mrc-icon {
 
-    width: 44px;
+        .mc-report-table .center {
+            text-align:center;
+        }
 
-    height: 44px;
 
-    border-radius: 10px;
+        .mc-report-table .right {
+            text-align:right;
+        }
 
-    display: flex;
 
-    align-items: center;
+        .mc-report-table .debit {
+            color:${CONFIG.colors.red};
+            font-weight:700;
+        }
 
-    justify-content: center;
 
-    background: #eff6ff;
+        .mc-report-table .credit {
+            color:${CONFIG.colors.green};
+            font-weight:700;
+        }
 
-    color: #2563eb;
 
-    font-size: 19px;
+        .mc-report-table tfoot td {
+            background:#f7f7f7;
+            font-weight:700;
+        }
 
-    margin-bottom: 14px;
 
-}
+        .mc-report-empty {
+            padding:45px 20px;
+            text-align:center;
+            color:#8a8f98;
+            font-size:13px;
+        }
 
 
-.mrc-card h4 {
+        .mc-report-empty i {
+            display:block;
+            font-size:25px;
+            margin-bottom:8px;
+        }
 
-    margin: 0 0 6px;
 
-    font-size: 1rem;
+        /* -----------------------------------------------------
+           COLUMN WIDTH
+           ----------------------------------------------------- */
 
-    color: #172033;
+        .mc-col-no {
+            width:5%;
+        }
 
-}
+        .mc-col-date {
+            width:9%;
+        }
 
+        .mc-col-time {
+            width:8%;
+        }
 
-.mrc-card p {
+        .mc-col-customer {
+            width:13%;
+        }
 
-    margin: 0 0 16px;
+        .mc-col-type {
+            width:9%;
+        }
 
-    color: #64748b;
+        .mc-col-details {
+            width:18%;
+        }
 
-    font-size: 0.82rem;
+        .mc-col-comment {
+            width:14%;
+        }
 
-    line-height: 1.5;
+        .mc-col-debit {
+            width:8%;
+        }
 
-}
+        .mc-col-credit {
+            width:8%;
+        }
 
+        .mc-col-balance {
+            width:8%;
+        }
 
-.mrc-actions {
 
-    display: flex;
+        /* -----------------------------------------------------
+           RESPONSIVE
+           ----------------------------------------------------- */
 
-    gap: 8px;
+        @media (max-width: 1000px) {
 
-    flex-wrap: wrap;
-
-}
-
-
-.mrc-btn {
-
-    border: 0;
-
-    border-radius: 8px;
-
-    padding: 9px 12px;
-
-    cursor: pointer;
-
-    font-size: 0.8rem;
-
-    font-weight: 700;
-
-    display: inline-flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 7px;
-
-}
-
-
-.mrc-btn-primary {
-
-    background: #2563eb;
-
-    color: #ffffff;
-
-}
-
-
-.mrc-btn-secondary {
-
-    background: #f1f5f9;
-
-    color: #334155;
-
-}
-
-
-.mrc-btn-success {
-
-    background: #059669;
-
-    color: #ffffff;
-
-}
-
-
-.mrc-filter-card {
-
-    background: #ffffff;
-
-    border: 1px solid #e5e7eb;
-
-    border-radius: 12px;
-
-    padding: 20px;
-
-    margin-bottom: 18px;
-
-}
-
-
-.mrc-filter-grid {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(
-            auto-fit,
-            minmax(
-                180px,
-                1fr
-            )
-        );
-
-    gap: 12px;
-
-}
-
-
-.mrc-field label {
-
-    display: block;
-
-    font-size: 0.78rem;
-
-    font-weight: 700;
-
-    color: #475569;
-
-    margin-bottom: 5px;
-
-}
-
-
-.mrc-field input,
-.mrc-field select {
-
-    width: 100%;
-
-    height: 40px;
-
-    border: 1px solid #dbe3ee;
-
-    border-radius: 7px;
-
-    padding: 0 10px;
-
-    background: #ffffff;
-
-    color: #1e293b;
-
-}
-
-
-.mrc-report-result {
-
-    margin-top: 18px;
-
-}
-
-
-.mrc-summary-grid {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(
-            auto-fit,
-            minmax(
-                170px,
-                1fr
-            )
-        );
-
-    gap: 12px;
-
-    margin-bottom: 16px;
-
-}
-
-
-.mrc-summary {
-
-    border: 1px solid #e5e7eb;
-
-    background: #ffffff;
-
-    border-radius: 10px;
-
-    padding: 14px;
-
-}
-
-
-.mrc-summary-label {
-
-    color: #64748b;
-
-    font-size: 0.76rem;
-
-}
-
-
-.mrc-summary-value {
-
-    margin-top: 5px;
-
-    font-size: 1.05rem;
-
-    font-weight: 800;
-
-    color: #172033;
-
-}
-
-
-.mrc-table-wrap {
-
-    overflow-x: auto;
-
-    border: 1px solid #e5e7eb;
-
-    border-radius: 10px;
-
-    background: #ffffff;
-
-}
-
-
-.mrc-table {
-
-    width: 100%;
-
-    border-collapse: collapse;
-
-    min-width: 700px;
-
-}
-
-
-.mrc-table th,
-.mrc-table td {
-
-    border-bottom:
-        1px solid #e5e7eb;
-
-    padding: 10px;
-
-    text-align: left;
-
-    font-size: 0.82rem;
-
-}
-
-
-.mrc-table th {
-
-    background: #f8fafc;
-
-    color: #475569;
-
-    font-weight: 800;
-
-}
-
-
-.mrc-table td {
-
-    color: #334155;
-
-}
-
-
-.mrc-empty {
-
-    padding: 35px;
-
-    text-align: center;
-
-    color: #94a3b8;
-
-}
-
-
-.mrc-loading {
-
-    padding: 35px;
-
-    text-align: center;
-
-    color: #64748b;
-
-}
-
-
-.mrc-back {
-
-    margin-bottom: 12px;
-
-    border: 0;
-
-    background: transparent;
-
-    color: #2563eb;
-
-    cursor: pointer;
-
-    font-weight: 700;
-
-}
-
-
-@media (max-width: 700px) {
-
-    .mrc-card {
-
-        padding: 16px;
-
-    }
-
-}
-
-        `;
-
-
-        document.head.appendChild(
-            style
-        );
-
-    }
-
-
-    /* ============================================================
-       SIDEBAR INSTALLATION
-       ============================================================ */
-
-    function installSidebarModule() {
-
-        const sidebar =
-            document.getElementById(
-                "sidebar"
-            );
-
-
-        if (!sidebar) {
-
-            return false;
+            .mc-report-grid {
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+            }
 
         }
 
 
-        const oldReports =
+        @media (max-width: 650px) {
+
+            .mc-report-header {
+                padding:16px;
+            }
+
+
+            .mc-report-filter {
+                padding:16px;
+            }
+
+
+            .mc-report-preview {
+                padding:12px;
+            }
+
+
+            .mc-report-grid {
+                grid-template-columns:1fr;
+            }
+
+
+            .mc-paper-info {
+                grid-template-columns:1fr;
+            }
+
+
+            .mc-report-actions {
+                justify-content:stretch;
+            }
+
+
+            .mc-report-btn {
+                flex:1;
+            }
+
+
+            .mc-report-paper {
+                padding:12px;
+            }
+
+        }
+
+
+        /* -----------------------------------------------------
+           PDF AREA
+           ----------------------------------------------------- */
+
+        .mc-pdf-render-area {
+            width:210mm;
+            min-height:297mm;
+            box-sizing:border-box;
+            padding:10mm;
+            background:#ffffff;
+            color:#111111;
+            font-family:${CONFIG.fontFamily};
+        }
+
+
+        .mc-pdf-render-area .mc-report-table th,
+        .mc-pdf-render-area .mc-report-table td {
+            font-size:9px;
+            padding:5px 5px;
+        }
+
+
+        /* -----------------------------------------------------
+           PRINT
+           ----------------------------------------------------- */
+
+        @media print {
+
+            body * {
+                visibility:hidden !important;
+            }
+
+
+            #mc-report-pdf-area,
+            #mc-report-pdf-area * {
+                visibility:visible !important;
+            }
+
+
+            #mc-report-pdf-area {
+                position:absolute;
+                left:0;
+                top:0;
+                width:210mm !important;
+                margin:0 !important;
+                padding:10mm !important;
+                border:none !important;
+            }
+
+        }
+
+        `;
+
+
+        document.head.appendChild(style);
+
+    }
+
+
+    /* =========================================================
+       BUILD REPORT CENTER UI
+       ========================================================= */
+
+    function buildUI() {
+
+        const container =
             document.getElementById(
-                "menu-reports-parent"
+                "cust-reports-section"
             );
 
 
-        /*
-         * Existing Reports & History menu already exists
-         * in the ERP. We reuse its position and convert it
-         * into the new Reports Center without changing the
-         * accounting source code.
-         */
-
-        if (oldReports) {
-
-            const anchor =
-                oldReports.querySelector(
-                    ":scope > a"
-                );
+        if (!container) {
+            return false;
+        }
 
 
-            if (anchor) {
+        injectStyles();
 
-                const newAnchor =
-                    anchor.cloneNode(
-                        true
+
+        container.innerHTML = `
+
+        <div class="mc-report-wrapper">
+
+            <div class="mc-report-card">
+
+
+                <!-- =============================================
+                     HEADER
+                     ============================================= -->
+
+                <div class="mc-report-header">
+
+                    <div class="mc-report-header-left">
+
+                        <div class="mc-report-icon">
+
+                            <i class="fa-solid fa-file-invoice-dollar"></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <h2 class="mc-report-header-title">
+
+                                রিপোর্ট সেন্টার
+
+                            </h2>
+
+
+                            <p class="mc-report-header-subtitle">
+
+                                প্রয়োজন অনুযায়ী রিপোর্ট নির্বাচন করুন এবং PDF ডাউনলোড করুন।
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     FILTER
+                     ============================================= -->
+
+                <div class="mc-report-filter">
+
+
+                    <div class="mc-report-grid">
+
+
+                        <!-- REPORT TYPE -->
+
+                        <div class="mc-report-field">
+
+                            <label>
+
+                                <i class="fa-solid fa-file-lines"></i>
+
+                                রিপোর্টের ধরন
+
+                            </label>
+
+
+                            <select id="mc-report-type">
+
+                                ${REPORT_TYPES.map(function (report) {
+
+                                    return `
+
+                                    <option
+                                        value="${escapeHtml(report.id)}"
+                                        ${report.available ? "" : "disabled"}
+                                    >
+
+                                        ${escapeHtml(
+                                            report.banglaTitle
+                                        )}
+
+                                    </option>
+
+                                    `;
+
+                                }).join("")}
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- DATE MODE -->
+
+                        <div class="mc-report-field">
+
+                            <label>
+
+                                <i class="fa-solid fa-calendar-days"></i>
+
+                                তারিখের ধরন
+
+                            </label>
+
+
+                            <select id="mc-report-date-mode">
+
+                                <option value="single">
+
+                                    নির্দিষ্ট তারিখ
+
+                                </option>
+
+
+                                <option value="range" selected>
+
+                                    তারিখের পরিসর
+
+                                </option>
+
+
+                                <option value="all">
+
+                                    সকল তারিখ
+
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- FROM DATE -->
+
+                        <div
+                            class="mc-report-field"
+                            id="mc-from-date-field"
+                        >
+
+                            <label>
+
+                                <i class="fa-solid fa-calendar-plus"></i>
+
+                                শুরু তারিখ
+
+                            </label>
+
+
+                            <input
+                                type="date"
+                                id="mc-report-from-date"
+                            >
+
+                        </div>
+
+
+                        <!-- TO DATE -->
+
+                        <div
+                            class="mc-report-field"
+                            id="mc-to-date-field"
+                        >
+
+                            <label>
+
+                                <i class="fa-solid fa-calendar-check"></i>
+
+                                শেষ তারিখ
+
+                            </label>
+
+
+                            <input
+                                type="date"
+                                id="mc-report-to-date"
+                            >
+
+                        </div>
+
+
+                        <!-- CUSTOMER -->
+
+                        <div class="mc-report-field">
+
+                            <label>
+
+                                <i class="fa-solid fa-user"></i>
+
+                                কাস্টমার
+
+                            </label>
+
+
+                            <select id="mc-report-customer">
+
+                                <option value="all">
+
+                                    সকল কাস্টমার
+
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- =========================================
+                         ACTIONS
+                         ========================================= -->
+
+                    <div class="mc-report-actions">
+
+
+                        <button
+                            type="button"
+                            class="mc-report-btn mc-report-btn-secondary"
+                            id="mc-report-reset"
+                        >
+
+                            <i class="fa-solid fa-rotate-left"></i>
+
+                            রিসেট
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="mc-report-btn mc-report-btn-primary"
+                            id="mc-report-generate"
+                        >
+
+                            <i class="fa-solid fa-file-circle-check"></i>
+
+                            রিপোর্ট তৈরি করুন
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="mc-report-btn mc-report-btn-pdf"
+                            id="mc-report-download"
+                            style="display:none;"
+                        >
+
+                            <i class="fa-solid fa-file-pdf"></i>
+
+                            PDF ডাউনলোড
+
+                        </button>
+
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <div
+                        id="mc-report-message"
+                        class="mc-report-message"
+                    ></div>
+
+
+                </div>
+
+
+                <!-- =============================================
+                     PREVIEW
+                     ============================================= -->
+
+                <div
+                    class="mc-report-preview"
+                    id="mc-report-preview"
+                >
+
+                    <div class="mc-preview-toolbar">
+
+
+                        <div>
+
+                            <h3 class="mc-preview-title">
+
+                                <i class="fa-solid fa-eye"></i>
+
+                                রিপোর্ট প্রিভিউ
+
+                            </h3>
+
+                        </div>
+
+
+                        <span
+                            class="mc-preview-count"
+                            id="mc-report-count"
+                        ></span>
+
+
+                    </div>
+
+
+                    <div
+                        id="mc-report-paper"
+                        class="mc-report-paper"
+                    ></div>
+
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+        `;
+
+
+        setDefaultDates();
+
+        populateCustomerDropdown();
+
+        attachEvents();
+
+        handleDateMode();
+
+
+        return true;
+
+    }
+
+
+    /* =========================================================
+       SET DEFAULT DATES
+       ========================================================= */
+
+    function setDefaultDates() {
+
+        const today =
+            getToday();
+
+
+        const from =
+            document.getElementById(
+                "mc-report-from-date"
+            );
+
+
+        const to =
+            document.getElementById(
+                "mc-report-to-date"
+            );
+
+
+        if (from) {
+            from.value = today;
+        }
+
+
+        if (to) {
+            to.value = today;
+        }
+
+    }
+
+
+    /* =========================================================
+       POPULATE CUSTOMER DROPDOWN
+       ========================================================= */
+
+    function populateCustomerDropdown() {
+
+        const select =
+            document.getElementById(
+                "mc-report-customer"
+            );
+
+
+        if (!select) {
+            return;
+        }
+
+
+        const currentValue =
+            select.value || "all";
+
+
+        const customers =
+            getCustomers();
+
+
+        const sorted =
+            [...customers].sort(function (a, b) {
+
+                return String(a.name || "")
+                    .localeCompare(
+                        String(b.name || ""),
+                        "bn"
                     );
 
-
-                newAnchor.removeAttribute(
-                    "onclick"
-                );
+            });
 
 
-                newAnchor.onclick =
-                    function (event) {
+        select.innerHTML = `
 
-                        event.preventDefault();
+            <option value="all">
 
-                        event.stopPropagation();
+                সকল কাস্টমার
 
-                        openReportsCenter();
-
-                    };
-
-
-                oldReports.replaceChild(
-                    newAnchor,
-                    anchor
-                );
-
-            }
-
-
-            const oldSubmenu =
-                oldReports.querySelector(
-                    ":scope > .submenu-list"
-                );
-
-
-            if (oldSubmenu) {
-
-                oldSubmenu.style.display =
-                    "none";
-
-            }
-
-
-            const text =
-                oldReports.querySelector(
-                    ":scope > a .menu-link-inner span"
-                );
-
-
-            if (text) {
-
-                text.textContent =
-                    "Reports";
-
-            }
-
-
-            oldReports.classList.remove(
-                "open"
-            );
-
-
-            oldReports.classList.remove(
-                "active"
-            );
-
-
-            oldReports.dataset.mousumiReportsCenter =
-                "true";
-
-
-            return true;
-
-        }
-
-
-        /*
-         * Fallback:
-         * If old reports menu does not exist,
-         * create a new one before Settings.
-         */
-
-        const settings =
-            document.getElementById(
-                "menu-settings-parent"
-            );
-
-
-        const li =
-            document.createElement(
-                "li"
-            );
-
-
-        li.className =
-            "menu-item";
-
-
-        li.id =
-            "menu-mousumi-reports";
-
-
-        li.innerHTML = `
-
-            <a href="#">
-
-                <span class="menu-link-inner">
-
-                    <i class="fa-solid fa-file-invoice-dollar"></i>
-
-                    <span>Reports</span>
-
-                </span>
-
-            </a>
+            </option>
 
         `;
 
 
-        li.querySelector(
-            "a"
-        ).onclick =
-            function (event) {
+        sorted.forEach(function (customer) {
 
-                event.preventDefault();
-
-                openReportsCenter();
-
-            };
+            if (!customer.customerId) {
+                return;
+            }
 
 
-        if (settings) {
+            select.insertAdjacentHTML(
+                "beforeend",
+                `
 
-            sidebar
-                .querySelector(
-                    ".menu-list"
-                )
-                .insertBefore(
-                    li,
-                    settings
+                <option
+                    value="${escapeHtml(
+                        customer.customerId
+                    )}"
+                >
+
+                    ${escapeHtml(
+                        customer.name ||
+                        "Unnamed Customer"
+                    )}
+
+                    — ${escapeHtml(
+                        customer.customerId
+                    )}
+
+                </option>
+
+                `
+            );
+
+        });
+
+
+        if (
+            currentValue === "all" ||
+            sorted.some(function (customer) {
+
+                return String(
+                    customer.customerId
+                ) === String(currentValue);
+
+            })
+        ) {
+
+            select.value =
+                currentValue;
+
+        }
+
+    }
+
+
+    /* =========================================================
+       DATE MODE
+       ========================================================= */
+
+    function handleDateMode() {
+
+        const mode =
+            document.getElementById(
+                "mc-report-date-mode"
+            )?.value;
+
+
+        const fromField =
+            document.getElementById(
+                "mc-from-date-field"
+            );
+
+
+        const toField =
+            document.getElementById(
+                "mc-to-date-field"
+            );
+
+
+        if (!fromField || !toField) {
+            return;
+        }
+
+
+        if (mode === "single") {
+
+            fromField.style.display =
+                "block";
+
+            toField.style.display =
+                "none";
+
+        }
+
+
+        else if (mode === "range") {
+
+            fromField.style.display =
+                "block";
+
+            toField.style.display =
+                "block";
+
+        }
+
+
+        else {
+
+            fromField.style.display =
+                "none";
+
+            toField.style.display =
+                "none";
+
+        }
+
+    }
+
+
+    /* =========================================================
+       MESSAGE
+       ========================================================= */
+
+    function showMessage(
+        message,
+        type = "info"
+    ) {
+
+        const box =
+            document.getElementById(
+                "mc-report-message"
+            );
+
+
+        if (!box) {
+            return;
+        }
+
+
+        box.textContent =
+            message;
+
+
+        box.className =
+            "mc-report-message show " +
+            type;
+
+    }
+
+
+    function hideMessage() {
+
+        const box =
+            document.getElementById(
+                "mc-report-message"
+            );
+
+
+        if (!box) {
+            return;
+        }
+
+
+        box.className =
+            "mc-report-message";
+
+        box.textContent =
+            "";
+
+    }
+
+
+    /* =========================================================
+       ATTACH EVENTS
+       ========================================================= */
+
+    function attachEvents() {
+
+        const dateMode =
+            document.getElementById(
+                "mc-report-date-mode"
+            );
+
+
+        if (dateMode) {
+
+            dateMode.addEventListener(
+                "change",
+                handleDateMode
+            );
+
+        }
+
+
+        const generate =
+            document.getElementById(
+                "mc-report-generate"
+            );
+
+
+        if (generate) {
+
+            generate.addEventListener(
+                "click",
+                generateReport
+            );
+
+        }
+
+
+        const reset =
+            document.getElementById(
+                "mc-report-reset"
+            );
+
+
+        if (reset) {
+
+            reset.addEventListener(
+                "click",
+                resetReport
+            );
+
+        }
+
+
+        const download =
+            document.getElementById(
+                "mc-report-download"
+            );
+
+
+        if (download) {
+
+            download.addEventListener(
+                "click",
+                downloadPDF
+            );
+
+        }
+
+
+        const reportType =
+            document.getElementById(
+                "mc-report-type"
+            );
+
+
+        if (reportType) {
+
+            reportType.addEventListener(
+                "change",
+                function () {
+
+                    const selected =
+                        reportType.value;
+
+
+                    if (
+                        selected ===
+                        "customer-transaction"
+                    ) {
+
+                        return;
+
+                    }
+
+                }
+            );
+
+        }
+
+    }
+
+
+    /* =========================================================
+       VALIDATE FILTER
+       ========================================================= */
+
+    function validateFilter() {
+
+        const mode =
+            document.getElementById(
+                "mc-report-date-mode"
+            )?.value;
+
+
+        const from =
+            document.getElementById(
+                "mc-report-from-date"
+            )?.value;
+
+
+        const to =
+            document.getElementById(
+                "mc-report-to-date"
+            )?.value;
+
+
+        if (mode === "single") {
+
+            if (!from) {
+
+                showMessage(
+                    "দয়া করে একটি তারিখ নির্বাচন করুন।",
+                    "error"
                 );
 
-        } else {
+                return false;
 
-            sidebar
-                .querySelector(
-                    ".menu-list"
-                )
-                .appendChild(
-                    li
+            }
+
+        }
+
+
+        if (mode === "range") {
+
+            if (!from || !to) {
+
+                showMessage(
+                    "শুরু এবং শেষ—দুইটি তারিখ নির্বাচন করুন।",
+                    "error"
                 );
+
+                return false;
+
+            }
+
+
+            if (from > to) {
+
+                showMessage(
+                    "শুরু তারিখ শেষ তারিখের পরে হতে পারে না।",
+                    "error"
+                );
+
+                return false;
+
+            }
 
         }
 
@@ -1320,926 +1982,359 @@
     }
 
 
-    /* ============================================================
-       CREATE REPORT CENTER VIEW
-       ============================================================ */
+    /* =========================================================
+       GENERATE REPORT
+       ========================================================= */
 
-    function createReportCenterView() {
+    function generateReport() {
+
+        hideMessage();
+
+
+        if (!validateFilter()) {
+            return;
+        }
+
+
+        const reportType =
+            document.getElementById(
+                "mc-report-type"
+            )?.value;
+
 
         if (
-            document.getElementById(
-                "reports-center-view"
-            )
+            reportType !==
+            "customer-transaction"
         ) {
 
-            return;
-
-        }
-
-
-        const mainWrapper =
-            document.querySelector(
-                ".main-wrapper"
+            showMessage(
+                "এই রিপোর্টটি এখনো তৈরি করা হয়নি।",
+                "error"
             );
-
-
-        if (!mainWrapper) {
 
             return;
 
         }
 
 
-        const view =
-            document.createElement(
-                "div"
-            );
+        const transactions =
+            getFilteredTransactions();
 
 
-        view.className =
-            "view-panel";
+        if (!transactions.length) {
 
+            const preview =
+                document.getElementById(
+                    "mc-report-preview"
+                );
 
-        view.id =
-            "reports-center-view";
 
+            const download =
+                document.getElementById(
+                    "mc-report-download"
+                );
 
-        view.innerHTML = `
 
-            <div class="mrc-header">
+            if (preview) {
 
-                <div>
-
-                    <h2 class="mrc-title">
-
-                        REPORT CENTER
-
-                    </h2>
-
-                    <p class="mrc-subtitle">
-
-                        আপনার প্রয়োজনীয় সকল রিপোর্ট
-                        এক জায়গা থেকে তৈরি ও PDF হিসেবে
-                        সংরক্ষণ করুন।
-
-                    </p>
-
-                </div>
-
-
-                <button
-                    class="mrc-refresh"
-                    type="button"
-                    onclick="MousumiReports.refresh()"
-                >
-
-                    <i class="fa-solid fa-rotate"></i>
-
-                    Refresh
-
-                </button>
-
-            </div>
-
-
-            <div
-                id="mrc-main-content"
-            >
-
-                <div class="mrc-loading">
-
-                    Reports Center প্রস্তুত হচ্ছে...
-
-                </div>
-
-            </div>
-
-        `;
-
-
-        mainWrapper.appendChild(
-            view
-        );
-
-    }
-
-
-    /* ============================================================
-       REPORT CARD DEFINITIONS
-       ============================================================ */
-
-    function reportCardsHTML() {
-
-        return `
-
-            <div class="mrc-grid">
-
-
-                <!-- DAILY TRANSACTION -->
-
-                <div class="mrc-card">
-
-                    <div class="mrc-icon">
-
-                        <i class="fa-solid fa-receipt"></i>
-
-                    </div>
-
-                    <h4>
-                        Daily Transaction Report
-                    </h4>
-
-                    <p>
-                        নির্দিষ্ট তারিখের সকল
-                        কাস্টমার লেনদেনের রিপোর্ট।
-                    </p>
-
-                    <div class="mrc-actions">
-
-                        <button
-                            class="mrc-btn mrc-btn-primary"
-                            onclick="MousumiReports.open('transactions')"
-                        >
-
-                            <i class="fa-solid fa-file-pdf"></i>
-
-                            Report
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-                <!-- CUSTOMER LEDGER -->
-
-                <div class="mrc-card">
-
-                    <div class="mrc-icon">
-
-                        <i class="fa-solid fa-user"></i>
-
-                    </div>
-
-                    <h4>
-                        Customer Ledger
-                    </h4>
-
-                    <p>
-                        নির্দিষ্ট কাস্টমারের
-                        সম্পূর্ণ লেনদেনের বিবরণ।
-                    </p>
-
-                    <div class="mrc-actions">
-
-                        <button
-                            class="mrc-btn mrc-btn-primary"
-                            onclick="MousumiReports.open('ledger')"
-                        >
-
-                            <i class="fa-solid fa-book"></i>
-
-                            Report
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-                <!-- DUE -->
-
-                <div class="mrc-card">
-
-                    <div class="mrc-icon">
-
-                        <i class="fa-solid fa-money-bill-transfer"></i>
-
-                    </div>
-
-                    <h4>
-                        Outstanding Due Report
-                    </h4>
-
-                    <p>
-                        সকল Active Customer-এর
-                        বর্তমান বকেয়া/পাওনা।
-                    </p>
-
-                    <div class="mrc-actions">
-
-                        <button
-                            class="mrc-btn mrc-btn-primary"
-                            onclick="MousumiReports.open('due')"
-                        >
-
-                            <i class="fa-solid fa-file-invoice-dollar"></i>
-
-                            Report
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-                <!-- BALANCE -->
-
-                <div class="mrc-card">
-
-                    <div class="mrc-icon">
-
-                        <i class="fa-solid fa-wallet"></i>
-
-                    </div>
-
-                    <h4>
-                        Balance Summary
-                    </h4>
-
-                    <p>
-                        সকল Category ও Account-এর
-                        বর্তমান ব্যালেন্স।
-                    </p>
-
-                    <div class="mrc-actions">
-
-                        <button
-                            class="mrc-btn mrc-btn-primary"
-                            onclick="MousumiReports.open('balance')"
-                        >
-
-                            <i class="fa-solid fa-chart-column"></i>
-
-                            Report
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-                <!-- CASH -->
-
-                <div class="mrc-card">
-
-                    <div class="mrc-icon">
-
-                        <i class="fa-solid fa-money-bill-wave"></i>
-
-                    </div>
-
-                    <h4>
-                        Cash Inventory Report
-                    </h4>
-
-                    <p>
-                        Cash denomination এবং
-                        মোট Cash Inventory।
-                    </p>
-
-                    <div class="mrc-actions">
-
-                        <button
-                            class="mrc-btn mrc-btn-primary"
-                            onclick="MousumiReports.open('cash')"
-                        >
-
-                            <i class="fa-solid fa-file-lines"></i>
-
-                            Report
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-                <!-- CARD -->
-
-                <div class="mrc-card">
-
-                    <div class="mrc-icon">
-
-                        <i class="fa-solid fa-sim-card"></i>
-
-                    </div>
-
-                    <h4>
-                        Card Inventory Report
-                    </h4>
-
-                    <p>
-                        Operator অনুযায়ী Card
-                        Inventory ও মূল্য।
-                    </p>
-
-                    <div class="mrc-actions">
-
-                        <button
-                            class="mrc-btn mrc-btn-primary"
-                            onclick="MousumiReports.open('card')"
-                        >
-
-                            <i class="fa-solid fa-boxes-stacked"></i>
-
-                            Report
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-                <!-- DAILY CLOSING -->
-
-                <div class="mrc-card">
-
-                    <div class="mrc-icon">
-
-                        <i class="fa-solid fa-lock"></i>
-
-                    </div>
-
-                    <h4>
-                        Daily Closing Report
-                    </h4>
-
-                    <p>
-                        সংরক্ষিত Daily Closing
-                        Snapshot রিপোর্ট।
-                    </p>
-
-                    <div class="mrc-actions">
-
-                        <button
-                            class="mrc-btn mrc-btn-primary"
-                            onclick="MousumiReports.open('closing')"
-                        >
-
-                            <i class="fa-solid fa-file-shield"></i>
-
-                            Report
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-                <!-- AUDIT -->
-
-                <div class="mrc-card">
-
-                    <div class="mrc-icon">
-
-                        <i class="fa-solid fa-clock-rotate-left"></i>
-
-                    </div>
-
-                    <h4>
-                        Audit & History Report
-                    </h4>
-
-                    <p>
-                        Account, Cash এবং Card-এর
-                        সংরক্ষিত History।
-                    </p>
-
-                    <div class="mrc-actions">
-
-                        <button
-                            class="mrc-btn mrc-btn-primary"
-                            onclick="MousumiReports.open('audit')"
-                        >
-
-                            <i class="fa-solid fa-history"></i>
-
-                            Report
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-            </div>
-
-        `;
-
-    }
-
-
-    /* ============================================================
-       RENDER HOME
-       ============================================================ */
-
-    function renderHome() {
-
-        const container =
-            document.getElementById(
-                "mrc-main-content"
-            );
-
-
-        if (!container) {
-
-            return;
-
-        }
-
-
-        container.innerHTML =
-            reportCardsHTML();
-
-    }
-
-
-    /* ============================================================
-       OPEN REPORT CENTER
-       ============================================================ */
-
-    async function openReportsCenter() {
-
-        const view =
-            document.getElementById(
-                "reports-center-view"
-            );
-
-
-        if (!view) {
-
-            return;
-
-        }
-
-
-        document
-            .querySelectorAll(
-                ".view-panel"
-            )
-            .forEach(
-                function (panel) {
-
-                    panel.classList.remove(
-                        "active"
-                    );
-
-                }
-            );
-
-
-        document
-            .querySelectorAll(
-                ".menu-item"
-            )
-            .forEach(
-                function (item) {
-
-                    item.classList.remove(
-                        "active"
-                    );
-
-                }
-            );
-
-
-        view.classList.add(
-            "active"
-        );
-
-
-        const menu =
-            document.getElementById(
-                "menu-reports-parent"
-            ) ||
-            document.getElementById(
-                "menu-mousumi-reports"
-            );
-
-
-        if (menu) {
-
-            menu.classList.add(
-                "active"
-            );
-
-        }
-
-
-        const title =
-            document.getElementById(
-                "top-title"
-            );
-
-
-        if (title) {
-
-            title.innerText =
-                "Reports Center";
-
-        }
-
-
-        const content =
-            document.getElementById(
-                "mrc-main-content"
-            );
-
-
-        if (content) {
-
-            content.innerHTML = `
-
-                <div class="mrc-loading">
-
-                    <i class="fa-solid fa-spinner fa-spin"></i>
-
-                    Reports data loading...
-
-                </div>
-
-            `;
-
-        }
-
-
-        try {
-
-            await loadReportData();
-
-
-            renderHome();
-
-        } catch (error) {
-
-            console.error(
-                error
-            );
-
-
-            if (content) {
-
-                content.innerHTML = `
-
-                    <div class="mrc-empty">
-
-                        Reports data load করা যায়নি।
-
-                        <br><br>
-
-                        ${escapeHTML(
-                            error.message
-                        )}
-
-                        <br><br>
-
-                        <button
-                            class="mrc-btn mrc-btn-primary"
-                            onclick="MousumiReports.refresh()"
-                        >
-
-                            Retry
-
-                        </button>
-
-                    </div>
-
-                `;
+                preview.classList.remove(
+                    "show"
+                );
 
             }
 
+
+            if (download) {
+
+                download.style.display =
+                    "none";
+
+            }
+
+
+            showMessage(
+                "নির্বাচিত সময়ের মধ্যে কোনো লেনদেন পাওয়া যায়নি।",
+                "error"
+            );
+
+            return;
+
         }
+
+
+        renderCustomerTransactionReport(
+            transactions
+        );
+
+
+        const preview =
+            document.getElementById(
+                "mc-report-preview"
+            );
+
+
+        const download =
+            document.getElementById(
+                "mc-report-download"
+            );
+
+
+        if (preview) {
+
+            preview.classList.add(
+                "show"
+            );
+
+        }
+
+
+        if (download) {
+
+            download.style.display =
+                "inline-flex";
+
+        }
+
+
+        showMessage(
+            "রিপোর্ট সফলভাবে তৈরি হয়েছে।",
+            "success"
+        );
 
     }
 
 
-    /* ============================================================
-       OPEN INDIVIDUAL REPORT
-       ============================================================ */
+    /* =========================================================
+       BUILD REPORT HEADER
+       ========================================================= */
 
-    async function openReport(
-        reportType
+    function buildReportHeader(
+        transactions
     ) {
 
-        const container =
+        const mode =
             document.getElementById(
-                "mrc-main-content"
-            );
+                "mc-report-date-mode"
+            )?.value;
 
-
-        if (!container) {
-
-            return;
-
-        }
-
-
-        container.innerHTML = `
-
-            <div class="mrc-loading">
-
-                <i class="fa-solid fa-spinner fa-spin"></i>
-
-                Report প্রস্তুত হচ্ছে...
-
-            </div>
-
-        `;
-
-
-        try {
-
-            await loadReportData();
-
-
-            if (
-                reportType ===
-                "transactions"
-            ) {
-
-                renderTransactionReport();
-
-            }
-
-            else if (
-                reportType ===
-                "ledger"
-            ) {
-
-                renderLedgerReport();
-
-            }
-
-            else if (
-                reportType ===
-                "due"
-            ) {
-
-                renderDueReport();
-
-            }
-
-            else if (
-                reportType ===
-                "balance"
-            ) {
-
-                renderBalanceReport();
-
-            }
-
-            else if (
-                reportType ===
-                "cash"
-            ) {
-
-                renderCashReport();
-
-            }
-
-            else if (
-                reportType ===
-                "card"
-            ) {
-
-                renderCardReport();
-
-            }
-
-            else if (
-                reportType ===
-                "closing"
-            ) {
-
-                renderClosingReport();
-
-            }
-
-            else if (
-                reportType ===
-                "audit"
-            ) {
-
-                renderAuditReport();
-
-            }
-
-        } catch (error) {
-
-            container.innerHTML = `
-
-                <div class="mrc-empty">
-
-                    Report তৈরি করা যায়নি।
-
-                    <br><br>
-
-                    ${escapeHTML(
-                        error.message
-                    )}
-
-                </div>
-
-            `;
-
-        }
-
-    }
-
-
-    /* ============================================================
-       BACK BUTTON
-       ============================================================ */
-
-    function backHome() {
-
-        renderHome();
-
-    }
-
-
-    /* ============================================================
-       DAILY TRANSACTION REPORT UI
-       ============================================================ */
-
-    function renderTransactionReport() {
-
-        const defaults =
-            setDefaultDates();
-
-
-        const container =
-            document.getElementById(
-                "mrc-main-content"
-            );
-
-
-        container.innerHTML = `
-
-            <button
-                class="mrc-back"
-                onclick="MousumiReports.back()"
-            >
-
-                ← Back to Reports
-
-            </button>
-
-
-            <div class="mrc-filter-card">
-
-                <div class="mrc-title"
-                     style="font-size:1.05rem; margin-bottom:15px;">
-
-                    Daily Transaction Report
-
-                </div>
-
-
-                <div class="mrc-filter-grid">
-
-                    <div class="mrc-field">
-
-                        <label>
-                            From Date
-                        </label>
-
-                        <input
-                            type="date"
-                            id="mrcTxFrom"
-                            value="${defaults.from}"
-                        />
-
-                    </div>
-
-
-                    <div class="mrc-field">
-
-                        <label>
-                            To Date
-                        </label>
-
-                        <input
-                            type="date"
-                            id="mrcTxTo"
-                            value="${defaults.to}"
-                        />
-
-                    </div>
-
-                </div>
-
-
-                <div style="margin-top:14px;">
-
-                    <button
-                        class="mrc-btn mrc-btn-primary"
-                        onclick="MousumiReports.generateTransactionReport()"
-                    >
-
-                        <i class="fa-solid fa-file-pdf"></i>
-
-                        Generate PDF
-
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <div
-                id="mrcTxResult"
-                class="mrc-report-result"
-            ></div>
-
-        `;
-
-
-        generateTransactionReport();
-
-    }
-
-
-    /* ============================================================
-       DAILY TRANSACTION REPORT
-       ============================================================ */
-
-    function generateTransactionReport() {
 
         const from =
             document.getElementById(
-                "mrcTxFrom"
-            ).value;
+                "mc-report-from-date"
+            )?.value;
 
 
         const to =
             document.getElementById(
-                "mrcTxTo"
-            ).value;
+                "mc-report-to-date"
+            )?.value;
 
 
-        let transactions =
-            reportDataCache.transactions
-                .filter(
-                    function (transaction) {
-
-                        if (
-                            from &&
-                            transaction.date <
-                            from
-                        ) {
-
-                            return false;
-
-                        }
+        const customerId =
+            document.getElementById(
+                "mc-report-customer"
+            )?.value ||
+            "all";
 
 
-                        if (
-                            to &&
-                            transaction.date >
-                            to
-                        ) {
-
-                            return false;
-
-                        }
+        let period =
+            "সকল তারিখ";
 
 
-                        return true;
+        if (mode === "single") {
 
-                    }
+            period =
+                formatDate(
+                    from
                 );
 
+        }
 
-        transactions.sort(
-            function (a, b) {
 
-                return (
-                    String(a.date)
-                    +
-                    " "
-                    +
-                    String(a.time)
-                ).localeCompare(
-                    String(b.date)
-                    +
-                    " "
-                    +
-                    String(b.time)
+        if (mode === "range") {
+
+            period =
+                `${formatDate(from)} — ${formatDate(to)}`;
+
+        }
+
+
+        let customerText =
+            "সকল কাস্টমার";
+
+
+        if (customerId !== "all") {
+
+            customerText =
+                getCustomerName(
+                    customerId
                 );
 
-            }
-        );
+        }
+
+
+        return `
+
+            <div class="mc-paper-heading">
+
+                <h1 class="mc-paper-company">
+
+                    ${escapeHtml(
+                        CONFIG.companyName
+                    )}
+
+                </h1>
+
+
+                <div class="mc-paper-title">
+
+                    ${escapeHtml(
+                        CONFIG.reportTitle
+                    )}
+
+                </div>
+
+
+                <div class="mc-paper-meta">
+
+                    রিপোর্ট সময়কাল:
+                    <strong>
+                        ${escapeHtml(period)}
+                    </strong>
+
+                    <br>
+
+                    কাস্টমার:
+                    <strong>
+                        ${escapeHtml(customerText)}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="mc-paper-info">
+
+
+                <div class="mc-paper-info-box">
+
+                    <span class="mc-paper-info-label">
+
+                        মোট লেনদেন
+
+                    </span>
+
+
+                    <span class="mc-paper-info-value">
+
+                        ${toBanglaNumber(
+                            transactions.length
+                        )}
+
+                    </span>
+
+                </div>
+
+
+                <div class="mc-paper-info-box">
+
+                    <span class="mc-paper-info-label">
+
+                        মোট দিলাম
+
+                    </span>
+
+
+                    <span
+                        class="mc-paper-info-value"
+                        style="color:${CONFIG.colors.red};"
+                    >
+
+                        ${formatMoney(
+                            transactions.reduce(
+                                function (sum, transaction) {
+
+                                    return sum +
+                                        (
+                                            Number(
+                                                transaction.debit
+                                            ) || 0
+                                        );
+
+                                },
+                                0
+                            )
+                        )}
+
+                    </span>
+
+                </div>
+
+
+                <div class="mc-paper-info-box">
+
+                    <span class="mc-paper-info-label">
+
+                        মোট পেলাম
+
+                    </span>
+
+
+                    <span
+                        class="mc-paper-info-value"
+                        style="color:${CONFIG.colors.green};"
+                    >
+
+                        ${formatMoney(
+                            transactions.reduce(
+                                function (sum, transaction) {
+
+                                    return sum +
+                                        (
+                                            Number(
+                                                transaction.credit
+                                            ) || 0
+                                        );
+
+                                },
+                                0
+                            )
+                        )}
+
+                    </span>
+
+                </div>
+
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* =========================================================
+       RENDER CUSTOMER TRANSACTION REPORT
+       ========================================================= */
+
+    function renderCustomerTransactionReport(
+        transactions
+    ) {
+
+        const paper =
+            document.getElementById(
+                "mc-report-paper"
+            );
+
+
+        if (!paper) {
+            return;
+        }
+
+
+        const runningBalances =
+            calculateRunningBalances();
 
 
         let totalDebit = 0;
@@ -2247,168 +2342,282 @@
         let totalCredit = 0;
 
 
-        transactions.forEach(
-            function (transaction) {
+        let rows = "";
 
-                totalDebit +=
+
+        transactions.forEach(
+            function (transaction, index) {
+
+                const debit =
                     Number(
                         transaction.debit
                     ) || 0;
 
 
-                totalCredit +=
+                const credit =
                     Number(
                         transaction.credit
                     ) || 0;
+
+
+                totalDebit +=
+                    debit;
+
+
+                totalCredit +=
+                    credit;
+
+
+                const customerName =
+                    getCustomerName(
+                        transaction.customerId
+                    );
+
+
+                const balance =
+                    runningBalances.get(
+                        String(transaction.id)
+                    );
+
+
+                /*
+                   বিস্তারিত:
+                   Existing transaction data has
+                   description field.
+                */
+
+                const details =
+                    transaction.description ||
+                    transaction.details ||
+                    transaction.particulars ||
+                    "-";
+
+
+                /*
+                   মন্তব্য:
+                   Existing transaction object may
+                   not contain a comment field.
+                   তাই future compatibility রাখা হয়েছে.
+                */
+
+                const comment =
+                    transaction.comment ||
+                    transaction.remarks ||
+                    transaction.note ||
+                    transaction.notes ||
+                    "-";
+
+
+                const type =
+                    transaction.type ||
+                    "-";
+
+
+                rows += `
+
+                    <tr>
+
+
+                        <td class="center">
+
+                            ${toBanglaNumber(
+                                index + 1
+                            )}।
+
+                        </td>
+
+
+                        <td class="center">
+
+                            ${escapeHtml(
+                                formatDate(
+                                    transaction.date
+                                )
+                            )}
+
+                        </td>
+
+
+                        <td class="center">
+
+                            ${escapeHtml(
+                                toBanglaNumber(
+                                    transaction.time ||
+                                    "-"
+                                )
+                            )}
+
+                        </td>
+
+
+                        <td>
+
+                            <strong>
+
+                                ${escapeHtml(
+                                    customerName
+                                )}
+
+                            </strong>
+
+
+                            <br>
+
+
+                            <span
+                                style="
+                                    font-size:8px;
+                                    color:#777;
+                                "
+                            >
+
+                                ${escapeHtml(
+                                    transaction.customerId ||
+                                    ""
+                                )}
+
+                            </span>
+
+                        </td>
+
+
+                        <td class="center">
+
+                            ${escapeHtml(
+                                type
+                            )}
+
+                        </td>
+
+
+                        <td>
+
+                            ${escapeHtml(
+                                details
+                            )}
+
+                        </td>
+
+
+                        <td>
+
+                            ${escapeHtml(
+                                comment
+                            )}
+
+                        </td>
+
+
+                        <td
+                            class="right debit"
+                        >
+
+                            ${
+                                debit > 0
+                                    ? formatMoney(debit)
+                                    : "-"
+                            }
+
+                        </td>
+
+
+                        <td
+                            class="right credit"
+                        >
+
+                            ${
+                                credit > 0
+                                    ? formatMoney(credit)
+                                    : "-"
+                            }
+
+                        </td>
+
+
+                        <td class="right">
+
+                            ${
+                                typeof balance ===
+                                "number"
+
+                                    ? formatMoney(
+                                        balance
+                                    )
+
+                                    : "-"
+                            }
+
+                        </td>
+
+
+                    </tr>
+
+                `;
 
             }
         );
 
 
-        const rows =
-            transactions.map(
-                function (
-                    transaction,
-                    index
-                ) {
+        paper.innerHTML = `
 
-                    const customer =
-                        getCustomer(
-                            transaction.customerId
-                        );
+            ${buildReportHeader(
+                transactions
+            )}
 
 
-                    const amount =
-                        Number(
-                            transaction.debit
-                        ) ||
-                        Number(
-                            transaction.credit
-                        ) ||
-                        0;
+            <div class="mc-table-wrap">
+
+                <table class="mc-report-table">
 
 
-                    const type =
-                        Number(
-                            transaction.debit
-                        ) > 0
-                            ? "বাকী দিলাম"
-                            : "বাকী পেলাম";
+                    <colgroup>
 
+                        <col class="mc-col-no">
 
-                    return `
+                        <col class="mc-col-date">
 
-                        <tr>
+                        <col class="mc-col-time">
 
-                            <td>
-                                ${index + 1}
-                            </td>
+                        <col class="mc-col-customer">
 
-                            <td>
-                                ${formatDate(
-                                    transaction.date
-                                )}
-                            </td>
+                        <col class="mc-col-type">
 
-                            <td>
-                                ${escapeHTML(
-                                    transaction.time || "-"
-                                )}
-                            </td>
+                        <col class="mc-col-details">
 
-                            <td>
-                                ${escapeHTML(
-                                    customer
-                                        ? customer.name
-                                        : transaction.customerId
-                                )}
-                            </td>
+                        <col class="mc-col-comment">
 
-                            <td>
-                                ${type}
-                            </td>
+                        <col class="mc-col-debit">
 
-                            <td>
-                                ${escapeHTML(
-                                    transaction.description || ""
-                                )}
-                            </td>
+                        <col class="mc-col-credit">
 
-                            <td style="text-align:right;">
-                                ${moneyBD(amount)}
-                            </td>
+                        <col class="mc-col-balance">
 
-                        </tr>
+                    </colgroup>
 
-                    `;
-
-                }
-            )
-            .join("");
-
-
-        document.getElementById(
-            "mrcTxResult"
-        ).innerHTML = `
-
-            <div class="mrc-summary-grid">
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Total Transactions
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${transactions.length}
-                    </div>
-
-                </div>
-
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Total Due Added
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${moneyBD(totalDebit)}
-                    </div>
-
-                </div>
-
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Total Payment Received
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${moneyBD(totalCredit)}
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="mrc-table-wrap">
-
-                <table class="mrc-table">
 
                     <thead>
 
                         <tr>
 
-                            <th>SL</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Customer</th>
-                            <th>Transaction</th>
-                            <th>Details</th>
-                            <th>Amount</th>
+                            <th>ক্রমিক</th>
+
+                            <th>তারিখ</th>
+
+                            <th>সময়</th>
+
+                            <th>কাস্টমার</th>
+
+                            <th>লেনদেন</th>
+
+                            <th>বিস্তারিত</th>
+
+                            <th>মন্তব্য</th>
+
+                            <th>দিলাম</th>
+
+                            <th>পেলাম</th>
+
+                            <th>অবশিষ্ট বাকি</th>
 
                         </tr>
 
@@ -2417,2282 +2626,763 @@
 
                     <tbody>
 
-                        ${
-                            rows ||
-                            `
-                            <tr>
-                                <td
-                                    colspan="7"
-                                    class="mrc-empty"
-                                >
-                                    No transactions found.
-                                </td>
-                            </tr>
-                            `
-                        }
+                        ${rows}
 
                     </tbody>
+
+
+                    <tfoot>
+
+                        <tr>
+
+                            <td
+                                colspan="7"
+                                class="right"
+                            >
+
+                                সর্বমোট:
+
+                            </td>
+
+
+                            <td
+                                class="right debit"
+                            >
+
+                                ${formatMoney(
+                                    totalDebit
+                                )}
+
+                            </td>
+
+
+                            <td
+                                class="right credit"
+                            >
+
+                                ${formatMoney(
+                                    totalCredit
+                                )}
+
+                            </td>
+
+
+                            <td class="right">
+
+                                -
+
+                            </td>
+
+                        </tr>
+
+                    </tfoot>
+
 
                 </table>
 
             </div>
 
-
-            <div style="margin-top:14px;">
-
-                <button
-                    class="mrc-btn mrc-btn-success"
-                    onclick="MousumiReports.printCurrentTransactionReport()"
-                >
-
-                    <i class="fa-solid fa-print"></i>
-
-                    Print / Save PDF
-
-                </button>
-
-            </div>
-
         `;
 
-    }
 
-
-    /* ============================================================
-       CUSTOMER LEDGER REPORT
-       ============================================================ */
-
-    function renderLedgerReport() {
-
-        const customers =
-            reportDataCache.customers
-                .filter(
-                    function (customer) {
-
-                        return (
-                            customer.status !==
-                            "Disabled"
-                        );
-
-                    }
-                );
-
-
-        const options =
-            customers.map(
-                function (customer) {
-
-                    return `
-
-                        <option
-                            value="${escapeHTML(
-                                customer.customerId
-                            )}"
-                        >
-
-                            ${escapeHTML(
-                                customer.name
-                            )}
-                            -
-                            ${escapeHTML(
-                                customer.customerId
-                            )}
-
-                        </option>
-
-                    `;
-
-                }
-            )
-            .join("");
-
-
-        const defaults =
-            setDefaultDates();
-
-
-        document.getElementById(
-            "mrc-main-content"
-        ).innerHTML = `
-
-            <button
-                class="mrc-back"
-                onclick="MousumiReports.back()"
-            >
-
-                ← Back to Reports
-
-            </button>
-
-
-            <div class="mrc-filter-card">
-
-                <div
-                    class="mrc-title"
-                    style="font-size:1.05rem; margin-bottom:15px;"
-                >
-
-                    Customer Ledger Report
-
-                </div>
-
-
-                <div class="mrc-filter-grid">
-
-                    <div class="mrc-field">
-
-                        <label>
-                            Customer
-                        </label>
-
-                        <select
-                            id="mrcLedgerCustomer"
-                        >
-
-                            <option value="">
-                                Select Customer
-                            </option>
-
-                            ${options}
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="mrc-field">
-
-                        <label>
-                            From Date
-                        </label>
-
-                        <input
-                            type="date"
-                            id="mrcLedgerFrom"
-                            value="${defaults.from}"
-                        />
-
-                    </div>
-
-
-                    <div class="mrc-field">
-
-                        <label>
-                            To Date
-                        </label>
-
-                        <input
-                            type="date"
-                            id="mrcLedgerTo"
-                            value="${defaults.to}"
-                        />
-
-                    </div>
-
-                </div>
-
-
-                <div style="margin-top:14px;">
-
-                    <button
-                        class="mrc-btn mrc-btn-primary"
-                        onclick="MousumiReports.generateLedgerReport()"
-                    >
-
-                        <i class="fa-solid fa-file-pdf"></i>
-
-                        Generate PDF
-
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <div
-                id="mrcLedgerResult"
-                class="mrc-report-result"
-            ></div>
-
-        `;
-
-    }
-
-
-    function generateLedgerReport() {
-
-        const customerId =
+        const count =
             document.getElementById(
-                "mrcLedgerCustomer"
-            ).value;
-
-
-        if (!customerId) {
-
-            alert(
-                "Please select a customer."
+                "mc-report-count"
             );
 
-            return;
+
+        if (count) {
+
+            count.textContent =
+                `${toBanglaNumber(
+                    transactions.length
+                )}টি লেনদেন পাওয়া গেছে`;
 
         }
 
+    }
 
-        const from =
+
+    /* =========================================================
+       RESET
+       ========================================================= */
+
+    function resetReport() {
+
+        const reportType =
             document.getElementById(
-                "mrcLedgerFrom"
-            ).value;
+                "mc-report-type"
+            );
 
 
-        const to =
+        const dateMode =
             document.getElementById(
-                "mrcLedgerTo"
-            ).value;
+                "mc-report-date-mode"
+            );
 
 
         const customer =
-            getCustomer(
-                customerId
-            );
-
-
-        let transactions =
-            reportDataCache.transactions
-                .filter(
-                    function (transaction) {
-
-                        return String(
-                            transaction.customerId
-                        ) ===
-                        String(
-                            customerId
-                        );
-
-                    }
-                )
-                .sort(
-                    function (a, b) {
-
-                        return new Date(
-                            a.createdAt
-                        ) -
-                        new Date(
-                            b.createdAt
-                        );
-
-                    }
-                );
-
-
-        const currentDue =
-            calculateCustomerDue(
-                customerId
-            );
-
-
-        if (from) {
-
-            transactions =
-                transactions.filter(
-                    function (transaction) {
-
-                        return (
-                            transaction.date >=
-                            from
-                        );
-
-                    }
-                );
-
-        }
-
-
-        if (to) {
-
-            transactions =
-                transactions.filter(
-                    function (transaction) {
-
-                        return (
-                            transaction.date <=
-                            to
-                        );
-
-                    }
-                );
-
-        }
-
-
-        const rows =
-            transactions.map(
-                function (
-                    transaction,
-                    index
-                ) {
-
-                    return `
-
-                        <tr>
-
-                            <td>
-                                ${index + 1}
-                            </td>
-
-                            <td>
-                                ${formatDate(
-                                    transaction.date
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHTML(
-                                    transaction.time || "-"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHTML(
-                                    transaction.description || ""
-                                )}
-                            </td>
-
-                            <td style="text-align:right;">
-                                ${moneyBD(
-                                    transaction.debit
-                                )}
-                            </td>
-
-                            <td style="text-align:right;">
-                                ${moneyBD(
-                                    transaction.credit
-                                )}
-                            </td>
-
-                            <td style="text-align:right;">
-                                ${moneyBD(
-                                    transaction.runningBalance
-                                )}
-                            </td>
-
-                        </tr>
-
-                    `;
-
-                }
-            )
-            .join("");
-
-
-        document.getElementById(
-            "mrcLedgerResult"
-        ).innerHTML = `
-
-            <div class="mrc-summary-grid">
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Customer
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${escapeHTML(
-                            customer.name
-                        )}
-                    </div>
-
-                </div>
-
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Current Due
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${moneyBD(
-                            currentDue
-                        )}
-                    </div>
-
-                </div>
-
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Transactions
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${transactions.length}
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="mrc-table-wrap">
-
-                <table class="mrc-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>SL</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Details</th>
-                            <th>Debit</th>
-                            <th>Credit</th>
-                            <th>Running Balance</th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        ${
-                            rows ||
-                            `
-                            <tr>
-                                <td
-                                    colspan="7"
-                                    class="mrc-empty"
-                                >
-                                    No transactions found.
-                                </td>
-                            </tr>
-                            `
-                        }
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-
-            <div style="margin-top:14px;">
-
-                <button
-                    class="mrc-btn mrc-btn-success"
-                    onclick="MousumiReports.printCurrentReport('Customer Ledger Report')"
-                >
-
-                    <i class="fa-solid fa-print"></i>
-
-                    Print / Save PDF
-
-                </button>
-
-            </div>
-
-        `;
-
-    }
-
-
-    /* ============================================================
-       DUE REPORT
-       ============================================================ */
-
-    function renderDueReport() {
-
-        const customers =
-            reportDataCache.customers
-                .filter(
-                    function (customer) {
-
-                        return (
-                            customer.status ===
-                            "Active"
-                        );
-
-                    }
-                )
-                .map(
-                    function (customer) {
-
-                        return {
-
-                            ...customer,
-
-                            currentDue:
-                                calculateCustomerDue(
-                                    customer.customerId
-                                )
-
-                        };
-
-                    }
-                )
-                .filter(
-                    function (customer) {
-
-                        return (
-                            customer.currentDue >
-                            0
-                        );
-
-                    }
-                )
-                .sort(
-                    function (a, b) {
-
-                        return (
-                            b.currentDue -
-                            a.currentDue
-                        );
-
-                    }
-                );
-
-
-        const totalDue =
-            customers.reduce(
-                function (sum, customer) {
-
-                    return (
-                        sum +
-                        customer.currentDue
-                    );
-
-                },
-                0
-            );
-
-
-        const rows =
-            customers.map(
-                function (
-                    customer,
-                    index
-                ) {
-
-                    return `
-
-                        <tr>
-
-                            <td>
-                                ${index + 1}
-                            </td>
-
-                            <td>
-                                ${escapeHTML(
-                                    customer.customerId
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHTML(
-                                    customer.name
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHTML(
-                                    customer.phone || "-"
-                                )}
-                            </td>
-
-                            <td style="text-align:right;">
-                                ${moneyBD(
-                                    customer.currentDue
-                                )}
-                            </td>
-
-                        </tr>
-
-                    `;
-
-                }
-            )
-            .join("");
-
-
-        document.getElementById(
-            "mrc-main-content"
-        ).innerHTML = `
-
-            <button
-                class="mrc-back"
-                onclick="MousumiReports.back()"
-            >
-
-                ← Back to Reports
-
-            </button>
-
-
-            <div class="mrc-summary-grid">
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Customers With Due
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${customers.length}
-                    </div>
-
-                </div>
-
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Total Outstanding
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${moneyBD(
-                            totalDue
-                        )}
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="mrc-table-wrap">
-
-                <table class="mrc-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>SL</th>
-                            <th>Customer ID</th>
-                            <th>Name</th>
-                            <th>Phone</th>
-                            <th>Outstanding Due</th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        ${
-                            rows ||
-                            `
-                            <tr>
-                                <td
-                                    colspan="5"
-                                    class="mrc-empty"
-                                >
-                                    No outstanding due found.
-                                </td>
-                            </tr>
-                            `
-                        }
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-
-            <div style="margin-top:14px;">
-
-                <button
-                    class="mrc-btn mrc-btn-success"
-                    onclick="MousumiReports.printCurrentReport('Outstanding Due Report')"
-                >
-
-                    <i class="fa-solid fa-print"></i>
-
-                    Print / Save PDF
-
-                </button>
-
-            </div>
-
-        `;
-
-    }
-
-
-    /* ============================================================
-       BALANCE REPORT
-       ============================================================ */
-
-    function renderBalanceReport() {
-
-        const erp =
-            reportDataCache.erp || {};
-
-
-        const categories =
-            toArray(
-                erp.categories
-            );
-
-
-        const accounts =
-            toArray(
-                erp.accounts
-            );
-
-
-        const balances =
-            erp.balances || {};
-
-
-        let grandTotal = 0;
-
-
-        const rows =
-            categories
-                .filter(
-                    function (category) {
-
-                        return (
-                            category.enabled !==
-                            false
-                        );
-
-                    }
-                )
-                .sort(
-                    function (a, b) {
-
-                        return (
-                            Number(a.order || 0) -
-                            Number(b.order || 0)
-                        );
-
-                    }
-                )
-                .map(
-                    function (category) {
-
-
-                        const catAccounts =
-                            accounts.filter(
-                                function (account) {
-
-                                    return (
-                                        account.catId ===
-                                        category.id &&
-                                        account.enabled !==
-                                        false
-                                    );
-
-                                }
-                            );
-
-
-                        const categoryTotal =
-                            catAccounts.reduce(
-                                function (
-                                    sum,
-                                    account
-                                ) {
-
-                                    return (
-                                        sum +
-                                        (
-                                            Number(
-                                                balances[
-                                                    account.id
-                                                ]
-                                            ) || 0
-                                        )
-                                    );
-
-                                },
-                                0
-                            );
-
-
-                        grandTotal +=
-                            categoryTotal;
-
-
-                        return catAccounts.map(
-                            function (
-                                account
-                            ) {
-
-                                const amount =
-                                    Number(
-                                        balances[
-                                            account.id
-                                        ]
-                                    ) || 0;
-
-
-                                return `
-
-                                    <tr>
-
-                                        <td>
-                                            ${escapeHTML(
-                                                category.name
-                                            )}
-                                        </td>
-
-                                        <td>
-                                            ${escapeHTML(
-                                                account.name
-                                            )}
-                                        </td>
-
-                                        <td style="text-align:right;">
-                                            ${moneyBD(
-                                                amount
-                                            )}
-                                        </td>
-
-                                    </tr>
-
-                                `;
-
-                            }
-                        ).join("");
-
-                    }
-                )
-                .join("");
-
-
-        document.getElementById(
-            "mrc-main-content"
-        ).innerHTML = `
-
-            <button
-                class="mrc-back"
-                onclick="MousumiReports.back()"
-            >
-
-                ← Back to Reports
-
-            </button>
-
-
-            <div class="mrc-summary-grid">
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Total Accounts
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${accounts.length}
-                    </div>
-
-                </div>
-
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Total Balance
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${moneyBD(
-                            grandTotal
-                        )}
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="mrc-table-wrap">
-
-                <table class="mrc-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>Category</th>
-                            <th>Account</th>
-                            <th>Balance</th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        ${
-                            rows ||
-                            `
-                            <tr>
-                                <td
-                                    colspan="3"
-                                    class="mrc-empty"
-                                >
-                                    No account data found.
-                                </td>
-                            </tr>
-                            `
-                        }
-
-                    </tbody>
-
-
-                    <tfoot>
-
-                        <tr>
-
-                            <th
-                                colspan="2"
-                                style="text-align:right;"
-                            >
-
-                                Grand Total
-
-                            </th>
-
-                            <th style="text-align:right;">
-
-                                ${moneyBD(
-                                    grandTotal
-                                )}
-
-                            </th>
-
-                        </tr>
-
-                    </tfoot>
-
-                </table>
-
-            </div>
-
-
-            <div style="margin-top:14px;">
-
-                <button
-                    class="mrc-btn mrc-btn-success"
-                    onclick="MousumiReports.printCurrentReport('Balance Summary Report')"
-                >
-
-                    <i class="fa-solid fa-print"></i>
-
-                    Print / Save PDF
-
-                </button>
-
-            </div>
-
-        `;
-
-    }
-
-
-    /* ============================================================
-       CASH REPORT
-       ============================================================ */
-
-    function renderCashReport() {
-
-        const erp =
-            reportDataCache.erp || {};
-
-
-        const cash =
-            erp.cashInventory || {};
-
-
-        const quantities =
-            cash.quantities || {};
-
-
-        const denominations = [
-
-            1000,
-            500,
-            200,
-            100,
-            50,
-            20,
-            10,
-            5,
-            2,
-            1
-
-        ];
-
-
-        let calculatedTotal = 0;
-
-
-        const rows =
-            denominations.map(
-                function (denomination) {
-
-                    const quantity =
-                        Number(
-                            quantities[
-                                denomination
-                            ]
-                        ) || 0;
-
-
-                    const value =
-                        denomination *
-                        quantity;
-
-
-                    calculatedTotal +=
-                        value;
-
-
-                    return `
-
-                        <tr>
-
-                            <td>
-                                ৳ ${denomination}
-                            </td>
-
-                            <td>
-                                ${quantity}
-                            </td>
-
-                            <td style="text-align:right;">
-                                ${moneyBD(
-                                    value
-                                )}
-                            </td>
-
-                        </tr>
-
-                    `;
-
-                }
-            )
-            .join("");
-
-
-        const others =
-            Number(
-                cash.others
-            ) || 0;
-
-
-        const storedGrandTotal =
-            Number(
-                cash.grandTotal
-            ) || calculatedTotal + others;
-
-
-        document.getElementById(
-            "mrc-main-content"
-        ).innerHTML = `
-
-            <button
-                class="mrc-back"
-                onclick="MousumiReports.back()"
-            >
-
-                ← Back to Reports
-
-            </button>
-
-
-            <div class="mrc-summary-grid">
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Denomination Total
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${moneyBD(
-                            calculatedTotal
-                        )}
-                    </div>
-
-                </div>
-
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Others
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${moneyBD(
-                            others
-                        )}
-                    </div>
-
-                </div>
-
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Grand Total Cash
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${moneyBD(
-                            storedGrandTotal
-                        )}
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="mrc-table-wrap">
-
-                <table class="mrc-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>Denomination</th>
-                            <th>Quantity</th>
-                            <th>Total Value</th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        ${rows}
-
-                    </tbody>
-
-
-                    <tfoot>
-
-                        <tr>
-
-                            <th
-                                colspan="2"
-                                style="text-align:right;"
-                            >
-
-                                Grand Total
-
-                            </th>
-
-                            <th style="text-align:right;">
-
-                                ${moneyBD(
-                                    storedGrandTotal
-                                )}
-
-                            </th>
-
-                        </tr>
-
-                    </tfoot>
-
-                </table>
-
-            </div>
-
-
-            <div style="margin-top:14px;">
-
-                <button
-                    class="mrc-btn mrc-btn-success"
-                    onclick="MousumiReports.printCurrentReport('Cash Inventory Report')"
-                >
-
-                    <i class="fa-solid fa-print"></i>
-
-                    Print / Save PDF
-
-                </button>
-
-            </div>
-
-        `;
-
-    }
-
-
-    /* ============================================================
-       CARD REPORT
-       ============================================================ */
-
-    function renderCardReport() {
-
-        const erp =
-            reportDataCache.erp || {};
-
-
-        const cardConfig =
-            erp.cardConfig || {};
-
-
-        const cardInventory =
-            erp.cardInventory || {};
-
-
-        const operators = [
-
-            "GP",
-            "Banglalink",
-            "Robi",
-            "Airtel"
-
-        ];
-
-
-        let grandTotal =
-            0;
-
-
-        const rows =
-            operators.map(
-                function (operator) {
-
-                    const cards =
-                        toArray(
-                            cardConfig[
-                                operator
-                            ]
-                        );
-
-
-                    const quantities =
-                        cardInventory[
-                            operator
-                        ] || {};
-
-
-                    let operatorTotal =
-                        0;
-
-
-                    let cardCount =
-                        0;
-
-
-                    cards.forEach(
-                        function (card) {
-
-                            const quantity =
-                                Number(
-                                    quantities[
-                                        card.id
-                                    ]
-                                ) || 0;
-
-
-                            cardCount +=
-                                quantity;
-
-
-                            operatorTotal +=
-                                quantity *
-                                (
-                                    Number(
-                                        card.price
-                                    ) || 0
-                                );
-
-                        }
-                    );
-
-
-                    grandTotal +=
-                        operatorTotal;
-
-
-                    return `
-
-                        <tr>
-
-                            <td>
-                                ${escapeHTML(
-                                    operator
-                                )}
-                            </td>
-
-                            <td>
-                                ${cardCount}
-                            </td>
-
-                            <td style="text-align:right;">
-                                ${moneyBD(
-                                    operatorTotal
-                                )}
-                            </td>
-
-                        </tr>
-
-                    `;
-
-                }
-            )
-            .join("");
-
-
-        document.getElementById(
-            "mrc-main-content"
-        ).innerHTML = `
-
-            <button
-                class="mrc-back"
-                onclick="MousumiReports.back()"
-            >
-
-                ← Back to Reports
-
-            </button>
-
-
-            <div class="mrc-summary-grid">
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Operators
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${operators.length}
-                    </div>
-
-                </div>
-
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Total Inventory Value
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${moneyBD(
-                            grandTotal
-                        )}
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="mrc-table-wrap">
-
-                <table class="mrc-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>Operator</th>
-                            <th>Total Cards</th>
-                            <th>Total Value</th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        ${rows}
-
-                    </tbody>
-
-
-                    <tfoot>
-
-                        <tr>
-
-                            <th
-                                colspan="2"
-                                style="text-align:right;"
-                            >
-
-                                Grand Total
-
-                            </th>
-
-                            <th style="text-align:right;">
-
-                                ${moneyBD(
-                                    grandTotal
-                                )}
-
-                            </th>
-
-                        </tr>
-
-                    </tfoot>
-
-                </table>
-
-            </div>
-
-
-            <div style="margin-top:14px;">
-
-                <button
-                    class="mrc-btn mrc-btn-success"
-                    onclick="MousumiReports.printCurrentReport('Card Inventory Report')"
-                >
-
-                    <i class="fa-solid fa-print"></i>
-
-                    Print / Save PDF
-
-                </button>
-
-            </div>
-
-        `;
-
-    }
-
-
-    /* ============================================================
-       DAILY CLOSING REPORT
-       ============================================================ */
-
-    function renderClosingReport() {
-
-        const erp =
-            reportDataCache.erp || {};
-
-
-        const reports =
-            toArray(
-                erp.dailyClosingReports
-            );
-
-
-        const sorted =
-            reports.sort(
-                function (a, b) {
-
-                    return String(
-                        b.closingDate ||
-                        b.reportDate ||
-                        ""
-                    ).localeCompare(
-                        String(
-                            a.closingDate ||
-                            a.reportDate ||
-                            ""
-                        )
-                    );
-
-                }
-            );
-
-
-        const rows =
-            sorted.map(
-                function (
-                    report,
-                    index
-                ) {
-
-                    return `
-
-                        <tr>
-
-                            <td>
-                                ${index + 1}
-                            </td>
-
-                            <td>
-                                ${escapeHTML(
-                                    report.closingDate ||
-                                    report.reportDate ||
-                                    "-"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHTML(
-                                    report.closingTime ||
-                                    "-"
-                                )}
-                            </td>
-
-                            <td>
-                                ${moneyBD(
-                                    report.openingCapital ||
-                                    report.openingBalance ||
-                                    0
-                                )}
-                            </td>
-
-                            <td>
-                                ${moneyBD(
-                                    report.closingCapital ||
-                                    report.netBalance ||
-                                    0
-                                )}
-                            </td>
-
-                            <td>
-                                ${moneyBD(
-                                    report.netIncome ||
-                                    report.netProfit ||
-                                    0
-                                )}
-                            </td>
-
-                        </tr>
-
-                    `;
-
-                }
-            )
-            .join("");
-
-
-        document.getElementById(
-            "mrc-main-content"
-        ).innerHTML = `
-
-            <button
-                class="mrc-back"
-                onclick="MousumiReports.back()"
-            >
-
-                ← Back to Reports
-
-            </button>
-
-
-            <div class="mrc-summary-grid">
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Saved Closing Reports
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${reports.length}
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="mrc-table-wrap">
-
-                <table class="mrc-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>SL</th>
-                            <th>Closing Date</th>
-                            <th>Closing Time</th>
-                            <th>Opening</th>
-                            <th>Closing</th>
-                            <th>Net Income</th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        ${
-                            rows ||
-                            `
-                            <tr>
-                                <td
-                                    colspan="6"
-                                    class="mrc-empty"
-                                >
-                                    No Daily Closing reports found.
-                                </td>
-                            </tr>
-                            `
-                        }
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-
-            <div style="margin-top:14px;">
-
-                <button
-                    class="mrc-btn mrc-btn-success"
-                    onclick="MousumiReports.printCurrentReport('Daily Closing Report')"
-                >
-
-                    <i class="fa-solid fa-print"></i>
-
-                    Print / Save PDF
-
-                </button>
-
-            </div>
-
-        `;
-
-    }
-
-
-    /* ============================================================
-       AUDIT REPORT
-       ============================================================ */
-
-    function renderAuditReport() {
-
-        const erp =
-            reportDataCache.erp || {};
-
-
-        const history =
-            toArray(
-                erp.fintechHistory
-            );
-
-
-        const cashHistory =
-            toArray(
-                erp.cashHistory
-            );
-
-
-        const cardHistory =
-            toArray(
-                erp.cardHistory
-            );
-
-
-        document.getElementById(
-            "mrc-main-content"
-        ).innerHTML = `
-
-            <button
-                class="mrc-back"
-                onclick="MousumiReports.back()"
-            >
-
-                ← Back to Reports
-
-            </button>
-
-
-            <div class="mrc-summary-grid">
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Account History
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${history.length}
-                    </div>
-
-                </div>
-
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Cash History
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${cashHistory.length}
-                    </div>
-
-                </div>
-
-
-                <div class="mrc-summary">
-
-                    <div class="mrc-summary-label">
-                        Card History
-                    </div>
-
-                    <div class="mrc-summary-value">
-                        ${cardHistory.length}
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="mrc-table-wrap">
-
-                <table class="mrc-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>Type</th>
-                            <th>Date / Time</th>
-                            <th>Details</th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        ${history
-                            .slice(
-                                0,
-                                100
-                            )
-                            .map(
-                                function (item) {
-
-                                    return `
-
-                                        <tr>
-
-                                            <td>
-                                                Account
-                                            </td>
-
-                                            <td>
-                                                ${escapeHTML(
-                                                    item.timestamp ||
-                                                    item.date ||
-                                                    "-"
-                                                )}
-                                            </td>
-
-                                            <td>
-                                                ${escapeHTML(
-                                                    item.accountName ||
-                                                    item.categoryName ||
-                                                    item.message ||
-                                                    "Account balance history"
-                                                )}
-                                            </td>
-
-                                        </tr>
-
-                                    `;
-
-                                }
-                            )
-                            .join("")}
-
-
-                        ${cashHistory
-                            .slice(
-                                0,
-                                100
-                            )
-                            .map(
-                                function (item) {
-
-                                    return `
-
-                                        <tr>
-
-                                            <td>
-                                                Cash
-                                            </td>
-
-                                            <td>
-                                                ${escapeHTML(
-                                                    item.timestamp ||
-                                                    item.date ||
-                                                    "-"
-                                                )}
-                                            </td>
-
-                                            <td>
-                                                Cash Inventory:
-                                                ${moneyBD(
-                                                    item.grandTotal ||
-                                                    item.total ||
-                                                    0
-                                                )}
-                                            </td>
-
-                                        </tr>
-
-                                    `;
-
-                                }
-                            )
-                            .join("")}
-
-
-                        ${cardHistory
-                            .slice(
-                                0,
-                                100
-                            )
-                            .map(
-                                function (item) {
-
-                                    return `
-
-                                        <tr>
-
-                                            <td>
-                                                Card
-                                            </td>
-
-                                            <td>
-                                                ${escapeHTML(
-                                                    item.timestamp ||
-                                                    item.date ||
-                                                    "-"
-                                                )}
-                                            </td>
-
-                                            <td>
-                                                Operator:
-                                                ${escapeHTML(
-                                                    item.operator ||
-                                                    "-"
-                                                )}
-                                                -
-                                                ${moneyBD(
-                                                    item.grandTotalValue ||
-                                                    0
-                                                )}
-                                            </td>
-
-                                        </tr>
-
-                                    `;
-
-                                }
-                            )
-                            .join("")}
-
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-
-            <div style="margin-top:14px;">
-
-                <button
-                    class="mrc-btn mrc-btn-success"
-                    onclick="MousumiReports.printCurrentReport('Audit and History Report')"
-                >
-
-                    <i class="fa-solid fa-print"></i>
-
-                    Print / Save PDF
-
-                </button>
-
-            </div>
-
-        `;
-
-    }
-
-
-    /* ============================================================
-       PRINT CURRENT REPORT
-       ============================================================ */
-
-    function printCurrentReport(
-        reportTitle
-    ) {
-
-        const view =
             document.getElementById(
-                "reports-center-view"
+                "mc-report-customer"
             );
 
 
-        if (!view) {
-
-            return;
-
-        }
-
-
-        const content =
+        const preview =
             document.getElementById(
-                "mrc-main-content"
+                "mc-report-preview"
             );
 
 
-        if (!content) {
+        const download =
+            document.getElementById(
+                "mc-report-download"
+            );
 
-            return;
+
+        const paper =
+            document.getElementById(
+                "mc-report-paper"
+            );
+
+
+        if (reportType) {
+
+            reportType.value =
+                "customer-transaction";
 
         }
 
 
-        const printWindow =
-            window.open(
-                "",
-                "_blank",
-                "width=1000,height=900"
+        if (dateMode) {
+
+            dateMode.value =
+                "range";
+
+        }
+
+
+        if (customer) {
+
+            customer.value =
+                "all";
+
+        }
+
+
+        setDefaultDates();
+
+
+        handleDateMode();
+
+
+        if (preview) {
+
+            preview.classList.remove(
+                "show"
+            );
+
+        }
+
+
+        if (download) {
+
+            download.style.display =
+                "none";
+
+        }
+
+
+        if (paper) {
+
+            paper.innerHTML =
+                "";
+
+        }
+
+
+        hideMessage();
+
+    }
+
+
+    /* =========================================================
+       CREATE PDF HTML
+       ========================================================= */
+
+    function createPDFDocument() {
+
+        const paper =
+            document.getElementById(
+                "mc-report-paper"
             );
 
 
-        if (!printWindow) {
+        if (!paper) {
+            return null;
+        }
 
-            alert(
-                "Popup blocked. Please allow popups for this site."
+
+        const clone =
+            paper.cloneNode(true);
+
+
+        const wrapper =
+            document.createElement(
+                "div"
+            );
+
+
+        wrapper.className =
+            "mc-pdf-render-area";
+
+
+        wrapper.id =
+            "mc-report-pdf-area";
+
+
+        wrapper.innerHTML =
+            clone.innerHTML;
+
+
+        return wrapper;
+
+    }
+
+
+    /* =========================================================
+       DOWNLOAD PDF
+       ========================================================= */
+
+    async function downloadPDF() {
+
+        hideMessage();
+
+
+        const paper =
+            document.getElementById(
+                "mc-report-paper"
+            );
+
+
+        if (
+            !paper ||
+            !paper.innerHTML.trim()
+        ) {
+
+            showMessage(
+                "আগে রিপোর্ট তৈরি করুন।",
+                "error"
             );
 
             return;
 
         }
-
-
-        printWindow.document.open();
-
-
-        printWindow.document.write(`
-
-<!DOCTYPE html>
-
-<html lang="en">
-
-<head>
-
-<meta charset="UTF-8">
-
-
-<title>
-    ${escapeHTML(
-        reportTitle
-    )}
-</title>
-
-
-<style>
-
-@page {
-
-    size: A4 portrait;
-
-    margin:
-        12mm;
-
-}
-
-
-* {
-
-    box-sizing: border-box;
-
-}
-
-
-body {
-
-    margin: 0;
-
-    color: #000;
-
-    background: #fff;
-
-    font-family:
-        Arial,
-        "Noto Sans Bengali",
-        "Nirmala UI",
-        sans-serif;
-
-    font-size: 11px;
-
-}
-
-
-.header {
-
-    text-align: center;
-
-    margin-bottom: 18px;
-
-}
-
-
-.shop {
-
-    font-size: 22px;
-
-    font-weight: 800;
-
-}
-
-
-.title {
-
-    font-size: 16px;
-
-    font-weight: 700;
-
-    margin-top: 4px;
-
-}
-
-
-table {
-
-    width: 100%;
-
-    border-collapse: collapse;
-
-}
-
-
-th,
-td {
-
-    border:
-        0.5px solid #000;
-
-    padding:
-        6px;
-
-    vertical-align: middle;
-
-}
-
-
-th {
-
-    background: #f5f5f5;
-
-    font-weight: 700;
-
-}
-
-
-tfoot th {
-
-    background: #fff;
-
-}
-
-
-.summary {
-
-    display: flex;
-
-    gap: 10px;
-
-    margin-bottom: 15px;
-
-}
-
-
-.summary-box {
-
-    flex: 1;
-
-    border:
-        0.5px solid #000;
-
-    padding: 8px;
-
-}
-
-
-.small {
-
-    font-size: 9px;
-
-    color: #555;
-
-}
-
-
-@media print {
-
-    table {
-
-        page-break-inside: auto;
-
-    }
-
-
-    tr {
-
-        page-break-inside: avoid;
-
-    }
-
-
-    thead {
-
-        display: table-header-group;
-
-    }
-
-}
-
-</style>
-
-</head>
-
-
-<body>
-
-
-<div class="header">
-
-    <div class="shop">
-        ${REPORTS_CONFIG.shopName}
-    </div>
-
-    <div class="title">
-        ${escapeHTML(
-            reportTitle
-        )}
-    </div>
-
-    <div class="small">
-        Generated:
-        ${new Date().toLocaleString()}
-    </div>
-
-</div>
-
-
-${content.innerHTML}
-
-
-<script>
-
-window.onload = function () {
-
-    setTimeout(
-        function () {
-
-            window.print();
-
-        },
-        350
-    );
-
-};
-
-window.onafterprint = function () {
-
-    setTimeout(
-        function () {
-
-            window.close();
-
-        },
-        300
-    );
-
-};
-
-<\/script>
-
-
-</body>
-
-</html>
-
-        `);
-
-
-        printWindow.document.close();
-
-    }
-
-
-    /* ============================================================
-       SPECIAL TRANSACTION PRINT
-       ============================================================ */
-
-    function printCurrentTransactionReport() {
-
-        printCurrentReport(
-            "Daily Transaction Report"
-        );
-
-    }
-
-
-    /* ============================================================
-       PUBLIC API
-       ============================================================ */
-
-    window.MousumiReports = {
-
-        open:
-            openReport,
-
-        back:
-            backHome,
-
-        refresh:
-            openReportsCenter,
-
-        generateTransactionReport:
-            generateTransactionReport,
-
-        generateLedgerReport:
-            generateLedgerReport,
-
-        printCurrentReport:
-            printCurrentReport,
-
-        printCurrentTransactionReport:
-            printCurrentTransactionReport
-
-    };
-
-
-    /* ============================================================
-       INITIALIZATION
-       ============================================================ */
-
-    async function initializeModule() {
-
-        injectReportCSS();
 
 
         /*
-         * Wait until the ERP DOM is available.
-         */
+           html2pdf availability
+        */
+
+        if (
+            typeof window.html2pdf !==
+            "function"
+        ) {
+
+            showMessage(
+                "PDF engine পাওয়া যায়নি। html2pdf library load হয়েছে কিনা পরীক্ষা করুন।",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        const button =
+            document.getElementById(
+                "mc-report-download"
+            );
+
+
+        const originalText =
+            button
+                ? button.innerHTML
+                : "";
+
+
+        if (button) {
+
+            button.disabled =
+                true;
+
+            button.innerHTML = `
+
+                <i class="fa-solid fa-spinner fa-spin"></i>
+
+                PDF তৈরি হচ্ছে...
+
+            `;
+
+        }
+
+
+        try {
+
+            /*
+               Font ready
+            */
+
+            if (document.fonts) {
+
+                await document.fonts.ready;
+
+                try {
+
+                    await document.fonts.load(
+                        "16px 'Tiro Bangla'"
+                    );
+
+                } catch (fontError) {
+
+                    console.warn(
+                        "Tiro Bangla font load warning:",
+                        fontError
+                    );
+
+                }
+
+            }
+
+
+            /*
+               Small render delay
+            */
+
+            await new Promise(
+                function (resolve) {
+
+                    setTimeout(
+                        resolve,
+                        250
+                    );
+
+                }
+            );
+
+
+            /*
+               Create a normal DOM element.
+               It is NOT placed at negative
+               z-index or far off-screen.
+            */
+
+            const pdfElement =
+                createPDFDocument();
+
+
+            if (!pdfElement) {
+
+                throw new Error(
+                    "PDF content could not be created."
+                );
+
+            }
+
+
+            /*
+               Put it temporarily in the body.
+            */
+
+            pdfElement.style.position =
+                "fixed";
+
+            pdfElement.style.left =
+                "0";
+
+            pdfElement.style.top =
+                "0";
+
+            pdfElement.style.zIndex =
+                "999999";
+
+            pdfElement.style.visibility =
+                "hidden";
+
+            pdfElement.style.pointerEvents =
+                "none";
+
+
+            document.body.appendChild(
+                pdfElement
+            );
+
+
+            /*
+               Force layout.
+            */
+
+            void pdfElement.offsetHeight;
+
+
+            const from =
+                document.getElementById(
+                    "mc-report-from-date"
+                )?.value ||
+                getToday();
+
+
+            const to =
+                document.getElementById(
+                    "mc-report-to-date"
+                )?.value ||
+                from;
+
+
+            const dateMode =
+                document.getElementById(
+                    "mc-report-date-mode"
+                )?.value;
+
+
+            let dateName =
+                from;
+
+
+            if (dateMode === "range") {
+
+                dateName =
+                    `${from}_${to}`;
+
+            }
+
+
+            const fileName =
+                `${CONFIG.pdfFileName}_${dateName}.pdf`;
+
+
+            const options = {
+
+                margin: 0,
+
+                filename:
+                    fileName,
+
+                image: {
+
+                    type: "jpeg",
+
+                    quality: 0.98
+
+                },
+
+                html2canvas: {
+
+                    scale: 3,
+
+                    useCORS: true,
+
+                    allowTaint: false,
+
+                    backgroundColor:
+                        "#ffffff",
+
+                    logging: false,
+
+                    letterRendering: true,
+
+                    imageTimeout:
+                        15000,
+
+                    scrollX: 0,
+
+                    scrollY: 0
+
+                },
+
+                jsPDF: {
+
+                    unit: "mm",
+
+                    format: "a4",
+
+                    orientation: "landscape",
+
+                    compress: true
+
+                },
+
+                pagebreak: {
+
+                    mode: [
+                        "css",
+                        "legacy"
+                    ]
+
+                }
+
+            };
+
+
+            /*
+               Generate PDF
+            */
+
+            await window
+                .html2pdf()
+                .set(options)
+                .from(pdfElement)
+                .save();
+
+
+            showMessage(
+                "PDF সফলভাবে ডাউনলোড হয়েছে।",
+                "success"
+            );
+
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Mousumi Report PDF Error:",
+                error
+            );
+
+
+            showMessage(
+                "PDF তৈরি করতে সমস্যা হয়েছে। Browser Console পরীক্ষা করুন।",
+                "error"
+            );
+
+        }
+
+        finally {
+
+            const pdfElement =
+                document.getElementById(
+                    "mc-report-pdf-area"
+                );
+
+
+            if (
+                pdfElement &&
+                pdfElement.parentNode
+            ) {
+
+                pdfElement.parentNode
+                    .removeChild(
+                        pdfElement
+                    );
+
+            }
+
+
+            if (button) {
+
+                button.disabled =
+                    false;
+
+                button.innerHTML =
+                    originalText;
+
+            }
+
+        }
+
+    }
+
+
+    /* =========================================================
+       REFRESH CUSTOMER DROPDOWN
+       ---------------------------------------------------------
+       Main ERP-তে নতুন customer যোগ হলে
+       এই function manually call করা যাবে.
+       ========================================================= */
+
+    window.refreshMousumiReportCustomers =
+        function () {
+
+            populateCustomerDropdown();
+
+        };
+
+
+    /* =========================================================
+       OPEN REPORT CENTER
+       ========================================================= */
+
+    window.openMousumiReportCenter =
+        function () {
+
+            const container =
+                document.getElementById(
+                    "cust-reports-section"
+                );
+
+
+            if (!container) {
+                return;
+            }
+
+
+            if (
+                !container.querySelector(
+                    ".mc-report-wrapper"
+                )
+            ) {
+
+                buildUI();
+
+            }
+
+
+            populateCustomerDropdown();
+
+            handleDateMode();
+
+        };
+
+
+    /* =========================================================
+       SIDEBAR REPORT MENU
+       ---------------------------------------------------------
+       Existing index.html না বদলিয়ে Reports menu-কে
+       single Reports entry হিসেবে ব্যবহার করার চেষ্টা।
+       ========================================================= */
+
+    function configureSidebar() {
+
+        const parent =
+            document.getElementById(
+                "menu-reports-parent"
+            );
+
+
+        if (!parent) {
+            return;
+        }
+
+
+        /*
+           Change menu title
+        */
+
+        const title =
+            parent.querySelector(
+                ".menu-link-inner span"
+            );
+
+
+        if (title) {
+
+            title.textContent =
+                "Reports";
+
+        }
+
+
+        /*
+           Hide old report submenu.
+           Main Reports page remains one page.
+        */
+
+        const submenu =
+            parent.querySelector(
+                ".submenu-list"
+            );
+
+
+        if (submenu) {
+
+            submenu.style.display =
+                "none";
+
+        }
+
+
+        /*
+           Parent click opens the existing
+           customer report section.
+        */
+
+        const anchor =
+            parent.querySelector(
+                ":scope > a"
+            );
+
+
+        if (anchor) {
+
+            anchor.onclick =
+                function (event) {
+
+                    if (event) {
+
+                        event.preventDefault();
+
+                    }
+
+
+                    /*
+                       Use existing navigation
+                       function when available.
+                    */
+
+                    if (
+                        typeof window
+                            .switchCustomerSubSection ===
+                        "function"
+                    ) {
+
+                        window.switchCustomerSubSection(
+                            "cust-reports-section"
+                        );
+
+                    }
+
+
+                    else {
+
+                        const section =
+                            document.getElementById(
+                                "cust-reports-section"
+                            );
+
+
+                        if (section) {
+
+                            section.style.display =
+                                "block";
+
+                        }
+
+                    }
+
+
+                    window.openMousumiReportCenter();
+
+                };
+
+        }
+
+    }
+
+
+    /* =========================================================
+       INITIALIZATION
+       ========================================================= */
+
+    function initialize() {
+
+        injectStyles();
+
+
+        /*
+           Try several times because Firebase/
+           main application may initialize after
+           this module.
+        */
 
         let attempts = 0;
 
@@ -4704,62 +3394,45 @@ window.onafterprint = function () {
                     attempts++;
 
 
-                    const sidebar =
+                    const container =
                         document.getElementById(
-                            "sidebar"
+                            "cust-reports-section"
                         );
 
 
-                    const mainWrapper =
-                        document.querySelector(
-                            ".main-wrapper"
-                        );
+                    if (container) {
 
+                        buildUI();
 
-                    if (
-                        sidebar &&
-                        mainWrapper
-                    ) {
+                        configureSidebar();
 
-                        clearInterval(
-                            timer
-                        );
+                        clearInterval(timer);
 
-
-                        installSidebarModule();
-
-                        createReportCenterView();
-
-                        openReportsCenter();
+                        return;
 
                     }
 
 
-                    if (
-                        attempts >
-                        100
-                    ) {
+                    if (attempts >= 30) {
 
-                        clearInterval(
-                            timer
-                        );
+                        clearInterval(timer);
 
-                        console.error(
-                            "Mousumi Reports Center: ERP DOM not found."
+                        console.warn(
+                            "Mousumi Reports Center: cust-reports-section not found."
                         );
 
                     }
 
                 },
-                100
+                300
             );
 
     }
 
 
-    /*
-     * Start after DOM ready.
-     */
+    /* =========================================================
+       DOM READY
+       ========================================================= */
 
     if (
         document.readyState ===
@@ -4768,12 +3441,14 @@ window.onafterprint = function () {
 
         document.addEventListener(
             "DOMContentLoaded",
-            initializeModule
+            initialize
         );
 
-    } else {
+    }
 
-        initializeModule();
+    else {
+
+        initialize();
 
     }
 
