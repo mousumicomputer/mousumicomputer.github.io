@@ -4,18 +4,18 @@
  * File: report_download_module.js
  * 
  * Features:
- * 1. Comprehensive Executive Financial Summary (All Asset Categories Included).
- * 2. Section 2: Customer Transactions & Due Summary (Dilam / Pelam / Due).
- * 3. 100% Standalone (No changes required in admin.html).
- * 4. Cross-device 'Tiro Bangla' Typography.
- * 5. Strict Table Break Prevention & Official Signature Block.
+ * 1. Single Day Mode (Today/Yesterday) & Multi-Day Date Range (Weekly/Monthly).
+ * 2. Full Executive Financial Summary (All Asset Categories).
+ * 3. Section 2: Customer Transactions & Due Summary (Dilam / Pelam / Due).
+ * 4. 100% Safe (No modifications required in admin.html).
+ * 5. Official Tiro Bangla Typography + Smart Page Breaks + Signatures.
  * ============================================================================
  */
 
 (function () {
     "use strict";
 
-    // ১. বাংলা সংখ্যা ও ফরম্যাটিং
+    // ১. বাংলা সংখ্যা ও ফরম্যাটিং হেল্পার
     const BN_DIGITS = { "0": "০", "1": "১", "2": "২", "3": "৩", "4": "৪", "5": "৫", "6": "৬", "7": "৭", "8": "৮", "9": "৯" };
     const toBn = (val) => String(val ?? "").replace(/\d/g, d => BN_DIGITS[d]);
 
@@ -44,7 +44,7 @@
     };
 
     const getBanglaDate = (dateString) => {
-        if (!dateString) return { day: "", date: "", month: "", year: "" };
+        if (!dateString) return { day: "", date: "", month: "", year: "", full: "" };
         const date = new Date(dateString + "T00:00:00");
         const days = ["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"];
         const months = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"];
@@ -52,11 +52,12 @@
             day: days[date.getDay()],
             date: toBn(date.getDate()),
             month: months[date.getMonth()],
-            year: toBn(date.getFullYear())
+            year: toBn(date.getFullYear()),
+            full: `${toBn(date.getDate())} ${months[date.getMonth()]} ${toBn(date.getFullYear())}`
         };
     };
 
-    // ২. সিএসএস স্টাইল
+    // ২. সিএসএস স্টাইল (Tiro Bangla ও ডেট রেঞ্জ রেসপন্সিভ)
     const moduleStyles = `
         <style id="custom-download-module-styles">
             @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap');
@@ -102,7 +103,7 @@
             }
             .rpt-filter-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
                 gap: 16px;
                 margin-bottom: 18px;
             }
@@ -334,7 +335,7 @@
         return true;
     }
 
-    // ৪. ভিউ প্যানেল ইনজেকশন
+    // ৪. ভিউ প্যানেল ইনজেকশন (From Date ও To Date ফিল্টারসহ)
     function injectModuleView() {
         if (document.getElementById('report-download-hub-view')) return true;
 
@@ -351,21 +352,25 @@
                     <div class="rpt-box-header">
                         <div>
                             <h3>Report Download Center</h3>
-                            <span>Select statement parameters to generate, preview, and download</span>
+                            <span>Select single date or custom date range (weekly/monthly) to preview and download</span>
                         </div>
                     </div>
 
                     <div class="rpt-filter-grid">
                         <div class="rpt-control-group" style="grid-column: span 2;">
-                            <label>Select Report</label>
+                            <label>Select Report Type</label>
                             <select id="hubReportType" class="rpt-sel">
-                                <option value="daily_closing" selected>Daily Closing Financial Statement (PDF Statement)</option>
-                                <option value="daily_transactions">Daily Transactions (লেনদেনের রিপোর্ট)</option>
+                                <option value="daily_closing" selected>Daily Closing Financial Statement (পূর্ণাঙ্গ আর্থিক বিবরণী)</option>
+                                <option value="daily_transactions">Customer Transactions Report (লেনদেনের রিপোর্ট)</option>
                             </select>
                         </div>
                         <div class="rpt-control-group">
-                            <label>Report Date</label>
+                            <label>From Date (শুরুর তারিখ)</label>
                             <input type="date" id="hubFromDate" class="rpt-inp" />
+                        </div>
+                        <div class="rpt-control-group">
+                            <label>To Date (শেষের তারিখ)</label>
+                            <input type="date" id="hubToDate" class="rpt-inp" />
                         </div>
                     </div>
 
@@ -373,6 +378,9 @@
                         <span>Shortcuts:</span>
                         <button type="button" class="rpt-pill-btn active" onclick="window.hubDateShortcut('today')">Today</button>
                         <button type="button" class="rpt-pill-btn" onclick="window.hubDateShortcut('yesterday')">Yesterday</button>
+                        <button type="button" class="rpt-pill-btn" onclick="window.hubDateShortcut('last7days')">Last 7 Days</button>
+                        <button type="button" class="rpt-pill-btn" onclick="window.hubDateShortcut('thismonth')">This Month</button>
+                        <button type="button" class="rpt-pill-btn" onclick="window.hubDateShortcut('lastmonth')">Last Month</button>
                     </div>
 
                     <div class="rpt-action-bar">
@@ -425,10 +433,10 @@
         const title = document.getElementById('top-title');
         if (title) title.innerText = "REPORT DOWNLOAD CENTER";
 
-        const dateInp = document.getElementById('hubFromDate');
-        if (dateInp && !dateInp.value) {
-            const now = new Date();
-            dateInp.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const fromInp = document.getElementById('hubFromDate');
+        const toInp = document.getElementById('hubToDate');
+        if (fromInp && !fromInp.value) {
+            window.hubDateShortcut('today');
         }
     };
 
@@ -451,16 +459,23 @@
         };
     }
 
-    // ৬. ডাটা সংগ্রাহক - দৈনিক লেনদেন
-    function getTransactionReportData(selectedDate) {
+    // ৬. ডাটা সংগ্রাহক - কাস্টমার লেনদেন (সিঙ্গেল ডে এবং ডেট রেঞ্জ সাপোর্ট)
+    function getTransactionReportData(fromDate, toDate) {
         const store = getLiveStore();
         const txs = Array.isArray(store.customerTransactions) ? store.customerTransactions : [];
         const custs = Array.isArray(store.customers) ? store.customers : [];
 
-        const dayTxs = txs.filter(t => String(t.date) === String(selectedDate));
-        if (dayTxs.length === 0) return null;
+        const rangeTxs = txs.filter(t => {
+            const d = String(t.date);
+            return d >= fromDate && d <= toDate;
+        });
 
-        return dayTxs.map(t => {
+        if (rangeTxs.length === 0) return null;
+
+        // তারিখ ও সময় অনুযায়ী সাজানো
+        rangeTxs.sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
+
+        return rangeTxs.map(t => {
             const cust = custs.find(c => String(c.id) === String(t.customerId));
             const debit = Number(t.debit) || 0;
             const credit = Number(t.credit) || 0;
@@ -475,17 +490,54 @@
         });
     }
 
-    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (পূর্ণাঙ্গ অ্যাসেট সামারিসহ)
-    function getDailyClosingStatementData(selectedDate) {
+    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (সিঙ্গেল ডে এবং রেঞ্জ সাপোর্ট)
+    function getDailyClosingStatementData(fromDate, toDate) {
         const store = getLiveStore();
         const reports = Array.isArray(store.dailyClosingReports) ? store.dailyClosingReports : [];
-        const closedSnap = reports.find(r => String(r.report_date) === String(selectedDate));
+        const isRange = fromDate !== toDate;
 
-        // ক. যদি হিস্ট্রিতে সংরক্ষিত ডিটেইলস স্ন্যাপশট থাকে
-        if (closedSnap && closedSnap.details) {
+        // শেষের দিনের ক্লোজিং স্ন্যাপশট
+        const closedSnap = reports.find(r => String(r.report_date) === String(toDate));
+
+        const categories = Array.isArray(store.categories) ? store.categories : [];
+        const accounts = Array.isArray(store.accounts) ? store.accounts : [];
+        const balanceStore = store.balanceStore || {};
+        const cardConfig = store.cardConfig || {};
+        const cardQuantities = store.cardQuantities || {};
+        const cashQuantities = store.cashQuantities || {};
+        const cashOthers = Number(store.cashOthersAmount) || 0;
+        const customers = Array.isArray(store.customers) ? store.customers : [];
+        const customerTransactions = Array.isArray(store.customerTransactions) ? store.customerTransactions : [];
+
+        // রেঞ্জ বা নির্দিষ্ট দিনের দিলাম ও পেলাম
+        let totalDilam = 0;
+        let totalPelam = 0;
+        customerTransactions.filter(t => {
+            const d = String(t.date);
+            return d >= fromDate && d <= toDate;
+        }).forEach(t => {
+            totalDilam += (parseFloat(t.debit) || 0);
+            totalPelam += (parseFloat(t.credit) || 0);
+        });
+
+        // মোট কাস্টমার বকেয়া
+        let totalCustomerDue = 0;
+        customers.forEach(c => {
+            let due = parseFloat(c.openingBalance) || 0;
+            const custTxs = customerTransactions.filter(t => t.customerId === c.id);
+            custTxs.forEach(t => {
+                due += (parseFloat(t.debit) || 0) - (parseFloat(t.credit) || 0);
+            });
+            if (due > 0) totalCustomerDue += due;
+        });
+
+        // ক. যদি হিস্ট্রিতে ডিটেইলস স্ন্যাপশট থাকে (সিঙ্গেল ডে মোড)
+        if (!isRange && closedSnap && closedSnap.details) {
             const det = closedSnap.details;
             return {
-                reportDate: selectedDate,
+                isRange: false,
+                reportDate: toDate,
+                dateRangeText: `Date: ${toDate}`,
                 reportTime: closedSnap.closing_time || "--:--",
                 reportId: closedSnap.report_id || `DCR-${Date.now()}`,
                 refId: `REF-${String(Math.abs((closedSnap.report_id || '').split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0))).padStart(6, '0').slice(-6)}`,
@@ -513,37 +565,7 @@
             };
         }
 
-        // খ. স্ট্যান্ডার্ড/লাইভ লোডার
-        const categories = Array.isArray(store.categories) ? store.categories : [];
-        const accounts = Array.isArray(store.accounts) ? store.accounts : [];
-        const balanceStore = store.balanceStore || {};
-        const cardConfig = store.cardConfig || {};
-        const cardQuantities = store.cardQuantities || {};
-        const cashQuantities = store.cashQuantities || {};
-        const cashOthers = Number(store.cashOthersAmount) || 0;
-        const customers = Array.isArray(store.customers) ? store.customers : [];
-        const customerTransactions = Array.isArray(store.customerTransactions) ? store.customerTransactions : [];
-
-        // ওই তারিখের লেনদেন: দিলাম ও পেলাম
-        let todayDilam = 0;
-        let todayPelam = 0;
-        customerTransactions.filter(t => String(t.date) === String(selectedDate)).forEach(t => {
-            todayDilam += (parseFloat(t.debit) || 0);
-            todayPelam += (parseFloat(t.credit) || 0);
-        });
-
-        // মোট কাস্টমার বকেয়া
-        let totalCustomerDue = 0;
-        customers.forEach(c => {
-            let due = parseFloat(c.openingBalance) || 0;
-            const custTxs = customerTransactions.filter(t => t.customerId === c.id);
-            custTxs.forEach(t => {
-                due += (parseFloat(t.debit) || 0) - (parseFloat(t.credit) || 0);
-            });
-            if (due > 0) totalCustomerDue += due;
-        });
-
-        // ক্যাটাগরি একাউন্ট গ্রুপ
+        // খ. লাইভ বা রেঞ্জ লোডার
         const getCatAccounts = (matchNames) => {
             const list = [];
             let total = 0;
@@ -593,7 +615,6 @@
             });
         });
 
-        // মোট ফাইনান্সিয়াল ব্যালেন্স
         const totalBankAndMFS = bankAccs.total + personalAccs.total + agentAccs.total + rechargeAccs.total;
         const totalAssetsSum = totalCash + totalCardsValue + totalBankAndMFS;
         const totalNetBalance = (closedSnap ? closedSnap.actual_closing : totalAssetsSum) + totalCustomerDue;
@@ -604,7 +625,11 @@
         const refId = `REF-${String(Math.abs(reportId.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0))).padStart(6, '0').slice(-6)}`;
 
         return {
-            reportDate: selectedDate,
+            isRange: isRange,
+            fromDate: fromDate,
+            toDate: toDate,
+            dateRangeText: isRange ? `Range: ${fromDate} to ${toDate}` : `Date: ${toDate}`,
+            reportDate: toDate,
             reportTime: timeStr,
             reportId: reportId,
             refId: refId,
@@ -619,8 +644,8 @@
                 totalNetBalance
             },
             dueSummary: {
-                todayDilam: closedSnap ? closedSnap.total_dilam : todayDilam,
-                todayPelam: closedSnap ? closedSnap.total_pelam : todayPelam,
+                todayDilam: totalDilam,
+                todayPelam: totalPelam,
                 totalCustomerDue
             },
             bankAccounts: bankAccs,
@@ -635,27 +660,32 @@
     // ৮. প্রিভিউ জেনারেটর
     window.hubGeneratePreview = function () {
         const rptType = document.getElementById('hubReportType').value;
-        const selectedDate = document.getElementById('hubFromDate').value;
+        const fromDate = document.getElementById('hubFromDate').value;
+        const toDate = document.getElementById('hubToDate').value || fromDate;
         const container = document.getElementById('hub-report-print-area');
 
-        if (!selectedDate) {
-            alert("দয়া করে একটি তারিখ নির্বাচন করুন।");
+        if (!fromDate) {
+            alert("দয়া করে তারিখ নির্বাচন করুন।");
             return;
         }
 
+        // ক. কাস্টমার লেনদেনের প্রিভিউ
         if (rptType === 'daily_transactions') {
-            const data = getTransactionReportData(selectedDate);
+            const data = getTransactionReportData(fromDate, toDate);
+            const isRange = fromDate !== toDate;
+
             if (!data) {
                 container.innerHTML = `
                     <div class="rpt-placeholder-state">
                         <i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i>
-                        <h4>এই তারিখে (${selectedDate}) কোনো লেনদেন নেই</h4>
+                        <h4>নির্বাচিত সময়ে (${isRange ? `${fromDate} থেকে ${toDate}` : fromDate}) কোনো লেনদেন নেই</h4>
                     </div>
                 `;
                 return;
             }
 
-            const dateInfo = getBanglaDate(selectedDate);
+            const fromInfo = getBanglaDate(fromDate);
+            const toInfo = getBanglaDate(toDate);
             let totalAmount = 0;
             let rowsHtml = '';
 
@@ -664,6 +694,7 @@
                 rowsHtml += `
                     <tr>
                         <td style="text-align:center;">${toBn(index + 1)}।</td>
+                        ${isRange ? `<td style="text-align:center;">${toBn(item.date)}</td>` : ''}
                         <td style="text-align:center;">${formatTime(item.time)}</td>
                         <td style="font-weight:600;">${escapeHTML(item.customerName)}</td>
                         <td style="text-align:center;">${escapeHTML(item.transactionType)}</td>
@@ -677,19 +708,20 @@
             container.innerHTML = `
                 <div style="text-align:center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px; font-family:'Tiro Bangla', serif;">
                     <h2 style="margin:0; font-size:22px; font-weight:bold;">MOUSUMI COMPUTER</h2>
-                    <h4 style="margin:3px 0; font-size:16px;">লেনদেনের রিপোর্ট</h4>
+                    <h4 style="margin:3px 0; font-size:16px;">লেনদেনের রিপোর্ট ${isRange ? `(তারিখ পরিসীমা)` : ''}</h4>
                 </div>
                 <div style="display:flex; justify-content:space-between; font-family:'Tiro Bangla', serif; font-size:13px; margin-bottom:8px; font-weight:600;">
-                    <div>তারিখ: ${dateInfo.date} ${dateInfo.month} ${dateInfo.year}</div>
-                    <div>বার: ${dateInfo.day}</div>
+                    <div>${isRange ? `সময়কাল: ${fromInfo.full} থেকে ${toInfo.full}` : `তারিখ: ${fromInfo.full} (${fromInfo.day})`}</div>
+                    <div>মোট লেনদেন: ${toBn(data.length)} টি</div>
                 </div>
                 <table class="rpt-preview-table">
                     <thead>
                         <tr>
-                            <th style="width:8%;">ক্রমিক</th>
-                            <th style="width:14%;">সময়</th>
-                            <th style="width:20%;">কাস্টমার</th>
-                            <th style="width:15%;">লেনদেন</th>
+                            <th style="width:7%;">ক্রমিক</th>
+                            ${isRange ? `<th style="width:13%;">তারিখ</th>` : ''}
+                            <th style="width:12%;">সময়</th>
+                            <th style="width:18%;">কাস্টমার</th>
+                            <th style="width:13%;">লেনদেন</th>
                             <th style="width:23%;">বিস্তারিত</th>
                             <th style="width:12%;">টাকা</th>
                             <th style="width:8%;">মন্তব্য</th>
@@ -698,7 +730,7 @@
                     <tbody>
                         ${rowsHtml}
                         <tr style="font-weight:bold; background:#f8fafc;">
-                            <td colspan="5" style="text-align:right; padding-right:15px;">সর্বমোট:</td>
+                            <td colspan="${isRange ? 6 : 5}" style="text-align:right; padding-right:15px;">সর্বমোট:</td>
                             <td style="text-align:right;">৳ ${toBnMoney(totalAmount)}</td>
                             <td></td>
                         </tr>
@@ -708,8 +740,9 @@
             return;
         }
 
+        // খ. DAILY CLOSING FINANCIAL STATEMENT প্রিভিউ
         if (rptType === 'daily_closing') {
-            const data = getDailyClosingStatementData(selectedDate);
+            const data = getDailyClosingStatementData(fromDate, toDate);
             
             const renderAccRows = (accList) => {
                 if (!accList || accList.length === 0) return `<tr><td colspan="2" style="text-align:center; color:#64748b;">No active balance</td></tr>`;
@@ -748,7 +781,7 @@
                     <!-- HEADER -->
                     <div class="dcr-preview-header">
                         <div style="font-size:11px; line-height:1.4;">
-                            <div>Date: ${data.reportDate}</div>
+                            <div>${data.dateRangeText}</div>
                             <div>Time: ${data.reportTime}</div>
                         </div>
                         <div class="dcr-preview-header-center">
@@ -763,7 +796,7 @@
 
                     <!-- SECTION 1: পূর্ণাঙ্গ অ্যাসেট সামারি -->
                     <div class="dcr-sec-box">
-                        <div class="dcr-sec-bar">SECTION 1: EXECUTIVE FINANCIAL SUMMARY</div>
+                        <div class="dcr-sec-bar">SECTION 1: EXECUTIVE FINANCIAL SUMMARY ${data.isRange ? `(AS OF ${data.toDate})` : ''}</div>
                         <table class="dcr-sec-table">
                             <tr>
                                 <td style="width:70%;">Total Cash Inventory (ক্যাশ ব্যালেন্স)</td>
@@ -798,14 +831,14 @@
 
                     <!-- SECTION 2: কাস্টমার লেনদেন ও বকেয়া সামারি -->
                     <div class="dcr-sec-box">
-                        <div class="dcr-sec-bar">SECTION 2: CUSTOMER TRANSACTIONS & DUE SUMMARY (দিলাম / পেলাম)</div>
+                        <div class="dcr-sec-bar">SECTION 2: CUSTOMER TRANSACTIONS & DUE SUMMARY (${data.isRange ? 'সময়কালের মোট দিল / পেল' : 'দিলাম / পেলাম'})</div>
                         <table class="dcr-sec-table">
                             <tr>
-                                <td style="width:70%; color:#dc2626; font-weight:bold;">Today's Total Dilam (-) [বাকী/ধার দেওয়া]</td>
+                                <td style="width:70%; color:#dc2626; font-weight:bold;">${data.isRange ? 'Period Total Dilam (-) [মোট বাকী/ধার দেওয়া]' : "Today's Total Dilam (-) [বাকী/ধার দেওয়া]"}</td>
                                 <td style="text-align:right; width:30%; color:#dc2626; font-weight:bold;">৳ ${toEnMoney(data.dueSummary.todayDilam)}</td>
                             </tr>
                             <tr>
-                                <td style="color:#16a34a; font-weight:bold;">Today's Total Pelam (+) [আদায়/জমা নেওয়া]</td>
+                                <td style="color:#16a34a; font-weight:bold;">${data.isRange ? 'Period Total Pelam (+) [মোট আদায়/জমা নেওয়া]' : "Today's Total Pelam (+) [আদায়/জমা নেওয়া]"}</td>
                                 <td style="text-align:right; color:#16a34a; font-weight:bold;">৳ ${toEnMoney(data.dueSummary.todayPelam)}</td>
                             </tr>
                             <tr class="total-row" style="background:#fef2f2;">
@@ -952,21 +985,25 @@
     // ৯. PDF প্রিন্ট / ডাউনলোড
     window.hubDownloadPDF = function () {
         const rptType = document.getElementById('hubReportType').value;
-        const selectedDate = document.getElementById('hubFromDate').value;
+        const fromDate = document.getElementById('hubFromDate').value;
+        const toDate = document.getElementById('hubToDate').value || fromDate;
 
-        if (!selectedDate) {
-            alert("দয়া করে একটি তারিখ নির্বাচন করুন।");
+        if (!fromDate) {
+            alert("দয়া করে তারিখ নির্বাচন করুন।");
             return;
         }
 
         if (rptType === 'daily_transactions') {
-            const reportData = getTransactionReportData(selectedDate);
+            const reportData = getTransactionReportData(fromDate, toDate);
+            const isRange = fromDate !== toDate;
+
             if (!reportData) {
                 alert("এই তারিখে কোনো লেনদেন নেই!");
                 return;
             }
 
-            const dateInfo = getBanglaDate(selectedDate);
+            const fromInfo = getBanglaDate(fromDate);
+            const toInfo = getBanglaDate(toDate);
             let totalAmount = 0;
             let rowsHTML = "";
 
@@ -975,6 +1012,7 @@
                 rowsHTML += `
                     <tr>
                         <td class="serial">${toBn(index + 1)}।</td>
+                        ${isRange ? `<td class="date-col">${toBn(t.date)}</td>` : ''}
                         <td class="time">${formatTime(t.time)}</td>
                         <td class="customer">${escapeHTML(t.customerName)}</td>
                         <td class="type">${escapeHTML(t.transactionType)}</td>
@@ -1003,13 +1041,14 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
 .transaction-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .transaction-table th, .transaction-table td { border: 0.5px solid #000; padding: 4px; font-size: 10.5px; line-height: 1.25; vertical-align: middle; }
 .transaction-table th { font-weight: bold; text-align: center; background: #f5f5f5; }
-.serial { width: 7%; text-align: center; }
-.time { width: 12%; text-align: center; }
+.serial { width: 6%; text-align: center; }
+.date-col { width: 11%; text-align: center; }
+.time { width: 10%; text-align: center; }
 .customer { width: 18%; text-align: left; }
-.type { width: 15%; text-align: center; }
-.details { width: 25%; text-align: left; }
+.type { width: 13%; text-align: center; }
+.details { width: 26%; text-align: left; }
 .money { width: 11%; text-align: right; }
-.comment { width: 12%; text-align: left; }
+.comment { width: 10%; text-align: left; }
 .total-row td { font-weight: bold; background: #fff; }
 .total-label { text-align: right; padding-right: 7px !important; }
 .signature-area { margin-top: 42px; display: flex; justify-content: flex-end; }
@@ -1022,16 +1061,17 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
 <body>
     <div class="header">
         <div class="shop-name">MOUSUMI COMPUTER</div>
-        <div class="report-title">লেনদেনের রিপোর্ট</div>
+        <div class="report-title">লেনদেনের রিপোর্ট ${isRange ? `(তারিখ পরিসীমা)` : ''}</div>
     </div>
     <div class="info">
-        <div>তারিখ: ${dateInfo.date} ${dateInfo.month} ${dateInfo.year}</div>
-        <div>বার: ${dateInfo.day}</div>
+        <div>${isRange ? `সময়কাল: ${fromInfo.full} থেকে ${toInfo.full}` : `তারিখ: ${fromInfo.full} (${fromInfo.day})`}</div>
+        <div>মোট লেনদেন: ${toBn(reportData.length)} টি</div>
     </div>
     <table class="transaction-table">
         <thead>
             <tr>
                 <th class="serial">ক্রমিক</th>
+                ${isRange ? `<th class="date-col">তারিখ</th>` : ''}
                 <th class="time">সময়</th>
                 <th class="customer">কাস্টমার</th>
                 <th class="type">লেনদেন</th>
@@ -1043,7 +1083,7 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
         <tbody>
             ${rowsHTML}
             <tr class="total-row">
-                <td colspan="5" class="total-label">সর্বমোট:</td>
+                <td colspan="${isRange ? 6 : 5}" class="total-label">সর্বমোট:</td>
                 <td class="money">${toBnMoney(totalAmount)}</td>
                 <td class="comment"></td>
             </tr>
@@ -1075,7 +1115,7 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
         }
 
         if (rptType === 'daily_closing') {
-            const data = getDailyClosingStatementData(selectedDate);
+            const data = getDailyClosingStatementData(fromDate, toDate);
 
             const renderAccRows = (accList) => {
                 if (!accList || accList.length === 0) return `<tr><td colspan="2" style="text-align:center; color:#64748b;">No active balance</td></tr>`;
@@ -1234,7 +1274,7 @@ html, body {
     <!-- HEADER -->
     <div class="dcr-header">
         <div class="dcr-header-left">
-            <div>Date: ${data.reportDate}</div>
+            <div>${data.dateRangeText}</div>
             <div>Time: ${data.reportTime}</div>
         </div>
         <div class="dcr-header-center">
@@ -1249,7 +1289,7 @@ html, body {
 
     <!-- SECTION 1: পূর্ণাঙ্গ ফিন্যান্সিয়াল অ্যাসেট সামারি -->
     <div class="section-block">
-        <div class="section-bar">SECTION 1: EXECUTIVE FINANCIAL SUMMARY</div>
+        <div class="section-bar">SECTION 1: EXECUTIVE FINANCIAL SUMMARY ${data.isRange ? `(AS OF ${data.toDate})` : ''}</div>
         <table class="statement-table">
             <tr>
                 <td style="width:70%;">Total Cash Inventory (ক্যাশ ব্যালেন্স)</td>
@@ -1284,7 +1324,7 @@ html, body {
 
     <!-- SECTION 2: কাস্টমার লেনদেন ও বকেয়া সামারি -->
     <div class="section-block">
-        <div class="section-bar">SECTION 2: CUSTOMER TRANSACTIONS & DUE SUMMARY (দিলাম / পেলাম)</div>
+        <div class="section-bar">SECTION 2: CUSTOMER TRANSACTIONS & DUE SUMMARY (${data.isRange ? 'সময়কালের মোট দিল / পেল' : 'দিলাম / পেলাম'})</div>
         <table class="statement-table">
             <tr>
                 <td style="width:70%;">Today's Total Dilam (-) [বাকী/ধার দেওয়া]</td>
@@ -1453,25 +1493,28 @@ html, body {
     // ১০. Excel এক্সপোর্ট
     window.hubExportExcel = function () {
         const rptType = document.getElementById('hubReportType').value;
-        const selectedDate = document.getElementById('hubFromDate').value;
+        const fromDate = document.getElementById('hubFromDate').value;
+        const toDate = document.getElementById('hubToDate').value || fromDate;
 
-        if (!selectedDate) {
-            alert("দয়া করে একটি তারিখ নির্বাচন করুন।");
+        if (!fromDate) {
+            alert("দয়া করে তারিখ নির্বাচন করুন।");
             return;
         }
 
         if (rptType === 'daily_transactions') {
-            const data = getTransactionReportData(selectedDate);
+            const data = getTransactionReportData(fromDate, toDate);
+            const isRange = fromDate !== toDate;
+
             if (!data) {
-                alert("এই তারিখে কোনো লেনদেন নেই!");
+                alert("নির্বাচিত সময়ে কোনো লেনদেন নেই!");
                 return;
             }
 
             const excelRows = [
-                ["MOUSUMI COMPUTER - DAILY TRANSACTION REPORT"],
-                ["Date:", selectedDate],
+                ["MOUSUMI COMPUTER - CUSTOMER TRANSACTION REPORT"],
+                ["Period:", isRange ? `${fromDate} to ${toDate}` : fromDate],
                 [],
-                ["SL", "Time", "Customer Name", "Type", "Description", "Amount (BDT)", "Comment"]
+                ["SL", ...(isRange ? ["Date"] : []), "Time", "Customer Name", "Type", "Description", "Amount (BDT)", "Comment"]
             ];
 
             let total = 0;
@@ -1479,6 +1522,7 @@ html, body {
                 total += Math.abs(d.amount);
                 excelRows.push([
                     idx + 1,
+                    ...(isRange ? [d.date] : []),
                     d.time || '--:--',
                     d.customerName,
                     d.transactionType,
@@ -1487,22 +1531,22 @@ html, body {
                     d.comment
                 ]);
             });
-            excelRows.push(["", "", "", "", "Total:", total, ""]);
+            excelRows.push(["", ...(isRange ? [""] : []), "", "", "", "Total:", total, ""]);
 
             if (window.XLSX) {
                 const ws = XLSX.utils.aoa_to_sheet(excelRows);
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "Transactions");
-                XLSX.writeFile(wb, `Transaction_Report_${selectedDate}.xlsx`);
+                XLSX.writeFile(wb, `Transaction_Report_${fromDate}_${toDate}.xlsx`);
             }
             return;
         }
 
         if (rptType === 'daily_closing') {
-            const data = getDailyClosingStatementData(selectedDate);
+            const data = getDailyClosingStatementData(fromDate, toDate);
             const excelRows = [
                 ["MOUSUMI COMPUTER - DAILY CLOSING FINANCIAL STATEMENT"],
-                ["Date:", data.reportDate, "Time:", data.reportTime, "Report ID:", data.reportId],
+                ["Period:", data.dateRangeText, "Time:", data.reportTime, "Report ID:", data.reportId],
                 [],
                 ["SECTION 1: EXECUTIVE FINANCIAL SUMMARY", "AMOUNT (BDT)"],
                 ["Total Cash Inventory", data.summary.totalCash],
@@ -1514,8 +1558,8 @@ html, body {
                 ["TOTAL CLOSING FINANCIAL BALANCE (ASSETS)", data.summary.totalNetBalance],
                 [],
                 ["SECTION 2: CUSTOMER TRANSACTIONS & DUE SUMMARY", "AMOUNT (BDT)"],
-                ["Today Total Dilam (-)", data.dueSummary.todayDilam],
-                ["Today Total Pelam (+)", data.dueSummary.todayPelam],
+                ["Total Dilam (-)", data.dueSummary.todayDilam],
+                ["Total Pelam (+)", data.dueSummary.todayPelam],
                 ["Total Customer Outstanding Due", data.dueSummary.totalCustomerDue],
                 [],
                 ["BANK ACCOUNTS", "BALANCE (BDT)"]
@@ -1545,27 +1589,47 @@ html, body {
                 const ws = XLSX.utils.aoa_to_sheet(excelRows);
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "Daily Closing");
-                XLSX.writeFile(wb, `Daily_Closing_Statement_${selectedDate}.xlsx`);
+                XLSX.writeFile(wb, `Daily_Closing_${fromDate}_${toDate}.xlsx`);
             }
         }
     };
 
-    // ১১. শর্টকাট ও রিসেট
+    // ১১. শর্টকাট ইঞ্জিন (Today, Yesterday, Last 7 Days, This Month, Last Month)
     window.hubDateShortcut = function (preset) {
         document.querySelectorAll('.rpt-pill-btn').forEach(b => b.classList.remove('active'));
         if (window.event && window.event.target) window.event.target.classList.add('active');
 
         const fromInp = document.getElementById('hubFromDate');
-        if (!fromInp) return;
+        const toInp = document.getElementById('hubToDate');
+        if (!fromInp || !toInp) return;
+
         const now = new Date();
         const fmt = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
         if (preset === 'today') {
-            fromInp.value = fmt(now);
+            const t = fmt(now);
+            fromInp.value = t;
+            toInp.value = t;
         } else if (preset === 'yesterday') {
             const y = new Date();
             y.setDate(y.getDate() - 1);
-            fromInp.value = fmt(y);
+            const yStr = fmt(y);
+            fromInp.value = yStr;
+            toInp.value = yStr;
+        } else if (preset === 'last7days') {
+            const past7 = new Date();
+            past7.setDate(past7.getDate() - 6);
+            fromInp.value = fmt(past7);
+            toInp.value = fmt(now);
+        } else if (preset === 'thismonth') {
+            const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            fromInp.value = fmt(startMonth);
+            toInp.value = fmt(now);
+        } else if (preset === 'lastmonth') {
+            const startLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const endLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+            fromInp.value = fmt(startLastMonth);
+            toInp.value = fmt(endLastMonth);
         }
     };
 
@@ -1585,7 +1649,7 @@ html, body {
         }
     };
 
-    // ১২. অটো-ইনিশিয়ালাইজার
+    // ১২. সুপার স্ট্যাবল অটো-ইনিশিয়ালাইজার
     function runAutoInit() {
         if (!document.getElementById('custom-download-module-styles')) {
             document.head.insertAdjacentHTML('beforeend', moduleStyles);
@@ -1595,10 +1659,9 @@ html, body {
         const vInjected = injectModuleView();
 
         if (mInjected && vInjected) {
-            const dateInp = document.getElementById('hubFromDate');
-            if (dateInp && !dateInp.value) {
-                const now = new Date();
-                dateInp.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const fromInp = document.getElementById('hubFromDate');
+            if (fromInp && !fromInp.value) {
+                window.hubDateShortcut('today');
             }
         }
     }
