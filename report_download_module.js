@@ -2,7 +2,7 @@
  * ============================================================================
  * MOUSUMI COMPUTER ERP - DEDICATED REPORT DOWNLOAD CENTER
  * File: report_download_module.js
- * (Ultra-Fast Live Memory Sync Engine)
+ * (Fixed Tab Switching & Clean Screen Exit Engine)
  * ============================================================================
  */
 
@@ -50,9 +50,17 @@
         };
     };
 
-    // ২. সিএসএস স্টাইল
+    // ২. সিএসএস স্টাইল (ট্যাব কনফ্লিক্ট ফিক্স সহ)
     const moduleStyles = `
         <style id="custom-download-module-styles">
+            /* পেজ কনফ্লিক্ট ফিক্স: একটিভ না থাকলে জোরপূর্বক হাইড হবে */
+            .view-panel:not(.active) {
+                display: none !important;
+            }
+            .view-panel.active {
+                display: block !important;
+            }
+
             .rpt-center-wrap {
                 max-width: 1100px;
                 margin: 0 auto;
@@ -387,17 +395,16 @@
         return true;
     }
 
-    // ৫. মাস্টার ট্যাব সুইচিং
+    // ৫. মাস্টার ট্যাব সুইচিং (সম্পূর্ণ ক্লিয়ারেন্স সহ)
     window.openReportDownloadHub = function() {
-        document.querySelectorAll('.view-panel').forEach(p => {
-            p.classList.remove('active');
-            p.style.display = 'none';
-        });
-
-        const panel = document.getElementById('report-download-hub-view');
-        if (panel) {
-            panel.classList.add('active');
-            panel.style.display = 'block';
+        if (typeof window.switchMainTab === 'function') {
+            window.switchMainTab('report-download-hub');
+        } else {
+            document.querySelectorAll('.view-panel').forEach(p => {
+                p.classList.remove('active');
+            });
+            const panel = document.getElementById('report-download-hub-view');
+            if (panel) panel.classList.add('active');
         }
 
         document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
