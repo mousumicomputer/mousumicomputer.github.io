@@ -3,17 +3,17 @@
  * MOUSUMI COMPUTER ERP - DEDICATED REPORT DOWNLOAD CENTER
  * File: report_download_module.js
  * 
- * Features:
- * 1. Filter out all 0.00 / Zero-quantity items to fit strictly in 2 pages.
+ * Includes:
+ * 1. Filter out all 0-qty Cards & Notes to fit strictly within 2 A4 Pages.
  * 2. Dedicated Section for Dilam / Pelam / Customer Due Summary.
- * 3. Strict Page Break after Agent Accounts.
+ * 3. Page Break immediately after Agent Accounts.
  * ============================================================================
  */
 
 (function () {
     "use strict";
 
-    // ১. বাংলা সংখ্যা ও ফরম্যাটিং
+    // ১. সংখ্যা ও ফরম্যাটিং
     const BN_DIGITS = { "0": "০", "1": "১", "2": "২", "3": "৩", "4": "৪", "5": "৫", "6": "৬", "7": "৭", "8": "৮", "9": "৯" };
     const toBn = (val) => String(val ?? "").replace(/\d/g, d => BN_DIGITS[d]);
 
@@ -230,8 +230,8 @@
                 display: flex;
                 justify-content: space-between;
                 align-items: flex-start;
-                margin-bottom: 10px;
-                padding-bottom: 6px;
+                margin-bottom: 8px;
+                padding-bottom: 5px;
                 border-bottom: 1.5px solid #000;
             }
             .dcr-preview-header-center {
@@ -239,37 +239,37 @@
                 flex: 1;
             }
             .dcr-preview-header-center h2 {
-                font-size: 18px;
+                font-size: 17px;
                 font-weight: bold;
                 letter-spacing: 0.5px;
                 margin: 0;
                 text-transform: uppercase;
             }
             .dcr-preview-header-center h4 {
-                font-size: 12px;
+                font-size: 11.5px;
                 font-weight: bold;
                 margin: 2px 0 0 0;
                 text-transform: uppercase;
             }
             .dcr-sec-bar {
                 background-color: #f3f4f6;
-                font-size: 11px;
+                font-size: 10.5px;
                 font-weight: bold;
                 text-transform: uppercase;
-                padding: 4px 8px;
+                padding: 4px 6px;
                 border: 1px solid #000;
-                margin-top: 8px;
+                margin-top: 6px;
                 margin-bottom: 0;
             }
             .dcr-sec-table {
                 width: 100%;
                 border-collapse: collapse;
-                margin-bottom: 8px;
+                margin-bottom: 6px;
             }
             .dcr-sec-table th, .dcr-sec-table td {
                 border: 1px solid #000;
-                padding: 4.5px 8px;
-                font-size: 11px;
+                padding: 4px 6px;
+                font-size: 10.5px;
                 color: #000;
             }
             .dcr-sec-table th {
@@ -285,7 +285,7 @@
             .dcr-page-separator {
                 border-top: 2px dashed #94a3b8;
                 text-align: center;
-                margin: 20px 0 15px 0;
+                margin: 18px 0 12px 0;
                 position: relative;
             }
             .dcr-page-separator span {
@@ -564,7 +564,7 @@
             });
         });
 
-        // মোট ফাইনান্সিয়াল ব্যালেন্স
+        // মোট ফাইনান্সিয়াল ব্যালেন্স (Cash + Cards + Bank/MFS)
         const totalBankAndMFS = bankAccs.total + personalAccs.total + agentAccs.total + rechargeAccs.total;
         const totalNetBalance = totalCash + totalCardsValue + totalCustomerDue + totalBankAndMFS;
 
@@ -880,7 +880,7 @@
         }
     };
 
-    // ৯. PDF প্রিন্ট / ডাউনলোড (Strict 2-Page Format)
+    // ৯. PDF প্রিন্ট / ডাউনলোড
     window.hubDownloadPDF = function () {
         const rptType = document.getElementById('hubReportType').value;
         const selectedDate = document.getElementById('hubFromDate').value;
