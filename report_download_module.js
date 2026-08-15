@@ -3,17 +3,14 @@
  * MOUSUMI COMPUTER ERP - DEDICATED REPORT DOWNLOAD CENTER
  * File: report_download_module.js
  * 
- * Concept:
- * - Standalone Report Download Module.
- * - Customer Management-এর "লেনদেনের রিপোর্ট" অক্ষত রেখে এই সেন্টারের 
- *   ড্রপডাউন থেকেও একই রিপোর্ট প্রিভিউ, PDF ও Excel ডাউনলোডের সুবিধা।
+ * Includes: Auto-Retry DOM Injector & Bulletproof Tab Switching Engine.
  * ============================================================================
  */
 
 (function () {
     "use strict";
 
-    // ১. বাংলা সংখ্যা ও কারেন্সি ফরম্যাট
+    // ১. বাংলা সংখ্যা ও ফরম্যাটিং
     const BN_DIGITS = { "0": "০", "1": "১", "2": "২", "3": "৩", "4": "৪", "5": "৫", "6": "৬", "7": "৭", "8": "৮", "9": "৯" };
     const toBn = (val) => String(val ?? "").replace(/\d/g, d => BN_DIGITS[d]);
 
@@ -49,7 +46,7 @@
         };
     };
 
-    // ২. ক্লিন ও মার্জিত সিএসএস
+    // ২. সিএসএস স্টাইল
     const moduleStyles = `
         <style id="custom-download-module-styles">
             .rpt-center-wrap {
@@ -207,16 +204,16 @@
         </style>
     `;
 
-    // ৩. সাইডবারে নতুন "Download Reports" মেনু যুক্ত করা
+    // ৩. সাইডবারে বাটন ইনজেকশন
     function injectModuleMenu() {
         const sidebarList = document.querySelector('.sidebar .menu-list');
-        if (!sidebarList || document.getElementById('menu-download-hub')) return;
+        if (!sidebarList || document.getElementById('menu-download-hub')) return false;
 
         const li = document.createElement('li');
         li.className = 'menu-item';
         li.id = 'menu-download-hub';
         li.innerHTML = `
-            <a onclick="window.switchMainTab('report-download-hub')">
+            <a onclick="window.openReportDownloadHub()">
                 <span class="menu-link-inner"><i class="fa-solid fa-cloud-arrow-down"></i> <span>Download Reports</span></span>
             </a>
         `;
@@ -227,12 +224,13 @@
         } else {
             sidebarList.appendChild(li);
         }
+        return true;
     }
 
-    // ৪. ভিউ প্যানেল তৈরি
+    // ৪. ভিউ প্যানেল ইনজেকশন
     function injectModuleView() {
         const wrapper = document.querySelector('.main-wrapper');
-        if (!wrapper || document.getElementById('report-download-hub-view')) return;
+        if (!wrapper || document.getElementById('report-download-hub-view')) return false;
 
         const panel = document.createElement('div');
         panel.className = 'view-panel';
@@ -299,9 +297,28 @@
         `;
 
         wrapper.appendChild(panel);
+        return true;
     }
 
-    // ৫. ট্রানজ্যাকশন ডাটা সংগ্রহ করা
+    // ৫. মাস্টার ট্যাব সুইচিং ফাংশন (ক্লিক করলে ওপেন হওয়া নিশ্চিত করে)
+    window.openReportDownloadHub = function() {
+        if (typeof window.switchMainTab === 'function') {
+            window.switchMainTab('report-download-hub');
+        } else {
+            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+            const p = document.getElementById('report-download-hub-view');
+            if (p) p.classList.add('active');
+        }
+
+        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+        const m = document.getElementById('menu-download-hub');
+        if (m) m.classList.add('active');
+
+        const title = document.getElementById('top-title');
+        if (title) title.innerText = "REPORT DOWNLOAD CENTER";
+    };
+
+    // ৬. ডাটা প্রিপারেশন
     function getTransactionReportData(selectedDate) {
         const txs = Array.isArray(window.customerTransactions) ? window.customerTransactions : [];
         const custs = Array.isArray(window.customers) ? window.customers : [];
@@ -324,7 +341,7 @@
         });
     }
 
-    // ৬. প্রিভিউ টেবিল প্রদর্শন
+    // ৭. প্রিভিউ টেবিল
     window.hubGeneratePreview = function () {
         const rptType = document.getElementById('hubReportType').value;
         const selectedDate = document.getElementById('hubFromDate').value;
@@ -400,7 +417,7 @@
         }
     };
 
-    // ৭. PDF প্রিন্ট ইঞ্জিন (reports_module.js এর অনুরূপ Native Engine)
+    // ৮. PDF ডাউনলোড ইঞ্জিন
     window.hubDownloadPDF = function () {
         const rptType = document.getElementById('hubReportType').value;
         const selectedDate = document.getElementById('hubFromDate').value;
@@ -524,7 +541,7 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
         }
     };
 
-    // ৮. Excel এক্সপোর্ট
+    // ৯. Excel এক্সপোর্ট
     window.hubExportExcel = function () {
         const rptType = document.getElementById('hubReportType').value;
         const selectedDate = document.getElementById('hubFromDate').value;
@@ -567,12 +584,13 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
         }
     };
 
-    // ৯. শর্টকাট ডেট ও ইনিট
+    // ১০. ডেট শর্টকাট ও রিসেট
     window.hubDateShortcut = function (preset) {
         document.querySelectorAll('.rpt-pill-btn').forEach(b => b.classList.remove('active'));
         if (event && event.target) event.target.classList.add('active');
 
         const fromInp = document.getElementById('hubFromDate');
+        if (!fromInp) return;
         const now = new Date();
         const fmt = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
@@ -586,27 +604,44 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
     };
 
     window.hubReset = function () {
-        document.getElementById('hubReportType').selectedIndex = 0;
+        const sel = document.getElementById('hubReportType');
+        if (sel) sel.selectedIndex = 0;
         window.hubDateShortcut('today');
-        document.getElementById('hub-report-print-area').innerHTML = `
-            <div class="rpt-placeholder-state">
-                <i class="fa-regular fa-file-lines"></i>
-                <h4>Report Ready for Generation</h4>
-                <p>Click <strong>Generate Preview</strong> to preview the statement, or click <strong>Download PDF</strong> / <strong>Export Excel</strong> directly.</p>
-            </div>
-        `;
+        const area = document.getElementById('hub-report-print-area');
+        if (area) {
+            area.innerHTML = `
+                <div class="rpt-placeholder-state">
+                    <i class="fa-regular fa-file-lines"></i>
+                    <h4>Report Ready for Generation</h4>
+                    <p>Click <strong>Generate Preview</strong> to preview the statement, or click <strong>Download PDF</strong> / <strong>Export Excel</strong> directly.</p>
+                </div>
+            `;
+        }
     };
 
-    function init() {
-        document.head.insertAdjacentHTML('beforeend', moduleStyles);
-        injectModuleMenu();
-        injectModuleView();
-        window.hubDateShortcut('today');
+    // ১১. অটো-রিট্রাই ইনিশিয়ালাইজার (সাইডবার লোড হওয়া নিশ্চিত করবে)
+    function autoInit() {
+        if (!document.getElementById('custom-download-module-styles')) {
+            document.head.insertAdjacentHTML('beforeend', moduleStyles);
+        }
+
+        const menuInjected = injectModuleMenu();
+        const viewInjected = injectModuleView();
+
+        if (menuInjected && viewInjected) {
+            window.hubDateShortcut('today');
+            return true;
+        }
+        return false;
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
+    // প্রতি ২৫০ মিলিসেকেন্ড পরপর চেক করবে যতক্ষণ না সাইডবার পাওয়া যায়
+    let attempts = 0;
+    const interval = setInterval(() => {
+        attempts++;
+        if (autoInit() || attempts > 40) {
+            clearInterval(interval);
+        }
+    }, 250);
+
 })();
