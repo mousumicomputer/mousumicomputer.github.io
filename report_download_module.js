@@ -2,18 +2,14 @@
  * ============================================================================
  * MOUSUMI COMPUTER ERP - DEDICATED REPORT DOWNLOAD CENTER
  * File: report_download_module.js
- * 
- * Includes:
- * 1. Daily Transactions (লেনদেনের রিপোর্ট)
- * 2. Daily Closing Financial Statement (2-Page Strict Layout with Page Break after Agent Accounts)
- * 3. Preview, Direct Printable PDF & Excel Export Engines
+ * (Ultra-Stable Injection & Live Data Fallback Engine)
  * ============================================================================
  */
 
 (function () {
     "use strict";
 
-    // ১. সংখ্যা ও ফরম্যাটিং হেল্পার
+    // ১. বাংলা সংখ্যা ও ফরম্যাটিং
     const BN_DIGITS = { "0": "০", "1": "১", "2": "২", "3": "৩", "4": "৪", "5": "৫", "6": "৬", "7": "৭", "8": "৮", "9": "৯" };
     const toBn = (val) => String(val ?? "").replace(/\d/g, d => BN_DIGITS[d]);
 
@@ -210,7 +206,7 @@
             .rpt-placeholder-state i { font-size: 2.8rem; color: #cbd5e1; margin-bottom: 12px; }
             .rpt-placeholder-state h4 { font-size: 1.05rem; color: #475569; margin-bottom: 4px; }
             
-            /* DCR STATEMENT PREVIEW STYLES */
+            /* DCR STATEMENT PREVIEW */
             .dcr-preview-doc {
                 font-family: Arial, Helvetica, sans-serif;
                 color: #000;
@@ -294,22 +290,24 @@
         </style>
     `;
 
-    // ৩. সাইডবারে বাটন ইনজেকশন
+    // ৩. সাইডবারে বাটন ইনজেকশন (Super Reliable)
     function injectModuleMenu() {
-        const sidebarList = document.querySelector('.sidebar .menu-list');
-        if (!sidebarList || document.getElementById('menu-download-hub')) return false;
+        if (document.getElementById('menu-download-hub')) return true;
+
+        const sidebarList = document.querySelector('#sidebar .menu-list') || document.querySelector('.sidebar .menu-list');
+        if (!sidebarList) return false;
 
         const li = document.createElement('li');
         li.className = 'menu-item';
         li.id = 'menu-download-hub';
         li.innerHTML = `
-            <a onclick="window.openReportDownloadHub()">
+            <a onclick="window.openReportDownloadHub()" style="cursor: pointer;">
                 <span class="menu-link-inner"><i class="fa-solid fa-cloud-arrow-down"></i> <span>Download Reports</span></span>
             </a>
         `;
 
         const settingsMenu = document.getElementById('menu-settings-parent');
-        if (settingsMenu) {
+        if (settingsMenu && settingsMenu.parentNode === sidebarList) {
             sidebarList.insertBefore(li, settingsMenu);
         } else {
             sidebarList.appendChild(li);
@@ -319,8 +317,10 @@
 
     // ৪. ভিউ প্যানেল ইনজেকশন
     function injectModuleView() {
-        const wrapper = document.querySelector('.main-wrapper');
-        if (!wrapper || document.getElementById('report-download-hub-view')) return false;
+        if (document.getElementById('report-download-hub-view')) return true;
+
+        const wrapper = document.querySelector('.main-wrapper') || document.querySelector('.dashboard-layout');
+        if (!wrapper) return false;
 
         const panel = document.createElement('div');
         panel.className = 'view-panel';
@@ -387,14 +387,17 @@
         return true;
     }
 
-    // ৫. মাস্টার ট্যাব সুইচিং ফাংশন
+    // ৫. মাস্টার ট্যাব সুইচিং
     window.openReportDownloadHub = function() {
-        if (typeof window.switchMainTab === 'function') {
-            window.switchMainTab('report-download-hub');
-        } else {
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-            const p = document.getElementById('report-download-hub-view');
-            if (p) p.classList.add('active');
+        document.querySelectorAll('.view-panel').forEach(p => {
+            p.classList.remove('active');
+            p.style.display = 'none';
+        });
+
+        const panel = document.getElementById('report-download-hub-view');
+        if (panel) {
+            panel.classList.add('active');
+            panel.style.display = 'block';
         }
 
         document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
@@ -403,9 +406,15 @@
 
         const title = document.getElementById('top-title');
         if (title) title.innerText = "REPORT DOWNLOAD CENTER";
+
+        const dateInp = document.getElementById('hubFromDate');
+        if (dateInp && !dateInp.value) {
+            const now = new Date();
+            dateInp.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        }
     };
 
-    // ৬. ডাটা সংগ্রাহক - ১: লেনদেন রিপোর্ট ডাটা
+    // ৬. ডাটা সংগ্রাহক - দৈনিক লেনদেন
     function getTransactionReportData(selectedDate) {
         const txs = Array.isArray(window.customerTransactions) ? window.customerTransactions : [];
         const custs = Array.isArray(window.customers) ? window.customers : [];
@@ -428,9 +437,8 @@
         });
     }
 
-    // ৭. ডাটা সংগ্রাহক - ২: DAILY CLOSING FINANCIAL STATEMENT ডাটা
+    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT
     function getDailyClosingStatementData(selectedDate) {
-        // ফায়ারবেস হিস্ট্রি চেক করা
         const reports = Array.isArray(window.dailyClosingReports) ? window.dailyClosingReports : [];
         const closedSnap = reports.find(r => String(r.report_date) === String(selectedDate));
 
@@ -442,14 +450,12 @@
         const cashQuantities = window.cashQuantities || {};
         const cashOthers = Number(window.cashOthersAmount) || 0;
 
-        // কাস্টমার টোটাল ডিউ হিসাব
         let totalCustomerDue = 0;
         if (typeof window.calculateCustomerTotals === 'function') {
             const cTotals = window.calculateCustomerTotals();
             totalCustomerDue = cTotals.totalReceivable || 0;
         }
 
-        // ১. ক্যাটাগরি একাউন্ট গ্রুপ
         const getCatAccounts = (matchNames) => {
             const list = [];
             let total = 0;
@@ -470,7 +476,6 @@
         const agentAccs = getCatAccounts(['agent']);
         const rechargeAccs = getCatAccounts(['recharge']);
 
-        // ২. ক্যাশ ইনভেন্টরি
         const cashNotes = [1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];
         const cashRows = [];
         let totalCash = 0;
@@ -487,7 +492,6 @@
             cashRows.push({ note: `Others / Coins`, qty: 1, amount: cashOthers });
         }
 
-        // ৩. কার্ড ইনভেন্টরি
         const cardRows = [];
         let totalCardsValue = 0;
         const opList = ['GP', 'Banglalink', 'Robi', 'Airtel'];
@@ -503,10 +507,8 @@
             });
         });
 
-        // ৪. মোট নিট ফিন্যান্সিয়াল ব্যালেন্স
         const totalNetBalance = totalCash + totalCardsValue + totalCustomerDue + bankAccs.total + personalAccs.total + agentAccs.total + rechargeAccs.total;
 
-        // টাইম ও আইডি
         const now = new Date();
         const timeStr = closedSnap?.closing_time || now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
         const reportId = closedSnap?.report_id || `DCR-${Date.now()}`;
@@ -543,7 +545,6 @@
             return;
         }
 
-        // ক. দৈনিক লেনদেন প্রিভিউ
         if (rptType === 'daily_transactions') {
             const data = getTransactionReportData(selectedDate);
             if (!data) {
@@ -609,7 +610,6 @@
             return;
         }
 
-        // খ. DAILY CLOSING FINANCIAL STATEMENT প্রিভিউ (২ পেজ)
         if (rptType === 'daily_closing') {
             const data = getDailyClosingStatementData(selectedDate);
             
@@ -645,7 +645,7 @@
 
             container.innerHTML = `
                 <div class="dcr-preview-doc">
-                    <!-- ================= PAGE 1 ================= -->
+                    <!-- PAGE 1 -->
                     <div class="dcr-preview-header">
                         <div style="font-size:11px; line-height:1.4;">
                             <div>Date: ${data.reportDate}</div>
@@ -661,7 +661,6 @@
                         </div>
                     </div>
 
-                    <!-- SECTION 1: EXECUTIVE FINANCIAL SUMMARY -->
                     <div class="dcr-sec-bar">SECTION 1: EXECUTIVE FINANCIAL SUMMARY</div>
                     <table class="dcr-sec-table" style="margin-top:0;">
                         <tr>
@@ -682,7 +681,6 @@
                         </tr>
                     </table>
 
-                    <!-- BANK ACCOUNTS -->
                     <div class="dcr-sec-bar">BANK ACCOUNTS</div>
                     <table class="dcr-sec-table" style="margin-top:0;">
                         <thead>
@@ -700,7 +698,6 @@
                         </tbody>
                     </table>
 
-                    <!-- PERSONAL ACCOUNTS -->
                     <div class="dcr-sec-bar">PERSONAL ACCOUNTS</div>
                     <table class="dcr-sec-table" style="margin-top:0;">
                         <thead>
@@ -718,7 +715,6 @@
                         </tbody>
                     </table>
 
-                    <!-- AGENT ACCOUNTS -->
                     <div class="dcr-sec-bar">AGENT ACCOUNTS</div>
                     <table class="dcr-sec-table" style="margin-top:0;">
                         <thead>
@@ -736,13 +732,11 @@
                         </tbody>
                     </table>
 
-                    <!-- PAGE BREAK INDICATOR (PREVIEW ONLY) -->
                     <div class="dcr-page-separator">
                         <span>--- PAGE BREAK (পৃষ্ঠা ২ শুরু) ---</span>
                     </div>
 
-                    <!-- ================= PAGE 2 ================= -->
-                    <!-- RECHARGE BALANCES -->
+                    <!-- PAGE 2 -->
                     <div class="dcr-sec-bar">RECHARGE BALANCES</div>
                     <table class="dcr-sec-table" style="margin-top:0;">
                         <thead>
@@ -760,7 +754,6 @@
                         </tbody>
                     </table>
 
-                    <!-- CASH INVENTORY DETAILS -->
                     <div class="dcr-sec-bar">CASH INVENTORY DETAILS</div>
                     <table class="dcr-sec-table" style="margin-top:0;">
                         <thead>
@@ -779,7 +772,6 @@
                         </tbody>
                     </table>
 
-                    <!-- CARD INVENTORY DETAILS -->
                     <div class="dcr-sec-bar">CARD INVENTORY DETAILS</div>
                     <table class="dcr-sec-table" style="margin-top:0;">
                         <thead>
@@ -802,7 +794,7 @@
         }
     };
 
-    // ৯. PDF ডাউনলোড ইঞ্জিন (প্রিন্ট উইন্ডো ও পেজ-ব্রেক সহ)
+    // ৯. PDF প্রিন্ট / ডাউনলোড
     window.hubDownloadPDF = function () {
         const rptType = document.getElementById('hubReportType').value;
         const selectedDate = document.getElementById('hubFromDate').value;
@@ -812,7 +804,6 @@
             return;
         }
 
-        // ক. দৈনিক লেনদেন প্রিন্ট
         if (rptType === 'daily_transactions') {
             const reportData = getTransactionReportData(selectedDate);
             if (!reportData) {
@@ -911,7 +902,7 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
     <script>
         window.onload = function() { setTimeout(function(){ window.focus(); window.print(); }, 350); };
         window.onafterprint = function() { setTimeout(function(){ window.close(); }, 200); };
-    </script>
+    <\/script>
 </body>
 </html>
             `;
@@ -927,7 +918,6 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
             return;
         }
 
-        // খ. DAILY CLOSING FINANCIAL STATEMENT (২ পেজ হুবহু ফরম্যাট)
         if (rptType === 'daily_closing') {
             const data = getDailyClosingStatementData(selectedDate);
 
@@ -1046,7 +1036,6 @@ html, body {
     background-color: #ffffff;
 }
 
-/* ২ পৃষ্ঠার মাঝে বাধ্যতামূলক পেজ-ব্রেক (এজেন্ট একাউন্টের পর) */
 .page-break {
     page-break-after: always;
     break-after: page;
@@ -1064,7 +1053,7 @@ html, body {
 </head>
 <body>
 
-    <!-- ======================= PAGE 1 ======================= -->
+    <!-- PAGE 1 -->
     <div class="page-1-wrapper">
         <div class="dcr-header">
             <div class="dcr-header-left">
@@ -1081,7 +1070,6 @@ html, body {
             </div>
         </div>
 
-        <!-- SECTION 1: EXECUTIVE FINANCIAL SUMMARY -->
         <div class="section-bar">SECTION 1: EXECUTIVE FINANCIAL SUMMARY</div>
         <table class="statement-table" style="margin-top:0;">
             <tr>
@@ -1102,7 +1090,6 @@ html, body {
             </tr>
         </table>
 
-        <!-- BANK ACCOUNTS -->
         <div class="section-bar">BANK ACCOUNTS</div>
         <table class="statement-table" style="margin-top:0;">
             <thead>
@@ -1120,7 +1107,6 @@ html, body {
             </tbody>
         </table>
 
-        <!-- PERSONAL ACCOUNTS -->
         <div class="section-bar">PERSONAL ACCOUNTS</div>
         <table class="statement-table" style="margin-top:0;">
             <thead>
@@ -1138,7 +1124,6 @@ html, body {
             </tbody>
         </table>
 
-        <!-- AGENT ACCOUNTS -->
         <div class="section-bar">AGENT ACCOUNTS</div>
         <table class="statement-table" style="margin-top:0;">
             <thead>
@@ -1157,12 +1142,11 @@ html, body {
         </table>
     </div>
 
-    <!-- এজেন্টের ডাটার ঠিক পরেই পেজ ব্রেক -->
+    <!-- এজেন্ট একাউন্টের পরেই পেজ ব্রেক -->
     <div class="page-break"></div>
 
-    <!-- ======================= PAGE 2 ======================= -->
+    <!-- PAGE 2 -->
     <div class="page-2-wrapper">
-        <!-- RECHARGE BALANCES -->
         <div class="section-bar" style="margin-top:0;">RECHARGE BALANCES</div>
         <table class="statement-table" style="margin-top:0;">
             <thead>
@@ -1180,9 +1164,227 @@ html, body {
             </tbody>
         </table>
 
-        <!-- CASH INVENTORY DETAILS -->
         <div class="section-bar">CASH INVENTORY DETAILS</div>
         <table class="statement-table" style="margin-top:0;">
             <thead>
                 <tr>
                     <th style="width:50%;">NOTES</th>
+                    <th style="text-align:center; width:20%;">QTY</th>
+                    <th style="text-align:right; width:30%;">AMOUNT (৳)</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${renderCashRows(data.cashInventory.rows)}
+                <tr class="total-row">
+                    <td colspan="2">TOTAL CASH INVENTORY</td>
+                    <td style="text-align:right;">${toEnMoney(data.cashInventory.total)}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="section-bar">CARD INVENTORY DETAILS</div>
+        <table class="statement-table" style="margin-top:0;">
+            <thead>
+                <tr>
+                    <th style="width:50%;">CARD NAME</th>
+                    <th style="text-align:center; width:20%;">QTY</th>
+                    <th style="text-align:right; width:30%;">TOTAL (৳)</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${renderCardRows(data.cardInventory.rows)}
+                <tr class="total-row">
+                    <td colspan="2">TOTAL CARD INVENTORY</td>
+                    <td style="text-align:right;">${toEnMoney(data.cardInventory.total)}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        window.onload = function() { setTimeout(function(){ window.focus(); window.print(); }, 350); };
+        window.onafterprint = function() { setTimeout(function(){ window.close(); }, 200); };
+    <\/script>
+</body>
+</html>
+            `;
+
+            const printWindow = window.open("", "_blank", "width=920,height=950");
+            if (!printWindow) {
+                alert("Print Window খোলা যায়নি! Browser-এর Popup Allow করুন।");
+                return;
+            }
+            printWindow.document.open();
+            printWindow.document.write(printHTML);
+            printWindow.document.close();
+        }
+    };
+
+    // ১০. Excel এক্সপোর্ট
+    window.hubExportExcel = function () {
+        const rptType = document.getElementById('hubReportType').value;
+        const selectedDate = document.getElementById('hubFromDate').value;
+
+        if (!selectedDate) {
+            alert("দয়া করে একটি তারিখ নির্বাচন করুন।");
+            return;
+        }
+
+        if (rptType === 'daily_transactions') {
+            const data = getTransactionReportData(selectedDate);
+            if (!data) {
+                alert("এই তারিখে কোনো লেনদেন নেই!");
+                return;
+            }
+
+            const excelRows = [
+                ["MOUSUMI COMPUTER - DAILY TRANSACTION REPORT"],
+                ["Date:", selectedDate],
+                [],
+                ["SL", "Time", "Customer Name", "Type", "Description", "Amount (BDT)", "Comment"]
+            ];
+
+            let total = 0;
+            data.forEach((d, idx) => {
+                total += Math.abs(d.amount);
+                excelRows.push([
+                    idx + 1,
+                    d.time || '--:--',
+                    d.customerName,
+                    d.transactionType,
+                    d.description,
+                    d.amount,
+                    d.comment
+                ]);
+            });
+            excelRows.push(["", "", "", "", "Total:", total, ""]);
+
+            if (window.XLSX) {
+                const ws = XLSX.utils.aoa_to_sheet(excelRows);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+                XLSX.writeFile(wb, `Transaction_Report_${selectedDate}.xlsx`);
+            }
+            return;
+        }
+
+        if (rptType === 'daily_closing') {
+            const data = getDailyClosingStatementData(selectedDate);
+            const excelRows = [
+                ["MOUSUMI COMPUTER - DAILY CLOSING FINANCIAL STATEMENT"],
+                ["Date:", data.reportDate, "Time:", data.reportTime, "Report ID:", data.reportId],
+                [],
+                ["SECTION 1: EXECUTIVE FINANCIAL SUMMARY", "AMOUNT (BDT)"],
+                ["Total Cash Inventory", data.summary.totalCash],
+                ["Total Card Inventory", data.summary.totalCard],
+                ["Total Customer Outstanding Due", data.summary.totalCustomerDue],
+                ["TOTAL NET FINANCIAL BALANCE", data.summary.totalNetBalance],
+                [],
+                ["BANK ACCOUNTS", "BALANCE (BDT)"]
+            ];
+
+            data.bankAccounts.list.forEach(a => excelRows.push([a.name, a.balance]));
+            excelRows.push(["TOTAL BANK ACCOUNTS", data.bankAccounts.total], []);
+
+            excelRows.push(["PERSONAL ACCOUNTS", "BALANCE (BDT)"]);
+            data.personalAccounts.list.forEach(a => excelRows.push([a.name, a.balance]));
+            excelRows.push(["TOTAL PERSONAL ACCOUNTS", data.personalAccounts.total], []);
+
+            excelRows.push(["AGENT ACCOUNTS", "BALANCE (BDT)"]);
+            data.agentAccounts.list.forEach(a => excelRows.push([a.name, a.balance]));
+            excelRows.push(["TOTAL AGENT ACCOUNTS", data.agentAccounts.total], []);
+
+            excelRows.push(["RECHARGE BALANCES", "BALANCE (BDT)"]);
+            data.rechargeBalances.list.forEach(a => excelRows.push([a.name, a.balance]));
+            excelRows.push(["TOTAL RECHARGE BALANCES", data.rechargeBalances.total], []);
+
+            excelRows.push(["CASH INVENTORY DETAILS", "QTY", "AMOUNT (BDT)"]);
+            data.cashInventory.rows.forEach(r => excelRows.push([r.note, r.qty, r.amount]));
+            excelRows.push(["TOTAL CASH INVENTORY", "", data.cashInventory.total], []);
+
+            excelRows.push(["CARD INVENTORY DETAILS", "QTY", "TOTAL (BDT)"]);
+            data.cardInventory.rows.forEach(r => excelRows.push([r.name, r.qty, r.total]));
+            excelRows.push(["TOTAL CARD INVENTORY", "", data.cardInventory.total]);
+
+            if (window.XLSX) {
+                const ws = XLSX.utils.aoa_to_sheet(excelRows);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Daily Closing");
+                XLSX.writeFile(wb, `Daily_Closing_Statement_${selectedDate}.xlsx`);
+            }
+        }
+    };
+
+    // ১১. শর্টকাট ও রিসেট
+    window.hubDateShortcut = function (preset) {
+        document.querySelectorAll('.rpt-pill-btn').forEach(b => b.classList.remove('active'));
+        if (window.event && window.event.target) window.event.target.classList.add('active');
+
+        const fromInp = document.getElementById('hubFromDate');
+        if (!fromInp) return;
+        const now = new Date();
+        const fmt = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+        if (preset === 'today') {
+            fromInp.value = fmt(now);
+        } else if (preset === 'yesterday') {
+            const y = new Date();
+            y.setDate(y.getDate() - 1);
+            fromInp.value = fmt(y);
+        }
+    };
+
+    window.hubReset = function () {
+        const sel = document.getElementById('hubReportType');
+        if (sel) sel.selectedIndex = 0;
+        window.hubDateShortcut('today');
+        const area = document.getElementById('hub-report-print-area');
+        if (area) {
+            area.innerHTML = `
+                <div class="rpt-placeholder-state">
+                    <i class="fa-regular fa-file-lines"></i>
+                    <h4>Report Ready for Generation</h4>
+                    <p>Click <strong>Generate Preview</strong> to preview the statement, or click <strong>Download PDF</strong> / <strong>Export Excel</strong> directly.</p>
+                </div>
+            `;
+        }
+    };
+
+    // ১২. সুপার স্ট্যাবল অটো-ইনিশিয়ালাইজার
+    function runAutoInit() {
+        if (!document.getElementById('custom-download-module-styles')) {
+            document.head.insertAdjacentHTML('beforeend', moduleStyles);
+        }
+
+        const mInjected = injectModuleMenu();
+        const vInjected = injectModuleView();
+
+        if (mInjected && vInjected) {
+            const dateInp = document.getElementById('hubFromDate');
+            if (dateInp && !dateInp.value) {
+                const now = new Date();
+                dateInp.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            }
+        }
+    }
+
+    // মাল্টিপল ইভেন্ট ও টাইমার দিয়ে নিশ্চিত করা
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', runAutoInit);
+    } else {
+        runAutoInit();
+    }
+    window.addEventListener('load', runAutoInit);
+
+    // ফায়ারবেস বা ডোম কিছুটা দেরিতে এলেও বাটন বসিয়ে দেবে
+    let checkCount = 0;
+    const intervalTimer = setInterval(() => {
+        checkCount++;
+        runAutoInit();
+        if (document.getElementById('menu-download-hub') && document.getElementById('report-download-hub-view')) {
+            if (checkCount > 10) clearInterval(intervalTimer);
+        }
+        if (checkCount > 60) clearInterval(intervalTimer);
+    }, 300);
+
+})();
