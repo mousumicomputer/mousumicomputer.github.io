@@ -2,7 +2,13 @@
  * ============================================================================
  * MOUSUMI COMPUTER ERP - DEDICATED REPORT DOWNLOAD CENTER
  * File: report_download_module.js
- * (100% Standalone - No changes required in admin.html)
+ * 
+ * Features:
+ * 1. Comprehensive Executive Financial Summary (All Asset Categories Included).
+ * 2. Section 2: Customer Transactions & Due Summary (Dilam / Pelam / Due).
+ * 3. 100% Standalone (No changes required in admin.html).
+ * 4. Cross-device 'Tiro Bangla' Typography.
+ * 5. Strict Table Break Prevention & Official Signature Block.
  * ============================================================================
  */
 
@@ -50,7 +56,7 @@
         };
     };
 
-    // ২. সিএসএস স্টাইল (Tiro Bangla ফন্ট সহ)
+    // ২. সিএসএস স্টাইল
     const moduleStyles = `
         <style id="custom-download-module-styles">
             @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap');
@@ -469,13 +475,13 @@
         });
     }
 
-    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (লাইভ ও হিস্ট্রি স্মার্ট হ্যান্ডলার)
+    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (পূর্ণাঙ্গ অ্যাসেট সামারিসহ)
     function getDailyClosingStatementData(selectedDate) {
         const store = getLiveStore();
         const reports = Array.isArray(store.dailyClosingReports) ? store.dailyClosingReports : [];
         const closedSnap = reports.find(r => String(r.report_date) === String(selectedDate));
 
-        // ক. যদি হিস্ট্রিতে অলরেডি ডিটেইলস স্ন্যাপশট থাকে
+        // ক. যদি হিস্ট্রিতে সংরক্ষিত ডিটেইলস স্ন্যাপশট থাকে
         if (closedSnap && closedSnap.details) {
             const det = closedSnap.details;
             return {
@@ -486,6 +492,10 @@
                 summary: det.summary || {
                     totalCash: det.cashInventory ? det.cashInventory.total : 0,
                     totalCard: det.cardInventory ? det.cardInventory.total : 0,
+                    totalBank: det.bankAccounts ? det.bankAccounts.total : 0,
+                    totalPersonal: det.personalAccounts ? det.personalAccounts.total : 0,
+                    totalAgent: det.agentAccounts ? det.agentAccounts.total : 0,
+                    totalRecharge: det.rechargeBalances ? det.rechargeBalances.total : 0,
                     totalCustomerDue: 0,
                     totalNetBalance: closedSnap.actual_closing
                 },
@@ -503,7 +513,7 @@
             };
         }
 
-        // খ. স্ট্যান্ডার্ড লোডার
+        // খ. স্ট্যান্ডার্ড/লাইভ লোডার
         const categories = Array.isArray(store.categories) ? store.categories : [];
         const accounts = Array.isArray(store.accounts) ? store.accounts : [];
         const balanceStore = store.balanceStore || {};
@@ -583,8 +593,10 @@
             });
         });
 
+        // মোট ফাইনান্সিয়াল ব্যালেন্স
         const totalBankAndMFS = bankAccs.total + personalAccs.total + agentAccs.total + rechargeAccs.total;
-        const totalNetBalance = (closedSnap ? closedSnap.actual_closing : (totalCash + totalCardsValue + totalBankAndMFS)) + totalCustomerDue;
+        const totalAssetsSum = totalCash + totalCardsValue + totalBankAndMFS;
+        const totalNetBalance = (closedSnap ? closedSnap.actual_closing : totalAssetsSum) + totalCustomerDue;
 
         const now = new Date();
         const timeStr = closedSnap ? closedSnap.closing_time : now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
@@ -599,6 +611,10 @@
             summary: {
                 totalCash,
                 totalCard: totalCardsValue,
+                totalBank: bankAccs.total,
+                totalPersonal: personalAccs.total,
+                totalAgent: agentAccs.total,
+                totalRecharge: rechargeAccs.total,
                 totalCustomerDue,
                 totalNetBalance
             },
@@ -745,26 +761,42 @@
                         </div>
                     </div>
 
-                    <!-- SECTION 1 -->
+                    <!-- SECTION 1: পূর্ণাঙ্গ অ্যাসেট সামারি -->
                     <div class="dcr-sec-box">
                         <div class="dcr-sec-bar">SECTION 1: EXECUTIVE FINANCIAL SUMMARY</div>
                         <table class="dcr-sec-table">
                             <tr>
-                                <td style="width:70%;">Total Cash Inventory</td>
+                                <td style="width:70%;">Total Cash Inventory (ক্যাশ ব্যালেন্স)</td>
                                 <td style="text-align:right; width:30%;">৳ ${toEnMoney(data.summary.totalCash)}</td>
                             </tr>
                             <tr>
-                                <td>Total Card Inventory</td>
+                                <td>Total Card Inventory Stock (কার্ড স্টক)</td>
                                 <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalCard)}</td>
                             </tr>
+                            <tr>
+                                <td>Total Bank Accounts (ব্যাংক ব্যালেন্স)</td>
+                                <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalBank)}</td>
+                            </tr>
+                            <tr>
+                                <td>Total Personal Accounts (পার্সোনাল ওয়ালেট)</td>
+                                <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalPersonal)}</td>
+                            </tr>
+                            <tr>
+                                <td>Total Agent Accounts (এজেন্ট ওয়ালেট)</td>
+                                <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalAgent)}</td>
+                            </tr>
+                            <tr>
+                                <td>Total Recharge Balances (রিচার্জ ব্যালেন্স)</td>
+                                <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalRecharge)}</td>
+                            </tr>
                             <tr class="total-row" style="background:#f9fafb;">
-                                <td>TOTAL NET FINANCIAL BALANCE (ASSETS)</td>
+                                <td>TOTAL CLOSING FINANCIAL BALANCE (ASSETS)</td>
                                 <td style="text-align:right; font-size:12px;">৳ ${toEnMoney(data.summary.totalNetBalance)}</td>
                             </tr>
                         </table>
                     </div>
 
-                    <!-- SECTION 2 -->
+                    <!-- SECTION 2: কাস্টমার লেনদেন ও বকেয়া সামারি -->
                     <div class="dcr-sec-box">
                         <div class="dcr-sec-bar">SECTION 2: CUSTOMER TRANSACTIONS & DUE SUMMARY (দিলাম / পেলাম)</div>
                         <table class="dcr-sec-table">
@@ -1215,26 +1247,42 @@ html, body {
         </div>
     </div>
 
-    <!-- SECTION 1: EXECUTIVE FINANCIAL SUMMARY -->
+    <!-- SECTION 1: পূর্ণাঙ্গ ফিন্যান্সিয়াল অ্যাসেট সামারি -->
     <div class="section-block">
         <div class="section-bar">SECTION 1: EXECUTIVE FINANCIAL SUMMARY</div>
         <table class="statement-table">
             <tr>
-                <td style="width:70%;">Total Cash Inventory</td>
+                <td style="width:70%;">Total Cash Inventory (ক্যাশ ব্যালেন্স)</td>
                 <td style="text-align:right; width:30%;">৳ ${toEnMoney(data.summary.totalCash)}</td>
             </tr>
             <tr>
-                <td>Total Card Inventory</td>
+                <td>Total Card Inventory Stock (কার্ড স্টক)</td>
                 <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalCard)}</td>
             </tr>
+            <tr>
+                <td>Total Bank Accounts (ব্যাংক ব্যালেন্স)</td>
+                <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalBank)}</td>
+            </tr>
+            <tr>
+                <td>Total Personal Accounts (পার্সোনাল ওয়ালেট)</td>
+                <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalPersonal)}</td>
+            </tr>
+            <tr>
+                <td>Total Agent Accounts (এজেন্ট ওয়ালেট)</td>
+                <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalAgent)}</td>
+            </tr>
+            <tr>
+                <td>Total Recharge Balances (রিচার্জ ব্যালেন্স)</td>
+                <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalRecharge)}</td>
+            </tr>
             <tr class="total-row" style="background:#f9fafb;">
-                <td>TOTAL NET FINANCIAL BALANCE (ASSETS)</td>
+                <td>TOTAL CLOSING FINANCIAL BALANCE (ASSETS)</td>
                 <td style="text-align:right; font-size:12px;">৳ ${toEnMoney(data.summary.totalNetBalance)}</td>
             </tr>
         </table>
     </div>
 
-    <!-- SECTION 2: CUSTOMER TRANSACTIONS & DUE SUMMARY -->
+    <!-- SECTION 2: কাস্টমার লেনদেন ও বকেয়া সামারি -->
     <div class="section-block">
         <div class="section-bar">SECTION 2: CUSTOMER TRANSACTIONS & DUE SUMMARY (দিলাম / পেলাম)</div>
         <table class="statement-table">
@@ -1459,7 +1507,11 @@ html, body {
                 ["SECTION 1: EXECUTIVE FINANCIAL SUMMARY", "AMOUNT (BDT)"],
                 ["Total Cash Inventory", data.summary.totalCash],
                 ["Total Card Inventory", data.summary.totalCard],
-                ["TOTAL NET FINANCIAL BALANCE (ASSETS)", data.summary.totalNetBalance],
+                ["Total Bank Accounts", data.summary.totalBank],
+                ["Total Personal Accounts", data.summary.totalPersonal],
+                ["Total Agent Accounts", data.summary.totalAgent],
+                ["Total Recharge Balances", data.summary.totalRecharge],
+                ["TOTAL CLOSING FINANCIAL BALANCE (ASSETS)", data.summary.totalNetBalance],
                 [],
                 ["SECTION 2: CUSTOMER TRANSACTIONS & DUE SUMMARY", "AMOUNT (BDT)"],
                 ["Today Total Dilam (-)", data.dueSummary.todayDilam],
@@ -1533,7 +1585,7 @@ html, body {
         }
     };
 
-    // ১২. সুপার স্ট্যাবল অটো-ইনিশিয়ালাইজার
+    // ১২. অটো-ইনিশিয়ালাইজার
     function runAutoInit() {
         if (!document.getElementById('custom-download-module-styles')) {
             document.head.insertAdjacentHTML('beforeend', moduleStyles);
