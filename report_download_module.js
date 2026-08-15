@@ -2,7 +2,11 @@
  * ============================================================================
  * MOUSUMI COMPUTER ERP - DEDICATED REPORT DOWNLOAD CENTER
  * File: report_download_module.js
- * (Fixed Tab Switching & Clean Screen Exit Engine)
+ * 
+ * Features:
+ * 1. Filter out all 0.00 / Zero-quantity items to fit strictly in 2 pages.
+ * 2. Dedicated Section for Dilam / Pelam / Customer Due Summary.
+ * 3. Strict Page Break after Agent Accounts.
  * ============================================================================
  */
 
@@ -50,10 +54,9 @@
         };
     };
 
-    // ২. সিএসএস স্টাইল (ট্যাব কনফ্লিক্ট ফিক্স সহ)
+    // ২. সিএসএস স্টাইল
     const moduleStyles = `
         <style id="custom-download-module-styles">
-            /* পেজ কনফ্লিক্ট ফিক্স: একটিভ না থাকলে জোরপূর্বক হাইড হবে */
             .view-panel:not(.active) {
                 display: none !important;
             }
@@ -227,7 +230,7 @@
                 display: flex;
                 justify-content: space-between;
                 align-items: flex-start;
-                margin-bottom: 12px;
+                margin-bottom: 10px;
                 padding-bottom: 6px;
                 border-bottom: 1.5px solid #000;
             }
@@ -255,13 +258,13 @@
                 text-transform: uppercase;
                 padding: 4px 8px;
                 border: 1px solid #000;
-                margin-top: 10px;
+                margin-top: 8px;
                 margin-bottom: 0;
             }
             .dcr-sec-table {
                 width: 100%;
                 border-collapse: collapse;
-                margin-bottom: 12px;
+                margin-bottom: 8px;
             }
             .dcr-sec-table th, .dcr-sec-table td {
                 border: 1px solid #000;
@@ -282,7 +285,7 @@
             .dcr-page-separator {
                 border-top: 2px dashed #94a3b8;
                 text-align: center;
-                margin: 25px 0 20px 0;
+                margin: 20px 0 15px 0;
                 position: relative;
             }
             .dcr-page-separator span {
@@ -395,7 +398,7 @@
         return true;
     }
 
-    // ৫. মাস্টার ট্যাব সুইচিং (সম্পূর্ণ ক্লিয়ারেন্স সহ)
+    // ৫. মাস্টার ট্যাব সুইচিং
     window.openReportDownloadHub = function() {
         if (typeof window.switchMainTab === 'function') {
             window.switchMainTab('report-download-hub');
@@ -464,7 +467,7 @@
         });
     }
 
-    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT
+    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (০.০০ মান ফিল্টারসহ)
     function getDailyClosingStatementData(selectedDate) {
         const store = getLiveStore();
         const reports = Array.isArray(store.dailyClosingReports) ? store.dailyClosingReports : [];
@@ -480,7 +483,15 @@
         const customers = Array.isArray(store.customers) ? store.customers : [];
         const customerTransactions = Array.isArray(store.customerTransactions) ? store.customerTransactions : [];
 
-        // কাস্টমার টোটাল ডিউ হিসাব
+        // আজকের লেনদেন: দিলাম ও পেলাম
+        let todayDilam = 0;
+        let todayPelam = 0;
+        customerTransactions.filter(t => String(t.date) === String(selectedDate)).forEach(t => {
+            todayDilam += (parseFloat(t.debit) || 0);
+            todayPelam += (parseFloat(t.credit) || 0);
+        });
+
+        // কাস্টমার মোট বকেয়া পাওনা হিসাব
         let totalCustomerDue = 0;
         customers.forEach(c => {
             let due = parseFloat(c.openingBalance) || 0;
@@ -492,7 +503,7 @@
             if (due > 0) totalCustomerDue += due;
         });
 
-        // ১. ক্যাটাগরি একাউন্ট গ্রুপ
+        // ১. ক্যাটাগরি একাউন্ট গ্রুপ (শুধু ব্যালেন্স > ০ ফিল্টার)
         const getCatAccounts = (matchNames) => {
             const list = [];
             let total = 0;
@@ -502,7 +513,10 @@
                 accs.forEach(acc => {
                     const bal = parseFloat(balanceStore[acc.id]) || 0;
                     total += bal;
-                    list.push({ name: acc.name, balance: bal });
+                    // শুধুমাত্র ০ থেকে বড় ব্যালেন্স লিস্টে আসবে
+                    if (bal > 0) {
+                        list.push({ name: acc.name, balance: bal });
+                    }
                 });
             });
             return { list, total };
@@ -513,7 +527,7 @@
         const agentAccs = getCatAccounts(['agent']);
         const rechargeAccs = getCatAccounts(['recharge']);
 
-        // ২. ক্যাশ ইনভেন্টরি
+        // ২. ক্যাশ ইনভেন্টরি (শুধুমাত্র QTY > ০ ফিল্টার)
         const cashNotes = [1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];
         const cashRows = [];
         let totalCash = 0;
@@ -522,7 +536,9 @@
             const qty = parseInt(cashQuantities[denom], 10) || 0;
             const amt = qty * denom;
             totalCash += amt;
-            cashRows.push({ note: `৳ ${denom} Notes`, qty, amount: amt });
+            if (qty > 0) {
+                cashRows.push({ note: `৳ ${denom} Notes`, qty, amount: amt });
+            }
         });
 
         if (cashOthers > 0) {
@@ -530,7 +546,7 @@
             cashRows.push({ note: `Others / Coins`, qty: 1, amount: cashOthers });
         }
 
-        // ৩. কার্ড ইনভেন্টরি
+        // ৩. কার্ড ইনভেন্টরি (শুধুমাত্র QTY > ০ ফিল্টার)
         const cardRows = [];
         let totalCardsValue = 0;
         const opList = ['GP', 'Banglalink', 'Robi', 'Airtel'];
@@ -542,11 +558,15 @@
                 const q = parseInt(qMap[c.id], 10) || 0;
                 const amt = q * (c.price || 0);
                 totalCardsValue += amt;
-                cardRows.push({ name: `${op} ${c.name}`, qty: q, total: amt });
+                if (q > 0) {
+                    cardRows.push({ name: `${op} ${c.name}`, qty: q, total: amt });
+                }
             });
         });
 
-        const totalNetBalance = totalCash + totalCardsValue + totalCustomerDue + bankAccs.total + personalAccs.total + agentAccs.total + rechargeAccs.total;
+        // মোট ফাইনান্সিয়াল ব্যালেন্স
+        const totalBankAndMFS = bankAccs.total + personalAccs.total + agentAccs.total + rechargeAccs.total;
+        const totalNetBalance = totalCash + totalCardsValue + totalCustomerDue + totalBankAndMFS;
 
         const now = new Date();
         const timeStr = closedSnap ? closedSnap.closing_time : now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
@@ -563,6 +583,11 @@
                 totalCard: totalCardsValue,
                 totalCustomerDue,
                 totalNetBalance
+            },
+            dueSummary: {
+                todayDilam,
+                todayPelam,
+                totalCustomerDue
             },
             bankAccounts: bankAccs,
             personalAccounts: personalAccs,
@@ -653,7 +678,7 @@
             const data = getDailyClosingStatementData(selectedDate);
             
             const renderAccRows = (accList) => {
-                if (!accList || accList.length === 0) return `<tr><td>No active accounts</td><td style="text-align:right;">0.00</td></tr>`;
+                if (!accList || accList.length === 0) return `<tr><td colspan="2" style="text-align:center; color:#64748b;">No active balance</td></tr>`;
                 return accList.map(a => `
                     <tr>
                         <td>${escapeHTML(a.name)}</td>
@@ -663,6 +688,7 @@
             };
 
             const renderCashRows = (rows) => {
+                if (!rows || rows.length === 0) return `<tr><td colspan="3" style="text-align:center; color:#64748b;">No cash in hand</td></tr>`;
                 return rows.map(r => `
                     <tr>
                         <td>${escapeHTML(r.note)}</td>
@@ -673,7 +699,7 @@
             };
 
             const renderCardRows = (rows) => {
-                if (!rows || rows.length === 0) return `<tr><td>No cards</td><td style="text-align:center;">0</td><td style="text-align:right;">0.00</td></tr>`;
+                if (!rows || rows.length === 0) return `<tr><td colspan="3" style="text-align:center; color:#64748b;">No cards in stock</td></tr>`;
                 return rows.map(r => `
                     <tr>
                         <td>${escapeHTML(r.name)}</td>
@@ -685,7 +711,7 @@
 
             container.innerHTML = `
                 <div class="dcr-preview-doc">
-                    <!-- PAGE 1 -->
+                    <!-- ================= PAGE 1 ================= -->
                     <div class="dcr-preview-header">
                         <div style="font-size:11px; line-height:1.4;">
                             <div>Date: ${data.reportDate}</div>
@@ -701,6 +727,7 @@
                         </div>
                     </div>
 
+                    <!-- SECTION 1: EXECUTIVE FINANCIAL SUMMARY (কাস্টমার ডিউ বাদে) -->
                     <div class="dcr-sec-bar">SECTION 1: EXECUTIVE FINANCIAL SUMMARY</div>
                     <table class="dcr-sec-table" style="margin-top:0;">
                         <tr>
@@ -711,16 +738,30 @@
                             <td>Total Card Inventory</td>
                             <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalCard)}</td>
                         </tr>
-                        <tr>
-                            <td>Total Customer Outstanding Due</td>
-                            <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalCustomerDue)}</td>
-                        </tr>
                         <tr class="total-row" style="background:#f9fafb;">
-                            <td>TOTAL NET FINANCIAL BALANCE</td>
+                            <td>TOTAL NET FINANCIAL BALANCE (ASSETS)</td>
                             <td style="text-align:right; font-size:12px;">৳ ${toEnMoney(data.summary.totalNetBalance)}</td>
                         </tr>
                     </table>
 
+                    <!-- SECTION 2: নতুন কাস্টমার লেনদেন ও বকেয়া সামারি (দিলাম / পেলাম) -->
+                    <div class="dcr-sec-bar">SECTION 2: CUSTOMER TRANSACTIONS & DUE SUMMARY (লেনদেন ও বকেয়া)</div>
+                    <table class="dcr-sec-table" style="margin-top:0;">
+                        <tr>
+                            <td style="width:70%; color:#dc2626; font-weight:bold;">Today's Total Dilam (-) [বাকী/ধার দেওয়া]</td>
+                            <td style="text-align:right; width:30%; color:#dc2626; font-weight:bold;">৳ ${toEnMoney(data.dueSummary.todayDilam)}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#16a34a; font-weight:bold;">Today's Total Pelam (+) [আদায়/জমা নেওয়া]</td>
+                            <td style="text-align:right; color:#16a34a; font-weight:bold;">৳ ${toEnMoney(data.dueSummary.todayPelam)}</td>
+                        </tr>
+                        <tr class="total-row" style="background:#fef2f2;">
+                            <td style="color:#b91c1c;">TOTAL CUSTOMER OUTSTANDING DUE (সর্বমোট পাওনা)</td>
+                            <td style="text-align:right; color:#b91c1c; font-size:12px;">৳ ${toEnMoney(data.dueSummary.totalCustomerDue)}</td>
+                        </tr>
+                    </table>
+
+                    <!-- BANK ACCOUNTS -->
                     <div class="dcr-sec-bar">BANK ACCOUNTS</div>
                     <table class="dcr-sec-table" style="margin-top:0;">
                         <thead>
@@ -738,6 +779,7 @@
                         </tbody>
                     </table>
 
+                    <!-- PERSONAL ACCOUNTS -->
                     <div class="dcr-sec-bar">PERSONAL ACCOUNTS</div>
                     <table class="dcr-sec-table" style="margin-top:0;">
                         <thead>
@@ -755,6 +797,7 @@
                         </tbody>
                     </table>
 
+                    <!-- AGENT ACCOUNTS -->
                     <div class="dcr-sec-bar">AGENT ACCOUNTS</div>
                     <table class="dcr-sec-table" style="margin-top:0;">
                         <thead>
@@ -776,7 +819,8 @@
                         <span>--- PAGE BREAK (পৃষ্ঠা ২ শুরু) ---</span>
                     </div>
 
-                    <!-- PAGE 2 -->
+                    <!-- ================= PAGE 2 ================= -->
+                    <!-- RECHARGE BALANCES -->
                     <div class="dcr-sec-bar">RECHARGE BALANCES</div>
                     <table class="dcr-sec-table" style="margin-top:0;">
                         <thead>
@@ -794,6 +838,7 @@
                         </tbody>
                     </table>
 
+                    <!-- CASH INVENTORY DETAILS -->
                     <div class="dcr-sec-bar">CASH INVENTORY DETAILS</div>
                     <table class="dcr-sec-table" style="margin-top:0;">
                         <thead>
@@ -812,6 +857,7 @@
                         </tbody>
                     </table>
 
+                    <!-- CARD INVENTORY DETAILS -->
                     <div class="dcr-sec-bar">CARD INVENTORY DETAILS</div>
                     <table class="dcr-sec-table" style="margin-top:0;">
                         <thead>
@@ -834,7 +880,7 @@
         }
     };
 
-    // ৯. PDF প্রিন্ট / ডাউনলোড
+    // ৯. PDF প্রিন্ট / ডাউনলোড (Strict 2-Page Format)
     window.hubDownloadPDF = function () {
         const rptType = document.getElementById('hubReportType').value;
         const selectedDate = document.getElementById('hubFromDate').value;
@@ -962,7 +1008,7 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
             const data = getDailyClosingStatementData(selectedDate);
 
             const renderAccRows = (accList) => {
-                if (!accList || accList.length === 0) return `<tr><td>No active accounts</td><td style="text-align:right;">0.00</td></tr>`;
+                if (!accList || accList.length === 0) return `<tr><td colspan="2" style="text-align:center; color:#64748b;">No active balance</td></tr>`;
                 return accList.map(a => `
                     <tr>
                         <td>${escapeHTML(a.name)}</td>
@@ -972,6 +1018,7 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
             };
 
             const renderCashRows = (rows) => {
+                if (!rows || rows.length === 0) return `<tr><td colspan="3" style="text-align:center; color:#64748b;">No cash in hand</td></tr>`;
                 return rows.map(r => `
                     <tr>
                         <td>${escapeHTML(r.note)}</td>
@@ -982,7 +1029,7 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
             };
 
             const renderCardRows = (rows) => {
-                if (!rows || rows.length === 0) return `<tr><td>No cards</td><td style="text-align:center;">0</td><td style="text-align:right;">0.00</td></tr>`;
+                if (!rows || rows.length === 0) return `<tr><td colspan="3" style="text-align:center; color:#64748b;">No cards in stock</td></tr>`;
                 return rows.map(r => `
                     <tr>
                         <td>${escapeHTML(r.name)}</td>
@@ -1001,7 +1048,7 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
 <style>
 @page {
     size: A4 portrait;
-    margin: 12mm 12mm 12mm 12mm;
+    margin: 10mm 12mm 10mm 12mm;
 }
 * { box-sizing: border-box; }
 html, body {
@@ -1011,59 +1058,59 @@ html, body {
     background: #fff;
     color: #000;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 11px;
+    font-size: 10.5px;
 }
 .dcr-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     border-bottom: 2px solid #000;
-    padding-bottom: 6px;
-    margin-bottom: 12px;
+    padding-bottom: 5px;
+    margin-bottom: 8px;
 }
 .dcr-header-center {
     text-align: center;
     flex: 1;
 }
 .dcr-header-center h1 {
-    font-size: 18px;
+    font-size: 17px;
     font-weight: bold;
     margin: 0;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 .dcr-header-center h3 {
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: bold;
-    margin: 3px 0 0 0;
+    margin: 2px 0 0 0;
     text-transform: uppercase;
 }
 .dcr-header-left, .dcr-header-right {
-    font-size: 10.5px;
-    line-height: 1.35;
+    font-size: 10px;
+    line-height: 1.3;
 }
 .dcr-header-right { text-align: right; }
 
 .section-bar {
     background-color: #f3f4f6;
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: bold;
     text-transform: uppercase;
-    padding: 5px 8px;
+    padding: 4px 6px;
     border: 1px solid #000;
-    margin-top: 10px;
+    margin-top: 8px;
     margin-bottom: 0;
 }
 .statement-table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     table-layout: fixed;
 }
 .statement-table th, .statement-table td {
     border: 1px solid #000;
-    padding: 5px 8px;
-    font-size: 11px;
+    padding: 4px 6px;
+    font-size: 10.5px;
     color: #000;
 }
 .statement-table th {
@@ -1094,7 +1141,7 @@ html, body {
 </head>
 <body>
 
-    <!-- PAGE 1 -->
+    <!-- ======================= PAGE 1 ======================= -->
     <div class="page-1-wrapper">
         <div class="dcr-header">
             <div class="dcr-header-left">
@@ -1111,6 +1158,7 @@ html, body {
             </div>
         </div>
 
+        <!-- SECTION 1: EXECUTIVE FINANCIAL SUMMARY -->
         <div class="section-bar">SECTION 1: EXECUTIVE FINANCIAL SUMMARY</div>
         <table class="statement-table" style="margin-top:0;">
             <tr>
@@ -1121,16 +1169,30 @@ html, body {
                 <td>Total Card Inventory</td>
                 <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalCard)}</td>
             </tr>
-            <tr>
-                <td>Total Customer Outstanding Due</td>
-                <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalCustomerDue)}</td>
-            </tr>
             <tr class="total-row" style="background:#f9fafb;">
-                <td>TOTAL NET FINANCIAL BALANCE</td>
-                <td style="text-align:right; font-size:12px;">৳ ${toEnMoney(data.summary.totalNetBalance)}</td>
+                <td>TOTAL NET FINANCIAL BALANCE (ASSETS)</td>
+                <td style="text-align:right; font-size:11.5px;">৳ ${toEnMoney(data.summary.totalNetBalance)}</td>
             </tr>
         </table>
 
+        <!-- SECTION 2: CUSTOMER TRANSACTIONS & DUE SUMMARY (দিলাম / পেলাম / মোট বকেয়া) -->
+        <div class="section-bar">SECTION 2: CUSTOMER TRANSACTIONS & DUE SUMMARY (দিলাম / পেলাম)</div>
+        <table class="statement-table" style="margin-top:0;">
+            <tr>
+                <td style="width:70%;">Today's Total Dilam (-) [বাকী/ধার দেওয়া]</td>
+                <td style="text-align:right; width:30%; color:#b91c1c; font-weight:bold;">৳ ${toEnMoney(data.dueSummary.todayDilam)}</td>
+            </tr>
+            <tr>
+                <td>Today's Total Pelam (+) [আদায়/জমা নেওয়া]</td>
+                <td style="text-align:right; color:#15803d; font-weight:bold;">৳ ${toEnMoney(data.dueSummary.todayPelam)}</td>
+            </tr>
+            <tr class="total-row" style="background:#fef2f2;">
+                <td style="color:#b91c1c;">TOTAL CUSTOMER OUTSTANDING DUE (সর্বমোট পাওনা)</td>
+                <td style="text-align:right; color:#b91c1c; font-size:11.5px;">৳ ${toEnMoney(data.dueSummary.totalCustomerDue)}</td>
+            </tr>
+        </table>
+
+        <!-- BANK ACCOUNTS -->
         <div class="section-bar">BANK ACCOUNTS</div>
         <table class="statement-table" style="margin-top:0;">
             <thead>
@@ -1148,6 +1210,7 @@ html, body {
             </tbody>
         </table>
 
+        <!-- PERSONAL ACCOUNTS -->
         <div class="section-bar">PERSONAL ACCOUNTS</div>
         <table class="statement-table" style="margin-top:0;">
             <thead>
@@ -1165,6 +1228,7 @@ html, body {
             </tbody>
         </table>
 
+        <!-- AGENT ACCOUNTS -->
         <div class="section-bar">AGENT ACCOUNTS</div>
         <table class="statement-table" style="margin-top:0;">
             <thead>
@@ -1183,11 +1247,12 @@ html, body {
         </table>
     </div>
 
-    <!-- এজেন্ট একাউন্টের পরেই পেজ ব্রেক -->
+    <!-- এজেন্ট একাউন্টের পরেই বাধ্যতামূলক পেজ ব্রেক -->
     <div class="page-break"></div>
 
-    <!-- PAGE 2 -->
+    <!-- ======================= PAGE 2 ======================= -->
     <div class="page-2-wrapper">
+        <!-- RECHARGE BALANCES -->
         <div class="section-bar" style="margin-top:0;">RECHARGE BALANCES</div>
         <table class="statement-table" style="margin-top:0;">
             <thead>
@@ -1205,6 +1270,7 @@ html, body {
             </tbody>
         </table>
 
+        <!-- CASH INVENTORY DETAILS -->
         <div class="section-bar">CASH INVENTORY DETAILS</div>
         <table class="statement-table" style="margin-top:0;">
             <thead>
@@ -1223,6 +1289,7 @@ html, body {
             </tbody>
         </table>
 
+        <!-- CARD INVENTORY DETAILS -->
         <div class="section-bar">CARD INVENTORY DETAILS</div>
         <table class="statement-table" style="margin-top:0;">
             <thead>
@@ -1318,8 +1385,12 @@ html, body {
                 ["SECTION 1: EXECUTIVE FINANCIAL SUMMARY", "AMOUNT (BDT)"],
                 ["Total Cash Inventory", data.summary.totalCash],
                 ["Total Card Inventory", data.summary.totalCard],
-                ["Total Customer Outstanding Due", data.summary.totalCustomerDue],
-                ["TOTAL NET FINANCIAL BALANCE", data.summary.totalNetBalance],
+                ["TOTAL NET FINANCIAL BALANCE (ASSETS)", data.summary.totalNetBalance],
+                [],
+                ["SECTION 2: CUSTOMER TRANSACTIONS & DUE SUMMARY", "AMOUNT (BDT)"],
+                ["Today Total Dilam (-)", data.dueSummary.todayDilam],
+                ["Today Total Pelam (+)", data.dueSummary.todayPelam],
+                ["Total Customer Outstanding Due", data.dueSummary.totalCustomerDue],
                 [],
                 ["BANK ACCOUNTS", "BALANCE (BDT)"]
             ];
@@ -1327,15 +1398,12 @@ html, body {
             data.bankAccounts.list.forEach(a => excelRows.push([a.name, a.balance]));
             excelRows.push(["TOTAL BANK ACCOUNTS", data.bankAccounts.total], []);
 
-            excelRows.push(["PERSONAL ACCOUNTS", "BALANCE (BDT)"]);
             data.personalAccounts.list.forEach(a => excelRows.push([a.name, a.balance]));
             excelRows.push(["TOTAL PERSONAL ACCOUNTS", data.personalAccounts.total], []);
 
-            excelRows.push(["AGENT ACCOUNTS", "BALANCE (BDT)"]);
             data.agentAccounts.list.forEach(a => excelRows.push([a.name, a.balance]));
             excelRows.push(["TOTAL AGENT ACCOUNTS", data.agentAccounts.total], []);
 
-            excelRows.push(["RECHARGE BALANCES", "BALANCE (BDT)"]);
             data.rechargeBalances.list.forEach(a => excelRows.push([a.name, a.balance]));
             excelRows.push(["TOTAL RECHARGE BALANCES", data.rechargeBalances.total], []);
 
@@ -1391,7 +1459,7 @@ html, body {
         }
     };
 
-    // ১২. সুপার স্ট্যাবল অটো-ইনিশিয়ালাইজার
+    // ১২. অটো-ইনিশিয়ালাইজার
     function runAutoInit() {
         if (!document.getElementById('custom-download-module-styles')) {
             document.head.insertAdjacentHTML('beforeend', moduleStyles);
