@@ -3059,7 +3059,27 @@ onValue(txRef, (snapshot) => {
 
                 updateDashboardCards();
                 loadSavedProfile();
-
+// ডেটা ডাউনলোড মডিউলের জন্য গ্লোবাল এক্সপোর্ট
+    window.categories = categories;
+    window.accounts = accounts;
+    window.balanceStore = balanceStore;
+    window.cardConfig = cardConfig;
+    window.cardQuantities = cardQuantities;
+    window.cashQuantities = cashQuantities;
+    window.cashOthersAmount = cashOthersAmount;
+    window.dailyClosingReports = dailyClosingReports;
+    window.getERPStore = () => ({
+        categories,
+        accounts,
+        balanceStore,
+        cardConfig,
+        cardQuantities,
+        cashQuantities,
+        cashOthersAmount,
+        dailyClosingReports,
+        customers,
+        customerTransactions
+    });
                 const activeView = document.querySelector('.view-panel.active');
                 if (activeView) {
                     if (activeView.id === 'card-inventory-view') renderAccordionInventory();
