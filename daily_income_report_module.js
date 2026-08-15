@@ -492,4 +492,80 @@ html, body {
 
     // ৮. অটো ইনিট ও ড্রপডাউনে অপশন যোগ করা
     function autoInitIncomeModule() {
-        if (!document.getElementById
+        if (!document.getElementById('custom-income-report-styles')) {
+            document.head.insertAdjacentHTML('beforeend', incomeModuleStyles);
+        }
+
+        // ডাউনলোড হাবের ড্রপডাউনে এই অপশনটি স্বয়ংক্রিয়ভাবে ইনজেক্ট করা
+        const hubSelect = document.getElementById('hubReportType');
+        if (hubSelect && !document.getElementById('opt-income-reconciliation')) {
+            const opt = document.createElement('option');
+            opt.id = 'opt-income-reconciliation';
+            opt.value = 'daily_income_reconciliation';
+            opt.innerText = "Daily Capital Reconciliation & Net Income Statement (১ পাতা)";
+            hubSelect.appendChild(opt);
+        }
+    }
+
+    // প্রিভিউ ইন্টারসেপ্টর
+    const prevGenPreview = window.hubGeneratePreview;
+    window.hubGeneratePreview = function () {
+        const rptType = document.getElementById('hubReportType') ? document.getElementById('hubReportType').value : '';
+        const selectedDate = document.getElementById('hubFromDate') ? document.getElementById('hubFromDate').value : '';
+
+        if (rptType === 'daily_income_reconciliation') {
+            if (!selectedDate) {
+                alert("দয়া করে একটি তারিখ নির্বাচন করুন।");
+                return;
+            }
+            window.renderDailyIncomeStatementPreview(selectedDate, 'hub-report-print-area');
+            return;
+        }
+
+        if (typeof prevGenPreview === 'function') {
+            prevGenPreview();
+        }
+    };
+
+    // ডাউনলোড ইন্টারসেপ্টর
+    const prevDownloadPDF = window.hubDownloadPDF;
+    window.hubDownloadPDF = function () {
+        const rptType = document.getElementById('hubReportType') ? document.getElementById('hubReportType').value : '';
+        const selectedDate = document.getElementById('hubFromDate') ? document.getElementById('hubFromDate').value : '';
+
+        if (rptType === 'daily_income_reconciliation') {
+            window.printDailyIncomeStatementPDF(selectedDate);
+            return;
+        }
+
+        if (typeof prevDownloadPDF === 'function') {
+            prevDownloadPDF();
+        }
+    };
+
+    // এক্সেল ইন্টারসেপ্টর
+    const prevExportExcel = window.hubExportExcel;
+    window.hubExportExcel = function () {
+        const rptType = document.getElementById('hubReportType') ? document.getElementById('hubReportType').value : '';
+        const selectedDate = document.getElementById('hubFromDate') ? document.getElementById('hubFromDate').value : '';
+
+        if (rptType === 'daily_income_reconciliation') {
+            window.exportDailyIncomeStatementExcel(selectedDate);
+            return;
+        }
+
+        if (typeof prevExportExcel === 'function') {
+            prevExportExcel();
+        }
+    };
+
+    // এক্সিকিউশন
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', autoInitIncomeModule);
+    } else {
+        autoInitIncomeModule();
+    }
+    window.addEventListener('load', autoInitIncomeModule);
+    setInterval(autoInitIncomeModule, 1000);
+
+})();
