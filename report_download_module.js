@@ -2,12 +2,14 @@
  * ============================================================================
  * MOUSUMI COMPUTER ERP - DEDICATED REPORT DOWNLOAD CENTER
  * File: report_download_module.js
- * (Ultra-Stable Injection & Live Data Fallback Engine)
+ * (Direct Firebase Realtime Sync + 2-Page Strict Layout Engine)
  * ============================================================================
  */
 
 (function () {
     "use strict";
+
+    const DB_BASE_URL = "https://mousumi-computer-default-rtdb.firebaseio.com";
 
     // ১. বাংলা সংখ্যা ও ফরম্যাটিং
     const BN_DIGITS = { "0": "০", "1": "১", "2": "২", "3": "৩", "4": "৪", "5": "৫", "6": "৬", "7": "৭", "8": "৮", "9": "৯" };
@@ -290,7 +292,7 @@
         </style>
     `;
 
-    // ৩. সাইডবারে বাটন ইনজেকশন (Super Reliable)
+    // ৩. সাইডবারে বাটন ইনজেকশন
     function injectModuleMenu() {
         if (document.getElementById('menu-download-hub')) return true;
 
@@ -414,10 +416,47 @@
         }
     };
 
+    // ৫.১ ফায়ারবেস থেকে লাইভ রিয়েলটাইম ডেটা ফেচার (Direct Realtime Data Sync)
+    async function fetchLiveERPStore() {
+        try {
+            const [erpRes, custRes, txRes] = await Promise.all([
+                fetch(`${DB_BASE_URL}/erp.json`).then(r => r.json()).catch(() => null),
+                fetch(`${DB_BASE_URL}/customers.json`).then(r => r.json()).catch(() => null),
+                fetch(`${DB_BASE_URL}/transactions.json`).then(r => r.json()).catch(() => null)
+            ]);
+
+            const erpData = erpRes || {};
+            const toArr = (d) => d ? (Array.isArray(d) ? d : Object.values(d)) : [];
+
+            return {
+                categories: toArr(erpData.categories),
+                accounts: toArr(erpData.accounts),
+                balances: erpData.balances || {},
+                cardConfig: erpData.cardConfig || {},
+                cardInventory: erpData.cardInventory || {},
+                cashInventory: erpData.cashInventory || {},
+                dailyClosingReports: toArr(erpData.dailyClosingReports),
+                customers: toArr(custRes),
+                transactions: toArr(txRes)
+            };
+        } catch (e) {
+            console.error("Firebase sync error:", e);
+            return null;
+        }
+    }
+
     // ৬. ডাটা সংগ্রাহক - দৈনিক লেনদেন
-    function getTransactionReportData(selectedDate) {
-        const txs = Array.isArray(window.customerTransactions) ? window.customerTransactions : [];
-        const custs = Array.isArray(window.customers) ? window.customers : [];
+    async function getTransactionReportData(selectedDate) {
+        let txs = Array.isArray(window.customerTransactions) ? window.customerTransactions : [];
+        let custs = Array.isArray(window.customers) ? window.customers : [];
+
+        if (txs.length === 0 || custs.length === 0) {
+            const live = await fetchLiveERPStore();
+            if (live) {
+                txs = live.transactions;
+                custs = live.customers;
+            }
+        }
 
         const dayTxs = txs.filter(t => String(t.date) === String(selectedDate));
         if (dayTxs.length === 0) return null;
@@ -437,25 +476,40 @@
         });
     }
 
-    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT
-    function getDailyClosingStatementData(selectedDate) {
-        const reports = Array.isArray(window.dailyClosingReports) ? window.dailyClosingReports : [];
-        const closedSnap = reports.find(r => String(r.report_date) === String(selectedDate));
-
-        const categories = Array.isArray(window.categories) ? window.categories : [];
-        const accounts = Array.isArray(window.accounts) ? window.accounts : [];
-        const balanceStore = window.balanceStore || {};
-        const cardConfig = window.cardConfig || {};
-        const cardQuantities = window.cardQuantities || {};
-        const cashQuantities = window.cashQuantities || {};
-        const cashOthers = Number(window.cashOthersAmount) || 0;
-
-        let totalCustomerDue = 0;
-        if (typeof window.calculateCustomerTotals === 'function') {
-            const cTotals = window.calculateCustomerTotals();
-            totalCustomerDue = cTotals.totalReceivable || 0;
+    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (সরাসরি লাইভ ডেটা থেকে)
+    async function getDailyClosingStatementData(selectedDate) {
+        const live = await fetchLiveERPStore();
+        if (!live) {
+            alert("ফায়ারবেস ডেটাবেজ থেকে ডেটা লোড করা সম্ভব হয়নি!");
+            return null;
         }
 
+        const reports = live.dailyClosingReports || [];
+        const closedSnap = reports.find(r => String(r.report_date) === String(selectedDate));
+
+        const categories = live.categories;
+        const accounts = live.accounts;
+        const balanceStore = live.balances;
+        const cardConfig = live.cardConfig;
+        const cardQuantities = live.cardInventory;
+        const cashQuantities = (live.cashInventory && live.cashInventory.quantities) ? live.cashInventory.quantities : {};
+        const cashOthers = Number(live.cashInventory && live.cashInventory.others) || 0;
+        const customers = live.customers;
+        const transactions = live.transactions;
+
+        // কাস্টমার টোটাল ডিউ হিসাব
+        let totalCustomerDue = 0;
+        customers.forEach(c => {
+            let due = parseFloat(c.openingBalance) || 0;
+            const custTxs = transactions.filter(t => t.customerId === c.id);
+            custTxs.forEach(t => {
+                due += (parseFloat(t.debit) || 0);
+                due -= (parseFloat(t.credit) || 0);
+            });
+            if (due > 0) totalCustomerDue += due;
+        });
+
+        // ১. ক্যাটাগরি একাউন্ট গ্রুপ
         const getCatAccounts = (matchNames) => {
             const list = [];
             let total = 0;
@@ -476,6 +530,7 @@
         const agentAccs = getCatAccounts(['agent']);
         const rechargeAccs = getCatAccounts(['recharge']);
 
+        // ২. ক্যাশ ইনভেন্টরি
         const cashNotes = [1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];
         const cashRows = [];
         let totalCash = 0;
@@ -492,6 +547,7 @@
             cashRows.push({ note: `Others / Coins`, qty: 1, amount: cashOthers });
         }
 
+        // ৩. কার্ড ইনভেন্টরি
         const cardRows = [];
         let totalCardsValue = 0;
         const opList = ['GP', 'Banglalink', 'Robi', 'Airtel'];
@@ -510,8 +566,8 @@
         const totalNetBalance = totalCash + totalCardsValue + totalCustomerDue + bankAccs.total + personalAccs.total + agentAccs.total + rechargeAccs.total;
 
         const now = new Date();
-        const timeStr = closedSnap?.closing_time || now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-        const reportId = closedSnap?.report_id || `DCR-${Date.now()}`;
+        const timeStr = closedSnap ? closedSnap.closing_time : now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+        const reportId = closedSnap ? closedSnap.report_id : `DCR-${Date.now()}`;
         const refId = `REF-${String(Math.abs(reportId.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0))).padStart(6, '0').slice(-6)}`;
 
         return {
@@ -535,7 +591,7 @@
     }
 
     // ৮. প্রিভিউ জেনারেটর
-    window.hubGeneratePreview = function () {
+    window.hubGeneratePreview = async function () {
         const rptType = document.getElementById('hubReportType').value;
         const selectedDate = document.getElementById('hubFromDate').value;
         const container = document.getElementById('hub-report-print-area');
@@ -545,8 +601,10 @@
             return;
         }
 
+        container.innerHTML = `<div style="text-align:center; padding:50px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; color:#4f46e5;"></i><p style="margin-top:10px; font-weight:bold;">ডেটাবেজ থেকে আসল তথ্য লোড হচ্ছে...</p></div>`;
+
         if (rptType === 'daily_transactions') {
-            const data = getTransactionReportData(selectedDate);
+            const data = await getTransactionReportData(selectedDate);
             if (!data) {
                 container.innerHTML = `
                     <div class="rpt-placeholder-state">
@@ -611,7 +669,8 @@
         }
 
         if (rptType === 'daily_closing') {
-            const data = getDailyClosingStatementData(selectedDate);
+            const data = await getDailyClosingStatementData(selectedDate);
+            if (!data) return;
             
             const renderAccRows = (accList) => {
                 if (!accList || accList.length === 0) return `<tr><td>No active accounts</td><td style="text-align:right;">0.00</td></tr>`;
@@ -634,6 +693,7 @@
             };
 
             const renderCardRows = (rows) => {
+                if (!rows || rows.length === 0) return `<tr><td>No cards</td><td style="text-align:center;">0</td><td style="text-align:right;">0.00</td></tr>`;
                 return rows.map(r => `
                     <tr>
                         <td>${escapeHTML(r.name)}</td>
@@ -795,7 +855,7 @@
     };
 
     // ৯. PDF প্রিন্ট / ডাউনলোড
-    window.hubDownloadPDF = function () {
+    window.hubDownloadPDF = async function () {
         const rptType = document.getElementById('hubReportType').value;
         const selectedDate = document.getElementById('hubFromDate').value;
 
@@ -805,7 +865,7 @@
         }
 
         if (rptType === 'daily_transactions') {
-            const reportData = getTransactionReportData(selectedDate);
+            const reportData = await getTransactionReportData(selectedDate);
             if (!reportData) {
                 alert("এই তারিখে কোনো লেনদেন নেই!");
                 return;
@@ -919,7 +979,8 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
         }
 
         if (rptType === 'daily_closing') {
-            const data = getDailyClosingStatementData(selectedDate);
+            const data = await getDailyClosingStatementData(selectedDate);
+            if (!data) return;
 
             const renderAccRows = (accList) => {
                 if (!accList || accList.length === 0) return `<tr><td>No active accounts</td><td style="text-align:right;">0.00</td></tr>`;
@@ -942,6 +1003,7 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
             };
 
             const renderCardRows = (rows) => {
+                if (!rows || rows.length === 0) return `<tr><td>No cards</td><td style="text-align:center;">0</td><td style="text-align:right;">0.00</td></tr>`;
                 return rows.map(r => `
                     <tr>
                         <td>${escapeHTML(r.name)}</td>
@@ -1221,7 +1283,7 @@ html, body {
     };
 
     // ১০. Excel এক্সপোর্ট
-    window.hubExportExcel = function () {
+    window.hubExportExcel = async function () {
         const rptType = document.getElementById('hubReportType').value;
         const selectedDate = document.getElementById('hubFromDate').value;
 
@@ -1231,7 +1293,7 @@ html, body {
         }
 
         if (rptType === 'daily_transactions') {
-            const data = getTransactionReportData(selectedDate);
+            const data = await getTransactionReportData(selectedDate);
             if (!data) {
                 alert("এই তারিখে কোনো লেনদেন নেই!");
                 return;
@@ -1269,7 +1331,9 @@ html, body {
         }
 
         if (rptType === 'daily_closing') {
-            const data = getDailyClosingStatementData(selectedDate);
+            const data = await getDailyClosingStatementData(selectedDate);
+            if (!data) return;
+
             const excelRows = [
                 ["MOUSUMI COMPUTER - DAILY CLOSING FINANCIAL STATEMENT"],
                 ["Date:", data.reportDate, "Time:", data.reportTime, "Report ID:", data.reportId],
@@ -1368,7 +1432,6 @@ html, body {
         }
     }
 
-    // মাল্টিপল ইভেন্ট ও টাইমার দিয়ে নিশ্চিত করা
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', runAutoInit);
     } else {
@@ -1376,7 +1439,6 @@ html, body {
     }
     window.addEventListener('load', runAutoInit);
 
-    // ফায়ারবেস বা ডোম কিছুটা দেরিতে এলেও বাটন বসিয়ে দেবে
     let checkCount = 0;
     const intervalTimer = setInterval(() => {
         checkCount++;
