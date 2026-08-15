@@ -2,14 +2,12 @@
  * ============================================================================
  * MOUSUMI COMPUTER ERP - DEDICATED REPORT DOWNLOAD CENTER
  * File: report_download_module.js
- * (Direct Firebase Realtime Sync + 2-Page Strict Layout Engine)
+ * (Ultra-Fast Live Memory Sync Engine)
  * ============================================================================
  */
 
 (function () {
     "use strict";
-
-    const DB_BASE_URL = "https://mousumi-computer-default-rtdb.firebaseio.com";
 
     // ১. বাংলা সংখ্যা ও ফরম্যাটিং
     const BN_DIGITS = { "0": "০", "1": "১", "2": "২", "3": "৩", "4": "৪", "5": "৫", "6": "৬", "7": "৭", "8": "৮", "9": "৯" };
@@ -416,47 +414,30 @@
         }
     };
 
-    // ৫.১ ফায়ারবেস থেকে লাইভ রিয়েলটাইম ডেটা ফেচার (Direct Realtime Data Sync)
-    async function fetchLiveERPStore() {
-        try {
-            const [erpRes, custRes, txRes] = await Promise.all([
-                fetch(`${DB_BASE_URL}/erp.json`).then(r => r.json()).catch(() => null),
-                fetch(`${DB_BASE_URL}/customers.json`).then(r => r.json()).catch(() => null),
-                fetch(`${DB_BASE_URL}/transactions.json`).then(r => r.json()).catch(() => null)
-            ]);
-
-            const erpData = erpRes || {};
-            const toArr = (d) => d ? (Array.isArray(d) ? d : Object.values(d)) : [];
-
-            return {
-                categories: toArr(erpData.categories),
-                accounts: toArr(erpData.accounts),
-                balances: erpData.balances || {},
-                cardConfig: erpData.cardConfig || {},
-                cardInventory: erpData.cardInventory || {},
-                cashInventory: erpData.cashInventory || {},
-                dailyClosingReports: toArr(erpData.dailyClosingReports),
-                customers: toArr(custRes),
-                transactions: toArr(txRes)
-            };
-        } catch (e) {
-            console.error("Firebase sync error:", e);
-            return null;
+    // ৫.১ লাইভ স্টোর রিডার
+    function getLiveStore() {
+        if (typeof window.getERPStore === 'function') {
+            return window.getERPStore();
         }
+        return {
+            categories: window.categories || [],
+            accounts: window.accounts || [],
+            balanceStore: window.balanceStore || {},
+            cardConfig: window.cardConfig || {},
+            cardQuantities: window.cardQuantities || {},
+            cashQuantities: window.cashQuantities || {},
+            cashOthersAmount: window.cashOthersAmount || 0,
+            dailyClosingReports: window.dailyClosingReports || [],
+            customers: window.customers || [],
+            customerTransactions: window.customerTransactions || []
+        };
     }
 
     // ৬. ডাটা সংগ্রাহক - দৈনিক লেনদেন
-    async function getTransactionReportData(selectedDate) {
-        let txs = Array.isArray(window.customerTransactions) ? window.customerTransactions : [];
-        let custs = Array.isArray(window.customers) ? window.customers : [];
-
-        if (txs.length === 0 || custs.length === 0) {
-            const live = await fetchLiveERPStore();
-            if (live) {
-                txs = live.transactions;
-                custs = live.customers;
-            }
-        }
+    function getTransactionReportData(selectedDate) {
+        const store = getLiveStore();
+        const txs = Array.isArray(store.customerTransactions) ? store.customerTransactions : [];
+        const custs = Array.isArray(store.customers) ? store.customers : [];
 
         const dayTxs = txs.filter(t => String(t.date) === String(selectedDate));
         if (dayTxs.length === 0) return null;
@@ -476,32 +457,27 @@
         });
     }
 
-    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (সরাসরি লাইভ ডেটা থেকে)
-    async function getDailyClosingStatementData(selectedDate) {
-        const live = await fetchLiveERPStore();
-        if (!live) {
-            alert("ফায়ারবেস ডেটাবেজ থেকে ডেটা লোড করা সম্ভব হয়নি!");
-            return null;
-        }
-
-        const reports = live.dailyClosingReports || [];
+    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT
+    function getDailyClosingStatementData(selectedDate) {
+        const store = getLiveStore();
+        const reports = Array.isArray(store.dailyClosingReports) ? store.dailyClosingReports : [];
         const closedSnap = reports.find(r => String(r.report_date) === String(selectedDate));
 
-        const categories = live.categories;
-        const accounts = live.accounts;
-        const balanceStore = live.balances;
-        const cardConfig = live.cardConfig;
-        const cardQuantities = live.cardInventory;
-        const cashQuantities = (live.cashInventory && live.cashInventory.quantities) ? live.cashInventory.quantities : {};
-        const cashOthers = Number(live.cashInventory && live.cashInventory.others) || 0;
-        const customers = live.customers;
-        const transactions = live.transactions;
+        const categories = Array.isArray(store.categories) ? store.categories : [];
+        const accounts = Array.isArray(store.accounts) ? store.accounts : [];
+        const balanceStore = store.balanceStore || {};
+        const cardConfig = store.cardConfig || {};
+        const cardQuantities = store.cardQuantities || {};
+        const cashQuantities = store.cashQuantities || {};
+        const cashOthers = Number(store.cashOthersAmount) || 0;
+        const customers = Array.isArray(store.customers) ? store.customers : [];
+        const customerTransactions = Array.isArray(store.customerTransactions) ? store.customerTransactions : [];
 
         // কাস্টমার টোটাল ডিউ হিসাব
         let totalCustomerDue = 0;
         customers.forEach(c => {
             let due = parseFloat(c.openingBalance) || 0;
-            const custTxs = transactions.filter(t => t.customerId === c.id);
+            const custTxs = customerTransactions.filter(t => t.customerId === c.id);
             custTxs.forEach(t => {
                 due += (parseFloat(t.debit) || 0);
                 due -= (parseFloat(t.credit) || 0);
@@ -591,7 +567,7 @@
     }
 
     // ৮. প্রিভিউ জেনারেটর
-    window.hubGeneratePreview = async function () {
+    window.hubGeneratePreview = function () {
         const rptType = document.getElementById('hubReportType').value;
         const selectedDate = document.getElementById('hubFromDate').value;
         const container = document.getElementById('hub-report-print-area');
@@ -601,10 +577,8 @@
             return;
         }
 
-        container.innerHTML = `<div style="text-align:center; padding:50px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; color:#4f46e5;"></i><p style="margin-top:10px; font-weight:bold;">ডেটাবেজ থেকে আসল তথ্য লোড হচ্ছে...</p></div>`;
-
         if (rptType === 'daily_transactions') {
-            const data = await getTransactionReportData(selectedDate);
+            const data = getTransactionReportData(selectedDate);
             if (!data) {
                 container.innerHTML = `
                     <div class="rpt-placeholder-state">
@@ -669,8 +643,7 @@
         }
 
         if (rptType === 'daily_closing') {
-            const data = await getDailyClosingStatementData(selectedDate);
-            if (!data) return;
+            const data = getDailyClosingStatementData(selectedDate);
             
             const renderAccRows = (accList) => {
                 if (!accList || accList.length === 0) return `<tr><td>No active accounts</td><td style="text-align:right;">0.00</td></tr>`;
@@ -855,7 +828,7 @@
     };
 
     // ৯. PDF প্রিন্ট / ডাউনলোড
-    window.hubDownloadPDF = async function () {
+    window.hubDownloadPDF = function () {
         const rptType = document.getElementById('hubReportType').value;
         const selectedDate = document.getElementById('hubFromDate').value;
 
@@ -865,7 +838,7 @@
         }
 
         if (rptType === 'daily_transactions') {
-            const reportData = await getTransactionReportData(selectedDate);
+            const reportData = getTransactionReportData(selectedDate);
             if (!reportData) {
                 alert("এই তারিখে কোনো লেনদেন নেই!");
                 return;
@@ -979,8 +952,7 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
         }
 
         if (rptType === 'daily_closing') {
-            const data = await getDailyClosingStatementData(selectedDate);
-            if (!data) return;
+            const data = getDailyClosingStatementData(selectedDate);
 
             const renderAccRows = (accList) => {
                 if (!accList || accList.length === 0) return `<tr><td>No active accounts</td><td style="text-align:right;">0.00</td></tr>`;
@@ -1283,7 +1255,7 @@ html, body {
     };
 
     // ১০. Excel এক্সপোর্ট
-    window.hubExportExcel = async function () {
+    window.hubExportExcel = function () {
         const rptType = document.getElementById('hubReportType').value;
         const selectedDate = document.getElementById('hubFromDate').value;
 
@@ -1293,7 +1265,7 @@ html, body {
         }
 
         if (rptType === 'daily_transactions') {
-            const data = await getTransactionReportData(selectedDate);
+            const data = getTransactionReportData(selectedDate);
             if (!data) {
                 alert("এই তারিখে কোনো লেনদেন নেই!");
                 return;
@@ -1331,9 +1303,7 @@ html, body {
         }
 
         if (rptType === 'daily_closing') {
-            const data = await getDailyClosingStatementData(selectedDate);
-            if (!data) return;
-
+            const data = getDailyClosingStatementData(selectedDate);
             const excelRows = [
                 ["MOUSUMI COMPUTER - DAILY CLOSING FINANCIAL STATEMENT"],
                 ["Date:", data.reportDate, "Time:", data.reportTime, "Report ID:", data.reportId],
