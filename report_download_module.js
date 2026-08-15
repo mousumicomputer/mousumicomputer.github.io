@@ -2,12 +2,7 @@
  * ============================================================================
  * MOUSUMI COMPUTER ERP - DEDICATED REPORT DOWNLOAD CENTER
  * File: report_download_module.js
- * 
- * Includes:
- * 1. Global 'Tiro Bangla' Typography with embedded cross-device web fonts.
- * 2. Smart Page Flow Engine (No broken tables + Clean page utilization).
- * 3. Filtered 0-qty items + Section 2: Dilam / Pelam / Due Summary.
- * 4. Official Signature block at the end.
+ * (100% Standalone - No changes required in admin.html)
  * ============================================================================
  */
 
@@ -55,7 +50,7 @@
         };
     };
 
-    // ২. সিএসএস স্টাইল
+    // ২. সিএসএস স্টাইল (Tiro Bangla ফন্ট সহ)
     const moduleStyles = `
         <style id="custom-download-module-styles">
             @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap');
@@ -234,7 +229,7 @@
                 display: flex;
                 justify-content: space-between;
                 align-items: flex-start;
-                margin-bottom: 12px;
+                margin-bottom: 10px;
                 padding-bottom: 6px;
                 border-bottom: 1.5px solid #000;
             }
@@ -256,7 +251,7 @@
                 text-transform: uppercase;
             }
             .dcr-sec-box {
-                margin-bottom: 14px;
+                margin-bottom: 12px;
             }
             .dcr-sec-bar {
                 background-color: #f3f4f6;
@@ -274,7 +269,7 @@
             }
             .dcr-sec-table th, .dcr-sec-table td {
                 border: 1px solid #000;
-                padding: 5.5px 8px;
+                padding: 5px 8px;
                 font-size: 11.5px;
                 color: #000;
             }
@@ -474,12 +469,41 @@
         });
     }
 
-    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (০.০০ মান ফিল্টারসহ)
+    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (লাইভ ও হিস্ট্রি স্মার্ট হ্যান্ডলার)
     function getDailyClosingStatementData(selectedDate) {
         const store = getLiveStore();
         const reports = Array.isArray(store.dailyClosingReports) ? store.dailyClosingReports : [];
         const closedSnap = reports.find(r => String(r.report_date) === String(selectedDate));
 
+        // ক. যদি হিস্ট্রিতে অলরেডি ডিটেইলস স্ন্যাপশট থাকে
+        if (closedSnap && closedSnap.details) {
+            const det = closedSnap.details;
+            return {
+                reportDate: selectedDate,
+                reportTime: closedSnap.closing_time || "--:--",
+                reportId: closedSnap.report_id || `DCR-${Date.now()}`,
+                refId: `REF-${String(Math.abs((closedSnap.report_id || '').split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0))).padStart(6, '0').slice(-6)}`,
+                summary: det.summary || {
+                    totalCash: det.cashInventory ? det.cashInventory.total : 0,
+                    totalCard: det.cardInventory ? det.cardInventory.total : 0,
+                    totalCustomerDue: 0,
+                    totalNetBalance: closedSnap.actual_closing
+                },
+                dueSummary: {
+                    todayDilam: closedSnap.total_dilam || 0,
+                    todayPelam: closedSnap.total_pelam || 0,
+                    totalCustomerDue: (det.summary && det.summary.totalCustomerDue) ? det.summary.totalCustomerDue : 0
+                },
+                bankAccounts: det.bankAccounts || { list: [], total: 0 },
+                personalAccounts: det.personalAccounts || { list: [], total: 0 },
+                agentAccounts: det.agentAccounts || { list: [], total: 0 },
+                rechargeBalances: det.rechargeBalances || { list: [], total: 0 },
+                cashInventory: det.cashInventory || { rows: [], total: 0 },
+                cardInventory: det.cardInventory || { rows: [], total: 0 }
+            };
+        }
+
+        // খ. স্ট্যান্ডার্ড লোডার
         const categories = Array.isArray(store.categories) ? store.categories : [];
         const accounts = Array.isArray(store.accounts) ? store.accounts : [];
         const balanceStore = store.balanceStore || {};
@@ -490,7 +514,7 @@
         const customers = Array.isArray(store.customers) ? store.customers : [];
         const customerTransactions = Array.isArray(store.customerTransactions) ? store.customerTransactions : [];
 
-        // আজকের লেনদেন: দিলাম ও পেলাম
+        // ওই তারিখের লেনদেন: দিলাম ও পেলাম
         let todayDilam = 0;
         let todayPelam = 0;
         customerTransactions.filter(t => String(t.date) === String(selectedDate)).forEach(t => {
@@ -498,19 +522,18 @@
             todayPelam += (parseFloat(t.credit) || 0);
         });
 
-        // কাস্টমার মোট বকেয়া পাওনা হিসাব
+        // মোট কাস্টমার বকেয়া
         let totalCustomerDue = 0;
         customers.forEach(c => {
             let due = parseFloat(c.openingBalance) || 0;
             const custTxs = customerTransactions.filter(t => t.customerId === c.id);
             custTxs.forEach(t => {
-                due += (parseFloat(t.debit) || 0);
-                due -= (parseFloat(t.credit) || 0);
+                due += (parseFloat(t.debit) || 0) - (parseFloat(t.credit) || 0);
             });
             if (due > 0) totalCustomerDue += due;
         });
 
-        // ১. ক্যাটাগরি একাউন্ট গ্রুপ (শুধু ব্যালেন্স > ০ ফিল্টার)
+        // ক্যাটাগরি একাউন্ট গ্রুপ
         const getCatAccounts = (matchNames) => {
             const list = [];
             let total = 0;
@@ -520,9 +543,7 @@
                 accs.forEach(acc => {
                     const bal = parseFloat(balanceStore[acc.id]) || 0;
                     total += bal;
-                    if (bal > 0) {
-                        list.push({ name: acc.name, balance: bal });
-                    }
+                    if (bal > 0) list.push({ name: acc.name, balance: bal });
                 });
             });
             return { list, total };
@@ -533,46 +554,37 @@
         const agentAccs = getCatAccounts(['agent']);
         const rechargeAccs = getCatAccounts(['recharge']);
 
-        // ২. ক্যাশ ইনভেন্টরি (শুধুমাত্র QTY > ০ ফিল্টার)
+        // ক্যাশ ইনভেন্টরি
         const cashNotes = [1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];
         const cashRows = [];
         let totalCash = 0;
-
         cashNotes.forEach(denom => {
             const qty = parseInt(cashQuantities[denom], 10) || 0;
             const amt = qty * denom;
             totalCash += amt;
-            if (qty > 0) {
-                cashRows.push({ note: `৳ ${denom} Notes`, qty, amount: amt });
-            }
+            if (qty > 0) cashRows.push({ note: `৳ ${denom} Notes`, qty, amount: amt });
         });
-
         if (cashOthers > 0) {
             totalCash += cashOthers;
             cashRows.push({ note: `Others / Coins`, qty: 1, amount: cashOthers });
         }
 
-        // ৩. কার্ড ইনভেন্টরি (শুধুমাত্র QTY > ০ ফিল্টার)
+        // কার্ড ইনভেন্টরি
         const cardRows = [];
         let totalCardsValue = 0;
-        const opList = ['GP', 'Banglalink', 'Robi', 'Airtel'];
-
-        opList.forEach(op => {
+        ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
             const cards = Array.isArray(cardConfig[op]) ? cardConfig[op] : Object.values(cardConfig[op] || {});
             const qMap = cardQuantities[op] || {};
             cards.filter(c => c.active !== false).forEach(c => {
                 const q = parseInt(qMap[c.id], 10) || 0;
                 const amt = q * (c.price || 0);
                 totalCardsValue += amt;
-                if (q > 0) {
-                    cardRows.push({ name: `${op} ${c.name}`, qty: q, total: amt });
-                }
+                if (q > 0) cardRows.push({ name: `${op} ${c.name}`, qty: q, total: amt });
             });
         });
 
-        // মোট ফাইনান্সিয়াল ব্যালেন্স
         const totalBankAndMFS = bankAccs.total + personalAccs.total + agentAccs.total + rechargeAccs.total;
-        const totalNetBalance = totalCash + totalCardsValue + totalCustomerDue + totalBankAndMFS;
+        const totalNetBalance = (closedSnap ? closedSnap.actual_closing : (totalCash + totalCardsValue + totalBankAndMFS)) + totalCustomerDue;
 
         const now = new Date();
         const timeStr = closedSnap ? closedSnap.closing_time : now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
@@ -591,8 +603,8 @@
                 totalNetBalance
             },
             dueSummary: {
-                todayDilam,
-                todayPelam,
+                todayDilam: closedSnap ? closedSnap.total_dilam : todayDilam,
+                todayPelam: closedSnap ? closedSnap.total_pelam : todayPelam,
                 totalCustomerDue
             },
             bankAccounts: bankAccs,
@@ -905,7 +917,7 @@
         }
     };
 
-    // ৯. PDF প্রিন্ট / ডাউনলোড (Tiro Bangla Web-Font + Smart Page Break Engine)
+    // ৯. PDF প্রিন্ট / ডাউনলোড
     window.hubDownloadPDF = function () {
         const rptType = document.getElementById('hubReportType').value;
         const selectedDate = document.getElementById('hubFromDate').value;
@@ -1119,7 +1131,6 @@ html, body {
 }
 .dcr-header-right { text-align: right; }
 
-/* টেবিল কখনো মাঝখান দিয়ে ভেঙে পরের পাতায় যাবে না */
 .section-block {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
