@@ -1,6 +1,5 @@
 /**
- * Mousumi Computer - Quick Transaction Module (Dedicated English Fintech Section)
- * Standalone Zero-Conflict Module
+ * Mousumi Computer - Quick Transaction Module (Classic Clean Layout & Searchable Customer)
  */
 
 (function () {
@@ -21,391 +20,300 @@
     }
     initFirebaseBridge();
 
-    // 2. মডার্ন ইংলিশ ইউআই সিএসএস (Modern Fintech Styling)
-    const quickTxStyles = `
-    .qt-wrapper {
+    // 2. কালপুরুষ ও টাইমস নিউ রোমান ফন্টসহ ২নং ছবির মতো সাধারণ সিএসএস
+    const cleanStyles = `
+    @import url('https://fonts.maateen.me/kalpurush/font.css');
+
+    .qt-clean-wrapper {
         display: none;
-        animation: qtFadeIn 0.3s ease-out;
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        animation: qtSimpleFade 0.2s ease-in-out;
     }
-    .qt-wrapper.active {
+    .qt-clean-wrapper.active {
         display: block;
     }
-    .qt-card-modern {
+    .qt-clean-card {
         background: #ffffff;
-        border-radius: 20px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-        padding: 30px;
-        max-width: 950px;
-        margin: 0 auto 25px auto;
-    }
-    .qt-banner-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-bottom: 20px;
-        margin-bottom: 25px;
-        border-bottom: 2px solid #f1f5f9;
-    }
-    .qt-title-box {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-    }
-    .qt-title-icon {
-        width: 48px;
-        height: 48px;
+        border: 1px solid #e5e7eb;
         border-radius: 14px;
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        color: #ffffff;
+        padding: 22px 25px;
+        max-width: 100%;
+        margin-bottom: 25px;
+        font-family: 'Kalpurush', 'Times New Roman', Times, serif !important;
+    }
+    .qt-clean-header {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1e293b;
+        padding-bottom: 14px;
+        margin-bottom: 18px;
+        border-bottom: 1px solid #f1f5f9;
         display: flex;
         align-items: center;
-        justify-content: center;
-        font-size: 1.3rem;
-        box-shadow: 0 6px 15px rgba(37, 99, 235, 0.25);
+        gap: 10px;
+        font-family: 'Kalpurush', 'Times New Roman', Times, serif !important;
     }
-    .qt-title-box h2 {
-        font-size: 1.35rem;
-        font-weight: 800;
-        color: #0f172a;
-        margin: 0 0 4px 0;
-    }
-    .qt-title-box p {
-        font-size: 0.85rem;
-        color: #64748b;
-        margin: 0;
-        font-weight: 600;
-    }
-    .qt-form-grid {
+    .qt-clean-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-        margin-bottom: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 14px;
+        margin-bottom: 15px;
     }
-    .qt-form-group {
+    .qt-clean-group {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 5px;
+        position: relative;
     }
-    .qt-form-group.full-col {
-        grid-column: span 2;
-    }
-    .qt-form-group label {
+    .qt-clean-group label {
         font-size: 0.88rem;
         font-weight: 700;
-        color: #334155;
+        color: #475569;
+        font-family: 'Kalpurush', 'Times New Roman', Times, serif !important;
     }
-    .qt-input-box {
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
-    .qt-input-box i {
-        position: absolute;
-        left: 15px;
-        color: #64748b;
-        font-size: 1rem;
-    }
-    .qt-control-modern {
+    .qt-clean-input {
         width: 100%;
-        height: 50px;
-        border: 1.5px solid #cbd5e1;
-        border-radius: 12px;
-        padding: 0 16px 0 44px;
-        font-size: 1rem;
-        font-weight: 600;
-        color: #0f172a;
-        background: #f8fafc;
-        outline: none;
-        transition: 0.2s;
-    }
-    .qt-control-modern:focus {
-        background: #ffffff;
-        border-color: #2563eb;
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-    }
-    .qt-type-toggle {
-        display: flex;
-        gap: 12px;
-    }
-    .qt-type-btn {
-        flex: 1;
-        height: 50px;
-        border-radius: 12px;
-        border: 2px solid #e2e8f0;
-        background: #f8fafc;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
+        padding: 9px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
         font-size: 0.95rem;
-        font-weight: 800;
-        color: #64748b;
-        cursor: pointer;
-        transition: 0.2s;
-        user-select: none;
+        color: #1e293b;
+        outline: none;
+        background: #ffffff;
+        font-family: 'Kalpurush', 'Times New Roman', Times, serif !important;
     }
-    .qt-type-btn.active-received {
+    .qt-clean-input:focus {
         border-color: #10b981;
-        background: #ecfdf5;
-        color: #059669;
     }
-    .qt-type-btn.active-given {
-        border-color: #ef4444;
-        background: #fef2f2;
-        color: #dc2626;
+    
+    /* Searchable Customer Dropdown List */
+    .qt-search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        max-height: 220px;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        display: none;
+        margin-top: 4px;
     }
-    .qt-backdated-card {
-        background: #f8fafc;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 14px;
-        padding: 14px 18px;
+    .qt-search-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 0.92rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-family: 'Kalpurush', 'Times New Roman', Times, serif !important;
+    }
+    .qt-search-item:hover {
+        background: #f0fdf4;
+        color: #16a34a;
+        font-weight: 700;
+    }
+
+    .qt-clean-backdated {
         display: flex;
         align-items: center;
-        gap: 14px;
-        margin-bottom: 25px;
+        gap: 8px;
+        font-size: 0.88rem;
+        color: #4b5563;
+        font-weight: 700;
+        margin-top: 10px;
         cursor: pointer;
-        transition: 0.2s;
+        font-family: 'Kalpurush', 'Times New Roman', Times, serif !important;
     }
-    .qt-backdated-card:hover {
-        background: #f1f5f9;
-    }
-    .qt-backdated-card input[type="checkbox"] {
-        width: 20px;
-        height: 20px;
-        accent-color: #2563eb;
+    .qt-clean-backdated input {
+        width: 16px;
+        height: 16px;
+        accent-color: #10b981;
         cursor: pointer;
     }
-    .qt-backdated-info strong {
-        display: block;
-        font-size: 0.92rem;
-        color: #1e293b;
-    }
-    .qt-backdated-info span {
-        font-size: 0.8rem;
-        color: #64748b;
-    }
-    .qt-btn-submit-main {
-        width: 100%;
-        height: 54px;
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+
+    .qt-clean-btn {
+        padding: 10px 26px;
+        background: #10b981;
         color: #ffffff;
         border: none;
-        border-radius: 12px;
-        font-size: 1.08rem;
-        font-weight: 800;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 700;
         cursor: pointer;
-        display: flex;
+        display: inline-flex;
         align-items: center;
-        justify-content: center;
-        gap: 12px;
-        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+        gap: 8px;
         transition: 0.2s;
+        font-family: 'Kalpurush', 'Times New Roman', Times, serif !important;
     }
-    .qt-btn-submit-main:hover {
-        background: #1d4ed8;
-        transform: translateY(-1px);
+    .qt-clean-btn:hover {
+        background: #059669;
     }
-    @keyframes qtFadeIn {
-        from { opacity: 0; transform: translateY(8px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    @media (max-width: 768px) {
-        .qt-form-grid { grid-template-columns: 1fr; }
-        .qt-form-group.full-col { grid-column: span 1; }
+
+    @keyframes qtSimpleFade {
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
     `;
 
     const styleEl = document.createElement('style');
-    styleEl.innerHTML = quickTxStyles;
+    styleEl.innerHTML = cleanStyles;
     document.head.appendChild(styleEl);
 
-    // 3. ডেডিকেটেড ইংলিশ সেকশন HTML
-    function getQuickTxSectionHTML() {
+    // 3. এইচটিএমএল স্ট্রাকচার (২নং ছবির মতো মার্জিত)
+    function getCleanQuickTxHTML() {
         const todayStr = new Date().toISOString().split('T')[0];
         return `
-        <div id="cust-quick-tx-section" class="cust-sub-section qt-wrapper" style="display:none;">
-            <div class="qt-card-modern">
-                <div class="qt-banner-header">
-                    <div class="qt-title-box">
-                        <div class="qt-title-icon"><i class="fa-solid fa-bolt"></i></div>
-                        <div>
-                            <h2>Quick Transaction Entry</h2>
-                            <p>Instantly record customer credit (debit) or payment collection without leaving this screen.</p>
-                        </div>
-                    </div>
+        <div id="cust-quick-tx-section" class="cust-sub-section qt-clean-wrapper" style="display:none;">
+            <div class="qt-clean-card">
+                <div class="qt-clean-header">
+                    <i class="fa-solid fa-money-bill-transfer" style="color: #10b981;"></i>
+                    <span>Quick Transaction Entry</span>
                 </div>
 
-                <form id="qtDedicatedForm" onsubmit="window.submitDedicatedQuickTx(event)">
-                    <div class="qt-form-grid">
-                        <!-- Customer Selection -->
-                        <div class="qt-form-group full-col">
-                            <label>Select Customer <span style="color:#ef4444;">*</span></label>
-                            <div class="qt-input-box">
-                                <i class="fa-solid fa-user-check"></i>
-                                <select id="qtDedCustomerSelect" class="qt-control-modern" required>
-                                    <option value="">-- Choose Customer --</option>
-                                </select>
-                            </div>
+                <form id="qtCleanForm" onsubmit="window.saveCleanQuickTransaction(event)">
+                    <div class="qt-clean-grid">
+                        <!-- Searchable Customer Input -->
+                        <div class="qt-clean-group" style="grid-column: span 1.5; min-width: 220px;">
+                            <label>Customer Selection (নাম বা মোবাইল লিখুন)</label>
+                            <input type="text" id="qtCustSearchInput" class="qt-clean-input" placeholder="কাস্টমারের নাম বা মোবাইল লিখুন..." autocomplete="off" oninput="window.filterQuickCustomers(this.value)" onfocus="window.filterQuickCustomers(this.value)">
+                            <input type="hidden" id="qtSelectedCustId" value="" required>
+                            <div id="qtCustSearchResults" class="qt-search-results"></div>
                         </div>
 
                         <!-- Transaction Type -->
-                        <div class="qt-form-group">
-                            <label>Transaction Type <span style="color:#ef4444;">*</span></label>
-                            <div class="qt-type-toggle">
-                                <div class="qt-type-btn active-received" id="qtTypeReceived" onclick="window.setDedicatedTxType('Received')">
-                                    <i class="fa-solid fa-arrow-down-left"></i> Received (+ Payment)
-                                </div>
-                                <div class="qt-type-btn" id="qtTypeGiven" onclick="window.setDedicatedTxType('Given')">
-                                    <i class="fa-solid fa-arrow-up-right"></i> Given (+ Sales/Due)
-                                </div>
-                            </div>
-                            <input type="hidden" id="qtDedType" value="Received">
+                        <div class="qt-clean-group">
+                            <label>Transaction Type</label>
+                            <select id="qtCleanType" class="qt-clean-input">
+                                <option value="Received">Received (+ Payment / পেলাম)</option>
+                                <option value="Given">Given (+ Due / Sales / দিলাম)</option>
+                            </select>
                         </div>
 
                         <!-- Amount -->
-                        <div class="qt-form-group">
-                            <label>Amount (৳) <span style="color:#ef4444;">*</span></label>
-                            <div class="qt-input-box">
-                                <i class="fa-solid fa-bangladeshi-taka-sign"></i>
-                                <input type="number" step="any" min="1" id="qtDedAmount" class="qt-control-modern" placeholder="0.00" required style="font-weight: 800; font-size: 1.15rem; color: #047857;">
-                            </div>
+                        <div class="qt-clean-group">
+                            <label>Amount (৳)</label>
+                            <input type="number" step="any" min="1" id="qtCleanAmount" class="qt-clean-input" placeholder="0.00" required>
                         </div>
 
                         <!-- Date -->
-                        <div class="qt-form-group">
-                            <label>Transaction Date <span style="color:#ef4444;">*</span></label>
-                            <div class="qt-input-box">
-                                <i class="fa-solid fa-calendar-day"></i>
-                                <input type="date" id="qtDedDate" class="qt-control-modern" value="${todayStr}" required style="cursor: pointer;">
-                            </div>
+                        <div class="qt-clean-group">
+                            <label>Date</label>
+                            <input type="date" id="qtCleanDate" class="qt-clean-input" value="${todayStr}" required style="cursor: pointer;">
                         </div>
 
                         <!-- Payment Method -->
-                        <div class="qt-form-group">
+                        <div class="qt-clean-group">
                             <label>Payment Method</label>
-                            <div class="qt-input-box">
-                                <i class="fa-solid fa-wallet"></i>
-                                <select id="qtDedPaymentMethod" class="qt-control-modern">
-                                    <option value="Cash" selected>Cash</option>
-                                    <option value="bKash">bKash</option>
-                                    <option value="Nagad">Nagad</option>
-                                    <option value="Rocket">Rocket</option>
-                                    <option value="Upay">Upay</option>
-                                    <option value="Bank">Bank Account</option>
-                                </select>
-                            </div>
+                            <select id="qtCleanPaymentMethod" class="qt-clean-input">
+                                <option value="Cash" selected>Cash</option>
+                                <option value="bKash">bKash</option>
+                                <option value="Nagad">Nagad</option>
+                                <option value="Rocket">Rocket</option>
+                                <option value="Upay">Upay</option>
+                                <option value="Bank">Bank Account</option>
+                            </select>
                         </div>
 
-                        <!-- Description / Note -->
-                        <div class="qt-form-group full-col">
-                            <label>Description / Note (Optional)</label>
-                            <div class="qt-input-box">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                                <input type="text" id="qtDedDescription" class="qt-control-modern" placeholder="e.g. Due Collection, Goods purchase, Voucher Ref...">
-                            </div>
+                        <!-- Description -->
+                        <div class="qt-clean-group" style="grid-column: 1 / -1;">
+                            <label>Description / Particulars (ঐচ্ছিক)</label>
+                            <input type="text" id="qtCleanDesc" class="qt-clean-input" placeholder="Notes, Item Details or Receipt info...">
                         </div>
                     </div>
 
-                    <!-- Old/Backdated Transaction Toggle -->
-                    <label class="qt-backdated-card" for="qtDedIsBackdated">
-                        <input type="checkbox" id="qtDedIsBackdated">
-                        <div class="qt-backdated-info">
-                            <strong><i class="fa-solid fa-clock-rotate-left" style="color: #2563eb; margin-right: 6px;"></i> Backdated / Ledger-Only Entry</strong>
-                            <span>Check this if entering past records. This will update the customer's ledger/due without affecting today's cash or closing report.</span>
-                        </div>
-                    </label>
-
-                    <!-- Submit Button -->
-                    <button type="submit" class="qt-btn-submit-main" id="qtDedSubmitBtn">
-                        <i class="fa-solid fa-circle-check"></i> Post & Save Transaction
-                    </button>
+                    <!-- Backdated Checkbox & Action Button -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-top: 10px;">
+                        <label class="qt-clean-backdated" for="qtCleanIsBackdated">
+                            <input type="checkbox" id="qtCleanIsBackdated">
+                            <span>পুরানা হিসাব / ব্যাকডেটেড এন্ট্রি (শুধুমাত্র কাস্টমার লেজারে যোগ হবে, ক্যাশ বা ক্লোজিংয়ে প্রভাব পড়বে না)</span>
+                        </label>
+                        <button type="submit" class="qt-clean-btn" id="qtCleanSubmitBtn">
+                            <i class="fa-solid fa-circle-check"></i> Save Transaction
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
         `;
     }
 
-    // 4. টাইপ সুইচার (Received / Given)
-    window.setDedicatedTxType = function (type) {
-        document.getElementById('qtDedType').value = type;
-        const btnRec = document.getElementById('qtTypeReceived');
-        const btnGiv = document.getElementById('qtTypeGiven');
-        const amtInput = document.getElementById('qtDedAmount');
+    // 4. দ্রুত কাস্টমার সার্চ ও সিলেক্ট লজিক (Search-as-you-type)
+    window.filterQuickCustomers = function (keyword) {
+        const resultsBox = document.getElementById('qtCustSearchResults');
+        if (!resultsBox) return;
 
-        if (type === 'Received') {
-            btnRec.className = 'qt-type-btn active-received';
-            btnGiv.className = 'qt-type-btn';
-            amtInput.style.color = '#047857';
-        } else {
-            btnRec.className = 'qt-type-btn';
-            btnGiv.className = 'qt-type-btn active-given';
-            amtInput.style.color = '#dc2626';
-        }
-    };
-
-    // 5. কাস্টমার ড্রপডাউন পপুলেট
-    function populateDedicatedCustomers() {
-        const select = document.getElementById('qtDedCustomerSelect');
-        if (!select) return;
-
-        const currentVal = select.value;
         const custs = window.customers || (window.getERPStore ? window.getERPStore().customers : []);
+        const term = (keyword || '').trim().toLowerCase();
 
-        select.innerHTML = '<option value="">-- Choose Customer --</option>';
-        custs.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c.id;
-            opt.innerText = `${c.name} (${c.phone || 'No Phone'})`;
-            select.appendChild(opt);
+        const filtered = custs.filter(c => 
+            (c.name || '').toLowerCase().includes(term) || 
+            (c.phone || '').toLowerCase().includes(term)
+        );
+
+        if (filtered.length === 0) {
+            resultsBox.innerHTML = '<div style="padding: 8px 12px; color:#9ca3af; font-size:0.85rem;">কোনো গ্রাহক পাওয়া যায়নি</div>';
+            resultsBox.style.display = 'block';
+            return;
+        }
+
+        let html = '';
+        filtered.slice(0, 15).forEach(c => {
+            html += `<div class="qt-search-item" onclick="window.selectQuickCustomer('${c.id}', '${c.name}', '${c.phone || ''}')">
+                <strong>${c.name}</strong> <span style="font-size:0.82rem; color:#64748b; margin-left:6px;">(${c.phone || 'No Phone'})</span>
+            </div>`;
         });
 
-        if (currentVal) select.value = currentVal;
-    }
-
-    // 6. ডেডিকেটেড সেকশনে যাওয়ার ফাংশন
-    window.openQuickTxSection = function () {
-        if (typeof window.switchCustomerSubSection === 'function') {
-            window.switchCustomerSubSection('cust-quick-tx-section');
-        } else {
-            document.querySelectorAll('.cust-sub-section').forEach(sec => sec.style.display = 'none');
-            const target = document.getElementById('cust-quick-tx-section');
-            if (target) target.style.display = 'block';
-        }
-        populateDedicatedCustomers();
+        resultsBox.innerHTML = html;
+        resultsBox.style.display = 'block';
     };
 
-    // 7. লেনদেন সেভ করার ইঞ্জিন
-    window.submitDedicatedQuickTx = async function (e) {
+    window.selectQuickCustomer = function (id, name, phone) {
+        document.getElementById('qtSelectedCustId').value = id;
+        document.getElementById('qtCustSearchInput').value = `${name} (${phone || 'No Phone'})`;
+        document.getElementById('qtCustSearchResults').style.display = 'none';
+    };
+
+    // বাইরে ক্লিক করলে ড্রপডাউন বন্ধ হওয়া
+    document.addEventListener('click', (e) => {
+        const box = document.getElementById('qtCustSearchResults');
+        const inp = document.getElementById('qtCustSearchInput');
+        if (box && e.target !== box && e.target !== inp) {
+            box.style.display = 'none';
+        }
+    });
+
+    // 5. ট্রানজ্যাকশন সেভ ইঞ্জিন
+    window.saveCleanQuickTransaction = async function (e) {
         e.preventDefault();
 
-        const custId = document.getElementById('qtDedCustomerSelect').value;
+        const custId = document.getElementById('qtSelectedCustId').value;
         if (!custId) {
-            if (typeof window.showToast === 'function') window.showToast("Please select a customer!", "warning");
+            if (typeof window.showToast === 'function') window.showToast("দয়া করে গ্রাহক সিলেক্ট করুন!", "warning");
             return;
         }
 
-        const amount = parseFloat(document.getElementById('qtDedAmount').value) || 0;
+        const amount = parseFloat(document.getElementById('qtCleanAmount').value) || 0;
         if (amount <= 0) {
-            if (typeof window.showToast === 'function') window.showToast("Please enter a valid amount!", "warning");
+            if (typeof window.showToast === 'function') window.showToast("টাকার পরিমাণ সঠিকভাবে লিখুন!", "warning");
             return;
         }
 
-        const txType = document.getElementById('qtDedType').value;
-        const dateVal = document.getElementById('qtDedDate').value;
-        const method = document.getElementById('qtDedPaymentMethod').value;
-        const descInput = document.getElementById('qtDedDescription').value.trim();
-        const isBackdated = document.getElementById('qtDedIsBackdated').checked;
+        const txType = document.getElementById('qtCleanType').value;
+        const dateVal = document.getElementById('qtCleanDate').value;
+        const method = document.getElementById('qtCleanPaymentMethod').value;
+        const descInput = document.getElementById('qtCleanDesc').value.trim();
+        const isBackdated = document.getElementById('qtCleanIsBackdated').checked;
 
-        if (typeof window.showLoader === 'function') window.showLoader("Saving transaction...");
+        if (typeof window.showLoader === 'function') window.showLoader("সংরক্ষণ করা হচ্ছে...");
 
         let finalDesc = descInput;
         if (!finalDesc) {
-            finalDesc = (txType === 'Received' ? 'Payment Received' : 'Sales / Credit Due');
+            finalDesc = (txType === 'Received' ? 'টাকা আদায় / গ্রহণ' : 'পণ্য বিক্রয় / ধার');
         }
         finalDesc += ` (${method})`;
-        if (isBackdated) finalDesc += ' [Backdated Record]';
+        if (isBackdated) finalDesc += ' [পুরানা হিসাব]';
 
         const now = new Date();
         const txObj = {
@@ -435,13 +343,15 @@
             if (typeof window.renderCustomerListTable === 'function') window.renderCustomerListTable();
             if (typeof window.updateDashboardCards === 'function') window.updateDashboardCards();
 
-            // ফর্ম রিসেট (তারিখ যা ছিল তাই থাকবে)
-            document.getElementById('qtDedAmount').value = '';
-            document.getElementById('qtDedDescription').value = '';
-            document.getElementById('qtDedIsBackdated').checked = false;
+            // ফর্ম ক্লিয়ার (তারিখ পরিবর্তন হবে না)
+            document.getElementById('qtSelectedCustId').value = '';
+            document.getElementById('qtCustSearchInput').value = '';
+            document.getElementById('qtCleanAmount').value = '';
+            document.getElementById('qtCleanDesc').value = '';
+            document.getElementById('qtCleanIsBackdated').checked = false;
 
             if (typeof window.hideLoader === 'function') window.hideLoader();
-            if (typeof window.showToast === 'function') window.showToast("Transaction saved successfully!", "success");
+            if (typeof window.showToast === 'function') window.showToast("লেনদেন সফলভাবে সম্পন্ন হয়েছে!", "success");
 
         } catch (err) {
             if (typeof window.hideLoader === 'function') window.hideLoader();
@@ -449,16 +359,23 @@
         }
     };
 
-    // 8. সাইডবার সাব-মেনু এবং সেকশন ইনজেকশন
-    function injectDedicatedQuickTxModule() {
-        // সেকশন ইনজেক্ট করা
+    // 6. সাইডবার সাব-মেনু ও সেকশন ইনজেক্ট
+    window.openCleanQuickTxSection = function () {
+        if (typeof window.switchCustomerSubSection === 'function') {
+            window.switchCustomerSubSection('cust-quick-tx-section');
+        } else {
+            document.querySelectorAll('.cust-sub-section').forEach(sec => sec.style.display = 'none');
+            const target = document.getElementById('cust-quick-tx-section');
+            if (target) target.style.display = 'block';
+        }
+    };
+
+    function injectCleanQuickTx() {
         const customerLedgerView = document.getElementById('customer-ledger-view');
         if (customerLedgerView && !document.getElementById('cust-quick-tx-section')) {
-            customerLedgerView.insertAdjacentHTML('beforeend', getQuickTxSectionHTML());
-            populateDedicatedCustomers();
+            customerLedgerView.insertAdjacentHTML('beforeend', getCleanQuickTxHTML());
         }
 
-        // সাইডবারে নতুন সাব-মেনু যোগ করা
         const custParentMenu = document.getElementById('menu-cust-parent');
         if (custParentMenu) {
             const subList = custParentMenu.querySelector('.submenu-list');
@@ -466,9 +383,8 @@
                 const li = document.createElement('li');
                 li.className = 'submenu-item';
                 li.id = 'sub-cust-quick-tx';
-                li.innerHTML = `<a onclick="window.openQuickTxSection()" style="color: #2563eb; font-weight: 700;"><i class="fa-solid fa-bolt"></i> <span>Quick Transaction ⚡</span></a>`;
+                li.innerHTML = `<a onclick="window.openCleanQuickTxSection()" style="color: #10b981; font-weight: 700;"><i class="fa-solid fa-bolt"></i> <span>Quick Transaction ⚡</span></a>`;
                 
-                // Customer List-এর ঠিক পরে ২য় অবস্থানে বসানো
                 const secondChild = subList.children[1];
                 if (secondChild) subList.insertBefore(li, secondChild);
                 else subList.appendChild(li);
@@ -477,20 +393,10 @@
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', injectDedicatedQuickTxModule);
+        document.addEventListener('DOMContentLoaded', injectCleanQuickTx);
     } else {
-        injectDedicatedQuickTxModule();
+        injectCleanQuickTx();
     }
-
-    setInterval(() => {
-        if (!document.getElementById('cust-quick-tx-section')) {
-            injectDedicatedQuickTxModule();
-        } else {
-            const sel = document.getElementById('qtDedCustomerSelect');
-            if (sel && sel.options.length <= 1 && (window.customers && window.customers.length > 0)) {
-                populateDedicatedCustomers();
-            }
-        }
-    }, 1000);
+    setTimeout(injectCleanQuickTx, 1500);
 
 })();
