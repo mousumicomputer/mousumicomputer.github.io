@@ -1,9 +1,9 @@
 /**
- * Mousumi Computer - Quick Transaction Module (Kalpurush & Times New Roman Typography)
+ * Mousumi Computer - Quick Transaction Module with Customer Summary Popup
  */
 
 (function () {
-    // 1. Kalpurush WebFont সরাসরি Head-এ ইনজেক্ট করা
+    // 1. Kalpurush WebFont সরাসরি Head-এ ইনজেক্ট
     if (!document.getElementById('kalpurush-font-link')) {
         const fontLink = document.createElement('link');
         fontLink.id = 'kalpurush-font-link';
@@ -29,17 +29,16 @@
     }
     initFirebaseBridge();
 
-    // 3. ফন্ট এবং ব্যালান্সড গ্রিড সিএসএস (Kalpurush & Times New Roman)
+    // 3. ফন্ট ও পপ-আপ সিএসএস (Kalpurush & Times New Roman)
     const cleanStyles = `
-    /* সম্পূর্ণ কুইক ট্রানজ্যাকশন সেকশন ও সার্চ ড্রপডাউনে কালপুরুষ ও টাইমস নিউ রোমান ফন্ট */
     #cust-quick-tx-section,
     #cust-quick-tx-section *:not(i),
     .qt-clean-card,
     .qt-clean-card *:not(i),
     .qt-search-results,
     .qt-search-results *:not(i),
-    .qt-search-item,
-    .qt-search-item * {
+    .qt-popup-modal,
+    .qt-popup-modal *:not(i) {
         font-family: 'Kalpurush', 'Times New Roman', Times, serif !important;
     }
 
@@ -70,12 +69,11 @@
         gap: 10px;
     }
     
-    /* পারফেক্ট ৪-কলাম ব্যালান্সড গ্রিড */
     .qt-balanced-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 16px;
-        margin-bottom: 16px;
+        margin-bottom: 12px;
     }
     .qt-group-item {
         display: flex;
@@ -106,7 +104,38 @@
         box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
     }
     
-    /* সার্চ ড্রপডাউন রেজাল্ট বক্স */
+    /* কাস্টমার লাইভ ইনফো স্ট্রিপ */
+    .qt-cust-live-info {
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 8px 14px;
+        margin-top: 6px;
+        font-size: 0.95rem;
+    }
+    .qt-btn-view-summary {
+        background: #eef2ff;
+        color: #4f46e5;
+        border: 1px solid #c7d2fe;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 0.88rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: 0.2s;
+    }
+    .qt-btn-view-summary:hover {
+        background: #4f46e5;
+        color: #ffffff;
+    }
+
+    /* সার্চ রেজাল্ট ড্রপডাউন */
     .qt-search-results {
         position: absolute;
         top: 100%;
@@ -130,7 +159,6 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        transition: 0.15s;
     }
     .qt-search-item:hover {
         background: #ecfdf5;
@@ -181,6 +209,83 @@
         background: #059669;
     }
 
+    /* পপ-আপ মোডাল (POPUP MODAL STYLES) */
+    .qt-popup-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 999999;
+        padding: 15px;
+    }
+    .qt-popup-overlay.active { display: flex; animation: qtSimpleFade 0.2s ease-out; }
+    
+    .qt-popup-modal {
+        background: #ffffff;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 650px;
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+        overflow: hidden;
+    }
+    .qt-popup-header {
+        padding: 16px 20px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .qt-popup-header h3 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+    .qt-popup-close {
+        background: #e2e8f0;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-weight: bold;
+        color: #475569;
+    }
+    .qt-popup-body {
+        padding: 20px;
+        overflow-y: auto;
+    }
+    .qt-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+    .qt-stat-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px;
+        text-align: center;
+    }
+    .qt-stat-box span {
+        font-size: 0.82rem;
+        color: #64748b;
+        display: block;
+        font-weight: 600;
+    }
+    .qt-stat-box strong {
+        font-size: 1.1rem;
+        color: #1e293b;
+    }
+
     @media (max-width: 992px) {
         .qt-balanced-grid { grid-template-columns: repeat(2, 1fr); }
         .qt-col-span-2 { grid-column: span 2 !important; }
@@ -188,10 +293,11 @@
     @media (max-width: 600px) {
         .qt-balanced-grid { grid-template-columns: 1fr; }
         .qt-col-span-2 { grid-column: span 1 !important; }
+        .qt-stat-grid { grid-template-columns: 1fr; }
     }
     @keyframes qtSimpleFade {
-        from { opacity: 0; transform: translateY(4px); }
-        to { opacity: 1; transform: translateY(0); }
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
     `;
 
@@ -199,7 +305,7 @@
     styleEl.innerHTML = cleanStyles;
     document.head.appendChild(styleEl);
 
-    // 4. এইচটিএমএল স্ট্রাকচার
+    // 4. এইচটিএমএল স্ট্রাকচার ও পপ-আপ মোডাল
     function getCleanQuickTxHTML() {
         const todayStr = new Date().toISOString().split('T')[0];
         return `
@@ -218,6 +324,17 @@
                             <input type="text" id="qtCustSearchInput" class="qt-control-input" placeholder="কাস্টমারের নাম বা মোবাইল নাম্বার দিয়ে খুঁজুন..." autocomplete="off" oninput="window.filterQuickCustomers(this.value)" onfocus="window.filterQuickCustomers(this.value)">
                             <input type="hidden" id="qtSelectedCustId" value="" required>
                             <div id="qtCustSearchResults" class="qt-search-results"></div>
+
+                            <!-- লাইভ কাস্টমার ইনফো বার -->
+                            <div class="qt-cust-live-info" id="qtCustLiveInfo">
+                                <div>
+                                    <span style="color:#64748b;">বর্তমান বকেয়া:</span> 
+                                    <strong id="qtLiveDueVal" style="color:#dc2626; font-size:1.05rem; margin-left:4px;">৳ 0.00</strong>
+                                </div>
+                                <button type="button" class="qt-btn-view-summary" onclick="window.openCustomerSummaryPopup()">
+                                    <i class="fa-solid fa-file-invoice"></i> <span>View Summary / হিস্ট্রি</span>
+                                </button>
+                            </div>
                         </div>
 
                         <!-- সারি ১: লেনদেনের ধরন (১ কলাম) -->
@@ -274,10 +391,23 @@
                 </form>
             </div>
         </div>
+
+        <!-- কাস্টমার সামারি পপ-আপ মোডাল -->
+        <div class="qt-popup-overlay" id="qtSummaryPopupOverlay">
+            <div class="qt-popup-modal">
+                <div class="qt-popup-header">
+                    <h3 id="qtPopCustName">গ্রাহকের হিসাব বিবরণী</h3>
+                    <button class="qt-popup-close" onclick="window.closeCustomerSummaryPopup()">✕</button>
+                </div>
+                <div class="qt-popup-body" id="qtPopBody">
+                    <!-- Dynamic Summary Content -->
+                </div>
+            </div>
+        </div>
         `;
     }
 
-    // 5. দ্রুত কাস্টমার সার্চ ও ড্রপডাউন রেন্ডার (Kalpurush Font Supported)
+    // 5. দ্রুত কাস্টমার সার্চ ও ড্রপডাউন রেন্ডার
     window.filterQuickCustomers = function (keyword) {
         const resultsBox = document.getElementById('qtCustSearchResults');
         if (!resultsBox) return;
@@ -308,12 +438,34 @@
         resultsBox.style.display = 'block';
     };
 
+    // কাস্টমার সিলেক্ট করলে লাইভ ব্যালেন্স দেখানো
     window.selectQuickCustomer = function (id, name, phone) {
         document.getElementById('qtSelectedCustId').value = id;
         document.getElementById('qtCustSearchInput').value = `${name} ${phone ? '(' + phone + ')' : ''}`;
         document.getElementById('qtCustSearchResults').style.display = 'none';
+
+        // বর্তমান বকেয়া বের করা
+        let due = 0;
+        if (typeof window.calculateCustomerCurrentDue === 'function') {
+            due = window.calculateCustomerCurrentDue(id);
+        } else {
+            const cust = (window.customers || []).find(c => c.id === id);
+            due = parseFloat(cust ? cust.openingBalance : 0) || 0;
+            (window.customerTransactions || []).filter(t => t.customerId === id).forEach(t => {
+                due += (parseFloat(t.debit) || 0) - (parseFloat(t.credit) || 0);
+            });
+        }
+
+        const infoBar = document.getElementById('qtCustLiveInfo');
+        const dueVal = document.getElementById('qtLiveDueVal');
+        if (infoBar && dueVal) {
+            dueVal.innerText = '৳ ' + due.toLocaleString('en-US', { minimumFractionDigits: 2 });
+            dueVal.style.color = due > 0 ? '#dc2626' : (due < 0 ? '#16a34a' : '#1e293b');
+            infoBar.style.display = 'flex';
+        }
     };
 
+    // বাইরে ক্লিক করলে ড্রপডাউন বন্ধ
     document.addEventListener('click', (e) => {
         const box = document.getElementById('qtCustSearchResults');
         const inp = document.getElementById('qtCustSearchInput');
@@ -322,7 +474,85 @@
         }
     });
 
-    // 6. ট্রানজ্যাকশন সেভ ইঞ্জিন
+    // 6. পপ-আপ সামারি মোডাল ওপেন ও রেন্ডার
+    window.openCustomerSummaryPopup = function () {
+        const custId = document.getElementById('qtSelectedCustId').value;
+        if (!custId) return;
+
+        const cust = (window.customers || []).find(c => c.id === custId);
+        if (!cust) return;
+
+        let opening = parseFloat(cust.openingBalance) || 0;
+        let totalDebit = 0, totalCredit = 0;
+
+        const txs = (window.customerTransactions || []).filter(t => t.customerId === custId);
+        txs.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).reverse();
+
+        txs.forEach(t => {
+            totalDebit += (parseFloat(t.debit) || 0);
+            totalCredit += (parseFloat(t.credit) || 0);
+        });
+
+        const currentDue = opening + totalDebit - totalCredit;
+
+        document.getElementById('qtPopCustName').innerText = `${cust.name} - এর হিসাব সারসংক্ষেপ`;
+
+        let rowsHtml = '';
+        txs.slice(0, 10).forEach(t => {
+            rowsHtml += `
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 8px 10px; font-size: 0.9rem; color: #64748b;">${t.date}</td>
+                    <td style="padding: 8px 10px; font-size: 0.92rem; font-weight: 600;">${t.description || '-'}</td>
+                    <td style="padding: 8px 10px; font-size: 0.95rem; font-weight: 700; color: #dc2626; text-align: right;">${t.debit > 0 ? '৳ ' + t.debit.toLocaleString('en-US') : '-'}</td>
+                    <td style="padding: 8px 10px; font-size: 0.95rem; font-weight: 700; color: #16a34a; text-align: right;">${t.credit > 0 ? '৳ ' + t.credit.toLocaleString('en-US') : '-'}</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('qtPopBody').innerHTML = `
+            <div style="background:#f1f5f9; padding:10px 14px; border-radius:8px; margin-bottom:15px; font-size:0.92rem;">
+                <strong>মোবাইল:</strong> ${cust.phone || 'নেই'} | <strong>ঠিকানা:</strong> ${cust.address || 'নেই'}
+            </div>
+
+            <div class="qt-stat-grid">
+                <div class="qt-stat-box">
+                    <span>মোট বিক্রয় / দিলাম</span>
+                    <strong style="color:#dc2626;">৳ ${totalDebit.toLocaleString('en-US')}</strong>
+                </div>
+                <div class="qt-stat-box">
+                    <span>মোট আদায় / পেলাম</span>
+                    <strong style="color:#16a34a;">৳ ${totalCredit.toLocaleString('en-US')}</strong>
+                </div>
+                <div class="qt-stat-box">
+                    <span>বর্তমান বকেয়া (Due)</span>
+                    <strong style="color:${currentDue > 0 ? '#dc2626' : '#16a34a'}; font-size:1.2rem;">৳ ${currentDue.toLocaleString('en-US')}</strong>
+                </div>
+            </div>
+
+            <div style="font-weight:700; margin-bottom:8px; font-size:1rem; color:#1e293b;">সাম্প্রতিক ১০টি লেনদেন:</div>
+            <div style="max-height: 220px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8fafc; text-align: left; font-size: 0.88rem; color: #475569;">
+                            <th style="padding: 8px 10px;">তারিখ</th>
+                            <th style="padding: 8px 10px;">বিবরণ</th>
+                            <th style="padding: 8px 10px; text-align: right; color:#dc2626;">দিলাম (+)</th>
+                            <th style="padding: 8px 10px; text-align: right; color:#16a34a;">পেলাম (-)</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml || '<tr><td colspan="4" style="text-align:center; padding:15px; color:#9ca3af;">কোনো লেনদেন রেকর্ড নেই</td></tr>'}</tbody>
+                </table>
+            </div>
+        `;
+
+        document.getElementById('qtSummaryPopupOverlay').classList.add('active');
+    };
+
+    window.closeCustomerSummaryPopup = function () {
+        document.getElementById('qtSummaryPopupOverlay').classList.remove('active');
+    };
+
+    // 7. ট্রানজ্যাকশন সেভ ইঞ্জিন
     window.saveCleanQuickTransaction = async function (e) {
         e.preventDefault();
 
@@ -381,12 +611,14 @@
             if (typeof window.renderCustomerListTable === 'function') window.renderCustomerListTable();
             if (typeof window.updateDashboardCards === 'function') window.updateDashboardCards();
 
-            // ক্লিয়ার ফিল্ডস
-            document.getElementById('qtSelectedCustId').value = '';
-            document.getElementById('qtCustSearchInput').value = '';
+            // ক্লিয়ার ফিল্ডস ও লাইভ ইনফো আপডেট
             document.getElementById('qtCleanAmount').value = '';
             document.getElementById('qtCleanDesc').value = '';
             document.getElementById('qtCleanIsBackdated').checked = false;
+
+            // লাইভ ব্যালেন্স রিফ্রেশ
+            const cust = (window.customers || []).find(c => c.id === custId);
+            window.selectQuickCustomer(custId, cust ? cust.name : '', cust ? cust.phone : '');
 
             if (typeof window.hideLoader === 'function') window.hideLoader();
             if (typeof window.showToast === 'function') window.showToast("লেনদেন সফলভাবে সম্পন্ন হয়েছে!", "success");
@@ -397,7 +629,7 @@
         }
     };
 
-    // 7. সাইডবার সাব-মেনু ও সেকশন সুইচ
+    // 8. সাইডবার সাব-মেনু ও সেকশন সুইচ
     window.openCleanQuickTxSection = function () {
         if (typeof window.switchCustomerSubSection === 'function') {
             window.switchCustomerSubSection('cust-quick-tx-section');
