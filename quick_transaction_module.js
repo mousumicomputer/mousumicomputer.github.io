@@ -1,5 +1,5 @@
 /**
- * Mousumi Computer - Quick Transaction Module (Classic Clean Layout & Searchable Customer)
+ * Mousumi Computer - Quick Transaction Module (Perfect Fit Balanced Layout)
  */
 
 (function () {
@@ -20,7 +20,7 @@
     }
     initFirebaseBridge();
 
-    // 2. কালপুরুষ ও টাইমস নিউ রোমান ফন্টসহ ২নং ছবির মতো সাধারণ সিএসএস
+    // 2. পারফেক্ট গ্রিড ও ফন্ট সিএসএস
     const cleanStyles = `
     @import url('https://fonts.maateen.me/kalpurush/font.css');
 
@@ -33,59 +33,64 @@
     }
     .qt-clean-card {
         background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 14px;
-        padding: 22px 25px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px 24px;
         max-width: 100%;
         margin-bottom: 25px;
-        font-family: 'Kalpurush', 'Times New Roman', Times, serif !important;
+        font-family: 'Kalpurush', 'Times New Roman', Times, serif;
     }
     .qt-clean-header {
         font-size: 1.15rem;
         font-weight: 700;
         color: #1e293b;
-        padding-bottom: 14px;
+        padding-bottom: 12px;
         margin-bottom: 18px;
         border-bottom: 1px solid #f1f5f9;
         display: flex;
         align-items: center;
         gap: 10px;
-        font-family: 'Kalpurush', 'Times New Roman', Times, serif !important;
+        font-family: 'Kalpurush', 'Times New Roman', Times, serif;
     }
-    .qt-clean-grid {
+    
+    /* 4-কলাম পারফেক্ট ব্যালান্সড গ্রিড */
+    .qt-balanced-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 14px;
-        margin-bottom: 15px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 16px;
     }
-    .qt-clean-group {
+    .qt-group-item {
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 6px;
         position: relative;
     }
-    .qt-clean-group label {
+    .qt-group-item label {
         font-size: 0.88rem;
         font-weight: 700;
         color: #475569;
-        font-family: 'Kalpurush', 'Times New Roman', Times, serif !important;
+        font-family: 'Kalpurush', 'Times New Roman', Times, serif;
     }
-    .qt-clean-input {
+    .qt-control-input {
         width: 100%;
-        padding: 9px 12px;
+        height: 44px;
+        padding: 0 12px;
         border: 1px solid #cbd5e1;
         border-radius: 8px;
         font-size: 0.95rem;
         color: #1e293b;
         outline: none;
         background: #ffffff;
-        font-family: 'Kalpurush', 'Times New Roman', Times, serif !important;
+        font-family: 'Kalpurush', 'Times New Roman', Times, serif;
+        box-sizing: border-box;
     }
-    .qt-clean-input:focus {
+    .qt-control-input:focus {
         border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
     }
     
-    /* Searchable Customer Dropdown List */
+    /* Search Results Box */
     .qt-search-results {
         position: absolute;
         top: 100%;
@@ -97,23 +102,32 @@
         max-height: 220px;
         overflow-y: auto;
         z-index: 1000;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.12);
         display: none;
         margin-top: 4px;
     }
     .qt-search-item {
-        padding: 8px 12px;
+        padding: 9px 12px;
         cursor: pointer;
         font-size: 0.92rem;
         border-bottom: 1px solid #f1f5f9;
-        font-family: 'Kalpurush', 'Times New Roman', Times, serif !important;
+        font-family: 'Kalpurush', 'Times New Roman', Times, serif;
     }
     .qt-search-item:hover {
-        background: #f0fdf4;
-        color: #16a34a;
+        background: #ecfdf5;
+        color: #059669;
         font-weight: 700;
     }
 
+    .qt-bottom-action-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        padding-top: 10px;
+        border-top: 1px solid #f8fafc;
+    }
     .qt-clean-backdated {
         display: flex;
         align-items: center;
@@ -121,39 +135,46 @@
         font-size: 0.88rem;
         color: #4b5563;
         font-weight: 700;
-        margin-top: 10px;
         cursor: pointer;
-        font-family: 'Kalpurush', 'Times New Roman', Times, serif !important;
+        font-family: 'Kalpurush', 'Times New Roman', Times, serif;
     }
     .qt-clean-backdated input {
-        width: 16px;
-        height: 16px;
+        width: 17px;
+        height: 17px;
         accent-color: #10b981;
         cursor: pointer;
     }
 
     .qt-clean-btn {
-        padding: 10px 26px;
+        padding: 11px 28px;
         background: #10b981;
         color: #ffffff;
         border: none;
         border-radius: 8px;
-        font-size: 0.95rem;
+        font-size: 0.98rem;
         font-weight: 700;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         gap: 8px;
         transition: 0.2s;
-        font-family: 'Kalpurush', 'Times New Roman', Times, serif !important;
+        font-family: 'Kalpurush', 'Times New Roman', Times, serif;
     }
     .qt-clean-btn:hover {
         background: #059669;
     }
 
+    @media (max-width: 992px) {
+        .qt-balanced-grid { grid-template-columns: repeat(2, 1fr); }
+        .qt-col-span-2 { grid-column: span 2 !important; }
+    }
+    @media (max-width: 600px) {
+        .qt-balanced-grid { grid-template-columns: 1fr; }
+        .qt-col-span-2 { grid-column: span 1 !important; }
+    }
     @keyframes qtSimpleFade {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     `;
 
@@ -161,7 +182,7 @@
     styleEl.innerHTML = cleanStyles;
     document.head.appendChild(styleEl);
 
-    // 3. এইচটিএমএল স্ট্রাকচার (২নং ছবির মতো মার্জিত)
+    // 3. এইচটিএমএল স্ট্রাকচার (সঠিক ও ফিট লেআউট)
     function getCleanQuickTxHTML() {
         const todayStr = new Date().toISOString().split('T')[0];
         return `
@@ -173,40 +194,40 @@
                 </div>
 
                 <form id="qtCleanForm" onsubmit="window.saveCleanQuickTransaction(event)">
-                    <div class="qt-clean-grid">
-                        <!-- Searchable Customer Input -->
-                        <div class="qt-clean-group" style="grid-column: span 1.5; min-width: 220px;">
+                    <div class="qt-balanced-grid">
+                        <!-- সারি ১: গ্রাহক সিলেকশন (২ কলাম জুড়ে) -->
+                        <div class="qt-group-item qt-col-span-2" style="grid-column: span 2;">
                             <label>Customer Selection (নাম বা মোবাইল লিখুন)</label>
-                            <input type="text" id="qtCustSearchInput" class="qt-clean-input" placeholder="কাস্টমারের নাম বা মোবাইল লিখুন..." autocomplete="off" oninput="window.filterQuickCustomers(this.value)" onfocus="window.filterQuickCustomers(this.value)">
+                            <input type="text" id="qtCustSearchInput" class="qt-control-input" placeholder="কাস্টমারের নাম বা মোবাইল নাম্বার দিয়ে খুঁজুন..." autocomplete="off" oninput="window.filterQuickCustomers(this.value)" onfocus="window.filterQuickCustomers(this.value)">
                             <input type="hidden" id="qtSelectedCustId" value="" required>
                             <div id="qtCustSearchResults" class="qt-search-results"></div>
                         </div>
 
-                        <!-- Transaction Type -->
-                        <div class="qt-clean-group">
+                        <!-- সারি ১: লেনদেনের ধরন (১ কলাম) -->
+                        <div class="qt-group-item">
                             <label>Transaction Type</label>
-                            <select id="qtCleanType" class="qt-clean-input">
-                                <option value="Received">Received (+ Payment / পেলাম)</option>
-                                <option value="Given">Given (+ Due / Sales / দিলাম)</option>
+                            <select id="qtCleanType" class="qt-control-input">
+                                <option value="Received">Received (পেলাম)</option>
+                                <option value="Given">Given (দিলাম)</option>
                             </select>
                         </div>
 
-                        <!-- Amount -->
-                        <div class="qt-clean-group">
+                        <!-- সারি ১: পরিমাণ (১ কলাম) -->
+                        <div class="qt-group-item">
                             <label>Amount (৳)</label>
-                            <input type="number" step="any" min="1" id="qtCleanAmount" class="qt-clean-input" placeholder="0.00" required>
+                            <input type="number" step="any" min="1" id="qtCleanAmount" class="qt-control-input" placeholder="0.00" required style="font-weight: 700;">
                         </div>
 
-                        <!-- Date -->
-                        <div class="qt-clean-group">
+                        <!-- সারি ২: তারিখ (১ কলাম) -->
+                        <div class="qt-group-item">
                             <label>Date</label>
-                            <input type="date" id="qtCleanDate" class="qt-clean-input" value="${todayStr}" required style="cursor: pointer;">
+                            <input type="date" id="qtCleanDate" class="qt-control-input" value="${todayStr}" required style="cursor: pointer;">
                         </div>
 
-                        <!-- Payment Method -->
-                        <div class="qt-clean-group">
+                        <!-- সারি ২: পেমেন্ট মাধ্যম (১ কলাম) -->
+                        <div class="qt-group-item">
                             <label>Payment Method</label>
-                            <select id="qtCleanPaymentMethod" class="qt-clean-input">
+                            <select id="qtCleanPaymentMethod" class="qt-control-input">
                                 <option value="Cash" selected>Cash</option>
                                 <option value="bKash">bKash</option>
                                 <option value="Nagad">Nagad</option>
@@ -216,15 +237,15 @@
                             </select>
                         </div>
 
-                        <!-- Description -->
-                        <div class="qt-clean-group" style="grid-column: 1 / -1;">
+                        <!-- সারি ২: বিবরণ (২ কলাম জুড়ে) -->
+                        <div class="qt-group-item qt-col-span-2" style="grid-column: span 2;">
                             <label>Description / Particulars (ঐচ্ছিক)</label>
-                            <input type="text" id="qtCleanDesc" class="qt-clean-input" placeholder="Notes, Item Details or Receipt info...">
+                            <input type="text" id="qtCleanDesc" class="qt-control-input" placeholder="Notes, Item Details or Receipt info...">
                         </div>
                     </div>
 
-                    <!-- Backdated Checkbox & Action Button -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-top: 10px;">
+                    <!-- সারি ৩: চেকবক্স এবং সেভ বাটন -->
+                    <div class="qt-bottom-action-bar">
                         <label class="qt-clean-backdated" for="qtCleanIsBackdated">
                             <input type="checkbox" id="qtCleanIsBackdated">
                             <span>পুরানা হিসাব / ব্যাকডেটেড এন্ট্রি (শুধুমাত্র কাস্টমার লেজারে যোগ হবে, ক্যাশ বা ক্লোজিংয়ে প্রভাব পড়বে না)</span>
@@ -239,7 +260,7 @@
         `;
     }
 
-    // 4. দ্রুত কাস্টমার সার্চ ও সিলেক্ট লজিক (Search-as-you-type)
+    // 4. দ্রুত কাস্টমার সার্চ লজিক
     window.filterQuickCustomers = function (keyword) {
         const resultsBox = document.getElementById('qtCustSearchResults');
         if (!resultsBox) return;
@@ -275,7 +296,6 @@
         document.getElementById('qtCustSearchResults').style.display = 'none';
     };
 
-    // বাইরে ক্লিক করলে ড্রপডাউন বন্ধ হওয়া
     document.addEventListener('click', (e) => {
         const box = document.getElementById('qtCustSearchResults');
         const inp = document.getElementById('qtCustSearchInput');
@@ -343,7 +363,7 @@
             if (typeof window.renderCustomerListTable === 'function') window.renderCustomerListTable();
             if (typeof window.updateDashboardCards === 'function') window.updateDashboardCards();
 
-            // ফর্ম ক্লিয়ার (তারিখ পরিবর্তন হবে না)
+            // ক্লিয়ার ফিল্ডস (তারিখ আগেরটাই থাকবে)
             document.getElementById('qtSelectedCustId').value = '';
             document.getElementById('qtCustSearchInput').value = '';
             document.getElementById('qtCleanAmount').value = '';
@@ -359,7 +379,7 @@
         }
     };
 
-    // 6. সাইডবার সাব-মেনু ও সেকশন ইনজেক্ট
+    // 6. সাইডবার সাব-মেনু ও সেকশন সুইচ
     window.openCleanQuickTxSection = function () {
         if (typeof window.switchCustomerSubSection === 'function') {
             window.switchCustomerSubSection('cust-quick-tx-section');
