@@ -1,9 +1,26 @@
 /**
- * Mousumi Computer - Daily Closing Wizard Module (Wide & No-Scroll Edition)
+ * Mousumi Computer - Daily Closing Wizard Module (Live Realtime Sync Edition)
  */
 
 (function () {
-    // 1. ইনজেক্টেড সিএসএস (Ultra-Wide, Responsive & Compact Grid)
+    // 1. Firebase Bridge Integration
+    let fbDb = null, fbRef = null, fbSet = null;
+
+    async function initFirebaseBridge() {
+        try {
+            const { getApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+            const { getDatabase, ref, set } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+            const app = getApp();
+            fbDb = getDatabase(app);
+            fbRef = ref;
+            fbSet = set;
+        } catch (e) {
+            console.warn("Firebase Bridge Init Note:", e);
+        }
+    }
+    initFirebaseBridge();
+
+    // 2. সিএসএস স্টাইল (Wide & Compact Layout)
     const wizardStyles = `
     .dcw-overlay {
         position: fixed;
@@ -22,7 +39,7 @@
         background: #ffffff;
         border-radius: 20px;
         width: 96%;
-        max-width: 1180px; /* পাশে আরও প্রশস্ত করা হয়েছে */
+        max-width: 1180px;
         max-height: 94vh;
         display: flex;
         flex-direction: column;
@@ -31,7 +48,6 @@
         font-family: 'Plus Jakarta Sans', 'Tiro Bangla', sans-serif;
     }
 
-    /* HEADER */
     .dcw-header {
         padding: 16px 25px;
         display: flex;
@@ -64,7 +80,6 @@
     }
     .dcw-close-btn:hover { background: #fee2e2; color: #ef4444; }
 
-    /* STEPPER */
     .dcw-stepper {
         display: flex;
         align-items: center;
@@ -109,7 +124,6 @@
     }
     .dcw-step-arrow { color: #cbd5e1; font-size: 0.7rem; }
 
-    /* BODY */
     .dcw-body {
         padding: 20px 25px;
         overflow-y: auto;
@@ -128,7 +142,6 @@
         margin-bottom: 16px;
     }
 
-    /* COMPACT GRID FOR ACCOUNTS (3 COLUMNS) */
     .dcw-grid-3 {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -185,7 +198,6 @@
         border-color: #00a8ef;
     }
 
-    /* 4-COLUMN OPERATOR CARDS LAYOUT */
     .dcw-card-operators-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -230,26 +242,15 @@
         background: #f8fafc;
         border: 1px solid #f1f5f9;
     }
-    .dcw-card-row-item:hover { background: #f1f5f9; }
-    .dcw-card-name {
-        font-size: 0.8rem;
-        font-weight: 700;
-        color: #1e293b;
-    }
-    .dcw-card-price {
-        font-size: 0.7rem;
-        color: #64748b;
-        font-weight: 600;
-    }
+    .dcw-card-name { font-size: 0.8rem; font-weight: 700; color: #1e293b; }
+    .dcw-card-price { font-size: 0.7rem; color: #64748b; font-weight: 600; }
 
-    /* CASH 2-COLUMN LAYOUT */
     .dcw-cash-grid-2 {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 16px;
     }
 
-    /* FOOTER */
     .dcw-footer {
         padding: 14px 25px;
         border-top: 1px solid #f1f5f9;
@@ -288,7 +289,7 @@
     styleEl.innerHTML = wizardStyles;
     document.head.appendChild(styleEl);
 
-    // 2. উইজার্ড HTML ফ্রেমওয়ার্ক
+    // 3. উইজার্ড HTML ফ্রেমওয়ার্ক
     const wizardModalHTML = `
     <div class="dcw-overlay" id="dailyClosingWizardOverlay">
         <div class="dcw-modal">
@@ -416,7 +417,6 @@
         else if (currentStep === 5) renderStepCardInventory(body);
     }
 
-    // অ্যাকাউন্টস (Step 1, 2, 3) - ৩-কলাম কম্প্যাক্ট গ্রিড
     function renderStepAccountsCategory(container, categoryKeyword, title, desc) {
         const store = window.getERPStore ? window.getERPStore() : {
             categories: window.categories || [],
@@ -461,7 +461,6 @@
         container.innerHTML = html;
     }
 
-    // ক্যাশ ইনভেন্টরি (Step 4) - ২-কলাম স্প্লিট ভিউ
     function renderStepCashInventory(container) {
         const cashQ = window.cashQuantities || {};
         const others = window.cashOthersAmount || 0;
@@ -528,7 +527,6 @@
         if (grandEl) grandEl.innerText = `৳ ${sum.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
     };
 
-    // কার্ড ইনভেন্টরি (Step 5) - ৪-কলাম পাশাপাশি গ্রিড (NO SCROLL)
     function renderStepCardInventory(container) {
         const cardCfg = window.cardConfig || {};
         const cardQ = window.cardQuantities || {};
@@ -581,38 +579,56 @@
         `;
     }
 
-    // ডাটা সংরক্ষণ লজিক
+    // লাইভ ডাটাবেজ সেভ ও ড্যাশবোর্ড ক্যালকুলেশন সিঙ্ক ইঞ্জিন
     window.saveAndProceedWizardStep = async function () {
-        if (typeof window.showLoader === 'function') window.showLoader("Saving step data...");
+        if (typeof window.showLoader === 'function') window.showLoader("Saving & Recalculating...");
 
         try {
+            // STEP 1, 2, 3 SAVING (Accounts Balance)
             if (currentStep >= 1 && currentStep <= 3) {
                 const inputs = document.querySelectorAll('#dcwStepBody input[id^="dcwInp_"]');
+                if (!window.balanceStore) window.balanceStore = {};
+
                 inputs.forEach(inp => {
                     const accId = inp.id.replace('dcwInp_', '');
                     const val = parseFloat(inp.value) || 0;
-                    if (window.balanceStore) window.balanceStore[accId] = val;
+                    window.balanceStore[accId] = val;
                 });
-                await writeFirebaseDirect('erp/balances', window.balanceStore);
-            } else if (currentStep === 4) {
+
+                if (fbDb && fbSet && fbRef) {
+                    await fbSet(fbRef(fbDb, 'erp/balances'), window.balanceStore);
+                }
+            } 
+            // STEP 4 SAVING (Cash Inventory)
+            else if (currentStep === 4) {
                 const denoms = [1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];
                 if (!window.cashQuantities) window.cashQuantities = {};
 
+                let calculatedSum = 0;
                 denoms.forEach(d => {
                     const inp = document.getElementById(`dcwCashQty_${d}`);
-                    window.cashQuantities[d] = parseInt(inp ? inp.value : 0) || 0;
+                    const q = parseInt(inp ? inp.value : 0) || 0;
+                    window.cashQuantities[d] = q;
+                    calculatedSum += (q * d);
                 });
 
                 const othersInp = document.getElementById('dcwCashOthers');
                 window.cashOthersAmount = parseFloat(othersInp ? othersInp.value : 0) || 0;
+                calculatedSum += window.cashOthersAmount;
 
-                const cashTotal = typeof window.calculateCashGrandTotal === 'function' ? window.calculateCashGrandTotal() : 0;
-                await writeFirebaseDirect('erp/cashInventory', {
-                    quantities: window.cashQuantities,
-                    others: window.cashOthersAmount,
-                    grandTotal: cashTotal
-                });
-            } else if (currentStep === 5) {
+                if (typeof window.saveCashInventory === 'function') {
+                    await window.saveCashInventory();
+                } else if (fbDb && fbSet && fbRef) {
+                    await fbSet(fbRef(fbDb, 'erp/cashInventory'), {
+                        quantities: window.cashQuantities,
+                        others: window.cashOthersAmount,
+                        grandTotal: calculatedSum,
+                        lastUpdated: new Date().toLocaleString()
+                    });
+                }
+            } 
+            // STEP 5 SAVING (Cards Inventory)
+            else if (currentStep === 5) {
                 const ops = ['GP', 'Banglalink', 'Robi', 'Airtel'];
                 if (!window.cardQuantities) window.cardQuantities = {};
 
@@ -625,19 +641,22 @@
                     });
                 });
 
-                await writeFirebaseDirect('erp/cardInventory', window.cardQuantities);
+                if (typeof window.saveTodayInventory === 'function') {
+                    await window.saveTodayInventory();
+                } else if (fbDb && fbSet && fbRef) {
+                    await fbSet(fbRef(fbDb, 'erp/cardInventory'), window.cardQuantities);
+                }
             }
 
-            if (typeof window.updateDashboardCards === 'function') window.updateDashboardCards();
             if (typeof window.hideLoader === 'function') window.hideLoader();
-            if (typeof window.showToast === 'function') window.showToast(`Step ${currentStep} saved!`, 'success');
+            if (typeof window.showToast === 'function') window.showToast(`Step ${currentStep} Updated Successfully!`, 'success');
 
             if (currentStep < TOTAL_STEPS) {
                 currentStep++;
                 renderWizardCurrentStep();
             } else {
                 window.closeClosingWizard();
-                if (typeof window.showToast === 'function') window.showToast('Daily Closing Wizard Completed!', 'success');
+                if (typeof window.showToast === 'function') window.showToast('Daily Closing Balance Successfully Synchronized!', 'success');
                 if (typeof window.switchMainTab === 'function') window.switchMainTab('daily-closing');
             }
 
@@ -646,10 +665,6 @@
             if (typeof window.showToast === 'function') window.showToast("Error saving: " + err.message, "error");
         }
     };
-
-    async function writeFirebaseDirect(path, data) {
-        if (window.writeToFirebase) return await window.writeToFirebase(path, data);
-    }
 
     function injectWizardTriggerButtons() {
         const closingMenu = document.getElementById('menu-closing-parent');
