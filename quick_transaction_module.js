@@ -1,5 +1,5 @@
 /**
- * Mousumi Computer - Quick Transaction Module with Customer Summary Popup
+ * Mousumi Computer - Quick Transaction Module (Direct Transaction Table Popup)
  */
 
 (function () {
@@ -120,14 +120,14 @@
         background: #eef2ff;
         color: #4f46e5;
         border: 1px solid #c7d2fe;
-        padding: 4px 10px;
+        padding: 5px 12px;
         border-radius: 6px;
         font-weight: 700;
         cursor: pointer;
-        font-size: 0.88rem;
+        font-size: 0.9rem;
         display: inline-flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
         transition: 0.2s;
     }
     .qt-btn-view-summary:hover {
@@ -227,7 +227,7 @@
         background: #ffffff;
         border-radius: 16px;
         width: 100%;
-        max-width: 650px;
+        max-width: 680px;
         max-height: 85vh;
         display: flex;
         flex-direction: column;
@@ -262,29 +262,6 @@
         padding: 20px;
         overflow-y: auto;
     }
-    .qt-stat-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        margin-bottom: 18px;
-    }
-    .qt-stat-box {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 12px;
-        text-align: center;
-    }
-    .qt-stat-box span {
-        font-size: 0.82rem;
-        color: #64748b;
-        display: block;
-        font-weight: 600;
-    }
-    .qt-stat-box strong {
-        font-size: 1.1rem;
-        color: #1e293b;
-    }
 
     @media (max-width: 992px) {
         .qt-balanced-grid { grid-template-columns: repeat(2, 1fr); }
@@ -293,7 +270,6 @@
     @media (max-width: 600px) {
         .qt-balanced-grid { grid-template-columns: 1fr; }
         .qt-col-span-2 { grid-column: span 1 !important; }
-        .qt-stat-grid { grid-template-columns: 1fr; }
     }
     @keyframes qtSimpleFade {
         from { opacity: 0; }
@@ -332,7 +308,7 @@
                                     <strong id="qtLiveDueVal" style="color:#dc2626; font-size:1.05rem; margin-left:4px;">৳ 0.00</strong>
                                 </div>
                                 <button type="button" class="qt-btn-view-summary" onclick="window.openCustomerSummaryPopup()">
-                                    <i class="fa-solid fa-file-invoice"></i> <span>View Summary / হিস্ট্রি</span>
+                                    <i class="fa-solid fa-list-check"></i> <span>লেনদেন হিস্ট্রি দেখুন</span>
                                 </button>
                             </div>
                         </div>
@@ -392,15 +368,15 @@
             </div>
         </div>
 
-        <!-- কাস্টমার সামারি পপ-আপ মোডাল -->
+        <!-- কাস্টমার লেনদেন হিস্ট্রি পপ-আপ মোডাল (শুধুমাত্র টেবিল) -->
         <div class="qt-popup-overlay" id="qtSummaryPopupOverlay">
             <div class="qt-popup-modal">
                 <div class="qt-popup-header">
-                    <h3 id="qtPopCustName">গ্রাহকের হিসাব বিবরণী</h3>
+                    <h3 id="qtPopCustName">গ্রাহকের লেনদেন হিস্ট্রি</h3>
                     <button class="qt-popup-close" onclick="window.closeCustomerSummaryPopup()">✕</button>
                 </div>
                 <div class="qt-popup-body" id="qtPopBody">
-                    <!-- Dynamic Summary Content -->
+                    <!-- Dynamic Table Content -->
                 </div>
             </div>
         </div>
@@ -444,7 +420,6 @@
         document.getElementById('qtCustSearchInput').value = `${name} ${phone ? '(' + phone + ')' : ''}`;
         document.getElementById('qtCustSearchResults').style.display = 'none';
 
-        // বর্তমান বকেয়া বের করা
         let due = 0;
         if (typeof window.calculateCustomerCurrentDue === 'function') {
             due = window.calculateCustomerCurrentDue(id);
@@ -465,7 +440,6 @@
         }
     };
 
-    // বাইরে ক্লিক করলে ড্রপডাউন বন্ধ
     document.addEventListener('click', (e) => {
         const box = document.getElementById('qtCustSearchResults');
         const inp = document.getElementById('qtCustSearchInput');
@@ -474,7 +448,7 @@
         }
     });
 
-    // 6. পপ-আপ সামারি মোডাল ওপেন ও রেন্ডার
+    // 6. পপ-আপ মোডাল (শুধুমাত্র লেনদেনের টেবিল)
     window.openCustomerSummaryPopup = function () {
         const custId = document.getElementById('qtSelectedCustId').value;
         if (!custId) return;
@@ -482,65 +456,35 @@
         const cust = (window.customers || []).find(c => c.id === custId);
         if (!cust) return;
 
-        let opening = parseFloat(cust.openingBalance) || 0;
-        let totalDebit = 0, totalCredit = 0;
-
         const txs = (window.customerTransactions || []).filter(t => t.customerId === custId);
         txs.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).reverse();
 
-        txs.forEach(t => {
-            totalDebit += (parseFloat(t.debit) || 0);
-            totalCredit += (parseFloat(t.credit) || 0);
-        });
-
-        const currentDue = opening + totalDebit - totalCredit;
-
-        document.getElementById('qtPopCustName').innerText = `${cust.name} - এর হিসাব সারসংক্ষেপ`;
+        document.getElementById('qtPopCustName').innerText = `${cust.name} - এর লেনদেন বিবরণী`;
 
         let rowsHtml = '';
-        txs.slice(0, 10).forEach(t => {
+        txs.forEach(t => {
             rowsHtml += `
                 <tr style="border-bottom: 1px solid #f1f5f9;">
-                    <td style="padding: 8px 10px; font-size: 0.9rem; color: #64748b;">${t.date}</td>
-                    <td style="padding: 8px 10px; font-size: 0.92rem; font-weight: 600;">${t.description || '-'}</td>
-                    <td style="padding: 8px 10px; font-size: 0.95rem; font-weight: 700; color: #dc2626; text-align: right;">${t.debit > 0 ? '৳ ' + t.debit.toLocaleString('en-US') : '-'}</td>
-                    <td style="padding: 8px 10px; font-size: 0.95rem; font-weight: 700; color: #16a34a; text-align: right;">${t.credit > 0 ? '৳ ' + t.credit.toLocaleString('en-US') : '-'}</td>
+                    <td style="padding: 10px 12px; font-size: 0.95rem; color: #64748b;">${t.date}</td>
+                    <td style="padding: 10px 12px; font-size: 0.95rem; font-weight: 600; color: #1e293b;">${t.description || '-'}</td>
+                    <td style="padding: 10px 12px; font-size: 1rem; font-weight: 700; color: #dc2626; text-align: right;">${t.debit > 0 ? '৳ ' + Number(t.debit).toLocaleString('en-US') : '-'}</td>
+                    <td style="padding: 10px 12px; font-size: 1rem; font-weight: 700; color: #16a34a; text-align: right;">${t.credit > 0 ? '৳ ' + Number(t.credit).toLocaleString('en-US') : '-'}</td>
                 </tr>
             `;
         });
 
         document.getElementById('qtPopBody').innerHTML = `
-            <div style="background:#f1f5f9; padding:10px 14px; border-radius:8px; margin-bottom:15px; font-size:0.92rem;">
-                <strong>মোবাইল:</strong> ${cust.phone || 'নেই'} | <strong>ঠিকানা:</strong> ${cust.address || 'নেই'}
-            </div>
-
-            <div class="qt-stat-grid">
-                <div class="qt-stat-box">
-                    <span>মোট বিক্রয় / দিলাম</span>
-                    <strong style="color:#dc2626;">৳ ${totalDebit.toLocaleString('en-US')}</strong>
-                </div>
-                <div class="qt-stat-box">
-                    <span>মোট আদায় / পেলাম</span>
-                    <strong style="color:#16a34a;">৳ ${totalCredit.toLocaleString('en-US')}</strong>
-                </div>
-                <div class="qt-stat-box">
-                    <span>বর্তমান বকেয়া (Due)</span>
-                    <strong style="color:${currentDue > 0 ? '#dc2626' : '#16a34a'}; font-size:1.2rem;">৳ ${currentDue.toLocaleString('en-US')}</strong>
-                </div>
-            </div>
-
-            <div style="font-weight:700; margin-bottom:8px; font-size:1rem; color:#1e293b;">সাম্প্রতিক ১০টি লেনদেন:</div>
-            <div style="max-height: 220px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <div style="max-height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
-                        <tr style="background: #f8fafc; text-align: left; font-size: 0.88rem; color: #475569;">
-                            <th style="padding: 8px 10px;">তারিখ</th>
-                            <th style="padding: 8px 10px;">বিবরণ</th>
-                            <th style="padding: 8px 10px; text-align: right; color:#dc2626;">দিলাম (+)</th>
-                            <th style="padding: 8px 10px; text-align: right; color:#16a34a;">পেলাম (-)</th>
+                        <tr style="background: #f8fafc; text-align: left; font-size: 0.92rem; color: #475569; position: sticky; top: 0; border-bottom: 1px solid #e2e8f0;">
+                            <th style="padding: 10px 12px; background: #f8fafc;">তারিখ</th>
+                            <th style="padding: 10px 12px; background: #f8fafc;">বিবরণ</th>
+                            <th style="padding: 10px 12px; text-align: right; color:#dc2626; background: #f8fafc;">দিলাম (+)</th>
+                            <th style="padding: 10px 12px; text-align: right; color:#16a34a; background: #f8fafc;">পেলাম (-)</th>
                         </tr>
                     </thead>
-                    <tbody>${rowsHtml || '<tr><td colspan="4" style="text-align:center; padding:15px; color:#9ca3af;">কোনো লেনদেন রেকর্ড নেই</td></tr>'}</tbody>
+                    <tbody>${rowsHtml || '<tr><td colspan="4" style="text-align:center; padding:25px; color:#9ca3af; font-size:1rem;">কোনো লেনদেন রেকর্ড নেই</td></tr>'}</tbody>
                 </table>
             </div>
         `;
@@ -611,12 +555,12 @@
             if (typeof window.renderCustomerListTable === 'function') window.renderCustomerListTable();
             if (typeof window.updateDashboardCards === 'function') window.updateDashboardCards();
 
-            // ক্লিয়ার ফিল্ডস ও লাইভ ইনফো আপডেট
+            // ক্লিয়ার ফিল্ডস
             document.getElementById('qtCleanAmount').value = '';
             document.getElementById('qtCleanDesc').value = '';
             document.getElementById('qtCleanIsBackdated').checked = false;
 
-            // লাইভ ব্যালেন্স রিফ্রেশ
+            // লাইভ বকেয়া আপডেট
             const cust = (window.customers || []).find(c => c.id === custId);
             window.selectQuickCustomer(custId, cust ? cust.name : '', cust ? cust.phone : '');
 
