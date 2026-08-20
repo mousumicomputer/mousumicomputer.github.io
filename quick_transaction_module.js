@@ -1,9 +1,18 @@
 /**
- * Mousumi Computer - Quick Transaction Module (Perfect Fit Balanced Layout)
+ * Mousumi Computer - Quick Transaction Module (Kalpurush & Times New Roman Typography)
  */
 
 (function () {
-    // 1. Firebase Bridge Integration
+    // 1. Kalpurush WebFont সরাসরি Head-এ ইনজেক্ট করা
+    if (!document.getElementById('kalpurush-font-link')) {
+        const fontLink = document.createElement('link');
+        fontLink.id = 'kalpurush-font-link';
+        fontLink.rel = 'stylesheet';
+        fontLink.href = 'https://fonts.maateen.me/kalpurush/font.css';
+        document.head.appendChild(fontLink);
+    }
+
+    // 2. Firebase Bridge Integration
     let fbDb = null, fbRef = null, fbSet = null;
 
     async function initFirebaseBridge() {
@@ -20,9 +29,19 @@
     }
     initFirebaseBridge();
 
-    // 2. পারফেক্ট গ্রিড ও ফন্ট সিএসএস
+    // 3. ফন্ট এবং ব্যালান্সড গ্রিড সিএসএস (Kalpurush & Times New Roman)
     const cleanStyles = `
-    @import url('https://fonts.maateen.me/kalpurush/font.css');
+    /* সম্পূর্ণ কুইক ট্রানজ্যাকশন সেকশন ও সার্চ ড্রপডাউনে কালপুরুষ ও টাইমস নিউ রোমান ফন্ট */
+    #cust-quick-tx-section,
+    #cust-quick-tx-section *:not(i),
+    .qt-clean-card,
+    .qt-clean-card *:not(i),
+    .qt-search-results,
+    .qt-search-results *:not(i),
+    .qt-search-item,
+    .qt-search-item * {
+        font-family: 'Kalpurush', 'Times New Roman', Times, serif !important;
+    }
 
     .qt-clean-wrapper {
         display: none;
@@ -38,10 +57,9 @@
         padding: 20px 24px;
         max-width: 100%;
         margin-bottom: 25px;
-        font-family: 'Kalpurush', 'Times New Roman', Times, serif;
     }
     .qt-clean-header {
-        font-size: 1.15rem;
+        font-size: 1.2rem;
         font-weight: 700;
         color: #1e293b;
         padding-bottom: 12px;
@@ -50,10 +68,9 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        font-family: 'Kalpurush', 'Times New Roman', Times, serif;
     }
     
-    /* 4-কলাম পারফেক্ট ব্যালান্সড গ্রিড */
+    /* পারফেক্ট ৪-কলাম ব্যালান্সড গ্রিড */
     .qt-balanced-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -67,51 +84,53 @@
         position: relative;
     }
     .qt-group-item label {
-        font-size: 0.88rem;
+        font-size: 0.95rem;
         font-weight: 700;
         color: #475569;
-        font-family: 'Kalpurush', 'Times New Roman', Times, serif;
     }
     .qt-control-input {
         width: 100%;
         height: 44px;
         padding: 0 12px;
-        border: 1px solid #cbd5e1;
+        border: 1.5px solid #cbd5e1;
         border-radius: 8px;
-        font-size: 0.95rem;
+        font-size: 1rem;
         color: #1e293b;
         outline: none;
         background: #ffffff;
-        font-family: 'Kalpurush', 'Times New Roman', Times, serif;
         box-sizing: border-box;
+        transition: 0.2s;
     }
     .qt-control-input:focus {
         border-color: #10b981;
         box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
     }
     
-    /* Search Results Box */
+    /* সার্চ ড্রপডাউন রেজাল্ট বক্স */
     .qt-search-results {
         position: absolute;
         top: 100%;
         left: 0;
         right: 0;
         background: #ffffff;
-        border: 1px solid #cbd5e1;
+        border: 1.5px solid #cbd5e1;
         border-radius: 8px;
-        max-height: 220px;
+        max-height: 240px;
         overflow-y: auto;
-        z-index: 1000;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        z-index: 10000;
+        box-shadow: 0 12px 28px rgba(0,0,0,0.15);
         display: none;
         margin-top: 4px;
     }
     .qt-search-item {
-        padding: 9px 12px;
+        padding: 10px 14px;
         cursor: pointer;
-        font-size: 0.92rem;
+        font-size: 1rem;
         border-bottom: 1px solid #f1f5f9;
-        font-family: 'Kalpurush', 'Times New Roman', Times, serif;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: 0.15s;
     }
     .qt-search-item:hover {
         background: #ecfdf5;
@@ -125,40 +144,38 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 15px;
-        padding-top: 10px;
+        padding-top: 12px;
         border-top: 1px solid #f8fafc;
     }
     .qt-clean-backdated {
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 0.88rem;
+        font-size: 0.95rem;
         color: #4b5563;
         font-weight: 700;
         cursor: pointer;
-        font-family: 'Kalpurush', 'Times New Roman', Times, serif;
     }
     .qt-clean-backdated input {
-        width: 17px;
-        height: 17px;
+        width: 18px;
+        height: 18px;
         accent-color: #10b981;
         cursor: pointer;
     }
 
     .qt-clean-btn {
-        padding: 11px 28px;
+        padding: 11px 30px;
         background: #10b981;
         color: #ffffff;
         border: none;
         border-radius: 8px;
-        font-size: 0.98rem;
+        font-size: 1rem;
         font-weight: 700;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         gap: 8px;
         transition: 0.2s;
-        font-family: 'Kalpurush', 'Times New Roman', Times, serif;
     }
     .qt-clean-btn:hover {
         background: #059669;
@@ -182,7 +199,7 @@
     styleEl.innerHTML = cleanStyles;
     document.head.appendChild(styleEl);
 
-    // 3. এইচটিএমএল স্ট্রাকচার (সঠিক ও ফিট লেআউট)
+    // 4. এইচটিএমএল স্ট্রাকচার
     function getCleanQuickTxHTML() {
         const todayStr = new Date().toISOString().split('T')[0];
         return `
@@ -260,7 +277,7 @@
         `;
     }
 
-    // 4. দ্রুত কাস্টমার সার্চ লজিক
+    // 5. দ্রুত কাস্টমার সার্চ ও ড্রপডাউন রেন্ডার (Kalpurush Font Supported)
     window.filterQuickCustomers = function (keyword) {
         const resultsBox = document.getElementById('qtCustSearchResults');
         if (!resultsBox) return;
@@ -274,7 +291,7 @@
         );
 
         if (filtered.length === 0) {
-            resultsBox.innerHTML = '<div style="padding: 8px 12px; color:#9ca3af; font-size:0.85rem;">কোনো গ্রাহক পাওয়া যায়নি</div>';
+            resultsBox.innerHTML = '<div style="padding: 10px 14px; color:#9ca3af; font-size:0.9rem;">কোনো গ্রাহক পাওয়া যায়নি</div>';
             resultsBox.style.display = 'block';
             return;
         }
@@ -282,7 +299,8 @@
         let html = '';
         filtered.slice(0, 15).forEach(c => {
             html += `<div class="qt-search-item" onclick="window.selectQuickCustomer('${c.id}', '${c.name}', '${c.phone || ''}')">
-                <strong>${c.name}</strong> <span style="font-size:0.82rem; color:#64748b; margin-left:6px;">(${c.phone || 'No Phone'})</span>
+                <span style="font-weight: 700; font-size: 1.05rem;">${c.name}</span>
+                <span style="font-size: 0.9rem; color: #64748b;">${c.phone ? '(' + c.phone + ')' : ''}</span>
             </div>`;
         });
 
@@ -292,7 +310,7 @@
 
     window.selectQuickCustomer = function (id, name, phone) {
         document.getElementById('qtSelectedCustId').value = id;
-        document.getElementById('qtCustSearchInput').value = `${name} (${phone || 'No Phone'})`;
+        document.getElementById('qtCustSearchInput').value = `${name} ${phone ? '(' + phone + ')' : ''}`;
         document.getElementById('qtCustSearchResults').style.display = 'none';
     };
 
@@ -304,7 +322,7 @@
         }
     });
 
-    // 5. ট্রানজ্যাকশন সেভ ইঞ্জিন
+    // 6. ট্রানজ্যাকশন সেভ ইঞ্জিন
     window.saveCleanQuickTransaction = async function (e) {
         e.preventDefault();
 
@@ -363,7 +381,7 @@
             if (typeof window.renderCustomerListTable === 'function') window.renderCustomerListTable();
             if (typeof window.updateDashboardCards === 'function') window.updateDashboardCards();
 
-            // ক্লিয়ার ফিল্ডস (তারিখ আগেরটাই থাকবে)
+            // ক্লিয়ার ফিল্ডস
             document.getElementById('qtSelectedCustId').value = '';
             document.getElementById('qtCustSearchInput').value = '';
             document.getElementById('qtCleanAmount').value = '';
@@ -379,7 +397,7 @@
         }
     };
 
-    // 6. সাইডবার সাব-মেনু ও সেকশন সুইচ
+    // 7. সাইডবার সাব-মেনু ও সেকশন সুইচ
     window.openCleanQuickTxSection = function () {
         if (typeof window.switchCustomerSubSection === 'function') {
             window.switchCustomerSubSection('cust-quick-tx-section');
