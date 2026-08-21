@@ -1,10 +1,10 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module
- * Reverted Section 1 to User's Exact HTML & Added Section 2 as requested.
+ * Added Section 3: Student Due Data Upload & Table matching user's exact screenshot.
  */
 
 (function () {
-    // ১. CSS ইনজেক্ট করা (কালপুরুষ ও টাইমস নিউ রোমান ফন্ট এবং আপনার অরিজিনাল লেআউট)
+    // ১. CSS ইনজেক্ট করা (স্ক্রিনশটের হুবহু ডিজাইন ও কালার)
     const css = `
         @import url('https://fonts.maateen.me/kalpurush/font.css');
 
@@ -13,7 +13,7 @@
             font-family: 'Kalpurush', 'Times New Roman', serif !important;
         }
 
-        /* --- SECTION 1 STYLE (User Original HTML Design) --- */
+        /* --- SECTION 1 STYLE --- */
         .edu-card {
             background: #ffffff;
             border-radius: 8px;
@@ -47,7 +47,7 @@
         .edu-compact-table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
         .edu-compact-table th, .edu-compact-table td { padding: 6px 10px; text-align: left; border-bottom: 1px solid #f1f5f9; }
 
-        /* --- SECTION 2 STYLE (New All Fee Records) --- */
+        /* --- SECTION 2 STYLE --- */
         .all-records-summary {
             background: #ffffff;
             border-radius: 6px;
@@ -72,13 +72,142 @@
         .records-main-table th { background: #f8fafc; color: #475569; padding: 10px; border: 1px solid #e2e8f0; text-align: center; }
         .records-main-table td { padding: 8px; border: 1px solid #e2e8f0; text-align: center; color: #334155; }
 
+        /* --- SECTION 3 STYLE (New Screenshot UI) --- */
+        .due-upload-card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            border: 1px solid #e5e7eb;
+            padding: 18px 22px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .due-file-wrapper {
+            display: flex;
+            align-items: center;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #ffffff;
+        }
+        .due-file-btn {
+            background: #f8fafc;
+            border: none;
+            border-right: 1px solid #cbd5e1;
+            padding: 9px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #1e293b;
+            font-weight: 500;
+        }
+        .due-file-name {
+            padding: 9px 15px;
+            font-size: 14px;
+            color: #475569;
+            min-width: 180px;
+        }
+        .btn-due-upload {
+            background: #007bff;
+            color: #ffffff !important;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-due-upload:hover { background: #0069d9; }
+        .btn-due-sample {
+            background: #198754;
+            color: #ffffff !important;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-due-sample:hover { background: #157347; }
+
+        .due-data-card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+        }
+        .due-table-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .due-entries-info {
+            font-size: 14px;
+            color: #475569;
+        }
+        .due-search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #475569;
+        }
+        .due-search-input {
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 14px;
+            outline: none;
+        }
+        .due-table-wrapper {
+            overflow-x: auto;
+        }
+        .due-data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .due-data-table th {
+            color: #2563eb;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+            background: #ffffff;
+            white-space: nowrap;
+        }
+        .due-data-table td {
+            padding: 14px 15px;
+            color: #334155;
+            font-size: 14px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .due-data-table tr:hover td {
+            background-color: #f8fafc;
+        }
+
         #menu-edu-parent.open .submenu-list { display: block; }
     `;
     const styleSheet = document.createElement("style");
     styleSheet.innerText = css;
     document.head.appendChild(styleSheet);
 
-    // ২. সাইডবার সাব-মেনু
+    // ২. সাইডবার সাব-মেনু ইনজেকশন (নতুন ৩য় মেনু সহ)
     function injectMenu() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList || document.getElementById('menu-edu-parent')) return;
@@ -92,20 +221,21 @@
                 <ul class="submenu-list">
                     <li class="submenu-item"><a onclick="switchMainTab('edu-fee-form')"><i class="fa-solid fa-angle-right"></i> <span>ফি এন্ট্রি (Fee Entry)</span></a></li>
                     <li class="submenu-item"><a onclick="switchMainTab('edu-fee-records')"><i class="fa-solid fa-angle-right"></i> <span>সকল ফি রেকর্ডস</span></a></li>
+                    <li class="submenu-item"><a onclick="switchMainTab('edu-due-data')"><i class="fa-solid fa-angle-right"></i> <span>বকেয়া ডেটা তালিকা (Due Data)</span></a></li>
                 </ul>
             </li>
         `;
         menuList.insertAdjacentHTML('beforeend', html);
     }
 
-    // ৩. ভিউ প্যানেল ইনজেক্ট করা
+    // ৩. ভিউ প্যানেল ইনজেক্ট করা (সেকশন ১, সেকশন ২ এবং নতুন সেকশন ৩)
     function injectPanels() {
         const wrapper = document.querySelector('.main-wrapper');
         if (!wrapper) return;
 
         const panelsHTML = `
             <div id="edu-module-container">
-                <!-- প্যানেল ১: আপনার দেওয়া এইচটিএমএল ডিজাইনের ফি এন্ট্রি ফর্ম -->
+                <!-- প্যানেল ১: ফি এন্ট্রি ফর্ম -->
                 <div class="view-panel" id="edu-fee-form-view">
                     <div class="edu-card">
                         <div class="edu-card-header">
@@ -164,7 +294,7 @@
                     </div>
                 </div>
 
-                <!-- প্যানেল ২: সকল ফি রেকর্ডস সেকশন (নতুন ডিজাইন) -->
+                <!-- প্যানেল ২: সকল ফি রেকর্ডস সেকশন -->
                 <div class="view-panel" id="edu-fee-records-view">
                     <div class="all-records-summary">
                         <span>সর্বমোট এন্ট্রি টাকা (Total Received):</span>
@@ -191,71 +321,167 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- প্যানেল ৩: বকেয়া ডেটা আপলোড ও তালিকা (স্ক্রিনশটের হুবহু সেকশন) -->
+                <div class="view-panel" id="edu-due-data-view">
+                    
+                    <!-- টপ আপলোড বার কার্ড -->
+                    <div class="due-upload-card">
+                        <input type="file" id="dueFileInput" accept=".xlsx, .xls, .csv" style="display: none;">
+                        
+                        <div class="due-file-wrapper">
+                            <button type="button" class="due-file-btn" onclick="document.getElementById('dueFileInput').click()">Choose File</button>
+                            <span class="due-file-name" id="dueFileNameDisplay">No file chosen</span>
+                        </div>
+
+                        <button type="button" class="btn-due-upload" id="btnUploadDueData">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Upload Data
+                        </button>
+
+                        <button type="button" class="btn-due-sample" id="btnDownloadSample">
+                            <i class="fa-solid fa-file-excel"></i> Sample Download
+                        </button>
+                    </div>
+
+                    <!-- নিচের ডেটা টেবিল কার্ড -->
+                    <div class="due-data-card">
+                        <div class="due-table-toolbar">
+                            <div class="due-entries-info" id="dueEntriesInfo">
+                                Showing 1 to 3 of 3 entries
+                            </div>
+                            <div class="due-search-box">
+                                <label for="dueTableSearch">Search:</label>
+                                <input type="text" id="dueTableSearch" class="due-search-input">
+                            </div>
+                        </div>
+
+                        <div class="due-table-wrapper">
+                            <table class="due-data-table">
+                                <thead>
+                                    <tr>
+                                        <th>SL</th>
+                                        <th>MONTH</th>
+                                        <th>STUDENT NAME</th>
+                                        <th>STUDENT ID</th>
+                                        <th>DUE AMOUNT</th>
+                                        <th>FEE NOTE</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dueDataTableBody">
+                                    <tr>
+                                        <td>566</td>
+                                        <td>August</td>
+                                        <td>Md Abrar Awsaf Abid</td>
+                                        <td>1400126</td>
+                                        <td>50</td>
+                                        <td>ID Cards Fee</td>
+                                    </tr>
+                                    <tr>
+                                        <td>565</td>
+                                        <td>August</td>
+                                        <td>M. Z. Tazwar</td>
+                                        <td>1401325</td>
+                                        <td>50</td>
+                                        <td>ID Cards Fee</td>
+                                    </tr>
+                                    <tr>
+                                        <td>564</td>
+                                        <td>August</td>
+                                        <td>TAHSIN SUBHA</td>
+                                        <td>101526</td>
+                                        <td>170</td>
+                                        <td>Hand Writing Fee</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         `;
         wrapper.insertAdjacentHTML('beforeend', panelsHTML);
     }
 
-    // ৪. লজিক (অরিজিনাল এইচটিএমএল লজিক অনুযায়ী)
+    // ৪. ফাইল ইনপুট সিলেক্টর ডিসপ্লে লজিক
     function initLogic() {
         const idInp = document.getElementById('origId');
         const dateInp = document.getElementById('origDate');
-        dateInp.value = new Date().toISOString().split('T')[0];
+        if(dateInp) dateInp.value = new Date().toISOString().split('T')[0];
 
-        idInp.addEventListener('input', function() {
-            const val = this.value.trim();
-            const customers = window.customers || [];
-            const found = customers.find(c => c.id === val || c.phone === val);
-            if(found) {
-                document.getElementById('origName').value = found.name;
-                if(window.calculateCustomerCurrentDue) {
-                    document.getElementById('origDue').value = window.calculateCustomerCurrentDue(found.id).toFixed(2);
+        if(idInp) {
+            idInp.addEventListener('input', function() {
+                const val = this.value.trim();
+                const customers = window.customers || [];
+                const found = customers.find(c => c.id === val || c.phone === val);
+                if(found) {
+                    document.getElementById('origName').value = found.name;
+                    if(window.calculateCustomerCurrentDue) {
+                        document.getElementById('origDue').value = window.calculateCustomerCurrentDue(found.id).toFixed(2);
+                    }
                 }
-            }
-        });
+            });
+        }
 
-        document.getElementById('feeFormOriginal').onsubmit = async function(e) {
-            e.preventDefault();
-            const rec = parseFloat(document.getElementById('origRec').value) || 0;
-            const txn = parseFloat(document.getElementById('origTxn').value) || 0;
-            const studentId = idInp.value;
+        const origForm = document.getElementById('feeFormOriginal');
+        if(origForm) {
+            origForm.onsubmit = async function(e) {
+                e.preventDefault();
+                const rec = parseFloat(document.getElementById('origRec').value) || 0;
+                const txn = parseFloat(document.getElementById('origTxn').value) || 0;
+                const studentId = idInp.value;
 
-            if(rec <= 0 || !studentId) return alert("তথ্য সঠিক নয়!");
+                if(rec <= 0 || !studentId) return alert("তথ্য সঠিক নয়!");
 
-            showLoader("সংরক্ষণ করা হচ্ছে...");
-            const txData = {
-                id: 'EDU-' + Date.now(),
-                customerId: studentId,
-                studentName: document.getElementById('origName').value,
-                credit: rec,
-                netReceived: rec,
-                txnFee: txn,
-                grossPayment: rec + txn,
-                date: dateInp.value,
-                time: new Date().toLocaleTimeString(),
-                type: 'Credit'
+                showLoader("সংরক্ষণ করা হচ্ছে...");
+                const txData = {
+                    id: 'EDU-' + Date.now(),
+                    customerId: studentId,
+                    studentName: document.getElementById('origName').value,
+                    credit: rec,
+                    netReceived: rec,
+                    txnFee: txn,
+                    grossPayment: rec + txn,
+                    date: dateInp.value,
+                    time: new Date().toLocaleTimeString(),
+                    type: 'Credit'
+                };
+
+                try {
+                    if(window.customerTransactions) {
+                        window.customerTransactions.push(txData);
+                        const db = window.getDatabase();
+                        const { ref, set } = window.firebase_database;
+                        await set(ref(db, 'transactions'), window.customerTransactions);
+                        
+                        showToast("ফি জমা হয়েছে!", "success");
+                        updateRecent(txData);
+                        this.reset();
+                        dateInp.value = new Date().toISOString().split('T')[0];
+                        renderFullTable();
+                    }
+                } catch(err) { console.error(err); }
+                hideLoader();
             };
+        }
 
-            try {
-                if(window.customerTransactions) {
-                    window.customerTransactions.push(txData);
-                    const db = window.getDatabase();
-                    const { ref, set } = window.firebase_database;
-                    await set(ref(db, 'transactions'), window.customerTransactions);
-                    
-                    showToast("ফি জমা হয়েছে!", "success");
-                    updateRecent(txData);
-                    this.reset();
-                    dateInp.value = new Date().toISOString().split('T')[0];
-                    renderFullTable();
+        // ফাইল সিলেক্ট করলে ফাইলের নাম দেখানো
+        const fileInput = document.getElementById('dueFileInput');
+        const fileNameDisplay = document.getElementById('dueFileNameDisplay');
+        if(fileInput && fileNameDisplay) {
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files.length > 0) {
+                    fileNameDisplay.innerText = this.files[0].name;
+                } else {
+                    fileNameDisplay.innerText = "No file chosen";
                 }
-            } catch(err) { console.error(err); }
-            hideLoader();
-        };
+            });
+        }
     }
 
     function updateRecent(t) {
         const body = document.getElementById('origRecentBody');
+        if (!body) return;
         const row = `<tr><td>${t.date}</td><td>${t.customerId}</td><td>${t.studentName || '-'}</td><td>৳ ${t.credit.toFixed(2)}</td></tr>`;
         if(body.innerText.includes("কোনো রিসেন্ট এন্ট্রি নেই")) body.innerHTML = "";
         body.insertAdjacentHTML('afterbegin', row);
@@ -278,7 +504,8 @@
                     <td style="color:#2563eb; font-weight:bold;">${(t.grossPayment || 0).toFixed(2)}</td><td>-</td>
                 </tr>`;
         });
-        document.getElementById('totalFeeSum').innerText = total.toLocaleString('en-US', {minimumFractionDigits:2});
+        const totalFeeSumEl = document.getElementById('totalFeeSum');
+        if (totalFeeSumEl) totalFeeSumEl.innerText = total.toLocaleString('en-US', {minimumFractionDigits:2});
     }
 
     window.addEventListener('load', () => {
