@@ -1,13 +1,13 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module
- * Features: Auto Calculation (Net Due, 1% Total Charge + Txn Fee, Net Received), Auto SL, Pagination & Cloud Sync.
+ * Features: Auto Calculation, Max 60 Tk Cap Gross Payment, Live Persistent Firebase Sync, Auto SL & Pagination.
  */
 
 (function () {
     let studentDueList = [];
     let firebaseCore = null;
-    let selectedStudentRawDue = 0; // মূল বকেয়া জমা রাখার ভ্যারিয়েবল
-    let selectedStudentData = null; // বর্তমান শিক্ষার্থীর সম্পূর্ণ তথ্য
+    let selectedStudentRawDue = 0; // মূল বকেয়া
+    let selectedStudentData = null; // বর্তমান শিক্ষার্থীর তথ্য
 
     // পেজিনেশন স্টেট
     let currentPage = 1;
@@ -56,7 +56,7 @@
         .edu-recent-section { margin-top: 25px; padding-top: 15px; border-top: 1px dashed #cbd5e1; }
         .edu-recent-title { font-size: 13px !important; color: #64748b !important; font-weight: bold !important; margin-bottom: 8px; display: flex; justify-content: space-between; }
         .edu-compact-table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
-        .edu-compact-table th, .edu-compact-table td { padding: 6px 10px; text-align: left; border-bottom: 1px solid #f1f5f9; }
+        .edu-compact-table th, .edu-compact-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #f1f5f9; }
 
         /* --- SECTION 2 STYLE --- */
         .all-records-summary {
@@ -489,7 +489,7 @@
         const discount = parseFloat(discountInp ? discountInp.value : 0) || 0;
         const txnFee = parseFloat(txnInp ? txnInp.value : 0) || 0;
 
-        // বকেয়া (Net Due) = বকেয়া ডেটা তালিকা - ডিসকাউন্ট
+        // বকেয়া (Net Due) = মূল বকেয়া - ডিসকাউন্ট
         const netDue = Math.max(0, selectedStudentRawDue - discount);
 
         // মোট চার্জ (Total Charge) = বকেয়া (Net Due) এর ১% + ট্রানজেকশন ফি (Txn Fee)
@@ -505,7 +505,7 @@
         if (recInp) recInp.value = netReceived.toFixed(2);
     }
 
-    // ৬. পেজিনেশন ও অটোমেটিক ক্রমিক (SL) সহ টেবিল রেন্ডার
+    // ৬. পেজিনেশন ও অটোমেটিক ক্রমিক (SL) সহ বকেয়া টেবিল রেন্ডার
     function renderDueDataTable() {
         const tbody = document.getElementById('dueDataTableBody');
         const entriesInfo = document.getElementById('dueEntriesInfo');
@@ -644,20 +644,33 @@
         return btn;
     }
 
-    // ৭. লাইভ ফায়ারবেস লিসেনার
+    // ৭. লাইভ রিয়েল-টাইম Firebase লিসেনার (স্থায়ী সংরক্ষণ)
     async function listenFirebaseData() {
         const fb = await getFirebase();
         if (!fb) return;
 
+        // বকেয়া ডেটা লিসেনার
         const dueRef = fb.ref(fb.db, 'erp/studentDueData');
         fb.onValue(dueRef, (snapshot) => {
             const data = snapshot.val();
             studentDueList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
             renderDueDataTable();
         });
+
+        // লেনদেন ডেটা লিসেনার (যাতে রিফ্রেশেও ফি রেকর্ড না হারায়)
+        const txRef = fb.ref(fb.db, 'transactions');
+        fb.onValue(txRef, (snapshot) => {
+            const data = snapshot.val();
+            const allTxs = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+            window.customerTransactions = allTxs;
+            
+            const eduTxs = allTxs.filter(t => t && t.id && String(t.id).startsWith('EDU-'));
+            renderFullTable(eduTxs);
+            renderRecentEntries(eduTxs);
+        });
     }
 
-    // ৮. ইভেন্ট লজিক ও অটো-ক্যালকুলেশন বাইন্ডিং
+    // ৮. ইভেন্ট লজিক
     function initLogic() {
         const idInp = document.getElementById('origId');
         const nameInp = document.getElementById('origName');
@@ -688,7 +701,6 @@
                     selectedStudentRawDue = parseFloat(dueFound.dueAmount || 0);
                     if (nameInp) nameInp.value = dueFound.studentName || '';
                 } else {
-                    // বিকল্পভাবে কাস্টমার ডেটাবেজ চেক
                     const customers = window.customers || [];
                     const foundCust = customers.find(c => String(c.id).trim() === val || String(c.phone).trim() === val);
                     if (foundCust) {
@@ -706,7 +718,6 @@
             });
         }
 
-        // ডিসকাউন্ট এবং ট্রানজেকশন ফি পরিবর্তন হলে রিয়েল-টাইম হিসাব
         if (discInp) discInp.addEventListener('input', calculateAutoValues);
         if (txnInp) txnInp.addEventListener('input', calculateAutoValues);
 
@@ -730,6 +741,10 @@
 
                 if (typeof showLoader === 'function') showLoader("সংরক্ষণ করা হচ্ছে...");
 
+                // ৩নং ছবির রুল: Gross Payment = Net Due + ১% (তবে চার্জ ৬০ টাকার বেশি হবে না)
+                const percentCapCharge = Math.min(netDue * 0.01, 60);
+                const calculatedGross = netDue + percentCapCharge;
+
                 const txData = {
                     id: 'EDU-' + Date.now(),
                     customerId: studentId,
@@ -743,7 +758,7 @@
                     totalCharge: totalCharge,
                     discount: discount,
                     netReceived: netReceived,
-                    grossPayment: netReceived,
+                    grossPayment: calculatedGross,
                     credit: netReceived,
                     date: dateInp ? dateInp.value : new Date().toISOString().split('T')[0],
                     time: new Date().toLocaleTimeString(),
@@ -752,15 +767,16 @@
 
                 try {
                     const fb = await getFirebase();
-                    const txs = window.customerTransactions || [];
-                    txs.push(txData);
-
                     if (fb) {
+                        const snap = await fb.get(fb.ref(fb.db, 'transactions'));
+                        let txs = snap.val();
+                        txs = txs ? (Array.isArray(txs) ? txs : Object.values(txs)) : [];
+                        txs.push(txData);
                         await fb.set(fb.ref(fb.db, 'transactions'), txs);
+                        window.customerTransactions = txs;
                     }
 
-                    if (typeof showToast === 'function') showToast("ফি সফলভাবে ক্লাউডে জমা হয়েছে!", "success");
-                    updateRecent(txData);
+                    if (typeof showToast === 'function') showToast("ফি সফলভাবে ক্লাউডে সংরক্ষিত হয়েছে!", "success");
                     
                     // ফর্ম রিসেট
                     this.reset();
@@ -769,7 +785,6 @@
                     if (dateInp) dateInp.value = new Date().toISOString().split('T')[0];
                     if (txnInp) txnInp.value = "6.00";
                     calculateAutoValues();
-                    renderFullTable();
                 } catch(err) { 
                     console.error(err); 
                     if (typeof showToast === 'function') showToast("ফি সেভ করতে সমস্যা হয়েছে!", "error");
@@ -778,7 +793,7 @@
             };
         }
 
-        // ফাইল নেম সিলেক্টর ডিসপ্লে
+        // ফাইল সিলেক্টর
         const fileInput = document.getElementById('dueFileInput');
         const fileNameDisplay = document.getElementById('dueFileNameDisplay');
         if (fileInput && fileNameDisplay) {
@@ -791,7 +806,7 @@
             });
         }
 
-        // পেজ সাইজ ড্রপডাউন ইভেন্ট
+        // পেজ সাইজ ড্রপডাউন
         const pageSizeSelect = document.getElementById('duePageSizeSelect');
         if (pageSizeSelect) {
             pageSizeSelect.addEventListener('change', function() {
@@ -801,7 +816,7 @@
             });
         }
 
-        // এক্সেল ফাইল আপলোড ও নিরাপদ ক্লাউড সেভ
+        // এক্সেল ফাইল আপলোড
         const btnUpload = document.getElementById('btnUploadDueData');
         if (btnUpload && fileInput) {
             btnUpload.addEventListener('click', function() {
@@ -857,10 +872,7 @@
                             currentPage = 1;
                             renderDueDataTable();
                             if (typeof showToast === 'function') showToast(`✅ সফলভাবে ${totalRows} টি ডেটা ক্লাউডে সংরক্ষিত হয়েছে!`, "success");
-                        } else {
-                            if (typeof showToast === 'function') showToast("Firebase ক্লাউড সংযোগ পাওয়া যায়নি!", "error");
                         }
-
                     } catch(err) {
                         console.error(err);
                         if (typeof showToast === 'function') showToast("Firebase আপলোডে সমস্যা হয়েছে: " + err.message, "error");
@@ -871,7 +883,7 @@
             });
         }
 
-        // লাইভ রিফ্রেশ বাটন
+        // রিফ্রেশ বাটন
         const btnRefresh = document.getElementById('btnRefreshDueData');
         if (btnRefresh) {
             btnRefresh.addEventListener('click', async function() {
@@ -893,7 +905,7 @@
             });
         }
 
-        // রিয়েল-টাইম সার্চ
+        // সার্চ
         const searchInput = document.getElementById('dueTableSearch');
         if (searchInput) {
             searchInput.addEventListener('input', function() {
@@ -903,7 +915,7 @@
             });
         }
 
-        // স্যাম্পল এক্সেল ডাউনলোড
+        // স্যাম্পল ডাউনলোড
         const btnSample = document.getElementById('btnDownloadSample');
         if (btnSample) {
             btnSample.addEventListener('click', function() {
@@ -927,45 +939,82 @@
         }
     }
 
-    function updateRecent(t) {
+    // ২নং ছবির সেকশন: সর্বশেষ এন্ট্রি (সর্বোচ্চ ৩টি)
+    function renderRecentEntries(eduTxs) {
         const body = document.getElementById('origRecentBody');
         if (!body) return;
-        const row = `<tr><td>${t.date}</td><td>${t.customerId}</td><td>${t.studentName || '-'}</td><td>৳ ${(t.netReceived || t.credit || 0).toFixed(2)}</td></tr>`;
-        if (body.innerText.includes("কোনো রিসেন্ট এন্ট্রি নেই")) body.innerHTML = "";
-        body.insertAdjacentHTML('afterbegin', row);
-        if (body.children.length > 3) body.removeChild(body.lastChild);
+        
+        if (!eduTxs || eduTxs.length === 0) {
+            body.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999; padding:15px;">কোনো রিসেন্ট এন্ট্রি নেই</td></tr>';
+            return;
+        }
+
+        const top3 = eduTxs.slice(-3).reverse();
+        let html = '';
+        top3.forEach(t => {
+            const amt = parseFloat(t.netReceived || t.credit || 0);
+            html += `
+                <tr>
+                    <td>${t.date || '-'}</td>
+                    <td><strong>${t.customerId || '-'}</strong></td>
+                    <td>${t.studentName || '-'}</td>
+                    <td style="font-weight:bold; color:#2563eb;">৳ ${amt.toFixed(2)}</td>
+                </tr>
+            `;
+        });
+        body.innerHTML = html;
     }
 
-    function renderFullTable() {
+    // ১নং ছবির সেকশন: সকল জমা হওয়া ফি তালিকা
+    function renderFullTable(eduTxs) {
         const body = document.getElementById('allRecordsTableBody');
+        const totalFeeSumEl = document.getElementById('totalFeeSum');
         if (!body) return;
-        const eduTxs = (window.customerTransactions || []).filter(t => t.id && t.id.startsWith('EDU-'));
+
+        if (!eduTxs || eduTxs.length === 0) {
+            body.innerHTML = '<tr><td colspan="14" style="padding:20px; color:#999; text-align:center;">এখনও কোনো ডেটা জমা হয়নি</td></tr>';
+            if (totalFeeSumEl) totalFeeSumEl.innerText = '0.00';
+            return;
+        }
+
         body.innerHTML = '';
         let total = 0;
         
-        eduTxs.slice().reverse().forEach((t, i) => {
-            total += (parseFloat(t.netReceived || t.credit) || 0);
+        const list = eduTxs.slice().reverse();
+        list.forEach((t, i) => {
+            const netDue = parseFloat(t.netDue || 0);
+            const txnFee = parseFloat(t.txnFee || 0);
+            const totalCharge = parseFloat(t.totalCharge || 0);
+            const netReceived = parseFloat(t.netReceived || t.credit || 0);
+            
+            // Gross Payment রুল: Net Due + ১% (তবে চার্জ সর্বোচ্চ ৬০ টাকা)
+            const percentCapped = Math.min(netDue * 0.01, 60);
+            const grossPayment = t.grossPayment !== undefined ? parseFloat(t.grossPayment) : (netDue + percentCapped);
+
+            total += netReceived;
+
             body.innerHTML += `
                 <tr>
-                    <td>${eduTxs.length - i}</td>
-                    <td>${t.date}</td>
-                    <td>${t.studentName || '-'}</td>
-                    <td>${t.customerId}</td>
+                    <td style="font-weight:bold; color:#64748b;">${list.length - i}</td>
+                    <td>${t.date || '-'}</td>
+                    <td><strong>${t.studentName || '-'}</strong></td>
+                    <td>${t.customerId || '-'}</td>
                     <td>${t.class || '-'}</td>
                     <td>${t.month || '-'}</td>
                     <td>${t.category || '-'}</td>
                     <td>${t.mobile || '-'}</td>
-                    <td>${(t.netDue || 0).toFixed(2)}</td>
-                    <td>${(t.txnFee || 0).toFixed(2)}</td>
-                    <td>${(t.totalCharge || 0).toFixed(2)}</td>
-                    <td>${(t.netReceived || 0).toFixed(2)}</td>
-                    <td style="color:#2563eb; font-weight:bold;">${(t.grossPayment || 0).toFixed(2)}</td>
+                    <td style="font-weight:bold;">${netDue.toFixed(2)}</td>
+                    <td>${txnFee.toFixed(2)}</td>
+                    <td>${totalCharge.toFixed(2)}</td>
+                    <td style="font-weight:bold; color:#16a34a;">${netReceived.toFixed(2)}</td>
+                    <td style="color:#2563eb; font-weight:bold;">${grossPayment.toFixed(2)}</td>
                     <td>${t.discount > 0 ? `ছাড়: ৳${t.discount}` : '-'}</td>
                 </tr>`;
         });
         
-        const totalFeeSumEl = document.getElementById('totalFeeSum');
-        if (totalFeeSumEl) totalFeeSumEl.innerText = total.toLocaleString('en-US', {minimumFractionDigits:2});
+        if (totalFeeSumEl) {
+            totalFeeSumEl.innerText = total.toLocaleString('en-US', { minimumFractionDigits: 2 });
+        }
     }
 
     window.addEventListener('load', () => {
@@ -973,6 +1022,5 @@
         injectPanels();
         initLogic();
         listenFirebaseData();
-        setTimeout(renderFullTable, 1000);
     });
 })();
