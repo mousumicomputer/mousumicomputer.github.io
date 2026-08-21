@@ -1,17 +1,17 @@
 /**
  * ==========================================================================
- * EDUCATION & DIGITAL SERVICES -> PIXEL PERFECT RECEIPT TEMPLATE
+ * EDUCATION & DIGITAL SERVICES -> 100% EXACT GOOGLE SHEET RECEIPT TEMPLATE
  * Mousumi Computer ERP Extension
  * ==========================================================================
  */
 
 (function () {
-    // ১. গুগল ফন্ট ও শিটের নিখুঁত সিএসএস ইনজেকশন
+    // ১. গুগল ফন্টস ও নিখুঁত সিএসএস ইনজেকশন
     const style = document.createElement('style');
     style.innerHTML = `
-        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lobster&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lobster&family=Lora:ital,wght@1,400;1,500;1,600&family=Roboto+Mono:wght@400;500&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap');
 
-        /* রসিদ কন্টেইনার */
+        /* রসিদ কার্ড ফ্রেম */
         .receipt-wrapper-card {
             background: #ffffff;
             width: 100%;
@@ -103,7 +103,7 @@
             text-transform: uppercase;
         }
 
-        /* টেবিল ও নিখুঁত ডটেড আন্ডারলাইন বিন্যাস */
+        /* Row 6-15: ডাটা টেবিল ও ডটেড লাইন */
         .rc-sheet-table {
             width: 100%;
             border-collapse: collapse;
@@ -118,7 +118,6 @@
             font-size: 14pt !important;
         }
 
-        /* লেবেল (Column B) */
         .rc-col-b {
             width: 38%;
             font-weight: bold !important;
@@ -126,14 +125,12 @@
             padding-left: 4px !important;
         }
 
-        /* ভ্যালু/সংখ্যা (Column C) */
         .rc-col-c {
             width: 62%;
             font-weight: normal !important;
             padding-left: 12px !important;
         }
 
-        /* ডটেড লাইন ও রো গ্যাপ স্পেসিং */
         .rc-border-bottom {
             border-bottom: 1.5px dotted #000;
         }
@@ -152,16 +149,16 @@
             border-right: none !important;
         }
 
-        /* PAID স্ট্যাম্প */
+        /* Row 16-19: PAID স্ট্যাম্প */
         .paid-stamp-wrapper {
             text-align: center;
-            margin: 12px 0 16px 0;
+            margin: 14px 0 16px 0;
         }
 
         .paid-seal {
             display: inline-block;
-            width: 80px;
-            height: 80px;
+            width: 82px;
+            height: 82px;
             border: 2.5px dotted #000;
             border-radius: 50%;
             padding: 3px;
@@ -182,7 +179,7 @@
 
         .paid-seal-text-top {
             font-family: 'EB Garamond', serif;
-            font-size: 7px;
+            font-size: 7.5px;
             font-weight: bold;
             letter-spacing: 0.5px;
         }
@@ -201,27 +198,43 @@
 
         .paid-seal-text-bot {
             font-family: 'EB Garamond', serif;
-            font-size: 7px;
+            font-size: 7.5px;
             font-weight: bold;
             letter-spacing: 0.5px;
         }
 
+        /* Row 21: Tiro Bangla 10pt (Received By) */
         .rc-footer-sign {
             font-family: 'Tiro Bangla', serif !important;
-            font-size: 12pt !important;
-            font-weight: bold !important;
-            margin-bottom: 15px;
+            font-size: 10pt !important;
+            margin: 12px 0 14px 0;
+            color: #000;
+        }
+        .rc-footer-sign strong {
+            font-weight: bold;
         }
 
-        .rc-disclaimer {
+        /* Row 23: Roboto Mono 10pt */
+        .rc-disclaimer-mono {
             text-align: center;
-            font-family: 'EB Garamond', serif !important;
-            font-size: 11pt !important;
+            font-family: 'Roboto Mono', monospace !important;
+            font-size: 10pt !important;
+            line-height: 1.4;
+            color: #000;
+            margin-bottom: 6px;
+        }
+
+        /* Row 24: Lora 10pt Italic */
+        .rc-disclaimer-lora {
+            text-align: center;
+            font-family: 'Lora', serif !important;
+            font-size: 10pt !important;
+            font-style: italic !important;
             line-height: 1.35;
             color: #000;
         }
 
-        /* প্রিন্ট সেটআপ */
+        /* প্রিন্ট স্টাইলিং */
         @media print {
             body * {
                 visibility: hidden;
@@ -295,22 +308,22 @@
                     </div>
 
                     <div class="receipt-body">
-                        <!-- Row 1 -->
+                        <!-- Row 1: Caveat 10pt -->
                         <div class="rc-bismillah">“In the name of Allah, the Most Gracious, the Most Merciful”</div>
                         
-                        <!-- Row 2 -->
+                        <!-- Row 2: Lobster 29pt Bold -->
                         <div class="rc-brand-title">Mousumi Computer</div>
                         
-                        <!-- Row 3 -->
+                        <!-- Row 3: EB Garamond 11pt -->
                         <div class="rc-services-desc">
                             All kinds of services: Tuition Fee Payment, T-Cash (Tap), bKash, <br>
                             Nagad, Rocket, Upay, Flexiload, and Computer Works.
                         </div>
 
-                        <!-- Row 5 -->
+                        <!-- Row 5: Tiro Bangla 12pt Bold -->
                         <div class="rc-main-title">RECEIPT</div>
 
-                        <!-- Row 6 থেকে 15 পর্যন্ত ডাটা টেবিল ও সঠিক আন্ডারলাইন বিন্যাস -->
+                        <!-- Row 6-15: Tiro Bangla 14pt (লেবেল বোল্ড, ভ্যালু রেগুলার) -->
                         <table class="rc-sheet-table">
                             <!-- Row 6 -->
                             <tr>
@@ -323,7 +336,7 @@
                                 <td class="rc-col-c">21-08-2026</td>
                             </tr>
 
-                            <!-- Row 8 (Blank Gap Row) -->
+                            <!-- Row 8 (Gap Row) -->
                             <tr class="rc-gap-row rc-border-bottom">
                                 <td class="rc-col-b"></td>
                                 <td class="rc-col-c"></td>
@@ -340,7 +353,7 @@
                                 <td class="rc-col-c">804325</td>
                             </tr>
 
-                            <!-- Row 11 (Blank Gap Row) -->
+                            <!-- Row 11 (Gap Row) -->
                             <tr class="rc-gap-row rc-border-bottom">
                                 <td class="rc-col-b"></td>
                                 <td class="rc-col-c"></td>
@@ -362,13 +375,13 @@
                                 <td class="rc-col-c">4,819.00</td>
                             </tr>
 
-                            <!-- Row 15 (Merged Payment Received Banner) -->
+                            <!-- Row 15: Merged Row -->
                             <tr class="rc-payment-received-row">
                                 <td colspan="2">Payment Received: 4819.6</td>
                             </tr>
                         </table>
 
-                        <!-- PAID সিল -->
+                        <!-- Row 16-19: PAID সিল -->
                         <div class="paid-stamp-wrapper">
                             <div class="paid-seal">
                                 <div class="paid-seal-inner">
@@ -379,17 +392,21 @@
                             </div>
                         </div>
 
-                        <!-- রিসিভার -->
-                        <div class="rc-footer-sign">Received By: Riyal Robiul</div>
+                        <!-- Row 21: Tiro Bangla 10pt -->
+                        <div class="rc-footer-sign">
+                            <strong>Received By:</strong> Riyal Robiul
+                        </div>
 
-                        <!-- ফুটনোট -->
-                        <div class="rc-disclaimer">
+                        <!-- Row 23: Roboto Mono 10pt -->
+                        <div class="rc-disclaimer-mono">
                             This is a computer-generated receipt.<br>
-                            Thank you for your payment.<br>
-                            <span style="display:inline-block; margin-top: 4px;">
-                                For any queries or assistance, please contact<br>
-                                <strong>Md. Robiul Islam at 01608-314552 or 01893-201584.</strong>
-                            </span>
+                            Thank you for your payment.
+                        </div>
+
+                        <!-- Row 24: Lora 10pt Italic -->
+                        <div class="rc-disclaimer-lora">
+                            For any queries or assistance, please contact<br>
+                            Md. Robiul Islam at 01608-314552 or 01893-201584.
                         </div>
                     </div>
                 </div>
