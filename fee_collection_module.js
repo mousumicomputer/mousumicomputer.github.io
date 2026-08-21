@@ -1,14 +1,18 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module
- * 100% Standalone - No changes needed in admin.html.
- * Auto-detects logged-in Firebase Admin session for seamless cross-device sync.
+ * Features: Auto Serial (SL) Number, Dynamic Pagination (10, 25, 50, 100), Page Controls & Firebase Sync.
  */
 
 (function () {
     let studentDueList = [];
     let firebaseCore = null;
 
-    // ১. CSS ইনজেক্ট করা
+    // পেজিনেশন স্টেট
+    let currentPage = 1;
+    let rowsPerPage = 25;
+    let currentSearchQuery = "";
+
+    // ১. CSS ইনজেক্ট করা (পেজিনেশন ও টেবিল স্টাইলসহ)
     const css = `
         @import url('https://fonts.maateen.me/kalpurush/font.css');
 
@@ -164,6 +168,17 @@
             color: #475569;
             font-weight: 600;
         }
+        .due-page-select {
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 13.5px;
+            outline: none;
+            background: #fff;
+            color: #334155;
+            font-weight: 600;
+            cursor: pointer;
+        }
         .btn-due-refresh {
             background: #eef2ff;
             color: #4f46e5 !important;
@@ -203,7 +218,7 @@
         .due-data-table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 1300px;
+            min-width: 1350px;
         }
         .due-data-table th {
             color: #2563eb;
@@ -227,20 +242,60 @@
             background-color: #f8fafc;
         }
 
+        /* পেজিনেশন কন্ট্রোল স্টাইল */
+        .due-pagination-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 18px;
+            padding-top: 15px;
+            border-top: 1px solid #f1f5f9;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .due-pagination-btns {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .due-page-btn {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .due-page-btn:hover:not(:disabled) {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        .due-page-btn.active {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+        }
+        .due-page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
         #menu-edu-parent.open .submenu-list { display: block; }
     `;
     const styleSheet = document.createElement("style");
     styleSheet.innerText = css;
     document.head.appendChild(styleSheet);
 
-    // ২. স্বয়ংক্রিয় Firebase কানেক্টর (মূল কোডে কোনো হাত না দিয়ে)
+    // ২. স্বয়ংক্রিয় Firebase কানেক্টর
     async function getFirebase() {
         if (firebaseCore) return firebaseCore;
         try {
             const fbApp = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
             const fbDb = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
 
-            // admin.html এর ইনিশিয়ালাইজেশনের জন্য অপেক্ষা
             let app;
             for (let i = 0; i < 20; i++) {
                 try {
@@ -251,7 +306,6 @@
             }
 
             if (!app) {
-                // ফলব্যাক কনফিগারেশন
                 app = fbApp.initializeApp({
                     databaseURL: "https://mousumi-computer-default-rtdb.firebaseio.com",
                     projectId: "mousumi-computer"
@@ -413,23 +467,34 @@
                     <div class="due-data-card">
                         <div class="due-table-toolbar">
                             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                                <div class="due-entries-info" id="dueEntriesInfo">
-                                    Showing 0 of 0 entries
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span style="font-size: 14px; color: #475569;">Show</span>
+                                    <select id="duePageSizeSelect" class="due-page-select">
+                                        <option value="10">10</option>
+                                        <option value="25" selected>25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                        <option value="-1">All</option>
+                                    </select>
+                                    <span style="font-size: 14px; color: #475569;">entries</span>
                                 </div>
                                 <button type="button" class="btn-due-refresh" id="btnRefreshDueData" title="লাইভ ডেটা রিফ্রেশ করুন">
                                     <i class="fa-solid fa-arrows-rotate"></i> রিফ্রেশ
                                 </button>
                             </div>
+
                             <div class="due-search-box">
                                 <label for="dueTableSearch">Search:</label>
                                 <input type="text" id="dueTableSearch" class="due-search-input" placeholder="যেকোনো তথ্য দিয়ে খুঁজুন...">
                             </div>
                         </div>
 
+                        <!-- টেবিল কন্টেইনার (অটো SL যুক্ত) -->
                         <div class="due-table-wrapper">
                             <table class="due-data-table">
                                 <thead>
                                     <tr>
+                                        <th style="width: 50px;">SL</th>
                                         <th>Class</th>
                                         <th>Section</th>
                                         <th>STD ID</th>
@@ -446,9 +511,19 @@
                                     </tr>
                                 </thead>
                                 <tbody id="dueDataTableBody">
-                                    <tr><td colspan="13" style="text-align: center; color: #94a3b8; padding: 25px;">কোনো ডেটা লোড করা হয়নি। এক্সেল ফাইল আপলোড করুন।</td></tr>
+                                    <tr><td colspan="14" style="text-align: center; color: #94a3b8; padding: 25px;">কোনো ডেটা লোড করা হয়নি। এক্সেল ফাইল আপলোড করুন।</td></tr>
                                 </tbody>
                             </table>
+                        </div>
+
+                        <!-- পেজিনেশন ফুটার বার -->
+                        <div class="due-pagination-wrapper">
+                            <div class="due-entries-info" id="dueEntriesInfo">
+                                Showing 0 to 0 of 0 entries
+                            </div>
+                            <div class="due-pagination-btns" id="duePaginationBtns">
+                                <!-- ডাইনামিক পেজিনেশন বাটন -->
+                            </div>
                         </div>
                     </div>
 
@@ -458,28 +533,58 @@
         wrapper.insertAdjacentHTML('beforeend', panelsHTML);
     }
 
-    // ৫. টেবিল রেন্ডার ফাংশন
-    function renderDueDataTable(listToRender) {
+    // ৫. পেজিনেশন ও অটোমেটিক ক্রমিক (SL) সহ টেবিল রেন্ডার ইঞ্জিন
+    function renderDueDataTable() {
         const tbody = document.getElementById('dueDataTableBody');
         const entriesInfo = document.getElementById('dueEntriesInfo');
+        const paginationBtns = document.getElementById('duePaginationBtns');
         if (!tbody) return;
 
-        const totalCount = studentDueList.length;
-        const currentCount = (listToRender || []).length;
-
-        if (entriesInfo) {
-            entriesInfo.innerText = `Showing 1 to ${currentCount} of ${totalCount} entries`;
+        // ১. ফিল্টারিং লজিক (Search Query)
+        let filtered = studentDueList;
+        if (currentSearchQuery) {
+            const q = currentSearchQuery.toLowerCase();
+            filtered = studentDueList.filter(item => 
+                (item.studentName && item.studentName.toLowerCase().includes(q)) ||
+                (item.stdId && item.stdId.toLowerCase().includes(q)) ||
+                (item.class && item.class.toLowerCase().includes(q)) ||
+                (item.mobile && item.mobile.toLowerCase().includes(q)) ||
+                (item.fathersMobile && item.fathersMobile.toLowerCase().includes(q)) ||
+                (item.dueItems && item.dueItems.toLowerCase().includes(q))
+            );
         }
 
-        if (currentCount === 0) {
-            tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: #94a3b8; padding: 25px;">কোনো রেকর্ড পাওয়া যায়নি। এক্সেল ফাইল আপলোড করুন।</td></tr>`;
+        const totalEntries = filtered.length;
+        const effectivePageSize = rowsPerPage === -1 ? totalEntries : rowsPerPage;
+        const totalPages = Math.max(1, Math.ceil(totalEntries / (effectivePageSize || 1)));
+
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        const startIndex = (currentPage - 1) * effectivePageSize;
+        const endIndex = rowsPerPage === -1 ? totalEntries : Math.min(startIndex + effectivePageSize, totalEntries);
+        const currentSlice = rowsPerPage === -1 ? filtered : filtered.slice(startIndex, endIndex);
+
+        // ২. এন্ট্রি টেক্সট আপডেট
+        if (entriesInfo) {
+            const startDisplay = totalEntries > 0 ? startIndex + 1 : 0;
+            entriesInfo.innerText = `Showing ${startDisplay} to ${endIndex} of ${totalEntries} entries`;
+        }
+
+        // ৩. নো রেকর্ড মেসেজ
+        if (totalEntries === 0) {
+            tbody.innerHTML = `<tr><td colspan="14" style="text-align: center; color: #94a3b8; padding: 25px;">কোনো রেকর্ড পাওয়া যায়নি।</td></tr>`;
+            if (paginationBtns) paginationBtns.innerHTML = '';
             return;
         }
 
+        // ৪. টেবিল সারি তৈরি (অটো SL নম্বর ক্যালকুলেশন)
         let html = '';
-        listToRender.forEach(item => {
+        currentSlice.forEach((item, index) => {
+            const autoSL = startIndex + index + 1;
             html += `
                 <tr>
+                    <td style="font-weight: 700; color: #64748b;">${autoSL}</td>
                     <td>${item.class || '-'}</td>
                     <td>${item.section || '-'}</td>
                     <td><strong>${item.stdId || '-'}</strong></td>
@@ -497,9 +602,86 @@
             `;
         });
         tbody.innerHTML = html;
+
+        // ৫. পেজিনেশন বাটন তৈরি
+        renderPaginationButtons(totalPages);
     }
 
-    // ৬. লাইভ ফায়ারবেস লিসেনার (Cross-device realtime sync)
+    // পেজিনেশন বাটন বিল্ডার
+    function renderPaginationButtons(totalPages) {
+        const container = document.getElementById('duePaginationBtns');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (totalPages <= 1) return;
+
+        // Previous বাটন
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'due-page-btn';
+        prevBtn.innerText = 'Previous';
+        prevBtn.disabled = (currentPage === 1);
+        prevBtn.onclick = () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderDueDataTable();
+            }
+        };
+        container.appendChild(prevBtn);
+
+        // দৃশ্যমান পেজ বাটন রেঞ্জ নির্ধারণ
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, currentPage + 2);
+
+        if (startPage > 1) {
+            container.appendChild(createPageButton(1));
+            if (startPage > 2) {
+                const dots = document.createElement('span');
+                dots.innerText = '...';
+                dots.style.padding = '0 5px';
+                container.appendChild(dots);
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            container.appendChild(createPageButton(i));
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                const dots = document.createElement('span');
+                dots.innerText = '...';
+                dots.style.padding = '0 5px';
+                container.appendChild(dots);
+            }
+            container.appendChild(createPageButton(totalPages));
+        }
+
+        // Next বাটন
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'due-page-btn';
+        nextBtn.innerText = 'Next';
+        nextBtn.disabled = (currentPage === totalPages);
+        nextBtn.onclick = () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderDueDataTable();
+            }
+        };
+        container.appendChild(nextBtn);
+    }
+
+    function createPageButton(pageNum) {
+        const btn = document.createElement('button');
+        btn.className = `due-page-btn ${pageNum === currentPage ? 'active' : ''}`;
+        btn.innerText = pageNum;
+        btn.onclick = () => {
+            currentPage = pageNum;
+            renderDueDataTable();
+        };
+        return btn;
+    }
+
+    // ৬. লাইভ ফায়ারবেস লিসেনার
     async function listenFirebaseData() {
         const fb = await getFirebase();
         if (!fb) return;
@@ -508,7 +690,7 @@
         fb.onValue(dueRef, (snapshot) => {
             const data = snapshot.val();
             studentDueList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-            renderDueDataTable(studentDueList);
+            renderDueDataTable();
         });
     }
 
@@ -600,9 +782,17 @@
             });
         }
 
-        // =========================================================================
-        // ৮. এক্সেল ফাইল আপলোড ও নিরাপদ ক্লাউড সেভ
-        // =========================================================================
+        // ৮. পেজ সাইজ ড্রপডাউন ইভেন্ট
+        const pageSizeSelect = document.getElementById('duePageSizeSelect');
+        if (pageSizeSelect) {
+            pageSizeSelect.addEventListener('change', function() {
+                rowsPerPage = parseInt(this.value);
+                currentPage = 1;
+                renderDueDataTable();
+            });
+        }
+
+        // ৯. এক্সেল ফাইল আপলোড ও নিরাপদ ক্লাউড সেভ
         const btnUpload = document.getElementById('btnUploadDueData');
         if (btnUpload && fileInput) {
             btnUpload.addEventListener('click', function() {
@@ -636,8 +826,7 @@
                         showToast(`📊 ${totalRows} টি ডেটা Firebase ক্লাউডে সেভ হচ্ছে...`, "info");
 
                         // ফরম্যাটিং
-                        const formatted = json.map((r, idx) => ({
-                            sl: idx + 1,
+                        const formatted = json.map(r => ({
                             class: r['Class'] || r['class'] || '-',
                             section: r['Section'] || r['section'] || '-',
                             stdId: String(r['STD ID'] || r['Std Id'] || r['Student ID'] || r['ID'] || '').trim(),
@@ -653,12 +842,12 @@
                             mothersMobile: String(r['Mothers Mobile'] || '').trim()
                         }));
 
-                        // Firebase ক্লাউডে অথেনটিকেটেড সেভ
                         const fb = await getFirebase();
                         if (fb) {
                             await fb.set(fb.ref(fb.db, 'erp/studentDueData'), formatted);
                             studentDueList = formatted;
-                            renderDueDataTable(studentDueList);
+                            currentPage = 1;
+                            renderDueDataTable();
                             showToast(`✅ সফলভাবে ${totalRows} টি ডেটা Firebase ক্লাউডে সংরক্ষিত হয়েছে!`, "success");
                         } else {
                             showToast("Firebase ক্লাউড সংযোগ পাওয়া যায়নি!", "error");
@@ -674,7 +863,7 @@
             });
         }
 
-        // ৯. লাইভ রিফ্রেশ বাটন
+        // ১০. লাইভ রিফ্রেশ বাটন
         const btnRefresh = document.getElementById('btnRefreshDueData');
         if (btnRefresh) {
             btnRefresh.addEventListener('click', async function() {
@@ -686,8 +875,8 @@
                     const snap = await fb.get(fb.ref(fb.db, 'erp/studentDueData'));
                     const data = snap.val();
                     studentDueList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-                    renderDueDataTable(studentDueList);
-                    showToast(`🔄 ক্লাউডে মোট ${studentDueList.length} টি রেকর্ড সংরক্ষিত রয়েছে।`, "success");
+                    renderDueDataTable();
+                    showToast(`🔄 ক্লাউডে মোট ${studentDueList.length} টি রেকর্ড রয়েছে।`, "success");
                 }
 
                 setTimeout(() => {
@@ -696,30 +885,17 @@
             });
         }
 
-        // ১০. রিয়েল-টাইম সার্চ
+        // ১১. রিয়েল-টাইম সার্চ
         const searchInput = document.getElementById('dueTableSearch');
         if (searchInput) {
             searchInput.addEventListener('input', function() {
-                const query = this.value.toLowerCase().trim();
-                if (!query) {
-                    renderDueDataTable(studentDueList);
-                    return;
-                }
-
-                const filtered = studentDueList.filter(item => 
-                    (item.studentName && item.studentName.toLowerCase().includes(query)) ||
-                    (item.stdId && item.stdId.toLowerCase().includes(query)) ||
-                    (item.class && item.class.toLowerCase().includes(query)) ||
-                    (item.mobile && item.mobile.toLowerCase().includes(query)) ||
-                    (item.fathersMobile && item.fathersMobile.toLowerCase().includes(query)) ||
-                    (item.dueItems && item.dueItems.toLowerCase().includes(query))
-                );
-
-                renderDueDataTable(filtered);
+                currentSearchQuery = this.value.trim();
+                currentPage = 1; // সার্চ করলে ১ম পেজে নিয়ে যাবে
+                renderDueDataTable();
             });
         }
 
-        // ১১. স্যাম্পল এক্সেল ডাউনলোড
+        // ১২. স্যাম্পল এক্সেল ডাউনলোড
         const btnSample = document.getElementById('btnDownloadSample');
         if (btnSample) {
             btnSample.addEventListener('click', function() {
