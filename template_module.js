@@ -149,58 +149,17 @@
             border-right: none !important;
         }
 
-        /* Row 16-19: PAID স্ট্যাম্প */
+        /* Row 16-19: অরিজিনাল PAID স্ট্যাম্প ইমেজ */
         .paid-stamp-wrapper {
             text-align: center;
-            margin: 14px 0 16px 0;
+            margin: 12px 0 14px 0;
         }
 
-        .paid-seal {
+        .paid-stamp-img {
+            width: 76px;
+            height: 76px;
+            object-fit: contain;
             display: inline-block;
-            width: 82px;
-            height: 82px;
-            border: 2.5px dotted #000;
-            border-radius: 50%;
-            padding: 3px;
-            box-sizing: border-box;
-        }
-
-        .paid-seal-inner {
-            width: 100%;
-            height: 100%;
-            border: 1.5px solid #000;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-        }
-
-        .paid-seal-text-top {
-            font-family: 'EB Garamond', serif;
-            font-size: 7.5px;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-
-        .paid-seal-main {
-            font-family: 'EB Garamond', serif;
-            font-size: 18px;
-            font-weight: 900;
-            line-height: 1;
-            letter-spacing: 1px;
-            border-top: 1px solid #000;
-            border-bottom: 1px solid #000;
-            padding: 2px 4px;
-            margin: 1px 0;
-        }
-
-        .paid-seal-text-bot {
-            font-family: 'EB Garamond', serif;
-            font-size: 7.5px;
-            font-weight: bold;
-            letter-spacing: 0.5px;
         }
 
         /* Row 21: Tiro Bangla 10pt (Received By) */
@@ -381,15 +340,9 @@
                             </tr>
                         </table>
 
-                        <!-- Row 16-19: PAID সিল -->
+                        <!-- Row 16-19: প্রদত্ত অরিজিনাল PAID স্ট্যাম্প ইমেজ -->
                         <div class="paid-stamp-wrapper">
-                            <div class="paid-seal">
-                                <div class="paid-seal-inner">
-                                    <div class="paid-seal-text-top">★ THANK YOU ★</div>
-                                    <div class="paid-seal-main">PAID</div>
-                                    <div class="paid-seal-text-bot">★ THANK YOU ★</div>
-                                </div>
-                            </div>
+                            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj7iR0RGQslBZcPB4aOop47p81Epplw_ubvqYmTIv2GHE8bSJE5e-BobTwcW-dpob62EWL1VUNdoBoCNUhPE1SRMuO8n19BkSUNQ1l94wIMIjPLfFEnil8tuIZfKZnje0TFgaiyysj7nkJceyH0JWSPPDLw0ChYhwfFbd4EE0SCQiJV8ruYjXv2unGmdZpF/s1600/drawing0.png" alt="PAID Stamp" class="paid-stamp-img" crossorigin="anonymous" />
                         </div>
 
                         <!-- Row 21: Tiro Bangla 10pt -->
