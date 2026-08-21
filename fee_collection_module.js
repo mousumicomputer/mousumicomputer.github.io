@@ -1,15 +1,26 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module
- * Exact Recreation from User Provided HTML Design
+ * Final Fix: Forcing Kalpurush Font on specific marked areas
  */
 
 (function () {
-    // ১. আপনার দেয়া HTML থেকে CSS ইনজেক্ট করা
+    // ১. কালপুরুষ ফন্ট সিডিএন এবং সিএসএস ইনজেক্ট করা
     const css = `
         @import url('https://fonts.maateen.me/kalpurush/font.css');
 
-        .edu-wrapper { font-family: 'Kalpurush', 'Times New Roman', serif; padding: 10px; }
-        
+        /* মডিউলের ভেতরের প্রতিটি এলিমেন্টকে কালপুরুষ ফন্টে বাধ্য করা */
+        #edu-fee-collection-view, 
+        #edu-fee-collection-view *,
+        #edu-fee-collection-view label,
+        #edu-fee-collection-view input,
+        #edu-fee-collection-view table,
+        #edu-fee-collection-view td,
+        #edu-fee-collection-view th,
+        #edu-fee-collection-view h2,
+        #edu-fee-collection-view span {
+            font-family: 'Kalpurush', 'Times New Roman', serif !important;
+        }
+
         .edu-card {
             background: #ffffff;
             border-radius: 8px;
@@ -30,15 +41,14 @@
             align-items: center;
         }
 
-        .edu-card-header h2 { font-size: 20px; font-weight: 600; margin: 0; }
+        .edu-card-header h2 { font-size: 20px !important; font-weight: 600 !important; margin: 0; }
 
         .edu-badge {
             background: #2c3e50;
             padding: 4px 10px;
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 14px !important;
             color: #bdc3c7;
-            font-family: 'Times New Roman', serif;
         }
 
         .edu-card-body { padding: 25px; }
@@ -52,48 +62,49 @@
 
         .edu-form-group { display: flex; flex-direction: column; }
 
+        /* লেবেল ফন্ট স্টাইল ফিক্স */
         .edu-form-group label {
-            font-size: 15px;
-            color: #444;
+            font-size: 16px !important;
+            color: #444 !important;
             margin-bottom: 6px;
-            font-weight: 600;
+            font-weight: 600 !important;
         }
 
         .edu-form-control {
             padding: 10px 12px;
             border: 1px solid #cccccc;
             border-radius: 5px;
-            font-size: 16px;
-            font-family: 'Kalpurush', 'Times New Roman', serif;
+            font-size: 17px !important;
             outline: none;
             transition: border-color 0.2s;
+            color: #333 !important;
         }
 
-        .edu-form-control:focus { border-color: #2563eb; }
+        .edu-form-control:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); }
 
-        .edu-form-control[readonly] { background-color: #f8f9fa; color: #6c757d; border-color: #e9ecef; }
+        .edu-form-control[readonly] { background-color: #f8f9fa; color: #666 !important; }
 
         .edu-sub-text {
-            font-size: 13px;
-            color: #2563eb;
+            font-size: 14px !important;
+            color: #2563eb !important;
             margin-top: 5px;
-            font-weight: bold;
+            font-weight: bold !important;
         }
 
         .edu-action-box { display: flex; justify-content: flex-end; margin-top: 10px; }
 
         .edu-btn-submit {
             background-color: #2563eb;
-            color: white;
+            color: white !important;
             border: none;
             padding: 10px 35px;
-            font-size: 16px;
-            font-family: 'Kalpurush', sans-serif;
-            font-weight: bold;
+            font-size: 17px !important;
+            font-weight: bold !important;
             border-radius: 5px;
             cursor: pointer;
         }
 
+        /* টেবিল সেকশন ফিক্স */
         .edu-recent-section {
             margin-top: 25px;
             padding-top: 15px;
@@ -101,41 +112,50 @@
         }
 
         .edu-recent-title {
-            font-size: 13px;
-            color: #64748b;
-            font-weight: bold;
-            margin-bottom: 8px;
+            font-size: 14px !important;
+            color: #64748b !important;
+            font-weight: bold !important;
+            margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
         }
 
-        .edu-compact-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .edu-compact-table th, .edu-compact-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #f1f5f9; }
-        .edu-compact-table th { color: #475569; background-color: #f8fafc; font-weight: 600; }
-        
-        /* মেনু ড্রপডাউন কন্ট্রোল */
-        #menu-edu-parent .submenu-list { display: none; }
+        .edu-compact-table { width: 100%; border-collapse: collapse; }
+        .edu-compact-table th { 
+            padding: 8px 10px; 
+            text-align: left; 
+            color: #475569 !important; 
+            background-color: #f8fafc; 
+            font-weight: 600 !important;
+            font-size: 14px !important;
+        }
+        .edu-compact-table td { 
+            padding: 10px 10px; 
+            border-bottom: 1px solid #f1f5f9; 
+            color: #334155 !important;
+            font-size: 15px !important;
+        }
+
         #menu-edu-parent.open .submenu-list { display: block; }
     `;
     const styleSheet = document.createElement("style");
     styleSheet.innerText = css;
     document.head.appendChild(styleSheet);
 
-    // ২. সাইডবার মেনু ইনজেক্ট করা (শিক্ষা ও ডিজিটাল সেবা নামে)
     function injectSidebar() {
         const menuList = document.querySelector('.menu-list');
-        if (!menuList) return;
+        if (!menuList || document.getElementById('menu-edu-parent')) return;
 
         const eduMenu = `
             <li class="menu-item" id="menu-edu-parent">
                 <a onclick="this.parentElement.classList.toggle('open')">
-                    <span class="menu-link-inner"><i class="fa-solid fa-graduation-cap"></i> <span>শিক্ষা ও ডিজিটাল সেবা</span></span>
+                    <span class="menu-link-inner"><i class="fa-solid fa-graduation-cap"></i> <span style="font-family:'Kalpurush'!important">শিক্ষা ও ডিজিটাল সেবা</span></span>
                     <i class="fa-solid fa-chevron-down chevron-icon" style="font-size: 0.7rem;"></i>
                 </a>
                 <ul class="submenu-list">
                     <li class="submenu-item" id="sub-fee-collection">
                         <a onclick="switchMainTab('edu-fee-collection')">
-                            <i class="fa-solid fa-angle-right"></i> <span>ফি কালেকশন (Fees)</span>
+                            <i class="fa-solid fa-angle-right"></i> <span style="font-family:'Kalpurush'!important">ফি কালেকশন (Fees)</span>
                         </a>
                     </li>
                 </ul>
@@ -144,80 +164,77 @@
         menuList.insertAdjacentHTML('beforeend', eduMenu);
     }
 
-    // ৩. আপনার পাঠানো HTML স্ট্রাকচার অনুযায়ী ভিউ প্যানেল তৈরি
     function injectViewPanel() {
         const mainWrapper = document.querySelector('.main-wrapper');
         if (!mainWrapper) return;
 
         const html = `
             <div class="view-panel" id="edu-fee-collection-view">
-                <div class="edu-wrapper">
-                    <div class="edu-card">
-                        <div class="edu-card-header">
-                            <h2>ফি কালেকশন মডিউল (Fee Collection)</h2>
-                            <span class="edu-badge">ERP v2.4</span>
-                        </div>
-                        <div class="edu-card-body">
-                            <form id="exactFeeForm">
-                                <div class="edu-form-grid">
-                                    <div class="edu-form-group">
-                                        <label>তারিখ (Date)</label>
-                                        <input type="date" id="exDate" class="edu-form-control" required>
-                                    </div>
-                                    <div class="edu-form-group">
-                                        <label>স্টুডেন্ট আইডি (ID)</label>
-                                        <input type="text" id="exStudentId" class="edu-form-control" placeholder="আইডি লিখুন" required>
-                                    </div>
-                                    <div class="edu-form-group">
-                                        <label>শিক্ষার্থীর নাম (Student Name)</label>
-                                        <input type="text" id="exStudentName" class="edu-form-control" placeholder="আব্দুর রহমান">
-                                    </div>
+                <div class="edu-card">
+                    <div class="edu-card-header">
+                        <h2>ফি কালেকশন মডিউল (Fee Collection)</h2>
+                        <span class="edu-badge">ERP v2.4</span>
+                    </div>
+                    <div class="edu-card-body">
+                        <form id="exactFeeForm">
+                            <div class="edu-form-grid">
+                                <div class="edu-form-group">
+                                    <label>তারিখ (Date)</label>
+                                    <input type="date" id="exDate" class="edu-form-control" required>
                                 </div>
-                                <div class="edu-form-grid">
-                                    <div class="edu-form-group">
-                                        <label>বকেয়া (Net Due)</label>
-                                        <input type="text" id="exNetDue" class="edu-form-control" value="0.00" readonly>
-                                    </div>
-                                    <div class="edu-form-group">
-                                        <label>ট্রানজেকশন ফি (Txn Fee)</label>
-                                        <input type="number" id="exTxnFee" class="edu-form-control" value="6.00" step="0.01">
-                                        <span class="edu-sub-text">মোট চার্জ (Total Charge): ৳ <span id="exChargeDisp">6.00</span></span>
-                                    </div>
-                                    <div class="edu-form-group">
-                                        <label>গৃহীত মোট টাকা (Net Received)</label>
-                                        <input type="number" id="exReceived" class="edu-form-control" placeholder="0.00" step="0.01" required>
-                                    </div>
+                                <div class="edu-form-group">
+                                    <label>স্টুডেন্ট আইডি (ID)</label>
+                                    <input type="text" id="exStudentId" class="edu-form-control" placeholder="আইডি লিখুন" required>
                                 </div>
-                                <div class="edu-form-grid">
-                                    <div class="edu-form-group">
-                                        <label>ছাড় (Discount)</label>
-                                        <input type="number" id="exDiscount" class="edu-form-control" value="0.00" step="0.01">
-                                    </div>
+                                <div class="edu-form-group">
+                                    <label>শিক্ষার্থীর নাম (Student Name)</label>
+                                    <input type="text" id="exStudentName" class="edu-form-control" placeholder="আব্দুর রহমান">
                                 </div>
-                                <div class="edu-action-box">
-                                    <button type="submit" class="edu-btn-submit">সাবমিট করুন</button>
-                                </div>
-                            </form>
-
-                            <div class="edu-recent-section">
-                                <div class="edu-recent-title">
-                                    <span>সর্বশেষ এন্ট্রি (Recent Entries)</span>
-                                    <span>সর্বোচ্চ ৩টি</span>
-                                </div>
-                                <table class="edu-compact-table">
-                                    <thead>
-                                        <tr>
-                                            <th>তারিখ</th>
-                                            <th>আইডি</th>
-                                            <th>নাম</th>
-                                            <th>গৃহীত টাকা</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="exRecentList">
-                                        <tr><td colspan="4" style="text-align:center; color:#94a3b8; padding:15px;">কোনো রিসেন্ট এন্ট্রি নেই</td></tr>
-                                    </tbody>
-                                </table>
                             </div>
+                            <div class="edu-form-grid">
+                                <div class="edu-form-group">
+                                    <label>বকেয়া (Net Due)</label>
+                                    <input type="text" id="exNetDue" class="edu-form-control" value="0.00" readonly>
+                                </div>
+                                <div class="edu-form-group">
+                                    <label>ট্রানজেকশন ফি (Txn Fee)</label>
+                                    <input type="number" id="exTxnFee" class="edu-form-control" value="6.00" step="0.01">
+                                    <span class="edu-sub-text">মোট চার্জ (Total Charge): ৳ <span id="exChargeDisp">6.00</span></span>
+                                </div>
+                                <div class="edu-form-group">
+                                    <label>গৃহীত মোট টাকা (Net Received)</label>
+                                    <input type="number" id="exReceived" class="edu-form-control" placeholder="0.00" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="edu-form-grid">
+                                <div class="edu-form-group">
+                                    <label>ছাড় (Discount)</label>
+                                    <input type="number" id="exDiscount" class="edu-form-control" value="0.00" step="0.01">
+                                </div>
+                            </div>
+                            <div class="edu-action-box">
+                                <button type="submit" class="edu-btn-submit">সাবমিট করুন</button>
+                            </div>
+                        </form>
+
+                        <div class="edu-recent-section">
+                            <div class="edu-recent-title">
+                                <span>সর্বশেষ এন্ট্রি (Recent Entries)</span>
+                                <span>সর্বোচ্চ ৩টি</span>
+                            </div>
+                            <table class="edu-compact-table">
+                                <thead>
+                                    <tr>
+                                        <th>তারিখ</th>
+                                        <th>আইডি</th>
+                                        <th>নাম</th>
+                                        <th>গৃহীত টাকা</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="exRecentList">
+                                    <tr><td colspan="4" style="text-align:center; color:#94a3b8; padding:20px;">কোনো রিসেন্ট এন্ট্রি নেই</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -226,13 +243,11 @@
         mainWrapper.insertAdjacentHTML('beforeend', html);
     }
 
-    // ৪. লজিক ও ডেটাবেস হ্যান্ডলিং
     function initLogic() {
         const idInput = document.getElementById('exStudentId');
         const dateInput = document.getElementById('exDate');
         dateInput.value = new Date().toISOString().split('T')[0];
 
-        // আইডি দিয়ে সার্চ করে নাম ও বকেয়া আনা
         idInput.addEventListener('input', function() {
             const val = this.value.trim();
             const customers = window.customers || [];
@@ -248,12 +263,10 @@
             }
         });
 
-        // চার্জ ডিসপ্লে আপডেট
         document.getElementById('exTxnFee').oninput = function() {
             document.getElementById('exChargeDisp').innerText = (parseFloat(this.value) || 0).toFixed(2);
         };
 
-        // ফর্ম সাবমিশন
         document.getElementById('exactFeeForm').onsubmit = async function(e) {
             e.preventDefault();
             const received = parseFloat(document.getElementById('exReceived').value) || 0;
@@ -293,23 +306,20 @@
 
     function updateUI(entry) {
         const list = document.getElementById('exRecentList');
-        const name = document.getElementById('exStudentName').value || "Unknown Student";
+        const name = document.getElementById('exStudentName').value || "নতুন শিক্ষার্থী";
         const row = `
             <tr>
                 <td>${entry.date}</td>
                 <td>${entry.customerId}</td>
                 <td>${name}</td>
-                <td><strong>৳ ${entry.credit.toFixed(2)}</strong></td>
+                <td style="font-weight:bold; color:#16a34a">৳ ${entry.credit.toFixed(2)}</td>
             </tr>
         `;
         if(list.innerText.includes("কোনো রিসেন্ট এন্ট্রি নেই")) list.innerHTML = "";
         list.insertAdjacentHTML('afterbegin', row);
-        
-        // সর্বোচ্চ ৩টি রাখা
         if (list.children.length > 3) list.removeChild(list.lastChild);
     }
 
-    // পেজ লোড হলে চালু হবে
     window.addEventListener('load', () => {
         injectSidebar();
         injectViewPanel();
