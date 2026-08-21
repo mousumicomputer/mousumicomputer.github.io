@@ -1,10 +1,10 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module
- * Updated Section 3: Exact Excel Columns Header & Real Sample Excel Download Functionality.
+ * Section 3 Updated: Non-blocking Excel Upload, ETA Toast Notification, Dynamic Table Replacement & Live Refresh Button.
  */
 
 (function () {
-    // ১. CSS ইনজেক্ট করা
+    // ১. CSS ইনজেক্ট করা (স্ক্রিনশট এবং নতুন রিফ্রেশ বাটনের ডিজাইনসহ)
     const css = `
         @import url('https://fonts.maateen.me/kalpurush/font.css');
 
@@ -153,12 +153,34 @@
             align-items: center;
             margin-bottom: 15px;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
         }
         .due-entries-info {
             font-size: 14px;
             color: #475569;
+            font-weight: 600;
         }
+        
+        /* রিফ্রেশ বাটন ডিজাইন */
+        .btn-due-refresh {
+            background: #eef2ff;
+            color: #4f46e5 !important;
+            border: 1px solid #c7d2fe;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+        .btn-due-refresh:hover {
+            background: #e0e7ff;
+            border-color: #a5b4fc;
+        }
+
         .due-search-box {
             display: flex;
             align-items: center;
@@ -209,6 +231,9 @@
     styleSheet.innerText = css;
     document.head.appendChild(styleSheet);
 
+    // গ্লোবাল স্টোর
+    let studentDueList = [];
+
     // ২. সাইডবার মেনু ইনজেক্ট করা
     function injectMenu() {
         const menuList = document.querySelector('.menu-list');
@@ -230,7 +255,7 @@
         menuList.insertAdjacentHTML('beforeend', html);
     }
 
-    // ৩. ভিউ প্যানেল ইনজেক্ট করা (সংশোধিত কলাম হেডারসহ)
+    // ৩. ভিউ প্যানেল ইনজেক্ট করা
     function injectPanels() {
         const wrapper = document.querySelector('.main-wrapper');
         if (!wrapper) return;
@@ -324,7 +349,7 @@
                     </div>
                 </div>
 
-                <!-- প্যানেল ৩: বকেয়া ডেটা আপলোড ও তালিকা (আপনার দেওয়া এক্সেল হেডার অনুযায়ী) -->
+                <!-- প্যানেল ৩: বকেয়া ডেটা আপলোড ও তালিকা -->
                 <div class="view-panel" id="edu-due-data-view">
                     
                     <!-- টপ আপলোড বার -->
@@ -333,7 +358,7 @@
                         
                         <div class="due-file-wrapper">
                             <button type="button" class="due-file-btn" onclick="document.getElementById('dueFileInput').click()">Choose File</button>
-                            <span class="due-file-name" id="dueFileNameDisplay">Student_Data_Sample.xlsx</span>
+                            <span class="due-file-name" id="dueFileNameDisplay">No file chosen</span>
                         </div>
 
                         <button type="button" class="btn-due-upload" id="btnUploadDueData">
@@ -348,12 +373,17 @@
                     <!-- নিচের ডেটা টেবিল কার্ড -->
                     <div class="due-data-card">
                         <div class="due-table-toolbar">
-                            <div class="due-entries-info" id="dueEntriesInfo">
-                                Showing 1 to 3 of 3 entries
+                            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                <div class="due-entries-info" id="dueEntriesInfo">
+                                    Showing 0 to 0 of 0 entries
+                                </div>
+                                <button type="button" class="btn-due-refresh" id="btnRefreshDueData" title="লাইভ ডেটা রিফ্রেশ করুন">
+                                    <i class="fa-solid fa-arrows-rotate"></i> রিফ্রেশ
+                                </button>
                             </div>
                             <div class="due-search-box">
                                 <label for="dueTableSearch">Search:</label>
-                                <input type="text" id="dueTableSearch" class="due-search-input">
+                                <input type="text" id="dueTableSearch" class="due-search-input" placeholder="যেকোনো তথ্য দিয়ে খুঁজুন...">
                             </div>
                         </div>
 
@@ -377,51 +407,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="dueDataTableBody">
-                                    <tr>
-                                        <td>Nursery</td>
-                                        <td>Dhorola</td>
-                                        <td>1400626</td>
-                                        <td>MOST NAFISA KHANDOKER</td>
-                                        <td>Army</td>
-                                        <td>1</td>
-                                        <td>Tuition Fee (August-2026)</td>
-                                        <td>600</td>
-                                        <td>01774258066</td>
-                                        <td>MD NABIUL</td>
-                                        <td>01774258066</td>
-                                        <td>MST DISA KHAN</td>
-                                        <td>01748808957</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Nursery</td>
-                                        <td>Dhorola</td>
-                                        <td>1400726</td>
-                                        <td>Sahrish Anaya</td>
-                                        <td>Civil</td>
-                                        <td>2</td>
-                                        <td>Tuition Fee (July-2026 - Aug...</td>
-                                        <td>2400</td>
-                                        <td>01749492670</td>
-                                        <td>Md Shafiullah</td>
-                                        <td>01718909989</td>
-                                        <td>Jannatul Ferdaus</td>
-                                        <td>01749492670</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Nursery</td>
-                                        <td>Dhorola</td>
-                                        <td>1400826</td>
-                                        <td>Afia Sultana Tamanna</td>
-                                        <td>Civil</td>
-                                        <td>2</td>
-                                        <td>Tuition Fee (July-2026 - Aug...</td>
-                                        <td>2550</td>
-                                        <td>01712550232</td>
-                                        <td>Md Abdul Aziz</td>
-                                        <td>0171772190</td>
-                                        <td>Most Taniya Akte...</td>
-                                        <td>01712550232</td>
-                                    </tr>
+                                    <tr><td colspan="13" style="text-align: center; color: #94a3b8; padding: 25px;">কোনো ডেটা লোড করা হয়নি। এক্সেল ফাইল আপলোড করুন।</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -433,15 +419,67 @@
         wrapper.insertAdjacentHTML('beforeend', panelsHTML);
     }
 
-    // ৪. ইভেন্ট এবং এক্সেল ডাউনলোড লজিক
+    // টেবিল রেন্ডার ফাংশন
+    function renderDueDataTable(listToRender) {
+        const tbody = document.getElementById('dueDataTableBody');
+        const entriesInfo = document.getElementById('dueEntriesInfo');
+        if (!tbody) return;
+
+        const totalCount = studentDueList.length;
+        const currentCount = listToRender.length;
+
+        if (entriesInfo) {
+            entriesInfo.innerText = `Showing 1 to ${currentCount} of ${totalCount} entries`;
+        }
+
+        if (currentCount === 0) {
+            tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: #94a3b8; padding: 25px;">কোনো রেকর্ড পাওয়া যায়নি।</td></tr>`;
+            return;
+        }
+
+        let html = '';
+        listToRender.forEach(item => {
+            html += `
+                <tr>
+                    <td>${item.class || '-'}</td>
+                    <td>${item.section || '-'}</td>
+                    <td><strong>${item.stdId || '-'}</strong></td>
+                    <td>${item.studentName || '-'}</td>
+                    <td>${item.category || '-'}</td>
+                    <td>${item.monthDue || '-'}</td>
+                    <td>${item.dueItems || '-'}</td>
+                    <td style="font-weight: bold; color: #e11d48;">${item.dueAmount || 0}</td>
+                    <td>${item.mobile || '-'}</td>
+                    <td>${item.fathersName || '-'}</td>
+                    <td>${item.fathersMobile || '-'}</td>
+                    <td>${item.mothersName || '-'}</td>
+                    <td>${item.mothersMobile || '-'}</td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    }
+
+    // ৪. ইভেন্ট লজিক এবং নন-ব্লকিং এক্সেল প্রসেসিং
     function initLogic() {
         const idInp = document.getElementById('origId');
         const dateInp = document.getElementById('origDate');
         if(dateInp) dateInp.value = new Date().toISOString().split('T')[0];
 
+        // ফি ফর্ম আইডি দিয়ে স্বয়ংক্রিয় ডিউ লোড
         if(idInp) {
             idInp.addEventListener('input', function() {
                 const val = this.value.trim();
+                
+                // ১. আগে আপলোড করা বকেয়া ডেটা লিস্ট থেকে খুঁজবে
+                const dueFound = studentDueList.find(s => String(s.stdId) === val || String(s.mobile) === val);
+                if (dueFound) {
+                    document.getElementById('origName').value = dueFound.studentName;
+                    document.getElementById('origDue').value = parseFloat(dueFound.dueAmount || 0).toFixed(2);
+                    return;
+                }
+
+                // ২. না পেলে কাস্টমার লিস্ট থেকে খুঁজবে
                 const customers = window.customers || [];
                 const found = customers.find(c => c.id === val || c.phone === val);
                 if(found) {
@@ -453,6 +491,7 @@
             });
         }
 
+        // ফি ফর্ম সাবমিট
         const origForm = document.getElementById('feeFormOriginal');
         if(origForm) {
             origForm.onsubmit = async function(e) {
@@ -480,9 +519,11 @@
                 try {
                     if(window.customerTransactions) {
                         window.customerTransactions.push(txData);
-                        const db = window.getDatabase();
-                        const { ref, set } = window.firebase_database;
-                        await set(ref(db, 'transactions'), window.customerTransactions);
+                        const db = window.getDatabase ? window.getDatabase() : null;
+                        if (db && window.firebase_database) {
+                            const { ref, set } = window.firebase_database;
+                            await set(ref(db, 'transactions'), window.customerTransactions);
+                        }
                         
                         showToast("ফি জমা হয়েছে!", "success");
                         updateRecent(txData);
@@ -495,7 +536,7 @@
             };
         }
 
-        // ফাইল নেম ডিসপ্লে হ্যান্ডলার
+        // ফাইল নেম সিলেক্টর ডিসপ্লে
         const fileInput = document.getElementById('dueFileInput');
         const fileNameDisplay = document.getElementById('dueFileNameDisplay');
         if(fileInput && fileNameDisplay) {
@@ -503,12 +544,140 @@
                 if (this.files && this.files.length > 0) {
                     fileNameDisplay.innerText = this.files[0].name;
                 } else {
-                    fileNameDisplay.innerText = "Student_Data_Sample.xlsx";
+                    fileNameDisplay.innerText = "No file chosen";
                 }
             });
         }
 
-        // নমুনা এক্সেল ডাউনলোড বাটন লজিক (আপনার ছবি অনুযায়ী হুবহু কলাম ও ডেটা)
+        // =========================================================================
+        // ৫. নন-ব্লকিং এক্সেল আপলোড ও ডাটা রিপ্লেসমেন্ট ইঞ্জিন
+        // =========================================================================
+        const btnUpload = document.getElementById('btnUploadDueData');
+        if (btnUpload && fileInput) {
+            btnUpload.addEventListener('click', function() {
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    showToast("অনুগ্রহ করে প্রথমে একটি এক্সেল ফাইল নির্বাচন করুন!", "warning");
+                    return;
+                }
+
+                if (typeof XLSX === 'undefined') {
+                    showToast("SheetJS লাইব্রেরি পাওয়া যায়নি!", "error");
+                    return;
+                }
+
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    try {
+                        const data = e.target.result;
+                        const workbook = XLSX.read(data, { type: 'binary' });
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        
+                        // এক্সেল রো গুলোকে অবজেক্টে রূপান্তর
+                        const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
+                        if (!json || json.length === 0) {
+                            showToast("এক্সেল ফাইলে কোনো ডেটা পাওয়া যায়নি!", "warning");
+                            return;
+                        }
+
+                        const totalRows = json.length;
+                        // আনুমানিক সময় গণনা (১০০০ ডেটার জন্য প্রায় ২-৩ সেকেন্ড)
+                        const estSeconds = Math.max(2, Math.ceil(totalRows / 400));
+
+                        // নন-ব্লকিং পপআপ মেসেজ (স্ক্রিন ফ্রিজ হবে না, ব্যাকগ্রাউন্ডে শুরু হবে)
+                        showToast(`📊 ${totalRows} টি ডেটা আপলোড শুরু হয়েছে। আনুমানিক সময়: ${estSeconds} সেকেন্ড`, "info");
+
+                        // আগের সব ডেটা মুছে নতুনভাবে প্রস্তুত করা
+                        const formatted = json.map((r, idx) => ({
+                            sl: idx + 1,
+                            class: r['Class'] || r['class'] || '-',
+                            section: r['Section'] || r['section'] || '-',
+                            stdId: String(r['STD ID'] || r['Std Id'] || r['Student ID'] || r['ID'] || '').trim(),
+                            studentName: r['Student Name'] || r['Name'] || '-',
+                            category: r['Category'] || '-',
+                            monthDue: r['Month Due'] || r['Month'] || '-',
+                            dueItems: r['Due items'] || r['Due Items'] || r['Due Item'] || '-',
+                            dueAmount: parseFloat(r['Due Amount'] || r['Amount'] || 0) || 0,
+                            mobile: String(r['Mobile'] || r['Phone'] || '').trim(),
+                            fathersName: r['Fathers name'] || r['Father Name'] || '-',
+                            fathersMobile: String(r['Fathers Mobile'] || '').trim(),
+                            mothersName: r['Mothers Name'] || r['Mother Name'] || '-',
+                            mothersMobile: String(r['Mothers Mobile'] || '').trim()
+                        }));
+
+                        studentDueList = formatted;
+                        
+                        // টেবিল তাৎক্ষণিক নতুন ডেটা দিয়ে রিফ্রেশ করা
+                        renderDueDataTable(studentDueList);
+
+                        // ফায়ারবেসে ব্যাকগ্রাউন্ডে সেভ
+                        setTimeout(async () => {
+                            try {
+                                const db = window.getDatabase ? window.getDatabase() : null;
+                                if (db && window.firebase_database) {
+                                    const { ref, set } = window.firebase_database;
+                                    await set(ref(db, 'erp/studentDueData'), studentDueList);
+                                }
+                                showToast(`✅ সফলভাবে ${totalRows} টি ডেটা লোড সম্পন্ন হয়েছে!`, "success");
+                            } catch(err) {
+                                console.error("Firebase write error:", err);
+                            }
+                        }, 500);
+
+                    } catch(err) {
+                        console.error(err);
+                        showToast("এক্সেল ফাইল রিড করতে সমস্যা হয়েছে!", "error");
+                    }
+                };
+
+                reader.readAsBinaryString(file);
+            });
+        }
+
+        // ৬. লাইভ রিফ্রেশ বাটন
+        const btnRefresh = document.getElementById('btnRefreshDueData');
+        if (btnRefresh) {
+            btnRefresh.addEventListener('click', function() {
+                // বাটন ঘোরার এনিমেশন
+                const icon = this.querySelector('i');
+                if(icon) icon.classList.add('fa-spin');
+
+                renderDueDataTable(studentDueList);
+                showToast(`🔄 রিফ্রেশ হয়েছে: বর্তমানে ${studentDueList.length} টি রেকর্ড রয়েছে।`, "success");
+
+                setTimeout(() => {
+                    if(icon) icon.classList.remove('fa-spin');
+                }, 600);
+            });
+        }
+
+        // ৭. রিয়েল-টাইম সার্চিং ফিল্টার
+        const searchInput = document.getElementById('dueTableSearch');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                if (!query) {
+                    renderDueDataTable(studentDueList);
+                    return;
+                }
+
+                const filtered = studentDueList.filter(item => 
+                    (item.studentName && item.studentName.toLowerCase().includes(query)) ||
+                    (item.stdId && item.stdId.toLowerCase().includes(query)) ||
+                    (item.class && item.class.toLowerCase().includes(query)) ||
+                    (item.mobile && item.mobile.toLowerCase().includes(query)) ||
+                    (item.fathersMobile && item.fathersMobile.toLowerCase().includes(query)) ||
+                    (item.dueItems && item.dueItems.toLowerCase().includes(query))
+                );
+
+                renderDueDataTable(filtered);
+            });
+        }
+
+        // ৮. নমুনা এক্সেল ডাউনলোড বাটন
         const btnSample = document.getElementById('btnDownloadSample');
         if (btnSample) {
             btnSample.addEventListener('click', function() {
