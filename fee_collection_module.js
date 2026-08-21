@@ -1,7 +1,6 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module
- * Features: Auto Calculation, Max 60 Tk Cap Gross Payment, Live Persistent Firebase Sync, 
- * Auto SL & Pagination, and Direct A5 Receipt PDF Generator on Submit.
+ * Features: Auto Calculation, Max 60 Tk Cap Gross Payment, Live Persistent Firebase Sync, Auto SL & Pagination.
  */
 
 (function () {
@@ -240,16 +239,6 @@
         .due-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
         #menu-edu-parent.open .submenu-list { display: block; }
-
-        /* রিসিট প্রিন্ট কন্টেইনার (লুকানো থাকবে স্ক্রিনে) */
-        #printable-receipt-container {
-            display: none;
-            width: 148mm;
-            background: #ffffff;
-            color: #000000;
-            padding: 8mm 10mm;
-            box-sizing: border-box;
-        }
     `;
     const styleSheet = document.createElement("style");
     styleSheet.innerText = css;
@@ -366,7 +355,7 @@
                                     </div>
                                 </div>
                                 <div style="display:flex; justify-content:flex-end;">
-                                    <button type="submit" class="edu-btn-submit"><i class="fa-solid fa-print"></i> সাবমিট করুন ও রিসিট নিন</button>
+                                    <button type="submit" class="edu-btn-submit">সাবমিট করুন</button>
                                 </div>
                             </form>
                             <div class="edu-recent-section">
@@ -484,9 +473,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- লুকানো রিসিট কন্টেইনার (A5 PDF জেনারেট করার জন্য) -->
-                <div id="printable-receipt-container"></div>
             </div>
         `;
         wrapper.insertAdjacentHTML('beforeend', panelsHTML);
@@ -684,112 +670,7 @@
         });
     }
 
-    // ৮. A5 রিসিট জেনারেটর (Google Sheet Receipt Format)
-    async function generateAndDownloadReceiptPDF(receiptData) {
-        const container = document.getElementById('printable-receipt-container');
-        if (!container) return;
-
-        const fmt = (num) => (parseFloat(num) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-        container.innerHTML = `
-            <div style="font-family: Arial, sans-serif; color: #1e293b; border: 2px solid #2563eb; border-radius: 8px; padding: 18px; background: #ffffff; width: 100%; box-sizing: border-box;">
-                
-                <!-- HEADER -->
-                <div style="text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 12px;">
-                    <h2 style="margin: 0; color: #1e3a8a; font-size: 20px; font-weight: 800; text-transform: uppercase;">MOUSUMI COMPUTER</h2>
-                    <p style="margin: 2px 0; font-size: 11px; color: #475569;">Education & Digital Financial Services Center</p>
-                    <div style="display: inline-block; background: #2563eb; color: #ffffff; padding: 3px 15px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-top: 5px;">
-                        TUITION FEE MONEY RECEIPT
-                    </div>
-                </div>
-
-                <!-- META INFO -->
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 12px;">
-                    <tr>
-                        <td style="padding: 3px 0;"><strong>Receipt No:</strong> #${receiptData.serialNumber}</td>
-                        <td style="padding: 3px 0; text-align: right;"><strong>Date:</strong> ${receiptData.date}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 3px 0;"><strong>Student ID:</strong> ${receiptData.customerId}</td>
-                        <td style="padding: 3px 0; text-align: right;"><strong>Class:</strong> ${receiptData.class || '-'} (${receiptData.section || '-'})</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 3px 0;" colspan="2"><strong>Student Name:</strong> ${receiptData.studentName}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 3px 0;"><strong>Month/Fee:</strong> ${receiptData.month || '-'}</td>
-                        <td style="padding: 3px 0; text-align: right;"><strong>Mobile:</strong> ${receiptData.mobile || '-'}</td>
-                    </tr>
-                </table>
-
-                <!-- FEE DETAILS TABLE -->
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 12px; border: 1px solid #cbd5e1;">
-                    <thead>
-                        <tr style="background: #f1f5f9; border-bottom: 1px solid #cbd5e1;">
-                            <th style="padding: 6px 8px; text-align: left; border-right: 1px solid #cbd5e1;">Description</th>
-                            <th style="padding: 6px 8px; text-align: right; width: 120px;">Amount (৳)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1;">Net Tuition Due</td>
-                            <td style="padding: 6px 8px; text-align: right;">৳ ${fmt(receiptData.netDue)}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1;">Transaction & Processing Fee</td>
-                            <td style="padding: 6px 8px; text-align: right;">৳ ${fmt(receiptData.totalCharge)}</td>
-                        </tr>
-                        ${receiptData.discount > 0 ? `
-                        <tr style="color: #ef4444;">
-                            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1;">Discount / Concession</td>
-                            <td style="padding: 6px 8px; text-align: right;">- ৳ ${fmt(receiptData.discount)}</td>
-                        </tr>` : ''}
-                        <tr style="background: #f8fafc; font-weight: bold; border-top: 1px solid #cbd5e1; font-size: 13px;">
-                            <td style="padding: 8px; border-right: 1px solid #cbd5e1; color: #1e3a8a;">Total Payment Received</td>
-                            <td style="padding: 8px; text-align: right; color: #16a34a;">৳ ${fmt(receiptData.netReceived)}</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <!-- REMARKS & FOOTER -->
-                <div style="font-size: 11px; margin-bottom: 30px; color: #475569;">
-                    <strong>Payment Status:</strong> <span style="color: #16a34a; font-weight: bold;">PAID</span> | 
-                    <strong>Remarks:</strong> ${receiptData.dueItems || 'Tuition Fee Collected'}
-                </div>
-
-                <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; margin-top: 20px;">
-                    <tr>
-                        <td style="width: 50%; padding-top: 15px; border-top: 1px dashed #94a3b8;">Customer Signature</td>
-                        <td style="width: 50%; padding-top: 15px; border-top: 1px dashed #94a3b8;">Authorized Seal & Signature</td>
-                    </tr>
-                </table>
-
-                <div style="text-align: center; font-size: 9px; color: #94a3b8; margin-top: 15px;">
-                    * This is a computer generated receipt. Thank you for choosing Mousumi Computer.
-                </div>
-            </div>
-        `;
-
-        container.style.display = 'block';
-
-        const opt = {
-            margin: 6,
-            filename: `Receipt_${receiptData.serialNumber}_${receiptData.customerId}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
-        };
-
-        if (typeof html2pdf !== 'undefined') {
-            await html2pdf().set(opt).from(container).save();
-        } else {
-            window.print();
-        }
-
-        container.style.display = 'none';
-    }
-
-    // ৯. ইভেন্ট লজিক
+    // ৮. ইভেন্ট লজিক
     function initLogic() {
         const idInp = document.getElementById('origId');
         const nameInp = document.getElementById('origName');
@@ -858,49 +739,34 @@
                     return;
                 }
 
-                if (typeof showLoader === 'function') showLoader("সংরক্ষণ ও রিসিট তৈরি হচ্ছে...");
+                if (typeof showLoader === 'function') showLoader("সংরক্ষণ করা হচ্ছে...");
 
                 // ৩নং ছবির রুল: Gross Payment = Net Due + ১% (তবে চার্জ ৬০ টাকার বেশি হবে না)
                 const percentCapCharge = Math.min(netDue * 0.01, 60);
                 const calculatedGross = netDue + percentCapCharge;
 
+                const txData = {
+                    id: 'EDU-' + Date.now(),
+                    customerId: studentId,
+                    studentName: studentName || '-',
+                    class: selectedStudentData ? (selectedStudentData.class || '-') : '-',
+                    month: selectedStudentData ? (selectedStudentData.monthDue || '-') : '-',
+                    category: selectedStudentData ? (selectedStudentData.category || '-') : '-',
+                    mobile: selectedStudentData ? (selectedStudentData.mobile || '-') : '-',
+                    netDue: netDue,
+                    txnFee: txnFee,
+                    totalCharge: totalCharge,
+                    discount: discount,
+                    netReceived: netReceived,
+                    grossPayment: calculatedGross,
+                    credit: netReceived,
+                    date: dateInp ? dateInp.value : new Date().toISOString().split('T')[0],
+                    time: new Date().toLocaleTimeString(),
+                    type: 'Credit'
+                };
+
                 try {
                     const fb = await getFirebase();
-                    let currentSerial = 1001;
-
-                    if (fb) {
-                        // সিরিয়াল ট্র্যাকার রিড ও আপডেট
-                        const serialRef = fb.ref(fb.db, 'erp/serialTracker');
-                        const serialSnap = await fb.get(serialRef);
-                        if (serialSnap.exists()) {
-                            currentSerial = (parseInt(serialSnap.val()) || 1000) + 1;
-                        }
-                        await fb.set(serialRef, currentSerial);
-                    }
-
-                    const txData = {
-                        id: 'EDU-' + Date.now(),
-                        serialNumber: currentSerial,
-                        customerId: studentId,
-                        studentName: studentName || '-',
-                        class: selectedStudentData ? (selectedStudentData.class || '-') : '-',
-                        section: selectedStudentData ? (selectedStudentData.section || '-') : '-',
-                        month: selectedStudentData ? (selectedStudentData.monthDue || '-') : '-',
-                        category: selectedStudentData ? (selectedStudentData.category || '-') : '-',
-                        mobile: selectedStudentData ? (selectedStudentData.mobile || '-') : '-',
-                        dueItems: selectedStudentData ? (selectedStudentData.dueItems || '-') : 'Tuition Fee',
-                        netDue: netDue,
-                        txnFee: txnFee,
-                        totalCharge: totalCharge,
-                        discount: discount,
-                        netReceived: netReceived,
-                        grossPayment: calculatedGross,
-                        credit: netReceived,
-                        date: dateInp ? dateInp.value : new Date().toISOString().split('T')[0],
-                        time: new Date().toLocaleTimeString(),
-                        type: 'Credit'
-                    };
-
                     if (fb) {
                         const snap = await fb.get(fb.ref(fb.db, 'transactions'));
                         let txs = snap.val();
@@ -910,10 +776,7 @@
                         window.customerTransactions = txs;
                     }
 
-                    // A5 রিসিট PDF সরাসরি তৈরি ও ডাউনলোড
-                    await generateAndDownloadReceiptPDF(txData);
-
-                    if (typeof showToast === 'function') showToast(`ফি সংরক্ষিত হয়েছে এবং রিসিট #${currentSerial} তৈরি হয়েছে!`, "success");
+                    if (typeof showToast === 'function') showToast("ফি সফলভাবে ক্লাউডে সংরক্ষিত হয়েছে!", "success");
                     
                     // ফর্ম রিসেট
                     this.reset();
