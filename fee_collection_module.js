@@ -1,76 +1,39 @@
 /**
- * Mousumi Computer ERP - Education & Digital Services Module
- * Reverted Section 1 to User's Exact HTML & Added Section 2 as requested.
+ * Mousumi Computer ERP - Independent Education Module
+ * Section 1: Entry Form (Auto-populates from Section 3)
+ * Section 2: Permanent Records Table (Static)
+ * Section 3: Data Master (Excel Upload Center)
  */
 
 (function () {
-    // ১. CSS ইনজেক্ট করা (কালপুরুষ ও টাইমস নিউ রোমান ফন্ট এবং আপনার অরিজিনাল লেআউট)
     const css = `
         @import url('https://fonts.maateen.me/kalpurush/font.css');
 
-        #edu-module-container, #edu-module-container * {
+        #edu-mod, #edu-mod * {
             box-sizing: border-box !important;
             font-family: 'Kalpurush', 'Times New Roman', serif !important;
         }
 
-        /* --- SECTION 1 STYLE (User Original HTML Design) --- */
-        .edu-card {
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            width: 100%;
-            max-width: 900px;
-            overflow: hidden;
-            border: 1px solid #e1e4e8;
-            margin: 0 auto;
-        }
-        .edu-card-header {
-            background-color: #34495e;
-            color: #ffffff;
-            padding: 15px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .edu-card-header h2 { font-size: 20px !important; font-weight: 600 !important; margin: 0; }
-        .edu-badge { background: #2c3e50; padding: 4px 10px; border-radius: 4px; font-size: 14px !important; color: #bdc3c7; }
-        .edu-card-body { padding: 25px; }
-        .edu-form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
-        .edu-form-group { display: flex; flex-direction: column; }
-        .edu-form-group label { font-size: 15px !important; color: #444 !important; margin-bottom: 6px; font-weight: 600 !important; }
-        .edu-form-control { padding: 10px 12px; border: 1px solid #cccccc; border-radius: 5px; font-size: 16px !important; outline: none; }
-        .edu-form-control[readonly] { background-color: #f8f9fa; color: #6c757d; border-color: #e9ecef; }
-        .edu-sub-text { font-size: 13px !important; color: #2563eb !important; margin-top: 5px; font-weight: bold !important; }
-        .edu-btn-submit { background-color: #2563eb; color: white !important; border: none; padding: 10px 28px; font-size: 16px !important; font-weight: bold !important; border-radius: 5px; cursor: pointer; }
-        .edu-recent-section { margin-top: 25px; padding-top: 15px; border-top: 1px dashed #cbd5e1; }
-        .edu-recent-title { font-size: 13px !important; color: #64748b !important; font-weight: bold !important; margin-bottom: 8px; display: flex; justify-content: space-between; }
-        .edu-compact-table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
-        .edu-compact-table th, .edu-compact-table td { padding: 6px 10px; text-align: left; border-bottom: 1px solid #f1f5f9; }
+        /* --- SECTION 3: UPLOAD CENTER STYLE --- */
+        .edu-master-card { background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 25px; border: 1px solid #e1e4e8; overflow: hidden; }
+        .edu-master-header { background: #34495e; color: #fff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        .edu-upload-box { padding: 30px; text-align: center; border: 2px dashed #cbd5e1; margin: 20px; border-radius: 10px; background: #f8fafc; }
+        .btn-download { background: #10b981; color: #fff !important; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-right: 10px; display: inline-block; cursor: pointer; }
+        .btn-upload-label { background: #2563eb; color: #fff; padding: 10px 25px; border-radius: 5px; cursor: pointer; font-weight: bold; display: inline-block; }
+        
+        /* --- TABLE STYLE (SECTION 2 & 3) --- */
+        .edu-table-wrapper { padding: 20px; overflow-x: auto; }
+        .edu-full-table { width: 100%; border-collapse: collapse; min-width: 1200px; font-size: 14px !important; }
+        .edu-full-table th { background: #f8fafc; color: #475569; padding: 10px; border: 1px solid #e2e8f0; text-align: center; }
+        .edu-full-table td { padding: 10px; border: 1px solid #e2e8f0; text-align: center; color: #334155; }
 
-        /* --- SECTION 2 STYLE (New All Fee Records) --- */
-        .all-records-summary {
-            background: #ffffff;
-            border-radius: 6px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            border-left: 4px solid #2563eb;
-            display: inline-block;
-        }
-        .all-records-card {
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            width: 100%;
-            overflow: hidden;
-            border: 1px solid #e1e4e8;
-        }
-        .all-records-header { background: #34495e; color: #fff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
-        .all-records-header h2 { font-size: 19px !important; margin: 0; }
-        .records-table-container { padding: 20px; overflow-x: auto; }
-        .records-main-table { width: 100%; border-collapse: collapse; min-width: 1200px; font-size: 13px !important; }
-        .records-main-table th { background: #f8fafc; color: #475569; padding: 10px; border: 1px solid #e2e8f0; text-align: center; }
-        .records-main-table td { padding: 8px; border: 1px solid #e2e8f0; text-align: center; color: #334155; }
+        /* --- SECTION 1 (ORIGINAL DESIGN) --- */
+        .edu-card-original { background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e1e4e8; overflow: hidden; max-width: 900px; margin: 0 auto 25px auto; }
+        .edu-form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 25px; }
+        .edu-form-group { display: flex; flex-direction: column; }
+        .edu-form-group label { font-size: 15px; color: #444; margin-bottom: 6px; font-weight: 600; }
+        .edu-control { padding: 10px 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; outline: none; }
+        .edu-btn-submit { background: #2563eb; color: #fff; border: none; padding: 12px 40px; border-radius: 5px; font-weight: bold; cursor: pointer; float: right; margin: 0 25px 25px 0; }
 
         #menu-edu-parent.open .submenu-list { display: block; }
     `;
@@ -78,7 +41,7 @@
     styleSheet.innerText = css;
     document.head.appendChild(styleSheet);
 
-    // ২. সাইডবার সাব-মেনু
+    // ১. সাইডবার মেনু তৈরি
     function injectMenu() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList || document.getElementById('menu-edu-parent')) return;
@@ -92,91 +55,46 @@
                 <ul class="submenu-list">
                     <li class="submenu-item"><a onclick="switchMainTab('edu-fee-form')"><i class="fa-solid fa-angle-right"></i> <span>ফি এন্ট্রি (Fee Entry)</span></a></li>
                     <li class="submenu-item"><a onclick="switchMainTab('edu-fee-records')"><i class="fa-solid fa-angle-right"></i> <span>সকল ফি রেকর্ডস</span></a></li>
+                    <li class="submenu-item"><a onclick="switchMainTab('edu-data-master')"><i class="fa-solid fa-angle-right"></i> <span>শিক্ষার্থী ডাটা মাস্টার</span></a></li>
                 </ul>
             </li>
         `;
         menuList.insertAdjacentHTML('beforeend', html);
     }
 
-    // ৩. ভিউ প্যানেল ইনজেক্ট করা
+    // ২. ৩টি সেকশনের প্যানেল ইনজেক্ট করা
     function injectPanels() {
         const wrapper = document.querySelector('.main-wrapper');
         if (!wrapper) return;
 
-        const panelsHTML = `
-            <div id="edu-module-container">
-                <!-- প্যানেল ১: আপনার দেওয়া এইচটিএমএল ডিজাইনের ফি এন্ট্রি ফর্ম -->
+        const html = `
+            <div id="edu-mod">
+                <!-- SECTION 1: FEE ENTRY -->
                 <div class="view-panel" id="edu-fee-form-view">
-                    <div class="edu-card">
-                        <div class="edu-card-header">
-                            <h2>ফি কালেকশন মডিউল (Fee Collection)</h2>
-                            <span class="edu-badge">ERP v2.4</span>
-                        </div>
-                        <div class="edu-card-body">
-                            <form id="feeFormOriginal">
-                                <div class="edu-form-grid">
-                                    <div class="edu-form-group">
-                                        <label>তারিখ (Date)</label>
-                                        <input type="date" id="origDate" class="edu-form-control" required>
-                                    </div>
-                                    <div class="edu-form-group">
-                                        <label>স্টুডেন্ট আইডি (ID)</label>
-                                        <input type="text" id="origId" class="edu-form-control" placeholder="আইডি লিখুন" required>
-                                    </div>
-                                    <div class="edu-form-group">
-                                        <label>শিক্ষার্থীর নাম (Student Name)</label>
-                                        <input type="text" id="origName" class="edu-form-control" placeholder="শিক্ষার্থীর নাম">
-                                    </div>
-                                </div>
-                                <div class="edu-form-grid">
-                                    <div class="edu-form-group">
-                                        <label>বকেয়া (Net Due)</label>
-                                        <input type="text" id="origDue" class="edu-form-control" value="0.00" readonly>
-                                    </div>
-                                    <div class="edu-form-group">
-                                        <label>ট্রানজেকশন ফি (Txn Fee)</label>
-                                        <input type="number" id="origTxn" class="edu-form-control" value="6.00">
-                                        <span class="edu-sub-text">মোট চার্জ (Total Charge): ৳ <span id="origCharge">6.00</span></span>
-                                    </div>
-                                    <div class="edu-form-group">
-                                        <label>গৃহীত মোট টাকা (Net Received)</label>
-                                        <input type="number" id="origRec" class="edu-form-control" placeholder="0.00" required>
-                                    </div>
-                                </div>
-                                <div class="edu-form-grid">
-                                    <div class="edu-form-group">
-                                        <label>ছাড় (Discount)</label>
-                                        <input type="number" id="origDisc" class="edu-form-control" value="0.00">
-                                    </div>
-                                </div>
-                                <div style="display:flex; justify-content:flex-end;">
-                                    <button type="submit" class="edu-btn-submit">সাবমিট করুন</button>
-                                </div>
-                            </form>
-                            <div class="edu-recent-section">
-                                <div class="edu-recent-title"><span>সর্বশেষ এন্ট্রি (Recent Entries)</span><span>সর্বোচ্চ ৩টি</span></div>
-                                <table class="edu-compact-table">
-                                    <thead><tr><th>তারিখ</th><th>আইডি</th><th>নাম</th><th>গৃহীত টাকা</th></tr></thead>
-                                    <tbody id="origRecentBody"><tr><td colspan="4" style="text-align:center; color:#999; padding:15px;">কোনো রিসেন্ট এন্ট্রি নেই</td></tr></tbody>
-                                </table>
+                    <div class="edu-card-original">
+                        <div class="edu-master-header"><h2>ফি কালেকশন মডিউল (Fee Collection)</h2><span style="font-family:Times New Roman; opacity:0.7;">ERP v2.4</span></div>
+                        <form id="feeForm">
+                            <div class="edu-form-grid">
+                                <div class="edu-form-group"><label>তারিখ (Date)</label><input type="date" id="fDate" class="edu-control" required></div>
+                                <div class="edu-form-group"><label>স্টুডেন্ট আইডি (ID)</label><input type="text" id="fId" class="edu-control" placeholder="আইডি লিখুন" required></div>
+                                <div class="edu-form-group"><label>শিক্ষার্থীর নাম (Student Name)</label><input type="text" id="fName" class="edu-control" readonly></div>
+                                <div class="edu-form-group"><label>বকেয়া (Net Due)</label><input type="text" id="fDue" class="edu-control" readonly value="0.00"></div>
+                                <div class="edu-form-group"><label>ট্রানজেকশন ফি (Txn Fee)</label><input type="number" id="fTxn" class="edu-control" readonly value="0.00"><span style="font-size:13px; color:#2563eb; font-weight:bold; margin-top:5px;">মোট চার্জ: ৳ <span id="fChargeDisp">0.00</span></span></div>
+                                <div class="edu-form-group"><label>গৃহীত মোট টাকা (Net Received)</label><input type="number" id="fRec" class="edu-control" placeholder="0.00" required></div>
+                                <div class="edu-form-group"><label>ছাড় (Discount)</label><input type="number" id="fDisc" class="edu-control" value="0.00"></div>
                             </div>
-                        </div>
+                            <button type="submit" class="edu-btn-submit">সাবমিট করুন</button>
+                            <div style="clear:both;"></div>
+                        </form>
                     </div>
                 </div>
 
-                <!-- প্যানেল ২: সকল ফি রেকর্ডস সেকশন (নতুন ডিজাইন) -->
+                <!-- SECTION 2: ALL FEE RECORDS -->
                 <div class="view-panel" id="edu-fee-records-view">
-                    <div class="all-records-summary">
-                        <span>সর্বমোট এন্ট্রি টাকা (Total Received):</span>
-                        <strong>৳ <span id="totalFeeSum">0.00</span></strong>
-                    </div>
-                    <div class="all-records-card">
-                        <div class="all-records-header">
-                            <h2>সকল জমা হওয়া ফি তালিকা (All Fee Records)</h2>
-                            <span style="font-size:12px; opacity:0.7;">Live Data</span>
-                        </div>
-                        <div class="records-table-container">
-                            <table class="records-main-table">
+                    <div class="edu-master-card">
+                        <div class="edu-master-header"><h2>সকল জমা হওয়া ফি তালিকা (All Fee Records)</h2></div>
+                        <div class="edu-table-wrapper">
+                            <table class="edu-full-table">
                                 <thead>
                                     <tr>
                                         <th>SL</th><th>Date</th><th>Student Name</th><th>Id</th><th>Class</th><th>Month</th>
@@ -184,107 +102,188 @@
                                         <th>Net Received</th><th>Gross Payment</th><th>Remarks</th>
                                     </tr>
                                 </thead>
-                                <tbody id="allRecordsTableBody">
-                                    <tr><td colspan="14" style="padding:20px; color:#999;">এখনও কোনো ডেটা জমা হয়নি</td></tr>
-                                </tbody>
+                                <tbody id="recordsBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: STUDENT DATA MASTER (UPLOAD) -->
+                <div class="view-panel" id="edu-data-master-view">
+                    <div class="edu-master-card">
+                        <div class="edu-master-header"><h2>শিক্ষার্থী ডাটা মাস্টার (Student Data Master)</h2></div>
+                        <div class="edu-upload-box">
+                            <p style="margin-bottom:20px; color:#64748b;">প্রথমে নমুনা ফাইলটি ডাউনলোড করুন, ডাটা ইনপুট দিন এবং তারপর আপলোড করুন।</p>
+                            <a class="btn-download" onclick="downloadSampleExcel()"><i class="fa-solid fa-download"></i> নমুনা ফাইল ডাউনলোড (Sample Copy)</a>
+                            <label class="btn-upload-label" for="excelUpload"><i class="fa-solid fa-file-excel"></i> এক্সেল ফাইল আপলোড করুন (Upload Excel)</label>
+                            <input type="file" id="excelUpload" accept=".xlsx, .xls" style="display:none;">
+                        </div>
+                        <div class="edu-table-wrapper">
+                            <h4 style="margin-bottom:15px; color:#34495e;">বর্তমানে আপলোডকৃত শিক্ষার্থী তালিকা:</h4>
+                            <table class="edu-full-table">
+                                <thead>
+                                    <tr><th>Id</th><th>Student Name</th><th>Class</th><th>Mobile</th><th>Month</th><th>Category</th><th>Net Due</th><th>Txn Fee</th></tr>
+                                </thead>
+                                <tbody id="masterDataBody"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
         `;
-        wrapper.insertAdjacentHTML('beforeend', panelsHTML);
+        wrapper.insertAdjacentHTML('beforeend', html);
     }
 
-    // ৪. লজিক (অরিজিনাল এইচটিএমএল লজিক অনুযায়ী)
-    function initLogic() {
-        const idInp = document.getElementById('origId');
-        const dateInp = document.getElementById('origDate');
-        dateInp.value = new Date().toISOString().split('T')[0];
+    // ৩. এক্সেল প্রসেসিং এবং ফায়ারবেস স্টোরেজ
+    let eduMasterData = [];
+    let eduFeeRecords = [];
+
+    async function handleExcelUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        showLoader("ফাইল প্রসেস হচ্ছে...");
+        const reader = new FileReader();
+        reader.onload = async function (evt) {
+            const data = evt.target.result;
+            const workbook = XLSX.read(data, { type: 'binary' });
+            const sheetName = workbook.SheetNames[0];
+            const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+            // আপনার চাহিদা অনুযায়ী নতুন সিট আপলোড মানে পুরানো সব ডাটা প্রতিস্থাপন (৩ নং সেকশন)
+            eduMasterData = json.map(row => ({
+                id: String(row['Id'] || ''),
+                name: row['Student Name'] || '',
+                class: row['Class'] || '',
+                mobile: row['Mobile'] || '',
+                month: row['Month'] || '',
+                category: row['Category'] || '',
+                due: parseFloat(row['Net Due']) || 0,
+                txnFee: parseFloat(row['Txn Fee']) || 0
+            }));
+
+            await writeToFirebase('erp/eduMasterData', eduMasterData);
+            renderMasterTable();
+            hideLoader();
+            showToast("ডাটা মাস্টার আপডেট হয়েছে!", "success");
+        };
+        reader.readAsBinaryString(file);
+    }
+
+    // ৪. নমুনা এক্সেল ডাউনলোড লজিক
+    window.downloadSampleExcel = function() {
+        const sample = [{
+            "Id": "101", "Student Name": "Abdur Rahman", "Class": "10", "Mobile": "01700000000",
+            "Month": "January", "Category": "Monthly Fee", "Net Due": "1000", "Txn Fee": "6"
+        }];
+        const ws = XLSX.utils.json_to_sheet(sample);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "SampleData");
+        XLSX.writeFile(wb, "Edu_Sample_Sheet.xlsx");
+    };
+
+    // ৫. ফি এন্ট্রি লজিক (অটো পপুলেশন)
+    function setupLogic() {
+        const idInp = document.getElementById('fId');
+        document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
 
         idInp.addEventListener('input', function() {
             const val = this.value.trim();
-            const customers = window.customers || [];
-            const found = customers.find(c => c.id === val || c.phone === val);
+            const found = eduMasterData.find(s => s.id === val);
+            
             if(found) {
-                document.getElementById('origName').value = found.name;
-                if(window.calculateCustomerCurrentDue) {
-                    document.getElementById('origDue').value = window.calculateCustomerCurrentDue(found.id).toFixed(2);
-                }
+                document.getElementById('fName').value = found.name;
+                document.getElementById('fDue').value = found.due.toFixed(2);
+                document.getElementById('fTxn').value = found.txnFee.toFixed(2);
+                document.getElementById('fChargeDisp').innerText = found.txnFee.toFixed(2);
+            } else {
+                document.getElementById('fName').value = "";
+                document.getElementById('fDue').value = "0.00";
+                document.getElementById('fTxn').value = "0.00";
+                document.getElementById('fChargeDisp').innerText = "0.00";
             }
         });
 
-        document.getElementById('feeFormOriginal').onsubmit = async function(e) {
+        document.getElementById('feeForm').onsubmit = async function(e) {
             e.preventDefault();
-            const rec = parseFloat(document.getElementById('origRec').value) || 0;
-            const txn = parseFloat(document.getElementById('origTxn').value) || 0;
-            const studentId = idInp.value;
-
-            if(rec <= 0 || !studentId) return alert("তথ্য সঠিক নয়!");
+            const id = idInp.value.trim();
+            const found = eduMasterData.find(s => s.id === id);
+            if(!found) return alert("স্টুডেন্ট আইডি পাওয়া যায়নি!");
 
             showLoader("সংরক্ষণ করা হচ্ছে...");
-            const txData = {
-                id: 'EDU-' + Date.now(),
-                customerId: studentId,
-                studentName: document.getElementById('origName').value,
-                credit: rec,
-                netReceived: rec,
+            const rec = parseFloat(document.getElementById('fRec').value) || 0;
+            const txn = parseFloat(document.getElementById('fTxn').value) || 0;
+
+            const record = {
+                sl: eduFeeRecords.length + 1,
+                date: document.getElementById('fDate').value,
+                studentName: found.name,
+                id: found.id,
+                class: found.class,
+                month: found.month,
+                category: found.category,
+                mobile: found.mobile,
+                netDue: found.due,
                 txnFee: txn,
+                totalCharge: txn,
+                netReceived: rec,
                 grossPayment: rec + txn,
-                date: dateInp.value,
-                time: new Date().toLocaleTimeString(),
-                type: 'Credit'
+                remarks: "-",
+                id_permanent: 'EDU-' + Date.now()
             };
 
-            try {
-                if(window.customerTransactions) {
-                    window.customerTransactions.push(txData);
-                    const db = window.getDatabase();
-                    const { ref, set } = window.firebase_database;
-                    await set(ref(db, 'transactions'), window.customerTransactions);
-                    
-                    showToast("ফি জমা হয়েছে!", "success");
-                    updateRecent(txData);
-                    this.reset();
-                    dateInp.value = new Date().toISOString().split('T')[0];
-                    renderFullTable();
-                }
-            } catch(err) { console.error(err); }
+            eduFeeRecords.push(record);
+            await writeToFirebase('erp/eduFeeRecords', eduFeeRecords);
+            
+            // ২ নং সেকশনে ডাটা পাঠানো মানে ওটা ফিক্সড থাকবে
+            renderRecordsTable();
+            this.reset();
+            document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
             hideLoader();
+            showToast("ফি রেকর্ড সংরক্ষিত হয়েছে!", "success");
         };
     }
 
-    function updateRecent(t) {
-        const body = document.getElementById('origRecentBody');
-        const row = `<tr><td>${t.date}</td><td>${t.customerId}</td><td>${t.studentName || '-'}</td><td>৳ ${t.credit.toFixed(2)}</td></tr>`;
-        if(body.innerText.includes("কোনো রিসেন্ট এন্ট্রি নেই")) body.innerHTML = "";
-        body.insertAdjacentHTML('afterbegin', row);
-        if (body.children.length > 3) body.removeChild(body.lastChild);
+    // ৬. রেন্ডার টেবিল ফাংশনসমূহ
+    function renderMasterTable() {
+        const body = document.getElementById('masterDataBody');
+        body.innerHTML = eduMasterData.map(s => `
+            <tr><td>${s.id}</td><td>${s.name}</td><td>${s.class}</td><td>${s.mobile}</td><td>${s.month}</td><td>${s.category}</td><td>${s.due.toFixed(2)}</td><td>${s.txnFee.toFixed(2)}</td></tr>
+        `).join('');
     }
 
-    function renderFullTable() {
-        const body = document.getElementById('allRecordsTableBody');
-        if(!body) return;
-        const eduTxs = (window.customerTransactions || []).filter(t => t.id && t.id.startsWith('EDU-'));
-        body.innerHTML = '';
-        let total = 0;
-        eduTxs.reverse().forEach((t, i) => {
-            total += (parseFloat(t.netReceived) || 0);
-            body.innerHTML += `
-                <tr>
-                    <td>${eduTxs.length - i}</td><td>${t.date}</td><td>${t.studentName || '-'}</td><td>${t.customerId}</td>
-                    <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>${(t.txnFee || 0).toFixed(2)}</td>
-                    <td>${(t.txnFee || 0).toFixed(2)}</td><td>${(t.netReceived || 0).toFixed(2)}</td>
-                    <td style="color:#2563eb; font-weight:bold;">${(t.grossPayment || 0).toFixed(2)}</td><td>-</td>
-                </tr>`;
-        });
-        document.getElementById('totalFeeSum').innerText = total.toLocaleString('en-US', {minimumFractionDigits:2});
+    function renderRecordsTable() {
+        const body = document.getElementById('recordsBody');
+        body.innerHTML = eduFeeRecords.slice().reverse().map((r, i) => `
+            <tr>
+                <td>${eduFeeRecords.length - i}</td><td>${r.date}</td><td>${r.studentName}</td><td>${r.id}</td><td>${r.class}</td><td>${r.month}</td>
+                <td>${r.category}</td><td>${r.mobile}</td><td>${r.netDue.toFixed(2)}</td><td>${r.txnFee.toFixed(2)}</td><td>${r.totalCharge.toFixed(2)}</td>
+                <td style="font-weight:bold;">${r.netReceived.toFixed(2)}</td><td style="font-weight:bold; color:#2563eb;">${r.grossPayment.toFixed(2)}</td><td>${r.remarks}</td>
+            </tr>
+        `).join('');
+    }
+
+    // ডাটা ইনিশিয়ালাইজেশন
+    async function initData() {
+        const db = window.getDatabase();
+        const { ref, get } = window.firebase_database;
+        
+        const masterSnap = await get(ref(db, 'erp/eduMasterData'));
+        if(masterSnap.exists()) eduMasterData = Object.values(masterSnap.val());
+        
+        const recordsSnap = await get(ref(db, 'erp/eduFeeRecords'));
+        if(recordsSnap.exists()) eduFeeRecords = Object.values(recordsSnap.val());
+        
+        renderMasterTable();
+        renderRecordsTable();
     }
 
     window.addEventListener('load', () => {
         injectMenu();
         injectPanels();
-        initLogic();
-        setTimeout(renderFullTable, 2000);
+        setupLogic();
+        document.getElementById('excelUpload').addEventListener('change', handleExcelUpload);
+        initData();
     });
+
 })();
