@@ -1,12 +1,12 @@
 /**
  * ==========================================================================
- * EDUCATION & DIGITAL SERVICES -> EXACT GOOGLE SHEET RECEIPT TEMPLATE
+ * EDUCATION & DIGITAL SERVICES -> PIXEL PERFECT RECEIPT TEMPLATE
  * Mousumi Computer ERP Extension
  * ==========================================================================
  */
 
 (function () {
-    // ১. গুগল ফন্ট ও নিখুঁত সিএসএস ইনজেকশন
+    // ১. গুগল ফন্ট ও শিটের নিখুঁত সিএসএস ইনজেকশন
     const style = document.createElement('style');
     style.innerHTML = `
         @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lobster&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap');
@@ -15,9 +15,9 @@
         .receipt-wrapper-card {
             background: #ffffff;
             width: 100%;
-            max-width: 580px;
+            max-width: 590px;
             margin: 0 auto;
-            padding: 35px 30px 25px 30px;
+            padding: 30px 25px 25px 25px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.06);
             border-radius: 4px;
             position: relative;
@@ -32,7 +32,7 @@
             top: 48%;
             left: 50%;
             transform: translate(-50%, -50%);
-            opacity: 0.07;
+            opacity: 0.08;
             pointer-events: none;
             z-index: 1;
             text-align: center;
@@ -40,27 +40,26 @@
         }
         .receipt-watermark .wm-logo {
             font-family: 'EB Garamond', serif;
-            font-size: 190px;
+            font-size: 200px;
             font-weight: 700;
             line-height: 1;
             color: #000;
         }
         .receipt-watermark .wm-text {
             font-family: 'EB Garamond', serif;
-            font-size: 30px;
+            font-size: 32px;
             font-weight: bold;
             letter-spacing: 1px;
-            margin-top: -35px;
+            margin-top: -40px;
             color: #000;
         }
 
-        /* রসিদ কনটেন্ট লেয়ার */
         .receipt-body {
             position: relative;
             z-index: 2;
         }
 
-        /* ১নং ছবি: Caveat 10pt */
+        /* Row 1: Caveat 10pt */
         .rc-bismillah {
             text-align: center;
             font-family: 'Caveat', cursive !important;
@@ -70,7 +69,7 @@
             line-height: 1.2;
         }
 
-        /* ২নং ছবি: Lobster 29pt Bold */
+        /* Row 2: Lobster 29pt Bold */
         .rc-brand-title {
             text-align: center;
             font-family: 'Lobster', cursive !important;
@@ -81,7 +80,7 @@
             line-height: 1.15;
         }
 
-        /* ৩নং ছবি: EB Garamond 11pt */
+        /* Row 3: EB Garamond 11pt */
         .rc-services-desc {
             text-align: center;
             font-family: 'EB Garamond', serif !important;
@@ -89,10 +88,10 @@
             line-height: 1.25;
             color: #000;
             margin: 0 auto 12px auto;
-            max-width: 480px;
+            max-width: 500px;
         }
 
-        /* ৪নং ছবি: Tiro Bangla 12pt Bold */
+        /* Row 5: Tiro Bangla 12pt Bold */
         .rc-main-title {
             text-align: center;
             font-family: 'Tiro Bangla', serif !important;
@@ -104,60 +103,65 @@
             text-transform: uppercase;
         }
 
-        /* ৫নং ছবি: Tiro Bangla 14pt Bold ও ডাটা টেবিল */
-        .rc-table {
+        /* টেবিল ও নিখুঁত ডটেড আন্ডারলাইন বিন্যাস */
+        .rc-sheet-table {
             width: 100%;
             border-collapse: collapse;
+            border-top: 1.5px dotted #000;
         }
 
-        .rc-table tr {
-            border-bottom: 1px dotted #000;
-        }
-
-        .rc-table td {
-            padding: 5px 8px;
+        .rc-sheet-table td {
+            padding: 3px 8px;
             color: #000;
             vertical-align: middle;
-        }
-
-        .rc-col-label {
-            width: 38%;
             font-family: 'Tiro Bangla', serif !important;
             font-size: 14pt !important;
-            font-weight: bold !important;
-            border-right: 1px dotted #000;
         }
 
-        .rc-col-val {
+        /* লেবেল (Column B) */
+        .rc-col-b {
+            width: 38%;
+            font-weight: bold !important;
+            border-right: 1.5px dotted #000;
+            padding-left: 4px !important;
+        }
+
+        /* ভ্যালু/সংখ্যা (Column C) */
+        .rc-col-c {
             width: 62%;
-            font-family: 'EB Garamond', 'Tiro Bangla', serif !important;
-            font-size: 13.5pt !important;
-            font-weight: 600;
+            font-weight: normal !important;
             padding-left: 12px !important;
         }
 
-        /* Payment Received ব্যানার */
-        .rc-payment-banner {
-            text-align: center;
-            font-family: 'Tiro Bangla', serif !important;
-            font-size: 14pt !important;
+        /* ডটেড লাইন ও রো গ্যাপ স্পেসিং */
+        .rc-border-bottom {
+            border-bottom: 1.5px dotted #000;
+        }
+
+        .rc-gap-row td {
+            height: 18px !important;
+            padding: 0 !important;
+        }
+
+        /* Row 15: Payment Received ব্যানার */
+        .rc-payment-received-row td {
+            text-align: center !important;
             font-weight: bold !important;
-            padding: 8px 0;
-            border-bottom: 1px dotted #000;
-            margin-bottom: 15px;
-            color: #000;
+            padding: 6px 0 !important;
+            border-bottom: 1.5px dotted #000 !important;
+            border-right: none !important;
         }
 
         /* PAID স্ট্যাম্প */
         .paid-stamp-wrapper {
             text-align: center;
-            margin: 10px 0 16px 0;
+            margin: 12px 0 16px 0;
         }
 
         .paid-seal {
             display: inline-block;
-            width: 78px;
-            height: 78px;
+            width: 80px;
+            height: 80px;
             border: 2.5px dotted #000;
             border-radius: 50%;
             padding: 3px;
@@ -185,7 +189,7 @@
 
         .paid-seal-main {
             font-family: 'EB Garamond', serif;
-            font-size: 17px;
+            font-size: 18px;
             font-weight: 900;
             line-height: 1;
             letter-spacing: 1px;
@@ -206,7 +210,7 @@
             font-family: 'Tiro Bangla', serif !important;
             font-size: 12pt !important;
             font-weight: bold !important;
-            margin-bottom: 18px;
+            margin-bottom: 15px;
         }
 
         .rc-disclaimer {
@@ -217,7 +221,7 @@
             color: #000;
         }
 
-        /* প্রিন্ট স্টাইলিং */
+        /* প্রিন্ট সেটআপ */
         @media print {
             body * {
                 visibility: hidden;
@@ -231,7 +235,7 @@
                 top: 0;
                 transform: translateX(-50%);
                 width: 100% !important;
-                max-width: 580px !important;
+                max-width: 590px !important;
                 box-shadow: none !important;
                 padding: 15px !important;
             }
@@ -242,7 +246,7 @@
     `;
     document.head.appendChild(style);
 
-    // ২. সাইডবার সাব-মেনু ইনজেকশন
+    // ২. সাইডবারে সাব-মেনু ইনজেকশন
     function injectTemplateSubMenu() {
         const menuItems = document.querySelectorAll('.menu-item');
         let submenuList = null;
@@ -282,7 +286,7 @@
                     </button>
                 </div>
 
-                <!-- গুগল শিট অনুযায়ী হুবহু রসিদ কার্ড -->
+                <!-- গুগল শিটের সাথে ১০০% হুবহু রসিদ -->
                 <div class="receipt-wrapper-card" id="printable-receipt-card">
                     <!-- ওয়াটারমার্ক -->
                     <div class="receipt-watermark">
@@ -291,61 +295,78 @@
                     </div>
 
                     <div class="receipt-body">
-                        <!-- ১নং ছবি: Caveat 10pt -->
+                        <!-- Row 1 -->
                         <div class="rc-bismillah">“In the name of Allah, the Most Gracious, the Most Merciful”</div>
                         
-                        <!-- ২নং ছবি: Lobster 29pt Bold -->
+                        <!-- Row 2 -->
                         <div class="rc-brand-title">Mousumi Computer</div>
                         
-                        <!-- ৩নং ছবি: EB Garamond 11pt -->
+                        <!-- Row 3 -->
                         <div class="rc-services-desc">
                             All kinds of services: Tuition Fee Payment, T-Cash (Tap), bKash, <br>
                             Nagad, Rocket, Upay, Flexiload, and Computer Works.
                         </div>
 
-                        <!-- ৪নং ছবি: Tiro Bangla 12pt Bold -->
+                        <!-- Row 5 -->
                         <div class="rc-main-title">RECEIPT</div>
 
-                        <!-- ৫নং ছবি: Tiro Bangla 14pt Bold -->
-                        <table class="rc-table" style="border-top: 1px dotted #000;">
+                        <!-- Row 6 থেকে 15 পর্যন্ত ডাটা টেবিল ও সঠিক আন্ডারলাইন বিন্যাস -->
+                        <table class="rc-sheet-table">
+                            <!-- Row 6 -->
                             <tr>
-                                <td class="rc-col-label">Receipt No</td>
-                                <td class="rc-col-val">3465</td>
+                                <td class="rc-col-b">Receipt No</td>
+                                <td class="rc-col-c">3465</td>
                             </tr>
+                            <!-- Row 7 -->
+                            <tr class="rc-border-bottom">
+                                <td class="rc-col-b">Date</td>
+                                <td class="rc-col-c">21-08-2026</td>
+                            </tr>
+
+                            <!-- Row 8 (Blank Gap Row) -->
+                            <tr class="rc-gap-row rc-border-bottom">
+                                <td class="rc-col-b"></td>
+                                <td class="rc-col-c"></td>
+                            </tr>
+
+                            <!-- Row 9 -->
                             <tr>
-                                <td class="rc-col-label">Date</td>
-                                <td class="rc-col-val">21-08-2026</td>
+                                <td class="rc-col-b">Student Name</td>
+                                <td class="rc-col-c">Md. Jobayer Ahmed Joy</td>
+                            </tr>
+                            <!-- Row 10 -->
+                            <tr class="rc-border-bottom">
+                                <td class="rc-col-b">Student ID</td>
+                                <td class="rc-col-c">804325</td>
+                            </tr>
+
+                            <!-- Row 11 (Blank Gap Row) -->
+                            <tr class="rc-gap-row rc-border-bottom">
+                                <td class="rc-col-b"></td>
+                                <td class="rc-col-c"></td>
+                            </tr>
+
+                            <!-- Row 12 -->
+                            <tr>
+                                <td class="rc-col-b">Tuition Fee</td>
+                                <td class="rc-col-c">4,760.00</td>
+                            </tr>
+                            <!-- Row 13 -->
+                            <tr>
+                                <td class="rc-col-b">Charge</td>
+                                <td class="rc-col-c">59.6</td>
+                            </tr>
+                            <!-- Row 14 -->
+                            <tr class="rc-border-bottom">
+                                <td class="rc-col-b">Total</td>
+                                <td class="rc-col-c">4,819.00</td>
+                            </tr>
+
+                            <!-- Row 15 (Merged Payment Received Banner) -->
+                            <tr class="rc-payment-received-row">
+                                <td colspan="2">Payment Received: 4819.6</td>
                             </tr>
                         </table>
-
-                        <table class="rc-table">
-                            <tr>
-                                <td class="rc-col-label">Student Name</td>
-                                <td class="rc-col-val">Md. Jobayer Ahmed Joy</td>
-                            </tr>
-                            <tr>
-                                <td class="rc-col-label">Student ID</td>
-                                <td class="rc-col-val">804325</td>
-                            </tr>
-                        </table>
-
-                        <table class="rc-table">
-                            <tr>
-                                <td class="rc-col-label">Tuition Fee</td>
-                                <td class="rc-col-val">4,760.00</td>
-                            </tr>
-                            <tr>
-                                <td class="rc-col-label">Charge</td>
-                                <td class="rc-col-val">59.6</td>
-                            </tr>
-                            <tr>
-                                <td class="rc-col-label">Total</td>
-                                <td class="rc-col-val">4,819.60</td>
-                            </tr>
-                        </table>
-
-                        <!-- পেমেন্ট রিসিভড ব্যানার -->
-                        <div class="rc-payment-banner">Payment Received: 4819.6</div>
 
                         <!-- PAID সিল -->
                         <div class="paid-stamp-wrapper">
@@ -396,7 +417,7 @@
     window.downloadReceiptPDF = function () {
         const element = document.getElementById('printable-receipt-card');
         const opt = {
-            margin: 10,
+            margin: 8,
             filename: 'Receipt_3465.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 3, useCORS: true },
