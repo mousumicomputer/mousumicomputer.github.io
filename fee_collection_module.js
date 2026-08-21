@@ -1,6 +1,6 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module
- * Features: Auto Calculation, Max 60 Tk Cap Gross Payment, Live Persistent Firebase Sync, Auto SL & Pagination.
+ * Features: Auto Calculation, Max 60 Tk Cap Gross Payment, Isolated Firebase Sync, Auto SL & Pagination.
  */
 
 (function () {
@@ -644,7 +644,7 @@
         return btn;
     }
 
-    // ৭. লাইভ রিয়েল-টাইম Firebase লিসেনার (স্থায়ী সংরক্ষণ)
+    // ৭. লাইভ রিয়েল-টাইম Firebase লিসেনার (সম্পূর্ণ আলাদা সেভ ও ফেচ)
     async function listenFirebaseData() {
         const fb = await getFirebase();
         if (!fb) return;
@@ -657,16 +657,13 @@
             renderDueDataTable();
         });
 
-        // লেনদেন ডেটা লিসেনার (যাতে রিফ্রেশেও ফি রেকর্ড না হারায়)
-        const txRef = fb.ref(fb.db, 'transactions');
-        fb.onValue(txRef, (snapshot) => {
+        // ফি ট্রানজেকশন ডেটা লিসেনার (erp/feeTransactions থেকে লোড হবে)
+        const feeRef = fb.ref(fb.db, 'erp/feeTransactions');
+        fb.onValue(feeRef, (snapshot) => {
             const data = snapshot.val();
-            const allTxs = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-            window.customerTransactions = allTxs;
-            
-            const eduTxs = allTxs.filter(t => t && t.id && String(t.id).startsWith('EDU-'));
-            renderFullTable(eduTxs);
-            renderRecentEntries(eduTxs);
+            const feeTxs = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+            renderFullTable(feeTxs);
+            renderRecentEntries(feeTxs);
         });
     }
 
@@ -721,7 +718,7 @@
         if (discInp) discInp.addEventListener('input', calculateAutoValues);
         if (txnInp) txnInp.addEventListener('input', calculateAutoValues);
 
-        // ফি ফর্ম সাবমিট
+        // ফি ফর্ম সাবমিট (মূল ট্রানজেকশনে কোনো প্রভাব ফেলবে না)
         const origForm = document.getElementById('feeFormOriginal');
         if (origForm) {
             origForm.onsubmit = async function(e) {
@@ -741,7 +738,7 @@
 
                 if (typeof showLoader === 'function') showLoader("সংরক্ষণ করা হচ্ছে...");
 
-                // ৩নং ছবির রুল: Gross Payment = Net Due + ১% (তবে চার্জ ৬০ টাকার বেশি হবে না)
+                // Gross Payment = Net Due + ১% (তবে চার্জ ৬০ টাকার বেশি হবে না)
                 const percentCapCharge = Math.min(netDue * 0.01, 60);
                 const calculatedGross = netDue + percentCapCharge;
 
@@ -759,21 +756,19 @@
                     discount: discount,
                     netReceived: netReceived,
                     grossPayment: calculatedGross,
-                    credit: netReceived,
                     date: dateInp ? dateInp.value : new Date().toISOString().split('T')[0],
-                    time: new Date().toLocaleTimeString(),
-                    type: 'Credit'
+                    time: new Date().toLocaleTimeString()
                 };
 
                 try {
                     const fb = await getFirebase();
                     if (fb) {
-                        const snap = await fb.get(fb.ref(fb.db, 'transactions'));
+                        // মূল transactions এর বদলে erp/feeTransactions নোডে সেভ হবে
+                        const snap = await fb.get(fb.ref(fb.db, 'erp/feeTransactions'));
                         let txs = snap.val();
                         txs = txs ? (Array.isArray(txs) ? txs : Object.values(txs)) : [];
                         txs.push(txData);
-                        await fb.set(fb.ref(fb.db, 'transactions'), txs);
-                        window.customerTransactions = txs;
+                        await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), txs);
                     }
 
                     if (typeof showToast === 'function') showToast("ফি সফলভাবে ক্লাউডে সংরক্ষিত হয়েছে!", "success");
@@ -939,20 +934,20 @@
         }
     }
 
-    // ২নং ছবির সেকশন: সর্বশেষ এন্ট্রি (সর্বোচ্চ ৩টি)
-    function renderRecentEntries(eduTxs) {
+    // সর্বশেষ এন্ট্রি (সর্বোচ্চ ৩টি)
+    function renderRecentEntries(feeTxs) {
         const body = document.getElementById('origRecentBody');
         if (!body) return;
         
-        if (!eduTxs || eduTxs.length === 0) {
+        if (!feeTxs || feeTxs.length === 0) {
             body.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999; padding:15px;">কোনো রিসেন্ট এন্ট্রি নেই</td></tr>';
             return;
         }
 
-        const top3 = eduTxs.slice(-3).reverse();
+        const top3 = feeTxs.slice(-3).reverse();
         let html = '';
         top3.forEach(t => {
-            const amt = parseFloat(t.netReceived || t.credit || 0);
+            const amt = parseFloat(t.netReceived || 0);
             html += `
                 <tr>
                     <td>${t.date || '-'}</td>
@@ -965,13 +960,13 @@
         body.innerHTML = html;
     }
 
-    // ১নং ছবির সেকশন: সকল জমা হওয়া ফি তালিকা
-    function renderFullTable(eduTxs) {
+    // সকল জমা হওয়া ফি তালিকা
+    function renderFullTable(feeTxs) {
         const body = document.getElementById('allRecordsTableBody');
         const totalFeeSumEl = document.getElementById('totalFeeSum');
         if (!body) return;
 
-        if (!eduTxs || eduTxs.length === 0) {
+        if (!feeTxs || feeTxs.length === 0) {
             body.innerHTML = '<tr><td colspan="14" style="padding:20px; color:#999; text-align:center;">এখনও কোনো ডেটা জমা হয়নি</td></tr>';
             if (totalFeeSumEl) totalFeeSumEl.innerText = '0.00';
             return;
@@ -980,14 +975,13 @@
         body.innerHTML = '';
         let total = 0;
         
-        const list = eduTxs.slice().reverse();
+        const list = feeTxs.slice().reverse();
         list.forEach((t, i) => {
             const netDue = parseFloat(t.netDue || 0);
             const txnFee = parseFloat(t.txnFee || 0);
             const totalCharge = parseFloat(t.totalCharge || 0);
-            const netReceived = parseFloat(t.netReceived || t.credit || 0);
+            const netReceived = parseFloat(t.netReceived || 0);
             
-            // Gross Payment রুল: Net Due + ১% (তবে চার্জ সর্বোচ্চ ৬০ টাকা)
             const percentCapped = Math.min(netDue * 0.01, 60);
             const grossPayment = t.grossPayment !== undefined ? parseFloat(t.grossPayment) : (netDue + percentCapped);
 
