@@ -1,9 +1,23 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module
- * Fixed: Permanent Data Persistence across Browser Refresh, Auto-load Cache & Background Firebase Sync.
+ * Connected directly to Firebase Realtime Database for Cross-Device Real-Time Sync.
  */
 
-(function () {
+(async function () {
+    // Firebase মডিউল সরাসরি ইমপোর্ট করা
+    let db, ref, set, onValue;
+    try {
+        const fbDb = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+        const fbApp = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+        const app = fbApp.getApp();
+        db = fbDb.getDatabase(app);
+        ref = fbDb.ref;
+        set = fbDb.set;
+        onValue = fbDb.onValue;
+    } catch (e) {
+        console.error("Firebase dynamic import error:", e);
+    }
+
     // ১. CSS ইনজেক্ট করা
     const css = `
         @import url('https://fonts.maateen.me/kalpurush/font.css');
@@ -229,18 +243,10 @@
     styleSheet.innerText = css;
     document.head.appendChild(styleSheet);
 
-    // ২. পার্মানেন্ট লোকাল স্টোরেজ থেকে ডেটা লোড
+    // গ্লোবাল স্টুডেন্ট লিস্ট
     let studentDueList = [];
-    try {
-        const cached = localStorage.getItem('MC_STUDENT_DUE_DATA');
-        if (cached) {
-            studentDueList = JSON.parse(cached);
-        }
-    } catch(e) {
-        console.error("Local storage load error:", e);
-    }
 
-    // ৩. সাইডবার মেনু ইনজেক্ট করা
+    // ২. সাইডবার মেনু ইনজেক্ট করা
     function injectMenu() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList || document.getElementById('menu-edu-parent')) return;
@@ -261,7 +267,7 @@
         menuList.insertAdjacentHTML('beforeend', html);
     }
 
-    // ৪. ভিউ প্যানেল ইনজেক্ট করা
+    // ৩. ভিউ প্যানেল ইনজেক্ট করা
     function injectPanels() {
         const wrapper = document.querySelector('.main-wrapper');
         if (!wrapper) return;
@@ -381,7 +387,7 @@
                         <div class="due-table-toolbar">
                             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                                 <div class="due-entries-info" id="dueEntriesInfo">
-                                    Showing 0 of 0 entries
+                                    Firebase থেকে ডেটা লোড হচ্ছে...
                                 </div>
                                 <button type="button" class="btn-due-refresh" id="btnRefreshDueData" title="লাইভ ডেটা রিফ্রেশ করুন">
                                     <i class="fa-solid fa-arrows-rotate"></i> রিফ্রেশ
@@ -413,7 +419,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="dueDataTableBody">
-                                    <!-- Dynamic rows loaded from localStorage -->
+                                    <tr><td colspan="13" style="text-align: center; color: #94a3b8; padding: 25px;">Firebase থেকে ডেটা লোড হচ্ছে...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -423,9 +429,6 @@
             </div>
         `;
         wrapper.insertAdjacentHTML('beforeend', panelsHTML);
-
-        // সেভ থাকা ডেটা অবিলম্বে রেন্ডার করা
-        renderDueDataTable(studentDueList);
     }
 
     // টেবিল রেন্ডার ইঞ্জিন
@@ -442,7 +445,7 @@
         }
 
         if (currentCount === 0) {
-            tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: #94a3b8; padding: 25px;">কোনো ডেটা লোড করা হয়নি। এক্সেল ফাইল আপলোড করুন।</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: #94a3b8; padding: 25px;">কোনো রেকর্ড পাওয়া যায়নি। এক্সেল ফাইল আপলোড করুন।</td></tr>`;
             return;
         }
 
@@ -469,6 +472,21 @@
         tbody.innerHTML = html;
     }
 
+    // ৪. FIREBASE REALTIME লাইভ ডেটা লিসেনার
+    function initFirebaseSync() {
+        if (!db || !ref || !onValue) {
+            setTimeout(initFirebaseSync, 500);
+            return;
+        }
+
+        const dueRef = ref(db, 'erp/studentDueData');
+        onValue(dueRef, (snapshot) => {
+            const data = snapshot.val();
+            studentDueList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+            renderDueDataTable(studentDueList);
+        });
+    }
+
     // ৫. ইভেন্ট হ্যান্ডলার ও ডেটা সংরক্ষণ লজিক
     function initLogic() {
         const idInp = document.getElementById('origId');
@@ -480,7 +498,7 @@
             idInp.addEventListener('input', function() {
                 const val = this.value.trim();
                 
-                // ১. পার্মানেন্ট স্টুডেন্ট ডিউ ডেটা থেকে সার্চ
+                // ১. ফায়ারবেস থেকে লোড হওয়া স্টুডেন্ট ডিউ ডেটা থেকে সার্চ
                 const dueFound = studentDueList.find(s => String(s.stdId) === val || String(s.mobile) === val);
                 if (dueFound) {
                     document.getElementById('origName').value = dueFound.studentName;
@@ -500,7 +518,50 @@
             });
         }
 
-        // ফাইল নেম ডিসপ্লে
+        // ফি ফর্ম সাবমিট
+        const origForm = document.getElementById('feeFormOriginal');
+        if(origForm) {
+            origForm.onsubmit = async function(e) {
+                e.preventDefault();
+                const rec = parseFloat(document.getElementById('origRec').value) || 0;
+                const txn = parseFloat(document.getElementById('origTxn').value) || 0;
+                const studentId = idInp.value;
+
+                if(rec <= 0 || !studentId) return alert("তথ্য সঠিক নয়!");
+
+                showLoader("সংরক্ষণ করা হচ্ছে...");
+                const txData = {
+                    id: 'EDU-' + Date.now(),
+                    customerId: studentId,
+                    studentName: document.getElementById('origName').value,
+                    credit: rec,
+                    netReceived: rec,
+                    txnFee: txn,
+                    grossPayment: rec + txn,
+                    date: dateInp.value,
+                    time: new Date().toLocaleTimeString(),
+                    type: 'Credit'
+                };
+
+                try {
+                    if (db && ref && set) {
+                        const txs = window.customerTransactions || [];
+                        txs.push(txData);
+                        await set(ref(db, 'transactions'), txs);
+                        showToast("ফি জমা হয়েছে!", "success");
+                        updateRecent(txData);
+                        this.reset();
+                        dateInp.value = new Date().toISOString().split('T')[0];
+                        renderFullTable();
+                    }
+                } catch(err) { 
+                    console.error(err); 
+                }
+                hideLoader();
+            };
+        }
+
+        // ফাইল নেম সিলেক্টর ডিসপ্লে
         const fileInput = document.getElementById('dueFileInput');
         const fileNameDisplay = document.getElementById('dueFileNameDisplay');
         if(fileInput && fileNameDisplay) {
@@ -514,7 +575,7 @@
         }
 
         // =========================================================================
-        // ৬. এক্সেল ফাইল আপলোড এবং স্থায়ীভাবে সংরক্ষণ (LocalStorage + Realtime Sync)
+        // ৬. এক্সেল ফাইল আপলোড ও সরাসরি Firebase ক্লাউডে সেভ
         // =========================================================================
         const btnUpload = document.getElementById('btnUploadDueData');
         if (btnUpload && fileInput) {
@@ -532,7 +593,7 @@
                 const file = fileInput.files[0];
                 const reader = new FileReader();
 
-                reader.onload = function(e) {
+                reader.onload = async function(e) {
                     try {
                         const data = e.target.result;
                         const workbook = XLSX.read(data, { type: 'binary' });
@@ -550,7 +611,7 @@
                         const estSeconds = Math.max(1, Math.ceil(totalRows / 500));
 
                         // নন-ব্লকিং প্রগ্রেস টোস্ট
-                        showToast(`📊 ${totalRows} টি ডেটা প্রসেসিং ও সংরক্ষণ শুরু হয়েছে। আনুমানিক সময়: ${estSeconds} সেকেন্ড`, "info");
+                        showToast(`📊 ${totalRows} টি ডেটা প্রসেসিং ও Firebase-এ ক্লাউড আপলোড শুরু হয়েছে...`, "info");
 
                         // ফরম্যাটিং
                         const formatted = json.map((r, idx) => ({
@@ -570,22 +631,13 @@
                             mothersMobile: String(r['Mothers Mobile'] || '').trim()
                         }));
 
-                        studentDueList = formatted;
-
-                        // ১. স্থায়ী লোকাল স্টোরেজে সেভ (রিফ্রেশ দিলে কখনো মুছবে না)
-                        try {
-                            localStorage.setItem('MC_STUDENT_DUE_DATA', JSON.stringify(studentDueList));
-                        } catch(err) {
-                            console.error("Local storage save error:", err);
+                        // সরাসরি FIREBASE ক্লাউড ডেটাবেজে প্রতিস্থাপন (Overwrite)
+                        if (db && ref && set) {
+                            await set(ref(db, 'erp/studentDueData'), formatted);
+                            showToast(`✅ সফলভাবে ${totalRows} টি ডেটা Firebase ক্লাউডে সেভ হয়েছে!`, "success");
+                        } else {
+                            showToast("Firebase ডেটাবেজ সংযুক্ত করা যায়নি!", "error");
                         }
-
-                        // ২. টেবিল রেন্ডার করা
-                        renderDueDataTable(studentDueList);
-
-                        // ৩. ফায়ারবেস ক্লাউড স্টোরেজে ব্যাকআপ
-                        setTimeout(() => {
-                            showToast(`✅ সফলভাবে ${totalRows} টি ডেটা স্থায়ীভাবে সংরক্ষণ সম্পন্ন হয়েছে!`, "success");
-                        }, 500);
 
                     } catch(err) {
                         console.error(err);
@@ -604,16 +656,8 @@
                 const icon = this.querySelector('i');
                 if(icon) icon.classList.add('fa-spin');
 
-                // লোকাল স্টোরেজ থেকে রি-রিড
-                try {
-                    const cached = localStorage.getItem('MC_STUDENT_DUE_DATA');
-                    if (cached) {
-                        studentDueList = JSON.parse(cached);
-                    }
-                } catch(e) {}
-
                 renderDueDataTable(studentDueList);
-                showToast(`🔄 রিফ্রেশ হয়েছে: বর্তমানে ${studentDueList.length} টি রেকর্ড সংরক্ষিত রয়েছে।`, "success");
+                showToast(`🔄 রিফ্রেশ হয়েছে: Firebase ক্লাউডে মোট ${studentDueList.length} টি রেকর্ড সংরক্ষিত রয়েছে।`, "success");
 
                 setTimeout(() => {
                     if(icon) icon.classList.remove('fa-spin');
@@ -703,6 +747,7 @@
         injectMenu();
         injectPanels();
         initLogic();
+        initFirebaseSync();
         setTimeout(renderFullTable, 1500);
     });
 })();
