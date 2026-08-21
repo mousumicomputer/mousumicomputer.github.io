@@ -1,18 +1,20 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module
- * Features: Auto Serial (SL) Number, Dynamic Pagination (10, 25, 50, 100), Page Controls & Firebase Sync.
+ * Features: Auto Calculation (Net Due, 1% Total Charge + Txn Fee, Net Received), Auto SL, Pagination & Cloud Sync.
  */
 
 (function () {
     let studentDueList = [];
     let firebaseCore = null;
+    let selectedStudentRawDue = 0; // মূল বকেয়া জমা রাখার ভ্যারিয়েবল
+    let selectedStudentData = null; // বর্তমান শিক্ষার্থীর সম্পূর্ণ তথ্য
 
     // পেজিনেশন স্টেট
     let currentPage = 1;
     let rowsPerPage = 25;
     let currentSearchQuery = "";
 
-    // ১. CSS ইনজেক্ট করা (পেজিনেশন ও টেবিল স্টাইলসহ)
+    // ১. CSS ইনজেক্ট করা
     const css = `
         @import url('https://fonts.maateen.me/kalpurush/font.css');
 
@@ -47,9 +49,10 @@
         .edu-form-group { display: flex; flex-direction: column; }
         .edu-form-group label { font-size: 15px !important; color: #444 !important; margin-bottom: 6px; font-weight: 600 !important; }
         .edu-form-control { padding: 10px 12px; border: 1px solid #cccccc; border-radius: 5px; font-size: 16px !important; outline: none; }
-        .edu-form-control[readonly] { background-color: #f8f9fa; color: #6c757d; border-color: #e9ecef; }
-        .edu-sub-text { font-size: 13px !important; color: #2563eb !important; margin-top: 5px; font-weight: bold !important; }
-        .edu-btn-submit { background-color: #2563eb; color: white !important; border: none; padding: 10px 28px; font-size: 16px !important; font-weight: bold !important; border-radius: 5px; cursor: pointer; }
+        .edu-form-control[readonly] { background-color: #f8f9fa; color: #334155; border-color: #e2e8f0; font-weight: bold; }
+        .edu-sub-text { font-size: 13.5px !important; color: #2563eb !important; margin-top: 6px; font-weight: bold !important; }
+        .edu-btn-submit { background-color: #2563eb; color: white !important; border: none; padding: 12px 32px; font-size: 16px !important; font-weight: bold !important; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+        .edu-btn-submit:hover { background-color: #1d4ed8; }
         .edu-recent-section { margin-top: 25px; padding-top: 15px; border-top: 1px dashed #cbd5e1; }
         .edu-recent-title { font-size: 13px !important; color: #64748b !important; font-weight: bold !important; margin-bottom: 8px; display: flex; justify-content: space-between; }
         .edu-compact-table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
@@ -163,11 +166,7 @@
             flex-wrap: wrap;
             gap: 12px;
         }
-        .due-entries-info {
-            font-size: 14px;
-            color: #475569;
-            font-weight: 600;
-        }
+        .due-entries-info { font-size: 14px; color: #475569; font-weight: 600; }
         .due-page-select {
             border: 1px solid #cbd5e1;
             border-radius: 6px;
@@ -193,33 +192,12 @@
             gap: 6px;
             transition: 0.2s;
         }
-        .btn-due-refresh:hover {
-            background: #e0e7ff;
-            border-color: #a5b4fc;
-        }
+        .btn-due-refresh:hover { background: #e0e7ff; border-color: #a5b4fc; }
 
-        .due-search-box {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: #475569;
-        }
-        .due-search-input {
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            padding: 6px 10px;
-            font-size: 14px;
-            outline: none;
-        }
-        .due-table-wrapper {
-            overflow-x: auto;
-        }
-        .due-data-table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 1350px;
-        }
+        .due-search-box { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #475569; }
+        .due-search-input { border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 10px; font-size: 14px; outline: none; }
+        .due-table-wrapper { overflow-x: auto; }
+        .due-data-table { width: 100%; border-collapse: collapse; min-width: 1350px; }
         .due-data-table th {
             color: #2563eb;
             font-weight: 700;
@@ -231,18 +209,9 @@
             background: #ffffff;
             white-space: nowrap;
         }
-        .due-data-table td {
-            padding: 12px 14px;
-            color: #334155;
-            font-size: 13.5px;
-            border-bottom: 1px solid #f1f5f9;
-            white-space: nowrap;
-        }
-        .due-data-table tr:hover td {
-            background-color: #f8fafc;
-        }
+        .due-data-table td { padding: 12px 14px; color: #334155; font-size: 13.5px; border-bottom: 1px solid #f1f5f9; white-space: nowrap; }
+        .due-data-table tr:hover td { background-color: #f8fafc; }
 
-        /* পেজিনেশন কন্ট্রোল স্টাইল */
         .due-pagination-wrapper {
             display: flex;
             justify-content: space-between;
@@ -253,11 +222,7 @@
             flex-wrap: wrap;
             gap: 12px;
         }
-        .due-pagination-btns {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
+        .due-pagination-btns { display: flex; align-items: center; gap: 4px; }
         .due-page-btn {
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -269,19 +234,9 @@
             cursor: pointer;
             transition: 0.2s;
         }
-        .due-page-btn:hover:not(:disabled) {
-            background: #f1f5f9;
-            border-color: #cbd5e1;
-        }
-        .due-page-btn.active {
-            background: #2563eb;
-            color: #ffffff;
-            border-color: #2563eb;
-        }
-        .due-page-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
+        .due-page-btn:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
+        .due-page-btn.active { background: #2563eb; color: #ffffff; border-color: #2563eb; }
+        .due-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
         #menu-edu-parent.open .submenu-list { display: block; }
     `;
@@ -371,11 +326,11 @@
                                     </div>
                                     <div class="edu-form-group">
                                         <label>স্টুডেন্ট আইডি (ID)</label>
-                                        <input type="text" id="origId" class="edu-form-control" placeholder="আইডি লিখুন" required>
+                                        <input type="text" id="origId" class="edu-form-control" placeholder="আইডি লিখুন" required autocomplete="off">
                                     </div>
                                     <div class="edu-form-group">
                                         <label>শিক্ষার্থীর নাম (Student Name)</label>
-                                        <input type="text" id="origName" class="edu-form-control" placeholder="শিক্ষার্থীর নাম">
+                                        <input type="text" id="origName" class="edu-form-control" placeholder="শিক্ষার্থীর নাম" readonly>
                                     </div>
                                 </div>
                                 <div class="edu-form-grid">
@@ -385,18 +340,18 @@
                                     </div>
                                     <div class="edu-form-group">
                                         <label>ট্রানজেকশন ফি (Txn Fee)</label>
-                                        <input type="number" id="origTxn" class="edu-form-control" value="6.00">
+                                        <input type="number" step="any" id="origTxn" class="edu-form-control" value="6.00">
                                         <span class="edu-sub-text">মোট চার্জ (Total Charge): ৳ <span id="origCharge">6.00</span></span>
                                     </div>
                                     <div class="edu-form-group">
                                         <label>গৃহীত মোট টাকা (Net Received)</label>
-                                        <input type="number" id="origRec" class="edu-form-control" placeholder="0.00" required>
+                                        <input type="text" id="origRec" class="edu-form-control" value="0.00" readonly>
                                     </div>
                                 </div>
                                 <div class="edu-form-grid">
                                     <div class="edu-form-group">
                                         <label>ছাড় (Discount)</label>
-                                        <input type="number" id="origDisc" class="edu-form-control" value="0.00">
+                                        <input type="number" step="any" id="origDisc" class="edu-form-control" value="0.00">
                                     </div>
                                 </div>
                                 <div style="display:flex; justify-content:flex-end;">
@@ -444,8 +399,6 @@
 
                 <!-- প্যানেল ৩: বকেয়া ডেটা আপলোড ও তালিকা -->
                 <div class="view-panel" id="edu-due-data-view">
-                    
-                    <!-- টপ আপলোড বার -->
                     <div class="due-upload-card">
                         <input type="file" id="dueFileInput" accept=".xlsx, .xls, .csv" style="display: none;">
                         
@@ -463,7 +416,6 @@
                         </button>
                     </div>
 
-                    <!-- নিচের ডেটা টেবিল কার্ড -->
                     <div class="due-data-card">
                         <div class="due-table-toolbar">
                             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
@@ -489,7 +441,6 @@
                             </div>
                         </div>
 
-                        <!-- টেবিল কন্টেইনার (অটো SL যুক্ত) -->
                         <div class="due-table-wrapper">
                             <table class="due-data-table">
                                 <thead>
@@ -516,31 +467,51 @@
                             </table>
                         </div>
 
-                        <!-- পেজিনেশন ফুটার বার -->
                         <div class="due-pagination-wrapper">
-                            <div class="due-entries-info" id="dueEntriesInfo">
-                                Showing 0 to 0 of 0 entries
-                            </div>
-                            <div class="due-pagination-btns" id="duePaginationBtns">
-                                <!-- ডাইনামিক পেজিনেশন বাটন -->
-                            </div>
+                            <div class="due-entries-info" id="dueEntriesInfo">Showing 0 to 0 of 0 entries</div>
+                            <div class="due-pagination-btns" id="duePaginationBtns"></div>
                         </div>
                     </div>
-
                 </div>
             </div>
         `;
         wrapper.insertAdjacentHTML('beforeend', panelsHTML);
     }
 
-    // ৫. পেজিনেশন ও অটোমেটিক ক্রমিক (SL) সহ টেবিল রেন্ডার ইঞ্জিন
+    // ৫. অটোমেটিক ক্যালকুলেশন ফাংশন
+    function calculateAutoValues() {
+        const discountInp = document.getElementById('origDisc');
+        const txnInp = document.getElementById('origTxn');
+        const dueInp = document.getElementById('origDue');
+        const chargeText = document.getElementById('origCharge');
+        const recInp = document.getElementById('origRec');
+
+        const discount = parseFloat(discountInp ? discountInp.value : 0) || 0;
+        const txnFee = parseFloat(txnInp ? txnInp.value : 0) || 0;
+
+        // বকেয়া (Net Due) = বকেয়া ডেটা তালিকা - ডিসকাউন্ট
+        const netDue = Math.max(0, selectedStudentRawDue - discount);
+
+        // মোট চার্জ (Total Charge) = বকেয়া (Net Due) এর ১% + ট্রানজেকশন ফি (Txn Fee)
+        const percentCharge = netDue * 0.01;
+        const totalCharge = percentCharge + txnFee;
+
+        // গৃহীত মোট টাকা (Net Received) = বকেয়া (Net Due) + মোট চার্জ (Total Charge)
+        const netReceived = netDue + totalCharge;
+
+        // ভ্যালু আপডেট
+        if (dueInp) dueInp.value = netDue.toFixed(2);
+        if (chargeText) chargeText.innerText = totalCharge.toFixed(2);
+        if (recInp) recInp.value = netReceived.toFixed(2);
+    }
+
+    // ৬. পেজিনেশন ও অটোমেটিক ক্রমিক (SL) সহ টেবিল রেন্ডার
     function renderDueDataTable() {
         const tbody = document.getElementById('dueDataTableBody');
         const entriesInfo = document.getElementById('dueEntriesInfo');
         const paginationBtns = document.getElementById('duePaginationBtns');
         if (!tbody) return;
 
-        // ১. ফিল্টারিং লজিক (Search Query)
         let filtered = studentDueList;
         if (currentSearchQuery) {
             const q = currentSearchQuery.toLowerCase();
@@ -565,20 +536,17 @@
         const endIndex = rowsPerPage === -1 ? totalEntries : Math.min(startIndex + effectivePageSize, totalEntries);
         const currentSlice = rowsPerPage === -1 ? filtered : filtered.slice(startIndex, endIndex);
 
-        // ২. এন্ট্রি টেক্সট আপডেট
         if (entriesInfo) {
             const startDisplay = totalEntries > 0 ? startIndex + 1 : 0;
             entriesInfo.innerText = `Showing ${startDisplay} to ${endIndex} of ${totalEntries} entries`;
         }
 
-        // ৩. নো রেকর্ড মেসেজ
         if (totalEntries === 0) {
             tbody.innerHTML = `<tr><td colspan="14" style="text-align: center; color: #94a3b8; padding: 25px;">কোনো রেকর্ড পাওয়া যায়নি।</td></tr>`;
             if (paginationBtns) paginationBtns.innerHTML = '';
             return;
         }
 
-        // ৪. টেবিল সারি তৈরি (অটো SL নম্বর ক্যালকুলেশন)
         let html = '';
         currentSlice.forEach((item, index) => {
             const autoSL = startIndex + index + 1;
@@ -603,11 +571,9 @@
         });
         tbody.innerHTML = html;
 
-        // ৫. পেজিনেশন বাটন তৈরি
         renderPaginationButtons(totalPages);
     }
 
-    // পেজিনেশন বাটন বিল্ডার
     function renderPaginationButtons(totalPages) {
         const container = document.getElementById('duePaginationBtns');
         if (!container) return;
@@ -615,7 +581,6 @@
 
         if (totalPages <= 1) return;
 
-        // Previous বাটন
         const prevBtn = document.createElement('button');
         prevBtn.className = 'due-page-btn';
         prevBtn.innerText = 'Previous';
@@ -628,7 +593,6 @@
         };
         container.appendChild(prevBtn);
 
-        // দৃশ্যমান পেজ বাটন রেঞ্জ নির্ধারণ
         let startPage = Math.max(1, currentPage - 2);
         let endPage = Math.min(totalPages, currentPage + 2);
 
@@ -656,7 +620,6 @@
             container.appendChild(createPageButton(totalPages));
         }
 
-        // Next বাটন
         const nextBtn = document.createElement('button');
         nextBtn.className = 'due-page-btn';
         nextBtn.innerText = 'Next';
@@ -681,7 +644,7 @@
         return btn;
     }
 
-    // ৬. লাইভ ফায়ারবেস লিসেনার
+    // ৭. লাইভ ফায়ারবেস লিসেনার
     async function listenFirebaseData() {
         const fb = await getFirebase();
         if (!fb) return;
@@ -694,55 +657,95 @@
         });
     }
 
-    // ৭. ইভেন্ট লজিক
+    // ৮. ইভেন্ট লজিক ও অটো-ক্যালকুলেশন বাইন্ডিং
     function initLogic() {
         const idInp = document.getElementById('origId');
+        const nameInp = document.getElementById('origName');
         const dateInp = document.getElementById('origDate');
+        const discInp = document.getElementById('origDisc');
+        const txnInp = document.getElementById('origTxn');
+
         if (dateInp) dateInp.value = new Date().toISOString().split('T')[0];
 
-        // ফি ফর্ম আইডি দিয়ে অটোমেটিক ডিউ সার্চ
+        // আইডি লেখার সাথে সাথে স্বয়ংক্রিয় ডিউ ও নাম লোড
         if (idInp) {
             idInp.addEventListener('input', function() {
                 const val = this.value.trim();
-                const dueFound = studentDueList.find(s => String(s.stdId) === val || String(s.mobile) === val);
-                if (dueFound) {
-                    document.getElementById('origName').value = dueFound.studentName;
-                    document.getElementById('origDue').value = parseFloat(dueFound.dueAmount || 0).toFixed(2);
+                
+                if (!val) {
+                    selectedStudentRawDue = 0;
+                    selectedStudentData = null;
+                    if (nameInp) nameInp.value = '';
+                    calculateAutoValues();
                     return;
                 }
 
-                const customers = window.customers || [];
-                const found = customers.find(c => c.id === val || c.phone === val);
-                if (found) {
-                    document.getElementById('origName').value = found.name;
-                    if (window.calculateCustomerCurrentDue) {
-                        document.getElementById('origDue').value = window.calculateCustomerCurrentDue(found.id).toFixed(2);
+                // বকেয়া তালিকা থেকে সার্চ
+                const dueFound = studentDueList.find(s => String(s.stdId).trim() === val || String(s.mobile).trim() === val);
+                
+                if (dueFound) {
+                    selectedStudentData = dueFound;
+                    selectedStudentRawDue = parseFloat(dueFound.dueAmount || 0);
+                    if (nameInp) nameInp.value = dueFound.studentName || '';
+                } else {
+                    // বিকল্পভাবে কাস্টমার ডেটাবেজ চেক
+                    const customers = window.customers || [];
+                    const foundCust = customers.find(c => String(c.id).trim() === val || String(c.phone).trim() === val);
+                    if (foundCust) {
+                        selectedStudentData = foundCust;
+                        selectedStudentRawDue = window.calculateCustomerCurrentDue ? window.calculateCustomerCurrentDue(foundCust.id) : 0;
+                        if (nameInp) nameInp.value = foundCust.name || '';
+                    } else {
+                        selectedStudentData = null;
+                        selectedStudentRawDue = 0;
+                        if (nameInp) nameInp.value = '';
                     }
                 }
+
+                calculateAutoValues();
             });
         }
+
+        // ডিসকাউন্ট এবং ট্রানজেকশন ফি পরিবর্তন হলে রিয়েল-টাইম হিসাব
+        if (discInp) discInp.addEventListener('input', calculateAutoValues);
+        if (txnInp) txnInp.addEventListener('input', calculateAutoValues);
 
         // ফি ফর্ম সাবমিট
         const origForm = document.getElementById('feeFormOriginal');
         if (origForm) {
             origForm.onsubmit = async function(e) {
                 e.preventDefault();
-                const rec = parseFloat(document.getElementById('origRec').value) || 0;
-                const txn = parseFloat(document.getElementById('origTxn').value) || 0;
-                const studentId = idInp.value;
+                const studentId = idInp ? idInp.value.trim() : '';
+                const studentName = nameInp ? nameInp.value.trim() : '';
+                const netDue = parseFloat(document.getElementById('origDue').value) || 0;
+                const txnFee = parseFloat(document.getElementById('origTxn').value) || 0;
+                const totalCharge = parseFloat(document.getElementById('origCharge').innerText) || 0;
+                const netReceived = parseFloat(document.getElementById('origRec').value) || 0;
+                const discount = parseFloat(document.getElementById('origDisc').value) || 0;
 
-                if (rec <= 0 || !studentId) return alert("তথ্য সঠিক নয়!");
+                if (!studentId || netReceived <= 0) {
+                    alert("দয়া করে সঠিক শিক্ষার্থী আইডি ও তথ্য প্রদান করুন!");
+                    return;
+                }
 
-                showLoader("সংরক্ষণ করা হচ্ছে...");
+                if (typeof showLoader === 'function') showLoader("সংরক্ষণ করা হচ্ছে...");
+
                 const txData = {
                     id: 'EDU-' + Date.now(),
                     customerId: studentId,
-                    studentName: document.getElementById('origName').value,
-                    credit: rec,
-                    netReceived: rec,
-                    txnFee: txn,
-                    grossPayment: rec + txn,
-                    date: dateInp.value,
+                    studentName: studentName || '-',
+                    class: selectedStudentData ? (selectedStudentData.class || '-') : '-',
+                    month: selectedStudentData ? (selectedStudentData.monthDue || '-') : '-',
+                    category: selectedStudentData ? (selectedStudentData.category || '-') : '-',
+                    mobile: selectedStudentData ? (selectedStudentData.mobile || '-') : '-',
+                    netDue: netDue,
+                    txnFee: txnFee,
+                    totalCharge: totalCharge,
+                    discount: discount,
+                    netReceived: netReceived,
+                    grossPayment: netReceived,
+                    credit: netReceived,
+                    date: dateInp ? dateInp.value : new Date().toISOString().split('T')[0],
                     time: new Date().toLocaleTimeString(),
                     type: 'Credit'
                 };
@@ -756,16 +759,22 @@
                         await fb.set(fb.ref(fb.db, 'transactions'), txs);
                     }
 
-                    showToast("ফি সফলভাবে ক্লাউডে জমা হয়েছে!", "success");
+                    if (typeof showToast === 'function') showToast("ফি সফলভাবে ক্লাউডে জমা হয়েছে!", "success");
                     updateRecent(txData);
+                    
+                    // ফর্ম রিসেট
                     this.reset();
-                    dateInp.value = new Date().toISOString().split('T')[0];
+                    selectedStudentRawDue = 0;
+                    selectedStudentData = null;
+                    if (dateInp) dateInp.value = new Date().toISOString().split('T')[0];
+                    if (txnInp) txnInp.value = "6.00";
+                    calculateAutoValues();
                     renderFullTable();
                 } catch(err) { 
                     console.error(err); 
-                    showToast("ফি সেভ করতে সমস্যা হয়েছে!", "error");
+                    if (typeof showToast === 'function') showToast("ফি সেভ করতে সমস্যা হয়েছে!", "error");
                 }
-                hideLoader();
+                if (typeof hideLoader === 'function') hideLoader();
             };
         }
 
@@ -782,7 +791,7 @@
             });
         }
 
-        // ৮. পেজ সাইজ ড্রপডাউন ইভেন্ট
+        // পেজ সাইজ ড্রপডাউন ইভেন্ট
         const pageSizeSelect = document.getElementById('duePageSizeSelect');
         if (pageSizeSelect) {
             pageSizeSelect.addEventListener('change', function() {
@@ -792,17 +801,17 @@
             });
         }
 
-        // ৯. এক্সেল ফাইল আপলোড ও নিরাপদ ক্লাউড সেভ
+        // এক্সেল ফাইল আপলোড ও নিরাপদ ক্লাউড সেভ
         const btnUpload = document.getElementById('btnUploadDueData');
         if (btnUpload && fileInput) {
             btnUpload.addEventListener('click', function() {
                 if (!fileInput.files || fileInput.files.length === 0) {
-                    showToast("অনুগ্রহ করে প্রথমে একটি এক্সেল ফাইল নির্বাচন করুন!", "warning");
+                    if (typeof showToast === 'function') showToast("অনুগ্রহ করে প্রথমে একটি এক্সেল ফাইল নির্বাচন করুন!", "warning");
                     return;
                 }
 
                 if (typeof XLSX === 'undefined') {
-                    showToast("SheetJS লাইব্রেরি পাওয়া যায়নি!", "error");
+                    if (typeof showToast === 'function') showToast("SheetJS লাইব্রেরি পাওয়া যায়নি!", "error");
                     return;
                 }
 
@@ -818,14 +827,13 @@
                         const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
 
                         if (!json || json.length === 0) {
-                            showToast("এক্সেল ফাইলে কোনো ডেটা পাওয়া যায়নি!", "warning");
+                            if (typeof showToast === 'function') showToast("এক্সেল ফাইলে কোনো ডেটা পাওয়া যায়নি!", "warning");
                             return;
                         }
 
                         const totalRows = json.length;
-                        showToast(`📊 ${totalRows} টি ডেটা Firebase ক্লাউডে সেভ হচ্ছে...`, "info");
+                        if (typeof showToast === 'function') showToast(`📊 ${totalRows} টি ডেটা Firebase ক্লাউডে সেভ হচ্ছে...`, "info");
 
-                        // ফরম্যাটিং
                         const formatted = json.map(r => ({
                             class: r['Class'] || r['class'] || '-',
                             section: r['Section'] || r['section'] || '-',
@@ -848,14 +856,14 @@
                             studentDueList = formatted;
                             currentPage = 1;
                             renderDueDataTable();
-                            showToast(`✅ সফলভাবে ${totalRows} টি ডেটা Firebase ক্লাউডে সংরক্ষিত হয়েছে!`, "success");
+                            if (typeof showToast === 'function') showToast(`✅ সফলভাবে ${totalRows} টি ডেটা ক্লাউডে সংরক্ষিত হয়েছে!`, "success");
                         } else {
-                            showToast("Firebase ক্লাউড সংযোগ পাওয়া যায়নি!", "error");
+                            if (typeof showToast === 'function') showToast("Firebase ক্লাউড সংযোগ পাওয়া যায়নি!", "error");
                         }
 
                     } catch(err) {
                         console.error(err);
-                        showToast("Firebase ক্লাউডে আপলোডে সমস্যা হয়েছে: " + err.message, "error");
+                        if (typeof showToast === 'function') showToast("Firebase আপলোডে সমস্যা হয়েছে: " + err.message, "error");
                     }
                 };
 
@@ -863,7 +871,7 @@
             });
         }
 
-        // ১০. লাইভ রিফ্রেশ বাটন
+        // লাইভ রিফ্রেশ বাটন
         const btnRefresh = document.getElementById('btnRefreshDueData');
         if (btnRefresh) {
             btnRefresh.addEventListener('click', async function() {
@@ -876,7 +884,7 @@
                     const data = snap.val();
                     studentDueList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
                     renderDueDataTable();
-                    showToast(`🔄 ক্লাউডে মোট ${studentDueList.length} টি রেকর্ড রয়েছে।`, "success");
+                    if (typeof showToast === 'function') showToast(`🔄 ক্লাউডে মোট ${studentDueList.length} টি রেকর্ড রয়েছে।`, "success");
                 }
 
                 setTimeout(() => {
@@ -885,17 +893,17 @@
             });
         }
 
-        // ১১. রিয়েল-টাইম সার্চ
+        // রিয়েল-টাইম সার্চ
         const searchInput = document.getElementById('dueTableSearch');
         if (searchInput) {
             searchInput.addEventListener('input', function() {
                 currentSearchQuery = this.value.trim();
-                currentPage = 1; // সার্চ করলে ১ম পেজে নিয়ে যাবে
+                currentPage = 1;
                 renderDueDataTable();
             });
         }
 
-        // ১২. স্যাম্পল এক্সেল ডাউনলোড
+        // স্যাম্পল এক্সেল ডাউনলোড
         const btnSample = document.getElementById('btnDownloadSample');
         if (btnSample) {
             btnSample.addEventListener('click', function() {
@@ -922,7 +930,7 @@
     function updateRecent(t) {
         const body = document.getElementById('origRecentBody');
         if (!body) return;
-        const row = `<tr><td>${t.date}</td><td>${t.customerId}</td><td>${t.studentName || '-'}</td><td>৳ ${t.credit.toFixed(2)}</td></tr>`;
+        const row = `<tr><td>${t.date}</td><td>${t.customerId}</td><td>${t.studentName || '-'}</td><td>৳ ${(t.netReceived || t.credit || 0).toFixed(2)}</td></tr>`;
         if (body.innerText.includes("কোনো রিসেন্ট এন্ট্রি নেই")) body.innerHTML = "";
         body.insertAdjacentHTML('afterbegin', row);
         if (body.children.length > 3) body.removeChild(body.lastChild);
@@ -934,16 +942,28 @@
         const eduTxs = (window.customerTransactions || []).filter(t => t.id && t.id.startsWith('EDU-'));
         body.innerHTML = '';
         let total = 0;
-        eduTxs.reverse().forEach((t, i) => {
-            total += (parseFloat(t.netReceived) || 0);
+        
+        eduTxs.slice().reverse().forEach((t, i) => {
+            total += (parseFloat(t.netReceived || t.credit) || 0);
             body.innerHTML += `
                 <tr>
-                    <td>${eduTxs.length - i}</td><td>${t.date}</td><td>${t.studentName || '-'}</td><td>${t.customerId}</td>
-                    <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>${(t.txnFee || 0).toFixed(2)}</td>
-                    <td>${(t.txnFee || 0).toFixed(2)}</td><td>${(t.netReceived || 0).toFixed(2)}</td>
-                    <td style="color:#2563eb; font-weight:bold;">${(t.grossPayment || 0).toFixed(2)}</td><td>-</td>
+                    <td>${eduTxs.length - i}</td>
+                    <td>${t.date}</td>
+                    <td>${t.studentName || '-'}</td>
+                    <td>${t.customerId}</td>
+                    <td>${t.class || '-'}</td>
+                    <td>${t.month || '-'}</td>
+                    <td>${t.category || '-'}</td>
+                    <td>${t.mobile || '-'}</td>
+                    <td>${(t.netDue || 0).toFixed(2)}</td>
+                    <td>${(t.txnFee || 0).toFixed(2)}</td>
+                    <td>${(t.totalCharge || 0).toFixed(2)}</td>
+                    <td>${(t.netReceived || 0).toFixed(2)}</td>
+                    <td style="color:#2563eb; font-weight:bold;">${(t.grossPayment || 0).toFixed(2)}</td>
+                    <td>${t.discount > 0 ? `ছাড়: ৳${t.discount}` : '-'}</td>
                 </tr>`;
         });
+        
         const totalFeeSumEl = document.getElementById('totalFeeSum');
         if (totalFeeSumEl) totalFeeSumEl.innerText = total.toLocaleString('en-US', {minimumFractionDigits:2});
     }
