@@ -1,8 +1,7 @@
 /**
- * CPSCL Module - Full ERP Certificate & Excel Engine
- * 1. Student List (Excel Import & Table Management)
- * 2. Student Entry (Manual Entry)
- * 3. Certificate Print (A4 Preview & Print)
+ * CPSCL Module - Accurate MS Word Page Setup Matching
+ * Orientation: A4 Landscape
+ * Margins: Top: 2.1", Left: 2.4", Right: 1.8", Bottom: 1.4"
  */
 
 (function () {
@@ -20,7 +19,7 @@
         if (document.getElementById('menu-cpscl-parent')) return;
 
         /* ==========================================================
-           ১. সাইডবারে CPSCL মেনু (Student List সহ ৩টি সেকশন)
+           ১. সাইডবার মেনু
            ========================================================== */
         const cpsclMenuItem = document.createElement('li');
         cpsclMenuItem.className = 'menu-item';
@@ -61,7 +60,7 @@
         }
 
         /* ==========================================================
-           ২. CPSCL ভিউ প্যানেল তৈরি
+           ২. CPSCL ভিউ প্যানেল (A4 Landscape Page Setup)
            ========================================================== */
         const cpsclViewPanel = document.createElement('div');
         cpsclViewPanel.className = 'view-panel';
@@ -120,7 +119,6 @@
                     background: #fff;
                 }
 
-                /* Excel Dropzone */
                 .excel-dropzone {
                     border: 2px dashed #6366f1;
                     background: #f8faff;
@@ -128,13 +126,9 @@
                     padding: 25px;
                     text-align: center;
                     cursor: pointer;
-                    transition: 0.3s;
                 }
-                .excel-dropzone:hover {
-                    background: #eef2ff;
-                }
+                .excel-dropzone:hover { background: #eef2ff; }
 
-                /* Table Styling */
                 .cpscl-table {
                     width: 100%;
                     border-collapse: separate;
@@ -158,7 +152,11 @@
                 .cpscl-table tr td:first-child { border-left: 1px solid #f1f5f9; border-radius: 10px 0 0 10px; }
                 .cpscl-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 10px 10px 0; }
 
-                /* A4 Certificate Sheet */
+                /* ==========================================================
+                   A4 LANDSCAPE EXACT MS WORD PAGE SETUP
+                   Paper: 297mm x 210mm (11.69" x 8.27")
+                   Margins: Top: 2.1", Right: 1.8", Bottom: 1.4", Left: 2.4"
+                   ========================================================== */
                 .cpscl-preview-wrapper {
                     background: #525659;
                     padding: 30px 15px;
@@ -169,7 +167,7 @@
                     overflow-x: auto;
                 }
                 .cpscl-toolbar {
-                    width: 210mm;
+                    width: 297mm;
                     max-width: 100%;
                     display: flex;
                     justify-content: space-between;
@@ -178,39 +176,96 @@
                     gap: 12px;
                     flex-wrap: wrap;
                 }
+
                 .cpscl-a4-sheet {
                     background: #ffffff;
-                    width: 210mm;
-                    min-height: 297mm;
-                    padding: 70mm 25mm 25mm 25mm;
+                    width: 297mm;
+                    min-height: 210mm;
+                    height: 210mm;
+                    /* Word Margins: Top: 2.1", Right: 1.8", Bottom: 1.4", Left: 2.4" */
+                    padding-top: 2.1in;
+                    padding-right: 1.8in;
+                    padding-bottom: 1.4in;
+                    padding-left: 2.4in;
                     box-shadow: 0 10px 30px rgba(0,0,0,0.4);
                     color: #000;
                     font-family: 'Monotype Corsiva', 'Times New Roman', cursive, serif;
                     box-sizing: border-box;
                     position: relative;
                 }
-                .cert-ref { font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; margin-bottom: 30px; }
-                .cert-body { font-size: 18.5px; line-height: 1.9; text-align: justify; font-style: italic; }
-                .cert-bold { font-family: Arial, sans-serif; font-weight: 800; font-style: normal; text-transform: uppercase; }
-                .cert-meta-bold { font-family: Arial, sans-serif; font-weight: 800; font-style: normal; }
-                .cert-footer-date { font-family: Arial, sans-serif; font-size: 11px; font-weight: bold; margin-top: 55px; }
+
+                .cert-ref {
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-size: 13px;
+                    font-weight: bold;
+                    margin-bottom: 22px;
+                }
+                .cert-body {
+                    font-size: 19px;
+                    line-height: 1.9;
+                    text-align: justify;
+                    font-style: italic;
+                }
+                .cert-bold {
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-weight: 800;
+                    font-style: normal;
+                    text-transform: uppercase;
+                }
+                .cert-meta-bold {
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-weight: 800;
+                    font-style: normal;
+                }
+                .cert-footer-date {
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-size: 11px;
+                    font-weight: bold;
+                    margin-top: 35px;
+                }
+
+                /* PRINT RULES MATCHING EXACT A4 LANDSCAPE SETUP */
+                @page {
+                    size: A4 landscape;
+                    margin: 0;
+                }
 
                 @media print {
-                    body * { visibility: hidden !important; }
-                    #cpsclPrintArea, #cpsclPrintArea * { visibility: visible !important; }
+                    html, body {
+                        width: 297mm;
+                        height: 210mm;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: #fff !important;
+                    }
+                    body * {
+                        visibility: hidden !important;
+                    }
+                    #cpsclPrintArea, #cpsclPrintArea * {
+                        visibility: visible !important;
+                    }
                     #cpsclPrintArea {
                         position: absolute;
-                        left: 0;
-                        top: 0;
-                        width: 100% !important;
+                        left: 0 !important;
+                        top: 0 !important;
+                        width: 297mm !important;
+                        height: 210mm !important;
+                        min-height: 210mm !important;
+                        padding-top: 2.1in !important;
+                        padding-right: 1.8in !important;
+                        padding-bottom: 1.4in !important;
+                        padding-left: 2.4in !important;
                         margin: 0 !important;
-                        padding: 65mm 20mm 20mm 20mm !important;
                         box-shadow: none !important;
+                        box-sizing: border-box !important;
+                    }
+                    .no-print {
+                        display: none !important;
                     }
                 }
             </style>
 
-            <!-- ================= ১. স্টুডেন্ট লিস্ট ও এক্সেল আপলোড সেকশন ================= -->
+            <!-- ================= ১. স্টুডেন্ট লিস্ট সেকশন ================= -->
             <div id="cpscl-list-view" class="cpscl-sub-view">
                 <div class="cpscl-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
@@ -228,7 +283,6 @@
                         </div>
                     </div>
 
-                    <!-- আপলোড ড্রপজোন -->
                     <div class="excel-dropzone" onclick="document.getElementById('excelFileInput').click()">
                         <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.5rem; color: #6366f1; margin-bottom: 8px;"></i>
                         <h4 style="color: #1e293b; font-weight: 700; margin-bottom: 4px;">এক্সেল ফাইল আপলোড করতে এখানে ক্লিক করুন</h4>
@@ -237,7 +291,6 @@
                     </div>
                 </div>
 
-                <!-- স্টুডেন্ট টেবিল -->
                 <div class="cpscl-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
                         <div style="position: relative; width: 320px;">
@@ -263,9 +316,7 @@
                                     <th style="text-align: right;">অ্যাকশন</th>
                                 </tr>
                             </thead>
-                            <tbody id="studentTableBody">
-                                <!-- ডাইনামিক রো আসবে -->
-                            </tbody>
+                            <tbody id="studentTableBody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -360,7 +411,7 @@
                 </div>
             </div>
 
-            <!-- ================= ৩. প্রিন্ট ও প্রিভিউ সেকশন ================= -->
+            <!-- ================= ৩. প্রিন্ট ও প্রিভিউ সেকশন (ল্যান্ডস্কেপ A4) ================= -->
             <div id="cpscl-preview-view" class="cpscl-sub-view" style="display:none;">
                 <div class="cpscl-preview-wrapper">
                     <div class="cpscl-toolbar">
@@ -383,7 +434,7 @@
                         </button>
                     </div>
 
-                    <!-- A4 Sheet -->
+                    <!-- A4 LANDSCAPE SHEET -->
                     <div class="cpscl-a4-sheet" id="cpsclPrintArea">
                         <div class="cert-ref" id="prevRef">CPSCL/ 801023/SSC-26/001</div>
                         
@@ -407,9 +458,6 @@
         renderStudentTable();
     }
 
-    /* ==========================================================
-       ৩. এক্সেল ফাইল হ্যান্ডলার ও পার্সার
-       ========================================================== */
     window.handleExcelUpload = function (event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -428,7 +476,6 @@
                     return;
                 }
 
-                // এক্সেল রো ম্যাপিং
                 const newStudents = jsonData.map((row, index) => {
                     const roll = row['Roll'] || row['রোল'] || (index + 1);
                     return {
@@ -459,9 +506,6 @@
         reader.readAsArrayBuffer(file);
     };
 
-    /* ==========================================================
-       ৪. স্টুডেন্ট টেবিল রেন্ডার
-       ========================================================== */
     window.renderStudentTable = function () {
         const tbody = document.getElementById('studentTableBody');
         const countEl = document.getElementById('totalStudentsCount');
@@ -501,9 +545,6 @@
         });
     };
 
-    /* ==========================================================
-       ৫. টেবিল থেকে সরাসরি প্রিন্ট ভিউতে লোড
-       ========================================================== */
     window.loadStudentToPrint = function (idx) {
         const s = studentDatabase[idx];
         if (!s) return;
@@ -525,9 +566,6 @@
         switchCPSCLSubSection('preview');
     };
 
-    /* ==========================================================
-       ৬. ডেমো এক্সেল ফাইল ডাউনলোড
-       ========================================================== */
     window.downloadSampleExcel = function () {
         const sampleData = [
             {
@@ -538,21 +576,6 @@
                 "Gender": "Male",
                 "Father Name": "MD ASHRAFUL HABIB",
                 "Mother Name": "MST AKLIMA KHATUN",
-                "Session": "2024-2025",
-                "Passing Year": 2026,
-                "Group": "Science",
-                "Board": "Dinajpur",
-                "GPA": 5.00,
-                "Publication Date": "10 August 2026"
-            },
-            {
-                "Reference": "CPSCL/ 801023/SSC-26/002",
-                "Roll": 229084,
-                "Registration": "2317722961",
-                "Student Name": "NUSRAT JAHAN",
-                "Gender": "Female",
-                "Father Name": "MD RAFIQUL ISLAM",
-                "Mother Name": "MST NASIMA BEGUM",
                 "Session": "2024-2025",
                 "Passing Year": 2026,
                 "Group": "Science",
@@ -576,9 +599,6 @@
         }
     };
 
-    /* ==========================================================
-       ৭. সাব-সেকশন সুইচ ফাংশন
-       ========================================================== */
     window.switchCPSCLSubSection = function (sectionType) {
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
