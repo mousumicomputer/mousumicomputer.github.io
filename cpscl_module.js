@@ -1,6 +1,7 @@
 /**
  * CPSCL Module - Multi-Template Architecture & Calibrated Print
  * Realtime Firebase Cloud Database Sync (Multi-Device Support)
+ * Embedded Cloud Web-Fonts (Guaranteed Universal Rendering on any PC/Device)
  * Exact MS Word Match: Multiple 1.8 Line-Height & 10pt After-Spacing
  */
 
@@ -132,6 +133,34 @@
 
         cpsclViewPanel.innerHTML = `
             <style>
+                /* ==========================================================
+                   UNIVERSAL CLOUD WEB-FONTS (Fallback Guaranteed)
+                   ========================================================== */
+                @font-face {
+                    font-family: 'Monotype Corsiva';
+                    src: local('Monotype Corsiva'),
+                         url('https://fonts.cdnfonts.com/s/14732/MTCORSVA.woff') format('woff');
+                    font-weight: normal;
+                    font-style: normal;
+                    font-display: swap;
+                }
+                @font-face {
+                    font-family: 'Cambria';
+                    src: local('Cambria'), local('Cambria-BoldItalic'),
+                         url('https://fonts.cdnfonts.com/s/16086/CAMBRIA.woff') format('woff');
+                    font-weight: 700;
+                    font-style: italic;
+                    font-display: swap;
+                }
+                @font-face {
+                    font-family: 'Calibri';
+                    src: local('Calibri'),
+                         url('https://fonts.cdnfonts.com/s/14728/CALIBRI.woff') format('woff');
+                    font-weight: 400;
+                    font-style: normal;
+                    font-display: swap;
+                }
+
                 .cpscl-card {
                     background: #ffffff;
                     border-radius: 16px;
