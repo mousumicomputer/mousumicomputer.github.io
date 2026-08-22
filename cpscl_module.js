@@ -1,9 +1,13 @@
 /**
- * CPSCL Module - Dynamic Multi-Template ERP Engine
- * Clean Separated View with Global Template Selector
+ * CPSCL Module - Full ERP Certificate & Excel Engine
+ * 1. Student List (Excel Import & Table Management)
+ * 2. Student Entry (Manual Entry)
+ * 3. Certificate Print (A4 Preview & Print)
  */
 
 (function () {
+    let studentDatabase = JSON.parse(localStorage.getItem('cpscl_students_data') || '[]');
+
     function initCPSCLModule() {
         const menuList = document.querySelector('.sidebar .menu-list');
         const mainWrapper = document.querySelector('.main-wrapper');
@@ -16,7 +20,7 @@
         if (document.getElementById('menu-cpscl-parent')) return;
 
         /* ==========================================================
-           ১. সাইডবারে CPSCL মেনু
+           ১. সাইডবারে CPSCL মেনু (Student List সহ ৩টি সেকশন)
            ========================================================== */
         const cpsclMenuItem = document.createElement('li');
         cpsclMenuItem.className = 'menu-item';
@@ -31,9 +35,14 @@
                 <i class="fa-solid fa-chevron-down chevron-icon"></i>
             </a>
             <ul class="submenu-list">
-                <li class="submenu-item active" id="sub-cpscl-entry">
+                <li class="submenu-item active" id="sub-cpscl-list">
+                    <a onclick="switchCPSCLSubSection('list')">
+                        <i class="fa-solid fa-users"></i> <span>Student List</span>
+                    </a>
+                </li>
+                <li class="submenu-item" id="sub-cpscl-entry">
                     <a onclick="switchCPSCLSubSection('entry')">
-                        <i class="fa-solid fa-pen-to-square"></i> <span>Student Entry</span>
+                        <i class="fa-solid fa-user-plus"></i> <span>Student Entry</span>
                     </a>
                 </li>
                 <li class="submenu-item" id="sub-cpscl-preview">
@@ -52,7 +61,7 @@
         }
 
         /* ==========================================================
-           ২. CPSCL ভিউ প্যানেল (টেমপ্লেট সিলেক্টরসহ)
+           ২. CPSCL ভিউ প্যানেল তৈরি
            ========================================================== */
         const cpsclViewPanel = document.createElement('div');
         cpsclViewPanel.className = 'view-panel';
@@ -60,14 +69,13 @@
 
         cpsclViewPanel.innerHTML = `
             <style>
-                .cpscl-form-card {
+                .cpscl-card {
                     background: #ffffff;
                     border-radius: 16px;
                     border: 1px solid #e2e8f0;
-                    padding: 30px;
-                    max-width: 920px;
-                    margin: 0 auto;
+                    padding: 25px;
                     box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+                    margin-bottom: 20px;
                 }
                 .cpscl-template-select-box {
                     background: #eef2ff;
@@ -78,13 +86,12 @@
                     border-radius: 10px;
                     outline: none;
                     cursor: pointer;
-                    font-size: 0.92rem;
                 }
                 .cpscl-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-                    gap: 18px;
-                    margin-bottom: 25px;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 16px;
+                    margin-bottom: 20px;
                 }
                 .cpscl-input-group {
                     display: flex;
@@ -92,16 +99,13 @@
                     gap: 6px;
                 }
                 .cpscl-input-group label {
-                    font-size: 0.88rem;
+                    font-size: 0.85rem;
                     font-weight: 700;
                     color: #475569;
                 }
-                .cpscl-input-group label span {
-                    color: #ef4444;
-                }
                 .cpscl-control {
                     width: 100%;
-                    height: 46px;
+                    height: 44px;
                     border: 1.5px solid #e2e8f0;
                     border-radius: 10px;
                     padding: 0 14px;
@@ -109,7 +113,6 @@
                     color: #1e293b;
                     outline: none;
                     background: #fcfdfe;
-                    transition: 0.2s;
                 }
                 .cpscl-control:focus {
                     border-color: #4f46e5;
@@ -117,7 +120,45 @@
                     background: #fff;
                 }
 
-                /* A4 Preview Wrapper & Toolbars */
+                /* Excel Dropzone */
+                .excel-dropzone {
+                    border: 2px dashed #6366f1;
+                    background: #f8faff;
+                    border-radius: 14px;
+                    padding: 25px;
+                    text-align: center;
+                    cursor: pointer;
+                    transition: 0.3s;
+                }
+                .excel-dropzone:hover {
+                    background: #eef2ff;
+                }
+
+                /* Table Styling */
+                .cpscl-table {
+                    width: 100%;
+                    border-collapse: separate;
+                    border-spacing: 0 8px;
+                }
+                .cpscl-table th {
+                    padding: 10px 14px;
+                    color: #64748b;
+                    font-size: 0.85rem;
+                    font-weight: 700;
+                    text-align: left;
+                }
+                .cpscl-table td {
+                    background: #ffffff;
+                    padding: 12px 14px;
+                    border-top: 1px solid #f1f5f9;
+                    border-bottom: 1px solid #f1f5f9;
+                    font-size: 0.92rem;
+                    color: #1e293b;
+                }
+                .cpscl-table tr td:first-child { border-left: 1px solid #f1f5f9; border-radius: 10px 0 0 10px; }
+                .cpscl-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 10px 10px 0; }
+
+                /* A4 Certificate Sheet */
                 .cpscl-preview-wrapper {
                     background: #525659;
                     padding: 30px 15px;
@@ -141,50 +182,22 @@
                     background: #ffffff;
                     width: 210mm;
                     min-height: 297mm;
-                    padding: 70mm 25mm 25mm 25mm; /* প্যাডের উপরের অংশের জন্য ফাঁকা */
+                    padding: 70mm 25mm 25mm 25mm;
                     box-shadow: 0 10px 30px rgba(0,0,0,0.4);
                     color: #000;
                     font-family: 'Monotype Corsiva', 'Times New Roman', cursive, serif;
                     box-sizing: border-box;
                     position: relative;
                 }
-                .cert-ref {
-                    font-family: Arial, sans-serif;
-                    font-size: 13px;
-                    font-weight: bold;
-                    margin-bottom: 30px;
-                }
-                .cert-body {
-                    font-size: 18.5px;
-                    line-height: 1.9;
-                    text-align: justify;
-                    font-style: italic;
-                }
-                .cert-bold {
-                    font-family: Arial, sans-serif;
-                    font-weight: 800;
-                    font-style: normal;
-                    text-transform: uppercase;
-                }
-                .cert-meta-bold {
-                    font-family: Arial, sans-serif;
-                    font-weight: 800;
-                    font-style: normal;
-                }
-                .cert-footer-date {
-                    font-family: Arial, sans-serif;
-                    font-size: 11px;
-                    font-weight: bold;
-                    margin-top: 55px;
-                }
+                .cert-ref { font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; margin-bottom: 30px; }
+                .cert-body { font-size: 18.5px; line-height: 1.9; text-align: justify; font-style: italic; }
+                .cert-bold { font-family: Arial, sans-serif; font-weight: 800; font-style: normal; text-transform: uppercase; }
+                .cert-meta-bold { font-family: Arial, sans-serif; font-weight: 800; font-style: normal; }
+                .cert-footer-date { font-family: Arial, sans-serif; font-size: 11px; font-weight: bold; margin-top: 55px; }
 
                 @media print {
-                    body * {
-                        visibility: hidden !important;
-                    }
-                    #cpsclPrintArea, #cpsclPrintArea * {
-                        visibility: visible !important;
-                    }
+                    body * { visibility: hidden !important; }
+                    #cpsclPrintArea, #cpsclPrintArea * { visibility: visible !important; }
                     #cpsclPrintArea {
                         position: absolute;
                         left: 0;
@@ -194,24 +207,79 @@
                         padding: 65mm 20mm 20mm 20mm !important;
                         box-shadow: none !important;
                     }
-                    .no-print {
-                        display: none !important;
-                    }
                 }
             </style>
 
-            <!-- ================= ১. এন্ট্রি সেকশন ================= -->
-            <div id="cpscl-entry-view" class="cpscl-sub-view">
-                <div class="cpscl-form-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
+            <!-- ================= ১. স্টুডেন্ট লিস্ট ও এক্সেল আপলোড সেকশন ================= -->
+            <div id="cpscl-list-view" class="cpscl-sub-view">
+                <div class="cpscl-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <h2 style="font-size: 1.3rem; color: #1e293b; font-weight: 800;"><i class="fa-solid fa-file-excel" style="color: #10b981;"></i> Student Excel Import & Database</h2>
+                            <p style="font-size: 0.85rem; color: #64748b;">এক্সেল ফাইল আপলোড করে শিক্ষার্থীদের ডাটাবেইজ তৈরি করুন</p>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-submit" onclick="downloadSampleExcel()" style="width: auto; padding: 10px 16px; background: #0284c7; border-radius: 8px; font-size: 0.88rem;">
+                                <i class="fa-solid fa-download"></i> স্যাম্পল এক্সেল ডাউনলোড
+                            </button>
+                            <button class="btn-submit" onclick="switchCPSCLSubSection('entry')" style="width: auto; padding: 10px 18px; background: #4f46e5; border-radius: 8px; font-size: 0.88rem;">
+                                <i class="fa-solid fa-user-plus"></i> নতুন শিক্ষার্থী এন্ট্রি
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- আপলোড ড্রপজোন -->
+                    <div class="excel-dropzone" onclick="document.getElementById('excelFileInput').click()">
+                        <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.5rem; color: #6366f1; margin-bottom: 8px;"></i>
+                        <h4 style="color: #1e293b; font-weight: 700; margin-bottom: 4px;">এক্সেল ফাইল আপলোড করতে এখানে ক্লিক করুন</h4>
+                        <p style="font-size: 0.82rem; color: #64748b;">সমর্থিত ফাইল: .xlsx, .xls, .csv</p>
+                        <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleExcelUpload(event)">
+                    </div>
+                </div>
+
+                <!-- স্টুডেন্ট টেবিল -->
+                <div class="cpscl-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <div style="position: relative; width: 320px;">
+                            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 14px; color: #94a3b8;"></i>
+                            <input type="text" id="studentSearchInput" placeholder="রোল, নাম বা রেজি. দিয়ে খুঁজুন..." class="cpscl-control" style="padding-left: 38px;" oninput="renderStudentTable()">
+                        </div>
+                        <div style="font-weight: 700; color: #64748b;">
+                            মোট শিক্ষার্থী: <span id="totalStudentsCount" style="color: #4f46e5; font-size: 1.1rem;">0</span> জন
+                            <button onclick="clearAllStudents()" style="margin-left: 15px; background: none; border: none; color: #ef4444; font-weight: 700; cursor: pointer; font-size: 0.85rem;"><i class="fa-solid fa-trash-can"></i> ডাটা ক্লিয়ার করুন</button>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table class="cpscl-table">
+                            <thead>
+                                <tr>
+                                    <th>রোল</th>
+                                    <th>রেজিস্ট্রেশন</th>
+                                    <th>শিক্ষার্থীর নাম</th>
+                                    <th>পিতার নাম</th>
+                                    <th>গ্রুপ</th>
+                                    <th>GPA</th>
+                                    <th style="text-align: right;">অ্যাকশন</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentTableBody">
+                                <!-- ডাইনামিক রো আসবে -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= ২. ম্যানুয়াল এন্ট্রি সেকশন ================= -->
+            <div id="cpscl-entry-view" class="cpscl-sub-view" style="display:none;">
+                <div class="cpscl-card" style="max-width: 900px; margin: 0 auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; flex-wrap: wrap; gap: 10px;">
                         <div>
                             <h2 style="font-size: 1.3rem; color: #1e293b; font-weight: 800;"><i class="fa-solid fa-pen-to-square" style="color: #4f46e5;"></i> Student Information Entry</h2>
-                            <p style="font-size: 0.85rem; color: #64748b; margin-top: 2px;">তথ্য ইনপুট দিন এবং টেমপ্লেট নির্বাচন করুন</p>
+                            <p style="font-size: 0.85rem; color: #64748b;">ম্যানুয়ালি তথ্য ইনপুট দিয়ে প্রশংসাপত্র তৈরি করুন</p>
                         </div>
-                        
-                        <!-- টেমপ্লেট ড্রপডাউন -->
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <label style="font-size: 0.85rem; font-weight: 700; color: #475569;"><i class="fa-solid fa-layer-group"></i> Template:</label>
                             <select id="entryTemplateSelect" class="cpscl-template-select-box" onchange="onTemplateChange(this.value)">
                                 <option value="ssc_testimonial">SSC Testimonial (এসএসসি প্রশংসাপত্র)</option>
                                 <option value="hsc_testimonial">HSC Testimonial (এইচএসসি প্রশংসাপত্র)</option>
@@ -221,7 +289,7 @@
                         </div>
                     </div>
 
-                    <form id="cpsclEntryForm" onsubmit="event.preventDefault(); generateAndGoPreview();">
+                    <form id="cpsclEntryForm" onsubmit="event.preventDefault(); saveAndPreviewFromForm();">
                         <div class="cpscl-grid">
                             <div class="cpscl-input-group" style="grid-column: 1 / -1;">
                                 <label>Reference No. <span>*</span></label>
@@ -281,8 +349,8 @@
                         </div>
 
                         <div style="display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid #f1f5f9; padding-top: 20px;">
-                            <button type="reset" class="btn-submit" style="width: auto; padding: 12px 25px; background: #94a3b8; border-radius: 10px;">
-                                <i class="fa-solid fa-rotate-left"></i> Reset
+                            <button type="button" class="btn-submit" onclick="switchCPSCLSubSection('list')" style="width: auto; padding: 12px 25px; background: #64748b; border-radius: 10px;">
+                                <i class="fa-solid fa-arrow-left"></i> ব্যাক টু লিস্ট
                             </button>
                             <button type="submit" class="btn-submit" style="width: auto; padding: 12px 35px; background: #4f46e5; border-radius: 10px; font-size: 1rem;">
                                 <i class="fa-solid fa-file-circle-check"></i> Generate & View Certificate
@@ -292,19 +360,16 @@
                 </div>
             </div>
 
-            <!-- ================= ২. প্রিন্ট ও প্রিভিউ সেকশন (টুলবারে ড্রপডাউনসহ) ================= -->
+            <!-- ================= ৩. প্রিন্ট ও প্রিভিউ সেকশন ================= -->
             <div id="cpscl-preview-view" class="cpscl-sub-view" style="display:none;">
                 <div class="cpscl-preview-wrapper">
-                    
-                    <!-- প্রিভিউ টুলবার -->
                     <div class="cpscl-toolbar">
-                        <button class="btn-submit" onclick="switchCPSCLSubSection('entry')" style="width: auto; padding: 10px 18px; background: #334155; border-radius: 8px;">
-                            <i class="fa-solid fa-arrow-left"></i> Back to Edit Info
+                        <button class="btn-submit" onclick="switchCPSCLSubSection('list')" style="width: auto; padding: 10px 18px; background: #334155; border-radius: 8px;">
+                            <i class="fa-solid fa-arrow-left"></i> Back to Student List
                         </button>
                         
-                        <!-- প্রিভিউ পেজেও টেমপ্লেট ড্রপডাউন -->
                         <div style="display: flex; align-items: center; gap: 8px; background: #fff; padding: 4px 12px; border-radius: 8px;">
-                            <span style="font-size: 0.85rem; font-weight: 700; color: #475569;">Selected Template:</span>
+                            <span style="font-size: 0.85rem; font-weight: 700; color: #475569;">Template:</span>
                             <select id="previewTemplateSelect" class="cpscl-template-select-box" style="border: none; background: transparent; padding: 4px 6px;" onchange="onTemplateChange(this.value)">
                                 <option value="ssc_testimonial">SSC Testimonial (এসএসসি প্রশংসাপত্র)</option>
                                 <option value="hsc_testimonial">HSC Testimonial (এইচএসসি প্রশংসাপত্র)</option>
@@ -318,7 +383,7 @@
                         </button>
                     </div>
 
-                    <!-- A4 সার্টিফিকেট শিট -->
+                    <!-- A4 Sheet -->
                     <div class="cpscl-a4-sheet" id="cpsclPrintArea">
                         <div class="cert-ref" id="prevRef">CPSCL/ 801023/SSC-26/001</div>
                         
@@ -339,13 +404,222 @@
         `;
 
         mainWrapper.appendChild(cpsclViewPanel);
+        renderStudentTable();
     }
 
     /* ==========================================================
-       ৩. টেমপ্লেট পরিবর্তন হ্যান্ডলার
+       ৩. এক্সেল ফাইল হ্যান্ডলার ও পার্সার
        ========================================================== */
+    window.handleExcelUpload = function (event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                if (jsonData.length === 0) {
+                    alert("এক্সেল ফাইলে কোনো ডাটা পাওয়া যায়নি!");
+                    return;
+                }
+
+                // এক্সেল রো ম্যাপিং
+                const newStudents = jsonData.map((row, index) => {
+                    const roll = row['Roll'] || row['রোল'] || (index + 1);
+                    return {
+                        ref: row['Reference'] || row['Ref'] || row['রেফারেন্স'] || `CPSCL/ 801023/SSC-26/${String(roll).padStart(3, '0')}`,
+                        name: row['Student Name'] || row['Name'] || row['নাম'] || 'STUDENT NAME',
+                        gender: (row['Gender'] || row['লিঙ্গ'] || 'Male').toString().toLowerCase().startsWith('f') ? 'Female' : 'Male',
+                        father: row['Father Name'] || row['Father'] || row['পিতার নাম'] || '',
+                        mother: row['Mother Name'] || row['Mother'] || row['মাতার নাম'] || '',
+                        roll: roll,
+                        reg: row['Registration'] || row['Reg'] || row['রেজিস্ট্রেশন'] || '',
+                        session: row['Session'] || row['সেশন'] || '2024-2025',
+                        year: row['Passing Year'] || row['Year'] || row['সাল'] || '2026',
+                        group: row['Group'] || row['বিভাগ'] || 'Science',
+                        board: row['Board'] || row['বোর্ড'] || 'Dinajpur',
+                        gpa: row['GPA'] || row['জিপিএ'] || '5.00',
+                        pubDate: row['Date'] || row['Publication Date'] || row['তারিখ'] || '10 August 2026'
+                    };
+                });
+
+                studentDatabase = newStudents;
+                localStorage.setItem('cpscl_students_data', JSON.stringify(studentDatabase));
+                renderStudentTable();
+                alert(`সফলভাবে ${newStudents.length} জন শিক্ষার্থীর তথ্য ইমপোর্ট হয়েছে!`);
+            } catch (err) {
+                alert("এক্সেল ফাইল রিড করতে সমস্যা হয়েছে: " + err.message);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    };
+
+    /* ==========================================================
+       ৪. স্টুডেন্ট টেবিল রেন্ডার
+       ========================================================== */
+    window.renderStudentTable = function () {
+        const tbody = document.getElementById('studentTableBody');
+        const countEl = document.getElementById('totalStudentsCount');
+        if (!tbody) return;
+
+        const searchVal = (document.getElementById('studentSearchInput')?.value || '').toLowerCase();
+        const filtered = studentDatabase.filter(s => 
+            String(s.roll).toLowerCase().includes(searchVal) ||
+            String(s.reg).toLowerCase().includes(searchVal) ||
+            s.name.toLowerCase().includes(searchVal)
+        );
+
+        if (countEl) countEl.innerText = studentDatabase.length;
+        tbody.innerHTML = '';
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 25px;">কোনো শিক্ষার্থীর তথ্য পাওয়া যায়নি। এক্সেল ফাইল আপলোড করুন।</td></tr>`;
+            return;
+        }
+
+        filtered.forEach((s, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${s.roll}</strong></td>
+                <td>${s.reg || '-'}</td>
+                <td><strong style="color:#1e293b;">${s.name}</strong></td>
+                <td>${s.father || '-'}</td>
+                <td><span style="background:#eef2ff; color:#4f46e5; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700;">${s.group}</span></td>
+                <td><strong style="color:#16a34a;">${s.gpa}</strong></td>
+                <td style="text-align: right;">
+                    <button onclick="loadStudentToPrint(${idx})" style="background: #4f46e5; color: #fff; border: none; padding: 6px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem;">
+                        <i class="fa-solid fa-print"></i> Print Certificate
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    };
+
+    /* ==========================================================
+       ৫. টেবিল থেকে সরাসরি প্রিন্ট ভিউতে লোড
+       ========================================================== */
+    window.loadStudentToPrint = function (idx) {
+        const s = studentDatabase[idx];
+        if (!s) return;
+
+        document.getElementById('inpRef').value = s.ref;
+        document.getElementById('inpName').value = s.name;
+        document.getElementById('inpGender').value = s.gender;
+        document.getElementById('inpFather').value = s.father;
+        document.getElementById('inpMother').value = s.mother;
+        document.getElementById('inpRoll').value = s.roll;
+        document.getElementById('inpReg').value = s.reg;
+        document.getElementById('inpSession').value = s.session;
+        document.getElementById('inpYear').value = s.year;
+        document.getElementById('inpGroup').value = s.group;
+        document.getElementById('inpBoard').value = s.board;
+        document.getElementById('inpGpa').value = s.gpa;
+        document.getElementById('inpPubDate').value = s.pubDate;
+
+        switchCPSCLSubSection('preview');
+    };
+
+    /* ==========================================================
+       ৬. ডেমো এক্সেল ফাইল ডাউনলোড
+       ========================================================== */
+    window.downloadSampleExcel = function () {
+        const sampleData = [
+            {
+                "Reference": "CPSCL/ 801023/SSC-26/001",
+                "Roll": 229083,
+                "Registration": "2317722960",
+                "Student Name": "K M ANISUJJAMAN MASUM",
+                "Gender": "Male",
+                "Father Name": "MD ASHRAFUL HABIB",
+                "Mother Name": "MST AKLIMA KHATUN",
+                "Session": "2024-2025",
+                "Passing Year": 2026,
+                "Group": "Science",
+                "Board": "Dinajpur",
+                "GPA": 5.00,
+                "Publication Date": "10 August 2026"
+            },
+            {
+                "Reference": "CPSCL/ 801023/SSC-26/002",
+                "Roll": 229084,
+                "Registration": "2317722961",
+                "Student Name": "NUSRAT JAHAN",
+                "Gender": "Female",
+                "Father Name": "MD RAFIQUL ISLAM",
+                "Mother Name": "MST NASIMA BEGUM",
+                "Session": "2024-2025",
+                "Passing Year": 2026,
+                "Group": "Science",
+                "Board": "Dinajpur",
+                "GPA": 5.00,
+                "Publication Date": "10 August 2026"
+            }
+        ];
+
+        const ws = XLSX.utils.json_to_sheet(sampleData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Students_Demo");
+        XLSX.writeFile(wb, "CPSCL_Students_Sample.xlsx");
+    };
+
+    window.clearAllStudents = function () {
+        if (confirm("আপনি কি নিশ্চিত যে সকল শিক্ষার্থীর তালিকা মুছে ফেলতে চান?")) {
+            studentDatabase = [];
+            localStorage.removeItem('cpscl_students_data');
+            renderStudentTable();
+        }
+    };
+
+    /* ==========================================================
+       ৭. সাব-সেকশন সুইচ ফাংশন
+       ========================================================== */
+    window.switchCPSCLSubSection = function (sectionType) {
+        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+        document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
+
+        const panel = document.getElementById('cpscl-view');
+        if (panel) panel.classList.add('active');
+
+        const parentMenu = document.getElementById('menu-cpscl-parent');
+        if (parentMenu) parentMenu.classList.add('active');
+
+        const listView = document.getElementById('cpscl-list-view');
+        const entryView = document.getElementById('cpscl-entry-view');
+        const previewView = document.getElementById('cpscl-preview-view');
+
+        const subList = document.getElementById('sub-cpscl-list');
+        const subEntry = document.getElementById('sub-cpscl-entry');
+        const subPreview = document.getElementById('sub-cpscl-preview');
+
+        if (listView) listView.style.display = 'none';
+        if (entryView) entryView.style.display = 'none';
+        if (previewView) previewView.style.display = 'none';
+
+        if (sectionType === 'list') {
+            if (listView) listView.style.display = 'block';
+            if (subList) subList.classList.add('active');
+            document.getElementById('top-title').innerText = "CPSCL - STUDENT LIST";
+            renderStudentTable();
+        } else if (sectionType === 'entry') {
+            if (entryView) entryView.style.display = 'block';
+            if (subEntry) subEntry.classList.add('active');
+            document.getElementById('top-title').innerText = "CPSCL - STUDENT ENTRY";
+        } else {
+            updateCertificateData();
+            if (previewView) previewView.style.display = 'block';
+            if (subPreview) subPreview.classList.add('active');
+            document.getElementById('top-title').innerText = "CPSCL - CERTIFICATE PRINT";
+        }
+    };
+
     window.onTemplateChange = function (templateVal) {
-        // উভয় ড্রপডাউনকে সিঙ্ক রাখা
         const entrySel = document.getElementById('entryTemplateSelect');
         const prevSel = document.getElementById('previewTemplateSelect');
         if (entrySel) entrySel.value = templateVal;
@@ -365,42 +639,6 @@
         updateCertificateData();
     };
 
-    /* ==========================================================
-       ৪. সাব-সেকশন সুইচ করার ফাংশন
-       ========================================================== */
-    window.switchCPSCLSubSection = function (sectionType) {
-        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-        document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
-
-        const panel = document.getElementById('cpscl-view');
-        if (panel) panel.classList.add('active');
-
-        const parentMenu = document.getElementById('menu-cpscl-parent');
-        if (parentMenu) parentMenu.classList.add('active');
-
-        const entryView = document.getElementById('cpscl-entry-view');
-        const previewView = document.getElementById('cpscl-preview-view');
-        const subEntry = document.getElementById('sub-cpscl-entry');
-        const subPreview = document.getElementById('sub-cpscl-preview');
-
-        if (sectionType === 'entry') {
-            if (entryView) entryView.style.display = 'block';
-            if (previewView) previewView.style.display = 'none';
-            if (subEntry) subEntry.classList.add('active');
-            document.getElementById('top-title').innerText = "CPSCL - STUDENT ENTRY";
-        } else {
-            updateCertificateData();
-            if (entryView) entryView.style.display = 'none';
-            if (previewView) previewView.style.display = 'block';
-            if (subPreview) subPreview.classList.add('active');
-            document.getElementById('top-title').innerText = "CPSCL - CERTIFICATE PRINT";
-        }
-    };
-
-    /* ==========================================================
-       ৫. সার্টিফিকেট ডাটা আপডেট
-       ========================================================== */
     function updateCertificateData() {
         const isMale = document.getElementById('inpGender').value === 'Male';
 
@@ -417,7 +655,6 @@
         document.getElementById('prevGpa').innerText = document.getElementById('inpGpa').value;
         document.getElementById('prevPubDate').innerText = document.getElementById('inpPubDate').value;
 
-        // Gender Pronouns Auto Update
         document.getElementById('prevRelation').innerText = isMale ? "son of" : "daughter of";
         document.getElementById('prevPronoun').innerText = isMale ? "He" : "She";
         document.getElementById('prevPronounLower').innerText = isMale ? "he" : "she";
@@ -425,7 +662,31 @@
         document.getElementById('prevObjective').innerText = isMale ? "him" : "her";
     }
 
-    window.generateAndGoPreview = function () {
+    window.saveAndPreviewFromForm = function () {
+        const studentObj = {
+            ref: document.getElementById('inpRef').value,
+            name: document.getElementById('inpName').value,
+            gender: document.getElementById('inpGender').value,
+            father: document.getElementById('inpFather').value,
+            mother: document.getElementById('inpMother').value,
+            roll: document.getElementById('inpRoll').value,
+            reg: document.getElementById('inpReg').value,
+            session: document.getElementById('inpSession').value,
+            year: document.getElementById('inpYear').value,
+            group: document.getElementById('inpGroup').value,
+            board: document.getElementById('inpBoard').value,
+            gpa: document.getElementById('inpGpa').value,
+            pubDate: document.getElementById('inpPubDate').value
+        };
+
+        const existingIdx = studentDatabase.findIndex(s => s.roll === studentObj.roll);
+        if (existingIdx !== -1) {
+            studentDatabase[existingIdx] = studentObj;
+        } else {
+            studentDatabase.unshift(studentObj);
+        }
+
+        localStorage.setItem('cpscl_students_data', JSON.stringify(studentDatabase));
         switchCPSCLSubSection('preview');
     };
 
