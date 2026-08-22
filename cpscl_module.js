@@ -1,6 +1,6 @@
 /**
- * CPSCL Module - 100% 1:1 Pixel-Perfect Overlay with Original MS Word Print
- * Fixed Line Breaks, Exact 7.49in Text Width, Zero-Margin Print Rule
+ * CPSCL Module - 100% Strict A4 Landscape Print Fix
+ * Exact MS Word Typography, Margins, Line Breaks & True Landscape Rendering
  */
 
 (function () {
@@ -59,7 +59,7 @@
         }
 
         /* ==========================================================
-           ২. CPSCL ভিউ প্যানেল (Exact 1:1 Matching)
+           ২. CPSCL ভিউ প্যানেল (Strict Landscape CSS)
            ========================================================== */
         const cpsclViewPanel = document.createElement('div');
         cpsclViewPanel.className = 'view-panel';
@@ -152,7 +152,7 @@
                 .cpscl-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 10px 10px 0; }
 
                 /* ==========================================================
-                   A4 LANDSCAPE 1:1 PIXEL-PERFECT SHEET
+                   A4 LANDSCAPE SCREEN PREVIEW
                    ========================================================== */
                 .cpscl-preview-wrapper {
                     background: #525659;
@@ -164,7 +164,7 @@
                     overflow-x: auto;
                 }
                 .cpscl-toolbar {
-                    width: 11.69in;
+                    width: 297mm;
                     max-width: 100%;
                     display: flex;
                     justify-content: space-between;
@@ -176,10 +176,10 @@
 
                 .cpscl-a4-sheet {
                     background: #ffffff;
-                    width: 11.69in;
-                    height: 8.27in;
-                    min-height: 8.27in;
-                    max-height: 8.27in;
+                    width: 297mm;
+                    height: 210mm;
+                    min-height: 210mm;
+                    max-height: 210mm;
                     padding-top: 2.1in;
                     padding-right: 1.8in;
                     padding-bottom: 1.4in;
@@ -202,13 +202,12 @@
                     line-height: 1.15 !important;
                 }
                 .cert-ref {
-                    margin-bottom: 24pt !important; /* 2 Enters */
+                    margin-bottom: 24pt !important; /* 2 Enters gap */
                 }
 
                 /* 2. Certificate Body & Exact Word Paragraph Matching */
                 .cert-body-block {
                     width: 100%;
-                    max-width: 7.49in; /* Exact Content Width (11.69 - 2.4 - 1.8) */
                     box-sizing: border-box;
                 }
 
@@ -275,17 +274,21 @@
                 }
 
                 /* ==========================================================
-                   100% ZERO-MARGIN PRINT FIX
+                   STRICT A4 LANDSCAPE PRINT RULES
                    ========================================================== */
                 @page {
-                    size: 11.69in 8.27in landscape;
-                    margin: 0 !important;
+                    size: A4 landscape !important;
+                    margin: 0mm !important;
                 }
 
                 @media print {
+                    @page {
+                        size: A4 landscape !important;
+                        margin: 0mm !important;
+                    }
                     html, body {
-                        width: 11.69in !important;
-                        height: 8.27in !important;
+                        width: 297mm !important;
+                        height: 210mm !important;
                         margin: 0 !important;
                         padding: 0 !important;
                         background: #ffffff !important;
@@ -301,9 +304,9 @@
                         position: absolute !important;
                         left: 0 !important;
                         top: 0 !important;
-                        width: 11.69in !important;
-                        height: 8.27in !important;
-                        max-height: 8.27in !important;
+                        width: 297mm !important;
+                        height: 210mm !important;
+                        max-height: 210mm !important;
                         padding-top: 2.1in !important;
                         padding-right: 1.8in !important;
                         padding-bottom: 1.4in !important;
@@ -379,7 +382,7 @@
             <!-- ================= ২. ম্যানুয়াল এন্ট্রি সেকশন ================= -->
             <div id="cpscl-entry-view" class="cpscl-sub-view" style="display:none;">
                 <div class="cpscl-card" style="max-width: 900px; margin: 0 auto;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; flex-wrap: gap; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; flex-wrap: wrap; gap: 10px;">
                         <div>
                             <h2 style="font-size: 1.3rem; color: #1e293b; font-weight: 800;"><i class="fa-solid fa-pen-to-square" style="color: #4f46e5;"></i> Student Information Entry</h2>
                             <p style="font-size: 0.85rem; color: #64748b;">ম্যানুয়ালি তথ্য ইনপুট দিয়ে প্রশংসাপত্র তৈরি করুন</p>
@@ -488,22 +491,19 @@
                         </button>
                     </div>
 
-                    <!-- A4 LANDSCAPE SHEET (100% Exact 1:1 Overlay) -->
+                    <!-- A4 LANDSCAPE SHEET -->
                     <div class="cpscl-a4-sheet" id="cpsclPrintArea">
                         <div class="cert-ref" id="prevRef">CPSCL/ 801023/SSC-26/001</div>
                         
                         <div class="cert-body-block">
-                            <!-- প্যারা ১: ৫টি লাইন হুবহু মূল ফাইলের মতো -->
                             <p class="cert-paragraph">
                                 This is to certify that <span class="cert-bold" id="prevName">K M ANISUJJAMAN MASUM</span>, <span id="prevRelation">son of</span> <span class="cert-bold" id="prevFather">MD ASHRAFUL HABIB</span> and <span class="cert-bold" id="prevMother">MST AKLIMA KHATUN</span> bearing Roll No. <span class="cert-meta-bold" id="prevRoll">229083</span>, Registration No. <span class="cert-meta-bold" id="prevReg">2317722960</span>, Session <span class="cert-meta-bold" id="prevSession">2024–2025</span> passed <span id="prevExamName">Secondary School Certificate Examination</span> in <span class="cert-meta-bold" id="prevYear">2026</span> from <span class="cert-meta-bold" id="prevGroup">Science</span> group under the Board of Intermediate and Secondary Education, <span id="prevBoard">Dinajpur</span> as a regular student of this institution and acquired GPA- <span class="cert-meta-bold" id="prevGpa">5.00</span>.
                             </p>
                             
-                            <!-- প্যারা ২ -->
                             <p class="cert-paragraph">
                                 <span id="prevPronoun">He</span> bears a good moral character. To the best of my concern, <span id="prevPronounLower">he</span> did not take part in any activity subversive of the state or against discipline during <span id="prevPossessive">his</span> stay at this institution.
                             </p>
                             
-                            <!-- প্যারা ৩ -->
                             <p class="cert-paragraph">
                                 I wish <span id="prevObjective">him</span> a bright future.
                             </p>
