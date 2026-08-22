@@ -1,7 +1,6 @@
 /**
  * User Management & Security Audit Module - Mousumi Computer ERP
- * Role-Based Access Control (RBAC) & Realtime Firebase Cloud Sync
- * Features: Admin Password Visibility, Activity Audit Logs, Instant Deactivation
+ * Strict Whitelist Role-Based Access Control (RBAC) & Realtime Firebase Sync
  */
 
 (function () {
@@ -20,8 +19,8 @@
     async function initFirebase() {
         try {
             const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-            const { getDatabase, ref, set, onValue, get } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
-            const { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+            const { getDatabase, ref, set, onValue } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+            const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
 
             const firebaseConfig = {
                 apiKey: "AIzaSyA1PhRiTkICNCd8sA4he3ZxKjHtIzM0d5E",
@@ -71,6 +70,9 @@
                 renderActivityLogsTable();
             });
 
+            // ডাইনামিক মেনু গার্ড (দেরিতে লোড হওয়া মেনুকেও সাথে সাথে হাইড করবে)
+            setupMenuMutationObserver();
+
         } catch (err) {
             console.error("User Management Firebase Init Error:", err);
         }
@@ -87,7 +89,7 @@
     }
 
     /* ==========================================================
-       ২. গ্লোবাল অ্যাক্টিভিটি লগার (Activity Log Engine)
+       ২. গ্লোবাল অ্যাক্টিভিটি লগার
        ========================================================== */
     window.logUserActivity = async function (actionType, details) {
         const now = new Date();
@@ -107,7 +109,7 @@
         };
 
         activityLogs.unshift(logEntry);
-        if (activityLogs.length > 500) activityLogs = activityLogs.slice(0, 500); // সর্বোচ্চ ৫০০ লগ সংরক্ষণ
+        if (activityLogs.length > 500) activityLogs = activityLogs.slice(0, 500);
 
         if (dbInstance && dbSetFunc && dbRefFunc) {
             try {
@@ -119,35 +121,30 @@
     };
 
     /* ==========================================================
-       ৩. সিকিউরিটি ও পারমিশন কন্ট্রোল গার্ড (Permission Guard)
+       ৩. নিখুঁত সিকিউরিটি ও স্ট্রিক্ট হোয়াইটলিস্ট গার্ড
        ========================================================== */
     async function syncUserStatusAndEnforceSecurity(user) {
         const email = (user.email || '').toLowerCase().trim();
         
-        // সুপার এডমিন চেক
         if (email === SUPER_ADMIN_EMAIL.toLowerCase()) {
-            currentUserProfile = { name: "Super Admin", role: "Super Admin", status: "Active" };
-            window.logUserActivity("LOGIN", "Super Admin logged in successfully");
+            currentUserProfile = { name: "Rabbi Hosen", role: "Admin", status: "Active" };
             unlockAllMenusForAdmin();
             return;
         }
 
-        // সাধারণ ইউজার চেক
         const profile = systemUsers.find(u => (u.email || '').toLowerCase().trim() === email);
         if (profile) {
             currentUserProfile = profile;
 
-            // যদি একাউন্ট ব্লক করা থাকে
             if (profile.status === 'Blocked' || profile.status === 'Inactive') {
-                window.logUserActivity("BLOCKED_LOGIN_ATTEMPT", `Blocked user (${profile.name}) attempted to access`);
-                alert("আপনার একাউন্টটি এডমিন কর্তৃক স্থগিত (Blocked) করা হয়েছে! যোগাযোগ করুন।");
+                window.logUserActivity("BLOCKED_ACCESS_ATTEMPT", `Blocked user (${profile.name}) tried to login`);
+                alert("আপনার একাউন্টটি সাময়িকভাবে স্থগিত (Blocked) আছে! এডমিনের সাথে যোগাযোগ করুন।");
                 const { getAuth, signOut } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
                 await signOut(getAuth());
                 window.location.reload();
                 return;
             }
 
-            window.logUserActivity("LOGIN", `User (${profile.name}) logged in`);
             enforcePermissionsForUser(email);
         }
     }
@@ -163,41 +160,78 @@
 
         const allowed = profile.permissions || {};
 
-        // মেইন মেনুগুলো ফিল্টার
-        toggleElementDisplay('#menu-dash', !!allowed.dashboard);
-        toggleElementDisplay('#menu-bal-parent', !!allowed.balance);
-        toggleElementDisplay('#menu-inv-parent', !!allowed.inventory);
-        toggleElementDisplay('#menu-cust-parent', !!allowed.customers);
-        toggleElementDisplay('#menu-closing-parent', !!allowed.closing);
-        toggleElementDisplay('#menu-settings-parent', false); // সেটিংস কেবল সুপার এডমিনের জন্য
-        toggleElementDisplay('#menu-user-mgmt', false); // ইউজার ম্যানেজমেন্ট শুধু সুপার এডমিন
+        // ১. টপ প্রোফাইল বারে ইউজারের নাম ও রোল পরিবর্তন
+        const dName = document.getElementById('dropdownName');
+        const dRole = document.getElementById('dropdownRole');
+        const fullProfName = document.getElementById('fullProfileNameDisplay');
+        const fullProfRole = document.getElementById('fullProfileRoleDisplay');
 
-        // CPSCL মেনু এক্সেস
-        toggleElementDisplay('#menu-cpscl-parent', !!allowed.cpscl);
+        if (dName) dName.innerText = profile.name || 'User';
+        if (dRole) dRole.innerText = profile.role || 'Operator';
+        if (fullProfName) fullProfName.innerText = profile.name || 'User';
+        if (fullProfRole) fullProfRole.innerText = profile.role || 'Operator';
 
-        // যদি শুধুমাত্র CPSCL অনুমতি দেওয়া থাকে, স্বয়ংক্রিয়ভাবে CPSCL এ পাঠানো
+        // ২. STRICT WHITELIST: সাইডবারের সমস্ত মেনু একবারে লুকিয়ে ফেলা (Hide All)
+        const allMenuItems = document.querySelectorAll('.sidebar .menu-list > li');
+        allMenuItems.forEach(item => {
+            item.style.setProperty('display', 'none', 'important');
+        });
+
+        // ৩. শুধুমাত্র অনুমোদিত মেনুগুলো দৃশ্যমান করা (Show Allowed Only)
+        if (allowed.dashboard) showMenuItem('#menu-dash');
+        if (allowed.balance) showMenuItem('#menu-bal-parent');
+        if (allowed.inventory) showMenuItem('#menu-inv-parent');
+        if (allowed.customers) showMenuItem('#menu-cust-parent');
+        if (allowed.closing) showMenuItem('#menu-closing-parent');
+
+        // CPSCL মেনু দৃশ্যমান করা
+        if (allowed.cpscl) {
+            allMenuItems.forEach(item => {
+                if (item.id === 'menu-cpscl-parent' || item.innerText.includes('CPSCL')) {
+                    item.style.setProperty('display', 'block', 'important');
+                }
+            });
+        }
+
+        // ৪. অটো-ল্যান্ডিং: যদি শুধু CPSCL অনুমতি থাকে, সরাসরি CPSCL ওপেন হবে
         if (allowed.cpscl && !allowed.dashboard && !allowed.balance && !allowed.customers && !allowed.closing) {
             if (typeof window.switchCPSCLSubSection === 'function') {
                 window.switchCPSCLSubSection('list');
             }
         }
 
-        // ডিলিট রেস্ট্রিকশন প্রয়োগ
+        // ৫. ডিলিট ক্ষমতা বন্ধ থাকলে "Clear All" বাটন বন্ধ করা
         if (allowed.cpscl && !allowed.canDeleteCPSCL) {
             const clearBtn = document.querySelector('button[onclick="clearAllStudents()"]');
-            if (clearBtn) clearBtn.style.display = 'none';
+            if (clearBtn) clearBtn.style.setProperty('display', 'none', 'important');
         }
     }
 
-    function toggleElementDisplay(selector, show) {
+    function showMenuItem(selector) {
         const el = document.querySelector(selector);
-        if (el) el.style.display = show ? 'block' : 'none';
+        if (el) el.style.setProperty('display', 'block', 'important');
     }
 
     function unlockAllMenusForAdmin() {
-        document.querySelectorAll('.menu-list .menu-item').forEach(el => el.style.display = 'block');
+        document.querySelectorAll('.sidebar .menu-list > li').forEach(el => {
+            el.style.removeProperty('display');
+        });
         const userMenu = document.getElementById('menu-user-mgmt');
-        if (userMenu) userMenu.style.display = 'block';
+        if (userMenu) userMenu.style.setProperty('display', 'block', 'important');
+    }
+
+    // অবজার্ভার: অন্য কোনো জাভাস্ক্রিপ্ট ফাইল দেরিতে মেনু বানালেও তা সাথে সাথে ফিল্টার হবে
+    function setupMenuMutationObserver() {
+        const menuContainer = document.querySelector('.sidebar .menu-list');
+        if (!menuContainer) return;
+
+        const observer = new MutationObserver(() => {
+            if (currentAuthUser && currentAuthUser.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) {
+                enforcePermissionsForUser(currentAuthUser.email);
+            }
+        });
+
+        observer.observe(menuContainer, { childList: true });
     }
 
     /* ==========================================================
@@ -214,7 +248,6 @@
 
         if (document.getElementById('menu-user-mgmt')) return;
 
-        // সাইডবারে User Management মেনু যুক্ত করা
         const userMenuItem = document.createElement('li');
         userMenuItem.className = 'menu-item';
         userMenuItem.id = 'menu-user-mgmt';
@@ -228,7 +261,6 @@
         `;
         menuList.appendChild(userMenuItem);
 
-        // ভিউ প্যানেল তৈরি
         const userViewPanel = document.createElement('div');
         userViewPanel.className = 'view-panel';
         userViewPanel.id = 'user-mgmt-view';
@@ -309,7 +341,6 @@
             </style>
 
             <div class="um-card">
-                <!-- ট্যাব হেডার -->
                 <div class="um-nav-tabs">
                     <button class="um-tab-btn active" id="btn-tab-users" onclick="switchUMTab('users')">
                         <i class="fa-solid fa-users"></i> ইউজার তালিকা (<span id="umUserCount">0</span>)
@@ -322,7 +353,6 @@
                     </button>
                 </div>
 
-                <!-- ১. ইউজার তালিকা স্ক্রিন -->
                 <div id="um-screen-users">
                     <div style="overflow-x: auto;">
                         <table class="um-table">
@@ -336,14 +366,11 @@
                                     <th style="text-align: right;">অ্যাকশন</th>
                                 </tr>
                             </thead>
-                            <tbody id="umUsersTableBody">
-                                <!-- ডাইনামিক রো আসবে -->
-                            </tbody>
+                            <tbody id="umUsersTableBody"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- ২. নতুন ইউজার এন্ট্রি / এডিট স্ক্রিন -->
                 <div id="um-screen-add" style="display:none; max-width: 800px;">
                     <h3 id="umFormTitle" style="margin-bottom: 20px; color:#1e293b; font-size:1.15rem; font-weight:800;">
                         <i class="fa-solid fa-user-shield" style="color:#4f46e5;"></i> নতুন ইউজার একাউন্ট তৈরি করুন
@@ -369,7 +396,6 @@
                             </div>
                         </div>
 
-                        <!-- পারমিশন চেকবক্স সমূহ -->
                         <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
                             <h4 style="font-size: 0.95rem; color: #1e1b4b; font-weight: 800; margin-bottom: 15px;">
                                 <i class="fa-solid fa-key" style="color: #f59e0b;"></i> মডিউল এক্সেস পারমিশন সিলেক্ট করুন:
@@ -415,7 +441,6 @@
                     </form>
                 </div>
 
-                <!-- ৩. অ্যাক্টিভিটি অডিট লগ স্ক্রিন -->
                 <div id="um-screen-logs" style="display:none;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h4 style="font-weight: 800; color: #1e293b;">লাইভ সিস্টেম অডিট হিস্ট্রি</h4>
@@ -433,9 +458,7 @@
                                     <th>বিস্তারিত বিবরণ</th>
                                 </tr>
                             </thead>
-                            <tbody id="umLogsTableBody">
-                                <!-- লগ আসবে -->
-                            </tbody>
+                            <tbody id="umLogsTableBody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -574,7 +597,6 @@
                     window.logUserActivity("USER_UPDATED", `User (${name} - ${email}) updated by Admin`);
                 }
             } else {
-                // ফায়ারবেস Auth একাউন্ট তৈরি
                 const { getAuth, createUserWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
                 try {
                     await createUserWithEmailAndPassword(getAuth(), email, password);
