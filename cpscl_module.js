@@ -1,6 +1,7 @@
 /**
- * CPSCL Module - Dedicated Institution Dashboard & Multi-Template Print
+ * CPSCL Module - Multi-Template Architecture & Calibrated Print
  * Realtime Firebase Cloud Database Sync (Multi-Device Support)
+ * Exact MS Word Match: Multiple 1.8 Line-Height & 10pt After-Spacing
  */
 
 (function () {
@@ -10,8 +11,6 @@
     let dbRefFunc = null;
     let dbSetFunc = null;
 
-    const CPSCL_LOGO_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg-795xmOcuKYH8wjija8JrA-qVjfOp_4KieeZ1pOQJaqX2uXsqGLMo09AXsGGsfGjH9LpK5fPlUNGbebFguiAzPC_YvbRXcHePj7cORQd6GMxDUg-LCeXtmNkccGI2K4Hv73PJqJkGX0Ju9N4knQuqKOAImqB6qy_WWFXpKeIaQhRgk7YbLqBLpCmL0cio/s1600/%E0%A6%95%E0%A7%8D%E0%A6%AF%E0%A6%AA%E0%A6%BE%E0%A6%A8%E0%A7%8D%E0%A6%9F%E0%A6%A8%E0%A6%AE%E0%A7%87%E0%A6%A8%E0%A7%8D%E0%A6%9F_%E0%A6%AA%E0%A6%BE%E0%A6%AC%E0%A6%B2%E0%A6%BF%E0%A6%9F%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2_%E0%A6%93_%E0%A6%95%E0%A6%B2%E0%A7%87%E0%A6%9C_%E0%A6%B2%E0%A6%BE%E0%A6%B2%E0%A6%AE%E0%A6%A8%E0%A6%BF%E0%A6%B0%E0%A6%B9%E0%A6%BE%E0%A6%9F%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png";
-
     const TEMPLATE_NAMES = {
         'ssc_testimonial': 'SSC Testimonial',
         'hsc_testimonial': 'HSC Testimonial',
@@ -20,7 +19,7 @@
     };
 
     /* ==========================================================
-       ১. ফায়ারবেস ক্লাউড ডাটাবেজ সংযোগ
+       ১. ফায়ারবেস রিয়েল-টাইম ডাটাবেজ সংযোগ
        ========================================================== */
     async function initFirebaseSync() {
         try {
@@ -52,7 +51,9 @@
                     studentDatabase = Array.isArray(cloudData) ? cloudData : Object.values(cloudData);
                     localStorage.setItem('cpscl_students_data', JSON.stringify(studentDatabase));
                     renderStudentTable();
-                    updateDashboardStats();
+                    if (typeof window.updateCPSCLThemeStats === 'function') {
+                        window.updateCPSCLThemeStats(studentDatabase);
+                    }
                 }
             });
 
@@ -72,7 +73,7 @@
     }
 
     /* ==========================================================
-       ২. মডিউল UI ও স্বতন্ত্র ড্যাশবোর্ড তৈরি
+       ২. মডিউল UI ইনিশিয়ালাইজেশন (অরিজিনাল ফরম্যাট)
        ========================================================== */
     function initCPSCLModule() {
         const menuList = document.querySelector('.sidebar .menu-list');
@@ -85,7 +86,7 @@
 
         if (document.getElementById('menu-cpscl-parent')) return;
 
-        // সাইডবার মেনু (ক্লিন ও স্বতন্ত্র স্ট্রাকচার)
+        // অরিজিনাল সাইডবার মেনু
         const cpsclMenuItem = document.createElement('li');
         cpsclMenuItem.className = 'menu-item';
         cpsclMenuItem.id = 'menu-cpscl-parent';
@@ -94,17 +95,12 @@
             <a onclick="toggleParentMenu('menu-cpscl-parent')">
                 <span class="menu-link-inner">
                     <i class="fa-solid fa-graduation-cap"></i> 
-                    <span>CPSCL Portal</span>
+                    <span>CPSCL</span>
                 </span>
                 <i class="fa-solid fa-chevron-down chevron-icon"></i>
             </a>
             <ul class="submenu-list">
-                <li class="submenu-item active" id="sub-cpscl-dash">
-                    <a onclick="switchCPSCLSubSection('dash')">
-                        <i class="fa-solid fa-house-chimney"></i> <span>CPSCL Dashboard</span>
-                    </a>
-                </li>
-                <li class="submenu-item" id="sub-cpscl-list">
+                <li class="submenu-item active" id="sub-cpscl-list">
                     <a onclick="switchCPSCLSubSection('list')">
                         <i class="fa-solid fa-users"></i> <span>Student List</span>
                     </a>
@@ -129,77 +125,13 @@
             menuList.appendChild(cpsclMenuItem);
         }
 
+        // ভিউ প্যানেল তৈরি
         const cpsclViewPanel = document.createElement('div');
         cpsclViewPanel.className = 'view-panel';
         cpsclViewPanel.id = 'cpscl-view';
 
         cpsclViewPanel.innerHTML = `
             <style>
-                .cpscl-hero-banner {
-                    background: linear-gradient(135deg, #064e3b 0%, #022c22 100%);
-                    border-radius: 14px;
-                    padding: 18px 24px;
-                    display: flex;
-                    align-items: center;
-                    gap: 20px;
-                    margin-bottom: 22px;
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.12);
-                    border: 1px solid rgba(250, 204, 21, 0.25);
-                    color: #ffffff;
-                }
-                .cpscl-hero-logo {
-                    width: 75px;
-                    height: 75px;
-                    object-fit: contain;
-                    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
-                }
-                .cpscl-hero-title {
-                    font-size: 1.25rem;
-                    font-weight: 900;
-                    color: #facc15;
-                    letter-spacing: 0.5px;
-                    margin-bottom: 5px;
-                    text-transform: uppercase;
-                }
-                .cpscl-hero-meta {
-                    font-size: 0.88rem;
-                    color: #f1f5f9;
-                    font-weight: 700;
-                    margin-bottom: 4px;
-                }
-                .cpscl-hero-addr {
-                    font-size: 0.82rem;
-                    color: #cbd5e1;
-                    font-weight: 600;
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                }
-                .cpscl-stat-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-                    gap: 16px;
-                    margin-bottom: 22px;
-                }
-                .cpscl-stat-card {
-                    background: #ffffff;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 14px;
-                    padding: 18px 20px;
-                    display: flex;
-                    align-items: center;
-                    gap: 16px;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-                }
-                .cpscl-stat-icon {
-                    width: 50px;
-                    height: 50px;
-                    border-radius: 12px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 1.4rem;
-                }
                 .cpscl-card {
                     background: #ffffff;
                     border-radius: 16px;
@@ -207,6 +139,16 @@
                     padding: 25px;
                     box-shadow: 0 4px 15px rgba(0,0,0,0.02);
                     margin-bottom: 20px;
+                }
+                .cpscl-template-select-box {
+                    background: #eef2ff;
+                    border: 1.5px solid #c7d2fe;
+                    color: #3730a3;
+                    font-weight: 700;
+                    padding: 8px 14px;
+                    border-radius: 10px;
+                    outline: none;
+                    cursor: pointer;
                 }
                 .cpscl-tabs-wrapper {
                     display: flex;
@@ -455,69 +397,8 @@
                 }
             </style>
 
-            <!-- ================= ১. স্বতন্ত্র CPSCL ড্যাশবোর্ড সেকশন ================= -->
-            <div id="cpscl-dash-view" class="cpscl-sub-view">
-                <!-- অফিশিয়াল প্রাতিষ্ঠানিক ব্যানার -->
-                <div class="cpscl-hero-banner">
-                    <img src="${CPSCL_LOGO_URL}" alt="CPSCL Logo" class="cpscl-hero-logo">
-                    <div style="flex: 1;">
-                        <h2 class="cpscl-hero-title">CANTONMENT PUBLIC SCHOOL & COLLEGE LALMONIRHAT</h2>
-                        <div class="cpscl-hero-meta">EIIN No. : 137653 &nbsp;|&nbsp; College Code : 7257 &nbsp;|&nbsp; School Code : 7296</div>
-                        <div class="cpscl-hero-addr"><i class="fa-solid fa-location-dot" style="color: #facc15;"></i> Address: Lalmonirhat Cantonment, Lalmonirhat</div>
-                    </div>
-                </div>
-
-                <!-- ৪টি সামারি কার্ড -->
-                <div class="cpscl-stat-grid">
-                    <div class="cpscl-stat-card">
-                        <div class="cpscl-stat-icon" style="background:#eef2ff; color:#4f46e5;"><i class="fa-solid fa-users"></i></div>
-                        <div>
-                            <p style="font-size:0.85rem; color:#64748b; font-weight:700; margin-bottom:2px;">মোট শিক্ষার্থী</p>
-                            <h3 id="statDashTotal" style="font-size:1.4rem; color:#0f172a; font-weight:800; margin:0;">0</h3>
-                        </div>
-                    </div>
-                    <div class="cpscl-stat-card">
-                        <div class="cpscl-stat-icon" style="background:#e0f2fe; color:#0284c7;"><i class="fa-solid fa-graduation-cap"></i></div>
-                        <div>
-                            <p style="font-size:0.85rem; color:#64748b; font-weight:700; margin-bottom:2px;">SSC Testimonial</p>
-                            <h3 id="statDashSSC" style="font-size:1.4rem; color:#0f172a; font-weight:800; margin:0;">0</h3>
-                        </div>
-                    </div>
-                    <div class="cpscl-stat-card">
-                        <div class="cpscl-stat-icon" style="background:#fef3c7; color:#d97706;"><i class="fa-solid fa-user-graduate"></i></div>
-                        <div>
-                            <p style="font-size:0.85rem; color:#64748b; font-weight:700; margin-bottom:2px;">HSC Testimonial</p>
-                            <h3 id="statDashHSC" style="font-size:1.4rem; color:#0f172a; font-weight:800; margin:0;">0</h3>
-                        </div>
-                    </div>
-                    <div class="cpscl-stat-card">
-                        <div class="cpscl-stat-icon" style="background:#fee2e2; color:#dc2626;"><i class="fa-solid fa-file-invoice"></i></div>
-                        <div>
-                            <p style="font-size:0.85rem; color:#64748b; font-weight:700; margin-bottom:2px;">TC ও চারিত্রিক সনদ</p>
-                            <h3 id="statDashOther" style="font-size:1.4rem; color:#0f172a; font-weight:800; margin:0;">0</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- কুইক অ্যাকশন কার্ড -->
-                <div class="cpscl-card">
-                    <h3 style="font-size:1.1rem; color:#1e293b; font-weight:800; margin-bottom:15px;"><i class="fa-solid fa-bolt" style="color:#f59e0b;"></i> Quick Actions</h3>
-                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                        <button class="btn-submit" onclick="switchCPSCLSubSection('list')" style="width:auto; padding:12px 22px; background:#4f46e5; border-radius:10px; font-weight:700;">
-                            <i class="fa-solid fa-users"></i> শিক্ষার্থী তালিকা দেখুন
-                        </button>
-                        <button class="btn-submit" onclick="switchCPSCLSubSection('entry')" style="width:auto; padding:12px 22px; background:#0284c7; border-radius:10px; font-weight:700;">
-                            <i class="fa-solid fa-user-plus"></i> নতুন শিক্ষার্থী এন্ট্রি
-                        </button>
-                        <button class="btn-submit" onclick="switchCPSCLSubSection('preview')" style="width:auto; padding:12px 22px; background:#10b981; border-radius:10px; font-weight:700;">
-                            <i class="fa-solid fa-print"></i> সার্টিফিকেট প্রিন্ট প্যানেল
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ================= ২. স্টুডেন্ট লিস্ট সেকশন (ক্লিন ভিউ) ================= -->
-            <div id="cpscl-list-view" class="cpscl-sub-view" style="display:none;">
+            <!-- ১. স্টুডেন্ট লিস্ট সেকশন (অরিজিনাল ক্লিন ভিউ) -->
+            <div id="cpscl-list-view" class="cpscl-sub-view">
                 <div class="cpscl-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                         <div>
@@ -583,7 +464,7 @@
                 </div>
             </div>
 
-            <!-- ================= ৩. ম্যানুয়াল এন্ট্রি সেকশন ================= -->
+            <!-- ২. ম্যানুয়াল এন্ট্রি সেকশন -->
             <div id="cpscl-entry-view" class="cpscl-sub-view" style="display:none;">
                 <div class="cpscl-card" style="max-width: 900px; margin: 0 auto;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; flex-wrap: wrap; gap: 10px;">
@@ -673,7 +554,7 @@
                 </div>
             </div>
 
-            <!-- ================= ৪. প্রিন্ট ও প্রিভিউ সেকশন ================= -->
+            <!-- ৩. প্রিন্ট ও প্রিভিউ সেকশন -->
             <div id="cpscl-preview-view" class="cpscl-sub-view" style="display:none;">
                 <div class="cpscl-preview-wrapper">
                     <div class="cpscl-toolbar">
@@ -721,26 +602,10 @@
 
         mainWrapper.appendChild(cpsclViewPanel);
         renderStudentTable();
-        updateDashboardStats();
     }
 
     /* ==========================================================
-       ৩. ড্যাশবোর্ড পরিসংখ্যান ক্যালকুলেটর
-       ========================================================== */
-    function updateDashboardStats() {
-        const total = studentDatabase.length;
-        const ssc = studentDatabase.filter(s => s.template === 'ssc_testimonial').length;
-        const hsc = studentDatabase.filter(s => s.template === 'hsc_testimonial').length;
-        const other = studentDatabase.filter(s => s.template === 'tc_certificate' || s.template === 'character_cert').length;
-
-        if (document.getElementById('statDashTotal')) document.getElementById('statDashTotal').innerText = total;
-        if (document.getElementById('statDashSSC')) document.getElementById('statDashSSC').innerText = ssc;
-        if (document.getElementById('statDashHSC')) document.getElementById('statDashHSC').innerText = hsc;
-        if (document.getElementById('statDashOther')) document.getElementById('statDashOther').innerText = other;
-    }
-
-    /* ==========================================================
-       ৪. ফিল্টারিং ও এক্সেল হ্যান্ডলার
+       ৩. ফিল্টারিং ও এক্সেল হ্যান্ডলার
        ========================================================== */
     window.filterByTemplate = function (tpl, btnElement) {
         currentFilterTemplate = tpl;
@@ -826,7 +691,6 @@
 
                 await syncToFirebase(studentDatabase);
                 renderStudentTable();
-                updateDashboardStats();
                 
                 if (typeof window.logUserActivity === 'function') {
                     window.logUserActivity("EXCEL_IMPORT", `${newStudents.length} Students imported from Excel file`);
@@ -968,7 +832,6 @@
             }
             await syncToFirebase(studentDatabase);
             renderStudentTable();
-            updateDashboardStats();
             if (typeof window.logUserActivity === 'function') {
                 window.logUserActivity("DATABASE_CLEAR", `CPSCL student records cleared`);
             }
@@ -977,6 +840,10 @@
     };
 
     window.switchCPSCLSubSection = function (sectionType) {
+        // ফ্রন্ট ড্যাশবোর্ড থাকলে তা হাইড করা
+        const portalDash = document.getElementById('cpscl-portal-dash-view');
+        if (portalDash) portalDash.classList.remove('active');
+
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
         document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
@@ -987,27 +854,19 @@
         const parentMenu = document.getElementById('menu-cpscl-parent');
         if (parentMenu) parentMenu.classList.add('active');
 
-        const dashView = document.getElementById('cpscl-dash-view');
         const listView = document.getElementById('cpscl-list-view');
         const entryView = document.getElementById('cpscl-entry-view');
         const previewView = document.getElementById('cpscl-preview-view');
 
-        const subDash = document.getElementById('sub-cpscl-dash');
         const subList = document.getElementById('sub-cpscl-list');
         const subEntry = document.getElementById('sub-cpscl-entry');
         const subPreview = document.getElementById('sub-cpscl-preview');
 
-        if (dashView) dashView.style.display = 'none';
         if (listView) listView.style.display = 'none';
         if (entryView) entryView.style.display = 'none';
         if (previewView) previewView.style.display = 'none';
 
-        if (sectionType === 'dash') {
-            if (dashView) dashView.style.display = 'block';
-            if (subDash) subDash.classList.add('active');
-            document.getElementById('top-title').innerText = "CPSCL - DASHBOARD";
-            updateDashboardStats();
-        } else if (sectionType === 'list') {
+        if (sectionType === 'list') {
             if (listView) listView.style.display = 'block';
             if (subList) subList.classList.add('active');
             document.getElementById('top-title').innerText = "CPSCL - STUDENT LIST";
@@ -1102,7 +961,6 @@
         }
 
         await syncToFirebase(studentDatabase);
-        updateDashboardStats();
         if (typeof hideLoader === 'function') hideLoader();
         if (typeof showToast === 'function') showToast("শিক্ষার্থীর তথ্য ফায়ারবেসে সংরক্ষিত হয়েছে!", "success");
 
