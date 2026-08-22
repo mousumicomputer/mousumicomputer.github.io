@@ -19,7 +19,7 @@
     };
 
     /* ==========================================================
-       ১. ফায়ারবেস রিয়েল-টাইম ডাটাবেজ সংযোগ (Self-Contained)
+       ১. ফায়ারবেস রিয়েল-টাইম ডাটাবেজ সংযোগ
        ========================================================== */
     async function initFirebaseSync() {
         try {
@@ -44,7 +44,6 @@
             dbRefFunc = ref;
             dbSetFunc = set;
 
-            // রিয়েলটাইম সিঙ্ক লিসেনার (অন্য যেকোনো পিসিতে ডাটা পরিবর্তন হলে অটোমেটিক আপডেট হবে)
             const studentsRef = ref(dbInstance, 'cpscl/students');
             onValue(studentsRef, (snapshot) => {
                 const cloudData = snapshot.val();
@@ -86,7 +85,6 @@
 
         if (document.getElementById('menu-cpscl-parent')) return;
 
-        // সাইডবার মেনু
         const cpsclMenuItem = document.createElement('li');
         cpsclMenuItem.className = 'menu-item';
         cpsclMenuItem.id = 'menu-cpscl-parent';
@@ -125,7 +123,6 @@
             menuList.appendChild(cpsclMenuItem);
         }
 
-        // ভিউ প্যানেল তৈরি
         const cpsclViewPanel = document.createElement('div');
         cpsclViewPanel.className = 'view-panel';
         cpsclViewPanel.id = 'cpscl-view';
@@ -254,9 +251,7 @@
                 .cpscl-table tr td:first-child { border-left: 1px solid #f1f5f9; border-radius: 10px 0 0 10px; }
                 .cpscl-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 10px 10px 0; }
 
-                /* ==========================================================
-                   A4 LANDSCAPE EXACT 1:1 CALIBRATED OVERLAY
-                   ========================================================== */
+                /* A4 LANDSCAPE EXACT 1:1 CALIBRATED OVERLAY */
                 .cpscl-preview-wrapper {
                     background: #525659;
                     padding: 30px 15px;
@@ -294,7 +289,6 @@
                     overflow: hidden;
                 }
 
-                /* 1. Reference -> Calibri 13pt */
                 .cert-ref, 
                 .cert-ref * {
                     font-family: 'Calibri', 'Segoe UI', Arial, sans-serif !important;
@@ -304,22 +298,16 @@
                     color: #000000 !important;
                     line-height: 1.15 !important;
                 }
-                .cert-ref {
-                    margin-bottom: 18pt !important;
-                }
+                .cert-ref { margin-bottom: 18pt !important; }
 
-                /* 2. Certificate Body -> MS Word Multiple 1.8 Line Spacing & 10pt Spacing After */
-                .cert-body-block {
-                    width: 100%;
-                    box-sizing: border-box;
-                }
+                .cert-body-block { width: 100%; box-sizing: border-box; }
 
                 .cert-paragraph {
-                    text-indent: 0.5in !important;         /* 0.5" Tab */
-                    text-align: justify !important;        /* Justified */
-                    line-height: 1.8 !important;           /* MS Word Multiple 1.8 */
-                    margin-top: 0pt !important;            /* Spacing Before 0pt */
-                    margin-bottom: 10pt !important;        /* Spacing After 10pt */
+                    text-indent: 0.5in !important;
+                    text-align: justify !important;
+                    line-height: 1.8 !important;
+                    margin-top: 0pt !important;
+                    margin-bottom: 10pt !important;
                     word-break: normal !important;
                 }
 
@@ -341,7 +329,6 @@
                     color: #000000 !important;
                 }
 
-                /* 3. Variables -> Cambria 15pt Bold Italic */
                 .cert-paragraph span.cert-bold,
                 .cert-paragraph span.cert-meta-bold,
                 #prevName,
@@ -361,7 +348,6 @@
                     letter-spacing: 0px !important;
                 }
 
-                /* 4. Publication Date -> Calibri 9pt */
                 .cert-footer-date,
                 .cert-footer-date *,
                 .cert-footer-date span {
@@ -372,23 +358,12 @@
                     color: #000000 !important;
                     line-height: 1.2;
                 }
-                .cert-footer-date {
-                    margin-top: 18pt !important;
-                }
+                .cert-footer-date { margin-top: 18pt !important; }
 
-                /* ==========================================================
-                   STRICT A4 LANDSCAPE PRINT RULES
-                   ========================================================== */
-                @page {
-                    size: A4 landscape !important;
-                    margin: 0mm !important;
-                }
+                @page { size: A4 landscape !important; margin: 0mm !important; }
 
                 @media print {
-                    @page {
-                        size: A4 landscape !important;
-                        margin: 0mm !important;
-                    }
+                    @page { size: A4 landscape !important; margin: 0mm !important; }
                     html, body {
                         width: 297mm !important;
                         height: 210mm !important;
@@ -397,12 +372,8 @@
                         background: #ffffff !important;
                         overflow: hidden !important;
                     }
-                    body * {
-                        visibility: hidden !important;
-                    }
-                    #cpsclPrintArea, #cpsclPrintArea * {
-                        visibility: visible !important;
-                    }
+                    body * { visibility: hidden !important; }
+                    #cpsclPrintArea, #cpsclPrintArea * { visibility: visible !important; }
                     #cpsclPrintArea {
                         position: absolute !important;
                         left: 0 !important;
@@ -419,13 +390,10 @@
                         box-sizing: border-box !important;
                         overflow: hidden !important;
                     }
-                    .no-print {
-                        display: none !important;
-                    }
+                    .no-print { display: none !important; }
                 }
             </style>
 
-            <!-- ================= ১. স্টুডেন্ট লিস্ট সেকশন ================= -->
             <div id="cpscl-list-view" class="cpscl-sub-view">
                 <div class="cpscl-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
@@ -452,7 +420,6 @@
                 </div>
 
                 <div class="cpscl-card">
-                    <!-- টেমপ্লেট ফিল্টার ট্যাব -->
                     <div class="cpscl-tabs-wrapper">
                         <button class="cpscl-tab-btn active" onclick="filterByTemplate('all', this)"><i class="fa-solid fa-layer-group"></i> All Students</button>
                         <button class="cpscl-tab-btn" onclick="filterByTemplate('ssc_testimonial', this)"><i class="fa-solid fa-graduation-cap"></i> SSC Testimonial</button>
@@ -493,7 +460,6 @@
                 </div>
             </div>
 
-            <!-- ================= ২. ম্যানুয়াল এন্ট্রি সেকশন ================= -->
             <div id="cpscl-entry-view" class="cpscl-sub-view" style="display:none;">
                 <div class="cpscl-card" style="max-width: 900px; margin: 0 auto;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; flex-wrap: wrap; gap: 10px;">
@@ -583,7 +549,6 @@
                 </div>
             </div>
 
-            <!-- ================= ৩. প্রিন্ট ও প্রিভিউ সেকশন ================= -->
             <div id="cpscl-preview-view" class="cpscl-sub-view" style="display:none;">
                 <div class="cpscl-preview-wrapper">
                     <div class="cpscl-toolbar">
@@ -601,27 +566,21 @@
                             </select>
                         </div>
 
-                        <button class="btn-submit" onclick="window.print()" style="width: auto; padding: 10px 25px; background: #22c55e; border-radius: 8px; font-weight: 800; font-size: 1rem;">
+                        <button class="btn-submit" onclick="printCPSCLCertificate()" style="width: auto; padding: 10px 25px; background: #22c55e; border-radius: 8px; font-weight: 800; font-size: 1rem;">
                             <i class="fa-solid fa-print"></i> Print / Download PDF
                         </button>
                     </div>
 
-                    <!-- A4 LANDSCAPE SHEET (100% Calibrated Overlay) -->
                     <div class="cpscl-a4-sheet" id="cpsclPrintArea">
                         <div class="cert-ref" id="prevRef">CPSCL/ 801023/SSC-26/001</div>
                         
                         <div class="cert-body-block">
-                            <!-- প্যারা ১ -->
                             <p class="cert-paragraph">
                                 This is to certify that <span class="cert-bold" id="prevName">K M ANISUJJAMAN MASUM</span>, <span id="prevRelation">son of</span> <span class="cert-bold" id="prevFather">MD ASHRAFUL HABIB</span> and <span class="cert-bold" id="prevMother">MST AKLIMA KHATUN</span> bearing Roll No. <span class="cert-meta-bold" id="prevRoll">229083</span>, Registration No. <span class="cert-meta-bold" id="prevReg">2317722960</span>, Session <span class="cert-meta-bold" id="prevSession">2024–2025</span> passed <span id="prevExamName">Secondary School Certificate Examination</span> in <span class="cert-meta-bold" id="prevYear">2026</span> from <span class="cert-meta-bold" id="prevGroup">Science</span> group under the Board of Intermediate and Secondary Education, <span id="prevBoard">Dinajpur</span> as a regular student of this institution and acquired GPA- <span class="cert-meta-bold" id="prevGpa">5.00</span>.
                             </p>
-                            
-                            <!-- প্যারা ২ -->
                             <p class="cert-paragraph">
                                 <span id="prevPronoun">He</span> bears a good moral character. To the best of my concern, <span id="prevPronounLower">he</span> did not take part in any activity subversive of the state or against discipline during <span id="prevPossessive">his</span> stay at this institution.
                             </p>
-                            
-                            <!-- প্যারা ৩ -->
                             <p class="cert-paragraph">
                                 I wish <span id="prevObjective">him</span> a bright future.
                             </p>
@@ -727,11 +686,13 @@
                 await syncToFirebase(studentDatabase);
                 renderStudentTable();
                 
+                if (typeof window.logUserActivity === 'function') {
+                    window.logUserActivity("EXCEL_IMPORT", `${newStudents.length} Students imported from Excel file`);
+                }
+
                 if (typeof hideLoader === 'function') hideLoader();
                 if (typeof showToast === 'function') {
                     showToast(`সফলভাবে ${newStudents.length} জন শিক্ষার্থীর তথ্য ক্লাউডে সিঙ্ক হয়েছে!`, "success");
-                } else {
-                    alert(`সফলভাবে ${newStudents.length} জন শিক্ষার্থীর তথ্য ইমপোর্ট হয়েছে!`);
                 }
                 event.target.value = '';
             } catch (err) {
@@ -820,6 +781,15 @@
         switchCPSCLSubSection('preview');
     };
 
+    window.printCPSCLCertificate = function () {
+        const name = document.getElementById('prevName').innerText;
+        const roll = document.getElementById('prevRoll').innerText;
+        if (typeof window.logUserActivity === 'function') {
+            window.logUserActivity("CERTIFICATE_PRINT", `Certificate printed for (${name}, Roll: ${roll})`);
+        }
+        window.print();
+    };
+
     window.downloadSampleExcel = function () {
         const currentTpl = (currentFilterTemplate === 'all') ? 'ssc_testimonial' : currentFilterTemplate;
         const sampleData = [
@@ -856,6 +826,9 @@
             }
             await syncToFirebase(studentDatabase);
             renderStudentTable();
+            if (typeof window.logUserActivity === 'function') {
+                window.logUserActivity("DATABASE_CLEAR", `CPSCL student records cleared by user`);
+            }
             if (typeof showToast === 'function') showToast("ডাটাবেজ ক্লিয়ার হয়েছে!", "info");
         }
     };
@@ -967,8 +940,14 @@
         const existingIdx = studentDatabase.findIndex(s => s.roll === studentObj.roll && s.template === selectedTpl);
         if (existingIdx !== -1) {
             studentDatabase[existingIdx] = studentObj;
+            if (typeof window.logUserActivity === 'function') {
+                window.logUserActivity("STUDENT_EDIT", `Student updated: ${studentObj.name} (Roll: ${studentObj.roll})`);
+            }
         } else {
             studentDatabase.unshift(studentObj);
+            if (typeof window.logUserActivity === 'function') {
+                window.logUserActivity("STUDENT_CREATE", `New student added: ${studentObj.name} (Roll: ${studentObj.roll})`);
+            }
         }
 
         await syncToFirebase(studentDatabase);
