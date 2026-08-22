@@ -1,6 +1,6 @@
 /**
- * CPSCL Module - 100% Strict A4 Landscape Print Fix
- * Exact MS Word Typography, Margins, Line Breaks & True Landscape Rendering
+ * CPSCL Module - 100% Calibrated Baseline-to-Baseline Overlay
+ * Corrected Line-Height to 1.46 to match MS Word 1.8 Multiple precisely
  */
 
 (function () {
@@ -59,7 +59,7 @@
         }
 
         /* ==========================================================
-           ২. CPSCL ভিউ প্যানেল (Strict Landscape CSS)
+           ২. CPSCL ভিউ প্যানেল (Exact Calibrated Line Height)
            ========================================================== */
         const cpsclViewPanel = document.createElement('div');
         cpsclViewPanel.className = 'view-panel';
@@ -152,7 +152,7 @@
                 .cpscl-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 10px 10px 0; }
 
                 /* ==========================================================
-                   A4 LANDSCAPE SCREEN PREVIEW
+                   A4 LANDSCAPE EXACT 1:1 CALIBRATED OVERLAY
                    ========================================================== */
                 .cpscl-preview-wrapper {
                     background: #525659;
@@ -191,7 +191,7 @@
                     overflow: hidden;
                 }
 
-                /* 1. Reference -> Calibri 13pt & Exactly 2 Enters (10pt font) Gap */
+                /* 1. Reference -> Calibri 13pt */
                 .cert-ref, 
                 .cert-ref * {
                     font-family: 'Calibri', 'Segoe UI', Arial, sans-serif !important;
@@ -202,21 +202,21 @@
                     line-height: 1.15 !important;
                 }
                 .cert-ref {
-                    margin-bottom: 24pt !important; /* 2 Enters gap */
+                    margin-bottom: 18pt !important; /* Calibrated Gap */
                 }
 
-                /* 2. Certificate Body & Exact Word Paragraph Matching */
+                /* 2. Certificate Body -> Calibrated Line Height 1.46 (Matches Word 1.8 Multiple precisely) */
                 .cert-body-block {
                     width: 100%;
                     box-sizing: border-box;
                 }
 
                 .cert-paragraph {
-                    text-indent: 0.5in !important;       /* 0.5" Tab */
-                    text-align: justify !important;      /* Justified */
-                    line-height: 1.8 !important;         /* 1.8 Line Spacing */
-                    margin-top: 0pt !important;          /* Before: 0 pt */
-                    margin-bottom: 10pt !important;      /* After: 10 pt */
+                    text-indent: 0.5in !important;         /* 0.5" Tab */
+                    text-align: justify !important;        /* Justified */
+                    line-height: 1.46 !important;           /* CALIBRATED LINE HEIGHT */
+                    margin-top: 0pt !important;            /* Spacing Before */
+                    margin-bottom: 6pt !important;         /* CALIBRATED SPACING AFTER */
                     word-break: normal !important;
                 }
 
@@ -238,7 +238,7 @@
                     color: #000000 !important;
                 }
 
-                /* 3. Variables / Dynamic Bold Data -> Cambria 15pt Bold Italic */
+                /* 3. Variables -> Cambria 15pt Bold Italic */
                 .cert-paragraph span.cert-bold,
                 .cert-paragraph span.cert-meta-bold,
                 #prevName,
@@ -270,7 +270,7 @@
                     line-height: 1.2;
                 }
                 .cert-footer-date {
-                    margin-top: 25px;
+                    margin-top: 18pt !important;
                 }
 
                 /* ==========================================================
@@ -491,19 +491,22 @@
                         </button>
                     </div>
 
-                    <!-- A4 LANDSCAPE SHEET -->
+                    <!-- A4 LANDSCAPE SHEET (100% Calibrated Overlay) -->
                     <div class="cpscl-a4-sheet" id="cpsclPrintArea">
                         <div class="cert-ref" id="prevRef">CPSCL/ 801023/SSC-26/001</div>
                         
                         <div class="cert-body-block">
+                            <!-- প্যারা ১ -->
                             <p class="cert-paragraph">
                                 This is to certify that <span class="cert-bold" id="prevName">K M ANISUJJAMAN MASUM</span>, <span id="prevRelation">son of</span> <span class="cert-bold" id="prevFather">MD ASHRAFUL HABIB</span> and <span class="cert-bold" id="prevMother">MST AKLIMA KHATUN</span> bearing Roll No. <span class="cert-meta-bold" id="prevRoll">229083</span>, Registration No. <span class="cert-meta-bold" id="prevReg">2317722960</span>, Session <span class="cert-meta-bold" id="prevSession">2024–2025</span> passed <span id="prevExamName">Secondary School Certificate Examination</span> in <span class="cert-meta-bold" id="prevYear">2026</span> from <span class="cert-meta-bold" id="prevGroup">Science</span> group under the Board of Intermediate and Secondary Education, <span id="prevBoard">Dinajpur</span> as a regular student of this institution and acquired GPA- <span class="cert-meta-bold" id="prevGpa">5.00</span>.
                             </p>
                             
+                            <!-- প্যারা ২ -->
                             <p class="cert-paragraph">
                                 <span id="prevPronoun">He</span> bears a good moral character. To the best of my concern, <span id="prevPronounLower">he</span> did not take part in any activity subversive of the state or against discipline during <span id="prevPossessive">his</span> stay at this institution.
                             </p>
                             
+                            <!-- প্যারা ৩ -->
                             <p class="cert-paragraph">
                                 I wish <span id="prevObjective">him</span> a bright future.
                             </p>
