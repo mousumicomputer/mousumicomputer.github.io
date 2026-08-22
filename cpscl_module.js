@@ -1,7 +1,6 @@
 /**
- * CPSCL Module - Clean Separated ERP Workflow
- * 1. Data Entry Section (Spacious Form)
- * 2. Certificate Print Section (Full-view A4 Preview & Print)
+ * CPSCL Module - Dynamic Multi-Template ERP Engine
+ * Clean Separated View with Global Template Selector
  */
 
 (function () {
@@ -17,7 +16,7 @@
         if (document.getElementById('menu-cpscl-parent')) return;
 
         /* ==========================================================
-           ১. সাইডবারে CPSCL মেনু (দুটি পরিষ্কার সাব-মেনু)
+           ১. সাইডবারে CPSCL মেনু
            ========================================================== */
         const cpsclMenuItem = document.createElement('li');
         cpsclMenuItem.className = 'menu-item';
@@ -53,7 +52,7 @@
         }
 
         /* ==========================================================
-           ২. CPSCL ভিউ প্যানেল (আলাদা এন্ট্রি ও প্রিন্ট ভিউ)
+           ২. CPSCL ভিউ প্যানেল (টেমপ্লেট সিলেক্টরসহ)
            ========================================================== */
         const cpsclViewPanel = document.createElement('div');
         cpsclViewPanel.className = 'view-panel';
@@ -66,9 +65,20 @@
                     border-radius: 16px;
                     border: 1px solid #e2e8f0;
                     padding: 30px;
-                    max-width: 900px;
+                    max-width: 920px;
                     margin: 0 auto;
                     box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+                }
+                .cpscl-template-select-box {
+                    background: #eef2ff;
+                    border: 1.5px solid #c7d2fe;
+                    color: #3730a3;
+                    font-weight: 700;
+                    padding: 8px 14px;
+                    border-radius: 10px;
+                    outline: none;
+                    cursor: pointer;
+                    font-size: 0.92rem;
                 }
                 .cpscl-grid {
                     display: grid;
@@ -107,7 +117,7 @@
                     background: #fff;
                 }
 
-                /* A4 Sheet Styles */
+                /* A4 Preview Wrapper & Toolbars */
                 .cpscl-preview-wrapper {
                     background: #525659;
                     padding: 30px 15px;
@@ -123,13 +133,15 @@
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    margin-bottom: 15px;
+                    margin-bottom: 18px;
+                    gap: 12px;
+                    flex-wrap: wrap;
                 }
                 .cpscl-a4-sheet {
                     background: #ffffff;
                     width: 210mm;
                     min-height: 297mm;
-                    padding: 70mm 25mm 25mm 25mm; /* প্যাডের উপরের হেডারের জন্য খালি জায়গা */
+                    padding: 70mm 25mm 25mm 25mm; /* প্যাডের উপরের অংশের জন্য ফাঁকা */
                     box-shadow: 0 10px 30px rgba(0,0,0,0.4);
                     color: #000;
                     font-family: 'Monotype Corsiva', 'Times New Roman', cursive, serif;
@@ -188,17 +200,25 @@
                 }
             </style>
 
-            <!-- ================= ১. আলাদা এন্ট্রি সেকশন ================= -->
+            <!-- ================= ১. এন্ট্রি সেকশন ================= -->
             <div id="cpscl-entry-view" class="cpscl-sub-view">
                 <div class="cpscl-form-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
                         <div>
-                            <h2 style="font-size: 1.3rem; color: #1e293b; font-weight: 800;"><i class="fa-solid fa-pen-to-square" style="color: #4f46e5;"></i> SSC Testimonial Data Entry</h2>
-                            <p style="font-size: 0.85rem; color: #64748b; margin-top: 2px;">প্রশংসাপত্র তৈরির জন্য ছাত্র/ছাত্রীর তথ্য ইনপুট দিন</p>
+                            <h2 style="font-size: 1.3rem; color: #1e293b; font-weight: 800;"><i class="fa-solid fa-pen-to-square" style="color: #4f46e5;"></i> Student Information Entry</h2>
+                            <p style="font-size: 0.85rem; color: #64748b; margin-top: 2px;">তথ্য ইনপুট দিন এবং টেমপ্লেট নির্বাচন করুন</p>
                         </div>
-                        <button type="button" class="btn-submit" onclick="switchCPSCLSubSection('preview')" style="width: auto; padding: 10px 20px; background: #4f46e5; border-radius: 10px;">
-                            <i class="fa-solid fa-eye"></i> বর্তমান প্রিভিউ দেখুন
-                        </button>
+                        
+                        <!-- টেমপ্লেট ড্রপডাউন -->
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label style="font-size: 0.85rem; font-weight: 700; color: #475569;"><i class="fa-solid fa-layer-group"></i> Template:</label>
+                            <select id="entryTemplateSelect" class="cpscl-template-select-box" onchange="onTemplateChange(this.value)">
+                                <option value="ssc_testimonial">SSC Testimonial (এসএসসি প্রশংসাপত্র)</option>
+                                <option value="hsc_testimonial">HSC Testimonial (এইচএসসি প্রশংসাপত্র)</option>
+                                <option value="tc_certificate">Transfer Certificate - TC (ছাড়পত্র)</option>
+                                <option value="character_cert">Character Certificate (চারিত্রিক সনদ)</option>
+                            </select>
+                        </div>
                     </div>
 
                     <form id="cpsclEntryForm" onsubmit="event.preventDefault(); generateAndGoPreview();">
@@ -272,15 +292,28 @@
                 </div>
             </div>
 
-            <!-- ================= ২. আলাদা প্রিন্ট ও প্রিভিউ সেকশন ================= -->
+            <!-- ================= ২. প্রিন্ট ও প্রিভিউ সেকশন (টুলবারে ড্রপডাউনসহ) ================= -->
             <div id="cpscl-preview-view" class="cpscl-sub-view" style="display:none;">
                 <div class="cpscl-preview-wrapper">
-                    <!-- টপ টুলবার -->
+                    
+                    <!-- প্রিভিউ টুলবার -->
                     <div class="cpscl-toolbar">
-                        <button class="btn-submit" onclick="switchCPSCLSubSection('entry')" style="width: auto; padding: 10px 20px; background: #334155; border-radius: 8px;">
+                        <button class="btn-submit" onclick="switchCPSCLSubSection('entry')" style="width: auto; padding: 10px 18px; background: #334155; border-radius: 8px;">
                             <i class="fa-solid fa-arrow-left"></i> Back to Edit Info
                         </button>
-                        <button class="btn-submit" onclick="window.print()" style="width: auto; padding: 10px 30px; background: #22c55e; border-radius: 8px; font-weight: 800; font-size: 1rem;">
+                        
+                        <!-- প্রিভিউ পেজেও টেমপ্লেট ড্রপডাউন -->
+                        <div style="display: flex; align-items: center; gap: 8px; background: #fff; padding: 4px 12px; border-radius: 8px;">
+                            <span style="font-size: 0.85rem; font-weight: 700; color: #475569;">Selected Template:</span>
+                            <select id="previewTemplateSelect" class="cpscl-template-select-box" style="border: none; background: transparent; padding: 4px 6px;" onchange="onTemplateChange(this.value)">
+                                <option value="ssc_testimonial">SSC Testimonial (এসএসসি প্রশংসাপত্র)</option>
+                                <option value="hsc_testimonial">HSC Testimonial (এইচএসসি প্রশংসাপত্র)</option>
+                                <option value="tc_certificate">Transfer Certificate - TC (ছাড়পত্র)</option>
+                                <option value="character_cert">Character Certificate (চারিত্রিক সনদ)</option>
+                            </select>
+                        </div>
+
+                        <button class="btn-submit" onclick="window.print()" style="width: auto; padding: 10px 25px; background: #22c55e; border-radius: 8px; font-weight: 800; font-size: 1rem;">
                             <i class="fa-solid fa-print"></i> Print / Download PDF
                         </button>
                     </div>
@@ -289,8 +322,8 @@
                     <div class="cpscl-a4-sheet" id="cpsclPrintArea">
                         <div class="cert-ref" id="prevRef">CPSCL/ 801023/SSC-26/001</div>
                         
-                        <div class="cert-body">
-                            This is to certify that <span class="cert-bold" id="prevName">K M ANISUJJAMAN MASUM</span>, <span id="prevRelation">son of</span> <span class="cert-bold" id="prevFather">MD ASHRAFUL HABIB</span> and <span class="cert-bold" id="prevMother">MST AKLIMA KHATUN</span> bearing Roll No. <span class="cert-meta-bold" id="prevRoll">229083</span>, Registration No. <span class="cert-meta-bold" id="prevReg">2317722960</span>, Session <span class="cert-meta-bold" id="prevSession">2024-2025</span> passed Secondary School Certificate Examination in <span class="cert-meta-bold" id="prevYear">2026</span> from <span class="cert-meta-bold" id="prevGroup">Science</span> group under the Board of Intermediate and Secondary Education, <span id="prevBoard">Dinajpur</span> as a regular student of this institution and acquired GPA- <span class="cert-meta-bold" id="prevGpa">5.00</span>.
+                        <div class="cert-body" id="certificateBodyContainer">
+                            This is to certify that <span class="cert-bold" id="prevName">K M ANISUJJAMAN MASUM</span>, <span id="prevRelation">son of</span> <span class="cert-bold" id="prevFather">MD ASHRAFUL HABIB</span> and <span class="cert-bold" id="prevMother">MST AKLIMA KHATUN</span> bearing Roll No. <span class="cert-meta-bold" id="prevRoll">229083</span>, Registration No. <span class="cert-meta-bold" id="prevReg">2317722960</span>, Session <span class="cert-meta-bold" id="prevSession">2024-2025</span> passed <span id="prevExamName">Secondary School Certificate Examination</span> in <span class="cert-meta-bold" id="prevYear">2026</span> from <span class="cert-meta-bold" id="prevGroup">Science</span> group under the Board of Intermediate and Secondary Education, <span id="prevBoard">Dinajpur</span> as a regular student of this institution and acquired GPA- <span class="cert-meta-bold" id="prevGpa">5.00</span>.
                             <br><br>
                             <span id="prevPronoun">He</span> bears a good moral character. To the best of my concern, <span id="prevPronounLower">he</span> did not take part in any activity subversive of the state or against discipline during <span id="prevPossessive">his</span> stay at this institution.
                             <br><br>
@@ -309,7 +342,31 @@
     }
 
     /* ==========================================================
-       ৩. সাব-সেকশন সুইচ করার ফাংশন
+       ৩. টেমপ্লেট পরিবর্তন হ্যান্ডলার
+       ========================================================== */
+    window.onTemplateChange = function (templateVal) {
+        // উভয় ড্রপডাউনকে সিঙ্ক রাখা
+        const entrySel = document.getElementById('entryTemplateSelect');
+        const prevSel = document.getElementById('previewTemplateSelect');
+        if (entrySel) entrySel.value = templateVal;
+        if (prevSel) prevSel.value = templateVal;
+
+        const examSpan = document.getElementById('prevExamName');
+        const refInp = document.getElementById('inpRef');
+
+        if (templateVal === 'hsc_testimonial') {
+            if (examSpan) examSpan.innerText = "Higher Secondary Certificate Examination";
+            if (refInp && refInp.value.includes('SSC')) refInp.value = refInp.value.replace('SSC', 'HSC');
+        } else {
+            if (examSpan) examSpan.innerText = "Secondary School Certificate Examination";
+            if (refInp && refInp.value.includes('HSC')) refInp.value = refInp.value.replace('HSC', 'SSC');
+        }
+
+        updateCertificateData();
+    };
+
+    /* ==========================================================
+       ৪. সাব-সেকশন সুইচ করার ফাংশন
        ========================================================== */
     window.switchCPSCLSubSection = function (sectionType) {
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
@@ -322,7 +379,6 @@
         const parentMenu = document.getElementById('menu-cpscl-parent');
         if (parentMenu) parentMenu.classList.add('active');
 
-        // সেকশন টগল
         const entryView = document.getElementById('cpscl-entry-view');
         const previewView = document.getElementById('cpscl-preview-view');
         const subEntry = document.getElementById('sub-cpscl-entry');
@@ -343,7 +399,7 @@
     };
 
     /* ==========================================================
-       ৪. ফর্ম ডাটা থেকে সার্টিফিকেট আপডেট করার ফাংশন
+       ৫. সার্টিফিকেট ডাটা আপডেট
        ========================================================== */
     function updateCertificateData() {
         const isMale = document.getElementById('inpGender').value === 'Male';
