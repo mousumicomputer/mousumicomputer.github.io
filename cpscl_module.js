@@ -1,7 +1,7 @@
 /**
- * CPSCL Module - Exact Word Document Tab Indentation Engine
- * Tab Indent: 0.5" on all 3 Paragraphs
- * Typography: Monotype Corsiva 15pt & Cambria Bold Italic 15pt
+ * CPSCL Module - Exact Word Document Spacing & Layout Engine
+ * Reference to Body Gap: Exact 2 Enters (10pt font equivalent = 24pt margin)
+ * Tab Indentation: 0.5" on all 3 paragraphs
  */
 
 (function () {
@@ -60,7 +60,7 @@
         }
 
         /* ==========================================================
-           ২. CPSCL ভিউ প্যানেল (Exact MS Word Tab Indents)
+           ২. CPSCL ভিউ প্যানেল (Exact 2-Enter Spacing)
            ========================================================== */
         const cpsclViewPanel = document.createElement('div');
         cpsclViewPanel.className = 'view-panel';
@@ -153,7 +153,7 @@
                 .cpscl-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 10px 10px 0; }
 
                 /* ==========================================================
-                   A4 LANDSCAPE EXACT WORD SETUP & TAB INDENTATIONS
+                   A4 LANDSCAPE EXACT WORD SETUP & 2-ENTER GAP
                    ========================================================== */
                 .cpscl-preview-wrapper {
                     background: #525659;
@@ -190,7 +190,7 @@
                     position: relative;
                 }
 
-                /* 1. Reference -> Calibri 13pt */
+                /* 1. Reference -> Calibri 13pt & Exactly 2 Enters (10pt font) Gap below */
                 .cert-ref, 
                 .cert-ref * {
                     font-family: 'Calibri', 'Segoe UI', Arial, sans-serif !important;
@@ -198,17 +198,13 @@
                     font-weight: 400 !important;
                     font-style: normal !important;
                     color: #000000 !important;
-                    line-height: 1.2;
+                    line-height: 1.15 !important;
                 }
                 .cert-ref {
-                    margin-bottom: 22px;
+                    margin-bottom: 24pt !important; /* Exactly 2 Enters of 10pt font */
                 }
 
                 /* 2. Certificate Body & Exact 0.5" Tab Indents */
-                .cert-body {
-                    text-align: justify;
-                }
-
                 .cert-paragraph {
                     text-indent: 0.5in !important; /* Word Standard 0.5" Tab */
                     margin: 0 0 14pt 0 !important;
@@ -479,22 +475,19 @@
                         </button>
                     </div>
 
-                    <!-- A4 LANDSCAPE SHEET (Exact MS Word Tab Indents) -->
+                    <!-- A4 LANDSCAPE SHEET (Word Document Accuracy) -->
                     <div class="cpscl-a4-sheet" id="cpsclPrintArea">
                         <div class="cert-ref" id="prevRef">CPSCL/ 801023/SSC-26/001</div>
                         
                         <div class="cert-body" id="certificateBodyContainer">
-                            <!-- প্যারা ১: 0.5 ইঞ্চি ট্যাব ইনডেন্ট -->
                             <p class="cert-paragraph">
                                 This is to certify that <span class="cert-bold" id="prevName">K M ANISUJJAMAN MASUM</span>, <span id="prevRelation">son of</span> <span class="cert-bold" id="prevFather">MD ASHRAFUL HABIB</span> and <span class="cert-bold" id="prevMother">MST AKLIMA KHATUN</span> bearing Roll No. <span class="cert-meta-bold" id="prevRoll">229083</span>, Registration No. <span class="cert-meta-bold" id="prevReg">2317722960</span>, Session <span class="cert-meta-bold" id="prevSession">2024–2025</span> passed <span id="prevExamName">Secondary School Certificate Examination</span> in <span class="cert-meta-bold" id="prevYear">2026</span> from <span class="cert-meta-bold" id="prevGroup">Science</span> group under the Board of Intermediate and Secondary Education, <span id="prevBoard">Dinajpur</span> as a regular student of this institution and acquired GPA- <span class="cert-meta-bold" id="prevGpa">5.00</span>.
                             </p>
                             
-                            <!-- প্যারা ২: 0.5 ইঞ্চি ট্যাব ইনডেন্ট -->
                             <p class="cert-paragraph">
                                 <span id="prevPronoun">He</span> bears a good moral character. To the best of my concern, <span id="prevPronounLower">he</span> did not take part in any activity subversive of the state or against discipline during <span id="prevPossessive">his</span> stay at this institution.
                             </p>
                             
-                            <!-- প্যারা ৩: 0.5 ইঞ্চি ট্যাব ইনডেন্ট -->
                             <p class="cert-paragraph">
                                 I wish <span id="prevObjective">him</span> a bright future.
                             </p>
