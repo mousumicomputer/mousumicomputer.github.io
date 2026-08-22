@@ -1,10 +1,18 @@
 /**
- * CPSCL Module - 100% Calibrated Baseline-to-Baseline Overlay
+ * CPSCL Module - Multi-Template Architecture & Calibrated Print
  * Exact MS Word Match: Multiple 1.8 Line-Height & 10pt After-Spacing
  */
 
 (function () {
     let studentDatabase = JSON.parse(localStorage.getItem('cpscl_students_data') || '[]');
+    let currentFilterTemplate = 'all';
+
+    const TEMPLATE_NAMES = {
+        'ssc_testimonial': 'SSC Testimonial',
+        'hsc_testimonial': 'HSC Testimonial',
+        'tc_certificate': 'Transfer Certificate (TC)',
+        'character_cert': 'Character Certificate'
+    };
 
     function initCPSCLModule() {
         const menuList = document.querySelector('.sidebar .menu-list');
@@ -85,6 +93,44 @@
                     outline: none;
                     cursor: pointer;
                 }
+                .cpscl-tabs-wrapper {
+                    display: flex;
+                    gap: 8px;
+                    overflow-x: auto;
+                    padding-bottom: 12px;
+                    margin-bottom: 15px;
+                    border-bottom: 1.5px solid #f1f5f9;
+                }
+                .cpscl-tab-btn {
+                    padding: 8px 16px;
+                    border-radius: 8px;
+                    border: 1px solid #e2e8f0;
+                    background: #f8fafc;
+                    color: #475569;
+                    font-weight: 700;
+                    font-size: 0.85rem;
+                    cursor: pointer;
+                    white-space: nowrap;
+                    transition: all 0.2s;
+                }
+                .cpscl-tab-btn.active {
+                    background: #4f46e5;
+                    color: #ffffff;
+                    border-color: #4f46e5;
+                    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+                }
+                .cpscl-badge {
+                    display: inline-block;
+                    padding: 3px 8px;
+                    border-radius: 6px;
+                    font-size: 0.78rem;
+                    font-weight: 700;
+                }
+                .badge-ssc { background: #e0f2fe; color: #0284c7; }
+                .badge-hsc { background: #fef3c7; color: #d97706; }
+                .badge-tc { background: #fee2e2; color: #dc2626; }
+                .badge-char { background: #dcfce7; color: #16a34a; }
+
                 .cpscl-grid {
                     display: grid;
                     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -212,11 +258,11 @@
                 }
 
                 .cert-paragraph {
-                    text-indent: 0.5in !important;         /* 0.5" Tab / Indentation */
-                    text-align: justify !important;        /* MS Word Justified Alignment */
-                    line-height: 1.8 !important;           /* MS Word Multiple 1.8 Line Spacing */
-                    margin-top: 0pt !important;            /* MS Word Spacing Before 0pt */
-                    margin-bottom: 10pt !important;        /* MS Word Spacing After 10pt */
+                    text-indent: 0.5in !important;         /* 0.5" Tab */
+                    text-align: justify !important;        /* Justified */
+                    line-height: 1.8 !important;           /* MS Word Multiple 1.8 */
+                    margin-top: 0pt !important;            /* Spacing Before 0pt */
+                    margin-bottom: 10pt !important;        /* Spacing After 10pt */
                     word-break: normal !important;
                 }
 
@@ -328,9 +374,9 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                         <div>
                             <h2 style="font-size: 1.3rem; color: #1e293b; font-weight: 800;"><i class="fa-solid fa-file-excel" style="color: #10b981;"></i> Student Excel Import & Database</h2>
-                            <p style="font-size: 0.85rem; color: #64748b;">এক্সেল ফাইল আপলোড করে শিক্ষার্থীদের ডাটাবেইজ তৈরি করুন</p>
+                            <p style="font-size: 0.85rem; color: #64748b;">টেমপ্লেট অনুযায়ী এক্সেল ফাইল আপলোড করুন অথবা স্যাম্পল এক্সেল ডাউনলোড করুন</p>
                         </div>
-                        <div style="display: flex; gap: 10px;">
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                             <button class="btn-submit" onclick="downloadSampleExcel()" style="width: auto; padding: 10px 16px; background: #0284c7; border-radius: 8px; font-size: 0.88rem;">
                                 <i class="fa-solid fa-download"></i> স্যাম্পল এক্সেল ডাউনলোড
                             </button>
@@ -349,6 +395,15 @@
                 </div>
 
                 <div class="cpscl-card">
+                    <!-- টেমপ্লেট ফিল্টার ট্যাব -->
+                    <div class="cpscl-tabs-wrapper">
+                        <button class="cpscl-tab-btn active" onclick="filterByTemplate('all', this)"><i class="fa-solid fa-layer-group"></i> All Students</button>
+                        <button class="cpscl-tab-btn" onclick="filterByTemplate('ssc_testimonial', this)"><i class="fa-solid fa-graduation-cap"></i> SSC Testimonial</button>
+                        <button class="cpscl-tab-btn" onclick="filterByTemplate('hsc_testimonial', this)"><i class="fa-solid fa-user-graduate"></i> HSC Testimonial</button>
+                        <button class="cpscl-tab-btn" onclick="filterByTemplate('tc_certificate', this)"><i class="fa-solid fa-arrow-right-from-bracket"></i> Transfer Certificate (TC)</button>
+                        <button class="cpscl-tab-btn" onclick="filterByTemplate('character_cert', this)"><i class="fa-solid fa-award"></i> Character Certificate</button>
+                    </div>
+
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
                         <div style="position: relative; width: 320px;">
                             <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 14px; color: #94a3b8;"></i>
@@ -368,7 +423,8 @@
                                     <th>রেজিস্ট্রেশন</th>
                                     <th>শিক্ষার্থীর নাম</th>
                                     <th>পিতার নাম</th>
-                                    <th>গ্রুপ</th>
+                                    <th>টেমপ্লেট টাইপ</th>
+                                    <th>গ্রুপ/শ্রেণি</th>
                                     <th>GPA</th>
                                     <th style="text-align: right;">অ্যাকশন</th>
                                 </tr>
@@ -385,12 +441,13 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; flex-wrap: wrap; gap: 10px;">
                         <div>
                             <h2 style="font-size: 1.3rem; color: #1e293b; font-weight: 800;"><i class="fa-solid fa-pen-to-square" style="color: #4f46e5;"></i> Student Information Entry</h2>
-                            <p style="font-size: 0.85rem; color: #64748b;">ম্যানুয়ালি তথ্য ইনপুট দিয়ে প্রশংসাপত্র তৈরি করুন</p>
+                            <p style="font-size: 0.85rem; color: #64748b;">সার্টিফিকেট টেমপ্লেট নির্বাচন করে তথ্য এন্ট্রি দিন</p>
                         </div>
                         <div style="display: flex; align-items: center; gap: 10px;">
+                            <label style="font-size: 0.85rem; font-weight: 700; color: #3730a3;">Certificate Type:</label>
                             <select id="entryTemplateSelect" class="cpscl-template-select-box" onchange="onTemplateChange(this.value)">
-                                <option value="ssc_testimonial">SSC Testimonial (এসএসসি প্রশংসাপত্র)</option>
-                                <option value="hsc_testimonial">HSC Testimonial (এইচএসসি প্রশংসাপত্র)</option>
+                                <option value="ssc_testimonial">SSC Testimonial (এসএসসি)</option>
+                                <option value="hsc_testimonial">HSC Testimonial (এইচএসসি)</option>
                                 <option value="tc_certificate">Transfer Certificate - TC (ছাড়পত্র)</option>
                                 <option value="character_cert">Character Certificate (চারিত্রিক সনদ)</option>
                             </select>
@@ -423,35 +480,35 @@
                                 <input type="text" id="inpMother" class="cpscl-control" value="MST AKLIMA KHATUN" required>
                             </div>
                             <div class="cpscl-input-group">
-                                <label>Roll No <span>*</span></label>
+                                <label>Roll / ID No <span>*</span></label>
                                 <input type="text" id="inpRoll" class="cpscl-control" value="229083" required>
                             </div>
                             <div class="cpscl-input-group">
-                                <label>Registration No <span>*</span></label>
-                                <input type="text" id="inpReg" class="cpscl-control" value="2317722960" required>
+                                <label>Registration No</label>
+                                <input type="text" id="inpReg" class="cpscl-control" value="2317722960">
                             </div>
                             <div class="cpscl-input-group">
                                 <label>Session <span>*</span></label>
                                 <input type="text" id="inpSession" class="cpscl-control" value="2024–2025" required>
                             </div>
                             <div class="cpscl-input-group">
-                                <label>Passing Year <span>*</span></label>
+                                <label>Passing Year / Year <span>*</span></label>
                                 <input type="text" id="inpYear" class="cpscl-control" value="2026" required>
                             </div>
                             <div class="cpscl-input-group">
-                                <label>Group <span>*</span></label>
+                                <label>Group / Class <span>*</span></label>
                                 <input type="text" id="inpGroup" class="cpscl-control" value="Science" required>
                             </div>
                             <div class="cpscl-input-group">
-                                <label>Education Board <span>*</span></label>
-                                <input type="text" id="inpBoard" class="cpscl-control" value="Dinajpur" required>
+                                <label>Education Board</label>
+                                <input type="text" id="inpBoard" class="cpscl-control" value="Dinajpur">
                             </div>
                             <div class="cpscl-input-group">
-                                <label>GPA <span>*</span></label>
-                                <input type="text" id="inpGpa" class="cpscl-control" value="5.00" required>
+                                <label>GPA / Result</label>
+                                <input type="text" id="inpGpa" class="cpscl-control" value="5.00">
                             </div>
                             <div class="cpscl-input-group">
-                                <label>Result Publication Date</label>
+                                <label>Date (Publication / Issue)</label>
                                 <input type="text" id="inpPubDate" class="cpscl-control" value="10 August 2026">
                             </div>
                         </div>
@@ -479,8 +536,8 @@
                         <div style="display: flex; align-items: center; gap: 8px; background: #fff; padding: 4px 12px; border-radius: 8px;">
                             <span style="font-size: 0.85rem; font-weight: 700; color: #475569;">Template:</span>
                             <select id="previewTemplateSelect" class="cpscl-template-select-box" style="border: none; background: transparent; padding: 4px 6px;" onchange="onTemplateChange(this.value)">
-                                <option value="ssc_testimonial">SSC Testimonial (এসএসসি প্রশংসাপত্র)</option>
-                                <option value="hsc_testimonial">HSC Testimonial (এইচএসসি প্রশংসাপত্র)</option>
+                                <option value="ssc_testimonial">SSC Testimonial (এসএসসি)</option>
+                                <option value="hsc_testimonial">HSC Testimonial (এইচএসসি)</option>
                                 <option value="tc_certificate">Transfer Certificate - TC (ছাড়পত্র)</option>
                                 <option value="character_cert">Character Certificate (চারিত্রিক সনদ)</option>
                             </select>
@@ -524,6 +581,13 @@
         renderStudentTable();
     }
 
+    window.filterByTemplate = function (tpl, btnElement) {
+        currentFilterTemplate = tpl;
+        document.querySelectorAll('.cpscl-tab-btn').forEach(btn => btn.classList.remove('active'));
+        if (btnElement) btnElement.classList.add('active');
+        renderStudentTable();
+    };
+
     window.handleExcelUpload = function (event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -543,9 +607,21 @@
                 }
 
                 const newStudents = jsonData.map((row, index) => {
-                    const roll = row['Roll'] || row['রোল'] || (index + 1);
+                    const roll = row['Roll'] || row['রোল'] || row['ID'] || (index + 1);
+                    
+                    // টেমপ্লেট ডিটেকশন
+                    let tpl = (row['Template'] || row['Template Type'] || row['টেমপ্লেট'] || '').toLowerCase();
+                    if (tpl.includes('hsc')) tpl = 'hsc_testimonial';
+                    else if (tpl.includes('tc') || tpl.includes('transfer')) tpl = 'tc_certificate';
+                    else if (tpl.includes('character') || tpl.includes('char')) tpl = 'character_cert';
+                    else if (currentFilterTemplate !== 'all') tpl = currentFilterTemplate;
+                    else tpl = 'ssc_testimonial';
+
+                    const refPrefix = tpl === 'hsc_testimonial' ? 'HSC-26' : (tpl === 'tc_certificate' ? 'TC-26' : 'SSC-26');
+
                     return {
-                        ref: row['Reference'] || row['Ref'] || row['রেফারেন্স'] || `CPSCL/ 801023/SSC-26/${String(roll).padStart(3, '0')}`,
+                        template: tpl,
+                        ref: row['Reference'] || row['Ref'] || row['রেফারেন্স'] || `CPSCL/ 801023/${refPrefix}/${String(roll).padStart(3, '0')}`,
                         name: row['Student Name'] || row['Name'] || row['নাম'] || 'STUDENT NAME',
                         gender: (row['Gender'] || row['লিঙ্গ'] || 'Male').toString().toLowerCase().startsWith('f') ? 'Female' : 'Male',
                         father: row['Father Name'] || row['Father'] || row['পিতার নাম'] || '',
@@ -554,7 +630,7 @@
                         reg: row['Registration'] || row['Reg'] || row['রেজিস্ট্রেশন'] || '',
                         session: row['Session'] || row['সেশন'] || '2024–2025',
                         year: row['Passing Year'] || row['Year'] || row['সাল'] || '2026',
-                        group: row['Group'] || row['বিভাগ'] || 'Science',
+                        group: row['Group'] || row['Class'] || row['বিভাগ'] || row['শ্রেণি'] || 'Science',
                         board: row['Board'] || row['বোর্ড'] || 'Dinajpur',
                         gpa: row['GPA'] || row['জিপিএ'] || '5.00',
                         pubDate: row['Date'] || row['Publication Date'] || row['তারিখ'] || '10 August 2026'
@@ -578,31 +654,41 @@
         if (!tbody) return;
 
         const searchVal = (document.getElementById('studentSearchInput')?.value || '').toLowerCase();
-        const filtered = studentDatabase.filter(s => 
-            String(s.roll).toLowerCase().includes(searchVal) ||
-            String(s.reg).toLowerCase().includes(searchVal) ||
-            s.name.toLowerCase().includes(searchVal)
-        );
+        
+        const filtered = studentDatabase.filter(s => {
+            const matchesSearch = String(s.roll).toLowerCase().includes(searchVal) ||
+                                  String(s.reg).toLowerCase().includes(searchVal) ||
+                                  s.name.toLowerCase().includes(searchVal);
+            const matchesTemplate = (currentFilterTemplate === 'all') || (s.template === currentFilterTemplate);
+            return matchesSearch && matchesTemplate;
+        });
 
-        if (countEl) countEl.innerText = studentDatabase.length;
+        if (countEl) countEl.innerText = filtered.length;
         tbody.innerHTML = '';
 
         if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 25px;">কোনো শিক্ষার্থীর তথ্য পাওয়া যায়নি। এক্সেল ফাইল আপলোড করুন।</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #94a3b8; padding: 25px;">কোনো শিক্ষার্থীর তথ্য পাওয়া যায়নি।</td></tr>`;
             return;
         }
 
-        filtered.forEach((s, idx) => {
+        filtered.forEach(s => {
+            const rawIndex = studentDatabase.indexOf(s);
+            let badgeClass = 'badge-ssc';
+            if (s.template === 'hsc_testimonial') badgeClass = 'badge-hsc';
+            else if (s.template === 'tc_certificate') badgeClass = 'badge-tc';
+            else if (s.template === 'character_cert') badgeClass = 'badge-char';
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>${s.roll}</strong></td>
                 <td>${s.reg || '-'}</td>
                 <td><strong style="color:#1e293b;">${s.name}</strong></td>
                 <td>${s.father || '-'}</td>
+                <td><span class="cpscl-badge ${badgeClass}">${TEMPLATE_NAMES[s.template] || 'SSC Testimonial'}</span></td>
                 <td><span style="background:#eef2ff; color:#4f46e5; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700;">${s.group}</span></td>
-                <td><strong style="color:#16a34a;">${s.gpa}</strong></td>
+                <td><strong style="color:#16a34a;">${s.gpa || '-'}</strong></td>
                 <td style="text-align: right;">
-                    <button onclick="loadStudentToPrint(${idx})" style="background: #4f46e5; color: #fff; border: none; padding: 6px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem;">
+                    <button onclick="loadStudentToPrint(${rawIndex})" style="background: #4f46e5; color: #fff; border: none; padding: 6px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem;">
                         <i class="fa-solid fa-print"></i> Print Certificate
                     </button>
                 </td>
@@ -614,6 +700,9 @@
     window.loadStudentToPrint = function (idx) {
         const s = studentDatabase[idx];
         if (!s) return;
+
+        const targetTpl = s.template || 'ssc_testimonial';
+        onTemplateChange(targetTpl);
 
         document.getElementById('inpRef').value = s.ref;
         document.getElementById('inpName').value = s.name;
@@ -633,9 +722,11 @@
     };
 
     window.downloadSampleExcel = function () {
+        const currentTpl = (currentFilterTemplate === 'all') ? 'ssc_testimonial' : currentFilterTemplate;
         const sampleData = [
             {
-                "Reference": "CPSCL/ 801023/SSC-26/001",
+                "Template": currentTpl,
+                "Reference": `CPSCL/ 801023/${currentTpl === 'hsc_testimonial' ? 'HSC' : 'SSC'}-26/001`,
                 "Roll": 229083,
                 "Registration": "2317722960",
                 "Student Name": "K M ANISUJJAMAN MASUM",
@@ -654,13 +745,17 @@
         const ws = XLSX.utils.json_to_sheet(sampleData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Students_Demo");
-        XLSX.writeFile(wb, "CPSCL_Students_Sample.xlsx");
+        XLSX.writeFile(wb, `CPSCL_${currentTpl}_Sample.xlsx`);
     };
 
     window.clearAllStudents = function () {
-        if (confirm("আপনি কি নিশ্চিত যে সকল শিক্ষার্থীর তালিকা মুছে ফেলতে চান?")) {
-            studentDatabase = [];
-            localStorage.removeItem('cpscl_students_data');
+        if (confirm("আপনি কি নিশ্চিত যে তালিকা মুছে ফেলতে চান?")) {
+            if (currentFilterTemplate === 'all') {
+                studentDatabase = [];
+            } else {
+                studentDatabase = studentDatabase.filter(s => s.template !== currentFilterTemplate);
+            }
+            localStorage.setItem('cpscl_students_data', JSON.stringify(studentDatabase));
             renderStudentTable();
         }
     };
@@ -749,7 +844,9 @@
     }
 
     window.saveAndPreviewFromForm = function () {
+        const selectedTpl = document.getElementById('entryTemplateSelect').value;
         const studentObj = {
+            template: selectedTpl,
             ref: document.getElementById('inpRef').value,
             name: document.getElementById('inpName').value,
             gender: document.getElementById('inpGender').value,
@@ -765,7 +862,7 @@
             pubDate: document.getElementById('inpPubDate').value
         };
 
-        const existingIdx = studentDatabase.findIndex(s => s.roll === studentObj.roll);
+        const existingIdx = studentDatabase.findIndex(s => s.roll === studentObj.roll && s.template === selectedTpl);
         if (existingIdx !== -1) {
             studentDatabase[existingIdx] = studentObj;
         } else {
