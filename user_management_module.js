@@ -1,10 +1,13 @@
 /**
  * User Management & Security Audit Module - Mousumi Computer ERP
- * Strict Whitelist Role-Based Access Control (RBAC) & Realtime Firebase Sync
+ * Role-Based Access Control (RBAC) & Realtime Firebase Sync
  */
 
 (function () {
     const SUPER_ADMIN_EMAIL = "mousumicomputer.org@gmail.com";
+    const MOUSUMI_LOGO = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg";
+    const CPSCL_LOGO = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg-795xmOcuKYH8wjija8JrA-qVjfOp_4KieeZ1pOQJaqX2uXsqGLMo09AXsGGsfGjH9LpK5fPlUNGbebFguiAzPC_YvbRXcHePj7cORQd6GMxDUg-LCeXtmNkccGI2K4Hv73PJqJkGX0Ju9N4knQuqKOAImqB6qy_WWFXpKeIaQhRgk7YbLqBLpCmL0cio/s1600/%E0%A6%95%E0%A7%8D%E0%A6%AF%E0%A6%AA%E0%A6%BE%E0%A6%A8%E0%A7%8D%E0%A6%9F%E0%A6%A8%E0%A6%AE%E0%A7%87%E0%A6%A8%E0%A7%8D%E0%A6%9F_%E0%A6%AA%E0%A6%BE%E0%A6%AC%E0%A6%B2%E0%A6%BF%E0%A6%9F%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2_%E0%A6%93_%E0%A6%95%E0%A6%B2%E0%A7%87%E0%A6%9C_%E0%A6%B2%E0%A6%BE%E0%A6%B2%E0%A6%AE%E0%A6%A8%E0%A6%BF%E0%A6%B0%E0%A6%B9%E0%A6%BE%E0%A6%9F%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png";
+
     let systemUsers = [];
     let activityLogs = [];
     let currentAuthUser = null;
@@ -14,12 +17,12 @@
     let dbSetFunc = null;
 
     /* ==========================================================
-       ১. ফায়ারবেস ক্লাউড ডাটাবেজ সংযোগ
+       ১. ফায়ারবেস ডাটাবেজ ইনিশিয়ালাইজেশন
        ========================================================== */
     async function initFirebase() {
         try {
             const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-            const { getDatabase, ref, set, onValue } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+            const { getDatabase, ref, set, onValue, get } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
             const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
 
             const firebaseConfig = {
@@ -40,29 +43,18 @@
 
             const auth = getAuth(app);
 
-            // অথেনটিকেশন লিসেনার
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    currentAuthUser = user;
-                    await syncUserStatusAndEnforceSecurity(user);
-                } else {
-                    currentAuthUser = null;
-                    currentUserProfile = null;
-                }
-            });
-
-            // রিয়েল-টাইম ইউজার ডাটাবেজ লিসেনার
+            // ইউজারের রিয়েল-টাইম ডাটা সিঙ্ক
             const usersRef = ref(dbInstance, 'erp/system_users');
             onValue(usersRef, (snapshot) => {
                 const data = snapshot.val();
                 systemUsers = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
                 renderUsersTable();
                 if (currentAuthUser) {
-                    enforcePermissionsForUser(currentAuthUser.email);
+                    enforceSecurity(currentAuthUser);
                 }
             });
 
-            // রিয়েল-টাইম অ্যাক্টিভিটি লগ লিসেনার
+            // অ্যাক্টিভিটি লগ সিঙ্ক
             const logsRef = ref(dbInstance, 'erp/activity_logs');
             onValue(logsRef, (snapshot) => {
                 const data = snapshot.val();
@@ -70,11 +62,19 @@
                 renderActivityLogsTable();
             });
 
-            // ডাইনামিক মেনু গার্ড (দেরিতে লোড হওয়া মেনুকেও সাথে সাথে হাইড করবে)
-            setupMenuMutationObserver();
+            // অথেনটিকেশন লিসেনার
+            onAuthStateChanged(auth, async (user) => {
+                currentAuthUser = user;
+                if (user) {
+                    await enforceSecurity(user);
+                } else {
+                    currentUserProfile = null;
+                    restoreAdminBranding();
+                }
+            });
 
         } catch (err) {
-            console.error("User Management Firebase Init Error:", err);
+            console.error("User Mgmt Init Error:", err);
         }
     }
 
@@ -89,7 +89,7 @@
     }
 
     /* ==========================================================
-       ২. গ্লোবাল অ্যাক্টিভিটি লগার
+       ২. অ্যাক্টিভিটি লগ ট্র্যাকার
        ========================================================== */
     window.logUserActivity = async function (actionType, details) {
         const now = new Date();
@@ -114,102 +114,108 @@
         if (dbInstance && dbSetFunc && dbRefFunc) {
             try {
                 await dbSetFunc(dbRefFunc(dbInstance, 'erp/activity_logs'), activityLogs);
-            } catch (e) {
-                console.warn("Log write error:", e);
-            }
+            } catch (e) {}
         }
     };
 
     /* ==========================================================
-       ৩. নিখুঁত সিকিউরিটি ও স্ট্রিক্ট হোয়াইটলিস্ট গার্ড
+       ৩. পারমিশন এনফোর্সমেন্ট ও ব্র্যান্ডিং সুইচিং
        ========================================================== */
-    async function syncUserStatusAndEnforceSecurity(user) {
+    async function enforceSecurity(user) {
         const email = (user.email || '').toLowerCase().trim();
-        
+
+        // ১. যদি সুপার এডমিন হয়
         if (email === SUPER_ADMIN_EMAIL.toLowerCase()) {
             currentUserProfile = { name: "Rabbi Hosen", role: "Admin", status: "Active" };
+            restoreAdminBranding();
             unlockAllMenusForAdmin();
             return;
         }
 
+        // ২. যদি সাব-ইউজার/অপারেটর হয়
         const profile = systemUsers.find(u => (u.email || '').toLowerCase().trim() === email);
         if (profile) {
             currentUserProfile = profile;
 
+            // ব্লকড চেক
             if (profile.status === 'Blocked' || profile.status === 'Inactive') {
-                window.logUserActivity("BLOCKED_ACCESS_ATTEMPT", `Blocked user (${profile.name}) tried to login`);
-                alert("আপনার একাউন্টটি সাময়িকভাবে স্থগিত (Blocked) আছে! এডমিনের সাথে যোগাযোগ করুন।");
+                alert("আপনার একাউন্টটি সাময়িকভাবে বন্ধ আছে! এডমিনের সাথে যোগাযোগ করুন।");
                 const { getAuth, signOut } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
                 await signOut(getAuth());
                 window.location.reload();
                 return;
             }
 
-            enforcePermissionsForUser(email);
-        }
-    }
+            // প্রোফাইল নাম ও পদবী আপডেট
+            const dName = document.getElementById('dropdownName');
+            const dRole = document.getElementById('dropdownRole');
+            if (dName) dName.innerText = profile.name || 'User';
+            if (dRole) dRole.innerText = profile.role || 'Operator';
 
-    function enforcePermissionsForUser(email) {
-        if (!email || email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) {
-            unlockAllMenusForAdmin();
-            return;
-        }
+            const allowed = profile.permissions || {};
 
-        const profile = systemUsers.find(u => (u.email || '').toLowerCase().trim() === email.toLowerCase());
-        if (!profile) return;
-
-        const allowed = profile.permissions || {};
-
-        // ১. টপ প্রোফাইল বারে ইউজারের নাম ও রোল পরিবর্তন
-        const dName = document.getElementById('dropdownName');
-        const dRole = document.getElementById('dropdownRole');
-        const fullProfName = document.getElementById('fullProfileNameDisplay');
-        const fullProfRole = document.getElementById('fullProfileRoleDisplay');
-
-        if (dName) dName.innerText = profile.name || 'User';
-        if (dRole) dRole.innerText = profile.role || 'Operator';
-        if (fullProfName) fullProfName.innerText = profile.name || 'User';
-        if (fullProfRole) fullProfRole.innerText = profile.role || 'Operator';
-
-        // ২. STRICT WHITELIST: সাইডবারের সমস্ত মেনু একবারে লুকিয়ে ফেলা (Hide All)
-        const allMenuItems = document.querySelectorAll('.sidebar .menu-list > li');
-        allMenuItems.forEach(item => {
-            item.style.setProperty('display', 'none', 'important');
-        });
-
-        // ৩. শুধুমাত্র অনুমোদিত মেনুগুলো দৃশ্যমান করা (Show Allowed Only)
-        if (allowed.dashboard) showMenuItem('#menu-dash');
-        if (allowed.balance) showMenuItem('#menu-bal-parent');
-        if (allowed.inventory) showMenuItem('#menu-inv-parent');
-        if (allowed.customers) showMenuItem('#menu-cust-parent');
-        if (allowed.closing) showMenuItem('#menu-closing-parent');
-
-        // CPSCL মেনু দৃশ্যমান করা
-        if (allowed.cpscl) {
+            // সাইডবারের সব মেনু একযোগে হাইড করা
+            const allMenuItems = document.querySelectorAll('.sidebar .menu-list > li');
             allMenuItems.forEach(item => {
-                if (item.id === 'menu-cpscl-parent' || item.innerText.includes('CPSCL')) {
-                    item.style.setProperty('display', 'block', 'important');
-                }
+                item.style.setProperty('display', 'none', 'important');
             });
-        }
 
-        // ৪. অটো-ল্যান্ডিং: যদি শুধু CPSCL অনুমতি থাকে, সরাসরি CPSCL ওপেন হবে
-        if (allowed.cpscl && !allowed.dashboard && !allowed.balance && !allowed.customers && !allowed.closing) {
-            if (typeof window.switchCPSCLSubSection === 'function') {
-                window.switchCPSCLSubSection('list');
+            // শুধু অনুমোদিত মেনুগুলো দেখানো
+            if (allowed.dashboard) showMenuItem('#menu-dash');
+            if (allowed.balance) showMenuItem('#menu-bal-parent');
+            if (allowed.inventory) showMenuItem('#menu-inv-parent');
+            if (allowed.customers) showMenuItem('#menu-cust-parent');
+            if (allowed.closing) showMenuItem('#menu-closing-parent');
+
+            // CPSCL অপারেটর হলে লোগো ও থিম পরিবর্তন এবং সরাসরি CPSCL ভিউ ওপেন
+            if (allowed.cpscl) {
+                allMenuItems.forEach(item => {
+                    if (item.id === 'menu-cpscl-parent' || item.innerText.includes('CPSCL')) {
+                        item.style.setProperty('display', 'block', 'important');
+                    }
+                });
+
+                applyCPSCLBranding();
+
+                // যদি শুধু CPSCL এর অনুমতি থাকে, সরাসরি CPSCL এ নিয়ে যাওয়া
+                if (!allowed.dashboard && !allowed.balance && !allowed.customers && !allowed.closing) {
+                    if (typeof window.switchCPSCLSubSection === 'function') {
+                        window.switchCPSCLSubSection('list');
+                    }
+                }
             }
-        }
 
-        // ৫. ডিলিট ক্ষমতা বন্ধ থাকলে "Clear All" বাটন বন্ধ করা
-        if (allowed.cpscl && !allowed.canDeleteCPSCL) {
-            const clearBtn = document.querySelector('button[onclick="clearAllStudents()"]');
-            if (clearBtn) clearBtn.style.setProperty('display', 'none', 'important');
+            // ডিলিট ক্ষমতা বন্ধ থাকলে "Clear All" বাটন বন্ধ রাখা
+            if (allowed.cpscl && !allowed.canDeleteCPSCL) {
+                const clearBtn = document.querySelector('button[onclick="clearAllStudents()"]');
+                if (clearBtn) clearBtn.style.setProperty('display', 'none', 'important');
+            }
         }
     }
 
     function showMenuItem(selector) {
         const el = document.querySelector(selector);
         if (el) el.style.setProperty('display', 'block', 'important');
+    }
+
+    function restoreAdminBranding() {
+        const brandLogoImg = document.querySelector('.brand-logo img');
+        const brandTextH3 = document.querySelector('.brand-text h3');
+        const brandTextSpan = document.querySelector('.brand-text span');
+
+        if (brandLogoImg) brandLogoImg.src = MOUSUMI_LOGO;
+        if (brandTextH3) brandTextH3.innerText = "Mousumi";
+        if (brandTextSpan) brandTextSpan.innerText = "Accounting ERP";
+    }
+
+    function applyCPSCLBranding() {
+        const brandLogoImg = document.querySelector('.brand-logo img');
+        const brandTextH3 = document.querySelector('.brand-text h3');
+        const brandTextSpan = document.querySelector('.brand-text span');
+
+        if (brandLogoImg) brandLogoImg.src = CPSCL_LOGO;
+        if (brandTextH3) brandTextH3.innerText = "CPSCL";
+        if (brandTextSpan) brandTextSpan.innerText = "LALMONIRHAT";
     }
 
     function unlockAllMenusForAdmin() {
@@ -220,22 +226,8 @@
         if (userMenu) userMenu.style.setProperty('display', 'block', 'important');
     }
 
-    // অবজার্ভার: অন্য কোনো জাভাস্ক্রিপ্ট ফাইল দেরিতে মেনু বানালেও তা সাথে সাথে ফিল্টার হবে
-    function setupMenuMutationObserver() {
-        const menuContainer = document.querySelector('.sidebar .menu-list');
-        if (!menuContainer) return;
-
-        const observer = new MutationObserver(() => {
-            if (currentAuthUser && currentAuthUser.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) {
-                enforcePermissionsForUser(currentAuthUser.email);
-            }
-        });
-
-        observer.observe(menuContainer, { childList: true });
-    }
-
     /* ==========================================================
-       ৪. UI ও ইউজার ম্যানেজমেন্ট প্যানেল তৈরি
+       ৪. ইউজার ম্যানেজমেন্ট UI ও প্যানেল
        ========================================================== */
     function initUserManagementUI() {
         const menuList = document.querySelector('.sidebar .menu-list');
@@ -384,7 +376,7 @@
                             </div>
                             <div>
                                 <label style="font-size:0.85rem; font-weight:700; color:#475569;">লগইন ইমেইল *</label>
-                                <input type="email" id="umEmail" placeholder="user@mousumi.com" class="mc-form-control" style="height:44px; margin-top:5px;" required>
+                                <input type="email" id="umEmail" placeholder="user@cpscl.com" class="mc-form-control" style="height:44px; margin-top:5px;" required>
                             </div>
                             <div>
                                 <label style="font-size:0.85rem; font-weight:700; color:#475569;">লগইন পাসওয়ার্ড *</label>
@@ -443,7 +435,7 @@
 
                 <div id="um-screen-logs" style="display:none;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h4 style="font-weight: 800; color: #1e293b;">লাইভ সিস্টেম অডিট হিস্ট্রি</h4>
+                        <h4 style="font-weight: 800; color: #1e1b4b;">লাইভ সিস্টেম অডিট হিস্ট্রি</h4>
                         <button onclick="clearActivityLogs()" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer;">
                             <i class="fa-solid fa-trash"></i> লগ ক্লিয়ার করুন
                         </button>
@@ -470,7 +462,7 @@
     }
 
     /* ==========================================================
-       ৫. রেন্ডারিং ও অ্যাকশন হ্যান্ডলারসমূহ
+       ৫. হ্যান্ডলার ফাংশনসমূহ
        ========================================================== */
     window.switchUMTab = function (tab) {
         document.querySelectorAll('.um-tab-btn').forEach(b => b.classList.remove('active'));
@@ -594,17 +586,13 @@
                 const idx = systemUsers.findIndex(u => u.id === editId);
                 if (idx !== -1) {
                     systemUsers[idx] = { ...systemUsers[idx], name, email, password, role, permissions };
-                    window.logUserActivity("USER_UPDATED", `User (${name} - ${email}) updated by Admin`);
+                    window.logUserActivity("USER_UPDATED", `User (${name} - ${email}) updated`);
                 }
             } else {
                 const { getAuth, createUserWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
                 try {
                     await createUserWithEmailAndPassword(getAuth(), email, password);
-                } catch (authErr) {
-                    if (authErr.code !== 'auth/email-already-in-use') {
-                        console.warn("Auth creation notice:", authErr.message);
-                    }
-                }
+                } catch (authErr) {}
 
                 const newUser = {
                     id: 'usr_' + Date.now(),
@@ -707,9 +695,6 @@
         }
     };
 
-    /* ==========================================================
-       ৬. ইনিশিয়ালাইজেশন
-       ========================================================== */
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             initUserManagementUI();
