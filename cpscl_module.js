@@ -1,5 +1,6 @@
 /**
  * CPSCL Module - Multi-Template Architecture & Calibrated Print
+ * Supports Custom Excel Layout & Dynamic Smart Reference Generation
  * Exact MS Word Match: Multiple 1.8 Line-Height & 10pt After-Spacing
  */
 
@@ -423,7 +424,8 @@
                                     <th>রেজিস্ট্রেশন</th>
                                     <th>শিক্ষার্থীর নাম</th>
                                     <th>পিতার নাম</th>
-                                    <th>টেমপ্লেট টাইপ</th>
+                                    <th>লিঙ্গ</th>
+                                    <th>টেমপ্লেট</th>
                                     <th>গ্রুপ/শ্রেণি</th>
                                     <th>GPA</th>
                                     <th style="text-align: right;">অ্যাকশন</th>
@@ -607,40 +609,69 @@
                 }
 
                 const newStudents = jsonData.map((row, index) => {
-                    const roll = row['Roll'] || row['রোল'] || row['ID'] || (index + 1);
-                    
-                    // টেমপ্লেট ডিটেকশন
-                    let tpl = (row['Template'] || row['Template Type'] || row['টেমপ্লেট'] || '').toLowerCase();
+                    // ১. সিরিয়াল ও রোল
+                    const ser = row['Ser'] || row['SL'] || row['Sl'] || row['সিরিয়াল'] || (index + 1);
+                    const roll = row['Board Roll'] || row['Roll'] || row['রোল'] || row['ID'] || ser;
+                    const studentID = row['Student ID'] || row['ID'] || row['আইডি'] || '801023';
+
+                    // ২. টেমপ্লেট নির্ধারণ
+                    let tpl = (row['Template'] || row['Template Type'] || row['টেমপ্লেট'] || '').toString().toLowerCase();
                     if (tpl.includes('hsc')) tpl = 'hsc_testimonial';
                     else if (tpl.includes('tc') || tpl.includes('transfer')) tpl = 'tc_certificate';
                     else if (tpl.includes('character') || tpl.includes('char')) tpl = 'character_cert';
                     else if (currentFilterTemplate !== 'all') tpl = currentFilterTemplate;
                     else tpl = 'ssc_testimonial';
 
-                    const refPrefix = tpl === 'hsc_testimonial' ? 'HSC-26' : (tpl === 'tc_certificate' ? 'TC-26' : 'SSC-26');
+                    // ৩. সাল ও এক্সাম সাফিক্স (যেমন: SSC-26)
+                    const rawYear = String(row['Passing Year'] || row['Year'] || row['সাল'] || '2026');
+                    const yearSuffix = rawYear.slice(-2); // 2026 -> 26
+                    const examCode = tpl === 'hsc_testimonial' ? 'HSC' : (tpl === 'tc_certificate' ? 'TC' : 'SSC');
+                    const serPadded = String(ser).padStart(3, '0'); // 1 -> 001
+
+                    // ৪. স্বয়ংক্রিয় রেফারেন্স/স্মারক নম্বর তৈরি
+                    const autoRef = row['Reference'] || row['Ref'] || row['রেফারেন্স'] || `CPSCL/ ${studentID}/${examCode}-${yearSuffix}/${serPadded}`;
+
+                    // ৫. রেজাল্ট/জিপিএ ফরম্যাটিং (যেমন: 5 কে 5.00)
+                    let gpaVal = (row['Result'] !== undefined ? row['Result'] : (row['GPA'] || row['জিপিএ'] || '5.00')).toString();
+                    if (!isNaN(parseFloat(gpaVal)) && !gpaVal.includes('.')) {
+                        gpaVal = parseFloat(gpaVal).toFixed(2);
+                    }
 
                     return {
                         template: tpl,
-                        ref: row['Reference'] || row['Ref'] || row['রেফারেন্স'] || `CPSCL/ 801023/${refPrefix}/${String(roll).padStart(3, '0')}`,
-                        name: row['Student Name'] || row['Name'] || row['নাম'] || 'STUDENT NAME',
+                        ser: ser,
+                        studentID: studentID,
+                        ref: autoRef,
+                        name: (row['Student Name'] || row['Name'] || row['নাম'] || 'STUDENT NAME').toString().trim(),
                         gender: (row['Gender'] || row['লিঙ্গ'] || 'Male').toString().toLowerCase().startsWith('f') ? 'Female' : 'Male',
-                        father: row['Father Name'] || row['Father'] || row['পিতার নাম'] || '',
-                        mother: row['Mother Name'] || row['Mother'] || row['মাতার নাম'] || '',
+                        father: (row["Father's Name"] || row['Father Name'] || row['Father'] || row['পিতার নাম'] || '').toString().trim(),
+                        mother: (row["Mother's Name"] || row['Mother Name'] || row['Mother'] || row['মাতার নাম'] || '').toString().trim(),
                         roll: roll,
-                        reg: row['Registration'] || row['Reg'] || row['রেজিস্ট্রেশন'] || '',
+                        reg: row['Registration No'] || row['Registration'] || row['Reg'] || row['রেজিস্ট্রেশন'] || '',
                         session: row['Session'] || row['সেশন'] || '2024–2025',
-                        year: row['Passing Year'] || row['Year'] || row['সাল'] || '2026',
-                        group: row['Group'] || row['Class'] || row['বিভাগ'] || row['শ্রেণি'] || 'Science',
+                        year: rawYear,
+                        group: (row['Group'] || row['Class'] || row['বিভাগ'] || row['শ্রেণি'] || 'Science').toString().trim(),
+                        dob: row['Date of Birth'] || row['DOB'] || row['জন্ম তারিখ'] || '',
                         board: row['Board'] || row['বোর্ড'] || 'Dinajpur',
-                        gpa: row['GPA'] || row['জিপিএ'] || '5.00',
-                        pubDate: row['Date'] || row['Publication Date'] || row['তারিখ'] || '10 August 2026'
+                        gpa: gpaVal,
+                        pubDate: row['Publication Date'] || row['Date'] || row['তারিখ'] || '10 August 2026'
                     };
                 });
 
-                studentDatabase = newStudents;
+                // ডাটাবেজে একের পর এক ফাইল মার্জ (ছেলে ও মেয়ে উভয় ফাইল সাপোর্ট)
+                newStudents.forEach(st => {
+                    const existingIdx = studentDatabase.findIndex(s => s.roll === st.roll && s.template === st.template);
+                    if (existingIdx !== -1) {
+                        studentDatabase[existingIdx] = st;
+                    } else {
+                        studentDatabase.push(st);
+                    }
+                });
+
                 localStorage.setItem('cpscl_students_data', JSON.stringify(studentDatabase));
                 renderStudentTable();
                 alert(`সফলভাবে ${newStudents.length} জন শিক্ষার্থীর তথ্য ইমপোর্ট হয়েছে!`);
+                event.target.value = ''; // রিসেট
             } catch (err) {
                 alert("এক্সেল ফাইল রিড করতে সমস্যা হয়েছে: " + err.message);
             }
@@ -667,7 +698,7 @@
         tbody.innerHTML = '';
 
         if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #94a3b8; padding: 25px;">কোনো শিক্ষার্থীর তথ্য পাওয়া যায়নি।</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #94a3b8; padding: 25px;">কোনো শিক্ষার্থীর তথ্য পাওয়া যায়নি। এক্সেল ফাইল আপলোড করুন।</td></tr>`;
             return;
         }
 
@@ -678,12 +709,17 @@
             else if (s.template === 'tc_certificate') badgeClass = 'badge-tc';
             else if (s.template === 'character_cert') badgeClass = 'badge-char';
 
+            const genderBadge = s.gender === 'Female' 
+                ? '<span style="color:#ec4899; font-weight:700;"><i class="fa-solid fa-venus"></i> Female</span>' 
+                : '<span style="color:#0284c7; font-weight:700;"><i class="fa-solid fa-mars"></i> Male</span>';
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>${s.roll}</strong></td>
                 <td>${s.reg || '-'}</td>
                 <td><strong style="color:#1e293b;">${s.name}</strong></td>
                 <td>${s.father || '-'}</td>
+                <td>${genderBadge}</td>
                 <td><span class="cpscl-badge ${badgeClass}">${TEMPLATE_NAMES[s.template] || 'SSC Testimonial'}</span></td>
                 <td><span style="background:#eef2ff; color:#4f46e5; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700;">${s.group}</span></td>
                 <td><strong style="color:#16a34a;">${s.gpa || '-'}</strong></td>
@@ -725,19 +761,19 @@
         const currentTpl = (currentFilterTemplate === 'all') ? 'ssc_testimonial' : currentFilterTemplate;
         const sampleData = [
             {
-                "Template": currentTpl,
-                "Reference": `CPSCL/ 801023/${currentTpl === 'hsc_testimonial' ? 'HSC' : 'SSC'}-26/001`,
-                "Roll": 229083,
-                "Registration": "2317722960",
-                "Student Name": "K M ANISUJJAMAN MASUM",
-                "Gender": "Male",
-                "Father Name": "MD ASHRAFUL HABIB",
-                "Mother Name": "MST AKLIMA KHATUN",
+                "Ser": 1,
+                "Registration No": "2317720914",
+                "Board Roll": 228958,
+                "Student ID": 900224,
+                "Student Name": "MOST. MEHERIN AKTHER",
+                "Father's Name": "MD. MASUD RANA",
+                "Result": 5.00,
+                "Gender": "Female",
+                "Mother's Name": "MOST. MOMENA BEGUM",
+                "Group": "SCIENCE",
+                "Date of Birth": "30/04/2010",
                 "Session": "2024–2025",
                 "Passing Year": 2026,
-                "Group": "Science",
-                "Board": "Dinajpur",
-                "GPA": 5.00,
                 "Publication Date": "10 August 2026"
             }
         ];
