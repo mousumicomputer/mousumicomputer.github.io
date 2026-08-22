@@ -1,7 +1,9 @@
 /**
- * CPSCL Module - Accurate MS Word Page Setup Matching
- * Orientation: A4 Landscape
- * Margins: Top: 2.1", Left: 2.4", Right: 1.8", Bottom: 1.4"
+ * CPSCL Module - Exact MS Word Typography & Font Size Matching
+ * Reference: Calibri 13pt
+ * Body Text: Monotype Corsiva 15pt
+ * Highlighted Data: Cambria Bold Italic 15pt
+ * Publication Date: Calibri 9pt
  */
 
 (function () {
@@ -60,7 +62,7 @@
         }
 
         /* ==========================================================
-           ২. CPSCL ভিউ প্যানেল (A4 Landscape Page Setup)
+           ২. CPSCL ভিউ প্যানেল (Exact MS Word Typography Matching)
            ========================================================== */
         const cpsclViewPanel = document.createElement('div');
         cpsclViewPanel.className = 'view-panel';
@@ -153,9 +155,7 @@
                 .cpscl-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 10px 10px 0; }
 
                 /* ==========================================================
-                   A4 LANDSCAPE EXACT MS WORD PAGE SETUP
-                   Paper: 297mm x 210mm (11.69" x 8.27")
-                   Margins: Top: 2.1", Right: 1.8", Bottom: 1.4", Left: 2.4"
+                   A4 LANDSCAPE EXACT TYPOGRAPHY & MARGINS
                    ========================================================== */
                 .cpscl-preview-wrapper {
                     background: #525659;
@@ -188,43 +188,51 @@
                     padding-bottom: 1.4in;
                     padding-left: 2.4in;
                     box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-                    color: #000;
-                    font-family: 'Monotype Corsiva', 'Times New Roman', cursive, serif;
+                    color: #000000;
                     box-sizing: border-box;
                     position: relative;
                 }
 
+                /* Image 1: Reference No -> Calibri 13pt */
                 .cert-ref {
-                    font-family: Arial, Helvetica, sans-serif;
-                    font-size: 13px;
-                    font-weight: bold;
-                    margin-bottom: 22px;
-                }
-                .cert-body {
-                    font-size: 19px;
-                    line-height: 1.9;
-                    text-align: justify;
-                    font-style: italic;
-                }
-                .cert-bold {
-                    font-family: Arial, Helvetica, sans-serif;
-                    font-weight: 800;
-                    font-style: normal;
-                    text-transform: uppercase;
-                }
-                .cert-meta-bold {
-                    font-family: Arial, Helvetica, sans-serif;
-                    font-weight: 800;
-                    font-style: normal;
-                }
-                .cert-footer-date {
-                    font-family: Arial, Helvetica, sans-serif;
-                    font-size: 11px;
-                    font-weight: bold;
-                    margin-top: 35px;
+                    font-family: 'Calibri', Arial, sans-serif !important;
+                    font-size: 13pt !important;
+                    font-weight: normal !important;
+                    font-style: normal !important;
+                    margin-bottom: 24px;
+                    color: #000000;
                 }
 
-                /* PRINT RULES MATCHING EXACT A4 LANDSCAPE SETUP */
+                /* Image 2: Body Narrative Text -> Monotype Corsiva 15pt Italic */
+                .cert-body {
+                    font-family: 'Monotype Corsiva', 'Apple Chancery', 'URW Chancery L', cursive, serif !important;
+                    font-size: 15pt !important;
+                    line-height: 1.85;
+                    text-align: justify;
+                    font-style: italic;
+                    color: #000000;
+                }
+
+                /* Image 3: Bold Data Values -> Cambria 15pt Bold Italic */
+                .cert-bold, .cert-meta-bold {
+                    font-family: 'Cambria', 'Georgia', serif !important;
+                    font-size: 15pt !important;
+                    font-weight: bold !important;
+                    font-style: italic !important;
+                    color: #000000;
+                }
+
+                /* Image 4: Result Publication Date -> Calibri 9pt */
+                .cert-footer-date {
+                    font-family: 'Calibri', Arial, sans-serif !important;
+                    font-size: 9pt !important;
+                    font-weight: normal !important;
+                    font-style: normal !important;
+                    margin-top: 36px;
+                    color: #000000;
+                }
+
+                /* PRINT RULES */
                 @page {
                     size: A4 landscape;
                     margin: 0;
@@ -411,7 +419,7 @@
                 </div>
             </div>
 
-            <!-- ================= ৩. প্রিন্ট ও প্রিভিউ সেকশন (ল্যান্ডস্কেপ A4) ================= -->
+            <!-- ================= ৩. প্রিন্ট ও প্রিভিউ সেকশন ================= -->
             <div id="cpscl-preview-view" class="cpscl-sub-view" style="display:none;">
                 <div class="cpscl-preview-wrapper">
                     <div class="cpscl-toolbar">
@@ -439,7 +447,7 @@
                         <div class="cert-ref" id="prevRef">CPSCL/ 801023/SSC-26/001</div>
                         
                         <div class="cert-body" id="certificateBodyContainer">
-                            This is to certify that <span class="cert-bold" id="prevName">K M ANISUJJAMAN MASUM</span>, <span id="prevRelation">son of</span> <span class="cert-bold" id="prevFather">MD ASHRAFUL HABIB</span> and <span class="cert-bold" id="prevMother">MST AKLIMA KHATUN</span> bearing Roll No. <span class="cert-meta-bold" id="prevRoll">229083</span>, Registration No. <span class="cert-meta-bold" id="prevReg">2317722960</span>, Session <span class="cert-meta-bold" id="prevSession">2024-2025</span> passed <span id="prevExamName">Secondary School Certificate Examination</span> in <span class="cert-meta-bold" id="prevYear">2026</span> from <span class="cert-meta-bold" id="prevGroup">Science</span> group under the Board of Intermediate and Secondary Education, <span id="prevBoard">Dinajpur</span> as a regular student of this institution and acquired GPA- <span class="cert-meta-bold" id="prevGpa">5.00</span>.
+                            This is to certify that <span class="cert-bold" id="prevName">K M ANISUJJAMAN MASUM</span>, <span id="prevRelation">son of</span> <span class="cert-bold" id="prevFather">MD ASHRAFUL HABIB</span> and <span class="cert-bold" id="prevMother">MST AKLIMA KHATUN</span> bearing Roll No. <span class="cert-meta-bold" id="prevRoll">229083</span>, Registration No. <span class="cert-meta-bold" id="prevReg">2317722960</span>, Session <span class="cert-meta-bold" id="prevSession">2024–2025</span> passed <span id="prevExamName">Secondary School Certificate Examination</span> in <span class="cert-meta-bold" id="prevYear">2026</span> from <span class="cert-meta-bold" id="prevGroup">Science</span> group under the Board of Intermediate and Secondary Education, <span id="prevBoard">Dinajpur</span> as a regular student of this institution and acquired GPA- <span class="cert-meta-bold" id="prevGpa">5.00</span>.
                             <br><br>
                             <span id="prevPronoun">He</span> bears a good moral character. To the best of my concern, <span id="prevPronounLower">he</span> did not take part in any activity subversive of the state or against discipline during <span id="prevPossessive">his</span> stay at this institution.
                             <br><br>
