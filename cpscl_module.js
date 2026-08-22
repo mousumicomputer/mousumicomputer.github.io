@@ -1,9 +1,6 @@
 /**
- * CPSCL Module - Exact MS Word Typography & Font Size Matching
- * Reference: Calibri 13pt
- * Body Text: Monotype Corsiva 15pt
- * Highlighted Data: Cambria Bold Italic 15pt
- * Publication Date: Calibri 9pt
+ * CPSCL Module - Flawless Typography & Anti-Aliased Rendering Engine
+ * Fixes Faux-Italic Glyph Distortion on Monotype Corsiva
  */
 
 (function () {
@@ -62,7 +59,7 @@
         }
 
         /* ==========================================================
-           ২. CPSCL ভিউ প্যানেল (Exact MS Word Typography Matching)
+           ২. CPSCL ভিউ প্যানেল (Flawless Font Rendering)
            ========================================================== */
         const cpsclViewPanel = document.createElement('div');
         cpsclViewPanel.className = 'view-panel';
@@ -155,7 +152,7 @@
                 .cpscl-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 10px 10px 0; }
 
                 /* ==========================================================
-                   A4 LANDSCAPE EXACT TYPOGRAPHY & MARGINS
+                   A4 LANDSCAPE EXACT WORD RENDERING
                    ========================================================== */
                 .cpscl-preview-wrapper {
                     background: #525659;
@@ -182,7 +179,6 @@
                     width: 297mm;
                     min-height: 210mm;
                     height: 210mm;
-                    /* Word Margins: Top: 2.1", Right: 1.8", Bottom: 1.4", Left: 2.4" */
                     padding-top: 2.1in;
                     padding-right: 1.8in;
                     padding-bottom: 1.4in;
@@ -191,45 +187,52 @@
                     color: #000000;
                     box-sizing: border-box;
                     position: relative;
+                    -webkit-font-smoothing: antialiased;
+                    -moz-osx-font-smoothing: grayscale;
+                    text-rendering: optimizeLegibility;
                 }
 
-                /* Image 1: Reference No -> Calibri 13pt */
+                /* 1. Reference -> Calibri 13pt Regular */
                 .cert-ref {
-                    font-family: 'Calibri', Arial, sans-serif !important;
+                    font-family: 'Calibri', 'Segoe UI', Arial, sans-serif !important;
                     font-size: 13pt !important;
-                    font-weight: normal !important;
+                    font-weight: 400 !important;
                     font-style: normal !important;
-                    margin-bottom: 24px;
+                    margin-bottom: 22px;
                     color: #000000;
+                    line-height: 1.2;
                 }
 
-                /* Image 2: Body Narrative Text -> Monotype Corsiva 15pt Italic */
+                /* 2. Body Text -> Monotype Corsiva 15pt (font-style: normal prevents double-slant distortion) */
                 .cert-body {
-                    font-family: 'Monotype Corsiva', 'Apple Chancery', 'URW Chancery L', cursive, serif !important;
+                    font-family: 'Monotype Corsiva', 'Corsiva Hebrew', 'Apple Chancery', cursive, serif !important;
                     font-size: 15pt !important;
                     line-height: 1.85;
                     text-align: justify;
-                    font-style: italic;
+                    font-style: normal !important; /* Fixes broken letter glitch */
                     color: #000000;
+                    word-spacing: 0.5px;
                 }
 
-                /* Image 3: Bold Data Values -> Cambria 15pt Bold Italic */
+                /* 3. Variables / Dynamic Bold Data -> Cambria 15pt Bold Italic */
                 .cert-bold, .cert-meta-bold {
                     font-family: 'Cambria', 'Georgia', serif !important;
                     font-size: 15pt !important;
-                    font-weight: bold !important;
+                    font-weight: 700 !important;
                     font-style: italic !important;
                     color: #000000;
+                    letter-spacing: 0.2px;
                 }
 
-                /* Image 4: Result Publication Date -> Calibri 9pt */
+                /* 4. Publication Date -> Calibri 9pt Regular */
                 .cert-footer-date {
-                    font-family: 'Calibri', Arial, sans-serif !important;
+                    font-family: 'Calibri', 'Segoe UI', Arial, sans-serif !important;
                     font-size: 9pt !important;
-                    font-weight: normal !important;
+                    font-weight: 400 !important;
                     font-style: normal !important;
-                    margin-top: 36px;
+                    margin-top: 35px;
                     color: #000000;
+                    line-height: 1.2;
                 }
 
                 /* PRINT RULES */
@@ -383,7 +386,7 @@
                             </div>
                             <div class="cpscl-input-group">
                                 <label>Session <span>*</span></label>
-                                <input type="text" id="inpSession" class="cpscl-control" value="2024-2025" required>
+                                <input type="text" id="inpSession" class="cpscl-control" value="2024–2025" required>
                             </div>
                             <div class="cpscl-input-group">
                                 <label>Passing Year <span>*</span></label>
@@ -442,7 +445,7 @@
                         </button>
                     </div>
 
-                    <!-- A4 LANDSCAPE SHEET -->
+                    <!-- A4 LANDSCAPE SHEET (Word Document Accuracy) -->
                     <div class="cpscl-a4-sheet" id="cpsclPrintArea">
                         <div class="cert-ref" id="prevRef">CPSCL/ 801023/SSC-26/001</div>
                         
@@ -494,7 +497,7 @@
                         mother: row['Mother Name'] || row['Mother'] || row['মাতার নাম'] || '',
                         roll: roll,
                         reg: row['Registration'] || row['Reg'] || row['রেজিস্ট্রেশন'] || '',
-                        session: row['Session'] || row['সেশন'] || '2024-2025',
+                        session: row['Session'] || row['সেশন'] || '2024–2025',
                         year: row['Passing Year'] || row['Year'] || row['সাল'] || '2026',
                         group: row['Group'] || row['বিভাগ'] || 'Science',
                         board: row['Board'] || row['বোর্ড'] || 'Dinajpur',
@@ -584,7 +587,7 @@
                 "Gender": "Male",
                 "Father Name": "MD ASHRAFUL HABIB",
                 "Mother Name": "MST AKLIMA KHATUN",
-                "Session": "2024-2025",
+                "Session": "2024–2025",
                 "Passing Year": 2026,
                 "Group": "Science",
                 "Board": "Dinajpur",
