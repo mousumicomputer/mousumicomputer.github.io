@@ -1,12 +1,15 @@
 /**
  * CPSCL Module - Multi-Template Architecture & Calibrated Print
- * Supports Custom Excel Layout & Dynamic Smart Reference Generation
+ * Realtime Firebase Cloud Database Sync (Multi-Device Support)
  * Exact MS Word Match: Multiple 1.8 Line-Height & 10pt After-Spacing
  */
 
 (function () {
     let studentDatabase = JSON.parse(localStorage.getItem('cpscl_students_data') || '[]');
     let currentFilterTemplate = 'all';
+    let dbInstance = null;
+    let dbRefFunc = null;
+    let dbSetFunc = null;
 
     const TEMPLATE_NAMES = {
         'ssc_testimonial': 'SSC Testimonial',
@@ -15,6 +18,63 @@
         'character_cert': 'Character Certificate'
     };
 
+    /* ==========================================================
+       ১. ফায়ারবেস রিয়েল-টাইম ডাটাবেজ সংযোগ (Self-Contained)
+       ========================================================== */
+    async function initFirebaseSync() {
+        try {
+            const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+            const { getDatabase, ref, set, onValue } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyA1PhRiTkICNCd8sA4he3ZxKjHtIzM0d5E",
+                authDomain: "mousumi-computer.firebaseapp.com",
+                databaseURL: "https://mousumi-computer-default-rtdb.firebaseio.com",
+                projectId: "mousumi-computer",
+                storageBucket: "mousumi-computer.firebasestorage.app",
+                messagingSenderId: "104820462623",
+                appId: "1:104820462623:web:e3abae9533cc841463712a",
+                measurementId: "G-EPYJ70W97Z"
+            };
+
+            const existingApps = getApps();
+            const app = existingApps.length > 0 ? existingApps[0] : initializeApp(firebaseConfig, "CPSCL_CLOUD_APP");
+            
+            dbInstance = getDatabase(app);
+            dbRefFunc = ref;
+            dbSetFunc = set;
+
+            // রিয়েলটাইম সিঙ্ক লিসেনার (অন্য যেকোনো পিসিতে ডাটা পরিবর্তন হলে অটোমেটিক আপডেট হবে)
+            const studentsRef = ref(dbInstance, 'cpscl/students');
+            onValue(studentsRef, (snapshot) => {
+                const cloudData = snapshot.val();
+                if (cloudData) {
+                    studentDatabase = Array.isArray(cloudData) ? cloudData : Object.values(cloudData);
+                    localStorage.setItem('cpscl_students_data', JSON.stringify(studentDatabase));
+                    renderStudentTable();
+                }
+            });
+
+        } catch (err) {
+            console.warn("Firebase Init Fallback to LocalStorage:", err);
+        }
+    }
+
+    async function syncToFirebase(newData) {
+        localStorage.setItem('cpscl_students_data', JSON.stringify(newData));
+        if (dbInstance && dbSetFunc && dbRefFunc) {
+            try {
+                const studentsRef = dbRefFunc(dbInstance, 'cpscl/students');
+                await dbSetFunc(studentsRef, newData);
+            } catch (error) {
+                console.error("Firebase write error:", error);
+            }
+        }
+    }
+
+    /* ==========================================================
+       ২. মডিউল UI ইনিশিয়ালাইজেশন
+       ========================================================== */
     function initCPSCLModule() {
         const menuList = document.querySelector('.sidebar .menu-list');
         const mainWrapper = document.querySelector('.main-wrapper');
@@ -26,9 +86,7 @@
 
         if (document.getElementById('menu-cpscl-parent')) return;
 
-        /* ==========================================================
-           ১. সাইডবার মেনু
-           ========================================================== */
+        // সাইডবার মেনু
         const cpsclMenuItem = document.createElement('li');
         cpsclMenuItem.className = 'menu-item';
         cpsclMenuItem.id = 'menu-cpscl-parent';
@@ -67,9 +125,7 @@
             menuList.appendChild(cpsclMenuItem);
         }
 
-        /* ==========================================================
-           ২. CPSCL ভিউ প্যানেল (Exact Calibrated Line Height & Spacing)
-           ========================================================== */
+        // ভিউ প্যানেল তৈরি
         const cpsclViewPanel = document.createElement('div');
         cpsclViewPanel.className = 'view-panel';
         cpsclViewPanel.id = 'cpscl-view';
@@ -375,7 +431,7 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                         <div>
                             <h2 style="font-size: 1.3rem; color: #1e293b; font-weight: 800;"><i class="fa-solid fa-file-excel" style="color: #10b981;"></i> Student Excel Import & Database</h2>
-                            <p style="font-size: 0.85rem; color: #64748b;">টেমপ্লেট অনুযায়ী এক্সেল ফাইল আপলোড করুন অথবা স্যাম্পল এক্সেল ডাউনলোড করুন</p>
+                            <p style="font-size: 0.85rem; color: #64748b;">টেমপ্লেট অনুযায়ী এক্সেল ফাইল আপলোড করুন (ক্লাউড ফায়ারবেসে স্বয়ংক্রিয় সংরক্ষণ হবে)</p>
                         </div>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                             <button class="btn-submit" onclick="downloadSampleExcel()" style="width: auto; padding: 10px 16px; background: #0284c7; border-radius: 8px; font-size: 0.88rem;">
@@ -583,6 +639,9 @@
         renderStudentTable();
     }
 
+    /* ==========================================================
+       ৩. ফিল্টারিং ও এক্সেল হ্যান্ডলার
+       ========================================================== */
     window.filterByTemplate = function (tpl, btnElement) {
         currentFilterTemplate = tpl;
         document.querySelectorAll('.cpscl-tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -594,8 +653,10 @@
         const file = event.target.files[0];
         if (!file) return;
 
+        if (typeof showLoader === 'function') showLoader("এক্সেল ডাটা ফায়ারবেসে সিঙ্ক হচ্ছে...");
+
         const reader = new FileReader();
-        reader.onload = function (e) {
+        reader.onload = async function (e) {
             try {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
@@ -604,17 +665,16 @@
                 const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
                 if (jsonData.length === 0) {
+                    if (typeof hideLoader === 'function') hideLoader();
                     alert("এক্সেল ফাইলে কোনো ডাটা পাওয়া যায়নি!");
                     return;
                 }
 
                 const newStudents = jsonData.map((row, index) => {
-                    // ১. সিরিয়াল ও রোল
                     const ser = row['Ser'] || row['SL'] || row['Sl'] || row['সিরিয়াল'] || (index + 1);
                     const roll = row['Board Roll'] || row['Roll'] || row['রোল'] || row['ID'] || ser;
                     const studentID = row['Student ID'] || row['ID'] || row['আইডি'] || '801023';
 
-                    // ২. টেমপ্লেট নির্ধারণ
                     let tpl = (row['Template'] || row['Template Type'] || row['টেমপ্লেট'] || '').toString().toLowerCase();
                     if (tpl.includes('hsc')) tpl = 'hsc_testimonial';
                     else if (tpl.includes('tc') || tpl.includes('transfer')) tpl = 'tc_certificate';
@@ -622,16 +682,13 @@
                     else if (currentFilterTemplate !== 'all') tpl = currentFilterTemplate;
                     else tpl = 'ssc_testimonial';
 
-                    // ৩. সাল ও এক্সাম সাফিক্স (যেমন: SSC-26)
                     const rawYear = String(row['Passing Year'] || row['Year'] || row['সাল'] || '2026');
-                    const yearSuffix = rawYear.slice(-2); // 2026 -> 26
+                    const yearSuffix = rawYear.slice(-2);
                     const examCode = tpl === 'hsc_testimonial' ? 'HSC' : (tpl === 'tc_certificate' ? 'TC' : 'SSC');
-                    const serPadded = String(ser).padStart(3, '0'); // 1 -> 001
+                    const serPadded = String(ser).padStart(3, '0');
 
-                    // ৪. স্বয়ংক্রিয় রেফারেন্স/স্মারক নম্বর তৈরি
                     const autoRef = row['Reference'] || row['Ref'] || row['রেফারেন্স'] || `CPSCL/ ${studentID}/${examCode}-${yearSuffix}/${serPadded}`;
 
-                    // ৫. রেজাল্ট/জিপিএ ফরম্যাটিং (যেমন: 5 কে 5.00)
                     let gpaVal = (row['Result'] !== undefined ? row['Result'] : (row['GPA'] || row['জিপিএ'] || '5.00')).toString();
                     if (!isNaN(parseFloat(gpaVal)) && !gpaVal.includes('.')) {
                         gpaVal = parseFloat(gpaVal).toFixed(2);
@@ -658,7 +715,6 @@
                     };
                 });
 
-                // ডাটাবেজে একের পর এক ফাইল মার্জ (ছেলে ও মেয়ে উভয় ফাইল সাপোর্ট)
                 newStudents.forEach(st => {
                     const existingIdx = studentDatabase.findIndex(s => s.roll === st.roll && s.template === st.template);
                     if (existingIdx !== -1) {
@@ -668,11 +724,18 @@
                     }
                 });
 
-                localStorage.setItem('cpscl_students_data', JSON.stringify(studentDatabase));
+                await syncToFirebase(studentDatabase);
                 renderStudentTable();
-                alert(`সফলভাবে ${newStudents.length} জন শিক্ষার্থীর তথ্য ইমপোর্ট হয়েছে!`);
-                event.target.value = ''; // রিসেট
+                
+                if (typeof hideLoader === 'function') hideLoader();
+                if (typeof showToast === 'function') {
+                    showToast(`সফলভাবে ${newStudents.length} জন শিক্ষার্থীর তথ্য ক্লাউডে সিঙ্ক হয়েছে!`, "success");
+                } else {
+                    alert(`সফলভাবে ${newStudents.length} জন শিক্ষার্থীর তথ্য ইমপোর্ট হয়েছে!`);
+                }
+                event.target.value = '';
             } catch (err) {
+                if (typeof hideLoader === 'function') hideLoader();
                 alert("এক্সেল ফাইল রিড করতে সমস্যা হয়েছে: " + err.message);
             }
         };
@@ -784,15 +847,16 @@
         XLSX.writeFile(wb, `CPSCL_${currentTpl}_Sample.xlsx`);
     };
 
-    window.clearAllStudents = function () {
-        if (confirm("আপনি কি নিশ্চিত যে তালিকা মুছে ফেলতে চান?")) {
+    window.clearAllStudents = async function () {
+        if (confirm("আপনি কি নিশ্চিত যে তালিকা মুছে ফেলতে চান? এটি ক্লাউড ডাটাবেজ থেকেও মুছে যাবে।")) {
             if (currentFilterTemplate === 'all') {
                 studentDatabase = [];
             } else {
                 studentDatabase = studentDatabase.filter(s => s.template !== currentFilterTemplate);
             }
-            localStorage.setItem('cpscl_students_data', JSON.stringify(studentDatabase));
+            await syncToFirebase(studentDatabase);
             renderStudentTable();
+            if (typeof showToast === 'function') showToast("ডাটাবেজ ক্লিয়ার হয়েছে!", "info");
         }
     };
 
@@ -879,7 +943,9 @@
         document.getElementById('prevObjective').innerText = isMale ? "him" : "her";
     }
 
-    window.saveAndPreviewFromForm = function () {
+    window.saveAndPreviewFromForm = async function () {
+        if (typeof showLoader === 'function') showLoader("সংরক্ষণ করা হচ্ছে...");
+
         const selectedTpl = document.getElementById('entryTemplateSelect').value;
         const studentObj = {
             template: selectedTpl,
@@ -905,13 +971,20 @@
             studentDatabase.unshift(studentObj);
         }
 
-        localStorage.setItem('cpscl_students_data', JSON.stringify(studentDatabase));
+        await syncToFirebase(studentDatabase);
+        if (typeof hideLoader === 'function') hideLoader();
+        if (typeof showToast === 'function') showToast("শিক্ষার্থীর তথ্য ফায়ারবেসে সংরক্ষিত হয়েছে!", "success");
+
         switchCPSCLSubSection('preview');
     };
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initCPSCLModule);
+        document.addEventListener('DOMContentLoaded', () => {
+            initCPSCLModule();
+            initFirebaseSync();
+        });
     } else {
         initCPSCLModule();
+        initFirebaseSync();
     }
 })();
