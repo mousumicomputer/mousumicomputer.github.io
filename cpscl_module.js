@@ -1,6 +1,6 @@
 /**
  * CPSCL Module - 100% Calibrated Baseline-to-Baseline Overlay
- * Corrected Line-Height to 1.46 to match MS Word 1.8 Multiple precisely
+ * Exact MS Word Match: Multiple 1.8 Line-Height & 10pt After-Spacing
  */
 
 (function () {
@@ -59,7 +59,7 @@
         }
 
         /* ==========================================================
-           ২. CPSCL ভিউ প্যানেল (Exact Calibrated Line Height)
+           ২. CPSCL ভিউ প্যানেল (Exact Calibrated Line Height & Spacing)
            ========================================================== */
         const cpsclViewPanel = document.createElement('div');
         cpsclViewPanel.className = 'view-panel';
@@ -202,21 +202,21 @@
                     line-height: 1.15 !important;
                 }
                 .cert-ref {
-                    margin-bottom: 18pt !important; /* Calibrated Gap */
+                    margin-bottom: 18pt !important;
                 }
 
-                /* 2. Certificate Body -> Calibrated Line Height 1.46 (Matches Word 1.8 Multiple precisely) */
+                /* 2. Certificate Body -> MS Word Multiple 1.8 Line Spacing & 10pt Spacing After */
                 .cert-body-block {
                     width: 100%;
                     box-sizing: border-box;
                 }
 
                 .cert-paragraph {
-                    text-indent: 0.5in !important;         /* 0.5" Tab */
-                    text-align: justify !important;        /* Justified */
-                    line-height: 1.46 !important;           /* CALIBRATED LINE HEIGHT */
-                    margin-top: 0pt !important;            /* Spacing Before */
-                    margin-bottom: 6pt !important;         /* CALIBRATED SPACING AFTER */
+                    text-indent: 0.5in !important;         /* 0.5" Tab / Indentation */
+                    text-align: justify !important;        /* MS Word Justified Alignment */
+                    line-height: 1.8 !important;           /* MS Word Multiple 1.8 Line Spacing */
+                    margin-top: 0pt !important;            /* MS Word Spacing Before 0pt */
+                    margin-bottom: 10pt !important;        /* MS Word Spacing After 10pt */
                     word-break: normal !important;
                 }
 
