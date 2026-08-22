@@ -1,6 +1,6 @@
 /**
- * CPSCL Module - Flawless Typography & Anti-Aliased Rendering Engine
- * Fixes Faux-Italic Glyph Distortion on Monotype Corsiva
+ * CPSCL Module - 100% Matching Typography Override
+ * Fixes Span Font Inheritance Conflict from Main HTML
  */
 
 (function () {
@@ -59,7 +59,7 @@
         }
 
         /* ==========================================================
-           ২. CPSCL ভিউ প্যানেল (Flawless Font Rendering)
+           ২. CPSCL ভিউ প্যানেল (Strict CSS Override For Fonts)
            ========================================================== */
         const cpsclViewPanel = document.createElement('div');
         cpsclViewPanel.className = 'view-panel';
@@ -152,7 +152,7 @@
                 .cpscl-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 10px 10px 0; }
 
                 /* ==========================================================
-                   A4 LANDSCAPE EXACT WORD RENDERING
+                   A4 LANDSCAPE EXACT WORD TYPOGRAPHY
                    ========================================================== */
                 .cpscl-preview-wrapper {
                     background: #525659;
@@ -187,52 +187,78 @@
                     color: #000000;
                     box-sizing: border-box;
                     position: relative;
-                    -webkit-font-smoothing: antialiased;
-                    -moz-osx-font-smoothing: grayscale;
-                    text-rendering: optimizeLegibility;
                 }
 
-                /* 1. Reference -> Calibri 13pt Regular */
-                .cert-ref {
+                /* 1. Reference -> Calibri 13pt */
+                .cert-ref, 
+                .cert-ref * {
                     font-family: 'Calibri', 'Segoe UI', Arial, sans-serif !important;
                     font-size: 13pt !important;
                     font-weight: 400 !important;
                     font-style: normal !important;
-                    margin-bottom: 22px;
-                    color: #000000;
+                    color: #000000 !important;
                     line-height: 1.2;
                 }
+                .cert-ref {
+                    margin-bottom: 22px;
+                }
 
-                /* 2. Body Text -> Monotype Corsiva 15pt (font-style: normal prevents double-slant distortion) */
-                .cert-body {
+                /* 2. Full Body Narrative Text and All Inner Spans -> Monotype Corsiva 15pt */
+                .cert-body,
+                .cert-body *,
+                .cert-body span,
+                #prevRelation,
+                #prevExamName,
+                #prevBoard,
+                #prevPronoun,
+                #prevPronounLower,
+                #prevPossessive,
+                #prevObjective {
                     font-family: 'Monotype Corsiva', 'Corsiva Hebrew', 'Apple Chancery', cursive, serif !important;
                     font-size: 15pt !important;
-                    line-height: 1.85;
+                    line-height: 1.85 !important;
+                    font-weight: 400 !important;
+                    font-style: normal !important;
+                    color: #000000 !important;
+                }
+                .cert-body {
                     text-align: justify;
-                    font-style: normal !important; /* Fixes broken letter glitch */
-                    color: #000000;
                     word-spacing: 0.5px;
                 }
 
                 /* 3. Variables / Dynamic Bold Data -> Cambria 15pt Bold Italic */
-                .cert-bold, .cert-meta-bold {
+                .cert-body span.cert-bold,
+                .cert-body span.cert-meta-bold,
+                #prevName,
+                #prevFather,
+                #prevMother,
+                #prevRoll,
+                #prevReg,
+                #prevSession,
+                #prevYear,
+                #prevGroup,
+                #prevGpa {
                     font-family: 'Cambria', 'Georgia', serif !important;
                     font-size: 15pt !important;
                     font-weight: 700 !important;
                     font-style: italic !important;
-                    color: #000000;
+                    color: #000000 !important;
                     letter-spacing: 0.2px;
                 }
 
-                /* 4. Publication Date -> Calibri 9pt Regular */
-                .cert-footer-date {
+                /* 4. Publication Date -> Calibri 9pt */
+                .cert-footer-date,
+                .cert-footer-date *,
+                .cert-footer-date span {
                     font-family: 'Calibri', 'Segoe UI', Arial, sans-serif !important;
                     font-size: 9pt !important;
                     font-weight: 400 !important;
                     font-style: normal !important;
-                    margin-top: 35px;
-                    color: #000000;
+                    color: #000000 !important;
                     line-height: 1.2;
+                }
+                .cert-footer-date {
+                    margin-top: 35px;
                 }
 
                 /* PRINT RULES */
@@ -445,7 +471,7 @@
                         </button>
                     </div>
 
-                    <!-- A4 LANDSCAPE SHEET (Word Document Accuracy) -->
+                    <!-- A4 LANDSCAPE SHEET (100% Exact Matching) -->
                     <div class="cpscl-a4-sheet" id="cpsclPrintArea">
                         <div class="cert-ref" id="prevRef">CPSCL/ 801023/SSC-26/001</div>
                         
