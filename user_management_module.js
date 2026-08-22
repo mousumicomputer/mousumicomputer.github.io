@@ -1,6 +1,6 @@
 /**
- * User Management & Security Audit Module - Mousumi Computer ERP
- * Role-Based Access Control (RBAC) & Realtime Firebase Sync
+ * User Management & Hardened Security Module - Mousumi Computer ERP
+ * Bulletproof Strict CSS Lock & Realtime Firebase Sync
  */
 
 (function () {
@@ -16,13 +16,38 @@
     let dbRefFunc = null;
     let dbSetFunc = null;
 
-    /* ==========================================================
-       ১. ফায়ারবেস ডাটাবেজ ইনিশিয়ালাইজেশন
-       ========================================================== */
+    // গ্লোবাল বুলেটপ্রুফ সিএসএস লক ইনজেকশন
+    function injectStrictCSSLock() {
+        if (document.getElementById('strict-security-lock-css')) return;
+        const style = document.createElement('style');
+        style.id = 'strict-security-lock-css';
+        style.innerHTML = `
+            /* CPSCL অপারেটরের জন্য অন্য সব মেনু সম্পূর্ণভাবে বলপ্রয়োগে বন্ধ (Force Kill) */
+            body.role-cpscl-only .sidebar .menu-list > li:not(#menu-cpscl-parent) {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                overflow: hidden !important;
+                pointer-events: none !important;
+            }
+            body.role-cpscl-only #menu-settings-parent,
+            body.role-cpscl-only #menu-user-mgmt,
+            body.role-cpscl-only #dashboard-view,
+            body.role-cpscl-only .fintech-hero-card {
+                display: none !important;
+            }
+            body.role-super-admin .sidebar .menu-list > li {
+                display: block !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
     async function initFirebase() {
+        injectStrictCSSLock();
         try {
             const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-            const { getDatabase, ref, set, onValue, get } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+            const { getDatabase, ref, set, onValue } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
             const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
 
             const firebaseConfig = {
@@ -43,18 +68,14 @@
 
             const auth = getAuth(app);
 
-            // ইউজারের রিয়েল-টাইম ডাটা সিঙ্ক
             const usersRef = ref(dbInstance, 'erp/system_users');
             onValue(usersRef, (snapshot) => {
                 const data = snapshot.val();
                 systemUsers = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
                 renderUsersTable();
-                if (currentAuthUser) {
-                    enforceSecurity(currentAuthUser);
-                }
+                if (currentAuthUser) enforceSecurity(currentAuthUser);
             });
 
-            // অ্যাক্টিভিটি লগ সিঙ্ক
             const logsRef = ref(dbInstance, 'erp/activity_logs');
             onValue(logsRef, (snapshot) => {
                 const data = snapshot.val();
@@ -62,12 +83,13 @@
                 renderActivityLogsTable();
             });
 
-            // অথেনটিকেশন লিসেনার
             onAuthStateChanged(auth, async (user) => {
                 currentAuthUser = user;
                 if (user) {
                     await enforceSecurity(user);
                 } else {
+                    document.body.classList.remove('role-cpscl-only');
+                    document.body.classList.remove('role-super-admin');
                     currentUserProfile = null;
                     restoreAdminBranding();
                 }
@@ -82,15 +104,10 @@
         if (dbInstance && dbSetFunc && dbRefFunc) {
             try {
                 await dbSetFunc(dbRefFunc(dbInstance, 'erp/system_users'), users);
-            } catch (e) {
-                console.error("Save users error:", e);
-            }
+            } catch (e) {}
         }
     }
 
-    /* ==========================================================
-       ২. অ্যাক্টিভিটি লগ ট্র্যাকার
-       ========================================================== */
     window.logUserActivity = async function (actionType, details) {
         const now = new Date();
         const timestamp = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString();
@@ -118,35 +135,32 @@
         }
     };
 
-    /* ==========================================================
-       ৩. পারমিশন এনফোর্সমেন্ট ও ব্র্যান্ডিং সুইচিং
-       ========================================================== */
     async function enforceSecurity(user) {
         const email = (user.email || '').toLowerCase().trim();
 
-        // ১. যদি সুপার এডমিন হয়
+        // ১. সুপার এডমিন
         if (email === SUPER_ADMIN_EMAIL.toLowerCase()) {
+            document.body.classList.remove('role-cpscl-only');
+            document.body.classList.add('role-super-admin');
             currentUserProfile = { name: "Rabbi Hosen", role: "Admin", status: "Active" };
             restoreAdminBranding();
             unlockAllMenusForAdmin();
             return;
         }
 
-        // ২. যদি সাব-ইউজার/অপারেটর হয়
+        // ২. সাব-ইউজার
         const profile = systemUsers.find(u => (u.email || '').toLowerCase().trim() === email);
         if (profile) {
             currentUserProfile = profile;
 
-            // ব্লকড চেক
             if (profile.status === 'Blocked' || profile.status === 'Inactive') {
-                alert("আপনার একাউন্টটি সাময়িকভাবে বন্ধ আছে! এডমিনের সাথে যোগাযোগ করুন।");
+                alert("আপনার একাউন্টটি বন্ধ আছে! যোগাযোগ করুন।");
                 const { getAuth, signOut } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
                 await signOut(getAuth());
                 window.location.reload();
                 return;
             }
 
-            // প্রোফাইল নাম ও পদবী আপডেট
             const dName = document.getElementById('dropdownName');
             const dRole = document.getElementById('dropdownRole');
             if (dName) dName.innerText = profile.name || 'User';
@@ -154,48 +168,25 @@
 
             const allowed = profile.permissions || {};
 
-            // সাইডবারের সব মেনু একযোগে হাইড করা
-            const allMenuItems = document.querySelectorAll('.sidebar .menu-list > li');
-            allMenuItems.forEach(item => {
-                item.style.setProperty('display', 'none', 'important');
-            });
-
-            // শুধু অনুমোদিত মেনুগুলো দেখানো
-            if (allowed.dashboard) showMenuItem('#menu-dash');
-            if (allowed.balance) showMenuItem('#menu-bal-parent');
-            if (allowed.inventory) showMenuItem('#menu-inv-parent');
-            if (allowed.customers) showMenuItem('#menu-cust-parent');
-            if (allowed.closing) showMenuItem('#menu-closing-parent');
-
-            // CPSCL অপারেটর হলে লোগো ও থিম পরিবর্তন এবং সরাসরি CPSCL ভিউ ওপেন
-            if (allowed.cpscl) {
-                allMenuItems.forEach(item => {
-                    if (item.id === 'menu-cpscl-parent' || item.innerText.includes('CPSCL')) {
-                        item.style.setProperty('display', 'block', 'important');
-                    }
-                });
-
+            // যদি শুধু CPSCL অপারেটর হয় -> সম্পূর্ণ সিকিউরিটি লক কার্যকর হবে
+            if (allowed.cpscl && !allowed.dashboard && !allowed.balance && !allowed.customers && !allowed.closing) {
+                document.body.classList.add('role-cpscl-only');
+                document.body.classList.remove('role-super-admin');
                 applyCPSCLBranding();
 
-                // যদি শুধু CPSCL এর অনুমতি থাকে, সরাসরি CPSCL এ নিয়ে যাওয়া
-                if (!allowed.dashboard && !allowed.balance && !allowed.customers && !allowed.closing) {
-                    if (typeof window.switchCPSCLSubSection === 'function') {
-                        window.switchCPSCLSubSection('list');
-                    }
+                // সরাসরি CPSCL ড্যাশবোর্ডে নিয়ে যাওয়া
+                if (typeof window.switchCPSCLSubSection === 'function') {
+                    window.switchCPSCLSubSection('dash');
                 }
+            } else {
+                document.body.classList.remove('role-cpscl-only');
             }
 
-            // ডিলিট ক্ষমতা বন্ধ থাকলে "Clear All" বাটন বন্ধ রাখা
             if (allowed.cpscl && !allowed.canDeleteCPSCL) {
                 const clearBtn = document.querySelector('button[onclick="clearAllStudents()"]');
                 if (clearBtn) clearBtn.style.setProperty('display', 'none', 'important');
             }
         }
-    }
-
-    function showMenuItem(selector) {
-        const el = document.querySelector(selector);
-        if (el) el.style.setProperty('display', 'block', 'important');
     }
 
     function restoreAdminBranding() {
@@ -226,9 +217,6 @@
         if (userMenu) userMenu.style.setProperty('display', 'block', 'important');
     }
 
-    /* ==========================================================
-       ৪. ইউজার ম্যানেজমেন্ট UI ও প্যানেল
-       ========================================================== */
     function initUserManagementUI() {
         const menuList = document.querySelector('.sidebar .menu-list');
         const mainWrapper = document.querySelector('.main-wrapper');
@@ -461,9 +449,6 @@
         mainWrapper.appendChild(userViewPanel);
     }
 
-    /* ==========================================================
-       ৫. হ্যান্ডলার ফাংশনসমূহ
-       ========================================================== */
     window.switchUMTab = function (tab) {
         document.querySelectorAll('.um-tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('um-screen-users').style.display = 'none';
@@ -507,7 +492,7 @@
         tbody.innerHTML = '';
 
         if (systemUsers.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:25px;">কোনো সাব-ইউজার পাওয়া যায়নি। নতুন ইউজার তৈরি করুন।</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:25px;">কোনো সাব-ইউজার পাওয়া যায়নি।</td></tr>`;
             return;
         }
 
@@ -515,9 +500,6 @@
             const isBlocked = u.status === 'Blocked';
             const permList = [];
             if (u.permissions?.cpscl) permList.push('<span style="background:#eef2ff; color:#4f46e5; padding:2px 6px; border-radius:4px; font-size:0.75rem; font-weight:700;">CPSCL</span>');
-            if (u.permissions?.dashboard) permList.push('<span style="background:#f1f5f9; color:#475569; padding:2px 6px; border-radius:4px; font-size:0.75rem;">Dashboard</span>');
-            if (u.permissions?.customers) permList.push('<span style="background:#f0fdf4; color:#16a34a; padding:2px 6px; border-radius:4px; font-size:0.75rem;">Customers</span>');
-            if (u.permissions?.balance) permList.push('<span style="background:#fffbeb; color:#d97706; padding:2px 6px; border-radius:4px; font-size:0.75rem;">Balance</span>');
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -539,11 +521,11 @@
                     </span>
                 </td>
                 <td style="text-align: right;">
-                    <button onclick="toggleBlockUser(${idx})" class="btn-action" style="background:${isBlocked ? '#dcfce7' : '#fee2e2'}; color:${isBlocked ? '#15803d' : '#dc2626'};" title="${isBlocked ? 'আনব্লক করুন' : 'ব্লক করুন'}">
+                    <button onclick="toggleBlockUser(${idx})" class="btn-action" style="background:${isBlocked ? '#dcfce7' : '#fee2e2'}; color:${isBlocked ? '#15803d' : '#dc2626'};">
                         <i class="fa-solid ${isBlocked ? 'fa-lock-open' : 'fa-ban'}"></i>
                     </button>
-                    <button onclick="editSystemUser(${idx})" class="btn-action btn-edit" title="এডিট"><i class="fa-solid fa-pen"></i></button>
-                    <button onclick="deleteSystemUser(${idx})" class="btn-action btn-delete" title="ডিলিট"><i class="fa-solid fa-trash"></i></button>
+                    <button onclick="editSystemUser(${idx})" class="btn-action btn-edit"><i class="fa-solid fa-pen"></i></button>
+                    <button onclick="deleteSystemUser(${idx})" class="btn-action btn-delete"><i class="fa-solid fa-trash"></i></button>
                 </td>
             `;
             tbody.appendChild(tr);
