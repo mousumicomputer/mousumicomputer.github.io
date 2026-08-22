@@ -1,29 +1,26 @@
 /**
- * CPSCL Dedicated Theme & Branding Module
+ * CPSCL Dedicated Login & Portal Theme Module
  * Institution: Cantonment Public School and College Lalmonirhat
- * Transforms Login Screen, Dashboard Header & Sidebar into CPSCL Official Branding
  */
 
 (function () {
-    const CPSCL_LOGO_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg-795xmOcuKYH8wjija8JrA-qVjfOp_4KieeZ1pOQJaqX2uXsqGLMo09AXsGGsfGjH9LpK5fPlUNGbebFguiAzPC_YvbRXcHePj7cORQd6GMxDUg-LCeXtmNkccGI2K4Hv73PJqJkGX0Ju9N4knQuqKOAImqB6qy_WWFXpKeIaQhRgk7YbLqBLpCmL0cio/s1600/%E0%A6%95%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%A8%E0%A7%8D%E0%A6%9F%E0%A6%A8%E0%A6%AE%E0%A7%87%E0%A6%A8%E0%A7%8D%E0%A6%9F_%E0%A6%AA%E0%A6%BE%E0%A6%AC%E0%A6%B2%E0%A6%BF%E0%A6%9F%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2_%E0%A6%93_%E0%A6%95%E0%A6%B2%E0%A7%87%E0%A6%9C_%E0%A6%B2%E0%A6%BE%E0%A6%B2%E0%A6%AE%E0%A6%A8%E0%A6%BF%E0%A6%B0%E0%A6%B9%E0%A6%BE%E0%A6%9F%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png";
-    const CPSCL_TITLE = "Cantonment Public School and College";
-    const CPSCL_SUB = "Lalmonirhat";
+    const CPSCL_LOGO_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg-795xmOcuKYH8wjija8JrA-qVjfOp_4KieeZ1pOQJaqX2uXsqGLMo09AXsGGsfGjH9LpK5fPlUNGbebFguiAzPC_YvbRXcHePj7cORQd6GMxDUg-LCeXtmNkccGI2K4Hv73PJqJkGX0Ju9N4knQuqKOAImqB6qy_WWFXpKeIaQhRgk7YbLqBLpCmL0cio/s1600/%E0%A6%95%E0%A7%8D%E0%A6%AF%E0%A6%AA%E0%A6%BE%E0%A6%A8%E0%A7%8D%E0%A6%9F%E0%A6%A8%E0%A6%AE%E0%A7%87%E0%A6%A8%E0%A7%8D%E0%A6%9F_%E0%A6%AA%E0%A6%BE%E0%A6%AC%E0%A6%B2%E0%A6%BF%E0%A6%9F%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2_%E0%A6%93_%E0%A6%95%E0%A6%B2%E0%A7%87%E0%A6%9C_%E0%A6%B2%E0%A6%BE%E0%A6%B2%E0%A6%AE%E0%A6%A8%E0%A6%BF%E0%A6%B0%E0%A6%B9%E0%A6%BE%E0%A6%9F%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png";
 
-    // চেক করা হচ্ছে URL এ ?portal=cpscl আছে কি না অথবা কোনো CPSCL ইউজার লগইন করছে কি না
-    function isCPSCLPortalRequested() {
+    function isCPSCLPortalURL() {
         const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('portal') === 'cpscl' || sessionStorage.getItem('active_portal') === 'cpscl';
+        return urlParams.get('portal') === 'cpscl';
     }
 
     /* ==========================================================
-       ১. ছবির মতো হুবহু লগইন পেজ ডিজাইন ইনজেকশন
+       ১. CPSCL সুন্দর সাইন-ইন পেজ রেন্ডারিং
        ========================================================== */
     function applyCPSCLCustomLoginUI() {
         const loginCard = document.querySelector('.login-card');
         const loginSection = document.getElementById('login-section');
         if (!loginCard || !loginSection) return;
 
-        // গ্লোবাল স্টাইল যোগ
+        if (document.getElementById('cpscl-custom-theme-styles')) return;
+
         const style = document.createElement('style');
         style.id = 'cpscl-custom-theme-styles';
         style.innerHTML = `
@@ -50,12 +47,12 @@
                 padding: 30px 20px;
                 text-align: center;
                 border-radius: 0 0 50% 50% / 0 0 20px 20px;
-                margin-bottom: 25px;
+                margin-bottom: 20px;
                 position: relative;
             }
             .cpscl-logo-box {
-                width: 85px;
-                height: 85px;
+                width: 90px;
+                height: 90px;
                 background: #ffffff;
                 border-radius: 50%;
                 margin: 0 auto;
@@ -63,7 +60,7 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.25);
             }
             .cpscl-logo-box img {
                 width: 100%;
@@ -84,14 +81,14 @@
                 font-size: 0.85rem;
                 color: #64748b;
                 text-align: center;
-                margin-bottom: 25px;
+                margin-bottom: 22px;
                 line-height: 1.4;
             }
             .cpscl-input-wrapper {
                 position: relative;
                 display: flex;
                 align-items: center;
-                margin-bottom: 18px;
+                margin-bottom: 16px;
             }
             .cpscl-input-control {
                 width: 100% !important;
@@ -149,7 +146,6 @@
         loginSection.classList.add('cpscl-theme-bg');
         loginCard.classList.add('cpscl-card-style');
 
-        // কার্ডের ভেতরের HTML ছবির মতো তৈরি করা
         loginCard.innerHTML = `
             <div class="cpscl-top-banner">
                 <div class="cpscl-logo-box">
@@ -158,23 +154,23 @@
             </div>
             <div class="cpscl-body-content">
                 <h2 class="cpscl-signin-title">Sign In</h2>
-                <p class="cpscl-signin-sub">Enter your Mobile/Username and password to access CPSCL panel</p>
+                <p class="cpscl-signin-sub">Enter your Email/Username and password to access panel</p>
                 
                 <p class="error-msg" id="errorMsg" style="display:none; text-align:center; margin-bottom:10px; color:#ef4444; font-weight:bold; font-size:0.85rem;"></p>
                 <p class="success-msg" id="successMsg" style="display:none; text-align:center; margin-bottom:10px; color:#10b981; font-weight:bold; font-size:0.85rem;"></p>
 
                 <form id="loginForm">
                     <div style="margin-bottom: 6px;">
-                        <label style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px; display:block;">Mobile No/Username</label>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px; display:block;">Email / Username</label>
                         <div class="cpscl-input-wrapper">
-                            <input type="text" id="username" class="cpscl-input-control" placeholder="Enter your Mobile No/Username" required>
+                            <input type="text" id="username" class="cpscl-input-control" placeholder="user@cpscl.com" required>
                         </div>
                     </div>
 
                     <div style="margin-bottom: 6px;">
-                        <label style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px; display:block;">PIN/Password</label>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px; display:block;">Password</label>
                         <div class="cpscl-input-wrapper">
-                            <input type="password" id="password" class="cpscl-input-control" placeholder="Enter your PIN/Password" style="padding-right: 48px !important;" required>
+                            <input type="password" id="password" class="cpscl-input-control" placeholder="Enter your Password" style="padding-right: 48px !important;" required>
                             <button type="button" class="cpscl-pwd-toggle-btn" onclick="toggleLoginPasswordView()">
                                 <i class="fa-solid fa-eye" id="loginEyeIcon"></i>
                             </button>
@@ -194,11 +190,9 @@
             </div>
         `;
 
-        // অরিজিনাল লগইন লিসেনার পুনরায় বাইন্ড করা
-        rebindLoginFormSubmit();
+        rebindLoginForm();
     }
 
-    // পাসওয়ার্ড শো/হাইড ফাংশন
     window.toggleLoginPasswordView = function () {
         const passInp = document.getElementById('password');
         const icon = document.getElementById('loginEyeIcon');
@@ -213,7 +207,7 @@
         }
     };
 
-    function rebindLoginFormSubmit() {
+    function rebindLoginForm() {
         const form = document.getElementById('loginForm');
         if (!form) return;
 
@@ -224,68 +218,30 @@
             const errorMsg = document.getElementById('errorMsg');
             if (errorMsg) errorMsg.style.display = 'none';
 
-            let emailToAuth = usernameVal;
-            if (!emailToAuth.includes('@')) {
-                emailToAuth = "mousumicomputer.org@gmail.com";
-            }
-
-            if (typeof showLoader === 'function') showLoader("CPSCL পোর্টালে প্রবেশ করা হচ্ছে...");
+            if (typeof showLoader === 'function') showLoader("যাচাই করা হচ্ছে...");
 
             try {
                 const { getAuth, signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
-                await signInWithEmailAndPassword(getAuth(), emailToAuth, passwordVal);
-                sessionStorage.setItem('active_portal', 'cpscl');
+                await signInWithEmailAndPassword(getAuth(), usernameVal, passwordVal);
             } catch (err) {
                 if (typeof hideLoader === 'function') hideLoader();
                 if (errorMsg) {
-                    errorMsg.innerText = "ভুল ইউজারনেম বা পাসওয়ার্ড!";
+                    errorMsg.innerText = "ভুল ইমেইল বা পাসওয়ার্ড!";
                     errorMsg.style.display = 'block';
                 }
             }
         });
     }
 
-    /* ==========================================================
-       ২. লগইন হওয়ার পর ড্যাশবোর্ড ও সাইডবার ব্র্যান্ডিং ট্রান্সফর্ম
-       ========================================================= */
-    function applyCPSCLDashboardBranding() {
-        // সাইডবারের টপ লোগো পরিবর্তন
-        const brandLogoImg = document.querySelector('.brand-logo img');
-        const brandLogoWrapper = document.querySelector('.brand-logo-img-wrapper');
-        const brandTextH3 = document.querySelector('.brand-text h3');
-        const brandTextSpan = document.querySelector('.brand-text span');
-
-        if (brandLogoImg) brandLogoImg.src = CPSCL_LOGO_URL;
-        if (brandLogoWrapper) brandLogoWrapper.style.background = "#ffffff";
-        if (brandTextH3) brandTextH3.innerText = "CPSCL";
-        if (brandTextSpan) brandTextSpan.innerText = "LALMONIRHAT";
-
-        // প্রোফাইল হেডার
-        const dropdownHeaderImg = document.getElementById('dropdownHeaderImg');
-        if (dropdownHeaderImg) dropdownHeaderImg.src = CPSCL_LOGO_URL;
-    }
-
-    /* ==========================================================
-       ৩. ইনিশিয়ালাইজার
-       ========================================================== */
-    function initCPSCLTheme() {
-        if (isCPSCLPortalRequested()) {
+    function init() {
+        if (isCPSCLPortalURL()) {
             applyCPSCLCustomLoginUI();
         }
-
-        // লগইন হওয়ার পর যদি CPSCL এক্সেস থাকে
-        const checkLoginInterval = setInterval(() => {
-            const dashSection = document.getElementById('dashboard-section');
-            if (dashSection && dashSection.style.display !== 'none') {
-                applyCPSCLDashboardBranding();
-                clearInterval(checkLoginInterval);
-            }
-        }, 500);
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initCPSCLTheme);
+        document.addEventListener('DOMContentLoaded', init);
     } else {
-        initCPSCLTheme();
+        init();
     }
 })();
