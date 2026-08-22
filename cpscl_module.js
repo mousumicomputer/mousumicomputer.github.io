@@ -1,7 +1,7 @@
 /**
  * CPSCL Module - Multi-Template Architecture & Calibrated Print
  * Realtime Firebase Cloud Database Sync (Multi-Device Support)
- * Embedded Cloud Web-Fonts (Guaranteed Universal Rendering on any PC/Device)
+ * Pure Native High-Precision Typography (Cambria Bold Italic & Monotype Corsiva)
  * Exact MS Word Match: Multiple 1.8 Line-Height & 10pt After-Spacing
  */
 
@@ -20,7 +20,7 @@
     };
 
     /* ==========================================================
-       ১. ফায়ারবেস রিয়েল-টাইম ডাটাবেজ সংযোগ (Self-Contained)
+       ১. ফায়ারবেস রিয়েল-টাইম ডাটাবেজ সংযোগ
        ========================================================== */
     async function initFirebaseSync() {
         try {
@@ -45,7 +45,6 @@
             dbRefFunc = ref;
             dbSetFunc = set;
 
-            // রিয়েলটাইম সিঙ্ক লিসেনার (অন্য যেকোনো পিসিতে ডাটা পরিবর্তন হলে অটোমেটিক আপডেট হবে)
             const studentsRef = ref(dbInstance, 'cpscl/students');
             onValue(studentsRef, (snapshot) => {
                 const cloudData = snapshot.val();
@@ -57,7 +56,7 @@
             });
 
         } catch (err) {
-            console.warn("Firebase Init Fallback to LocalStorage:", err);
+            console.warn("Firebase Sync Init Fallback to LocalStorage:", err);
         }
     }
 
@@ -133,34 +132,6 @@
 
         cpsclViewPanel.innerHTML = `
             <style>
-                /* ==========================================================
-                   UNIVERSAL CLOUD WEB-FONTS (Fallback Guaranteed)
-                   ========================================================== */
-                @font-face {
-                    font-family: 'Monotype Corsiva';
-                    src: local('Monotype Corsiva'),
-                         url('https://fonts.cdnfonts.com/s/14732/MTCORSVA.woff') format('woff');
-                    font-weight: normal;
-                    font-style: normal;
-                    font-display: swap;
-                }
-                @font-face {
-                    font-family: 'Cambria';
-                    src: local('Cambria'), local('Cambria-BoldItalic'),
-                         url('https://fonts.cdnfonts.com/s/16086/CAMBRIA.woff') format('woff');
-                    font-weight: 700;
-                    font-style: italic;
-                    font-display: swap;
-                }
-                @font-face {
-                    font-family: 'Calibri';
-                    src: local('Calibri'),
-                         url('https://fonts.cdnfonts.com/s/14728/CALIBRI.woff') format('woff');
-                    font-weight: 400;
-                    font-style: normal;
-                    font-display: swap;
-                }
-
                 .cpscl-card {
                     background: #ffffff;
                     border-radius: 16px;
@@ -324,16 +295,13 @@
                 }
 
                 /* 1. Reference -> Calibri 13pt */
-                .cert-ref, 
-                .cert-ref * {
+                .cert-ref {
                     font-family: 'Calibri', 'Segoe UI', Arial, sans-serif !important;
                     font-size: 13pt !important;
                     font-weight: 400 !important;
                     font-style: normal !important;
                     color: #000000 !important;
                     line-height: 1.15 !important;
-                }
-                .cert-ref {
                     margin-bottom: 18pt !important;
                 }
 
@@ -344,6 +312,11 @@
                 }
 
                 .cert-paragraph {
+                    font-family: 'Monotype Corsiva', 'Corsiva Hebrew', 'Apple Chancery', cursive, serif !important;
+                    font-size: 15pt !important;
+                    font-weight: normal !important;
+                    font-style: normal !important;
+                    color: #000000 !important;
                     text-indent: 0.5in !important;         /* 0.5" Tab */
                     text-align: justify !important;        /* Justified */
                     line-height: 1.8 !important;           /* MS Word Multiple 1.8 */
@@ -352,25 +325,15 @@
                     word-break: normal !important;
                 }
 
-                .cert-body-block,
-                .cert-body-block *,
-                .cert-paragraph,
-                .cert-paragraph span,
-                #prevRelation,
-                #prevExamName,
-                #prevBoard,
-                #prevPronoun,
-                #prevPronounLower,
-                #prevPossessive,
-                #prevObjective {
-                    font-family: 'Monotype Corsiva', 'Corsiva Hebrew', 'Apple Chancery', cursive, serif !important;
-                    font-size: 15pt !important;
-                    font-weight: 400 !important;
-                    font-style: normal !important;
-                    color: #000000 !important;
+                .cert-paragraph span {
+                    font-family: 'Monotype Corsiva', 'Corsiva Hebrew', 'Apple Chancery', cursive, serif;
+                    font-size: 15pt;
+                    font-weight: normal;
+                    font-style: normal;
+                    color: #000000;
                 }
 
-                /* 3. Variables -> Cambria 15pt Bold Italic */
+                /* 3. Variables -> Pure Cambria 15pt Bold Italic */
                 .cert-paragraph span.cert-bold,
                 .cert-paragraph span.cert-meta-bold,
                 #prevName,
@@ -391,17 +354,13 @@
                 }
 
                 /* 4. Publication Date -> Calibri 9pt */
-                .cert-footer-date,
-                .cert-footer-date *,
-                .cert-footer-date span {
+                .cert-footer-date {
                     font-family: 'Calibri', 'Segoe UI', Arial, sans-serif !important;
                     font-size: 9pt !important;
                     font-weight: 400 !important;
                     font-style: normal !important;
                     color: #000000 !important;
                     line-height: 1.2;
-                }
-                .cert-footer-date {
                     margin-top: 18pt !important;
                 }
 
@@ -682,7 +641,7 @@
         const file = event.target.files[0];
         if (!file) return;
 
-        if (typeof showLoader === 'function') showLoader("এক্সেল ডাটা ফায়ারবেসে সিঙ্ক হচ্ছে...");
+        if (typeof showLoader === 'function') showLoader("ডাটা ক্লাউডে সিঙ্ক হচ্ছে...");
 
         const reader = new FileReader();
         reader.onload = async function (e) {
