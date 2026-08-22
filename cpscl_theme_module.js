@@ -1,10 +1,13 @@
 /**
  * CPSCL Dedicated Login & Portal Theme Module
  * Institution: Cantonment Public School and College Lalmonirhat
+ * Features: Top Navbar Pill, Dynamic User Profile Avatar, Institutional Hero Banner
  */
 
 (function () {
+    const SUPER_ADMIN_EMAIL = "mousumicomputer.org@gmail.com";
     const CPSCL_LOGO_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg-795xmOcuKYH8wjija8JrA-qVjfOp_4KieeZ1pOQJaqX2uXsqGLMo09AXsGGsfGjH9LpK5fPlUNGbebFguiAzPC_YvbRXcHePj7cORQd6GMxDUg-LCeXtmNkccGI2K4Hv73PJqJkGX0Ju9N4knQuqKOAImqB6qy_WWFXpKeIaQhRgk7YbLqBLpCmL0cio/s1600/%E0%A6%95%E0%A7%8D%E0%A6%AF%E0%A6%AA%E0%A6%BE%E0%A6%A8%E0%A7%8D%E0%A6%9F%E0%A6%A8%E0%A6%AE%E0%A7%87%E0%A6%A8%E0%A7%8D%E0%A6%9F_%E0%A6%AA%E0%A6%BE%E0%A6%AC%E0%A6%B2%E0%A6%BF%E0%A6%9F%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2_%E0%A6%93_%E0%A6%95%E0%A6%B2%E0%A7%87%E0%A6%9C_%E0%A6%B2%E0%A6%BE%E0%A6%B2%E0%A6%AE%E0%A6%A8%E0%A6%BF%E0%A6%B0%E0%A6%B9%E0%A6%BE%E0%A6%9F%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png";
+    const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
 
     function isCPSCLPortalURL() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -12,17 +15,17 @@
     }
 
     /* ==========================================================
-       ১. CPSCL সুন্দর সাইন-ইন পেজ রেন্ডারিং
+       ১. CPSCL ছবির মতো হুবহু সাইন-ইন পেজ
        ========================================================== */
     function applyCPSCLCustomLoginUI() {
         const loginCard = document.querySelector('.login-card');
         const loginSection = document.getElementById('login-section');
         if (!loginCard || !loginSection) return;
 
-        if (document.getElementById('cpscl-custom-theme-styles')) return;
+        if (document.getElementById('cpscl-login-styles')) return;
 
         const style = document.createElement('style');
-        style.id = 'cpscl-custom-theme-styles';
+        style.id = 'cpscl-login-styles';
         style.innerHTML = `
             #login-section.cpscl-theme-bg {
                 background: #f1f5f9 !important;
@@ -154,23 +157,23 @@
             </div>
             <div class="cpscl-body-content">
                 <h2 class="cpscl-signin-title">Sign In</h2>
-                <p class="cpscl-signin-sub">Enter your Email/Username and password to access panel</p>
+                <p class="cpscl-signin-sub">Enter your Mobile/Username and password to access admin panel</p>
                 
                 <p class="error-msg" id="errorMsg" style="display:none; text-align:center; margin-bottom:10px; color:#ef4444; font-weight:bold; font-size:0.85rem;"></p>
                 <p class="success-msg" id="successMsg" style="display:none; text-align:center; margin-bottom:10px; color:#10b981; font-weight:bold; font-size:0.85rem;"></p>
 
                 <form id="loginForm">
                     <div style="margin-bottom: 6px;">
-                        <label style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px; display:block;">Email / Username</label>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px; display:block;">Mobile No/Username</label>
                         <div class="cpscl-input-wrapper">
-                            <input type="text" id="username" class="cpscl-input-control" placeholder="user@cpscl.com" required>
+                            <input type="text" id="username" class="cpscl-input-control" placeholder="Enter your Mobile No/Username" required>
                         </div>
                     </div>
 
                     <div style="margin-bottom: 6px;">
-                        <label style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px; display:block;">Password</label>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px; display:block;">PIN/Password</label>
                         <div class="cpscl-input-wrapper">
-                            <input type="password" id="password" class="cpscl-input-control" placeholder="Enter your Password" style="padding-right: 48px !important;" required>
+                            <input type="password" id="password" class="cpscl-input-control" placeholder="Enter your PIN/Password" style="padding-right: 48px !important;" required>
                             <button type="button" class="cpscl-pwd-toggle-btn" onclick="toggleLoginPasswordView()">
                                 <i class="fa-solid fa-eye" id="loginEyeIcon"></i>
                             </button>
@@ -233,9 +236,174 @@
         });
     }
 
-    function init() {
+    /* ==========================================================
+       ২. টপ ন্যাভবার পিল ও ইনস্টিটিউশন ব্যানার রেন্ডারার
+       ========================================================== */
+    function injectCPSCLHeaderAndBanner(userPhotoURL) {
+        // ১. টপ ন্যাভবারে ছবির মতো স্টাইলিশ পিল ব্যাজ যোগ
+        const navLeft = document.querySelector('.navbar-left');
+        const topTitle = document.getElementById('top-title');
+
+        if (navLeft && !document.getElementById('cpscl-navbar-pill')) {
+            if (topTitle) topTitle.style.display = 'none';
+
+            const pillDiv = document.createElement('div');
+            pillDiv.id = 'cpscl-navbar-pill';
+            pillDiv.className = 'cpscl-nav-pill';
+            pillDiv.innerHTML = `
+                <i class="fa-solid fa-building-columns" style="color: #2563eb;"></i>
+                <span style="font-weight: 700; color: #1e40af;">Cantonment Public School And College Lalmonirhat</span>
+                <span class="cpscl-pill-id">ID: 1013</span>
+            `;
+            navLeft.appendChild(pillDiv);
+        }
+
+        // ২. ইউজারের নিজস্ব প্রোফাইল ছবি আপডেট করা
+        const userAvatar = document.getElementById('navAvatar');
+        const dropdownHeaderImg = document.getElementById('dropdownHeaderImg');
+        const avatarSrc = userPhotoURL || DEFAULT_AVATAR;
+
+        if (userAvatar) userAvatar.src = avatarSrc;
+        if (dropdownHeaderImg) dropdownHeaderImg.src = avatarSrc;
+
+        // ৩. CPSCL ভিউ প্যানেলের উপরে ডিপ গ্রিন ইনস্টিটিউশন ব্যানার যুক্ত করা
+        const cpsclView = document.getElementById('cpscl-view');
+        if (cpsclView && !document.getElementById('cpscl-hero-banner')) {
+            const bannerDiv = document.createElement('div');
+            bannerDiv.id = 'cpscl-hero-banner';
+            bannerDiv.className = 'cpscl-hero-banner';
+            bannerDiv.innerHTML = `
+                <img src="${CPSCL_LOGO_URL}" alt="CPSCL Logo" class="cpscl-hero-logo">
+                <div style="flex: 1;">
+                    <h2 class="cpscl-hero-title">CANTONMENT PUBLIC SCHOOL & COLLEGE LALMONIRHAT</h2>
+                    <div class="cpscl-hero-meta">EIIN No. : 137653 &nbsp;|&nbsp; College Code : 7257 &nbsp;|&nbsp; School Code : 7296</div>
+                    <div class="cpscl-hero-addr"><i class="fa-solid fa-location-dot" style="color: #facc15;"></i> Address: Lalmonirhat Cantonment, Lalmonirhat</div>
+                </div>
+            `;
+            cpsclView.insertBefore(bannerDiv, cpsclView.firstChild);
+        }
+    }
+
+    function removeCPSCLHeaderAndBanner() {
+        const pill = document.getElementById('cpscl-navbar-pill');
+        const topTitle = document.getElementById('top-title');
+        const banner = document.getElementById('cpscl-hero-banner');
+
+        if (pill) pill.remove();
+        if (topTitle) topTitle.style.display = 'block';
+        if (banner) banner.remove();
+    }
+
+    /* ==========================================================
+       ৩. গ্লোবাল সিএসএস স্টাইল
+       ========================================================== */
+    function injectGlobalStyles() {
+        if (document.getElementById('cpscl-portal-global-css')) return;
+        const style = document.createElement('style');
+        style.id = 'cpscl-portal-global-css';
+        style.innerHTML = `
+            .cpscl-nav-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                background: #eff6ff;
+                border: 1.5px solid #bfdbfe;
+                padding: 6px 14px;
+                border-radius: 30px;
+                font-size: 0.9rem;
+                margin-left: 8px;
+            }
+            .cpscl-pill-id {
+                background: #3b82f6;
+                color: #ffffff;
+                font-size: 0.72rem;
+                padding: 3px 8px;
+                border-radius: 12px;
+                font-weight: 800;
+            }
+            .cpscl-hero-banner {
+                background: linear-gradient(135deg, #064e3b 0%, #022c22 100%);
+                border-radius: 14px;
+                padding: 18px 24px;
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                margin-bottom: 22px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+                border: 1px solid rgba(250, 204, 21, 0.25);
+                color: #ffffff;
+            }
+            .cpscl-hero-logo {
+                width: 75px;
+                height: 75px;
+                object-fit: contain;
+                filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+            }
+            .cpscl-hero-title {
+                font-size: 1.25rem;
+                font-weight: 900;
+                color: #facc15;
+                letter-spacing: 0.5px;
+                margin-bottom: 5px;
+                text-transform: uppercase;
+            }
+            .cpscl-hero-meta {
+                font-size: 0.88rem;
+                color: #f1f5f9;
+                font-weight: 700;
+                margin-bottom: 4px;
+            }
+            .cpscl-hero-addr {
+                font-size: 0.82rem;
+                color: #cbd5e1;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            @media (max-width: 768px) {
+                .cpscl-hero-banner {
+                    flex-direction: column;
+                    text-align: center;
+                }
+                .cpscl-hero-addr {
+                    justify-content: center;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    /* ==========================================================
+       ৪. অথ লিসেনার ও ইনিশিয়ালাইজার
+       ========================================================== */
+    async function init() {
+        injectGlobalStyles();
+
         if (isCPSCLPortalURL()) {
             applyCPSCLCustomLoginUI();
+        }
+
+        try {
+            const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+            const auth = getAuth();
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    const isSuperAdmin = user.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
+                    if (!isSuperAdmin) {
+                        // CPSCL ইউজারের জন্য ব্যানার ও পিল অন হবে
+                        injectCPSCLHeaderAndBanner(user.photoURL);
+                    } else {
+                        // এডমিনের জন্য সাধারণ অবস্থা বজায় থাকবে
+                        removeCPSCLHeaderAndBanner();
+                    }
+                } else {
+                    removeCPSCLHeaderAndBanner();
+                }
+            });
+        } catch (e) {
+            console.warn("Auth check error in theme module:", e);
         }
     }
 
