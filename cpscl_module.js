@@ -1,7 +1,8 @@
 /**
- * CPSCL Module - Exact Word Document Spacing & Layout Engine
- * Reference to Body Gap: Exact 2 Enters (10pt font equivalent = 24pt margin)
- * Tab Indentation: 0.5" on all 3 paragraphs
+ * CPSCL Module - Exact Word Paragraph & Line Spacing Matching
+ * Line Spacing: Multiple At 1.8
+ * Spacing Before: 0 pt | Spacing After: 10 pt
+ * Alignment: Justified | Tab Indent: 0.5"
  */
 
 (function () {
@@ -60,7 +61,7 @@
         }
 
         /* ==========================================================
-           ২. CPSCL ভিউ প্যানেল (Exact 2-Enter Spacing)
+           ২. CPSCL ভিউ প্যানেল (Exact Paragraph Spacing)
            ========================================================== */
         const cpsclViewPanel = document.createElement('div');
         cpsclViewPanel.className = 'view-panel';
@@ -153,7 +154,7 @@
                 .cpscl-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 10px 10px 0; }
 
                 /* ==========================================================
-                   A4 LANDSCAPE EXACT WORD SETUP & 2-ENTER GAP
+                   A4 LANDSCAPE EXACT WORD SETUP & LINE SPACING
                    ========================================================== */
                 .cpscl-preview-wrapper {
                     background: #525659;
@@ -201,15 +202,16 @@
                     line-height: 1.15 !important;
                 }
                 .cert-ref {
-                    margin-bottom: 24pt !important; /* Exactly 2 Enters of 10pt font */
+                    margin-bottom: 24pt !important; /* 2 Enters gap */
                 }
 
-                /* 2. Certificate Body & Exact 0.5" Tab Indents */
+                /* 2. Certificate Body & Exact Word Paragraph Settings */
                 .cert-paragraph {
-                    text-indent: 0.5in !important; /* Word Standard 0.5" Tab */
-                    margin: 0 0 14pt 0 !important;
-                    line-height: 1.85 !important;
-                    text-align: justify !important;
+                    text-indent: 0.5in !important;       /* 0.5" Tab Indent */
+                    text-align: justify !important;      /* Alignment: Justified */
+                    line-height: 1.8 !important;         /* Line spacing: Multiple At 1.8 */
+                    margin-top: 0pt !important;          /* Spacing Before: 0 pt */
+                    margin-bottom: 10pt !important;      /* Spacing After: 10 pt */
                 }
 
                 .cert-body,
@@ -475,7 +477,7 @@
                         </button>
                     </div>
 
-                    <!-- A4 LANDSCAPE SHEET (Word Document Accuracy) -->
+                    <!-- A4 LANDSCAPE SHEET (Word Paragraph Accuracy) -->
                     <div class="cpscl-a4-sheet" id="cpsclPrintArea">
                         <div class="cert-ref" id="prevRef">CPSCL/ 801023/SSC-26/001</div>
                         
