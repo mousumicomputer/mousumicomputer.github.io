@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case Converter - Mousumi Computer</title>
+  <link rel="icon" type="image/x-icon" href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifAQVAOjeF0ccNQdBRY2gpfOlc19vjYbQiNjCUUJ9jJqxHEjVJB7nhST4fbzYcdaaV3DtoBrxxrhi4nQJsuwHoWnEmQKud8muKsZIRcWV6YgFLEmdsDc8TRv8Vcmw5jktkvXt4cnlRnbxOW8MlFzlJ4P7QSA7E1Owl9bxDsaW7wjMJQ91bdczQa5zjxu94/s1600/Screenshot_1.jpg">
+  
+  <!-- FontAwesome Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  
+  <!-- Google Fonts & Tiro Bangla -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Tiro+Bangla&display=swap" rel="stylesheet"/>
+
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif; background-color: #f2f4f7; color: #333; overflow-x: hidden; }
+    a { text-decoration: none; }
+    .site-wrapper { max-width: 1200px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 0 15px rgba(0,0,0,0.1); min-height: 100vh; display: flex; flex-direction: column; }
+    .tiro-text { font-family: 'Tiro Bangla', serif !important; }
+
+    /* টপ বার ও হেডার */
+    .ticker-top-bar { background-color: #2176ff; padding: 8px 20px; color: #ffffff; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+    .top-social-icons { display: flex; gap: 12px; }
+    .top-social-icons a { color: #ffffff; font-size: 13px; }
+
+    .middle-header { padding: 18px 40px; display: flex; justify-content: space-between; align-items: center; background: #ffffff; border-bottom: 1px solid #eaeaea; }
+    .logo-area { display: flex; align-items: center; gap: 15px; }
+    .logo-icon { color: #0f52ba; font-size: 38px; }
+    .logo-text h1 { margin: 0; font-size: 26px; color: #003366; font-weight: bold; }
+    .logo-text p { margin: 0; font-size: 24px; color: #2e8b57; font-weight: bold; line-height: 1; }
+    .contact-details { font-size: 13.5px; color: #444; font-weight: 500; }
+    .cart-box { background-color: #2176ff; color: #ffffff; padding: 8px 18px; border-radius: 30px; display: flex; align-items: center; gap: 10px; font-weight: bold; }
+
+    /* মেনু বার ও ড্রপডাউন */
+    .nav-container { background-color: #2176ff; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; }
+    .main-menu { display: flex; list-style: none; margin: 0; padding: 0; align-items: center; }
+    .main-menu > li { position: relative; }
+    .main-menu > li > a { color: #ffffff; display: block; padding: 15px 18px; font-size: 15px; font-weight: 500; transition: background 0.2s; }
+    .main-menu > li > a:hover, .main-menu > li.active > a { background-color: rgba(0,0,0,0.12); }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #ffffff;
+      min-width: 200px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      border-radius: 0 0 8px 8px;
+      list-style: none;
+      padding: 8px 0;
+      margin: 0;
+      z-index: 1000;
+    }
+    .dropdown-menu li a {
+      color: #333333;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .dropdown-menu li a:hover {
+      background-color: #f0f5ff;
+      color: #2176ff;
+      padding-left: 22px;
+    }
+    .dropdown:hover .dropdown-menu { display: block; }
+
+    .nav-admin-btn {
+      background: linear-gradient(135deg, #0d233a 0%, #1a3a5c 100%);
+      color: #ffffff !important;
+      padding: 8px 18px !important;
+      border-radius: 50px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    /* =========================================================
+       CASE CONVERTER TOOL CONTAINER (MATCHING SCREENSHOT)
+       ========================================================= */
+    .converter-main {
+      flex: 1;
+      padding: 35px 40px;
+      background: #f8fafc;
+    }
+    .converter-card {
+      background: #ffffff;
+      border: 1px solid #dce4ed;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+      padding: 20px;
+      margin: 0 auto;
+      max-width: 1120px;
+    }
+    .tool-header-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tool-subtitle {
+      font-size: 13.5px;
+      color: #64748b;
+      margin-bottom: 18px;
+    }
+
+    /* টেক্সট এরিয়া */
+    .text-box-wrapper {
+      position: relative;
+      border: 1.5px solid #d7e2ee;
+      border-radius: 10px;
+      background: #ffffff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .text-box-wrapper:focus-within {
+      border-color: #2176ff;
+      box-shadow: 0 0 0 3px rgba(33, 118, 255, 0.15);
+    }
+    #converterInput {
+      width: 100%;
+      min-height: 240px;
+      padding: 16px 18px;
+      font-size: 15px;
+      font-family: inherit;
+      line-height: 1.6;
+      border: none;
+      outline: none;
+      resize: vertical;
+      color: #1e293b;
+      background: transparent;
+      border-radius: 10px 10px 0 0;
+    }
+
+    /* টেক্সট এরিয়ার নিচের আইকন বার এবং কাউন্টার */
+    .editor-bottom-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      border-radius: 0 0 10px 10px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .action-icon-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-icon-action {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-icon-action:hover {
+      background: #2176ff;
+      color: #ffffff;
+      border-color: #2176ff;
+    }
+
+    /* রিয়েল-টাইম কাউন্টার বার */
+    .counters-text {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .counters-text span {
+      color: #0f172a;
+    }
+
+    /* কেস কনভার্সন বাটন সারি (স্ক্রিনশটের মতো ট্যাব স্টাইল) */
+    .case-buttons-container {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid #f1f5f9;
+    }
+    .case-btn-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* প্রতিটি কেস বাটন */
+    .btn-case {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #334155;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      transition: all 0.2s ease;
+    }
+    .btn-case:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+    }
+    .btn-case:active {
+      transform: translateY(0);
+    }
+    .btn-badge {
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #f1f5f9;
+    }
+    .badge-sc { color: #ea580c; background: #ffedd5; }
+    .badge-lc { color: #16a34a; background: #dcfce7; }
+    .badge-uc { color: #0284c7; background: #e0f2fe; }
+    .badge-cc { color: #9333ea; background: #f3e8ff; }
+    .badge-ac { color: #d97706; background: #fef3c7; }
+    .badge-tc { color: #0d9488; background: #ccfbf1; }
+    .badge-ic { color: #db2777; background: #fce7f3; }
+
+    .btn-extra-util {
+      background: #0f172a;
+      color: #ffffff;
+      border: none;
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: 0.2s;
+    }
+    .btn-extra-util:hover {
+      background: #2176ff;
+    }
+
+    /* টোস্ট নোটিফিকেশন */
+    #toastMsg {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      z-index: 99999;
+      opacity: 0;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #toastMsg.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* সেটিংস পপআপ মোডাল */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(3px);
+      z-index: 100000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-box {
+      background: #fff;
+      padding: 25px;
+      border-radius: 14px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .modal-box h3 { margin-top: 0; font-size: 18px; color: #0f172a; }
+    .modal-opt { margin: 15px 0; display: flex; justify-content: space-between; align-items: center; }
+
+    /* ফুটার */
+    .site-footer { background-color: #2176ff; color: #ffffff; padding: 40px 30px 20px 30px; border-top: 4px solid #0d233a; margin-top: auto; }
+    .footer-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .footer-title { font-size: 16px; color: #ffcc00; font-weight: bold; margin-bottom: 15px; display: inline-block; border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 5px; }
+    .footer-links { list-style: none; padding: 0; }
+    .footer-links li { margin-bottom: 10px; font-size: 13px; display: flex; align-items: center; gap: 8px; color: #f0f5ff; line-height: 1.4; }
+    .footer-links i { color: #ffcc00; width: 15px; text-align: center; }
+
+    @media (max-width: 991px) {
+      .footer-container { grid-template-columns: repeat(2, 1fr); }
+      .middle-header { flex-direction: column; text-align: center; gap: 15px; }
+      .nav-container { flex-direction: column; padding: 10px; }
+      .converter-main { padding: 20px 15px; }
+    }
+    @media (max-width: 575px) {
+      .footer-container { grid-template-columns: 1fr; }
+      .editor-bottom-bar { flex-direction: column; align-items: flex-start; }
+      .case-buttons-container { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="site-wrapper">
+  <!-- টপ বার -->
+  <div class="ticker-top-bar">
+    <div class="top-social-icons">
+      <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+      <a href="#"><i class="fa-brands fa-twitter"></i></a>
+      <a href="#"><i class="fa-brands fa-instagram"></i></a>
+      <a href="#"><i class="fa-brands fa-pinterest-p"></i></a>
+    </div>
+    <marquee behavior="scroll" direction="left" scrollamount="6">
+      Welcome to Mousumi Computer! পাবেন সব ধরণের কম্পিউটার এক্সেসরিজ এবং অনলাইন ডিজিটাল সেবা।
+    </marquee>
+  </div>
+
+  <!-- হেডার -->
+  <div class="middle-header">
+    <div class="logo-area">
+      <div class="logo-icon"><i class="fa-solid fa-desktop"></i></div>
+      <div class="logo-text">
+        <h1 class="tiro-text">Mousumi</h1>
+        <p class="tiro-text">Computer</p>
+      </div>
+    </div>
+    <div class="contact-details">
+      <span><i class="fa-solid fa-envelope" style="color: #0f52ba;"></i> mousumicomputer.org@gmail.com</span><br>
+      <span><i class="fa-solid fa-phone" style="color: #0f52ba;"></i> +8801608314552</span>
+    </div>
+    <div class="cart-box">
+      <i class="fa-solid fa-basket-shopping"></i>
+      <span style="background: rgba(255,255,255,0.2); padding: 0 10px; border-radius: 10px;">0</span>
+    </div>
+  </div>
+
+  <!-- নেভিগেশন বার -->
+  <div class="nav-container">
+    <ul class="main-menu">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="#">Offer Zone</a></li>
+      <li><a href="#">Today's Deals</a></li>
+      <li class="dropdown active">
+        <a href="javascript:void(0);">Converter <i class="fa-solid fa-chevron-down" style="font-size: 11px; margin-left: 4px;"></i></a>
+        <ul class="dropdown-menu">
+          <li><a href="case-converter.html"><i class="fa-solid fa-font"></i> Case Converter</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Blog</a></li>
+      <li><a href="#">Contact Us</a></li>
+    </ul>
+    <a href="admin.html" class="nav-admin-btn">
+      <i class="fa-solid fa-user-shield"></i> Admin Login
+    </a>
+  </div>
+
+  <!-- কনভার্টার মূল কন্টেন্ট এরিয়া -->
+  <main class="converter-main">
+    <div class="converter-card">
+      <h2 class="tool-header-title"><i class="fa-solid fa-font-awesome" style="color: #2176ff;"></i> Online Case Converter & Text Tool</h2>
+      <p class="tool-subtitle">Type, paste or convert your text easily into uppercase, lowercase, sentence case, capitalized case and more.</p>
+
+      <!-- টেক্সট এরিয়া ও কাউন্টার বার -->
+      <div class="text-box-wrapper">
+        <textarea id="converterInput" placeholder="Type or paste your content here" oninput="updateCounters()"></textarea>
+        
+        <div class="editor-bottom-bar">
+          <div class="action-icon-group">
+            <button class="btn-icon-action" title="Copy Text" onclick="copyText()"><i class="fa-regular fa-copy"></i></button>
+            <button class="btn-icon-action" title="Share Text" onclick="shareText()"><i class="fa-solid fa-share-nodes"></i></button>
+            <button class="btn-icon-action" title="Download .txt" onclick="downloadText()"><i class="fa-solid fa-download"></i></button>
+            <button class="btn-icon-action" title="Clear All" onclick="clearText()"><i class="fa-regular fa-trash-can"></i></button>
+            <button class="btn-icon-action" title="Settings" onclick="openSettingsModal()"><i class="fa-solid fa-gear"></i></button>
+          </div>
+
+          <div class="counters-text">
+            Character Count: <span id="charCount">0</span> | Word Count: <span id="wordCount">0</span> | Line Count: <span id="lineCount">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- কেস পরিবর্তন বাটনসমূহ -->
+      <div class="case-buttons-container">
+        <div class="case-btn-list">
+          <button class="btn-case" onclick="convertCase('sentence')"><span class="btn-badge badge-sc">Sc</span> Sentence case</button>
+          <button class="btn-case" onclick="convertCase('lower')"><span class="btn-badge badge-lc">lc</span> lower case</button>
+          <button class="btn-case" onclick="convertCase('upper')"><span class="btn-badge badge-uc">UC</span> UPPER CASE</button>
+          <button class="btn-case" onclick="convertCase('capitalized')"><span class="btn-badge badge-cc">CC</span> Capitalized Case</button>
+          <button class="btn-case" onclick="convertCase('alternating')"><span class="btn-badge badge-ac">aC</span> aLtErNaTiNg cAsE</button>
+          <button class="btn-case" onclick="convertCase('title')"><span class="btn-badge badge-tc">TC</span> Title Case</button>
+          <button class="btn-case" onclick="convertCase('inverse')"><span class="btn-badge badge-ic">iC</span> InVeRsE CaSe</button>
+        </div>
+
+        <button class="btn-extra-util" onclick="removeExtraSpaces()"><i class="fa-solid fa-broom"></i> Clean Spaces</button>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ফুটার -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-column">
+        <h3 class="footer-title tiro-text">আমাদের সম্পর্কে (About Us)</h3>
+        <p class="tiro-text" style="font-size: 13px; line-height: 1.6;">মৌসুমি কম্পিউটার (Mousumi Computer) একটি বিশ্বস্ত আইটি ও সেবা কেন্দ্র।</p>
+      </div>
+      <div class="footer-column">
+        <h3 class="footer-title tiro-text">যোগাযোগ (Contact Us)</h3>
+        <ul class="footer-links tiro-text">
+          <li><i class="fa-solid fa-location-dot"></i> লালমনিরহাট, রংপুর, বাংলাদেশ।</li>
+          <li><i class="fa-solid fa-phone"></i> +8801608314552</li>
+          <li><i class="fa-solid fa-envelope"></i> mousumicomputer.org@gmail.com</li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3 class="footer-title tiro-text">সময়সূচী (Our Hours)</h3>
+        <ul class="footer-links tiro-text">
+          <li><i class="fa-solid fa-clock"></i> সকাল ০৯:০০ টা - রাত ১০:০০ টা</li>
+          <li><i class="fa-solid fa-calendar-days"></i> শনি - বৃহস্পতিবার (খোলা)</li>
+          <li><i class="fa-solid fa-calendar-xmark" style="color: #ffcccc;"></i> শুক্রবার (বন্ধ)</li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3 class="footer-title tiro-text">সোশ্যাল লিংক (Social Link)</h3>
+        <div style="display: flex; gap: 10px;">
+          <a href="#" style="background: rgba(255,255,255,0.15); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" style="background: rgba(255,255,255,0.15); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fa-brands fa-youtube"></i></a>
+        </div>
+      </div>
+    </div>
+    <div style="text-align: center; margin-top: 35px; font-size: 12px; opacity: 0.8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+      &copy; 2026 Mousumi Computer. All Rights Reserved.
+    </div>
+  </footer>
+</div>
+
+<!-- সেটিংস মোডাল -->
+<div id="settingsModal" class="modal-backdrop">
+  <div class="modal-box">
+    <h3><i class="fa-solid fa-sliders"></i> Tool Settings</h3>
+    <div class="modal-opt">
+      <label>Font Size:</label>
+      <select id="fontSizeSelect" onchange="changeFontSize(this.value)" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ccc;">
+        <option value="14px">Small (14px)</option>
+        <option value="16px" selected>Normal (16px)</option>
+        <option value="18px">Medium (18px)</option>
+        <option value="20px">Large (20px)</option>
+      </select>
+    </div>
+    <div style="text-align: right; margin-top: 20px;">
+      <button onclick="closeSettingsModal()" style="padding: 8px 20px; background: #2176ff; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- টোস্ট মেসেজ -->
+<div id="toastMsg"><i class="fa-solid fa-circle-check"></i> <span id="toastText">Copied to clipboard!</span></div>
+
+<!-- জাভাস্ক্রিপ্ট ইঞ্জিন -->
+<script>
+  const textInput = document.getElementById('converterInput');
+  const charCount = document.getElementById('charCount');
+  const wordCount = document.getElementById('wordCount');
+  const lineCount = document.getElementById('lineCount');
+
+  // ১. রিয়েল-টাইম কাউন্টার
+  function updateCounters() {
+    const str = textInput.value;
+    charCount.innerText = str.length;
+
+    const words = str.trim().split(/\s+/).filter(w => w.length > 0);
+    wordCount.innerText = words.length;
+
+    const lines = str.length === 0 ? 0 : str.split(/\r\n|\r|\n/).length;
+    lineCount.innerText = lines;
+  }
+
+  // ২. টোস্ট নোটিফিকেশন
+  function showToast(msg) {
+    const toast = document.getElementById('toastMsg');
+    document.getElementById('toastText').innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  // ৩. অ্যাকশন বাটনসমূহ
+  function copyText() {
+    if (!textInput.value.trim()) { showToast("Nothing to copy!"); return; }
+    navigator.clipboard.writeText(textInput.value);
+    showToast("Text copied to clipboard!");
+  }
+
+  function shareText() {
+    if (!textInput.value.trim()) { showToast("Nothing to share!"); return; }
+    if (navigator.share) {
+      navigator.share({ title: 'Mousumi Computer Text Tool', text: textInput.value });
+    } else {
+      copyText();
+      showToast("Link copied to share!");
+    }
+  }
+
+  function downloadText() {
+    if (!textInput.value.trim()) { showToast("Nothing to download!"); return; }
+    const blob = new Blob([textInput.value], { type: "text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "mousumi_converted_text.txt";
+    a.click();
+    showToast("File downloaded!");
+  }
+
+  function clearText() {
+    if (textInput.value.trim() && confirm("Are you sure you want to clear the text?")) {
+      textInput.value = "";
+      updateCounters();
+      showToast("Cleared all text!");
+    }
+  }
+
+  // ৪. কেস কনভার্সন ফাংশনসমূহ
+  function convertCase(type) {
+    let str = textInput.value;
+    if (!str) return;
+
+    switch (type) {
+      case 'sentence':
+        // প্রতিটি বাক্যের প্রথম বর্ণ বড় হাতের করা
+        str = str.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g, c => c.toUpperCase());
+        break;
+
+      case 'lower':
+        str = str.toLowerCase();
+        break;
+
+      case 'upper':
+        str = str.toUpperCase();
+        break;
+
+      case 'capitalized':
+        // প্রতিটি শব্দের প্রথম অক্ষর ক্যাপিটাল
+        str = str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+        break;
+
+      case 'alternating':
+        // aLtErNaTiNg
+        let alt = '';
+        for (let i = 0; i < str.length; i++) {
+          alt += (i % 2 === 0) ? str[i].toLowerCase() : str[i].toUpperCase();
+        }
+        str = alt;
+        break;
+
+      case 'title':
+        // টাইটেল কেস
+        const stopWords = ['a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'in', 'nor', 'of', 'on', 'or', 'the', 'to', 'with'];
+        str = str.toLowerCase().split(' ').map((word, idx) => {
+          if (idx === 0 || !stopWords.includes(word)) {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+          }
+          return word;
+        }).join(' ');
+        break;
+
+      case 'inverse':
+        // ইনভার্স কেস (ছোটকে বড়, বড়কে ছোট)
+        let inv = '';
+        for (let i = 0; i < str.length; i++) {
+          const c = str[i];
+          inv += (c === c.toUpperCase()) ? c.toLowerCase() : c.toUpperCase();
+        }
+        str = inv;
+        break;
+    }
+
+    textInput.value = str;
+    updateCounters();
+    showToast("Case converted successfully!");
+  }
+
+  // অতিরিক্ত স্পেস দূর করা
+  function removeExtraSpaces() {
+    if (!textInput.value) return;
+    textInput.value = textInput.value.replace(/\s+/g, ' ').trim();
+    updateCounters();
+    showToast("Extra spaces cleaned!");
+  }
+
+  // সেটিংস হ্যান্ডেলার
+  function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; }
+  function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
+  function changeFontSize(size) { textInput.style.fontSize = size; }
+</script>
+
+</body>
+</html>
