@@ -1,7 +1,7 @@
 /**
  * ==========================================================================
  * EDUCATION & DIGITAL SERVICES -> 100% EXACT GOOGLE SHEET RECEIPT TEMPLATE
- * Mousumi Computer ERP Extension
+ * Mousumi Computer ERP Extension (Crisp Single Dotted Lines Fix)
  * ==========================================================================
  */
 
@@ -15,7 +15,7 @@
         document.head.appendChild(fontLink);
     }
 
-    // ২. সিএসএস ডিজাইন (পিডিএফ অনুযায়ী)
+    // ২. সিএসএস ডিজাইন (নিখুঁত একক ডটেড লাইন)
     const style = document.createElement('style');
     style.innerHTML = `
         /* রসিদ কার্ড ফ্রেম */
@@ -105,7 +105,7 @@
             text-transform: uppercase;
         }
 
-        /* ডাটা টেবিল ও পিডিএফ-এর নিখুঁত ডটেড লাইন */
+        /* ডাটা টেবিল ও স্পষ্ট একক ডটেড লাইন */
         .rc-sheet-table {
             width: 100%;
             border-collapse: collapse;
@@ -119,12 +119,13 @@
             font-family: 'Tiro Bangla', serif !important;
             font-size: 13.5pt !important;
             line-height: 1.25;
+            border: none;
         }
 
         .rc-col-b {
             width: 38%;
             font-weight: bold !important;
-            border-right: 1.5px dotted #000;
+            border-right: 1.5px dotted #000 !important;
             padding-left: 2px !important;
         }
 
@@ -134,13 +135,15 @@
             padding-left: 10px !important;
         }
 
-        .rc-border-bottom {
-            border-bottom: 1.5px dotted #000;
+        /* সেকশন শেষের একক ডটেড বর্ডার ও গ্যাপ */
+        .rc-section-end td {
+            border-bottom: 1.5px dotted #000 !important;
+            padding-bottom: 10px !important;
         }
 
-        .rc-gap-row td {
-            height: 14px !important;
-            padding: 0 !important;
+        /* পরবর্তী সেকশন শুরুর প্যাডিং */
+        .rc-section-start td {
+            padding-top: 10px !important;
         }
 
         /* Payment Received ব্যানার */
@@ -148,7 +151,7 @@
             text-align: center !important;
             font-weight: bold !important;
             font-size: 14pt !important;
-            padding: 5px 0 !important;
+            padding: 6px 0 !important;
             border-bottom: 1.5px dotted #000 !important;
             border-right: none !important;
         }
@@ -278,39 +281,27 @@
 
                         <div class="rc-main-title">RECEIPT</div>
 
-                        <!-- ডাটা টেবিল (PDF অনুযায়ী) -->
+                        <!-- ডাটা টেবিল (নিখুঁত একক ডটেড লাইন স্ট্রাকচার) -->
                         <table class="rc-sheet-table">
                             <tr>
                                 <td class="rc-col-b">Receipt No</td>
                                 <td class="rc-col-c">3521</td>
                             </tr>
-                            <tr class="rc-border-bottom">
+                            <tr class="rc-section-end">
                                 <td class="rc-col-b">Date</td>
                                 <td class="rc-col-c">24-08-2026</td>
                             </tr>
 
-                            <!-- Gap Row -->
-                            <tr class="rc-gap-row rc-border-bottom">
-                                <td class="rc-col-b"></td>
-                                <td class="rc-col-c"></td>
-                            </tr>
-
-                            <tr>
+                            <tr class="rc-section-start">
                                 <td class="rc-col-b">Student Name</td>
                                 <td class="rc-col-c">Md. Tamim Eqbul</td>
                             </tr>
-                            <tr class="rc-border-bottom">
+                            <tr class="rc-section-end">
                                 <td class="rc-col-b">Student ID</td>
                                 <td class="rc-col-c">252062</td>
                             </tr>
 
-                            <!-- Gap Row -->
-                            <tr class="rc-gap-row rc-border-bottom">
-                                <td class="rc-col-b"></td>
-                                <td class="rc-col-c"></td>
-                            </tr>
-
-                            <tr>
+                            <tr class="rc-section-start">
                                 <td class="rc-col-b">Tuition Fee</td>
                                 <td class="rc-col-c">16,330.00</td>
                             </tr>
@@ -318,7 +309,7 @@
                                 <td class="rc-col-b">Charge</td>
                                 <td class="rc-col-c">170.3</td>
                             </tr>
-                            <tr class="rc-border-bottom">
+                            <tr class="rc-section-end">
                                 <td class="rc-col-b">Total</td>
                                 <td class="rc-col-c">16,500.30</td>
                             </tr>
@@ -353,7 +344,6 @@
             mainWrapper.appendChild(templatePanel);
         }
 
-        // উভয় এলিমেন্ট তৈরি হয়েছে কিনা রিটার্ন করা
         return !!(document.getElementById('sub-edu-template') && document.getElementById('template-view'));
     }
 
@@ -385,13 +375,12 @@
         html2pdf().set(opt).from(element).save();
     };
 
-    // নিশ্চিতভাবে সাইডবার লোড হওয়ার পর মেনু যুক্ত করার লুপ
+    // সাইডবার অটো চেকার
     const autoChecker = setInterval(() => {
         if (injectTemplateModule()) {
             clearInterval(autoChecker);
         }
     }, 100);
 
-    // ৫ সেকেন্ড পর সেফটি ক্লিয়ার
     setTimeout(() => clearInterval(autoChecker), 5000);
 })();
