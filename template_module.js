@@ -1,12 +1,12 @@
 /**
  * ==========================================================================
  * EDUCATION & DIGITAL SERVICES -> 100% EXACT GOOGLE SHEET RECEIPT TEMPLATE
- * Mousumi Computer ERP Extension (Fast Loading & Exact PDF Layout)
+ * Mousumi Computer ERP Extension
  * ==========================================================================
  */
 
 (function () {
-    // দ্রুত ফন্ট লোডের জন্য অপ্টিমাইজড লিঙ্ক ইনজেকশন
+    // ১. ফন্ট লিঙ্ক ইনজেকশন
     if (!document.getElementById('mc-receipt-fonts')) {
         const fontLink = document.createElement('link');
         fontLink.id = 'mc-receipt-fonts';
@@ -15,7 +15,7 @@
         document.head.appendChild(fontLink);
     }
 
-    // নিখুঁত সিএসএস ডিজাইন (PDF অনুযায়ী)
+    // ২. সিএসএস ডিজাইন (পিডিএফ অনুযায়ী)
     const style = document.createElement('style');
     style.innerHTML = `
         /* রসিদ কার্ড ফ্রেম */
@@ -222,14 +222,14 @@
     `;
     document.head.appendChild(style);
 
-    // ড্যাশবোর্ড ও সাইডবার লোড ফাংশন
-    function initTemplate() {
+    // ৩. অটো-ডিটেকশন ও ইনজেকশন লজিক
+    function injectTemplateModule() {
         const menuItems = document.querySelectorAll('.menu-item');
         let submenuList = null;
 
         menuItems.forEach(item => {
             if (item.textContent.includes('শিক্ষা ও ডিজিটাল সেবা')) {
-                submenuList = item.querySelector('.submenu-list');
+                submenuList = item.querySelector('.submenu-list') || item.querySelector('ul');
             }
         });
 
@@ -246,7 +246,7 @@
             submenuList.appendChild(templateSubItem);
         }
 
-        const mainWrapper = document.querySelector('.main-wrapper');
+        const mainWrapper = document.querySelector('.main-wrapper') || document.querySelector('.content-wrapper') || document.querySelector('main');
         if (mainWrapper && !document.getElementById('template-view')) {
             const templatePanel = document.createElement('div');
             templatePanel.className = 'view-panel';
@@ -352,9 +352,12 @@
             `;
             mainWrapper.appendChild(templatePanel);
         }
+
+        // উভয় এলিমেন্ট তৈরি হয়েছে কিনা রিটার্ন করা
+        return !!(document.getElementById('sub-edu-template') && document.getElementById('template-view'));
     }
 
-    // সেকশন ওপেন ফাংশন
+    // ৪. সেকশন ওপেন ফাংশন
     window.openTemplateSection = function () {
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
@@ -369,7 +372,7 @@
         if (topTitle) topTitle.innerText = "RECEIPT TEMPLATE";
     };
 
-    // PDF ডাউনলোড ফাংশন
+    // ৫. PDF ডাউনলোড ফাংশন
     window.downloadReceiptPDF = function () {
         const element = document.getElementById('printable-receipt-card');
         const opt = {
@@ -382,10 +385,13 @@
         html2pdf().set(opt).from(element).save();
     };
 
-    // তাত্ক্ষণিকভাবে ইনিশিয়ালাইজেশন (Lag Fix)
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initTemplate);
-    } else {
-        initTemplate();
-    }
+    // নিশ্চিতভাবে সাইডবার লোড হওয়ার পর মেনু যুক্ত করার লুপ
+    const autoChecker = setInterval(() => {
+        if (injectTemplateModule()) {
+            clearInterval(autoChecker);
+        }
+    }, 100);
+
+    // ৫ সেকেন্ড পর সেফটি ক্লিয়ার
+    setTimeout(() => clearInterval(autoChecker), 5000);
 })();
