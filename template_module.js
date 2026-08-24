@@ -26,13 +26,13 @@
             overflow: hidden;
         }
 
-        /* ওয়াটারমার্ক (জলছাপ) */
+        /* ওয়াটারমার্ক (জলছাপ স্পষ্ট করা হয়েছে) */
         .receipt-watermark {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            opacity: 0.12;
+            opacity: 0.30; /* অপাসিটি বাড়িয়ে স্পষ্ট করা হলো */
             pointer-events: none;
             z-index: 1;
             text-align: center;
@@ -42,8 +42,8 @@
             align-items: center;
         }
         .receipt-watermark img {
-            max-width: 320px;
-            width: 65%;
+            max-width: 380px;
+            width: 75%;
             height: auto;
             object-fit: contain;
         }
