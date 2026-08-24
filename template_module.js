@@ -156,8 +156,9 @@
         }
 
         .paid-stamp-img {
-            width: 76px;
-            height: 76px;
+            width: 85px;
+            height: auto;
+            max-height: 85px;
             object-fit: contain;
             display: inline-block;
         }
@@ -340,9 +341,9 @@
                             </tr>
                         </table>
 
-                        <!-- Row 16-19: প্রদত্ত অরিজিনাল PAID স্ট্যাম্প ইমেজ -->
+                        <!-- Row 16-19: নতুন PAID স্ট্যাম্প ইমেজ -->
                         <div class="paid-stamp-wrapper">
-                            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj7iR0RGQslBZcPB4aOop47p81Epplw_ubvqYmTIv2GHE8bSJE5e-BobTwcW-dpob62EWL1VUNdoBoCNUhPE1SRMuO8n19BkSUNQ1l94wIMIjPLfFEnil8tuIZfKZnje0TFgaiyysj7nkJceyH0JWSPPDLw0ChYhwfFbd4EE0SCQiJV8ruYjXv2unGmdZpF/s1600/drawing0.png" alt="PAID Stamp" class="paid-stamp-img" crossorigin="anonymous" />
+                            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgkW_Mz8uWQPQY8WqCQEVSh7ff6C8_ZE02lZw3o42e8QtmSIE8Sxgx_ejXTZmN_QNLHg0nfS5hrG4Mu2Y6NGCztsTnRZfvFuZ3bZzLAkMtvHxP6tkMxi9YUWcKG9gKXpJHrmnuWFFDAw0qIcAPb6WvHNVT_eiZkM2xDyI3HvRxrrqrpqyv8Zv2FIICwIQQr/s1600/Receipt.png" alt="PAID Stamp" class="paid-stamp-img" crossorigin="anonymous" />
                         </div>
 
                         <!-- Row 21: Tiro Bangla 10pt -->
