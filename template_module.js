@@ -1,7 +1,7 @@
 /**
  * ==========================================================================
  * EDUCATION & DIGITAL SERVICES -> 100% EXACT GOOGLE SHEET RECEIPT TEMPLATE
- * Mousumi Computer ERP Extension (Crisp Single Dotted Lines Fix)
+ * Mousumi Computer ERP Extension (Perfect A5 Paper Fit)
  * ==========================================================================
  */
 
@@ -15,16 +15,22 @@
         document.head.appendChild(fontLink);
     }
 
-    // ২. সিএসএস ডিজাইন (নিখুঁত একক ডটেড লাইন)
+    // ২. সিএসএস ডিজাইন (A5 পেপারের উপযোগী নিখুঁত মাপ)
     const style = document.createElement('style');
     style.innerHTML = `
-        /* রসিদ কার্ড ফ্রেম */
+        /* A5 প্রিন্ট পেজ রুল */
+        @page {
+            size: A5 portrait;
+            margin: 5mm;
+        }
+
+        /* রসিদ কার্ড ফ্রেম (A5 স্ট্যান্ডার্ড সাইজ) */
         .receipt-wrapper-card {
             background: #ffffff;
             width: 100%;
-            max-width: 590px;
+            max-width: 530px;
             margin: 0 auto;
-            padding: 30px 25px 25px 25px;
+            padding: 24px 20px 20px 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.06);
             border-radius: 4px;
             position: relative;
@@ -33,7 +39,7 @@
             overflow: hidden;
         }
 
-        /* পিডিএফ অনুযায়ী একদম নিখুঁত স্থানে জলছাপ */
+        /* A5 অনুযায়ী জলছাপ পজিশন */
         .receipt-watermark {
             position: absolute;
             top: 41%;
@@ -49,8 +55,8 @@
             align-items: center;
         }
         .receipt-watermark img {
-            max-width: 440px;
-            width: 82%;
+            max-width: 390px;
+            width: 80%;
             height: auto;
             object-fit: contain;
             filter: contrast(1.1);
@@ -65,39 +71,39 @@
         .rc-bismillah {
             text-align: center;
             font-family: 'Caveat', cursive !important;
-            font-size: 11pt !important;
+            font-size: 10.5pt !important;
             color: #000;
             margin-bottom: 2px;
-            line-height: 1.2;
+            line-height: 1.15;
         }
 
         /* Row 2: Brand Title */
         .rc-brand-title {
             text-align: center;
             font-family: 'Lobster', cursive !important;
-            font-size: 29pt !important;
+            font-size: 27pt !important;
             font-weight: bold !important;
             color: #000;
-            margin: 0 0 4px 0;
-            line-height: 1.15;
+            margin: 0 0 3px 0;
+            line-height: 1.1;
         }
 
         /* Row 3: Services Description */
         .rc-services-desc {
             text-align: center;
             font-family: 'EB Garamond', serif !important;
-            font-size: 11pt !important;
-            line-height: 1.25;
+            font-size: 10.5pt !important;
+            line-height: 1.2;
             color: #000;
-            margin: 0 auto 10px auto;
-            max-width: 500px;
+            margin: 0 auto 8px auto;
+            max-width: 460px;
         }
 
         /* Row 5: Main RECEIPT Title */
         .rc-main-title {
             text-align: center;
             font-family: 'Tiro Bangla', serif !important;
-            font-size: 12.5pt !important;
+            font-size: 12pt !important;
             font-weight: bold !important;
             letter-spacing: 1.5px;
             margin-bottom: 4px;
@@ -105,7 +111,7 @@
             text-transform: uppercase;
         }
 
-        /* ডাটা টেবিল ও স্পষ্ট একক ডটেড লাইন */
+        /* ডাটা টেবিল ও একক ডটেড লাইন */
         .rc-sheet-table {
             width: 100%;
             border-collapse: collapse;
@@ -113,12 +119,12 @@
         }
 
         .rc-sheet-table td {
-            padding: 3.5px 8px;
+            padding: 3px 6px;
             color: #000;
             vertical-align: middle;
             font-family: 'Tiro Bangla', serif !important;
-            font-size: 13.5pt !important;
-            line-height: 1.25;
+            font-size: 13pt !important;
+            line-height: 1.2;
             border: none;
         }
 
@@ -138,20 +144,20 @@
         /* সেকশন শেষের একক ডটেড বর্ডার ও গ্যাপ */
         .rc-section-end td {
             border-bottom: 1.5px dotted #000 !important;
-            padding-bottom: 10px !important;
+            padding-bottom: 8px !important;
         }
 
         /* পরবর্তী সেকশন শুরুর প্যাডিং */
         .rc-section-start td {
-            padding-top: 10px !important;
+            padding-top: 8px !important;
         }
 
         /* Payment Received ব্যানার */
         .rc-payment-received-row td {
             text-align: center !important;
             font-weight: bold !important;
-            font-size: 14pt !important;
-            padding: 6px 0 !important;
+            font-size: 13.5pt !important;
+            padding: 5px 0 !important;
             border-bottom: 1.5px dotted #000 !important;
             border-right: none !important;
         }
@@ -159,13 +165,13 @@
         /* PAID স্ট্যাম্প ইমেজ */
         .paid-stamp-wrapper {
             text-align: center;
-            margin: 12px 0 14px 0;
+            margin: 10px 0 10px 0;
         }
 
         .paid-stamp-img {
-            width: 82px;
+            width: 76px;
             height: auto;
-            max-height: 82px;
+            max-height: 76px;
             object-fit: contain;
             display: inline-block;
         }
@@ -173,8 +179,8 @@
         /* Received By */
         .rc-footer-sign {
             font-family: 'Tiro Bangla', serif !important;
-            font-size: 10.5pt !important;
-            margin: 12px 0 14px 0;
+            font-size: 10pt !important;
+            margin: 10px 0 10px 0;
             color: #000;
         }
         .rc-footer-sign strong {
@@ -185,22 +191,22 @@
         .rc-disclaimer-mono {
             text-align: center;
             font-family: 'Roboto Mono', monospace !important;
-            font-size: 10pt !important;
-            line-height: 1.4;
+            font-size: 9.5pt !important;
+            line-height: 1.35;
             color: #000;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
 
         .rc-disclaimer-lora {
             text-align: center;
             font-family: 'Lora', serif !important;
-            font-size: 10pt !important;
+            font-size: 9.5pt !important;
             font-style: italic !important;
-            line-height: 1.35;
+            line-height: 1.3;
             color: #000;
         }
 
-        /* প্রিন্ট স্টাইলিং */
+        /* প্রিন্ট স্টাইলিং (A5 হুবহু ফিট) */
         @media print {
             body * {
                 visibility: hidden;
@@ -210,13 +216,13 @@
             }
             #printable-receipt-card {
                 position: absolute;
-                left: 50%;
+                left: 0;
                 top: 0;
-                transform: translateX(-50%);
                 width: 100% !important;
-                max-width: 590px !important;
+                max-width: 100% !important;
                 box-shadow: none !important;
-                padding: 15px !important;
+                padding: 4mm !important;
+                margin: 0 auto !important;
             }
             .no-print {
                 display: none !important;
@@ -260,7 +266,7 @@
                         <i class="fa-solid fa-print"></i> প্রিন্ট রসিদ
                     </button>
                     <button onclick="downloadReceiptPDF()" class="mc-btn-primary" style="background: #4f46e5; padding: 10px 22px; border-radius: 8px; cursor: pointer;">
-                        <i class="fa-solid fa-file-pdf"></i> PDF ডাউনলোড
+                        <i class="fa-solid fa-file-pdf"></i> A5 PDF ডাউনলোড
                     </button>
                 </div>
 
@@ -281,7 +287,7 @@
 
                         <div class="rc-main-title">RECEIPT</div>
 
-                        <!-- ডাটা টেবিল (নিখুঁত একক ডটেড লাইন স্ট্রাকচার) -->
+                        <!-- ডাটা টেবিল (নিখুঁত একক ডটেড লাইন) -->
                         <table class="rc-sheet-table">
                             <tr>
                                 <td class="rc-col-b">Receipt No</td>
@@ -359,18 +365,18 @@
         if (subItem) subItem.classList.add('active');
 
         const topTitle = document.getElementById('top-title');
-        if (topTitle) topTitle.innerText = "RECEIPT TEMPLATE";
+        if (topTitle) topTitle.innerText = "RECEIPT TEMPLATE (A5)";
     };
 
-    // ৫. PDF ডাউনলোড ফাংশন
+    // ৫. নিখুঁত A5 PDF ডাউনলোড ফাংশন
     window.downloadReceiptPDF = function () {
         const element = document.getElementById('printable-receipt-card');
         const opt = {
-            margin: 8,
-            filename: 'Receipt_3521.pdf',
+            margin: [5, 4, 5, 4], // A5 মার্জিন (mm)
+            filename: 'Receipt_3521_A5.pdf',
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 3, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            html2canvas: { scale: 3, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' } // A5 ফরম্যাট
         };
         html2pdf().set(opt).from(element).save();
     };
