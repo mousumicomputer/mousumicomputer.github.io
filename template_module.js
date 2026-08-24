@@ -26,32 +26,26 @@
             overflow: hidden;
         }
 
-        /* ওয়াটারমার্ক */
+        /* ওয়াটারমার্ক (জলছাপ) */
         .receipt-watermark {
             position: absolute;
-            top: 48%;
+            top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            opacity: 0.08;
+            opacity: 0.12;
             pointer-events: none;
             z-index: 1;
             text-align: center;
             width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        .receipt-watermark .wm-logo {
-            font-family: 'EB Garamond', serif;
-            font-size: 200px;
-            font-weight: 700;
-            line-height: 1;
-            color: #000;
-        }
-        .receipt-watermark .wm-text {
-            font-family: 'EB Garamond', serif;
-            font-size: 32px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            margin-top: -40px;
-            color: #000;
+        .receipt-watermark img {
+            max-width: 320px;
+            width: 65%;
+            height: auto;
+            object-fit: contain;
         }
 
         .receipt-body {
@@ -149,7 +143,7 @@
             border-right: none !important;
         }
 
-        /* Row 16-19: অরিজিনাল PAID স্ট্যাম্প ইমেজ */
+        /* Row 16-19: PAID স্ট্যাম্প ইমেজ */
         .paid-stamp-wrapper {
             text-align: center;
             margin: 12px 0 14px 0;
@@ -261,10 +255,9 @@
 
                 <!-- গুগল শিটের সাথে ১০০% হুবহু রসিদ -->
                 <div class="receipt-wrapper-card" id="printable-receipt-card">
-                    <!-- ওয়াটারমার্ক -->
+                    <!-- নতুন জলছাপ (Watermark Image) -->
                     <div class="receipt-watermark">
-                        <div class="wm-logo">MC</div>
-                        <div class="wm-text">Mousumi Computer</div>
+                        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgBBifAiiveIb1xVgQZv6AxAD_YCVu7JRmBqQOX2eeSJFxavzFEhsWQlYpN6b_aUIiUVCdNu39EHD2-tG1Li5b2Jx4U1DqTH98zbWgxmegb-xPADeDbJBdCqt-WhP71NUrFTlJLeEpZgVoAxEcUufpJNxMQs8nVE28Jj6Ch0LRjTnDBICBibZxxgwE7nFyB/s1600/Receipt%20%281%29.png" alt="Watermark" crossorigin="anonymous" />
                     </div>
 
                     <div class="receipt-body">
@@ -341,7 +334,7 @@
                             </tr>
                         </table>
 
-                        <!-- Row 16-19: নতুন PAID স্ট্যাম্প ইমেজ -->
+                        <!-- Row 16-19: PAID স্ট্যাম্প ইমেজ -->
                         <div class="paid-stamp-wrapper">
                             <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgkW_Mz8uWQPQY8WqCQEVSh7ff6C8_ZE02lZw3o42e8QtmSIE8Sxgx_ejXTZmN_QNLHg0nfS5hrG4Mu2Y6NGCztsTnRZfvFuZ3bZzLAkMtvHxP6tkMxi9YUWcKG9gKXpJHrmnuWFFDAw0qIcAPb6WvHNVT_eiZkM2xDyI3HvRxrrqrpqyv8Zv2FIICwIQQr/s1600/Receipt.png" alt="PAID Stamp" class="paid-stamp-img" crossorigin="anonymous" />
                         </div>
