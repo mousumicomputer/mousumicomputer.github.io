@@ -1,70 +1,46 @@
 /**
  * ==========================================================================
- * EDUCATION & DIGITAL SERVICES -> 100% EXACT A5 DIRECT PRINT TEMPLATE
+ * EDUCATION & DIGITAL SERVICES -> 100% PERFECT A5 ISOLATED PRINT ENGINE
  * Mousumi Computer ERP Extension
  * ==========================================================================
  */
 
 (function () {
-    // ১. ফন্ট লিঙ্ক ইনজেকশন
-    if (!document.getElementById('mc-receipt-fonts')) {
-        const fontLink = document.createElement('link');
-        fontLink.id = 'mc-receipt-fonts';
-        fontLink.rel = 'stylesheet';
-        fontLink.href = 'https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lobster&family=Lora:ital,wght@1,400;1,500;1,600&family=Roboto+Mono:wght@400;500&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap';
-        document.head.appendChild(fontLink);
-    }
-
-    // ২. পারফেক্ট প্রিন্ট সিএসএস (A5 ফিক্সড)
+    // ১. ড্যাশবোর্ড ডিসপ্লে সিএসএস
     const style = document.createElement('style');
     style.innerHTML = `
-        /* প্রিন্ট পেপার সাইজ রুল */
-        @page {
-            size: A5 portrait;
-            margin: 6mm 5mm 6mm 5mm;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lobster&family=Lora:ital,wght@1,400;1,500;1,600&family=Roboto+Mono:wght@400;500&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap');
 
-        /* রসিদ কার্ড ফ্রেম (স্ক্রিন ও প্রিন্টের জন্য নিখুঁত মাপ) */
         .receipt-wrapper-card {
-            background: #ffffff !important;
+            background: #ffffff;
             width: 100%;
             max-width: 500px;
             margin: 0 auto;
-            padding: 18px 20px 20px 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            padding: 20px 22px 22px 22px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.08);
             border-radius: 4px;
             position: relative;
-            box-sizing: border-box !important;
+            box-sizing: border-box;
             color: #000000;
             overflow: hidden;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
         }
 
-        /* জলছাপ (প্রিন্টে নিখুঁত সেন্টারিং ও ভিজিবিলিটি) */
         .receipt-watermark {
             position: absolute;
             top: 40%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 80% !important;
+            width: 80%;
             max-width: 380px;
-            opacity: 0.45 !important;
+            opacity: 0.42;
             pointer-events: none;
             z-index: 1;
             text-align: center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
         }
         .receipt-watermark img {
-            width: 100% !important;
-            height: auto !important;
+            width: 100%;
+            height: auto;
             display: block;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
         }
 
         .receipt-body {
@@ -72,133 +48,115 @@
             z-index: 2;
         }
 
-        /* Row 1: Bismillah */
         .rc-bismillah {
             text-align: center;
             font-family: 'Caveat', cursive !important;
-            font-size: 11pt !important;
+            font-size: 11pt;
             color: #000;
             margin-bottom: 2px;
-            line-height: 1.15;
         }
 
-        /* Row 2: Brand Title */
         .rc-brand-title {
             text-align: center;
             font-family: 'Lobster', cursive !important;
-            font-size: 26pt !important;
-            font-weight: bold !important;
+            font-size: 27pt;
+            font-weight: bold;
             color: #000;
             margin: 0 0 2px 0;
             line-height: 1.1;
         }
 
-        /* Row 3: Services Description */
         .rc-services-desc {
             text-align: center;
             font-family: 'EB Garamond', serif !important;
-            font-size: 10pt !important;
-            line-height: 1.2;
+            font-size: 10pt;
+            line-height: 1.25;
             color: #000;
             margin: 0 auto 8px auto;
             max-width: 450px;
         }
 
-        /* Row 5: Main RECEIPT Title */
         .rc-main-title {
             text-align: center;
             font-family: 'Tiro Bangla', serif !important;
-            font-size: 12pt !important;
-            font-weight: bold !important;
-            letter-spacing: 1.2px;
+            font-size: 12pt;
+            font-weight: bold;
+            letter-spacing: 1.5px;
             margin-bottom: 4px;
             color: #000;
             text-transform: uppercase;
         }
 
-        /* ডাটা টেবিল ও শার্প ডটেড লাইন */
         .rc-sheet-table {
             width: 100%;
-            border-collapse: collapse !important;
-            border-top: 1.5px dotted #000 !important;
+            border-collapse: collapse;
+            border-top: 1.5px dotted #000;
         }
 
         .rc-sheet-table td {
-            padding: 3.5px 8px !important;
+            padding: 3.5px 8px;
             color: #000;
             vertical-align: middle;
             font-family: 'Tiro Bangla', serif !important;
-            font-size: 13pt !important;
+            font-size: 13pt;
             line-height: 1.2;
             border: none;
         }
 
         .rc-col-b {
             width: 38%;
-            font-weight: bold !important;
-            border-right: 1.5px dotted #000 !important;
-            padding-left: 2px !important;
+            font-weight: bold;
+            border-right: 1.5px dotted #000;
+            padding-left: 2px;
         }
 
         .rc-col-c {
             width: 62%;
-            font-weight: normal !important;
-            padding-left: 10px !important;
+            font-weight: normal;
+            padding-left: 10px;
         }
 
-        /* সেকশন শেষের ডটেড বর্ডার ও গ্যাপ */
         .rc-section-end td {
-            border-bottom: 1.5px dotted #000 !important;
-            padding-bottom: 7px !important;
+            border-bottom: 1.5px dotted #000;
+            padding-bottom: 8px;
         }
 
-        /* পরবর্তী সেকশন শুরুর টপ প্যাডিং */
         .rc-section-start td {
-            padding-top: 7px !important;
+            padding-top: 8px;
         }
 
-        /* Payment Received ব্যানার */
         .rc-payment-received-row td {
             text-align: center !important;
-            font-weight: bold !important;
-            font-size: 13.5pt !important;
-            padding: 5px 0 !important;
-            border-bottom: 1.5px dotted #000 !important;
-            border-right: none !important;
+            font-weight: bold;
+            font-size: 13.5pt;
+            padding: 5px 0;
+            border-bottom: 1.5px dotted #000;
+            border-right: none;
         }
 
-        /* PAID স্ট্যাম্প ইমেজ */
         .paid-stamp-wrapper {
             text-align: center;
-            margin: 8px 0 8px 0;
+            margin: 8px 0;
         }
 
         .paid-stamp-img {
             width: 74px;
             height: auto;
-            max-height: 74px;
             object-fit: contain;
             display: inline-block;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
         }
 
-        /* Received By */
         .rc-footer-sign {
             font-family: 'Tiro Bangla', serif !important;
-            font-size: 10pt !important;
+            font-size: 10pt;
             margin: 8px 0 10px 0;
             color: #000;
         }
-        .rc-footer-sign strong {
-            font-weight: bold;
-        }
 
-        /* ফুটার টেক্সট ও ডিসক্লেইমার */
         .rc-disclaimer-mono {
             text-align: center;
             font-family: 'Roboto Mono', monospace !important;
-            font-size: 9pt !important;
+            font-size: 9pt;
             line-height: 1.35;
             color: #000;
             margin-bottom: 4px;
@@ -207,59 +165,15 @@
         .rc-disclaimer-lora {
             text-align: center;
             font-family: 'Lora', serif !important;
-            font-size: 9pt !important;
-            font-style: italic !important;
+            font-size: 9pt;
+            font-style: italic;
             line-height: 1.3;
             color: #000;
-        }
-
-        /* প্রিন্ট প্রিভিউ ফিক্সড কোড (A5 এ নিখুঁত ফিটিং) */
-        @media print {
-            body {
-                background: #ffffff !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            body * {
-                visibility: hidden;
-            }
-            #printable-receipt-card, #printable-receipt-card * {
-                visibility: visible !important;
-            }
-            #printable-receipt-card {
-                position: fixed !important;
-                left: 0 !important;
-                right: 0 !important;
-                top: 0 !important;
-                width: 100% !important;
-                max-width: 135mm !important;
-                margin: 0 auto !important;
-                padding: 2mm 2mm !important;
-                box-shadow: none !important;
-                border: none !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            .receipt-watermark {
-                display: flex !important;
-                visibility: visible !important;
-                opacity: 0.45 !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            .receipt-watermark img {
-                visibility: visible !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            .no-print {
-                display: none !important;
-            }
         }
     `;
     document.head.appendChild(style);
 
-    // ৩. অটো-ডিটেকশন ও ইনজেকশন লজিক
+    // ২. সাইডবার ও ড্যাশবোর্ড ইনজেকশন
     function injectTemplateModule() {
         const menuItems = document.querySelectorAll('.menu-item');
         let submenuList = null;
@@ -289,17 +203,16 @@
             templatePanel.className = 'view-panel';
             templatePanel.id = 'template-view';
             templatePanel.innerHTML = `
-                <div style="margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px;" class="no-print">
-                    <button onclick="window.print()" class="mc-btn-primary" style="background: #1e293b; padding: 12px 28px; font-size: 15px; border-radius: 8px; cursor: pointer; color: #fff; border: none; display: flex; align-items: center; gap: 8px;">
+                <div style="margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                    <button onclick="printReceiptA5Clean()" class="mc-btn-primary" style="background: #1e293b; padding: 12px 28px; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; color: #fff; border: none; display: flex; align-items: center; gap: 8px;">
                         <i class="fa-solid fa-print"></i> প্রিন্ট রসিদ (A5)
                     </button>
                 </div>
 
-                <!-- হুবহু সফট কপির মত রসিদ কার্ড -->
-                <div class="receipt-wrapper-card" id="printable-receipt-card">
-                    <!-- সঠিক স্থানে বসানো জলছাপ -->
+                <!-- মূল রসিদ কার্ড -->
+                <div class="receipt-wrapper-card" id="receipt-card-container">
                     <div class="receipt-watermark">
-                        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgBBifAiiveIb1xVgQZv6AxAD_YCVu7JRmBqQOX2eeSJFxavzFEhsWQlYpN6b_aUIiUVCdNu39EHD2-tG1Li5b2Jx4U1DqTH98zbWgxmegb-xPADeDbJBdCqt-WhP71NUrFTlJLeEpZgVoAxEcUufpJNxMQs8nVE28Jj6Ch0LRjTnDBICBibZxxgwE7nFyB/s1600/Receipt%20%281%29.png" alt="Watermark" crossorigin="anonymous" />
+                        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgBBifAiiveIb1xVgQZv6AxAD_YCVu7JRmBqQOX2eeSJFxavzFEhsWQlYpN6b_aUIiUVCdNu39EHD2-tG1Li5b2Jx4U1DqTH98zbWgxmegb-xPADeDbJBdCqt-WhP71NUrFTlJLeEpZgVoAxEcUufpJNxMQs8nVE28Jj6Ch0LRjTnDBICBibZxxgwE7nFyB/s1600/Receipt%20%281%29.png" alt="Watermark" />
                     </div>
 
                     <div class="receipt-body">
@@ -312,7 +225,6 @@
 
                         <div class="rc-main-title">RECEIPT</div>
 
-                        <!-- ডাটা টেবিল (একক ডটেড লাইন স্ট্রাকচার) -->
                         <table class="rc-sheet-table">
                             <tr>
                                 <td class="rc-col-b">Receipt No</td>
@@ -350,12 +262,10 @@
                             </tr>
                         </table>
 
-                        <!-- PAID স্ট্যাম্প -->
                         <div class="paid-stamp-wrapper">
-                            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgkW_Mz8uWQPQY8WqCQEVSh7ff6C8_ZE02lZw3o42e8QtmSIE8Sxgx_ejXTZmN_QNLHg0nfS5hrG4Mu2Y6NGCztsTnRZfvFuZ3bZzLAkMtvHxP6tkMxi9YUWcKG9gKXpJHrmnuWFFDAw0qIcAPb6WvHNVT_eiZkM2xDyI3HvRxrrqrpqyv8Zv2FIICwIQQr/s1600/Receipt.png" alt="PAID Stamp" class="paid-stamp-img" crossorigin="anonymous" />
+                            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgkW_Mz8uWQPQY8WqCQEVSh7ff6C8_ZE02lZw3o42e8QtmSIE8Sxgx_ejXTZmN_QNLHg0nfS5hrG4Mu2Y6NGCztsTnRZfvFuZ3bZzLAkMtvHxP6tkMxi9YUWcKG9gKXpJHrmnuWFFDAw0qIcAPb6WvHNVT_eiZkM2xDyI3HvRxrrqrpqyv8Zv2FIICwIQQr/s1600/Receipt.png" alt="PAID Stamp" class="paid-stamp-img" />
                         </div>
 
-                        <!-- Received By -->
                         <div class="rc-footer-sign">
                             <strong>Received By:</strong> Riyal Robiul
                         </div>
@@ -378,7 +288,7 @@
         return !!(document.getElementById('sub-edu-template') && document.getElementById('template-view'));
     }
 
-    // ৪. সেকশন ওপেন ফাংশন
+    // ৩. সেকশন ওপেন ফাংশন
     window.openTemplateSection = function () {
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
@@ -391,6 +301,226 @@
 
         const topTitle = document.getElementById('top-title');
         if (topTitle) topTitle.innerText = "RECEIPT TEMPLATE (A5)";
+    };
+
+    // ৪. আইসোলেটেড পারফেক্ট A5 প্রিন্টার ফাংশন (১ পেজ ও ছবি লোড নিশ্চিত)
+    window.printReceiptA5Clean = function () {
+        let printFrame = document.getElementById('mc-isolated-print-frame');
+        if (printFrame) printFrame.remove();
+
+        printFrame = document.createElement('iframe');
+        printFrame.id = 'mc-isolated-print-frame';
+        printFrame.style.position = 'fixed';
+        printFrame.style.right = '0';
+        printFrame.style.bottom = '0';
+        printFrame.style.width = '0';
+        printFrame.style.height = '0';
+        printFrame.style.border = '0';
+        document.body.appendChild(printFrame);
+
+        const cardContent = document.getElementById('receipt-card-container').innerHTML;
+
+        const printDoc = printFrame.contentWindow.document;
+        printDoc.open();
+        printDoc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Receipt_3521</title>
+                <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lobster&family=Lora:ital,wght@1,400;1,500;1,600&family=Roboto+Mono:wght@400;500&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap">
+                <style>
+                    @page {
+                        size: A5 portrait;
+                        margin: 0;
+                    }
+                    html, body {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: #ffffff !important;
+                        width: 100%;
+                        height: 100%;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                    .receipt-wrapper-card {
+                        background: #ffffff !important;
+                        width: 134mm !important;
+                        max-width: 134mm !important;
+                        margin: 4mm auto 0 auto !important;
+                        padding: 2mm 3mm !important;
+                        position: relative !important;
+                        box-sizing: border-box !important;
+                        color: #000000 !important;
+                        overflow: hidden !important;
+                    }
+                    .receipt-watermark {
+                        position: absolute !important;
+                        top: 39% !important;
+                        left: 50% !important;
+                        transform: translate(-50%, -50%) !important;
+                        width: 105mm !important;
+                        opacity: 0.42 !important;
+                        z-index: 1 !important;
+                        text-align: center !important;
+                    }
+                    .receipt-watermark img {
+                        width: 100% !important;
+                        height: auto !important;
+                        display: block !important;
+                    }
+                    .receipt-body {
+                        position: relative !important;
+                        z-index: 2 !important;
+                    }
+                    .rc-bismillah {
+                        text-align: center !important;
+                        font-family: 'Caveat', cursive !important;
+                        font-size: 10.5pt !important;
+                        color: #000 !important;
+                        margin-bottom: 2px !important;
+                        line-height: 1.15 !important;
+                    }
+                    .rc-brand-title {
+                        text-align: center !important;
+                        font-family: 'Lobster', cursive !important;
+                        font-size: 26pt !important;
+                        font-weight: bold !important;
+                        color: #000 !important;
+                        margin: 0 0 2px 0 !important;
+                        line-height: 1.1 !important;
+                    }
+                    .rc-services-desc {
+                        text-align: center !important;
+                        font-family: 'EB Garamond', serif !important;
+                        font-size: 10pt !important;
+                        line-height: 1.2 !important;
+                        color: #000 !important;
+                        margin: 0 auto 8px auto !important;
+                        max-width: 120mm !important;
+                    }
+                    .rc-main-title {
+                        text-align: center !important;
+                        font-family: 'Tiro Bangla', serif !important;
+                        font-size: 12pt !important;
+                        font-weight: bold !important;
+                        letter-spacing: 1.5px !important;
+                        margin-bottom: 4px !important;
+                        color: #000 !important;
+                        text-transform: uppercase !important;
+                    }
+                    .rc-sheet-table {
+                        width: 100% !important;
+                        border-collapse: collapse !important;
+                        border-top: 1.5px dotted #000 !important;
+                    }
+                    .rc-sheet-table td {
+                        padding: 3.5px 8px !important;
+                        color: #000 !important;
+                        vertical-align: middle !important;
+                        font-family: 'Tiro Bangla', serif !important;
+                        font-size: 13pt !important;
+                        line-height: 1.2 !important;
+                        border: none !important;
+                    }
+                    .rc-col-b {
+                        width: 38% !important;
+                        font-weight: bold !important;
+                        border-right: 1.5px dotted #000 !important;
+                        padding-left: 2px !important;
+                    }
+                    .rc-col-c {
+                        width: 62% !important;
+                        font-weight: normal !important;
+                        padding-left: 10px !important;
+                    }
+                    .rc-section-end td {
+                        border-bottom: 1.5px dotted #000 !important;
+                        padding-bottom: 8px !important;
+                    }
+                    .rc-section-start td {
+                        padding-top: 8px !important;
+                    }
+                    .rc-payment-received-row td {
+                        text-align: center !important;
+                        font-weight: bold !important;
+                        font-size: 13.5pt !important;
+                        padding: 5px 0 !important;
+                        border-bottom: 1.5px dotted #000 !important;
+                        border-right: none !important;
+                    }
+                    .paid-stamp-wrapper {
+                        text-align: center !important;
+                        margin: 8px 0 !important;
+                    }
+                    .paid-stamp-img {
+                        width: 74px !important;
+                        height: auto !important;
+                        object-fit: contain !important;
+                        display: inline-block !important;
+                    }
+                    .rc-footer-sign {
+                        font-family: 'Tiro Bangla', serif !important;
+                        font-size: 10pt !important;
+                        margin: 8px 0 10px 0 !important;
+                        color: #000 !important;
+                    }
+                    .rc-footer-sign strong {
+                        font-weight: bold !important;
+                    }
+                    .rc-disclaimer-mono {
+                        text-align: center !important;
+                        font-family: 'Roboto Mono', monospace !important;
+                        font-size: 9pt !important;
+                        line-height: 1.35 !important;
+                        color: #000 !important;
+                        margin-bottom: 4px !important;
+                    }
+                    .rc-disclaimer-lora {
+                        text-align: center !important;
+                        font-family: 'Lora', serif !important;
+                        font-size: 9pt !important;
+                        font-style: italic !important;
+                        line-height: 1.3 !important;
+                        color: #000 !important;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="receipt-wrapper-card">
+                    ${cardContent}
+                </div>
+            </body>
+            </html>
+        `);
+        printDoc.close();
+
+        // ছবি ও ফন্ট লোড হওয়ার পর নিখুঁতভাবে প্রিন্ট ট্রিগার
+        const images = printDoc.images;
+        let loaded = 0;
+        const total = images.length;
+
+        function triggerCleanPrint() {
+            setTimeout(() => {
+                printFrame.contentWindow.focus();
+                printFrame.contentWindow.print();
+            }, 300);
+        }
+
+        if (total === 0) {
+            triggerCleanPrint();
+        } else {
+            for (let i = 0; i < total; i++) {
+                if (images[i].complete) {
+                    loaded++;
+                    if (loaded === total) triggerCleanPrint();
+                } else {
+                    images[i].onload = images[i].onerror = function () {
+                        loaded++;
+                        if (loaded === total) triggerCleanPrint();
+                    };
+                }
+            }
+        }
     };
 
     // সাইডবার অটো চেকার
