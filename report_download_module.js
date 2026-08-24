@@ -5,7 +5,7 @@
  * 
  * Features:
  * 1. Single Day Mode (Today/Yesterday) & Multi-Day Date Range (Weekly/Monthly).
- * 2. Full Executive Financial Summary (All Asset Categories).
+ * 2. Full Executive Financial Summary (All Asset Categories with Correct Sum).
  * 3. Section 2: Customer Transactions & Due Summary (Dilam / Pelam / Due).
  * 4. 100% Safe (No modifications required in admin.html).
  * 5. Official Tiro Bangla Typography + Smart Page Breaks + Signatures.
@@ -335,7 +335,7 @@
         return true;
     }
 
-    // ৪. ভিউ প্যানেল ইনজেকশন (From Date ও To Date ফিল্টারসহ)
+    // ৪. ভিউ প্যানেল ইনজেকশন
     function injectModuleView() {
         if (document.getElementById('report-download-hub-view')) return true;
 
@@ -459,7 +459,7 @@
         };
     }
 
-    // ৬. ডাটা সংগ্রাহক - কাস্টমার লেনদেন (সিঙ্গেল ডে এবং ডেট রেঞ্জ সাপোর্ট)
+    // ৬. ডাটা সংগ্রাহক - কাস্টমার লেনদেন
     function getTransactionReportData(fromDate, toDate) {
         const store = getLiveStore();
         const txs = Array.isArray(store.customerTransactions) ? store.customerTransactions : [];
@@ -472,7 +472,6 @@
 
         if (rangeTxs.length === 0) return null;
 
-        // তারিখ ও সময় অনুযায়ী সাজানো
         rangeTxs.sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
 
         return rangeTxs.map(t => {
@@ -490,13 +489,12 @@
         });
     }
 
-    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (সিঙ্গেল ডে এবং রেঞ্জ সাপোর্ট)
+    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (সঠিক যোগফলসহ)
     function getDailyClosingStatementData(fromDate, toDate) {
         const store = getLiveStore();
         const reports = Array.isArray(store.dailyClosingReports) ? store.dailyClosingReports : [];
         const isRange = fromDate !== toDate;
 
-        // শেষের দিনের ক্লোজিং স্ন্যাপশট
         const closedSnap = reports.find(r => String(r.report_date) === String(toDate));
 
         const categories = Array.isArray(store.categories) ? store.categories : [];
@@ -509,7 +507,6 @@
         const customers = Array.isArray(store.customers) ? store.customers : [];
         const customerTransactions = Array.isArray(store.customerTransactions) ? store.customerTransactions : [];
 
-        // রেঞ্জ বা নির্দিষ্ট দিনের দিলাম ও পেলাম
         let totalDilam = 0;
         let totalPelam = 0;
         customerTransactions.filter(t => {
@@ -520,7 +517,6 @@
             totalPelam += (parseFloat(t.credit) || 0);
         });
 
-        // মোট কাস্টমার বকেয়া
         let totalCustomerDue = 0;
         customers.forEach(c => {
             let due = parseFloat(c.openingBalance) || 0;
@@ -534,6 +530,16 @@
         // ক. যদি হিস্ট্রিতে ডিটেইলস স্ন্যাপশট থাকে (সিঙ্গেল ডে মোড)
         if (!isRange && closedSnap && closedSnap.details) {
             const det = closedSnap.details;
+            const snapCash = det.cashInventory ? det.cashInventory.total : (det.summary ? det.summary.totalCash : 0);
+            const snapCard = det.cardInventory ? det.cardInventory.total : (det.summary ? det.summary.totalCard : 0);
+            const snapBank = det.bankAccounts ? det.bankAccounts.total : (det.summary ? det.summary.totalBank : 0);
+            const snapPersonal = det.personalAccounts ? det.personalAccounts.total : (det.summary ? det.summary.totalPersonal : 0);
+            const snapAgent = det.agentAccounts ? det.agentAccounts.total : (det.summary ? det.summary.totalAgent : 0);
+            const snapRecharge = det.rechargeBalances ? det.rechargeBalances.total : (det.summary ? det.summary.totalRecharge : 0);
+
+            // সেকশন ১ এর দৃশ্যমান আইটেমগুলোর হুবহু যোগফল
+            const correctTotalAssets = snapCash + snapCard + snapBank + snapPersonal + snapAgent + snapRecharge;
+
             return {
                 isRange: false,
                 reportDate: toDate,
@@ -541,20 +547,20 @@
                 reportTime: closedSnap.closing_time || "--:--",
                 reportId: closedSnap.report_id || `DCR-${Date.now()}`,
                 refId: `REF-${String(Math.abs((closedSnap.report_id || '').split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0))).padStart(6, '0').slice(-6)}`,
-                summary: det.summary || {
-                    totalCash: det.cashInventory ? det.cashInventory.total : 0,
-                    totalCard: det.cardInventory ? det.cardInventory.total : 0,
-                    totalBank: det.bankAccounts ? det.bankAccounts.total : 0,
-                    totalPersonal: det.personalAccounts ? det.personalAccounts.total : 0,
-                    totalAgent: det.agentAccounts ? det.agentAccounts.total : 0,
-                    totalRecharge: det.rechargeBalances ? det.rechargeBalances.total : 0,
-                    totalCustomerDue: 0,
-                    totalNetBalance: closedSnap.actual_closing
+                summary: {
+                    totalCash: snapCash,
+                    totalCard: snapCard,
+                    totalBank: snapBank,
+                    totalPersonal: snapPersonal,
+                    totalAgent: snapAgent,
+                    totalRecharge: snapRecharge,
+                    totalCustomerDue: (det.summary && det.summary.totalCustomerDue) ? det.summary.totalCustomerDue : totalCustomerDue,
+                    totalNetBalance: correctTotalAssets
                 },
                 dueSummary: {
-                    todayDilam: closedSnap.total_dilam || 0,
-                    todayPelam: closedSnap.total_pelam || 0,
-                    totalCustomerDue: (det.summary && det.summary.totalCustomerDue) ? det.summary.totalCustomerDue : 0
+                    todayDilam: closedSnap.total_dilam || totalDilam,
+                    todayPelam: closedSnap.total_pelam || totalPelam,
+                    totalCustomerDue: (det.summary && det.summary.totalCustomerDue) ? det.summary.totalCustomerDue : totalCustomerDue
                 },
                 bankAccounts: det.bankAccounts || { list: [], total: 0 },
                 personalAccounts: det.personalAccounts || { list: [], total: 0 },
@@ -616,8 +622,8 @@
         });
 
         const totalBankAndMFS = bankAccs.total + personalAccs.total + agentAccs.total + rechargeAccs.total;
+        // সেকশন ১ এর প্রকৃত সম্পদ যোগফল
         const totalAssetsSum = totalCash + totalCardsValue + totalBankAndMFS;
-        const totalNetBalance = (closedSnap ? closedSnap.actual_closing : totalAssetsSum) + totalCustomerDue;
 
         const now = new Date();
         const timeStr = closedSnap ? closedSnap.closing_time : now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
@@ -641,7 +647,7 @@
                 totalAgent: agentAccs.total,
                 totalRecharge: rechargeAccs.total,
                 totalCustomerDue,
-                totalNetBalance
+                totalNetBalance: totalAssetsSum // সংশোধিত নির্ভুল যোগফল
             },
             dueSummary: {
                 todayDilam: totalDilam,
@@ -794,7 +800,7 @@
                         </div>
                     </div>
 
-                    <!-- SECTION 1: পূর্ণাঙ্গ অ্যাসেট সামারি -->
+                    <!-- SECTION 1: পূর্ণাঙ্গ ফিন্যান্সিয়াল অ্যাসেট সামারি -->
                     <div class="dcr-sec-box">
                         <div class="dcr-sec-bar">SECTION 1: EXECUTIVE FINANCIAL SUMMARY ${data.isRange ? `(AS OF ${data.toDate})` : ''}</div>
                         <table class="dcr-sec-table">
@@ -824,7 +830,7 @@
                             </tr>
                             <tr class="total-row" style="background:#f9fafb;">
                                 <td>TOTAL CLOSING FINANCIAL BALANCE (ASSETS)</td>
-                                <td style="text-align:right; font-size:12px;">৳ ${toEnMoney(data.summary.totalNetBalance)}</td>
+                                <td style="text-align:right; font-size:12px; font-weight:bold;">৳ ${toEnMoney(data.summary.totalNetBalance)}</td>
                             </tr>
                         </table>
                     </div>
@@ -1317,7 +1323,7 @@ html, body {
             </tr>
             <tr class="total-row" style="background:#f9fafb;">
                 <td>TOTAL CLOSING FINANCIAL BALANCE (ASSETS)</td>
-                <td style="text-align:right; font-size:12px;">৳ ${toEnMoney(data.summary.totalNetBalance)}</td>
+                <td style="text-align:right; font-size:12px; font-weight:bold;">৳ ${toEnMoney(data.summary.totalNetBalance)}</td>
             </tr>
         </table>
     </div>
@@ -1594,7 +1600,7 @@ html, body {
         }
     };
 
-    // ১১. শর্টকাট ইঞ্জিন (Today, Yesterday, Last 7 Days, This Month, Last Month)
+    // ১১. শর্টকাট ইঞ্জিন
     window.hubDateShortcut = function (preset) {
         document.querySelectorAll('.rpt-pill-btn').forEach(b => b.classList.remove('active'));
         if (window.event && window.event.target) window.event.target.classList.add('active');
