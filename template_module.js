@@ -26,13 +26,13 @@
             overflow: hidden;
         }
 
-        /* ওয়াটারমার্ক (জলছাপ স্পষ্ট করা হয়েছে) */
+        /* ওয়াটারমার্ক (গাঢ় এবং স্পষ্ট জলছাপ) */
         .receipt-watermark {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            opacity: 0.30; /* অপাসিটি বাড়িয়ে স্পষ্ট করা হলো */
+            opacity: 0.65; /* অপাসিটি বৃদ্ধি করা হয়েছে যাতে একদম ক্লিয়ার দেখা যায় */
             pointer-events: none;
             z-index: 1;
             text-align: center;
@@ -42,10 +42,11 @@
             align-items: center;
         }
         .receipt-watermark img {
-            max-width: 380px;
-            width: 75%;
+            max-width: 420px;
+            width: 80%;
             height: auto;
             object-fit: contain;
+            filter: contrast(1.15) brightness(0.95); /* দাগগুলো গাঢ় করার জন্য */
         }
 
         .receipt-body {
@@ -255,7 +256,7 @@
 
                 <!-- গুগল শিটের সাথে ১০০% হুবহু রসিদ -->
                 <div class="receipt-wrapper-card" id="printable-receipt-card">
-                    <!-- নতুন জলছাপ (Watermark Image) -->
+                    <!-- নতুন গাঢ় জলছাপ (Watermark Image) -->
                     <div class="receipt-watermark">
                         <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgBBifAiiveIb1xVgQZv6AxAD_YCVu7JRmBqQOX2eeSJFxavzFEhsWQlYpN6b_aUIiUVCdNu39EHD2-tG1Li5b2Jx4U1DqTH98zbWgxmegb-xPADeDbJBdCqt-WhP71NUrFTlJLeEpZgVoAxEcUufpJNxMQs8nVE28Jj6Ch0LRjTnDBICBibZxxgwE7nFyB/s1600/Receipt%20%281%29.png" alt="Watermark" crossorigin="anonymous" />
                     </div>
