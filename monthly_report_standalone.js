@@ -1,146 +1,132 @@
 /**
- * Mousumi Computer ERP - Monthly Report Standalone Plugin
- * এটি অটোমেটিক ড্রপডাউন খুঁজে "Monthly Financial Statement" যোগ করবে।
+ * Mousumi Computer ERP - Monthly Report Standalone (Advanced Hook)
+ * এটি সরাসরি ইভেন্ট লিসেনার ব্যবহার করে ড্রপডাউন এবং বাটন কন্ট্রোল করবে।
  */
 
 (function() {
-    // ১. ড্রপডাউনে অপশনটি ইনজেক্ট করার ফাংশন
+    // ১. ড্রপডাউনে অপশন ইনজেক্ট করা
     function injectMonthlyOption() {
-        // সিস্টেমে থাকা সব ড্রপডাউন (select) চেক করা
-        const allSelects = document.querySelectorAll('select');
-        let reportDropdown = null;
-
-        allSelects.forEach(select => {
-            // ড্রপডাউনের ভেতরে যদি Daily Closing কথাটি থাকে তবে সেটিই আমাদের টার্গেট
-            if (select.innerText.includes('Daily Closing')) {
-                reportDropdown = select;
-            }
-        });
-
-        // যদি ড্রপডাউন পাওয়া যায় এবং আমাদের অপশনটি আগে থেকে না থাকে
-        if (reportDropdown && !document.getElementById('monthly-stat-opt')) {
+        const select = document.querySelector('select[id*="Type"]') || 
+                       Array.from(document.querySelectorAll('select')).find(s => s.innerText.includes('Daily Closing'));
+        
+        if (select && !document.getElementById('monthly-stat-v3')) {
             const opt = document.createElement('option');
-            opt.id = 'monthly-stat-opt';
-            opt.value = 'monthly_financial_report';
+            opt.id = 'monthly-stat-v3';
+            opt.value = 'monthly_report_final';
             opt.innerText = 'Monthly Financial Statement (মাসিক আর্থিক বিবরণী)';
-            reportDropdown.appendChild(opt);
-            console.log("Monthly Report Option Added!");
+            select.appendChild(opt);
         }
     }
 
-    // ২. মাসিক লাভ-ক্ষতি ক্যালকুলেশন লজিক
-    window.runMonthlyReportLogic = function() {
+    // ২. মাসিক রিপোর্ট জেনারেশন ফাংশন
+    window.renderMonthlyPreview = function() {
         const closings = window.dailyClosingReports || [];
-        // তারিখ ইনপুট ফিল্ড খুঁজে বের করা
-        const dateInput = document.querySelector('input[type="date"]');
+        // স্ক্রিনশট অনুযায়ী 'From Date' ইনপুট খুঁজে নেওয়া
+        const fromDateInput = document.querySelectorAll('input[type="date"]')[0]; 
         
-        if (!dateInput || !dateInput.value) {
-            alert("দয়া করে তারিখ নির্বাচন করুন!");
+        if (!fromDateInput || !fromDateInput.value) {
+            alert("দয়া করে একটি শুরু তারিখ (From Date) নির্বাচন করুন!");
             return;
         }
 
-        const selectedDate = new Date(dateInput.value);
-        const targetMonth = selectedDate.getMonth();
-        const targetYear = selectedDate.getFullYear();
+        const date = new Date(fromDateInput.value);
+        const m = date.getMonth();
+        const y = date.getFullYear();
 
-        // নির্বাচিত মাসের ডাটা ফিল্টার করা
-        const monthlyClosings = closings.filter(r => {
-            const d = new Date(r.report_date);
-            return d.getMonth() === targetMonth && d.getFullYear() === targetYear;
+        const filtered = closings.filter(r => {
+            const rd = new Date(r.report_date);
+            return rd.getMonth() === m && rd.getFullYear() === y;
         });
 
-        if (monthlyClosings.length === 0) {
-            alert("নির্বাচিত মাসের কোনো ক্লোজিং ডাটা পাওয়া যায়নি!");
+        if (filtered.length === 0) {
+            alert("দুঃখিত, এই মাসের জন্য কোনো ক্লোজিং ডাটা খুঁজে পাওয়া যায়নি!");
             return;
         }
 
-        // তারিখ অনুযায়ী সাজানো
-        monthlyClosings.sort((a, b) => a.report_date.localeCompare(b.report_date));
+        filtered.sort((a, b) => a.report_date.localeCompare(b.report_date));
 
-        let totalPelam = 0, totalDilam = 0, totalProfit = 0;
-        const openingBal = monthlyClosings[0].opening_capital || 0;
-        const finalAsset = monthlyClosings[monthlyClosings.length - 1].actual_closing || 0;
+        let tPelam = 0, tDilam = 0, tProfit = 0;
+        const opening = filtered[0].opening_capital || 0;
+        const closing = filtered[filtered.length - 1].actual_closing || 0;
 
-        monthlyClosings.forEach(r => {
-            totalPelam += parseFloat(r.total_pelam) || 0;
-            totalDilam += parseFloat(r.total_dilam) || 0;
-            totalProfit += parseFloat(r.income) || 0;
+        filtered.forEach(r => {
+            tPelam += parseFloat(r.total_pelam) || 0;
+            tDilam += parseFloat(r.total_dilam) || 0;
+            tProfit += parseFloat(r.income) || 0;
         });
 
-        // ৩. প্রফেশনাল রিপোর্ট ডিজাইন (আপনার ১নং ছবির মতো)
-        const months = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"];
-        const numFmt = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2 });
+        const mNames = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"];
+        const fmt = (v) => v.toLocaleString('en-US', { minimumFractionDigits: 2 });
 
         const html = `
-            <div id="monthly-report-wrapper" style="font-family: Arial, sans-serif; color: #000; padding: 25px; background: #fff;">
-                <div style="text-align: center; border-bottom: 2px solid #333; margin-bottom: 15px; padding-bottom: 10px;">
-                    <h2 style="margin: 0; font-size: 24px; color: #1e1b4b;">MOUSUMI COMPUTER</h2>
-                    <p style="margin: 5px 0; font-weight: bold; font-size: 15px;">MONTHLY FINANCIAL STATEMENT</p>
-                    <p style="margin: 0; font-size: 13px;">মাস: ${months[targetMonth]} - ${targetYear}</p>
+            <div id="monthly-report-output" style="font-family: 'Arial', sans-serif; padding: 30px; background: #fff; color: #000; line-height: 1.5;">
+                <div style="text-align: center; border-bottom: 2.5px solid #000; margin-bottom: 20px; padding-bottom: 15px;">
+                    <h2 style="margin: 0; font-size: 26px; text-transform: uppercase;">Mousumi Computer</h2>
+                    <p style="margin: 5px 0; font-weight: bold; font-size: 16px;">MONTHLY FINANCIAL STATEMENT</p>
+                    <p style="margin: 0; font-size: 14px;">মাস: ${mNames[m]} - ${y}</p>
                 </div>
 
-                <div style="border: 1px solid #000; margin-top: 10px;">
-                    <div style="background: #f1f5f9; padding: 8px; font-weight: bold; border-bottom: 1px solid #000; font-size: 13px;">MONTHLY CASH RECONCILIATION</div>
+                <div style="border: 1.5px solid #000;">
+                    <div style="background: #f1f5f9; padding: 10px; font-weight: bold; border-bottom: 1.5px solid #000; font-size: 14px;">CAPITAL & CASH RECONCILIATION</div>
                     <table style="width: 100%; border-collapse: collapse;">
-                        <tr style="background: #f8fafc; font-weight: bold; font-size: 12px;">
-                            <td style="border: 1px solid #000; padding: 10px;">DESCRIPTION</td>
-                            <td style="border: 1px solid #000; padding: 10px; text-align: right;">AMOUNT (৳)</td>
+                        <tr style="background: #f8fafc; font-weight: bold;">
+                            <td style="border: 1px solid #000; padding: 12px; font-size: 13px;">DESCRIPTION</td>
+                            <td style="border: 1px solid #000; padding: 12px; text-align: right; font-size: 13px;">AMOUNT (৳)</td>
                         </tr>
                         <tr>
-                            <td style="border: 1px solid #000; padding: 8px; font-size: 12px;">Opening Capital (মাসের শুরুতে পুঁজি)</td>
-                            <td style="border: 1px solid #000; padding: 8px; text-align: right;">৳ ${numFmt(openingBal)}</td>
+                            <td style="border: 1px solid #000; padding: 10px;">Opening Capital (মাসের শুরুতে মোট পুঁজি)</td>
+                            <td style="border: 1px solid #000; padding: 10px; text-align: right;">৳ ${fmt(opening)}</td>
                         </tr>
                         <tr>
-                            <td style="border: 1px solid #000; padding: 8px; font-size: 12px;">(+) Total Cash Collection (সারা মাসে মোট আদায়)</td>
-                            <td style="border: 1px solid #000; padding: 8px; text-align: right; color: #10b981;">৳ ${numFmt(totalPelam)}</td>
+                            <td style="border: 1px solid #000; padding: 10px;">Total Monthly Collection (মোট নগদ আদায়)</td>
+                            <td style="border: 1px solid #000; padding: 10px; text-align: right; color: #10b981; font-weight: bold;">৳ ${fmt(tPelam)}</td>
                         </tr>
                         <tr>
-                            <td style="border: 1px solid #000; padding: 8px; font-size: 12px;">(-) Total Sales/Credit (সারা মাসে মোট প্রদান)</td>
-                            <td style="border: 1px solid #000; padding: 8px; text-align: right; color: #ef4444;">৳ ${numFmt(totalDilam)}</td>
+                            <td style="border: 1px solid #000; padding: 10px;">Total Monthly Credit/Sales (মোট প্রদান/বাকি)</td>
+                            <td style="border: 1px solid #000; padding: 10px; text-align: right; color: #ef4444; font-weight: bold;">৳ ${fmt(tDilam)}</td>
                         </tr>
-                        <tr style="font-weight: bold; background: #f8fafc;">
-                            <td style="border: 1px solid #000; padding: 10px; font-size: 12px;">Actual Closing Assets (মাসের শেষে মোট নগদ সম্পদ)</td>
-                            <td style="border: 1px solid #000; padding: 10px; text-align: right;">৳ ${numFmt(finalAsset)}</td>
+                        <tr style="background: #f8fafc; font-weight: bold;">
+                            <td style="border: 1px solid #000; padding: 10px;">Actual Closing Assets (মাসের শেষে মোট নগদ সম্পদ)</td>
+                            <td style="border: 1px solid #000; padding: 10px; text-align: right;">৳ ${fmt(closing)}</td>
                         </tr>
-                        <tr style="font-weight: bold; background: #e2e8f0; font-size: 15px;">
-                            <td style="border: 1px solid #000; padding: 12px;">NET PROFIT OF THE MONTH (মাসিক নিট লাভ)</td>
-                            <td style="border: 1px solid #000; padding: 12px; text-align: right;">৳ ${numFmt(totalProfit)}</td>
+                        <tr style="background: #e2e8f0; font-weight: 900; font-size: 16px;">
+                            <td style="border: 1px solid #000; padding: 15px;">NET MONTHLY PROFIT (পুরো মাসের নিট লাভ)</td>
+                            <td style="border: 1px solid #000; padding: 15px; text-align: right;">৳ ${fmt(tProfit)}</td>
                         </tr>
                     </table>
                 </div>
-                <div style="margin-top: 30px; text-align: center; font-size: 10px; color: #666;">
-                    Generated by Mousumi Computer ERP - ${new Date().toLocaleString()}
-                </div>
+                <p style="text-align: center; margin-top: 30px; font-size: 11px; color: #666;">Generated on: ${new Date().toLocaleString()}</p>
             </div>
         `;
 
-        // প্রিভিউ এরিয়াতে ডাটা দেখানো
-        const previewDiv = document.getElementById('printable-closing-report') || 
-                           document.getElementById('report-preview-area');
-        if (previewDiv) {
-            previewDiv.innerHTML = html;
-            if(window.showToast) window.showToast("Monthly Report Generated!", "success");
+        // রিপোর্টটি প্রিভিউ এরিয়াতে বসানো
+        const previewBox = document.getElementById('printable-closing-report') || 
+                           document.querySelector('.report-preview-area') || 
+                           document.querySelector('[id*="preview"]');
+                           
+        if (previewBox) {
+            previewBox.innerHTML = html;
+            previewBox.style.display = 'block';
+            window.scrollTo({ top: previewBox.offsetTop - 100, behavior: 'smooth' });
         }
     };
 
-    // ৪. জেনারেট বাটনের সাথে লজিক হুক করা
-    function hookGenerateButton() {
-        const btns = document.querySelectorAll('button');
-        btns.forEach(btn => {
-            if (btn.innerText.includes('Generate Preview')) {
-                btn.addEventListener('click', function(e) {
-                    const sel = document.querySelector('select');
-                    if (sel && sel.value === 'monthly_financial_report') {
-                        e.stopImmediatePropagation(); // মূল কোডের ইভেন্ট বন্ধ করা
-                        window.runMonthlyReportLogic();
-                    }
-                }, true); // Use capture to run before original event
+    // ৩. গ্লোবাল বাটন ক্লিক লিসেনার (সবচেয়ে কার্যকর পদ্ধতি)
+    document.addEventListener('click', function(e) {
+        // যদি ক্লিক করা এলিমেন্ট 'Generate Preview' বাটন হয়
+        if (e.target && (e.target.innerText.includes('Generate Preview') || e.target.closest('button')?.innerText.includes('Generate Preview'))) {
+            const select = document.querySelector('select[id*="Type"]') || 
+                           Array.from(document.querySelectorAll('select')).find(s => s.innerText.includes('Daily Closing'));
+            
+            if (select && select.value === 'monthly_report_final') {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                window.renderMonthlyPreview();
             }
-        });
-    }
+        }
+    }, true); // true মানে এটি অন্য সব ইভেন্টের আগে কাজ করবে
 
-    // ৫. অটো-রান
-    setInterval(injectMonthlyOption, 2000); // ২ সেকেন্ড পর পর চেক করবে
-    setTimeout(hookGenerateButton, 3000);   // ৩ সেকেন্ড পর বাটনে হুক করবে
+    // ৪. অটো ইনজেকশন রান করা
+    setInterval(injectMonthlyOption, 2000);
 
 })();
