@@ -1,7 +1,7 @@
 /**
  * ==========================================================================
  * EDUCATION & DIGITAL SERVICES -> 100% PERFECT A5 ISOLATED PRINT ENGINE
- * Mousumi Computer ERP Extension (Exact Match Edition)
+ * Mousumi Computer ERP Extension (Pixel-Perfect Match)
  * ==========================================================================
  */
 
@@ -14,9 +14,9 @@
         .receipt-wrapper-card {
             background: #ffffff;
             width: 100%;
-            max-width: 520px;
+            max-width: 530px;
             margin: 0 auto;
-            padding: 24px 24px 20px 24px;
+            padding: 22px 24px;
             box-shadow: 0 5px 25px rgba(0,0,0,0.08);
             border-radius: 4px;
             position: relative;
@@ -30,8 +30,8 @@
             top: 42%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 82%;
-            max-width: 400px;
+            width: 85%;
+            max-width: 410px;
             opacity: 0.38;
             pointer-events: none;
             z-index: 1;
@@ -63,14 +63,14 @@
             font-size: 30pt;
             font-weight: normal;
             color: #000;
-            margin: 0 0 4px 0;
+            margin: 0 0 3px 0;
             line-height: 1.1;
         }
 
         .rc-services-desc {
             text-align: center;
             font-family: 'EB Garamond', serif !important;
-            font-size: 10pt;
+            font-size: 10.5pt;
             line-height: 1.25;
             color: #000;
             margin: 0 auto 10px auto;
@@ -80,7 +80,7 @@
         .rc-main-title {
             text-align: center;
             font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
-            font-size: 12.5pt;
+            font-size: 12pt;
             font-weight: bold;
             letter-spacing: 1.5px;
             margin-bottom: 5px;
@@ -95,26 +95,25 @@
         }
 
         .rc-sheet-table td {
-            padding: 4px 6px;
+            padding: 4px 8px;
             color: #000;
             vertical-align: middle;
             font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
             font-size: 13.5pt;
             line-height: 1.2;
-            border: none;
         }
 
         .rc-col-b {
-            width: 38%;
+            width: 36%;
             font-weight: bold;
-            border-right: 1.5px dotted #000;
+            border-right: 1.5px dotted #000 !important;
             padding-left: 2px !important;
         }
 
         .rc-col-c {
-            width: 62%;
+            width: 64%;
             font-weight: normal;
-            padding-left: 12px !important;
+            padding-left: 14px !important;
         }
 
         .rc-section-end td {
@@ -131,17 +130,18 @@
             font-weight: bold;
             font-size: 14pt;
             padding: 6px 0;
+            border-top: 1.5px dotted #000;
             border-bottom: 1.5px dotted #000;
-            border-right: none;
+            border-right: none !important;
         }
 
         .paid-stamp-wrapper {
             text-align: center;
-            margin: 10px 0;
+            margin: 12px 0;
         }
 
         .paid-stamp-img {
-            width: 78px;
+            width: 82px;
             height: auto;
             object-fit: contain;
             display: inline-block;
@@ -304,7 +304,7 @@
         if (topTitle) topTitle.innerText = "RECEIPT TEMPLATE (A5)";
     };
 
-    // ৪. আইসোলেটেড পারফেক্ট A5 প্রিন্টার ফাংশন (১০০% ফন্ট ও ইমেজ নিশ্চিতকরণ)
+    // ৪. আইসোলেটেড পারফেক্ট A5 প্রিন্টার ফাংশন
     window.printReceiptA5Clean = function () {
         let printFrame = document.getElementById('mc-isolated-print-frame');
         if (printFrame) printFrame.remove();
@@ -347,10 +347,10 @@
                     }
                     .receipt-wrapper-card {
                         background: #ffffff !important;
-                        width: 136mm !important;
-                        max-width: 136mm !important;
-                        margin: 5mm auto 0 auto !important;
-                        padding: 2mm 3mm !important;
+                        width: 138mm !important;
+                        max-width: 138mm !important;
+                        margin: 4mm auto 0 auto !important;
+                        padding: 2mm 2mm !important;
                         position: relative !important;
                         box-sizing: border-box !important;
                         color: #000000 !important;
@@ -361,7 +361,7 @@
                         top: 41% !important;
                         left: 50% !important;
                         transform: translate(-50%, -50%) !important;
-                        width: 110mm !important;
+                        width: 112mm !important;
                         opacity: 0.38 !important;
                         z-index: 1 !important;
                         text-align: center !important;
@@ -378,7 +378,7 @@
                     .rc-bismillah {
                         text-align: center !important;
                         font-family: 'Caveat', cursive !important;
-                        font-size: 11pt !important;
+                        font-size: 11.5pt !important;
                         font-weight: 600 !important;
                         color: #000 !important;
                         margin-bottom: 2px !important;
@@ -400,7 +400,7 @@
                         line-height: 1.25 !important;
                         color: #000 !important;
                         margin: 0 auto 8px auto !important;
-                        max-width: 125mm !important;
+                        max-width: 128mm !important;
                     }
                     .rc-main-title {
                         text-align: center !important;
@@ -424,18 +424,17 @@
                         font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
                         font-size: 13.5pt !important;
                         line-height: 1.2 !important;
-                        border: none !important;
                     }
                     .rc-col-b {
-                        width: 38% !important;
+                        width: 36% !important;
                         font-weight: bold !important;
                         border-right: 1.5px dotted #000 !important;
                         padding-left: 2px !important;
                     }
                     .rc-col-c {
-                        width: 62% !important;
+                        width: 64% !important;
                         font-weight: normal !important;
-                        padding-left: 12px !important;
+                        padding-left: 14px !important;
                     }
                     .rc-section-end td {
                         border-bottom: 1.5px dotted #000 !important;
@@ -449,6 +448,7 @@
                         font-weight: bold !important;
                         font-size: 14pt !important;
                         padding: 6px 0 !important;
+                        border-top: 1.5px dotted #000 !important;
                         border-bottom: 1.5px dotted #000 !important;
                         border-right: none !important;
                     }
@@ -457,7 +457,7 @@
                         margin: 10px 0 !important;
                     }
                     .paid-stamp-img {
-                        width: 78px !important;
+                        width: 80px !important;
                         height: auto !important;
                         object-fit: contain !important;
                         display: inline-block !important;
@@ -498,12 +498,12 @@
         `);
         printDoc.close();
 
-        // ফন্ট ও সকল ইমেজ সম্পূর্ণ লোড হওয়া নিশ্চিত করার পর প্রিন্ট ট্রিগার
+        // ফন্ট এবং ছবি সম্পূর্ণ প্রস্তুত হওয়া নিশ্চিত করে প্রিন্ট
         const triggerFinalPrint = () => {
             setTimeout(() => {
                 printFrame.contentWindow.focus();
                 printFrame.contentWindow.print();
-            }, 350);
+            }, 400);
         };
 
         const images = printDoc.images;
