@@ -1,7 +1,7 @@
 /**
  * ==========================================================================
  * EDUCATION & DIGITAL SERVICES -> 100% PERFECT A5 ISOLATED PRINT ENGINE
- * Mousumi Computer ERP Extension (Pixel-Perfect Match)
+ * Mousumi Computer ERP Extension (Pixel-to-Pixel Exact Match)
  * ==========================================================================
  */
 
@@ -14,9 +14,9 @@
         .receipt-wrapper-card {
             background: #ffffff;
             width: 100%;
-            max-width: 530px;
+            max-width: 540px;
             margin: 0 auto;
-            padding: 22px 24px;
+            padding: 24px 26px;
             box-shadow: 0 5px 25px rgba(0,0,0,0.08);
             border-radius: 4px;
             position: relative;
@@ -30,8 +30,8 @@
             top: 42%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 85%;
-            max-width: 410px;
+            width: 90%;
+            max-width: 440px;
             opacity: 0.38;
             pointer-events: none;
             z-index: 1;
@@ -74,7 +74,7 @@
             line-height: 1.25;
             color: #000;
             margin: 0 auto 10px auto;
-            max-width: 460px;
+            max-width: 480px;
         }
 
         .rc-main-title {
@@ -95,7 +95,6 @@
         }
 
         .rc-sheet-table td {
-            padding: 4px 8px;
             color: #000;
             vertical-align: middle;
             font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
@@ -104,34 +103,33 @@
         }
 
         .rc-col-b {
-            width: 36%;
+            width: 38%;
             font-weight: bold;
             border-right: 1.5px dotted #000 !important;
-            padding-left: 2px !important;
+            padding: 4px 10px 4px 0 !important;
         }
 
         .rc-col-c {
-            width: 64%;
+            width: 62%;
             font-weight: normal;
-            padding-left: 14px !important;
+            padding: 4px 0 4px 12px !important;
         }
 
         .rc-section-end td {
             border-bottom: 1.5px dotted #000;
-            padding-bottom: 8px;
+            padding-bottom: 7px;
         }
 
         .rc-section-start td {
-            padding-top: 8px;
+            padding-top: 7px;
         }
 
         .rc-payment-received-row td {
             text-align: center !important;
             font-weight: bold;
             font-size: 14pt;
-            padding: 6px 0;
-            border-top: 1.5px dotted #000;
-            border-bottom: 1.5px dotted #000;
+            padding: 6px 0 !important;
+            border-bottom: 1.5px dotted #000 !important;
             border-right: none !important;
         }
 
@@ -141,7 +139,7 @@
         }
 
         .paid-stamp-img {
-            width: 82px;
+            width: 78px;
             height: auto;
             object-fit: contain;
             display: inline-block;
@@ -304,7 +302,7 @@
         if (topTitle) topTitle.innerText = "RECEIPT TEMPLATE (A5)";
     };
 
-    // ৪. আইসোলেটেড পারফেক্ট A5 প্রিন্টার ফাংশন
+    // ৪. আইসোলেটেড পারফেক্ট A5 প্রিন্টার ফাংশন (১০০% নিখুঁত রেন্ডারিং)
     window.printReceiptA5Clean = function () {
         let printFrame = document.getElementById('mc-isolated-print-frame');
         if (printFrame) printFrame.remove();
@@ -347,10 +345,10 @@
                     }
                     .receipt-wrapper-card {
                         background: #ffffff !important;
-                        width: 138mm !important;
-                        max-width: 138mm !important;
-                        margin: 4mm auto 0 auto !important;
-                        padding: 2mm 2mm !important;
+                        width: 140mm !important;
+                        max-width: 140mm !important;
+                        margin: 4.5mm auto 0 auto !important;
+                        padding: 2mm 2.5mm !important;
                         position: relative !important;
                         box-sizing: border-box !important;
                         color: #000000 !important;
@@ -358,10 +356,10 @@
                     }
                     .receipt-watermark {
                         position: absolute !important;
-                        top: 41% !important;
+                        top: 41.5% !important;
                         left: 50% !important;
                         transform: translate(-50%, -50%) !important;
-                        width: 112mm !important;
+                        width: 118mm !important;
                         opacity: 0.38 !important;
                         z-index: 1 !important;
                         text-align: center !important;
@@ -387,7 +385,7 @@
                     .rc-brand-title {
                         text-align: center !important;
                         font-family: 'Lobster', cursive !important;
-                        font-size: 28pt !important;
+                        font-size: 28.5pt !important;
                         font-weight: normal !important;
                         color: #000 !important;
                         margin: 0 0 3px 0 !important;
@@ -400,7 +398,7 @@
                         line-height: 1.25 !important;
                         color: #000 !important;
                         margin: 0 auto 8px auto !important;
-                        max-width: 128mm !important;
+                        max-width: 130mm !important;
                     }
                     .rc-main-title {
                         text-align: center !important;
@@ -418,7 +416,6 @@
                         border-top: 1.5px dotted #000 !important;
                     }
                     .rc-sheet-table td {
-                        padding: 3.8px 6px !important;
                         color: #000 !important;
                         vertical-align: middle !important;
                         font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
@@ -426,29 +423,28 @@
                         line-height: 1.2 !important;
                     }
                     .rc-col-b {
-                        width: 36% !important;
+                        width: 38% !important;
                         font-weight: bold !important;
                         border-right: 1.5px dotted #000 !important;
-                        padding-left: 2px !important;
+                        padding: 3.6px 10px 3.6px 0 !important;
                     }
                     .rc-col-c {
-                        width: 64% !important;
+                        width: 62% !important;
                         font-weight: normal !important;
-                        padding-left: 14px !important;
+                        padding: 3.6px 0 3.6px 12px !important;
                     }
                     .rc-section-end td {
                         border-bottom: 1.5px dotted #000 !important;
-                        padding-bottom: 8px !important;
+                        padding-bottom: 7.5px !important;
                     }
                     .rc-section-start td {
-                        padding-top: 8px !important;
+                        padding-top: 7.5px !important;
                     }
                     .rc-payment-received-row td {
                         text-align: center !important;
                         font-weight: bold !important;
                         font-size: 14pt !important;
                         padding: 6px 0 !important;
-                        border-top: 1.5px dotted #000 !important;
                         border-bottom: 1.5px dotted #000 !important;
                         border-right: none !important;
                     }
@@ -457,7 +453,7 @@
                         margin: 10px 0 !important;
                     }
                     .paid-stamp-img {
-                        width: 80px !important;
+                        width: 78px !important;
                         height: auto !important;
                         object-fit: contain !important;
                         display: inline-block !important;
@@ -498,12 +494,12 @@
         `);
         printDoc.close();
 
-        // ফন্ট এবং ছবি সম্পূর্ণ প্রস্তুত হওয়া নিশ্চিত করে প্রিন্ট
+        // ফন্ট এবং ইমেজ কমপ্লিট লোড নিশ্চিতকরণ
         const triggerFinalPrint = () => {
             setTimeout(() => {
                 printFrame.contentWindow.focus();
                 printFrame.contentWindow.print();
-            }, 400);
+            }, 350);
         };
 
         const images = printDoc.images;
