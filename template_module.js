@@ -1,7 +1,7 @@
 /**
  * ==========================================================================
  * EDUCATION & DIGITAL SERVICES -> 100% PERFECT A5 ISOLATED PRINT ENGINE
- * Mousumi Computer ERP Extension (Exact Side Margin & Width)
+ * Mousumi Computer ERP Extension (Exact Line-by-Line Spacing Edition)
  * ==========================================================================
  */
 
@@ -14,9 +14,9 @@
         .receipt-wrapper-card {
             background: #ffffff;
             width: 100%;
-            max-width: 500px;
+            max-width: 520px;
             margin: 0 auto;
-            padding: 20px 22px;
+            padding: 24px 28px;
             box-shadow: 0 5px 25px rgba(0,0,0,0.08);
             border-radius: 4px;
             position: relative;
@@ -27,11 +27,11 @@
 
         .receipt-watermark {
             position: absolute;
-            top: 42%;
+            top: 41%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 82%;
-            max-width: 380px;
+            width: 88%;
+            max-width: 420px;
             opacity: 0.38;
             pointer-events: none;
             z-index: 1;
@@ -54,7 +54,7 @@
             font-size: 13pt;
             font-weight: 600;
             color: #000;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
         }
 
         .rc-brand-title {
@@ -63,7 +63,7 @@
             font-size: 30pt;
             font-weight: normal;
             color: #000;
-            margin: 0 0 3px 0;
+            margin: 0 0 4px 0;
             line-height: 1.1;
         }
 
@@ -73,17 +73,17 @@
             font-size: 10.5pt;
             line-height: 1.25;
             color: #000;
-            margin: 0 auto 10px auto;
-            max-width: 450px;
+            margin: 0 auto 14px auto;
+            max-width: 470px;
         }
 
         .rc-main-title {
             text-align: center;
             font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
-            font-size: 12.5pt;
+            font-size: 12pt;
             font-weight: bold;
             letter-spacing: 1.5px;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             color: #000;
             text-transform: uppercase;
         }
@@ -100,6 +100,7 @@
             font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
             font-size: 13.5pt;
             line-height: 1.2;
+            border: none;
         }
 
         .rc-col-b {
@@ -112,30 +113,30 @@
         .rc-col-c {
             width: 63%;
             font-weight: normal;
-            padding: 4px 0 4px 12px !important;
+            padding: 4px 0 4px 14px !important;
         }
 
         .rc-section-end td {
             border-bottom: 1.5px dotted #000;
-            padding-bottom: 7px;
+            padding-bottom: 8px !important;
         }
 
         .rc-section-start td {
-            padding-top: 7px;
+            padding-top: 8px !important;
         }
 
         .rc-payment-received-row td {
             text-align: center !important;
             font-weight: bold;
             font-size: 14pt;
-            padding: 6px 0 !important;
+            padding: 7px 0 !important;
             border-bottom: 1.5px dotted #000 !important;
             border-right: none !important;
         }
 
         .paid-stamp-wrapper {
             text-align: center;
-            margin: 12px 0;
+            margin: 15px 0 16px 0;
         }
 
         .paid-stamp-img {
@@ -148,8 +149,12 @@
         .rc-footer-sign {
             font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
             font-size: 11pt;
-            margin: 10px 0 12px 0;
+            margin: 0 0 18px 0;
             color: #000;
+        }
+
+        .rc-footer-sign strong {
+            font-weight: bold;
         }
 
         .rc-disclaimer-mono {
@@ -158,7 +163,7 @@
             font-size: 9pt;
             line-height: 1.35;
             color: #000;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         .rc-disclaimer-lora {
@@ -302,7 +307,7 @@
         if (topTitle) topTitle.innerText = "RECEIPT TEMPLATE (A5)";
     };
 
-    // ৪. আইসোলেটেড পারফেক্ট A5 প্রিন্টার ফাংশন (২নং ছবির নিখুঁত সাইড মার্জিন)
+    // ৪. আইসোলেটেড পারফেক্ট A5 প্রিন্টার ফাংশন (এক্স্যাক্ট স্পেসিং)
     window.printReceiptA5Clean = function () {
         let printFrame = document.getElementById('mc-isolated-print-frame');
         if (printFrame) printFrame.remove();
@@ -332,7 +337,7 @@
                 <style>
                     @page {
                         size: A5 portrait;
-                        margin: 0mm; /* মার্জিন জিরো করে ফুল পেজ কন্ট্রোল */
+                        margin: 0;
                     }
                     html, body {
                         margin: 0 !important;
@@ -345,9 +350,9 @@
                     }
                     .receipt-wrapper-card {
                         background: #ffffff !important;
-                        width: 124mm !important; /* ২নং ছবির এক্স্যাক্ট সাইড মার্জিন অনুযায়ী উইডথ */
-                        max-width: 124mm !important;
-                        margin: 8mm auto 0 auto !important; /* একদম পারফেক্ট সেন্টারিং */
+                        width: 128mm !important;
+                        max-width: 128mm !important;
+                        margin: 7mm auto 0 auto !important;
                         padding: 0 !important;
                         position: relative !important;
                         box-sizing: border-box !important;
@@ -359,7 +364,7 @@
                         top: 41% !important;
                         left: 50% !important;
                         transform: translate(-50%, -50%) !important;
-                        width: 102mm !important;
+                        width: 106mm !important;
                         opacity: 0.38 !important;
                         z-index: 1 !important;
                         text-align: center !important;
@@ -385,7 +390,7 @@
                     .rc-brand-title {
                         text-align: center !important;
                         font-family: 'Lobster', cursive !important;
-                        font-size: 27pt !important;
+                        font-size: 27.5pt !important;
                         font-weight: normal !important;
                         color: #000 !important;
                         margin: 0 0 3px 0 !important;
@@ -397,8 +402,8 @@
                         font-size: 10pt !important;
                         line-height: 1.25 !important;
                         color: #000 !important;
-                        margin: 0 auto 8px auto !important;
-                        max-width: 118mm !important;
+                        margin: 0 auto 10px auto !important;
+                        max-width: 120mm !important;
                     }
                     .rc-main-title {
                         text-align: center !important;
@@ -406,7 +411,7 @@
                         font-size: 11.5pt !important;
                         font-weight: bold !important;
                         letter-spacing: 1.5px !important;
-                        margin-bottom: 4px !important;
+                        margin-bottom: 5px !important;
                         color: #000 !important;
                         text-transform: uppercase !important;
                     }
@@ -421,6 +426,7 @@
                         font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
                         font-size: 13pt !important;
                         line-height: 1.2 !important;
+                        border: none !important;
                     }
                     .rc-col-b {
                         width: 37% !important;
@@ -431,29 +437,29 @@
                     .rc-col-c {
                         width: 63% !important;
                         font-weight: normal !important;
-                        padding: 3.5px 0 3.5px 10px !important;
+                        padding: 3.5px 0 3.5px 12px !important;
                     }
                     .rc-section-end td {
                         border-bottom: 1.5px dotted #000 !important;
-                        padding-bottom: 7px !important;
+                        padding-bottom: 7.5px !important;
                     }
                     .rc-section-start td {
-                        padding-top: 7px !important;
+                        padding-top: 7.5px !important;
                     }
                     .rc-payment-received-row td {
                         text-align: center !important;
                         font-weight: bold !important;
                         font-size: 13.5pt !important;
-                        padding: 5.5px 0 !important;
+                        padding: 6px 0 !important;
                         border-bottom: 1.5px dotted #000 !important;
                         border-right: none !important;
                     }
                     .paid-stamp-wrapper {
                         text-align: center !important;
-                        margin: 10px 0 !important;
+                        margin: 12px 0 14px 0 !important;
                     }
                     .paid-stamp-img {
-                        width: 74px !important;
+                        width: 76px !important;
                         height: auto !important;
                         object-fit: contain !important;
                         display: inline-block !important;
@@ -461,7 +467,7 @@
                     .rc-footer-sign {
                         font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
                         font-size: 10.5pt !important;
-                        margin: 8px 0 10px 0 !important;
+                        margin: 0 0 16px 0 !important;
                         color: #000 !important;
                     }
                     .rc-footer-sign strong {
@@ -473,7 +479,7 @@
                         font-size: 8.5pt !important;
                         line-height: 1.35 !important;
                         color: #000 !important;
-                        margin-bottom: 4px !important;
+                        margin-bottom: 5px !important;
                     }
                     .rc-disclaimer-lora {
                         text-align: center !important;
@@ -494,7 +500,7 @@
         `);
         printDoc.close();
 
-        // ফন্ট ও ইমেজ সম্পূর্ণ রেডি হওয়ার পর প্রিন্ট
+        // ফন্ট ও ছবি পুরোপুরি রেন্ডার হওয়ার পর প্রিন্ট
         const triggerFinalPrint = () => {
             setTimeout(() => {
                 printFrame.contentWindow.focus();
