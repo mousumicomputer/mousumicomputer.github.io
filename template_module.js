@@ -1,22 +1,22 @@
 /**
  * ==========================================================================
  * EDUCATION & DIGITAL SERVICES -> 100% PERFECT A5 ISOLATED PRINT ENGINE
- * Mousumi Computer ERP Extension
+ * Mousumi Computer ERP Extension (Exact Match Edition)
  * ==========================================================================
  */
 
 (function () {
-    // ১. ড্যাশবোর্ড ডিসপ্লে সিএসএস
+    // ১. মূল ড্যাশবোর্ড ডিসপ্লে সিএসএস
     const style = document.createElement('style');
     style.innerHTML = `
-        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lobster&family=Lora:ital,wght@1,400;1,500;1,600&family=Roboto+Mono:wght@400;500&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=EB+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Lobster&family=Lora:ital,wght@1,400;1,500;1,600&family=Roboto+Mono:wght@400;500&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap');
 
         .receipt-wrapper-card {
             background: #ffffff;
             width: 100%;
-            max-width: 500px;
+            max-width: 520px;
             margin: 0 auto;
-            padding: 20px 22px 22px 22px;
+            padding: 24px 24px 20px 24px;
             box-shadow: 0 5px 25px rgba(0,0,0,0.08);
             border-radius: 4px;
             position: relative;
@@ -27,12 +27,12 @@
 
         .receipt-watermark {
             position: absolute;
-            top: 40%;
+            top: 42%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 80%;
-            max-width: 380px;
-            opacity: 0.42;
+            width: 82%;
+            max-width: 400px;
+            opacity: 0.38;
             pointer-events: none;
             z-index: 1;
             text-align: center;
@@ -51,7 +51,8 @@
         .rc-bismillah {
             text-align: center;
             font-family: 'Caveat', cursive !important;
-            font-size: 11pt;
+            font-size: 13pt;
+            font-weight: 600;
             color: #000;
             margin-bottom: 2px;
         }
@@ -59,10 +60,10 @@
         .rc-brand-title {
             text-align: center;
             font-family: 'Lobster', cursive !important;
-            font-size: 27pt;
-            font-weight: bold;
+            font-size: 30pt;
+            font-weight: normal;
             color: #000;
-            margin: 0 0 2px 0;
+            margin: 0 0 4px 0;
             line-height: 1.1;
         }
 
@@ -72,17 +73,17 @@
             font-size: 10pt;
             line-height: 1.25;
             color: #000;
-            margin: 0 auto 8px auto;
-            max-width: 450px;
+            margin: 0 auto 10px auto;
+            max-width: 460px;
         }
 
         .rc-main-title {
             text-align: center;
-            font-family: 'Tiro Bangla', serif !important;
-            font-size: 12pt;
+            font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
+            font-size: 12.5pt;
             font-weight: bold;
             letter-spacing: 1.5px;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
             color: #000;
             text-transform: uppercase;
         }
@@ -94,11 +95,11 @@
         }
 
         .rc-sheet-table td {
-            padding: 3.5px 8px;
+            padding: 4px 6px;
             color: #000;
             vertical-align: middle;
-            font-family: 'Tiro Bangla', serif !important;
-            font-size: 13pt;
+            font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
+            font-size: 13.5pt;
             line-height: 1.2;
             border: none;
         }
@@ -107,13 +108,13 @@
             width: 38%;
             font-weight: bold;
             border-right: 1.5px dotted #000;
-            padding-left: 2px;
+            padding-left: 2px !important;
         }
 
         .rc-col-c {
             width: 62%;
             font-weight: normal;
-            padding-left: 10px;
+            padding-left: 12px !important;
         }
 
         .rc-section-end td {
@@ -128,28 +129,28 @@
         .rc-payment-received-row td {
             text-align: center !important;
             font-weight: bold;
-            font-size: 13.5pt;
-            padding: 5px 0;
+            font-size: 14pt;
+            padding: 6px 0;
             border-bottom: 1.5px dotted #000;
             border-right: none;
         }
 
         .paid-stamp-wrapper {
             text-align: center;
-            margin: 8px 0;
+            margin: 10px 0;
         }
 
         .paid-stamp-img {
-            width: 74px;
+            width: 78px;
             height: auto;
             object-fit: contain;
             display: inline-block;
         }
 
         .rc-footer-sign {
-            font-family: 'Tiro Bangla', serif !important;
-            font-size: 10pt;
-            margin: 8px 0 10px 0;
+            font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
+            font-size: 11pt;
+            margin: 10px 0 12px 0;
             color: #000;
         }
 
@@ -228,37 +229,37 @@
                         <table class="rc-sheet-table">
                             <tr>
                                 <td class="rc-col-b">Receipt No</td>
-                                <td class="rc-col-c">3521</td>
+                                <td class="rc-col-c">3546</td>
                             </tr>
                             <tr class="rc-section-end">
                                 <td class="rc-col-b">Date</td>
-                                <td class="rc-col-c">24-08-2026</td>
+                                <td class="rc-col-c">25-08-2026</td>
                             </tr>
 
                             <tr class="rc-section-start">
                                 <td class="rc-col-b">Student Name</td>
-                                <td class="rc-col-c">Md. Tamim Eqbul</td>
+                                <td class="rc-col-c">Amit Partho Roy</td>
                             </tr>
                             <tr class="rc-section-end">
                                 <td class="rc-col-b">Student ID</td>
-                                <td class="rc-col-c">252062</td>
+                                <td class="rc-col-c">602722</td>
                             </tr>
 
                             <tr class="rc-section-start">
                                 <td class="rc-col-b">Tuition Fee</td>
-                                <td class="rc-col-c">16,330.00</td>
+                                <td class="rc-col-c">4,760.00</td>
                             </tr>
                             <tr>
                                 <td class="rc-col-b">Charge</td>
-                                <td class="rc-col-c">170.3</td>
+                                <td class="rc-col-c">59.6</td>
                             </tr>
                             <tr class="rc-section-end">
                                 <td class="rc-col-b">Total</td>
-                                <td class="rc-col-c">16,500.30</td>
+                                <td class="rc-col-c">4,819.60</td>
                             </tr>
 
                             <tr class="rc-payment-received-row">
-                                <td colspan="2">Payment Received: 16500.3</td>
+                                <td colspan="2">Payment Received: 4819.6</td>
                             </tr>
                         </table>
 
@@ -303,7 +304,7 @@
         if (topTitle) topTitle.innerText = "RECEIPT TEMPLATE (A5)";
     };
 
-    // ৪. আইসোলেটেড পারফেক্ট A5 প্রিন্টার ফাংশন (১ পেজ ও ছবি লোড নিশ্চিত)
+    // ৪. আইসোলেটেড পারফেক্ট A5 প্রিন্টার ফাংশন (১০০% ফন্ট ও ইমেজ নিশ্চিতকরণ)
     window.printReceiptA5Clean = function () {
         let printFrame = document.getElementById('mc-isolated-print-frame');
         if (printFrame) printFrame.remove();
@@ -326,8 +327,10 @@
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Receipt_3521</title>
-                <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lobster&family=Lora:ital,wght@1,400;1,500;1,600&family=Roboto+Mono:wght@400;500&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap">
+                <title>Receipt_Print</title>
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=EB+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Lobster&family=Lora:ital,wght@1,400;1,500;1,600&family=Roboto+Mono:wght@400;500&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
                 <style>
                     @page {
                         size: A5 portrait;
@@ -344,9 +347,9 @@
                     }
                     .receipt-wrapper-card {
                         background: #ffffff !important;
-                        width: 134mm !important;
-                        max-width: 134mm !important;
-                        margin: 4mm auto 0 auto !important;
+                        width: 136mm !important;
+                        max-width: 136mm !important;
+                        margin: 5mm auto 0 auto !important;
                         padding: 2mm 3mm !important;
                         position: relative !important;
                         box-sizing: border-box !important;
@@ -355,11 +358,11 @@
                     }
                     .receipt-watermark {
                         position: absolute !important;
-                        top: 39% !important;
+                        top: 41% !important;
                         left: 50% !important;
                         transform: translate(-50%, -50%) !important;
-                        width: 105mm !important;
-                        opacity: 0.42 !important;
+                        width: 110mm !important;
+                        opacity: 0.38 !important;
                         z-index: 1 !important;
                         text-align: center !important;
                     }
@@ -375,7 +378,8 @@
                     .rc-bismillah {
                         text-align: center !important;
                         font-family: 'Caveat', cursive !important;
-                        font-size: 10.5pt !important;
+                        font-size: 11pt !important;
+                        font-weight: 600 !important;
                         color: #000 !important;
                         margin-bottom: 2px !important;
                         line-height: 1.15 !important;
@@ -383,24 +387,24 @@
                     .rc-brand-title {
                         text-align: center !important;
                         font-family: 'Lobster', cursive !important;
-                        font-size: 26pt !important;
-                        font-weight: bold !important;
+                        font-size: 28pt !important;
+                        font-weight: normal !important;
                         color: #000 !important;
-                        margin: 0 0 2px 0 !important;
+                        margin: 0 0 3px 0 !important;
                         line-height: 1.1 !important;
                     }
                     .rc-services-desc {
                         text-align: center !important;
                         font-family: 'EB Garamond', serif !important;
                         font-size: 10pt !important;
-                        line-height: 1.2 !important;
+                        line-height: 1.25 !important;
                         color: #000 !important;
                         margin: 0 auto 8px auto !important;
-                        max-width: 120mm !important;
+                        max-width: 125mm !important;
                     }
                     .rc-main-title {
                         text-align: center !important;
-                        font-family: 'Tiro Bangla', serif !important;
+                        font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
                         font-size: 12pt !important;
                         font-weight: bold !important;
                         letter-spacing: 1.5px !important;
@@ -414,11 +418,11 @@
                         border-top: 1.5px dotted #000 !important;
                     }
                     .rc-sheet-table td {
-                        padding: 3.5px 8px !important;
+                        padding: 3.8px 6px !important;
                         color: #000 !important;
                         vertical-align: middle !important;
-                        font-family: 'Tiro Bangla', serif !important;
-                        font-size: 13pt !important;
+                        font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
+                        font-size: 13.5pt !important;
                         line-height: 1.2 !important;
                         border: none !important;
                     }
@@ -431,7 +435,7 @@
                     .rc-col-c {
                         width: 62% !important;
                         font-weight: normal !important;
-                        padding-left: 10px !important;
+                        padding-left: 12px !important;
                     }
                     .rc-section-end td {
                         border-bottom: 1.5px dotted #000 !important;
@@ -443,24 +447,24 @@
                     .rc-payment-received-row td {
                         text-align: center !important;
                         font-weight: bold !important;
-                        font-size: 13.5pt !important;
-                        padding: 5px 0 !important;
+                        font-size: 14pt !important;
+                        padding: 6px 0 !important;
                         border-bottom: 1.5px dotted #000 !important;
                         border-right: none !important;
                     }
                     .paid-stamp-wrapper {
                         text-align: center !important;
-                        margin: 8px 0 !important;
+                        margin: 10px 0 !important;
                     }
                     .paid-stamp-img {
-                        width: 74px !important;
+                        width: 78px !important;
                         height: auto !important;
                         object-fit: contain !important;
                         display: inline-block !important;
                     }
                     .rc-footer-sign {
-                        font-family: 'Tiro Bangla', serif !important;
-                        font-size: 10pt !important;
+                        font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
+                        font-size: 10.5pt !important;
                         margin: 8px 0 10px 0 !important;
                         color: #000 !important;
                     }
@@ -494,29 +498,41 @@
         `);
         printDoc.close();
 
-        // ছবি ও ফন্ট লোড হওয়ার পর নিখুঁতভাবে প্রিন্ট ট্রিগার
-        const images = printDoc.images;
-        let loaded = 0;
-        const total = images.length;
-
-        function triggerCleanPrint() {
+        // ফন্ট ও সকল ইমেজ সম্পূর্ণ লোড হওয়া নিশ্চিত করার পর প্রিন্ট ট্রিগার
+        const triggerFinalPrint = () => {
             setTimeout(() => {
                 printFrame.contentWindow.focus();
                 printFrame.contentWindow.print();
-            }, 300);
-        }
+            }, 350);
+        };
 
-        if (total === 0) {
-            triggerCleanPrint();
+        const images = printDoc.images;
+        let loadedImages = 0;
+        const totalImages = images.length;
+
+        const checkAllReady = () => {
+            if (printDoc.fonts && printDoc.fonts.ready) {
+                printDoc.fonts.ready.then(() => {
+                    triggerFinalPrint();
+                }).catch(() => {
+                    triggerFinalPrint();
+                });
+            } else {
+                triggerFinalPrint();
+            }
+        };
+
+        if (totalImages === 0) {
+            checkAllReady();
         } else {
-            for (let i = 0; i < total; i++) {
+            for (let i = 0; i < totalImages; i++) {
                 if (images[i].complete) {
-                    loaded++;
-                    if (loaded === total) triggerCleanPrint();
+                    loadedImages++;
+                    if (loadedImages === totalImages) checkAllReady();
                 } else {
                     images[i].onload = images[i].onerror = function () {
-                        loaded++;
-                        if (loaded === total) triggerCleanPrint();
+                        loadedImages++;
+                        if (loadedImages === totalImages) checkAllReady();
                     };
                 }
             }
