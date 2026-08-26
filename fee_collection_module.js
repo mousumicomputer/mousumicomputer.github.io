@@ -1,13 +1,14 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module
- * Features: Auto Calculation, Max 60 Tk Cap Gross Payment, Isolated Firebase Sync, Auto SL & Pagination.
+ * Features: Auto Calculation, Max 60 Tk Cap Gross Payment, Isolated Firebase Sync, Auto SL & Pagination, Dynamic A5 Print Receipt.
  */
 
 (function () {
     let studentDueList = [];
     let firebaseCore = null;
-    let selectedStudentRawDue = 0; // মূল বকেয়া
-    let selectedStudentData = null; // বর্তমান শিক্ষার্থীর তথ্য
+    let feeTransactionsList = [];
+    let selectedStudentRawDue = 0;
+    let selectedStudentData = null;
 
     // পেজিনেশন স্টেট
     let currentPage = 1;
@@ -79,9 +80,25 @@
         .all-records-header { background: #34495e; color: #fff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
         .all-records-header h2 { font-size: 19px !important; margin: 0; }
         .records-table-container { padding: 20px; overflow-x: auto; }
-        .records-main-table { width: 100%; border-collapse: collapse; min-width: 1200px; font-size: 13px !important; }
+        .records-main-table { width: 100%; border-collapse: collapse; min-width: 1300px; font-size: 13px !important; }
         .records-main-table th { background: #f8fafc; color: #475569; padding: 10px; border: 1px solid #e2e8f0; text-align: center; }
         .records-main-table td { padding: 8px; border: 1px solid #e2e8f0; text-align: center; color: #334155; }
+
+        .btn-print-row {
+            background: #1e293b;
+            color: #ffffff !important;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: 0.2s;
+        }
+        .btn-print-row:hover { background: #000000; }
 
         /* --- SECTION 3 STYLE --- */
         .due-upload-card {
@@ -355,14 +372,14 @@
                                     </div>
                                 </div>
                                 <div style="display:flex; justify-content:flex-end;">
-                                    <button type="submit" class="edu-btn-submit">সাবমিট করুন</button>
+                                    <button type="submit" class="edu-btn-submit"><i class="fa-solid fa-print"></i> সাবমিট ও প্রিন্ট করুন</button>
                                 </div>
                             </form>
                             <div class="edu-recent-section">
                                 <div class="edu-recent-title"><span>সর্বশেষ এন্ট্রি (Recent Entries)</span><span>সর্বোচ্চ ৩টি</span></div>
                                 <table class="edu-compact-table">
-                                    <thead><tr><th>তারিখ</th><th>আইডি</th><th>নাম</th><th>গৃহীত টাকা</th></tr></thead>
-                                    <tbody id="origRecentBody"><tr><td colspan="4" style="text-align:center; color:#999; padding:15px;">কোনো রিসেন্ট এন্ট্রি নেই</td></tr></tbody>
+                                    <thead><tr><th>তারিখ</th><th>আইডি</th><th>নাম</th><th>গৃহীত টাকা</th><th style="text-align:right;">প্রিন্ট</th></tr></thead>
+                                    <tbody id="origRecentBody"><tr><td colspan="5" style="text-align:center; color:#999; padding:15px;">কোনো রিসেন্ট এন্ট্রি নেই</td></tr></tbody>
                                 </table>
                             </div>
                         </div>
@@ -386,11 +403,11 @@
                                     <tr>
                                         <th>SL</th><th>Date</th><th>Student Name</th><th>Id</th><th>Class</th><th>Month</th>
                                         <th>Category</th><th>Mobile</th><th>Net Due</th><th>Txn Fee</th><th>Total Charge</th>
-                                        <th>Net Received</th><th>Gross Payment</th><th>Remarks</th>
+                                        <th>Net Received</th><th>Gross Payment</th><th>Remarks</th><th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="allRecordsTableBody">
-                                    <tr><td colspan="14" style="padding:20px; color:#999;">এখনও কোনো ডেটা জমা হয়নি</td></tr>
+                                    <tr><td colspan="15" style="padding:20px; color:#999;">এখনও কোনো ডেটা জমা হয়নি</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -505,7 +522,17 @@
         if (recInp) recInp.value = netReceived.toFixed(2);
     }
 
-    // ৬. পেজিনেশন ও অটোমেটিক ক্রমিক (SL) সহ বকেয়া টেবিল রেন্ডার
+    // ৬. তারিখ ফরম্যাট হেল্পার (DD-MM-YYYY)
+    function formatDateToDDMMYYYY(dateStr) {
+        if (!dateStr) return new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+        return dateStr;
+    }
+
+    // ৭. পেজিনেশন ও অটোমেটিক ক্রমিক (SL) সহ বকেয়া টেবিল রেন্ডার
     function renderDueDataTable() {
         const tbody = document.getElementById('dueDataTableBody');
         const entriesInfo = document.getElementById('dueEntriesInfo');
@@ -644,7 +671,7 @@
         return btn;
     }
 
-    // ৭. লাইভ রিয়েল-টাইম Firebase লিসেনার (সম্পূর্ণ আলাদা সেভ ও ফেচ)
+    // ৮. লাইভ রিয়েল-টাইম Firebase লিসেনার
     async function listenFirebaseData() {
         const fb = await getFirebase();
         if (!fb) return;
@@ -657,17 +684,49 @@
             renderDueDataTable();
         });
 
-        // ফি ট্রানজেকশন ডেটা লিসেনার (erp/feeTransactions থেকে লোড হবে)
+        // ফি ট্রানজেকশন ডেটা লিসেনার
         const feeRef = fb.ref(fb.db, 'erp/feeTransactions');
         fb.onValue(feeRef, (snapshot) => {
             const data = snapshot.val();
-            const feeTxs = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-            renderFullTable(feeTxs);
-            renderRecentEntries(feeTxs);
+            feeTransactionsList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+            renderFullTable(feeTransactionsList);
+            renderRecentEntries(feeTransactionsList);
         });
     }
 
-    // ৮. ইভেন্ট লজিক
+    // ৯. প্রিন্ট রসিদ ট্রিগার ফাংশন (গ্লোবাল)
+    window.printRowReceipt = function(txId, customReceiptNo) {
+        const tx = feeTransactionsList.find(t => t.id === txId);
+        if (!tx) {
+            if (typeof showToast === 'function') showToast("লেনদেন তথ্য পাওয়া যায়নি!", "error");
+            return;
+        }
+
+        const receiptNo = customReceiptNo || String(tx.receiptNo || tx.id.replace(/\D/g, '').slice(-4) || '3546');
+        const netDueVal = parseFloat(tx.netDue || 0);
+        const chargeVal = parseFloat(tx.totalCharge || 0);
+        const totalVal = parseFloat(tx.netReceived || 0);
+
+        const receiptData = {
+            receiptNo: receiptNo,
+            date: formatDateToDDMMYYYY(tx.date),
+            studentName: tx.studentName || '-',
+            studentId: tx.customerId || '-',
+            tuitionFee: netDueVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+            charge: chargeVal.toFixed(1),
+            total: totalVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+            received: totalVal.toString(),
+            receivedBy: tx.receivedBy || (window.profileSettings && window.profileSettings.fullName) || 'Riyal Robiul'
+        };
+
+        if (typeof window.printReceiptA5Clean === 'function') {
+            window.printReceiptA5Clean(receiptData);
+        } else {
+            alert("Print engine is loading, please try again.");
+        }
+    };
+
+    // ১০. ইভেন্ট লজিক
     function initLogic() {
         const idInp = document.getElementById('origId');
         const nameInp = document.getElementById('origName');
@@ -718,7 +777,7 @@
         if (discInp) discInp.addEventListener('input', calculateAutoValues);
         if (txnInp) txnInp.addEventListener('input', calculateAutoValues);
 
-        // ফি ফর্ম সাবমিট (মূল ট্রানজেকশনে কোনো প্রভাব ফেলবে না)
+        // ফি ফর্ম সাবমিট (ডাটা সেভ এবং সরাসরি A5 প্রিন্ট)
         const origForm = document.getElementById('feeFormOriginal');
         if (origForm) {
             origForm.onsubmit = async function(e) {
@@ -736,14 +795,16 @@
                     return;
                 }
 
-                if (typeof showLoader === 'function') showLoader("সংরক্ষণ করা হচ্ছে...");
+                if (typeof showLoader === 'function') showLoader("সংরক্ষণ ও রসিদ তৈরি হচ্ছে...");
 
                 // Gross Payment = Net Due + ১% (তবে চার্জ ৬০ টাকার বেশি হবে না)
                 const percentCapCharge = Math.min(netDue * 0.01, 60);
                 const calculatedGross = netDue + percentCapCharge;
+                const receiptNumeric = (feeTransactionsList.length + 1) + 3400; // ক্রমানুসারে রসিদ নম্বর
 
                 const txData = {
                     id: 'EDU-' + Date.now(),
+                    receiptNo: String(receiptNumeric),
                     customerId: studentId,
                     studentName: studentName || '-',
                     class: selectedStudentData ? (selectedStudentData.class || '-') : '-',
@@ -757,13 +818,13 @@
                     netReceived: netReceived,
                     grossPayment: calculatedGross,
                     date: dateInp ? dateInp.value : new Date().toISOString().split('T')[0],
-                    time: new Date().toLocaleTimeString()
+                    time: new Date().toLocaleTimeString(),
+                    receivedBy: (window.profileSettings && window.profileSettings.fullName) || 'Riyal Robiul'
                 };
 
                 try {
                     const fb = await getFirebase();
                     if (fb) {
-                        // মূল transactions এর বদলে erp/feeTransactions নোডে সেভ হবে
                         const snap = await fb.get(fb.ref(fb.db, 'erp/feeTransactions'));
                         let txs = snap.val();
                         txs = txs ? (Array.isArray(txs) ? txs : Object.values(txs)) : [];
@@ -771,8 +832,25 @@
                         await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), txs);
                     }
 
-                    if (typeof showToast === 'function') showToast("ফি সফলভাবে ক্লাউডে সংরক্ষিত হয়েছে!", "success");
+                    if (typeof showToast === 'function') showToast("ফি সফলভাবে সংরক্ষিত হয়েছে!", "success");
                     
+                    // রসিদ ডেটা তৈরি ও পারফেক্ট A5 প্রিন্ট কল
+                    const receiptData = {
+                        receiptNo: txData.receiptNo,
+                        date: formatDateToDDMMYYYY(txData.date),
+                        studentName: txData.studentName,
+                        studentId: txData.customerId,
+                        tuitionFee: netDue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+                        charge: totalCharge.toFixed(1),
+                        total: netReceived.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+                        received: netReceived.toString(),
+                        receivedBy: txData.receivedBy
+                    };
+
+                    if (typeof window.printReceiptA5Clean === 'function') {
+                        window.printReceiptA5Clean(receiptData);
+                    }
+
                     // ফর্ম রিসেট
                     this.reset();
                     selectedStudentRawDue = 0;
@@ -934,19 +1012,20 @@
         }
     }
 
-    // সর্বশেষ এন্ট্রি (সর্বোচ্চ ৩টি)
+    // সর্বশেষ এন্ট্রি (সর্বোচ্চ ৩টি) - প্রিন্ট বাটন সহ
     function renderRecentEntries(feeTxs) {
         const body = document.getElementById('origRecentBody');
         if (!body) return;
         
         if (!feeTxs || feeTxs.length === 0) {
-            body.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999; padding:15px;">কোনো রিসেন্ট এন্ট্রি নেই</td></tr>';
+            body.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999; padding:15px;">কোনো রিসেন্ট এন্ট্রি নেই</td></tr>';
             return;
         }
 
         const top3 = feeTxs.slice(-3).reverse();
         let html = '';
-        top3.forEach(t => {
+        top3.forEach((t, i) => {
+            const autoSL = feeTxs.length - i;
             const amt = parseFloat(t.netReceived || 0);
             html += `
                 <tr>
@@ -954,20 +1033,25 @@
                     <td><strong>${t.customerId || '-'}</strong></td>
                     <td>${t.studentName || '-'}</td>
                     <td style="font-weight:bold; color:#2563eb;">৳ ${amt.toFixed(2)}</td>
+                    <td style="text-align:right;">
+                        <button class="btn-print-row" onclick="printRowReceipt('${t.id}')">
+                            <i class="fa-solid fa-print"></i>
+                        </button>
+                    </td>
                 </tr>
             `;
         });
         body.innerHTML = html;
     }
 
-    // সকল জমা হওয়া ফি তালিকা
+    // সকল জমা হওয়া ফি তালিকা - অ্যাকশন কলামে প্রিন্ট বাটন সহ
     function renderFullTable(feeTxs) {
         const body = document.getElementById('allRecordsTableBody');
         const totalFeeSumEl = document.getElementById('totalFeeSum');
         if (!body) return;
 
         if (!feeTxs || feeTxs.length === 0) {
-            body.innerHTML = '<tr><td colspan="14" style="padding:20px; color:#999; text-align:center;">এখনও কোনো ডেটা জমা হয়নি</td></tr>';
+            body.innerHTML = '<tr><td colspan="15" style="padding:20px; color:#999; text-align:center;">এখনও কোনো ডেটা জমা হয়নি</td></tr>';
             if (totalFeeSumEl) totalFeeSumEl.innerText = '0.00';
             return;
         }
@@ -984,12 +1068,13 @@
             
             const percentCapped = Math.min(netDue * 0.01, 60);
             const grossPayment = t.grossPayment !== undefined ? parseFloat(t.grossPayment) : (netDue + percentCapped);
+            const autoSL = list.length - i;
 
             total += netReceived;
 
             body.innerHTML += `
                 <tr>
-                    <td style="font-weight:bold; color:#64748b;">${list.length - i}</td>
+                    <td style="font-weight:bold; color:#64748b;">${autoSL}</td>
                     <td>${t.date || '-'}</td>
                     <td><strong>${t.studentName || '-'}</strong></td>
                     <td>${t.customerId || '-'}</td>
@@ -1003,6 +1088,11 @@
                     <td style="font-weight:bold; color:#16a34a;">${netReceived.toFixed(2)}</td>
                     <td style="color:#2563eb; font-weight:bold;">${grossPayment.toFixed(2)}</td>
                     <td>${t.discount > 0 ? `ছাড়: ৳${t.discount}` : '-'}</td>
+                    <td>
+                        <button class="btn-print-row" onclick="printRowReceipt('${t.id}')" title="A5 রসিদ প্রিন্ট করুন">
+                            <i class="fa-solid fa-print"></i> প্রিন্ট
+                        </button>
+                    </td>
                 </tr>`;
         });
         
