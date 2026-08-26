@@ -1,6 +1,6 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module
- * Features: 100% Perfect 1-Page A5 Tab Receipt, PDF Download, Auto Calculation, Auto SL & Pagination.
+ * Features: Restored Exact Receipt Layout, Icon-Only Software Toolbar, PDF Download, Auto SL & Pagination.
  */
 
 (function () {
@@ -286,7 +286,7 @@
         }
     }
 
-    // ৩. রসিদ নতুন ট্যাবে ওপেন (Professional Action Bar & 100% 1-Page A5 Fix)
+    // ৩. রসিদ নতুন ট্যাবে ওপেন (Restored Exact Design & Icon-Only Action Bar)
     window.openReceiptInNewTab = function (d) {
         const receiptWindow = window.open('', '_blank');
         if (!receiptWindow) {
@@ -296,19 +296,19 @@
 
         const htmlContent = `
             <!DOCTYPE html>
-            <html lang="en">
+            <html lang="bn">
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Receipt_${d.receiptNo}_${d.studentName}</title>
-                <!-- FontAwesome & Google Fonts -->
+                <!-- FontAwesome Icons & Google Fonts -->
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=EB+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Lobster&family=Lora:ital,wght@1,400;1,500;1,600&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Roboto+Mono:wght@400;500&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+                <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=EB+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Lobster&family=Lora:ital,wght@1,400;1,500;1,600&family=Roboto+Mono:wght@400;500&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
                 <!-- html2pdf Library for Instant PDF Download -->
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
+                
                 <style>
                     * {
                         box-sizing: border-box;
@@ -327,134 +327,149 @@
                         min-height: 100vh;
                     }
 
-                    /* --- MODERN SOFTWARE TOP ACTION BAR --- */
-                    .software-action-bar {
-                        background: rgba(30, 41, 59, 0.85);
-                        backdrop-filter: blur(12px);
+                    /* --- ICON-ONLY MODERN FLOATING ACTION BAR --- */
+                    .icon-action-bar {
+                        background: rgba(30, 41, 59, 0.9);
+                        backdrop-filter: blur(10px);
                         border: 1px solid rgba(255, 255, 255, 0.12);
-                        padding: 10px 20px;
+                        padding: 8px 16px;
                         border-radius: 50px;
-                        margin-bottom: 24px;
+                        margin-bottom: 20px;
                         display: flex;
                         align-items: center;
                         gap: 12px;
-                        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+                        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
                     }
 
-                    .mc-btn {
-                        font-family: 'Plus Jakarta Sans', sans-serif !important;
+                    .icon-btn {
+                        width: 44px;
+                        height: 44px;
+                        border-radius: 50%;
                         border: none;
-                        padding: 9px 18px;
-                        font-size: 13.5px;
-                        font-weight: 700;
-                        border-radius: 30px;
-                        cursor: pointer;
-                        display: inline-flex;
+                        display: flex;
                         align-items: center;
-                        gap: 8px;
-                        transition: all 0.2s ease;
-                        letter-spacing: 0.3px;
+                        justify-content: center;
+                        font-size: 18px;
+                        cursor: pointer;
+                        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
                     }
 
                     .btn-print {
                         background: linear-gradient(135deg, #00d2ff 0%, #0078ff 100%);
                         color: #ffffff;
-                        box-shadow: 0 4px 12px rgba(0, 120, 255, 0.3);
                     }
-                    .btn-print:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0, 120, 255, 0.45); }
+                    .btn-print:hover {
+                        transform: scale(1.1);
+                        box-shadow: 0 4px 15px rgba(0, 120, 255, 0.5);
+                    }
 
                     .btn-download {
-                        background: #10b981;
+                        background: linear-gradient(135deg, #34d399 0%, #059669 100%);
                         color: #ffffff;
-                        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
                     }
-                    .btn-download:hover { background: #059669; transform: translateY(-1px); }
+                    .btn-download:hover {
+                        transform: scale(1.1);
+                        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.5);
+                    }
 
                     .btn-close {
-                        background: rgba(255, 255, 255, 0.08);
+                        background: rgba(255, 255, 255, 0.1);
                         color: #e2e8f0;
                         border: 1px solid rgba(255, 255, 255, 0.15);
                     }
-                    .btn-close:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
+                    .btn-close:hover {
+                        background: #ef4444;
+                        color: #ffffff;
+                        border-color: #ef4444;
+                        transform: scale(1.1);
+                    }
 
-                    /* --- EXACT A5 RECEIPT CARD (STRICT 1-PAGE LOCK) --- */
+                    /* --- মূল রসিদ কার্ড (আসল নিখুঁত ডিজাইন) --- */
                     .receipt-wrapper-card {
                         background: #ffffff;
                         width: 148mm;
-                        height: 210mm;
-                        max-height: 210mm;
-                        padding: 8mm 14mm 6mm 14mm;
+                        min-height: 210mm;
+                        padding: 12mm 15mm;
                         box-shadow: 0 15px 40px rgba(0,0,0,0.5);
-                        border-radius: 4px;
+                        border-radius: 2px;
                         position: relative;
                         box-sizing: border-box;
                         color: #000000;
                         overflow: hidden;
                     }
 
+                    /* ওয়াটারমার্ক */
                     .receipt-watermark {
                         position: absolute;
                         top: 41%;
                         left: 50%;
                         transform: translate(-50%, -50%);
-                        width: 104mm;
+                        width: 106mm;
                         opacity: 0.38;
                         pointer-events: none;
                         z-index: 1;
                         text-align: center;
                     }
+
                     .receipt-watermark img {
                         width: 100%;
                         height: auto;
                         display: block;
                     }
 
+                    /* রসিদ কন্টেন্ট বডি */
                     .receipt-body {
                         position: relative;
                         z-index: 2;
                     }
 
+                    /* ১. বিসমিল্লাহ */
                     .rc-bismillah {
                         text-align: center;
                         font-family: 'Caveat', cursive !important;
-                        font-size: 11pt;
+                        font-size: 13.5pt;
                         font-weight: 600;
                         color: #000;
                         margin-bottom: 2px;
-                        line-height: 1.15;
+                        line-height: 1.2;
                     }
 
+                    /* ২. শপ নাম */
                     .rc-brand-title {
                         text-align: center;
                         font-family: 'Lobster', cursive !important;
-                        font-size: 27pt;
+                        font-size: 30pt;
                         font-weight: normal;
                         color: #000;
-                        margin: 0 0 2px 0;
-                        line-height: 1.05;
+                        margin: 0 0 4px 0;
+                        line-height: 1.1;
                     }
 
+                    /* ৩. সেবা তালিকা */
                     .rc-services-desc {
                         text-align: center;
                         font-family: 'EB Garamond', serif !important;
-                        font-size: 9.5pt;
-                        line-height: 1.22;
+                        font-size: 10.5pt;
+                        line-height: 1.25;
                         color: #000;
-                        margin: 0 auto 9px auto;
-                        max-width: 120mm;
+                        margin: 0 auto 12px auto;
+                        max-width: 115mm;
                     }
 
+                    /* ৪. RECEIPT টাইটেল */
                     .rc-main-title {
                         text-align: center;
                         font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
-                        font-size: 11.5pt;
+                        font-size: 12.5pt;
                         font-weight: bold;
                         letter-spacing: 1.5px;
-                        margin-bottom: 5px;
+                        margin-bottom: 6px;
                         color: #000;
                         text-transform: uppercase;
                     }
 
+                    /* ৫. টেবিল ডাটা */
                     .rc-sheet-table {
                         width: 100%;
                         border-collapse: collapse;
@@ -465,7 +480,7 @@
                         color: #000;
                         vertical-align: middle;
                         font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
-                        font-size: 12.5pt;
+                        font-size: 13.5pt;
                         line-height: 1.2;
                         border: none;
                     }
@@ -474,49 +489,51 @@
                         width: 37%;
                         font-weight: bold;
                         border-right: 1.5px dotted #000 !important;
-                        padding: 3.5px 8px 3.5px 0 !important;
+                        padding: 4px 10px 4px 0 !important;
                     }
 
                     .rc-col-c {
                         width: 63%;
                         font-weight: normal;
-                        padding: 3.5px 0 3.5px 12px !important;
+                        padding: 4px 0 4px 14px !important;
                     }
 
                     .rc-section-end td {
                         border-bottom: 1.5px dotted #000;
-                        padding-bottom: 6px !important;
+                        padding-bottom: 8px !important;
                     }
 
                     .rc-section-start td {
-                        padding-top: 6px !important;
+                        padding-top: 8px !important;
                     }
 
                     .rc-payment-received-row td {
                         text-align: center !important;
                         font-weight: bold;
-                        font-size: 13.5pt;
-                        padding: 5.5px 0 !important;
+                        font-size: 14pt;
+                        padding: 7px 0 !important;
                         border-bottom: 1.5px dotted #000 !important;
                         border-right: none !important;
                     }
 
+                    /* ৬. PAID স্ট্যাম্প */
                     .paid-stamp-wrapper {
                         text-align: center;
-                        margin: 9px 0 11px 0;
+                        margin: 14px 0 16px 0;
                     }
 
                     .paid-stamp-img {
-                        width: 72px;
+                        width: 78px;
                         height: auto;
                         object-fit: contain;
                         display: inline-block;
                     }
 
+                    /* ৭. রিসিভড বাই */
                     .rc-footer-sign {
                         font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
-                        font-size: 10.5pt;
-                        margin: 0 0 14px 0;
+                        font-size: 11pt;
+                        margin: 0 0 18px 0;
                         color: #000;
                     }
 
@@ -524,38 +541,35 @@
                         font-weight: bold;
                     }
 
+                    /* ৮. ডিসক্লেইমার ও যোগাযোগ */
                     .rc-disclaimer-mono {
                         text-align: center;
                         font-family: 'Roboto Mono', monospace !important;
-                        font-size: 8pt;
-                        line-height: 1.3;
+                        font-size: 9pt;
+                        line-height: 1.35;
                         color: #000;
-                        margin-bottom: 4px;
+                        margin-bottom: 6px;
                     }
 
                     .rc-disclaimer-lora {
                         text-align: center;
                         font-family: 'Lora', serif !important;
-                        font-size: 8pt;
+                        font-size: 9pt;
                         font-style: italic;
-                        line-height: 1.25;
+                        line-height: 1.3;
                         color: #000;
                     }
 
-                    /* --- PRINT MEDIA ENGINE (STRICT 1 SHEET OF PAPER) --- */
+                    /* প্রিন্ট মিডিয়া স্টাইলিং (A5 পারফেক্ট) */
                     @media print {
                         @page {
                             size: A5 portrait;
-                            margin: 0mm;
+                            margin: 0;
                         }
-                        html, body {
-                            width: 148mm !important;
-                            height: 210mm !important;
-                            max-height: 210mm !important;
-                            margin: 0 !important;
-                            padding: 0 !important;
+                        body {
                             background: #ffffff !important;
-                            overflow: hidden !important;
+                            padding: 0 !important;
+                            margin: 0 !important;
                             -webkit-print-color-adjust: exact !important;
                             print-color-adjust: exact !important;
                         }
@@ -563,32 +577,30 @@
                             display: none !important;
                         }
                         .receipt-wrapper-card {
-                            width: 148mm !important;
-                            height: 210mm !important;
-                            max-height: 210mm !important;
-                            padding: 8mm 14mm 6mm 14mm !important;
+                            width: 100% !important;
+                            min-height: 100% !important;
                             box-shadow: none !important;
                             border-radius: 0 !important;
+                            padding: 10mm 12mm !important;
                             margin: 0 auto !important;
-                            page-break-after: avoid !important;
                             page-break-inside: avoid !important;
-                            overflow: hidden !important;
+                            page-break-after: avoid !important;
                         }
                     }
                 </style>
             </head>
             <body>
 
-                <!-- MODERN ACTION CONTROLS -->
-                <div class="software-action-bar no-print">
-                    <button class="mc-btn btn-print" onclick="window.print()">
-                        <i class="fa-solid fa-print"></i> Print Receipt (A5)
+                <!-- ICON-ONLY CONTROLS -->
+                <div class="icon-action-bar no-print">
+                    <button class="icon-btn btn-print" onclick="window.print()" title="Print (A5)">
+                        <i class="fa-solid fa-print"></i>
                     </button>
-                    <button class="mc-btn btn-download" onclick="downloadReceiptPDF()">
-                        <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+                    <button class="icon-btn btn-download" onclick="downloadReceiptPDF()" title="Download PDF">
+                        <i class="fa-solid fa-file-arrow-down"></i>
                     </button>
-                    <button class="mc-btn btn-close" onclick="window.close()">
-                        <i class="fa-solid fa-xmark"></i> Close
+                    <button class="icon-btn btn-close" onclick="window.close()" title="Close">
+                        <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
 
@@ -1308,8 +1320,8 @@
                     <td>${t.studentName || '-'}</td>
                     <td style="font-weight:bold; color:#2563eb;">৳ ${amt.toFixed(2)}</td>
                     <td style="text-align:right;">
-                        <button class="btn-print-row" onclick="printRowReceipt('${t.id}')">
-                            <i class="fa-solid fa-file-lines"></i> রসিদ
+                        <button class="btn-print-row" onclick="printRowReceipt('${t.id}')" title="Print Receipt">
+                            <i class="fa-solid fa-print"></i>
                         </button>
                     </td>
                 </tr>
@@ -1361,8 +1373,8 @@
                     <td style="color:#2563eb; font-weight:bold;">${grossPayment.toFixed(2)}</td>
                     <td>${t.discount > 0 ? `ছাড়: ৳${t.discount}` : '-'}</td>
                     <td>
-                        <button class="btn-print-row" onclick="printRowReceipt('${t.id}')">
-                            <i class="fa-solid fa-print"></i> রসিদ
+                        <button class="btn-print-row" onclick="printRowReceipt('${t.id}')" title="Print Receipt">
+                            <i class="fa-solid fa-print"></i>
                         </button>
                     </td>
                 </tr>`;
