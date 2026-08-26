@@ -1,6 +1,6 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module
- * Features: Auto Calculation, Max 60 Tk Cap Gross Payment, Isolated Firebase Sync, Auto SL & Pagination, Dynamic A5 Print Receipt.
+ * Features: Standalone Clean A5 Tab Receipt, Auto Calculation, Auto SL & Pagination.
  */
 
 (function () {
@@ -15,7 +15,7 @@
     let rowsPerPage = 25;
     let currentSearchQuery = "";
 
-    // ১. CSS ইনজেক্ট করা
+    // ১. মডিউল সিএসএস
     const css = `
         @import url('https://fonts.maateen.me/kalpurush/font.css');
 
@@ -88,14 +88,14 @@
             background: #1e293b;
             color: #ffffff !important;
             border: none;
-            padding: 5px 10px;
+            padding: 5px 12px;
             border-radius: 5px;
             font-size: 12px;
             font-weight: bold;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
             transition: 0.2s;
         }
         .btn-print-row:hover { background: #000000; }
@@ -149,9 +149,7 @@
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            transition: 0.2s;
         }
-        .btn-due-upload:hover { background: #0069d9; }
         .btn-due-sample {
             background: #198754;
             color: #ffffff !important;
@@ -164,9 +162,7 @@
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            transition: 0.2s;
         }
-        .btn-due-sample:hover { background: #157347; }
 
         .due-data-card {
             background: #ffffff;
@@ -183,7 +179,6 @@
             flex-wrap: wrap;
             gap: 12px;
         }
-        .due-entries-info { font-size: 14px; color: #475569; font-weight: 600; }
         .due-page-select {
             border: 1px solid #cbd5e1;
             border-radius: 6px;
@@ -207,10 +202,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            transition: 0.2s;
         }
-        .btn-due-refresh:hover { background: #e0e7ff; border-color: #a5b4fc; }
-
         .due-search-box { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #475569; }
         .due-search-input { border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 10px; font-size: 14px; outline: none; }
         .due-table-wrapper { overflow-x: auto; }
@@ -227,7 +219,6 @@
             white-space: nowrap;
         }
         .due-data-table td { padding: 12px 14px; color: #334155; font-size: 13.5px; border-bottom: 1px solid #f1f5f9; white-space: nowrap; }
-        .due-data-table tr:hover td { background-color: #f8fafc; }
 
         .due-pagination-wrapper {
             display: flex;
@@ -236,8 +227,6 @@
             margin-top: 18px;
             padding-top: 15px;
             border-top: 1px solid #f1f5f9;
-            flex-wrap: wrap;
-            gap: 12px;
         }
         .due-pagination-btns { display: flex; align-items: center; gap: 4px; }
         .due-page-btn {
@@ -249,9 +238,7 @@
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
-            transition: 0.2s;
         }
-        .due-page-btn:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
         .due-page-btn.active { background: #2563eb; color: #ffffff; border-color: #2563eb; }
         .due-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -299,7 +286,364 @@
         }
     }
 
-    // ৩. সাইডবার মেনু ইনজেক্ট করা
+    // ৩. রসিদ নতুন ট্যাবে খোলার মূল ইঞ্জিন (১০০% নির্ভুল A5)
+    window.openReceiptInNewTab = function (d) {
+        const receiptWindow = window.open('', '_blank');
+        if (!receiptWindow) {
+            alert("পপ-আপ ব্লক করা আছে! দয়া করে ব্রাউজারের পপ-আপ এলাও (Allow) করুন।");
+            return;
+        }
+
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html lang="bn">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Receipt_${d.receiptNo}_${d.studentName}</title>
+                <!-- Google Fonts -->
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=EB+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Lobster&family=Lora:ital,wght@1,400;1,500;1,600&family=Roboto+Mono:wght@400;500&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+                
+                <style>
+                    * {
+                        box-sizing: border-box;
+                        margin: 0;
+                        padding: 0;
+                    }
+
+                    body {
+                        background-color: #e2e8f0;
+                        font-family: 'Tiro Bangla', 'Times New Roman', serif;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        padding: 20px 0;
+                        color: #000;
+                    }
+
+                    /* প্রিভিউ কন্ট্রোল বার (প্রিন্ট পেজে দেখা যাবে না) */
+                    .preview-controls {
+                        margin-bottom: 18px;
+                        display: flex;
+                        gap: 12px;
+                    }
+
+                    .btn-action {
+                        border: none;
+                        padding: 10px 22px;
+                        font-size: 15px;
+                        font-weight: bold;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    }
+
+                    .btn-print { background-color: #0f172a; color: #ffffff; }
+                    .btn-print:hover { background-color: #334155; }
+                    .btn-close { background-color: #ef4444; color: #ffffff; }
+
+                    /* মূল রসিদ কার্ড (A5 সাইজ) */
+                    .receipt-wrapper-card {
+                        background: #ffffff;
+                        width: 148mm;
+                        min-height: 210mm;
+                        padding: 12mm 15mm;
+                        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+                        border-radius: 2px;
+                        position: relative;
+                        box-sizing: border-box;
+                        color: #000000;
+                        overflow: hidden;
+                    }
+
+                    /* ওয়াটারমার্ক */
+                    .receipt-watermark {
+                        position: absolute;
+                        top: 41%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 106mm;
+                        opacity: 0.38;
+                        pointer-events: none;
+                        z-index: 1;
+                        text-align: center;
+                    }
+
+                    .receipt-watermark img {
+                        width: 100%;
+                        height: auto;
+                        display: block;
+                    }
+
+                    .receipt-body {
+                        position: relative;
+                        z-index: 2;
+                    }
+
+                    .rc-bismillah {
+                        text-align: center;
+                        font-family: 'Caveat', cursive !important;
+                        font-size: 13.5pt;
+                        font-weight: 600;
+                        color: #000;
+                        margin-bottom: 2px;
+                        line-height: 1.2;
+                    }
+
+                    .rc-brand-title {
+                        text-align: center;
+                        font-family: 'Lobster', cursive !important;
+                        font-size: 30pt;
+                        font-weight: normal;
+                        color: #000;
+                        margin: 0 0 4px 0;
+                        line-height: 1.1;
+                    }
+
+                    .rc-services-desc {
+                        text-align: center;
+                        font-family: 'EB Garamond', serif !important;
+                        font-size: 10.5pt;
+                        line-height: 1.25;
+                        color: #000;
+                        margin: 0 auto 12px auto;
+                        max-width: 115mm;
+                    }
+
+                    .rc-main-title {
+                        text-align: center;
+                        font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
+                        font-size: 12.5pt;
+                        font-weight: bold;
+                        letter-spacing: 1.5px;
+                        margin-bottom: 6px;
+                        color: #000;
+                        text-transform: uppercase;
+                    }
+
+                    .rc-sheet-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        border-top: 1.5px dotted #000;
+                    }
+
+                    .rc-sheet-table td {
+                        color: #000;
+                        vertical-align: middle;
+                        font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
+                        font-size: 13.5pt;
+                        line-height: 1.2;
+                        border: none;
+                    }
+
+                    .rc-col-b {
+                        width: 37%;
+                        font-weight: bold;
+                        border-right: 1.5px dotted #000 !important;
+                        padding: 4px 10px 4px 0 !important;
+                    }
+
+                    .rc-col-c {
+                        width: 63%;
+                        font-weight: normal;
+                        padding: 4px 0 4px 14px !important;
+                    }
+
+                    .rc-section-end td {
+                        border-bottom: 1.5px dotted #000;
+                        padding-bottom: 8px !important;
+                    }
+
+                    .rc-section-start td {
+                        padding-top: 8px !important;
+                    }
+
+                    .rc-payment-received-row td {
+                        text-align: center !important;
+                        font-weight: bold;
+                        font-size: 14pt;
+                        padding: 7px 0 !important;
+                        border-bottom: 1.5px dotted #000 !important;
+                        border-right: none !important;
+                    }
+
+                    .paid-stamp-wrapper {
+                        text-align: center;
+                        margin: 14px 0 16px 0;
+                    }
+
+                    .paid-stamp-img {
+                        width: 78px;
+                        height: auto;
+                        object-fit: contain;
+                        display: inline-block;
+                    }
+
+                    .rc-footer-sign {
+                        font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
+                        font-size: 11pt;
+                        margin: 0 0 18px 0;
+                        color: #000;
+                    }
+
+                    .rc-footer-sign strong {
+                        font-weight: bold;
+                    }
+
+                    .rc-disclaimer-mono {
+                        text-align: center;
+                        font-family: 'Roboto Mono', monospace !important;
+                        font-size: 9pt;
+                        line-height: 1.35;
+                        color: #000;
+                        margin-bottom: 6px;
+                    }
+
+                    .rc-disclaimer-lora {
+                        text-align: center;
+                        font-family: 'Lora', serif !important;
+                        font-size: 9pt;
+                        font-style: italic;
+                        line-height: 1.3;
+                        color: #000;
+                    }
+
+                    /* প্রিন্ট মিডিয়া স্টাইলিং (A5 পারফেক্ট - ১ পাতা) */
+                    @media print {
+                        @page {
+                            size: A5 portrait;
+                            margin: 0;
+                        }
+                        body {
+                            background: #ffffff !important;
+                            padding: 0 !important;
+                            margin: 0 !important;
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                        }
+                        .preview-controls {
+                            display: none !important;
+                        }
+                        .receipt-wrapper-card {
+                            width: 148mm !important;
+                            min-height: 210mm !important;
+                            box-shadow: none !important;
+                            border-radius: 0 !important;
+                            padding: 10mm 14mm !important;
+                            margin: 0 auto !important;
+                            page-break-after: avoid !important;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+
+                <!-- কন্ট্রোল বাটন -->
+                <div class="preview-controls">
+                    <button class="btn-action btn-print" onclick="window.print()">🖨️ প্রিন্ট / PDF ডাউনলোড (A5)</button>
+                    <button class="btn-action btn-close" onclick="window.close()">❌ বন্ধ করুন</button>
+                </div>
+
+                <!-- মূল রসিদ কার্ড -->
+                <div class="receipt-wrapper-card">
+                    
+                    <!-- ওয়াটারমার্ক -->
+                    <div class="receipt-watermark">
+                        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgBBifAiiveIb1xVgQZv6AxAD_YCVu7JRmBqQOX2eeSJFxavzFEhsWQlYpN6b_aUIiUVCdNu39EHD2-tG1Li5b2Jx4U1DqTH98zbWgxmegb-xPADeDbJBdCqt-WhP71NUrFTlJLeEpZgVoAxEcUufpJNxMQs8nVE28Jj6Ch0LRjTnDBICBibZxxgwE7nFyB/s1600/Receipt%20%281%29.png" alt="Watermark" />
+                    </div>
+
+                    <div class="receipt-body">
+                        <!-- ১. বিসমিল্লাহ -->
+                        <div class="rc-bismillah">“In the name of Allah, the Most Gracious, the Most Merciful”</div>
+
+                        <!-- ২. শপ নাম -->
+                        <div class="rc-brand-title">Mousumi Computer</div>
+
+                        <!-- ৩. সেবা তালিকা -->
+                        <div class="rc-services-desc">
+                            All kinds of services: Tuition Fee Payment, T-Cash (Tap), bKash, <br>
+                            Nagad, Rocket, Upay, Flexiload, and Computer Works.
+                        </div>
+
+                        <!-- ৪. RECEIPT টাইটেল -->
+                        <div class="rc-main-title">RECEIPT</div>
+
+                        <!-- ৫. টেবিল ডাটা -->
+                        <table class="rc-sheet-table">
+                            <tr>
+                                <td class="rc-col-b">Receipt No</td>
+                                <td class="rc-col-c">${d.receiptNo}</td>
+                            </tr>
+                            <tr class="rc-section-end">
+                                <td class="rc-col-b">Date</td>
+                                <td class="rc-col-c">${d.date}</td>
+                            </tr>
+
+                            <tr class="rc-section-start">
+                                <td class="rc-col-b">Student Name</td>
+                                <td class="rc-col-c">${d.studentName}</td>
+                            </tr>
+                            <tr class="rc-section-end">
+                                <td class="rc-col-b">Student ID</td>
+                                <td class="rc-col-c">${d.studentId}</td>
+                            </tr>
+
+                            <tr class="rc-section-start">
+                                <td class="rc-col-b">Tuition Fee</td>
+                                <td class="rc-col-c">${d.tuitionFee}</td>
+                            </tr>
+                            <tr>
+                                <td class="rc-col-b">Charge</td>
+                                <td class="rc-col-c">${d.charge}</td>
+                            </tr>
+                            <tr class="rc-section-end">
+                                <td class="rc-col-b">Total</td>
+                                <td class="rc-col-c">${d.total}</td>
+                            </tr>
+
+                            <tr class="rc-payment-received-row">
+                                <td colspan="2">Payment Received: ${d.received}</td>
+                            </tr>
+                        </table>
+
+                        <!-- ৬. PAID স্ট্যাম্প -->
+                        <div class="paid-stamp-wrapper">
+                            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgkW_Mz8uWQPQY8WqCQEVSh7ff6C8_ZE02lZw3o42e8QtmSIE8Sxgx_ejXTZmN_QNLHg0nfS5hrG4Mu2Y6NGCztsTnRZfvFuZ3bZzLAkMtvHxP6tkMxi9YUWcKG9gKXpJHrmnuWFFDAw0qIcAPb6WvHNVT_eiZkM2xDyI3HvRxrrqrpqyv8Zv2FIICwIQQr/s1600/Receipt.png" alt="PAID Stamp" class="paid-stamp-img" />
+                        </div>
+
+                        <!-- ৭. রিসিভড বাই -->
+                        <div class="rc-footer-sign">
+                            <strong>Received By:</strong> ${d.receivedBy || 'Riyal Robiul'}
+                        </div>
+
+                        <!-- ৮. ফুটার টেক্সট -->
+                        <div class="rc-disclaimer-mono">
+                            This is a computer-generated receipt.<br>
+                            Thank you for your payment.
+                        </div>
+
+                        <div class="rc-disclaimer-lora">
+                            For any queries or assistance, please contact<br>
+                            Md. Robiul Islam at 01608-314552 or 01893-201584.
+                        </div>
+                    </div>
+                </div>
+
+            </body>
+            </html>
+        `;
+
+        receiptWindow.document.open();
+        receiptWindow.document.write(htmlContent);
+        receiptWindow.document.close();
+    };
+
+    // ৪. সাইডবার মেনু ইনজেক্ট করা
     function injectMenu() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList || document.getElementById('menu-edu-parent')) return;
@@ -320,7 +664,7 @@
         menuList.insertAdjacentHTML('beforeend', html);
     }
 
-    // ৪. ভিউ প্যানেল ইনজেক্ট করা
+    // ৫. ভিউ প্যানেল ইনজেক্ট করা
     function injectPanels() {
         const wrapper = document.querySelector('.main-wrapper');
         if (!wrapper) return;
@@ -372,13 +716,13 @@
                                     </div>
                                 </div>
                                 <div style="display:flex; justify-content:flex-end;">
-                                    <button type="submit" class="edu-btn-submit"><i class="fa-solid fa-print"></i> সাবমিট ও প্রিন্ট করুন</button>
+                                    <button type="submit" class="edu-btn-submit">সাবমিট করুন</button>
                                 </div>
                             </form>
                             <div class="edu-recent-section">
                                 <div class="edu-recent-title"><span>সর্বশেষ এন্ট্রি (Recent Entries)</span><span>সর্বোচ্চ ৩টি</span></div>
                                 <table class="edu-compact-table">
-                                    <thead><tr><th>তারিখ</th><th>আইডি</th><th>নাম</th><th>গৃহীত টাকা</th><th style="text-align:right;">প্রিন্ট</th></tr></thead>
+                                    <thead><tr><th>তারিখ</th><th>আইডি</th><th>নাম</th><th>গৃহীত টাকা</th><th style="text-align:right;">রসিদ</th></tr></thead>
                                     <tbody id="origRecentBody"><tr><td colspan="5" style="text-align:center; color:#999; padding:15px;">কোনো রিসেন্ট এন্ট্রি নেই</td></tr></tbody>
                                 </table>
                             </div>
@@ -403,7 +747,7 @@
                                     <tr>
                                         <th>SL</th><th>Date</th><th>Student Name</th><th>Id</th><th>Class</th><th>Month</th>
                                         <th>Category</th><th>Mobile</th><th>Net Due</th><th>Txn Fee</th><th>Total Charge</th>
-                                        <th>Net Received</th><th>Gross Payment</th><th>Remarks</th><th>Action</th>
+                                        <th>Net Received</th><th>Gross Payment</th><th>Remarks</th><th>রসিদ প্রিন্ট</th>
                                     </tr>
                                 </thead>
                                 <tbody id="allRecordsTableBody">
@@ -418,19 +762,12 @@
                 <div class="view-panel" id="edu-due-data-view">
                     <div class="due-upload-card">
                         <input type="file" id="dueFileInput" accept=".xlsx, .xls, .csv" style="display: none;">
-                        
                         <div class="due-file-wrapper">
                             <button type="button" class="due-file-btn" onclick="document.getElementById('dueFileInput').click()">Choose File</button>
                             <span class="due-file-name" id="dueFileNameDisplay">No file chosen</span>
                         </div>
-
-                        <button type="button" class="btn-due-upload" id="btnUploadDueData">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> Upload Data
-                        </button>
-
-                        <button type="button" class="btn-due-sample" id="btnDownloadSample">
-                            <i class="fa-solid fa-file-excel"></i> Sample Download
-                        </button>
+                        <button type="button" class="btn-due-upload" id="btnUploadDueData"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Data</button>
+                        <button type="button" class="btn-due-sample" id="btnDownloadSample"><i class="fa-solid fa-file-excel"></i> Sample Download</button>
                     </div>
 
                     <div class="due-data-card">
@@ -447,11 +784,8 @@
                                     </select>
                                     <span style="font-size: 14px; color: #475569;">entries</span>
                                 </div>
-                                <button type="button" class="btn-due-refresh" id="btnRefreshDueData" title="লাইভ ডেটা রিফ্রেশ করুন">
-                                    <i class="fa-solid fa-arrows-rotate"></i> রিফ্রেশ
-                                </button>
+                                <button type="button" class="btn-due-refresh" id="btnRefreshDueData" title="লাইভ ডেটা রিফ্রেশ করুন"><i class="fa-solid fa-arrows-rotate"></i> রিফ্রেশ</button>
                             </div>
-
                             <div class="due-search-box">
                                 <label for="dueTableSearch">Search:</label>
                                 <input type="text" id="dueTableSearch" class="due-search-input" placeholder="যেকোনো তথ্য দিয়ে খুঁজুন...">
@@ -495,7 +829,7 @@
         wrapper.insertAdjacentHTML('beforeend', panelsHTML);
     }
 
-    // ৫. অটোমেটিক ক্যালকুলেশন ফাংশন
+    // ৬. অটোমেটিক ক্যালকুলেশন
     function calculateAutoValues() {
         const discountInp = document.getElementById('origDisc');
         const txnInp = document.getElementById('origTxn');
@@ -506,33 +840,25 @@
         const discount = parseFloat(discountInp ? discountInp.value : 0) || 0;
         const txnFee = parseFloat(txnInp ? txnInp.value : 0) || 0;
 
-        // বকেয়া (Net Due) = মূল বকেয়া - ডিসকাউন্ট
         const netDue = Math.max(0, selectedStudentRawDue - discount);
-
-        // মোট চার্জ (Total Charge) = বকেয়া (Net Due) এর ১% + ট্রানজেকশন ফি (Txn Fee)
         const percentCharge = netDue * 0.01;
         const totalCharge = percentCharge + txnFee;
-
-        // গৃহীত মোট টাকা (Net Received) = বকেয়া (Net Due) + মোট চার্জ (Total Charge)
         const netReceived = netDue + totalCharge;
 
-        // ভ্যালু আপডেট
         if (dueInp) dueInp.value = netDue.toFixed(2);
         if (chargeText) chargeText.innerText = totalCharge.toFixed(2);
         if (recInp) recInp.value = netReceived.toFixed(2);
     }
 
-    // ৬. তারিখ ফরম্যাট হেল্পার (DD-MM-YYYY)
+    // ৭. তারিখ ফরম্যাটার
     function formatDateToDDMMYYYY(dateStr) {
         if (!dateStr) return new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
         const parts = dateStr.split('-');
-        if (parts.length === 3) {
-            return `${parts[2]}-${parts[1]}-${parts[0]}`;
-        }
+        if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
         return dateStr;
     }
 
-    // ৭. পেজিনেশন ও অটোমেটিক ক্রমিক (SL) সহ বকেয়া টেবিল রেন্ডার
+    // ৮. পেজিনেশন ও বকেয়া টেবিল রেন্ডার
     function renderDueDataTable() {
         const tbody = document.getElementById('dueDataTableBody');
         const entriesInfo = document.getElementById('dueEntriesInfo');
@@ -605,88 +931,46 @@
         const container = document.getElementById('duePaginationBtns');
         if (!container) return;
         container.innerHTML = '';
-
         if (totalPages <= 1) return;
 
         const prevBtn = document.createElement('button');
         prevBtn.className = 'due-page-btn';
         prevBtn.innerText = 'Previous';
         prevBtn.disabled = (currentPage === 1);
-        prevBtn.onclick = () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderDueDataTable();
-            }
-        };
+        prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderDueDataTable(); } };
         container.appendChild(prevBtn);
 
         let startPage = Math.max(1, currentPage - 2);
         let endPage = Math.min(totalPages, currentPage + 2);
 
-        if (startPage > 1) {
-            container.appendChild(createPageButton(1));
-            if (startPage > 2) {
-                const dots = document.createElement('span');
-                dots.innerText = '...';
-                dots.style.padding = '0 5px';
-                container.appendChild(dots);
-            }
-        }
-
         for (let i = startPage; i <= endPage; i++) {
-            container.appendChild(createPageButton(i));
-        }
-
-        if (endPage < totalPages) {
-            if (endPage < totalPages - 1) {
-                const dots = document.createElement('span');
-                dots.innerText = '...';
-                dots.style.padding = '0 5px';
-                container.appendChild(dots);
-            }
-            container.appendChild(createPageButton(totalPages));
+            const btn = document.createElement('button');
+            btn.className = `due-page-btn ${i === currentPage ? 'active' : ''}`;
+            btn.innerText = i;
+            btn.onclick = () => { currentPage = i; renderDueDataTable(); };
+            container.appendChild(btn);
         }
 
         const nextBtn = document.createElement('button');
         nextBtn.className = 'due-page-btn';
         nextBtn.innerText = 'Next';
         nextBtn.disabled = (currentPage === totalPages);
-        nextBtn.onclick = () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderDueDataTable();
-            }
-        };
+        nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderDueDataTable(); } };
         container.appendChild(nextBtn);
     }
 
-    function createPageButton(pageNum) {
-        const btn = document.createElement('button');
-        btn.className = `due-page-btn ${pageNum === currentPage ? 'active' : ''}`;
-        btn.innerText = pageNum;
-        btn.onclick = () => {
-            currentPage = pageNum;
-            renderDueDataTable();
-        };
-        return btn;
-    }
-
-    // ৮. লাইভ রিয়েল-টাইম Firebase লিসেনার
+    // ৯. Firebase লাইভ সিঙ্ক
     async function listenFirebaseData() {
         const fb = await getFirebase();
         if (!fb) return;
 
-        // বকেয়া ডেটা লিসেনার
-        const dueRef = fb.ref(fb.db, 'erp/studentDueData');
-        fb.onValue(dueRef, (snapshot) => {
+        fb.onValue(fb.ref(fb.db, 'erp/studentDueData'), (snapshot) => {
             const data = snapshot.val();
             studentDueList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
             renderDueDataTable();
         });
 
-        // ফি ট্রানজেকশন ডেটা লিসেনার
-        const feeRef = fb.ref(fb.db, 'erp/feeTransactions');
-        fb.onValue(feeRef, (snapshot) => {
+        fb.onValue(fb.ref(fb.db, 'erp/feeTransactions'), (snapshot) => {
             const data = snapshot.val();
             feeTransactionsList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
             renderFullTable(feeTransactionsList);
@@ -694,21 +978,17 @@
         });
     }
 
-    // ৯. প্রিন্ট রসিদ ট্রিগার ফাংশন (গ্লোবাল)
-    window.printRowReceipt = function(txId, customReceiptNo) {
+    // ১০. টেবিল বা সাম্প্রতিক এন্ট্রি থেকে রসিদ ওপেন ফাংশন
+    window.printRowReceipt = function(txId) {
         const tx = feeTransactionsList.find(t => t.id === txId);
-        if (!tx) {
-            if (typeof showToast === 'function') showToast("লেনদেন তথ্য পাওয়া যায়নি!", "error");
-            return;
-        }
+        if (!tx) return;
 
-        const receiptNo = customReceiptNo || String(tx.receiptNo || tx.id.replace(/\D/g, '').slice(-4) || '3546');
         const netDueVal = parseFloat(tx.netDue || 0);
         const chargeVal = parseFloat(tx.totalCharge || 0);
         const totalVal = parseFloat(tx.netReceived || 0);
 
         const receiptData = {
-            receiptNo: receiptNo,
+            receiptNo: tx.receiptNo || tx.id.replace(/\D/g, '').slice(-4) || '3546',
             date: formatDateToDDMMYYYY(tx.date),
             studentName: tx.studentName || '-',
             studentId: tx.customerId || '-',
@@ -719,14 +999,10 @@
             receivedBy: tx.receivedBy || (window.profileSettings && window.profileSettings.fullName) || 'Riyal Robiul'
         };
 
-        if (typeof window.printReceiptA5Clean === 'function') {
-            window.printReceiptA5Clean(receiptData);
-        } else {
-            alert("Print engine is loading, please try again.");
-        }
+        window.openReceiptInNewTab(receiptData);
     };
 
-    // ১০. ইভেন্ট লজিক
+    // ১১. ইভেন্ট লজিক
     function initLogic() {
         const idInp = document.getElementById('origId');
         const nameInp = document.getElementById('origName');
@@ -736,11 +1012,9 @@
 
         if (dateInp) dateInp.value = new Date().toISOString().split('T')[0];
 
-        // আইডি লেখার সাথে সাথে স্বয়ংক্রিয় ডিউ ও নাম লোড
         if (idInp) {
             idInp.addEventListener('input', function() {
                 const val = this.value.trim();
-                
                 if (!val) {
                     selectedStudentRawDue = 0;
                     selectedStudentData = null;
@@ -749,27 +1023,16 @@
                     return;
                 }
 
-                // বকেয়া তালিকা থেকে সার্চ
                 const dueFound = studentDueList.find(s => String(s.stdId).trim() === val || String(s.mobile).trim() === val);
-                
                 if (dueFound) {
                     selectedStudentData = dueFound;
                     selectedStudentRawDue = parseFloat(dueFound.dueAmount || 0);
                     if (nameInp) nameInp.value = dueFound.studentName || '';
                 } else {
-                    const customers = window.customers || [];
-                    const foundCust = customers.find(c => String(c.id).trim() === val || String(c.phone).trim() === val);
-                    if (foundCust) {
-                        selectedStudentData = foundCust;
-                        selectedStudentRawDue = window.calculateCustomerCurrentDue ? window.calculateCustomerCurrentDue(foundCust.id) : 0;
-                        if (nameInp) nameInp.value = foundCust.name || '';
-                    } else {
-                        selectedStudentData = null;
-                        selectedStudentRawDue = 0;
-                        if (nameInp) nameInp.value = '';
-                    }
+                    selectedStudentData = null;
+                    selectedStudentRawDue = 0;
+                    if (nameInp) nameInp.value = '';
                 }
-
                 calculateAutoValues();
             });
         }
@@ -777,7 +1040,7 @@
         if (discInp) discInp.addEventListener('input', calculateAutoValues);
         if (txnInp) txnInp.addEventListener('input', calculateAutoValues);
 
-        // ফি ফর্ম সাবমিট (ডাটা সেভ এবং সরাসরি A5 প্রিন্ট)
+        // ফর্ম সাবমিট (সেভ হবে এবং সাথে সাথে নতুন ট্যাবে রসিদ ওপেন হবে)
         const origForm = document.getElementById('feeFormOriginal');
         if (origForm) {
             origForm.onsubmit = async function(e) {
@@ -795,12 +1058,11 @@
                     return;
                 }
 
-                if (typeof showLoader === 'function') showLoader("সংরক্ষণ ও রসিদ তৈরি হচ্ছে...");
+                if (typeof showLoader === 'function') showLoader("সংরক্ষণ করা হচ্ছে...");
 
-                // Gross Payment = Net Due + ১% (তবে চার্জ ৬০ টাকার বেশি হবে না)
                 const percentCapCharge = Math.min(netDue * 0.01, 60);
                 const calculatedGross = netDue + percentCapCharge;
-                const receiptNumeric = (feeTransactionsList.length + 1) + 3400; // ক্রমানুসারে রসিদ নম্বর
+                const receiptNumeric = (feeTransactionsList.length + 1) + 3400;
 
                 const txData = {
                     id: 'EDU-' + Date.now(),
@@ -833,8 +1095,8 @@
                     }
 
                     if (typeof showToast === 'function') showToast("ফি সফলভাবে সংরক্ষিত হয়েছে!", "success");
-                    
-                    // রসিদ ডেটা তৈরি ও পারফেক্ট A5 প্রিন্ট কল
+
+                    // রসিদ অবজেক্ট তৈরি এবং নতুন ট্যাবে ওপেন
                     const receiptData = {
                         receiptNo: txData.receiptNo,
                         date: formatDateToDDMMYYYY(txData.date),
@@ -847,9 +1109,7 @@
                         receivedBy: txData.receivedBy
                     };
 
-                    if (typeof window.printReceiptA5Clean === 'function') {
-                        window.printReceiptA5Clean(receiptData);
-                    }
+                    window.openReceiptInNewTab(receiptData);
 
                     // ফর্ম রিসেট
                     this.reset();
@@ -866,20 +1126,15 @@
             };
         }
 
-        // ফাইল সিলেক্টর
+        // এক্সেল ফাইল ইনপুট
         const fileInput = document.getElementById('dueFileInput');
         const fileNameDisplay = document.getElementById('dueFileNameDisplay');
         if (fileInput && fileNameDisplay) {
             fileInput.addEventListener('change', function() {
-                if (this.files && this.files.length > 0) {
-                    fileNameDisplay.innerText = this.files[0].name;
-                } else {
-                    fileNameDisplay.innerText = "No file chosen";
-                }
+                fileNameDisplay.innerText = (this.files && this.files.length > 0) ? this.files[0].name : "No file chosen";
             });
         }
 
-        // পেজ সাইজ ড্রপডাউন
         const pageSizeSelect = document.getElementById('duePageSizeSelect');
         if (pageSizeSelect) {
             pageSizeSelect.addEventListener('change', function() {
@@ -889,38 +1144,22 @@
             });
         }
 
-        // এক্সেল ফাইল আপলোড
         const btnUpload = document.getElementById('btnUploadDueData');
         if (btnUpload && fileInput) {
             btnUpload.addEventListener('click', function() {
                 if (!fileInput.files || fileInput.files.length === 0) {
-                    if (typeof showToast === 'function') showToast("অনুগ্রহ করে প্রথমে একটি এক্সেল ফাইল নির্বাচন করুন!", "warning");
-                    return;
-                }
-
-                if (typeof XLSX === 'undefined') {
-                    if (typeof showToast === 'function') showToast("SheetJS লাইব্রেরি পাওয়া যায়নি!", "error");
+                    if (typeof showToast === 'function') showToast("অনুগ্রহ করে একটি এক্সেল ফাইল নির্বাচন করুন!", "warning");
                     return;
                 }
 
                 const file = fileInput.files[0];
                 const reader = new FileReader();
-
                 reader.onload = async function(e) {
                     try {
                         const data = e.target.result;
                         const workbook = XLSX.read(data, { type: 'binary' });
                         const firstSheetName = workbook.SheetNames[0];
-                        const worksheet = workbook.Sheets[firstSheetName];
-                        const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-
-                        if (!json || json.length === 0) {
-                            if (typeof showToast === 'function') showToast("এক্সেল ফাইলে কোনো ডেটা পাওয়া যায়নি!", "warning");
-                            return;
-                        }
-
-                        const totalRows = json.length;
-                        if (typeof showToast === 'function') showToast(`📊 ${totalRows} টি ডেটা Firebase ক্লাউডে সেভ হচ্ছে...`, "info");
+                        const json = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName], { defval: '' });
 
                         const formatted = json.map(r => ({
                             class: r['Class'] || r['class'] || '-',
@@ -929,12 +1168,12 @@
                             studentName: r['Student Name'] || r['Name'] || '-',
                             category: r['Category'] || '-',
                             monthDue: r['Month Due'] || r['Month'] || '-',
-                            dueItems: r['Due items'] || r['Due Items'] || r['Due Item'] || '-',
+                            dueItems: r['Due items'] || r['Due Items'] || '-',
                             dueAmount: parseFloat(r['Due Amount'] || r['Amount'] || 0) || 0,
-                            mobile: String(r['Mobile'] || r['Phone'] || '').trim(),
-                            fathersName: r['Fathers name'] || r['Father Name'] || '-',
+                            mobile: String(r['Mobile'] || '').trim(),
+                            fathersName: r['Fathers name'] || '-',
                             fathersMobile: String(r['Fathers Mobile'] || '').trim(),
-                            mothersName: r['Mothers Name'] || r['Mother Name'] || '-',
+                            mothersName: r['Mothers Name'] || '-',
                             mothersMobile: String(r['Mothers Mobile'] || '').trim()
                         }));
 
@@ -944,41 +1183,31 @@
                             studentDueList = formatted;
                             currentPage = 1;
                             renderDueDataTable();
-                            if (typeof showToast === 'function') showToast(`✅ সফলভাবে ${totalRows} টি ডেটা ক্লাউডে সংরক্ষিত হয়েছে!`, "success");
+                            if (typeof showToast === 'function') showToast(`✅ সফলভাবে ${formatted.length} টি রেকর্ড সেভ হয়েছে!`, "success");
                         }
                     } catch(err) {
-                        console.error(err);
-                        if (typeof showToast === 'function') showToast("Firebase আপলোডে সমস্যা হয়েছে: " + err.message, "error");
+                        if (typeof showToast === 'function') showToast("আপলোডে সমস্যা হয়েছে!", "error");
                     }
                 };
-
                 reader.readAsBinaryString(file);
             });
         }
 
-        // রিফ্রেশ বাটন
         const btnRefresh = document.getElementById('btnRefreshDueData');
         if (btnRefresh) {
             btnRefresh.addEventListener('click', async function() {
                 const icon = this.querySelector('i');
                 if (icon) icon.classList.add('fa-spin');
-
                 const fb = await getFirebase();
                 if (fb) {
                     const snap = await fb.get(fb.ref(fb.db, 'erp/studentDueData'));
-                    const data = snap.val();
-                    studentDueList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                    studentDueList = snap.val() ? Object.values(snap.val()) : [];
                     renderDueDataTable();
-                    if (typeof showToast === 'function') showToast(`🔄 ক্লাউডে মোট ${studentDueList.length} টি রেকর্ড রয়েছে।`, "success");
                 }
-
-                setTimeout(() => {
-                    if (icon) icon.classList.remove('fa-spin');
-                }, 500);
+                setTimeout(() => { if (icon) icon.classList.remove('fa-spin'); }, 400);
             });
         }
 
-        // সার্চ
         const searchInput = document.getElementById('dueTableSearch');
         if (searchInput) {
             searchInput.addEventListener('input', function() {
@@ -988,35 +1217,25 @@
             });
         }
 
-        // স্যাম্পল ডাউনলোড
         const btnSample = document.getElementById('btnDownloadSample');
         if (btnSample) {
             btnSample.addEventListener('click', function() {
-                if (typeof XLSX === 'undefined') {
-                    alert("Excel Library (SheetJS) লোড হয়নি!");
-                    return;
-                }
-
                 const sampleData = [
                     ["Class", "Section", "STD ID", "Student Name", "Category", "Month Due", "Due items", "Due Amount", "Mobile", "Fathers name", "Fathers Mobile", "Mothers Name", "Mothers Mobile"],
-                    ["Nursery", "Dhorola", "1400626", "MOST NAFISA KHANDOKER", "Army", 1, "Tuition Fee (August-2026)", 600, "01774258066", "MD NABIUL", "01774258066", "MST DISA KHAN", "01748808957"],
-                    ["Nursery", "Dhorola", "1400726", "Sahrish Anaya", "Civil", 2, "Tuition Fee (July-2026 - August-2026)", 2400, "01749492670", "Md Shafiullah", "01718909989", "Jannatul Ferdaus", "01749492670"],
-                    ["Nursery", "Dhorola", "1400826", "Afia Sultana Tamanna", "Civil", 2, "Tuition Fee (July-2026 - August-2026)", 2550, "01712550232", "Md Abdul Aziz", "0171772190", "Most Taniya Akter", "01712550232"]
+                    ["Nursery", "Dhorola", "1400626", "MOST NAFISA KHANDOKER", "Army", 1, "Tuition Fee (August-2026)", 600, "01774258066", "MD NABIUL", "01774258066", "MST DISA KHAN", "01748808957"]
                 ];
-
                 const ws = XLSX.utils.aoa_to_sheet(sampleData);
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Sample_Data");
-                XLSX.writeFile(wb, "Student_Data_Sample.xlsx");
+                XLSX.utils.book_append_sheet(wb, ws, "Sample");
+                XLSX.writeFile(wb, "Student_Sample.xlsx");
             });
         }
     }
 
-    // সর্বশেষ এন্ট্রি (সর্বোচ্চ ৩টি) - প্রিন্ট বাটন সহ
+    // সর্বশেষ এন্ট্রি (সর্বোচ্চ ৩টি)
     function renderRecentEntries(feeTxs) {
         const body = document.getElementById('origRecentBody');
         if (!body) return;
-        
         if (!feeTxs || feeTxs.length === 0) {
             body.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999; padding:15px;">কোনো রিসেন্ট এন্ট্রি নেই</td></tr>';
             return;
@@ -1024,8 +1243,7 @@
 
         const top3 = feeTxs.slice(-3).reverse();
         let html = '';
-        top3.forEach((t, i) => {
-            const autoSL = feeTxs.length - i;
+        top3.forEach(t => {
             const amt = parseFloat(t.netReceived || 0);
             html += `
                 <tr>
@@ -1035,7 +1253,7 @@
                     <td style="font-weight:bold; color:#2563eb;">৳ ${amt.toFixed(2)}</td>
                     <td style="text-align:right;">
                         <button class="btn-print-row" onclick="printRowReceipt('${t.id}')">
-                            <i class="fa-solid fa-print"></i>
+                            <i class="fa-solid fa-file-lines"></i> রসিদ
                         </button>
                     </td>
                 </tr>
@@ -1044,7 +1262,7 @@
         body.innerHTML = html;
     }
 
-    // সকল জমা হওয়া ফি তালিকা - অ্যাকশন কলামে প্রিন্ট বাটন সহ
+    // সকল জমা হওয়া ফি তালিকা
     function renderFullTable(feeTxs) {
         const body = document.getElementById('allRecordsTableBody');
         const totalFeeSumEl = document.getElementById('totalFeeSum');
@@ -1058,14 +1276,12 @@
 
         body.innerHTML = '';
         let total = 0;
-        
         const list = feeTxs.slice().reverse();
         list.forEach((t, i) => {
             const netDue = parseFloat(t.netDue || 0);
             const txnFee = parseFloat(t.txnFee || 0);
             const totalCharge = parseFloat(t.totalCharge || 0);
             const netReceived = parseFloat(t.netReceived || 0);
-            
             const percentCapped = Math.min(netDue * 0.01, 60);
             const grossPayment = t.grossPayment !== undefined ? parseFloat(t.grossPayment) : (netDue + percentCapped);
             const autoSL = list.length - i;
@@ -1089,8 +1305,8 @@
                     <td style="color:#2563eb; font-weight:bold;">${grossPayment.toFixed(2)}</td>
                     <td>${t.discount > 0 ? `ছাড়: ৳${t.discount}` : '-'}</td>
                     <td>
-                        <button class="btn-print-row" onclick="printRowReceipt('${t.id}')" title="A5 রসিদ প্রিন্ট করুন">
-                            <i class="fa-solid fa-print"></i> প্রিন্ট
+                        <button class="btn-print-row" onclick="printRowReceipt('${t.id}')">
+                            <i class="fa-solid fa-print"></i> রসিদ
                         </button>
                     </td>
                 </tr>`;
