@@ -1,7 +1,7 @@
 /**
  * ==========================================================================
  * EDUCATION & DIGITAL SERVICES -> 100% PERFECT A5 ISOLATED PRINT ENGINE
- * Mousumi Computer ERP Extension (Dynamic & Exact Line-by-Line Spacing)
+ * Mousumi Computer ERP Extension (Exact PDF Match - 1 Page Fixed Edition)
  * ==========================================================================
  */
 
@@ -13,16 +13,17 @@
 
         .receipt-wrapper-card {
             background: #ffffff;
-            width: 100%;
-            max-width: 520px;
+            width: 148mm;
+            max-width: 100%;
             margin: 0 auto;
-            padding: 24px 28px;
+            padding: 10mm 14mm;
             box-shadow: 0 5px 25px rgba(0,0,0,0.08);
             border-radius: 4px;
             position: relative;
             box-sizing: border-box;
             color: #000000;
             overflow: hidden;
+            font-family: 'Tiro Bangla', 'Times New Roman', serif;
         }
 
         .receipt-watermark {
@@ -30,8 +31,7 @@
             top: 41%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 88%;
-            max-width: 420px;
+            width: 102mm;
             opacity: 0.38;
             pointer-events: none;
             z-index: 1;
@@ -54,16 +54,17 @@
             font-size: 13pt;
             font-weight: 600;
             color: #000;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
+            line-height: 1.2;
         }
 
         .rc-brand-title {
             text-align: center;
             font-family: 'Lobster', cursive !important;
-            font-size: 30pt;
+            font-size: 29pt;
             font-weight: normal;
             color: #000;
-            margin: 0 0 4px 0;
+            margin: 0 0 3px 0;
             line-height: 1.1;
         }
 
@@ -73,8 +74,8 @@
             font-size: 10.5pt;
             line-height: 1.25;
             color: #000;
-            margin: 0 auto 14px auto;
-            max-width: 470px;
+            margin: 0 auto 12px auto;
+            max-width: 118mm;
         }
 
         .rc-main-title {
@@ -98,7 +99,7 @@
             color: #000;
             vertical-align: middle;
             font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
-            font-size: 13.5pt;
+            font-size: 13pt;
             line-height: 1.2;
             border: none;
         }
@@ -118,29 +119,29 @@
 
         .rc-section-end td {
             border-bottom: 1.5px dotted #000;
-            padding-bottom: 8px !important;
+            padding-bottom: 7px !important;
         }
 
         .rc-section-start td {
-            padding-top: 8px !important;
+            padding-top: 7px !important;
         }
 
         .rc-payment-received-row td {
             text-align: center !important;
             font-weight: bold;
-            font-size: 14pt;
-            padding: 7px 0 !important;
+            font-size: 13.5pt;
+            padding: 6px 0 !important;
             border-bottom: 1.5px dotted #000 !important;
             border-right: none !important;
         }
 
         .paid-stamp-wrapper {
             text-align: center;
-            margin: 15px 0 16px 0;
+            margin: 12px 0 14px 0;
         }
 
         .paid-stamp-img {
-            width: 78px;
+            width: 76px;
             height: auto;
             object-fit: contain;
             display: inline-block;
@@ -149,7 +150,7 @@
         .rc-footer-sign {
             font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
             font-size: 11pt;
-            margin: 0 0 18px 0;
+            margin: 0 0 16px 0;
             color: #000;
         }
 
@@ -160,16 +161,16 @@
         .rc-disclaimer-mono {
             text-align: center;
             font-family: 'Roboto Mono', monospace !important;
-            font-size: 9pt;
+            font-size: 8.5pt;
             line-height: 1.35;
             color: #000;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
 
         .rc-disclaimer-lora {
             text-align: center;
             font-family: 'Lora', serif !important;
-            font-size: 9pt;
+            font-size: 8.5pt;
             font-style: italic;
             line-height: 1.3;
             color: #000;
@@ -177,17 +178,17 @@
     `;
     document.head.appendChild(style);
 
-    // ২. ডায়নামিক HTML টেমপ্লেট জেনারেটর
-    function generateReceiptHTML(data) {
+    // ২. ডায়নামিক রসিদ HTML তৈরি ফাংশন
+    function generateReceiptInnerContent(data) {
         const d = data || {
-            receiptNo: "3546",
-            date: "25-08-2026",
-            studentName: "Amit Partho Roy",
-            studentId: "602722",
-            tuitionFee: "4,760.00",
-            charge: "59.60",
-            total: "4,819.60",
-            received: "4819.60",
+            receiptNo: "3427",
+            date: "16-08-2026",
+            studentName: "Md. Ahsan Habib",
+            studentId: "400423",
+            tuitionFee: "5,080.00",
+            charge: "64.8",
+            total: "5,144.80",
+            received: "5144.8",
             receivedBy: "Riyal Robiul"
         };
 
@@ -264,7 +265,7 @@
         `;
     }
 
-    // ৩. সাইডবার ও ড্যাশবোর্ড ইনজেকশন
+    // ৩. সাইডবার মেনু ও ড্যাশবোর্ড প্যানেল ইনজেকশন
     function injectTemplateModule() {
         const menuItems = document.querySelectorAll('.menu-item');
         let submenuList = null;
@@ -302,7 +303,7 @@
 
                 <!-- মূল রসিদ কার্ড -->
                 <div class="receipt-wrapper-card" id="receipt-card-container">
-                    ${generateReceiptHTML()}
+                    ${generateReceiptInnerContent()}
                 </div>
             `;
             mainWrapper.appendChild(templatePanel);
@@ -326,7 +327,7 @@
         if (topTitle) topTitle.innerText = "RECEIPT TEMPLATE (A5)";
     };
 
-    // ৫. ডায়নামিক আইসোলেটেড পারফেক্ট A5 প্রিন্টার ইঞ্জিন
+    // ৫. ১০০% নিখুঁত ১-পেজ A5 আইসোলেটেড প্রিন্টার ইঞ্জিন
     window.printReceiptA5Clean = function (customData) {
         let printFrame = document.getElementById('mc-isolated-print-frame');
         if (printFrame) printFrame.remove();
@@ -341,7 +342,7 @@
         printFrame.style.border = '0';
         document.body.appendChild(printFrame);
 
-        const cardContent = customData ? generateReceiptHTML(customData) : document.getElementById('receipt-card-container').innerHTML;
+        const cardContent = generateReceiptInnerContent(customData);
 
         const printDoc = printFrame.contentWindow.document;
         printDoc.open();
@@ -349,41 +350,51 @@
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Receipt_Print</title>
+                <meta charset="UTF-8">
+                <title>Receipt_${customData ? customData.receiptNo : 'Print'}</title>
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=EB+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Lobster&family=Lora:ital,wght@1,400;1,500;1,600&family=Roboto+Mono:wght@400;500&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
                 <style>
+                    * {
+                        box-sizing: border-box !important;
+                        margin: 0;
+                        padding: 0;
+                    }
                     @page {
                         size: A5 portrait;
-                        margin: 0;
+                        margin: 0mm;
                     }
                     html, body {
+                        width: 148mm !important;
+                        height: 210mm !important;
                         margin: 0 !important;
                         padding: 0 !important;
                         background: #ffffff !important;
-                        width: 100%;
-                        height: 100%;
+                        color: #000000 !important;
+                        overflow: hidden !important;
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
+                        font-family: 'Tiro Bangla', 'Times New Roman', serif;
                     }
                     .receipt-wrapper-card {
                         background: #ffffff !important;
-                        width: 128mm !important;
-                        max-width: 128mm !important;
-                        margin: 7mm auto 0 auto !important;
-                        padding: 0 !important;
+                        width: 148mm !important;
+                        height: 210mm !important;
+                        max-height: 210mm !important;
+                        padding: 8mm 12mm 6mm 12mm !important;
                         position: relative !important;
                         box-sizing: border-box !important;
-                        color: #000000 !important;
                         overflow: hidden !important;
+                        page-break-after: avoid !important;
+                        page-break-inside: avoid !important;
                     }
                     .receipt-watermark {
                         position: absolute !important;
                         top: 41% !important;
                         left: 50% !important;
                         transform: translate(-50%, -50%) !important;
-                        width: 106mm !important;
+                        width: 104mm !important;
                         opacity: 0.38 !important;
                         z-index: 1 !important;
                         text-align: center !important;
@@ -400,7 +411,7 @@
                     .rc-bismillah {
                         text-align: center !important;
                         font-family: 'Caveat', cursive !important;
-                        font-size: 11pt !important;
+                        font-size: 11.5pt !important;
                         font-weight: 600 !important;
                         color: #000 !important;
                         margin-bottom: 2px !important;
@@ -409,16 +420,16 @@
                     .rc-brand-title {
                         text-align: center !important;
                         font-family: 'Lobster', cursive !important;
-                        font-size: 27.5pt !important;
+                        font-size: 28pt !important;
                         font-weight: normal !important;
                         color: #000 !important;
-                        margin: 0 0 3px 0 !important;
-                        line-height: 1.1 !important;
+                        margin: 0 0 2px 0 !important;
+                        line-height: 1.05 !important;
                     }
                     .rc-services-desc {
                         text-align: center !important;
                         font-family: 'EB Garamond', serif !important;
-                        font-size: 10pt !important;
+                        font-size: 9.5pt !important;
                         line-height: 1.25 !important;
                         color: #000 !important;
                         margin: 0 auto 10px auto !important;
@@ -443,7 +454,7 @@
                         color: #000 !important;
                         vertical-align: middle !important;
                         font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
-                        font-size: 13pt !important;
+                        font-size: 12.5pt !important;
                         line-height: 1.2 !important;
                         border: none !important;
                     }
@@ -460,10 +471,10 @@
                     }
                     .rc-section-end td {
                         border-bottom: 1.5px dotted #000 !important;
-                        padding-bottom: 7.5px !important;
+                        padding-bottom: 6.5px !important;
                     }
                     .rc-section-start td {
-                        padding-top: 7.5px !important;
+                        padding-top: 6.5px !important;
                     }
                     .rc-payment-received-row td {
                         text-align: center !important;
@@ -475,10 +486,10 @@
                     }
                     .paid-stamp-wrapper {
                         text-align: center !important;
-                        margin: 12px 0 14px 0 !important;
+                        margin: 10px 0 12px 0 !important;
                     }
                     .paid-stamp-img {
-                        width: 76px !important;
+                        width: 74px !important;
                         height: auto !important;
                         object-fit: contain !important;
                         display: inline-block !important;
@@ -486,7 +497,7 @@
                     .rc-footer-sign {
                         font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
                         font-size: 10.5pt !important;
-                        margin: 0 0 16px 0 !important;
+                        margin: 0 0 14px 0 !important;
                         color: #000 !important;
                     }
                     .rc-footer-sign strong {
@@ -495,17 +506,17 @@
                     .rc-disclaimer-mono {
                         text-align: center !important;
                         font-family: 'Roboto Mono', monospace !important;
-                        font-size: 8.5pt !important;
-                        line-height: 1.35 !important;
+                        font-size: 8pt !important;
+                        line-height: 1.3 !important;
                         color: #000 !important;
-                        margin-bottom: 5px !important;
+                        margin-bottom: 4px !important;
                     }
                     .rc-disclaimer-lora {
                         text-align: center !important;
                         font-family: 'Lora', serif !important;
-                        font-size: 8.5pt !important;
+                        font-size: 8pt !important;
                         font-style: italic !important;
-                        line-height: 1.3 !important;
+                        line-height: 1.25 !important;
                         color: #000 !important;
                     }
                 </style>
@@ -519,11 +530,12 @@
         `);
         printDoc.close();
 
+        // ফন্ট ও ছবি পুরোপুরি রেন্ডার নিশ্চিত করে প্রিন্ট
         const triggerFinalPrint = () => {
             setTimeout(() => {
                 printFrame.contentWindow.focus();
                 printFrame.contentWindow.print();
-            }, 350);
+            }, 300);
         };
 
         const images = printDoc.images;
