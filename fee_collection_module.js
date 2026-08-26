@@ -1,7 +1,6 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module (Enterprise Edition)
- * Sections: Fee Collection, Pending Clearance, Paid Settlement, Due Database, Void Logs, Reports Export.
- * Features: 1-Click Tap Pay & Undo, Reason-based Void & Restore, Real Excel/PDF Export, Fixed A5 Print.
+ * Fixed: Sidebar Submenu Dropdown, 1-Click Tap Pay, Reason Void, Reports Hub, A5 Print.
  */
 
 (function () {
@@ -25,6 +24,12 @@
         #edu-module-container, #edu-module-container * {
             box-sizing: border-box !important;
             font-family: 'Plus Jakarta Sans', 'Kalpurush', sans-serif !important;
+        }
+
+        /* ড্রপডাউন সাবমেনু ফিক্স */
+        #menu-edu-parent .submenu-list.show,
+        #menu-edu-parent.open .submenu-list {
+            display: flex !important;
         }
 
         .edu-view-card {
@@ -222,18 +227,28 @@
         }
     }
 
-    // ৩. সাইডবার মেনু ইনজেকশন (৬টি ঝকঝকে ইংরেজি মেনু)
+    // ৩. গ্লোবাল মেনু টগল ফাংশন
+    window.toggleEduMenu = function () {
+        const item = document.getElementById('menu-edu-parent');
+        if (item) {
+            item.classList.toggle('open');
+            const sub = item.querySelector('.submenu-list');
+            if (sub) sub.classList.toggle('show');
+        }
+    };
+
+    // ৪. সাইডবার মেনু ইনজেকশন (হুবহু admin.html স্টাইলে)
     function injectMenu() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList || document.getElementById('menu-edu-parent')) return;
 
         const html = `
             <li class="menu-item" id="menu-edu-parent">
-                <a onclick="this.parentElement.classList.toggle('open')">
+                <a onclick="toggleEduMenu()">
                     <span class="menu-link-inner"><i class="fa-solid fa-graduation-cap"></i> <span>Education & Digital</span></span>
                     <i class="fa-solid fa-chevron-down chevron-icon" style="font-size: 0.7rem;"></i>
                 </a>
-                <ul class="submenu-list">
+                <ul class="submenu-list show">
                     <li class="submenu-item"><a onclick="switchMainTab('edu-fee-form')"><i class="fa-solid fa-angle-right"></i> <span>Fee Collection</span></a></li>
                     <li class="submenu-item"><a onclick="switchMainTab('edu-pending-clearance')"><i class="fa-solid fa-angle-right"></i> <span>Pending Clearance</span></a></li>
                     <li class="submenu-item"><a onclick="switchMainTab('edu-paid-settlement')"><i class="fa-solid fa-angle-right"></i> <span>Paid Settlement</span></a></li>
@@ -246,7 +261,7 @@
         menuList.insertAdjacentHTML('beforeend', html);
     }
 
-    // ৪. ভিউ প্যানেল ইনজেকশন
+    // ৫. ভিউ প্যানেল ইনজেকশন
     function injectPanels() {
         const wrapper = document.querySelector('.main-wrapper');
         if (!wrapper) return;
@@ -515,7 +530,7 @@
         wrapper.insertAdjacentHTML('beforeend', panelsHTML);
     }
 
-    // ৫. রসিদ নতুন ট্যাবে ওপেন (Restored Exact Design & Clean Icon-Only Toolbar)
+    // ৬. রসিদ নতুন ট্যাবে ওপেন (Restored Exact Design & Clean Icon-Only Toolbar)
     window.openReceiptInNewTab = function (d) {
         const receiptWindow = window.open('', '_blank');
         if (!receiptWindow) {
@@ -530,7 +545,6 @@
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Receipt_${d.receiptNo}_${d.studentName}</title>
-                <!-- FontAwesome & Google Fonts -->
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -617,7 +631,7 @@
         receiptWindow.document.close();
     };
 
-    // ৬. অটোমেটিক ক্যালকুলেশন ও বকেয়া সমন্বয়
+    // ৭. অটো ক্যালকুলেশন
     function calculateAutoValues() {
         const discountInp = document.getElementById('origDisc');
         const txnInp = document.getElementById('origTxn');
@@ -644,7 +658,7 @@
         return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : dateStr;
     }
 
-    // ৭. ১-ক্লিকে Tap Pay এবং Revert/Undo লজিক
+    // ৮. ১-ক্লিকে Tap Pay এবং Revert লজিক
     window.markAsTapPaid = async function(txId) {
         const tx = feeTransactionsList.find(t => t.id === txId);
         if (!tx) return;
@@ -673,7 +687,7 @@
         } catch(e) { console.error(e); }
     };
 
-    // ৮. ডিলিট / Void উইথ Mandatory Reason
+    // ৯. Void / Delete Modal
     window.openVoidModal = function(txId) {
         document.getElementById('voidTargetTxId').value = txId;
         document.getElementById('voidReasonModal').style.display = 'flex';
@@ -724,7 +738,7 @@
         } catch(e) { console.error(e); }
     };
 
-    // ৯. টেবিল রেন্ডারিং ফাংশনসমূহ (Clean & Dedicated)
+    // ১০. টেবিল রেন্ডারিং
     function renderPendingTable() {
         const tbody = document.getElementById('pendingClearanceTableBody');
         const badge = document.getElementById('pendingCountBadge');
@@ -837,7 +851,7 @@
         if (badge) badge.innerText = `${voidLogsList.length} Voided`;
     }
 
-    // ১০. মাস্টার এক্সেল ও পিডিএফ এক্সপোর্ট ফাংশন
+    // ১১. মাস্টার এক্সেল এক্সপোর্ট
     window.exportDataToExcel = function(type) {
         if (typeof XLSX === 'undefined') {
             alert("SheetJS library not loaded!");
@@ -879,7 +893,7 @@
         XLSX.writeFile(wb, fileName);
     };
 
-    // ১১. পেজিনেশন ও বকেয়া টেবিল
+    // ১২. পেজিনেশন ও বকেয়া টেবিল
     function renderDueDataTable() {
         const tbody = document.getElementById('dueDataTableBody');
         const paginationBtns = document.getElementById('duePaginationBtns');
@@ -927,7 +941,6 @@
         });
         tbody.innerHTML = html;
 
-        // Pagination buttons
         if (paginationBtns) {
             paginationBtns.innerHTML = '';
             if (totalPages > 1) {
@@ -942,7 +955,7 @@
         }
     }
 
-    // ১২. Firebase লিসেনার
+    // ১৩. Firebase লিসেনার
     async function listenFirebaseData() {
         const fb = await getFirebase();
         if (!fb) return;
@@ -986,7 +999,7 @@
         window.openReceiptInNewTab(receiptData);
     };
 
-    // ১৩. ফর্ম ও ইভেন্ট লজিক
+    // ১৪. ফর্ম ও ইভেন্ট লজিক
     function initLogic() {
         const idInp = document.getElementById('origId');
         const nameInp = document.getElementById('origName');
@@ -1012,8 +1025,6 @@
                 }
 
                 const dueFound = studentDueList.find(s => String(s.stdId).trim() === val || String(s.mobile).trim() === val);
-                
-                // পূর্ববর্তী জমার সমন্বয় চেক
                 const prevPayments = feeTransactionsList.filter(t => String(t.customerId).trim() === val && t.status === 'Pending');
                 let prevPaidSum = 0;
                 prevPayments.forEach(p => prevPaidSum += (parseFloat(p.netDue) || 0));
