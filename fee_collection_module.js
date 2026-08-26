@@ -1,6 +1,6 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module
- * Features: Restored Exact Receipt Layout, Icon-Only Software Toolbar, PDF Download, Auto SL & Pagination.
+ * Features: Fixed Print Watermark, Fixed PDF Stamp, Icon-Only Software Toolbar, Auto SL & Pagination.
  */
 
 (function () {
@@ -286,7 +286,7 @@
         }
     }
 
-    // ৩. রসিদ নতুন ট্যাবে ওপেন (Restored Exact Design & Icon-Only Action Bar)
+    // ৩. রসিদ নতুন ট্যাবে ওপেন (Fixed Watermark & Visible Paid Stamp)
     window.openReceiptInNewTab = function (d) {
         const receiptWindow = window.open('', '_blank');
         if (!receiptWindow) {
@@ -301,7 +301,7 @@
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Receipt_${d.receiptNo}_${d.studentName}</title>
-                <!-- FontAwesome Icons & Google Fonts -->
+                <!-- FontAwesome & Google Fonts -->
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -399,12 +399,11 @@
                         overflow: hidden;
                     }
 
-                    /* ওয়াটারমার্ক */
+                    /* ওয়াটারমার্ক ফিক্স (প্রিন্টারে নড়বে না) */
                     .receipt-watermark {
                         position: absolute;
-                        top: 41%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
+                        top: 48mm;
+                        left: 21mm;
                         width: 106mm;
                         opacity: 0.38;
                         pointer-events: none;
@@ -516,10 +515,12 @@
                         border-right: none !important;
                     }
 
-                    /* ৬. PAID স্ট্যাম্প */
+                    /* ৬. PAID স্ট্যাম্প (ফিক্সড ভিজিবিলিটি) */
                     .paid-stamp-wrapper {
                         text-align: center;
                         margin: 14px 0 16px 0;
+                        position: relative;
+                        z-index: 5;
                     }
 
                     .paid-stamp-img {
@@ -586,6 +587,10 @@
                             page-break-inside: avoid !important;
                             page-break-after: avoid !important;
                         }
+                        .receipt-watermark {
+                            top: 48mm !important;
+                            left: 21mm !important;
+                        }
                     }
                 </style>
             </head>
@@ -609,7 +614,7 @@
                     
                     <!-- ওয়াটারমার্ক -->
                     <div class="receipt-watermark">
-                        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgBBifAiiveIb1xVgQZv6AxAD_YCVu7JRmBqQOX2eeSJFxavzFEhsWQlYpN6b_aUIiUVCdNu39EHD2-tG1Li5b2Jx4U1DqTH98zbWgxmegb-xPADeDbJBdCqt-WhP71NUrFTlJLeEpZgVoAxEcUufpJNxMQs8nVE28Jj6Ch0LRjTnDBICBibZxxgwE7nFyB/s1600/Receipt%20%281%29.png" alt="Watermark" />
+                        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgBBifAiiveIb1xVgQZv6AxAD_YCVu7JRmBqQOX2eeSJFxavzFEhsWQlYpN6b_aUIiUVCdNu39EHD2-tG1Li5b2Jx4U1DqTH98zbWgxmegb-xPADeDbJBdCqt-WhP71NUrFTlJLeEpZgVoAxEcUufpJNxMQs8nVE28Jj6Ch0LRjTnDBICBibZxxgwE7nFyB/s1600/Receipt%20%281%29.png" alt="Watermark" crossorigin="anonymous" />
                     </div>
 
                     <div class="receipt-body">
@@ -668,7 +673,7 @@
 
                         <!-- ৬. PAID স্ট্যাম্প -->
                         <div class="paid-stamp-wrapper">
-                            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgkW_Mz8uWQPQY8WqCQEVSh7ff6C8_ZE02lZw3o42e8QtmSIE8Sxgx_ejXTZmN_QNLHg0nfS5hrG4Mu2Y6NGCztsTnRZfvFuZ3bZzLAkMtvHxP6tkMxi9YUWcKG9gKXpJHrmnuWFFDAw0qIcAPb6WvHNVT_eiZkM2xDyI3HvRxrrqrpqyv8Zv2FIICwIQQr/s1600/Receipt.png" alt="PAID Stamp" class="paid-stamp-img" />
+                            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgkW_Mz8uWQPQY8WqCQEVSh7ff6C8_ZE02lZw3o42e8QtmSIE8Sxgx_ejXTZmN_QNLHg0nfS5hrG4Mu2Y6NGCztsTnRZfvFuZ3bZzLAkMtvHxP6tkMxi9YUWcKG9gKXpJHrmnuWFFDAw0qIcAPb6WvHNVT_eiZkM2xDyI3HvRxrrqrpqyv8Zv2FIICwIQQr/s1600/Receipt.png" alt="PAID Stamp" class="paid-stamp-img" crossorigin="anonymous" />
                         </div>
 
                         <!-- ৭. রিসিভড বাই -->
@@ -696,7 +701,12 @@
                             margin: 0,
                             filename: 'Receipt_${d.receiptNo}_${d.studentId}.pdf',
                             image: { type: 'jpeg', quality: 0.98 },
-                            html2canvas: { scale: 2.5, useCORS: true },
+                            html2canvas: { 
+                                scale: 2.5, 
+                                useCORS: true, 
+                                allowTaint: true,
+                                logging: false
+                            },
                             jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
                         };
                         html2pdf().set(opt).from(element).save();
