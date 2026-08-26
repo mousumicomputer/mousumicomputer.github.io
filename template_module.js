@@ -1,7 +1,7 @@
 /**
  * ==========================================================================
  * EDUCATION & DIGITAL SERVICES -> 100% PERFECT A5 ISOLATED PRINT ENGINE
- * Mousumi Computer ERP Extension (Exact Line-by-Line Spacing Edition)
+ * Mousumi Computer ERP Extension (Dynamic & Exact Line-by-Line Spacing)
  * ==========================================================================
  */
 
@@ -177,7 +177,94 @@
     `;
     document.head.appendChild(style);
 
-    // ২. সাইডবার ও ড্যাশবোর্ড ইনজেকশন
+    // ২. ডায়নামিক HTML টেমপ্লেট জেনারেটর
+    function generateReceiptHTML(data) {
+        const d = data || {
+            receiptNo: "3546",
+            date: "25-08-2026",
+            studentName: "Amit Partho Roy",
+            studentId: "602722",
+            tuitionFee: "4,760.00",
+            charge: "59.60",
+            total: "4,819.60",
+            received: "4819.60",
+            receivedBy: "Riyal Robiul"
+        };
+
+        return `
+            <div class="receipt-watermark">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgBBifAiiveIb1xVgQZv6AxAD_YCVu7JRmBqQOX2eeSJFxavzFEhsWQlYpN6b_aUIiUVCdNu39EHD2-tG1Li5b2Jx4U1DqTH98zbWgxmegb-xPADeDbJBdCqt-WhP71NUrFTlJLeEpZgVoAxEcUufpJNxMQs8nVE28Jj6Ch0LRjTnDBICBibZxxgwE7nFyB/s1600/Receipt%20%281%29.png" alt="Watermark" />
+            </div>
+
+            <div class="receipt-body">
+                <div class="rc-bismillah">“In the name of Allah, the Most Gracious, the Most Merciful”</div>
+                <div class="rc-brand-title">Mousumi Computer</div>
+                <div class="rc-services-desc">
+                    All kinds of services: Tuition Fee Payment, T-Cash (Tap), bKash, <br>
+                    Nagad, Rocket, Upay, Flexiload, and Computer Works.
+                </div>
+
+                <div class="rc-main-title">RECEIPT</div>
+
+                <table class="rc-sheet-table">
+                    <tr>
+                        <td class="rc-col-b">Receipt No</td>
+                        <td class="rc-col-c">${d.receiptNo}</td>
+                    </tr>
+                    <tr class="rc-section-end">
+                        <td class="rc-col-b">Date</td>
+                        <td class="rc-col-c">${d.date}</td>
+                    </tr>
+
+                    <tr class="rc-section-start">
+                        <td class="rc-col-b">Student Name</td>
+                        <td class="rc-col-c">${d.studentName}</td>
+                    </tr>
+                    <tr class="rc-section-end">
+                        <td class="rc-col-b">Student ID</td>
+                        <td class="rc-col-c">${d.studentId}</td>
+                    </tr>
+
+                    <tr class="rc-section-start">
+                        <td class="rc-col-b">Tuition Fee</td>
+                        <td class="rc-col-c">${d.tuitionFee}</td>
+                    </tr>
+                    <tr>
+                        <td class="rc-col-b">Charge</td>
+                        <td class="rc-col-c">${d.charge}</td>
+                    </tr>
+                    <tr class="rc-section-end">
+                        <td class="rc-col-b">Total</td>
+                        <td class="rc-col-c">${d.total}</td>
+                    </tr>
+
+                    <tr class="rc-payment-received-row">
+                        <td colspan="2">Payment Received: ${d.received}</td>
+                    </tr>
+                </table>
+
+                <div class="paid-stamp-wrapper">
+                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgkW_Mz8uWQPQY8WqCQEVSh7ff6C8_ZE02lZw3o42e8QtmSIE8Sxgx_ejXTZmN_QNLHg0nfS5hrG4Mu2Y6NGCztsTnRZfvFuZ3bZzLAkMtvHxP6tkMxi9YUWcKG9gKXpJHrmnuWFFDAw0qIcAPb6WvHNVT_eiZkM2xDyI3HvRxrrqrpqyv8Zv2FIICwIQQr/s1600/Receipt.png" alt="PAID Stamp" class="paid-stamp-img" />
+                </div>
+
+                <div class="rc-footer-sign">
+                    <strong>Received By:</strong> ${d.receivedBy || 'Riyal Robiul'}
+                </div>
+
+                <div class="rc-disclaimer-mono">
+                    This is a computer-generated receipt.<br>
+                    Thank you for your payment.
+                </div>
+
+                <div class="rc-disclaimer-lora">
+                    For any queries or assistance, please contact<br>
+                    Md. Robiul Islam at 01608-314552 or 01893-201584.
+                </div>
+            </div>
+        `;
+    }
+
+    // ৩. সাইডবার ও ড্যাশবোর্ড ইনজেকশন
     function injectTemplateModule() {
         const menuItems = document.querySelectorAll('.menu-item');
         let submenuList = null;
@@ -215,75 +302,7 @@
 
                 <!-- মূল রসিদ কার্ড -->
                 <div class="receipt-wrapper-card" id="receipt-card-container">
-                    <div class="receipt-watermark">
-                        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgBBifAiiveIb1xVgQZv6AxAD_YCVu7JRmBqQOX2eeSJFxavzFEhsWQlYpN6b_aUIiUVCdNu39EHD2-tG1Li5b2Jx4U1DqTH98zbWgxmegb-xPADeDbJBdCqt-WhP71NUrFTlJLeEpZgVoAxEcUufpJNxMQs8nVE28Jj6Ch0LRjTnDBICBibZxxgwE7nFyB/s1600/Receipt%20%281%29.png" alt="Watermark" />
-                    </div>
-
-                    <div class="receipt-body">
-                        <div class="rc-bismillah">“In the name of Allah, the Most Gracious, the Most Merciful”</div>
-                        <div class="rc-brand-title">Mousumi Computer</div>
-                        <div class="rc-services-desc">
-                            All kinds of services: Tuition Fee Payment, T-Cash (Tap), bKash, <br>
-                            Nagad, Rocket, Upay, Flexiload, and Computer Works.
-                        </div>
-
-                        <div class="rc-main-title">RECEIPT</div>
-
-                        <table class="rc-sheet-table">
-                            <tr>
-                                <td class="rc-col-b">Receipt No</td>
-                                <td class="rc-col-c">3546</td>
-                            </tr>
-                            <tr class="rc-section-end">
-                                <td class="rc-col-b">Date</td>
-                                <td class="rc-col-c">25-08-2026</td>
-                            </tr>
-
-                            <tr class="rc-section-start">
-                                <td class="rc-col-b">Student Name</td>
-                                <td class="rc-col-c">Amit Partho Roy</td>
-                            </tr>
-                            <tr class="rc-section-end">
-                                <td class="rc-col-b">Student ID</td>
-                                <td class="rc-col-c">602722</td>
-                            </tr>
-
-                            <tr class="rc-section-start">
-                                <td class="rc-col-b">Tuition Fee</td>
-                                <td class="rc-col-c">4,760.00</td>
-                            </tr>
-                            <tr>
-                                <td class="rc-col-b">Charge</td>
-                                <td class="rc-col-c">59.6</td>
-                            </tr>
-                            <tr class="rc-section-end">
-                                <td class="rc-col-b">Total</td>
-                                <td class="rc-col-c">4,819.60</td>
-                            </tr>
-
-                            <tr class="rc-payment-received-row">
-                                <td colspan="2">Payment Received: 4819.6</td>
-                            </tr>
-                        </table>
-
-                        <div class="paid-stamp-wrapper">
-                            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgkW_Mz8uWQPQY8WqCQEVSh7ff6C8_ZE02lZw3o42e8QtmSIE8Sxgx_ejXTZmN_QNLHg0nfS5hrG4Mu2Y6NGCztsTnRZfvFuZ3bZzLAkMtvHxP6tkMxi9YUWcKG9gKXpJHrmnuWFFDAw0qIcAPb6WvHNVT_eiZkM2xDyI3HvRxrrqrpqyv8Zv2FIICwIQQr/s1600/Receipt.png" alt="PAID Stamp" class="paid-stamp-img" />
-                        </div>
-
-                        <div class="rc-footer-sign">
-                            <strong>Received By:</strong> Riyal Robiul
-                        </div>
-
-                        <div class="rc-disclaimer-mono">
-                            This is a computer-generated receipt.<br>
-                            Thank you for your payment.
-                        </div>
-
-                        <div class="rc-disclaimer-lora">
-                            For any queries or assistance, please contact<br>
-                            Md. Robiul Islam at 01608-314552 or 01893-201584.
-                        </div>
-                    </div>
+                    ${generateReceiptHTML()}
                 </div>
             `;
             mainWrapper.appendChild(templatePanel);
@@ -292,7 +311,7 @@
         return !!(document.getElementById('sub-edu-template') && document.getElementById('template-view'));
     }
 
-    // ৩. সেকশন ওপেন ফাংশন
+    // ৪. সেকশন ওপেন ফাংশন
     window.openTemplateSection = function () {
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
@@ -307,8 +326,8 @@
         if (topTitle) topTitle.innerText = "RECEIPT TEMPLATE (A5)";
     };
 
-    // ৪. আইসোলেটেড পারফেক্ট A5 প্রিন্টার ফাংশন (এক্স্যাক্ট স্পেসিং)
-    window.printReceiptA5Clean = function () {
+    // ৫. ডায়নামিক আইসোলেটেড পারফেক্ট A5 প্রিন্টার ইঞ্জিন
+    window.printReceiptA5Clean = function (customData) {
         let printFrame = document.getElementById('mc-isolated-print-frame');
         if (printFrame) printFrame.remove();
 
@@ -322,7 +341,7 @@
         printFrame.style.border = '0';
         document.body.appendChild(printFrame);
 
-        const cardContent = document.getElementById('receipt-card-container').innerHTML;
+        const cardContent = customData ? generateReceiptHTML(customData) : document.getElementById('receipt-card-container').innerHTML;
 
         const printDoc = printFrame.contentWindow.document;
         printDoc.open();
@@ -500,7 +519,6 @@
         `);
         printDoc.close();
 
-        // ফন্ট ও ছবি পুরোপুরি রেন্ডার হওয়ার পর প্রিন্ট
         const triggerFinalPrint = () => {
             setTimeout(() => {
                 printFrame.contentWindow.focus();
