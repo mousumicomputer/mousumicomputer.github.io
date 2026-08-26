@@ -1,6 +1,6 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module
- * Features: Standalone Clean A5 Tab Receipt, Auto Calculation, Auto SL & Pagination.
+ * Features: 100% Perfect 1-Page A5 Tab Receipt, PDF Download, Auto Calculation, Auto SL & Pagination.
  */
 
 (function () {
@@ -248,7 +248,7 @@
     styleSheet.innerText = css;
     document.head.appendChild(styleSheet);
 
-    // ২. স্বয়ংক্রিয় Firebase কানেক্টর
+    // ২. Firebase কানেক্টর
     async function getFirebase() {
         if (firebaseCore) return firebaseCore;
         try {
@@ -286,7 +286,7 @@
         }
     }
 
-    // ৩. রসিদ নতুন ট্যাবে খোলার মূল ইঞ্জিন (১০০% নির্ভুল A5)
+    // ৩. রসিদ নতুন ট্যাবে ওপেন (Professional Action Bar & 100% 1-Page A5 Fix)
     window.openReceiptInNewTab = function (d) {
         const receiptWindow = window.open('', '_blank');
         if (!receiptWindow) {
@@ -296,16 +296,19 @@
 
         const htmlContent = `
             <!DOCTYPE html>
-            <html lang="bn">
+            <html lang="en">
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Receipt_${d.receiptNo}_${d.studentName}</title>
-                <!-- Google Fonts -->
+                <!-- FontAwesome & Google Fonts -->
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=EB+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Lobster&family=Lora:ital,wght@1,400;1,500;1,600&family=Roboto+Mono:wght@400;500&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-                
+                <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=EB+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Lobster&family=Lora:ital,wght@1,400;1,500;1,600&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Roboto+Mono:wght@400;500&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+                <!-- html2pdf Library for Instant PDF Download -->
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
                 <style>
                     * {
                         box-sizing: border-box;
@@ -314,66 +317,92 @@
                     }
 
                     body {
-                        background-color: #e2e8f0;
+                        background-color: #0f172a;
                         font-family: 'Tiro Bangla', 'Times New Roman', serif;
                         display: flex;
                         flex-direction: column;
                         align-items: center;
-                        padding: 20px 0;
+                        padding: 20px 0 40px 0;
                         color: #000;
+                        min-height: 100vh;
                     }
 
-                    /* প্রিভিউ কন্ট্রোল বার (প্রিন্ট পেজে দেখা যাবে না) */
-                    .preview-controls {
-                        margin-bottom: 18px;
-                        display: flex;
-                        gap: 12px;
-                    }
-
-                    .btn-action {
-                        border: none;
-                        padding: 10px 22px;
-                        font-size: 15px;
-                        font-weight: bold;
-                        border-radius: 6px;
-                        cursor: pointer;
+                    /* --- MODERN SOFTWARE TOP ACTION BAR --- */
+                    .software-action-bar {
+                        background: rgba(30, 41, 59, 0.85);
+                        backdrop-filter: blur(12px);
+                        border: 1px solid rgba(255, 255, 255, 0.12);
+                        padding: 10px 20px;
+                        border-radius: 50px;
+                        margin-bottom: 24px;
                         display: flex;
                         align-items: center;
-                        gap: 8px;
-                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                        gap: 12px;
+                        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
                     }
 
-                    .btn-print { background-color: #0f172a; color: #ffffff; }
-                    .btn-print:hover { background-color: #334155; }
-                    .btn-close { background-color: #ef4444; color: #ffffff; }
+                    .mc-btn {
+                        font-family: 'Plus Jakarta Sans', sans-serif !important;
+                        border: none;
+                        padding: 9px 18px;
+                        font-size: 13.5px;
+                        font-weight: 700;
+                        border-radius: 30px;
+                        cursor: pointer;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 8px;
+                        transition: all 0.2s ease;
+                        letter-spacing: 0.3px;
+                    }
 
-                    /* মূল রসিদ কার্ড (A5 সাইজ) */
+                    .btn-print {
+                        background: linear-gradient(135deg, #00d2ff 0%, #0078ff 100%);
+                        color: #ffffff;
+                        box-shadow: 0 4px 12px rgba(0, 120, 255, 0.3);
+                    }
+                    .btn-print:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0, 120, 255, 0.45); }
+
+                    .btn-download {
+                        background: #10b981;
+                        color: #ffffff;
+                        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+                    }
+                    .btn-download:hover { background: #059669; transform: translateY(-1px); }
+
+                    .btn-close {
+                        background: rgba(255, 255, 255, 0.08);
+                        color: #e2e8f0;
+                        border: 1px solid rgba(255, 255, 255, 0.15);
+                    }
+                    .btn-close:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
+
+                    /* --- EXACT A5 RECEIPT CARD (STRICT 1-PAGE LOCK) --- */
                     .receipt-wrapper-card {
                         background: #ffffff;
                         width: 148mm;
-                        min-height: 210mm;
-                        padding: 12mm 15mm;
-                        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-                        border-radius: 2px;
+                        height: 210mm;
+                        max-height: 210mm;
+                        padding: 8mm 14mm 6mm 14mm;
+                        box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+                        border-radius: 4px;
                         position: relative;
                         box-sizing: border-box;
                         color: #000000;
                         overflow: hidden;
                     }
 
-                    /* ওয়াটারমার্ক */
                     .receipt-watermark {
                         position: absolute;
                         top: 41%;
                         left: 50%;
                         transform: translate(-50%, -50%);
-                        width: 106mm;
+                        width: 104mm;
                         opacity: 0.38;
                         pointer-events: none;
                         z-index: 1;
                         text-align: center;
                     }
-
                     .receipt-watermark img {
                         width: 100%;
                         height: auto;
@@ -388,40 +417,40 @@
                     .rc-bismillah {
                         text-align: center;
                         font-family: 'Caveat', cursive !important;
-                        font-size: 13.5pt;
+                        font-size: 11pt;
                         font-weight: 600;
                         color: #000;
                         margin-bottom: 2px;
-                        line-height: 1.2;
+                        line-height: 1.15;
                     }
 
                     .rc-brand-title {
                         text-align: center;
                         font-family: 'Lobster', cursive !important;
-                        font-size: 30pt;
+                        font-size: 27pt;
                         font-weight: normal;
                         color: #000;
-                        margin: 0 0 4px 0;
-                        line-height: 1.1;
+                        margin: 0 0 2px 0;
+                        line-height: 1.05;
                     }
 
                     .rc-services-desc {
                         text-align: center;
                         font-family: 'EB Garamond', serif !important;
-                        font-size: 10.5pt;
-                        line-height: 1.25;
+                        font-size: 9.5pt;
+                        line-height: 1.22;
                         color: #000;
-                        margin: 0 auto 12px auto;
-                        max-width: 115mm;
+                        margin: 0 auto 9px auto;
+                        max-width: 120mm;
                     }
 
                     .rc-main-title {
                         text-align: center;
                         font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
-                        font-size: 12.5pt;
+                        font-size: 11.5pt;
                         font-weight: bold;
                         letter-spacing: 1.5px;
-                        margin-bottom: 6px;
+                        margin-bottom: 5px;
                         color: #000;
                         text-transform: uppercase;
                     }
@@ -436,7 +465,7 @@
                         color: #000;
                         vertical-align: middle;
                         font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
-                        font-size: 13.5pt;
+                        font-size: 12.5pt;
                         line-height: 1.2;
                         border: none;
                     }
@@ -445,40 +474,40 @@
                         width: 37%;
                         font-weight: bold;
                         border-right: 1.5px dotted #000 !important;
-                        padding: 4px 10px 4px 0 !important;
+                        padding: 3.5px 8px 3.5px 0 !important;
                     }
 
                     .rc-col-c {
                         width: 63%;
                         font-weight: normal;
-                        padding: 4px 0 4px 14px !important;
+                        padding: 3.5px 0 3.5px 12px !important;
                     }
 
                     .rc-section-end td {
                         border-bottom: 1.5px dotted #000;
-                        padding-bottom: 8px !important;
+                        padding-bottom: 6px !important;
                     }
 
                     .rc-section-start td {
-                        padding-top: 8px !important;
+                        padding-top: 6px !important;
                     }
 
                     .rc-payment-received-row td {
                         text-align: center !important;
                         font-weight: bold;
-                        font-size: 14pt;
-                        padding: 7px 0 !important;
+                        font-size: 13.5pt;
+                        padding: 5.5px 0 !important;
                         border-bottom: 1.5px dotted #000 !important;
                         border-right: none !important;
                     }
 
                     .paid-stamp-wrapper {
                         text-align: center;
-                        margin: 14px 0 16px 0;
+                        margin: 9px 0 11px 0;
                     }
 
                     .paid-stamp-img {
-                        width: 78px;
+                        width: 72px;
                         height: auto;
                         object-fit: contain;
                         display: inline-block;
@@ -486,8 +515,8 @@
 
                     .rc-footer-sign {
                         font-family: 'Tiro Bangla', 'Times New Roman', serif !important;
-                        font-size: 11pt;
-                        margin: 0 0 18px 0;
+                        font-size: 10.5pt;
+                        margin: 0 0 14px 0;
                         color: #000;
                     }
 
@@ -498,59 +527,73 @@
                     .rc-disclaimer-mono {
                         text-align: center;
                         font-family: 'Roboto Mono', monospace !important;
-                        font-size: 9pt;
-                        line-height: 1.35;
+                        font-size: 8pt;
+                        line-height: 1.3;
                         color: #000;
-                        margin-bottom: 6px;
+                        margin-bottom: 4px;
                     }
 
                     .rc-disclaimer-lora {
                         text-align: center;
                         font-family: 'Lora', serif !important;
-                        font-size: 9pt;
+                        font-size: 8pt;
                         font-style: italic;
-                        line-height: 1.3;
+                        line-height: 1.25;
                         color: #000;
                     }
 
-                    /* প্রিন্ট মিডিয়া স্টাইলিং (A5 পারফেক্ট - ১ পাতা) */
+                    /* --- PRINT MEDIA ENGINE (STRICT 1 SHEET OF PAPER) --- */
                     @media print {
                         @page {
                             size: A5 portrait;
-                            margin: 0;
+                            margin: 0mm;
                         }
-                        body {
-                            background: #ffffff !important;
-                            padding: 0 !important;
+                        html, body {
+                            width: 148mm !important;
+                            height: 210mm !important;
+                            max-height: 210mm !important;
                             margin: 0 !important;
+                            padding: 0 !important;
+                            background: #ffffff !important;
+                            overflow: hidden !important;
                             -webkit-print-color-adjust: exact !important;
                             print-color-adjust: exact !important;
                         }
-                        .preview-controls {
+                        .no-print {
                             display: none !important;
                         }
                         .receipt-wrapper-card {
                             width: 148mm !important;
-                            min-height: 210mm !important;
+                            height: 210mm !important;
+                            max-height: 210mm !important;
+                            padding: 8mm 14mm 6mm 14mm !important;
                             box-shadow: none !important;
                             border-radius: 0 !important;
-                            padding: 10mm 14mm !important;
                             margin: 0 auto !important;
                             page-break-after: avoid !important;
+                            page-break-inside: avoid !important;
+                            overflow: hidden !important;
                         }
                     }
                 </style>
             </head>
             <body>
 
-                <!-- কন্ট্রোল বাটন -->
-                <div class="preview-controls">
-                    <button class="btn-action btn-print" onclick="window.print()">🖨️ প্রিন্ট / PDF ডাউনলোড (A5)</button>
-                    <button class="btn-action btn-close" onclick="window.close()">❌ বন্ধ করুন</button>
+                <!-- MODERN ACTION CONTROLS -->
+                <div class="software-action-bar no-print">
+                    <button class="mc-btn btn-print" onclick="window.print()">
+                        <i class="fa-solid fa-print"></i> Print Receipt (A5)
+                    </button>
+                    <button class="mc-btn btn-download" onclick="downloadReceiptPDF()">
+                        <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+                    </button>
+                    <button class="mc-btn btn-close" onclick="window.close()">
+                        <i class="fa-solid fa-xmark"></i> Close
+                    </button>
                 </div>
 
                 <!-- মূল রসিদ কার্ড -->
-                <div class="receipt-wrapper-card">
+                <div class="receipt-wrapper-card" id="printableReceiptCard">
                     
                     <!-- ওয়াটারমার্ক -->
                     <div class="receipt-watermark">
@@ -634,6 +677,19 @@
                     </div>
                 </div>
 
+                <script>
+                    function downloadReceiptPDF() {
+                        const element = document.getElementById('printableReceiptCard');
+                        const opt = {
+                            margin: 0,
+                            filename: 'Receipt_${d.receiptNo}_${d.studentId}.pdf',
+                            image: { type: 'jpeg', quality: 0.98 },
+                            html2canvas: { scale: 2.5, useCORS: true },
+                            jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
+                        };
+                        html2pdf().set(opt).from(element).save();
+                    }
+                <\/script>
             </body>
             </html>
         `;
@@ -988,7 +1044,7 @@
         const totalVal = parseFloat(tx.netReceived || 0);
 
         const receiptData = {
-            receiptNo: tx.receiptNo || tx.id.replace(/\D/g, '').slice(-4) || '3546',
+            receiptNo: tx.receiptNo || tx.id.replace(/\D/g, '').slice(-4) || '3410',
             date: formatDateToDDMMYYYY(tx.date),
             studentName: tx.studentName || '-',
             studentId: tx.customerId || '-',
