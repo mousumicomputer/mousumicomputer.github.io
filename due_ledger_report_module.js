@@ -1,18 +1,23 @@
 /**
  * ============================================================================
- * MOUSUMI COMPUTER ERP - OFFICIAL CUSTOMER DUE & ADVANCE LEDGER ADDON
+ * MOUSUMI COMPUTER ERP - DYNAMIC REPORT DOWNLOAD HUB & DUE LEDGER ADDON
  * File: due_ledger_report_module.js
  * 
- * Reports Included (3 Pages):
- * 1. Page 1: আমি কতজনের কাছে টাকা পাবো (গ্রাহকদের বকেয়া তালিকা)
- * 2. Page 2: আমার কাছে কে কে টাকা পাবে (গ্রাহকদের জমা / দেনা তালিকা)
- * 3. Page 3: দেনা-পাওনা হিসাব সমন্বয় বিবরণী (Adjustment & Summary)
+ * Features:
+ * 1. Context-Aware Dynamic UI (Auto hides/shows date filters & preview based on report type).
+ * 2. 3-Page Official Software Report:
+ *    - Page 1: আমি কতজনের কাছে টাকা পাবো (Receivables)
+ *    - Page 2: আমার কাছে কে কে টাকা পাবে (Payables)
+ *    - Page 3: দেনা-পাওনা হিসাব সমন্বয় বিবরণী (Adjustment & Net Position)
+ * 3. Direct Print-Ready PDF & Excel Export without unnecessary previews.
+ * 4. 100% Tiro Bangla Typography with Strict A4 Paging.
  * ============================================================================
  */
 
 (function () {
     "use strict";
 
+    // ১. বাংলা ফরম্যাটিং হেল্পার
     const BN_DIGITS = { "0": "০", "1": "১", "2": "২", "3": "৩", "4": "৪", "5": "৫", "6": "৬", "7": "৭", "8": "৮", "9": "৯" };
     const toBn = (val) => String(val ?? "").replace(/\d/g, d => BN_DIGITS[d]);
 
@@ -35,7 +40,7 @@
         };
     };
 
-    // ডেটা লোডার
+    // ২. লাইভ স্টোর থেকে কাস্টমার লেজার ডেটা প্রস্তুতকরণ
     function getLedgerData() {
         let customers = [];
         let transactions = [];
@@ -94,13 +99,13 @@
         };
     }
 
-    // ৩ পাতার অফিশিয়াল PDF প্রিন্ট মেকানিজম
-    function triggerDirectPrintPDF() {
+    // ৩. ৩ পাতার স্ট্যান্ডার্ড অফিশিয়াল PDF প্রিন্ট ডায়ালগ
+    function triggerDirectDueLedgerPDF() {
         const data = getLedgerData();
 
         let recRows = '';
         if (data.receivableList.length === 0) {
-            recRows = `<tr><td colspan="5" style="text-align:center; padding:10px;">কোনো বকেয়া পাওনা নেই</td></tr>`;
+            recRows = `<tr><td colspan="5" style="text-align:center; padding:12px;">কোনো গ্রাহকের নিকট বকেয়া পাওনা নেই</td></tr>`;
         } else {
             data.receivableList.forEach((r, i) => {
                 recRows += `
@@ -116,7 +121,7 @@
 
         let payRows = '';
         if (data.payableList.length === 0) {
-            payRows = `<tr><td colspan="5" style="text-align:center; padding:10px;">কোনো জমা/দেনা নেই</td></tr>`;
+            payRows = `<tr><td colspan="5" style="text-align:center; padding:12px;">কোনো গ্রাহকের জমা বা অগ্রিম দেনা নেই</td></tr>`;
         } else {
             data.payableList.forEach((p, i) => {
                 payRows += `
@@ -135,21 +140,21 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<title>Customer Due & Advance Ledger</title>
+<title>Customer Due & Advance Ledger - Mousumi Computer</title>
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap');
     @page { size: A4 portrait; margin: 10mm 12mm; }
     * { box-sizing: border-box; }
-    body { font-family: 'Tiro Bangla', serif; font-size: 11px; margin: 0; padding: 0; color: #000; }
+    body { font-family: 'Tiro Bangla', serif; font-size: 11px; margin: 0; padding: 0; color: #000; background: #fff; }
     .page { page-break-after: always; display: flex; flex-direction: column; min-height: 98vh; justify-content: space-between; }
     .page:last-child { page-break-after: avoid; }
     .header { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 4px; margin-bottom: 8px; }
-    .header h2 { margin: 0; font-size: 18px; text-transform: uppercase; }
-    .header h4 { margin: 2px 0 0 0; font-size: 13px; font-weight: normal; }
+    .header h2 { margin: 0; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .header h4 { margin: 2px 0 0 0; font-size: 13px; }
     .meta { display: flex; justify-content: space-between; font-size: 10.5px; margin-bottom: 6px; }
     table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-    th, td { border: 0.5px solid #000; padding: 4px 6px; font-size: 10.5px; word-break: break-word; }
-    th { background: #f2f2f2; text-align: left; }
+    th, td { border: 0.5px solid #000; padding: 4.5px 6px; font-size: 10.5px; word-break: break-word; }
+    th { background: #f2f2f2; text-align: left; font-weight: bold; }
     .total-row td { font-weight: bold; background: #fafafa; }
     .sig-area { margin-top: 35px; display: flex; justify-content: flex-end; }
     .sig-box { width: 180px; text-align: center; }
@@ -168,7 +173,7 @@
             </div>
             <div class="meta">
                 <div>তারিখ: ${data.dateInfo.full}</div>
-                <div>মোট গ্রাহক: ${toBn(data.receivableList.length)} জন</div>
+                <div>মোট দেনাদার গ্রাহক: ${toBn(data.receivableList.length)} জন</div>
             </div>
             <table>
                 <thead>
@@ -204,7 +209,7 @@
             </div>
             <div class="meta">
                 <div>তারিখ: ${data.dateInfo.full}</div>
-                <div>মোট গ্রাহক: ${toBn(data.payableList.length)} জন</div>
+                <div>মোট পাওনাদার গ্রাহক: ${toBn(data.payableList.length)} জন</div>
             </div>
             <table>
                 <thead>
@@ -236,7 +241,7 @@
         <div>
             <div class="header">
                 <h2>MOUSUMI COMPUTER</h2>
-                <h4>দেনা-পাওনা হিসাব সমন্বয় বিবরণী</h4>
+                <h4>দেনা-পাওনা হিসাব সমন্বয় বিবরণী (Adjustment Summary)</h4>
             </div>
             <div class="meta">
                 <div>তারিখ: ${data.dateInfo.full}</div>
@@ -280,7 +285,7 @@
 
         const printWin = window.open("", "_blank", "width=850,height=900");
         if (!printWin) {
-            alert("প্রিন্ট উইন্ডো খুলতে পারেনি! ব্রাউজারের পপ-আপ অন করুন।");
+            alert("প্রিন্ট উইন্ডো খুলতে পারেনি! ব্রাউজারের পপ-আপ Allow করুন।");
             return;
         }
         printWin.document.open();
@@ -288,8 +293,8 @@
         printWin.document.close();
     }
 
-    // সরাসরি এক্সেল এক্সপোর্ট
-    function triggerDirectExcel() {
+    // ৪. সরাসরি এক্সেল এক্সপোর্ট
+    function triggerDirectDueLedgerExcel() {
         if (!window.XLSX) {
             alert("Excel লাইব্রেরি পাওয়া যায়নি!");
             return;
@@ -334,26 +339,78 @@
         XLSX.writeFile(wb, "Customer_Due_and_Advance_Ledger.xlsx");
     }
 
-    // ড্রপডাউনে অপশন যোগ করা
+    // ৫. ডাইনামিক UI কন্ট্রোলার (ড্রপডাউনের ওপর ভিত্তি করে ফিল্টার ও প্রিভিউ দেখানো/লুকানো)
+    function handleReportTypeChange() {
+        const select = document.getElementById('hubReportType');
+        if (!select) return;
+
+        const val = select.value;
+        const fromDateGroup = document.getElementById('hubFromDate')?.closest('.rpt-control-group');
+        const toDateGroup = document.getElementById('hubToDate')?.closest('.rpt-control-group');
+        const shortcutsBar = document.querySelector('.rpt-quick-dates');
+        const previewBtn = document.querySelector('.rpt-btn-dark');
+        const previewCard = document.getElementById('hub-report-print-area');
+
+        if (val === 'due_advance_ledger') {
+            // বকেয়া ও দেনা-পাওনা লেজার মোড: অপ্রয়োজনীয় উপাদান হাইড করা
+            if (fromDateGroup) fromDateGroup.style.display = 'none';
+            if (toDateGroup) toDateGroup.style.display = 'none';
+            if (shortcutsBar) shortcutsBar.style.display = 'none';
+            if (previewBtn) previewBtn.style.display = 'none';
+            
+            if (previewCard) {
+                previewCard.innerHTML = `
+                    <div class="rpt-placeholder-state" style="padding: 40px 20px;">
+                        <i class="fa-solid fa-scale-balanced" style="font-size:2.8rem; color:#0284c7; margin-bottom:12px;"></i>
+                        <h4 style="font-size:1.1rem; color:#0f172a; margin-bottom:6px;">Customer Due & Advance Ledger (৩ পাতার খাতা)</h4>
+                        <p style="color:#64748b; margin-bottom:0;">এটি একটি রিয়েল-টাইম হিসাব বিবরণী। সরাসরি ডাউনলোড করতে <strong>Download PDF</strong> অথবা <strong>Export Excel</strong> বাটনে ক্লিক করুন।</p>
+                    </div>
+                `;
+            }
+        } else {
+            // অন্যান্য সাধারণ ডেট-রেঞ্জ রিপোর্ট মোড: ফিল্টার দেখানো
+            if (fromDateGroup) fromDateGroup.style.display = 'flex';
+            if (toDateGroup) toDateGroup.style.display = 'flex';
+            if (shortcutsBar) shortcutsBar.style.display = 'flex';
+            if (previewBtn) previewBtn.style.display = 'inline-flex';
+            
+            if (previewCard && previewCard.querySelector('.fa-scale-balanced')) {
+                previewCard.innerHTML = `
+                    <div class="rpt-placeholder-state">
+                        <i class="fa-regular fa-file-lines"></i>
+                        <h4>Report Ready for Generation</h4>
+                        <p>Click <strong>Generate Preview</strong> to preview the statement, or click <strong>Download PDF</strong> / <strong>Export Excel</strong> directly.</p>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    // ৬. ড্রপডাউনে অপশন ইনজেক্ট করা
     function injectDropdownOption() {
         const select = document.getElementById('hubReportType');
         if (!select) return false;
-        if (select.querySelector('option[value="due_advance_ledger"]')) return true;
 
-        const opt = document.createElement('option');
-        opt.value = 'due_advance_ledger';
-        opt.innerText = 'Customer Due & Advance Ledger (দেনা-পাওনা সমন্বয় ৩ পাতার খাতা)';
-        select.appendChild(opt);
+        if (!select.querySelector('option[value="due_advance_ledger"]')) {
+            const opt = document.createElement('option');
+            opt.value = 'due_advance_ledger';
+            opt.innerText = 'Customer Due & Advance Ledger (দেনা-পাওনা সমন্বয় ৩ পাতার খাতা)';
+            select.appendChild(opt);
+        }
+
+        // ইভেন্ট লিসেনার লাগানো
+        select.removeEventListener('change', handleReportTypeChange);
+        select.addEventListener('change', handleReportTypeChange);
         return true;
     }
 
-    // বাটন হুকিং (ডাউনলোড হাবের বাটনগুলোর সাথে সংযোগ)
+    // ৭. হুকিং বাটন ইঞ্জিন
     function attachHubHooks() {
         const origPDF = window.hubDownloadPDF;
         window.hubDownloadPDF = function () {
             const select = document.getElementById('hubReportType');
             if (select && select.value === 'due_advance_ledger') {
-                triggerDirectPrintPDF();
+                triggerDirectDueLedgerPDF();
                 return;
             }
             if (typeof origPDF === 'function') origPDF();
@@ -363,26 +420,23 @@
         window.hubExportExcel = function () {
             const select = document.getElementById('hubReportType');
             if (select && select.value === 'due_advance_ledger') {
-                triggerDirectExcel();
+                triggerDirectDueLedgerExcel();
                 return;
             }
             if (typeof origExcel === 'function') origExcel();
         };
 
-        const origPreview = window.hubGeneratePreview;
-        window.hubGeneratePreview = function () {
-            const select = document.getElementById('hubReportType');
-            if (select && select.value === 'due_advance_ledger') {
-                triggerDirectPrintPDF();
-                return;
-            }
-            if (typeof origPreview === 'function') origPreview();
+        const origReset = window.hubReset;
+        window.hubReset = function () {
+            if (typeof origReset === 'function') origReset();
+            setTimeout(handleReportTypeChange, 50);
         };
     }
 
     function init() {
         injectDropdownOption();
         attachHubHooks();
+        handleReportTypeChange();
     }
 
     if (document.readyState === 'loading') {
