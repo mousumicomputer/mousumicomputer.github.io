@@ -4,9 +4,9 @@
  * File: due_ledger_report_module.js
  * 
  * Features:
- * 1. 100% Plain Official Format (কোনো কালার বা অপ্রয়োজনীয় ডিজাইন নেই)
- * 2. Perfect Compact Layout (১ম পাতা থেকেই টেবিল শুরু, কোনো ফাঁকা পেজ হবে না)
- * 3. Native Crisp PDF & Print Support
+ * 1. 100% Tiro Bangla Google Font Typography
+ * 2. Serial Number Format: ১। ২। ৩। 
+ * 3. Compact Official Layout & Direct Print/PDF Support
  * ============================================================================
  */
 
@@ -103,7 +103,7 @@
             data.receivableList.forEach((r, i) => {
                 recRows += `
                     <tr>
-                        <td style="text-align:center;">${toBn(i + 1)}</td>
+                        <td style="text-align:center; font-weight:600;">${toBn(i + 1)}।</td>
                         <td style="font-weight:600;">${escapeHTML(r.name)}</td>
                         <td style="text-align:center;">${toBn(r.phone)}</td>
                         <td>${escapeHTML(r.address)}</td>
@@ -119,7 +119,7 @@
             data.payableList.forEach((p, i) => {
                 payRows += `
                     <tr>
-                        <td style="text-align:center;">${toBn(i + 1)}</td>
+                        <td style="text-align:center; font-weight:600;">${toBn(i + 1)}।</td>
                         <td style="font-weight:600;">${escapeHTML(p.name)}</td>
                         <td style="text-align:center;">${toBn(p.phone)}</td>
                         <td>${escapeHTML(p.address)}</td>
@@ -134,9 +134,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Due & Advance Ledger - Mousumi Computer</title>
+    <!-- Google Fonts: Tiro Bangla -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"><\/script>
     
     <style>
@@ -145,9 +146,9 @@
             margin: 0;
             padding: 20px 0;
             background: #e2e8f0;
-            font-family: 'Hind Siliguri', Arial, sans-serif;
+            font-family: 'Tiro Bangla', serif;
             color: #000;
-            font-size: 13px;
+            font-size: 13.5px;
         }
 
         /* প্রিন্ট অ্যাকশন বাটন */
@@ -172,7 +173,7 @@
             font-weight: 600;
             cursor: pointer;
             border-radius: 4px;
-            font-family: inherit;
+            font-family: 'Tiro Bangla', serif;
         }
         .btn-pdf { background: #dc2626; }
         .btn-excel { background: #059669; }
@@ -196,7 +197,7 @@
         }
         .header h1 {
             margin: 0;
-            font-size: 22px;
+            font-size: 23px;
             font-weight: 800;
             letter-spacing: 0.5px;
         }
@@ -209,7 +210,7 @@
         .meta {
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
+            font-size: 12.5px;
             margin-bottom: 8px;
             border-bottom: 1px solid #000;
             padding-bottom: 4px;
@@ -219,13 +220,13 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 12.5px;
+            font-size: 13px;
             margin-bottom: 12px;
         }
         th, td {
             border: 1px solid #000;
             padding: 4px 6px;
-            line-height: 1.25;
+            line-height: 1.3;
             vertical-align: middle;
         }
         th {
@@ -236,7 +237,7 @@
         .sec-title {
             background: #e2e8f0;
             font-weight: 700;
-            font-size: 13px;
+            font-size: 13.5px;
             border: 1px solid #000;
             border-bottom: none;
             padding: 4px 6px;
@@ -320,12 +321,12 @@
         </table>
 
         <!-- ৩. বকেয়া পাওনা টেবিল -->
-        <div class="sec-title">১. গ্রাহকদের বকেয়া তালিকা (আমি যাদের কাছে টাকা পাবো) — মোট: ${toBn(data.receivableList.length)} জন</div>
+        <div class="sec-title">১। গ্রাহকদের বকেয়া তালিকা (আমি যাদের কাছে টাকা পাবো) — মোট: ${toBn(data.receivableList.length)} জন</div>
         <table>
             <thead>
                 <tr>
-                    <th style="width:7%; text-align:center;">ক্রমিক</th>
-                    <th style="width:35%;">কাস্টমারের নাম</th>
+                    <th style="width:8%; text-align:center;">ক্রমিক</th>
+                    <th style="width:34%;">কাস্টমারের নাম</th>
                     <th style="width:20%; text-align:center;">মোবাইল নম্বর</th>
                     <th style="width:20%;">ঠিকানা</th>
                     <th style="width:18%; text-align:right;">বকেয়া (৳)</th>
@@ -341,12 +342,12 @@
         </table>
 
         <!-- ৪. অগ্রিম দেনা টেবিল -->
-        <div class="sec-title">২. গ্রাহকদের জমা / দেনা তালিকা (আমার কাছে যারা টাকা পাবে) — মোট: ${toBn(data.payableList.length)} জন</div>
+        <div class="sec-title">২। গ্রাহকদের জমা / দেনা তালিকা (আমার কাছে যারা টাকা পাবে) — মোট: ${toBn(data.payableList.length)} জন</div>
         <table>
             <thead>
                 <tr>
-                    <th style="width:7%; text-align:center;">ক্রমিক</th>
-                    <th style="width:35%;">কাস্টমারের নাম</th>
+                    <th style="width:8%; text-align:center;">ক্রমিক</th>
+                    <th style="width:34%;">কাস্টমারের নাম</th>
                     <th style="width:20%; text-align:center;">মোবাইল নম্বর</th>
                     <th style="width:20%;">ঠিকানা</th>
                     <th style="width:18%; text-align:right;">জমা / দেনা (৳)</th>
@@ -379,12 +380,12 @@
         function downloadExcel() {
             const wb = XLSX.utils.book_new();
             const s1 = [["MOUSUMI COMPUTER - বকেয়া তালিকা"], ["তারিখ:", "${data.dateInfo.full}"], [], ["ক্রমিক", "কাস্টমারের নাম", "মোবাইল", "ঠিকানা", "বকেয়া (৳)"]];
-            ${JSON.stringify(data.receivableList)}.forEach((r, i) => s1.push([i + 1, r.name, r.phone, r.address, r.amount]));
+            ${JSON.stringify(data.receivableList)}.forEach((r, i) => s1.push([i + 1 + "।", r.name, r.phone, r.address, r.amount]));
             s1.push(["", "", "", "মোট বকেয়া:", ${data.totalReceivable}]);
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s1), "বকেয়া তালিকা");
 
             const s2 = [["MOUSUMI COMPUTER - দেনা তালিকা"], ["তারিখ:", "${data.dateInfo.full}"], [], ["ক্রমিক", "কাস্টমারের নাম", "মোবাইল", "ঠিকানা", "দেনা (৳)"]];
-            ${JSON.stringify(data.payableList)}.forEach((p, i) => s2.push([i + 1, p.name, p.phone, p.address, p.amount]));
+            ${JSON.stringify(data.payableList)}.forEach((p, i) => s2.push([i + 1 + "।", p.name, p.phone, p.address, p.amount]));
             s2.push(["", "", "", "মোট দেনা:", ${data.totalPayable}]);
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s2), "দেনা তালিকা");
 
@@ -428,8 +429,8 @@
                 previewCard.innerHTML = `
                     <div class="rpt-placeholder-state" style="padding: 35px 20px; text-align: center;">
                         <i class="fa-solid fa-file-lines" style="font-size:2.5rem; color:#475569; margin-bottom:10px;"></i>
-                        <h4 style="font-size:1.1rem; color:#000; margin-bottom:4px;">Customer Due & Advance Ledger</h4>
-                        <p style="color:#555; margin-bottom:0;">অফিশিয়াল লেজার খতিয়ান শিট। দেখতে বা প্রিন্ট করতে <strong>Download PDF</strong> বাটনে ক্লিক করুন।</p>
+                        <h4 style="font-size:1.1rem; color:#000; margin-bottom:4px; font-family:'Tiro Bangla', serif;">Customer Due & Advance Ledger</h4>
+                        <p style="color:#555; margin-bottom:0; font-family:'Tiro Bangla', serif;">অফিশিয়াল লেজার খতিয়ান শিট। দেখতে বা প্রিন্ট করতে <strong>Download PDF</strong> বাটনে ক্লিক করুন।</p>
                     </div>
                 `;
             }
