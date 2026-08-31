@@ -1,79 +1,84 @@
 /* ==========================================================
-   ENTERPRISE CUSTOMER MANAGEMENT & HORIZONTAL CARDS
-   Font: 100% Tiro Bangla Everywhere
-   Avatar: Clean Faceless Human Vector Line-Art
+   ENTERPRISE CUSTOMER MANAGEMENT - MINIMALIST STRIP CARDS
+   Clean, High-Contrast & Crisp Typography
    File: customer_management_module.js
    ========================================================== */
 
-// ১. Tiro Bangla ফন্ট এবং গ্লোবাল স্টাইল ইনজেকশন
 const injectCorporateStyles = () => {
     if (document.getElementById('erp-corporate-css')) return;
     
-    // Tiro Bangla গুগল ফন্ট লোড
+    // Tiro Bangla ও Inter ফন্ট
     const fontLink = document.createElement('link');
     fontLink.rel = 'stylesheet';
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Inter:wght@400;500;600;700;800&display=swap';
     document.head.appendChild(fontLink);
 
     const style = document.createElement('style');
     style.id = 'erp-corporate-css';
     style.innerHTML = `
-        /* পুরো মডিউলে সর্বত্র Tiro Bangla ফন্ট প্রযোজ্য হবে */
-        #customer-ledger-view, 
-        #customer-ledger-view * {
-            font-family: 'Tiro Bangla', serif !important;
+        #customer-ledger-view {
+            font-family: 'Tiro Bangla', 'Inter', -apple-system, sans-serif !important;
+            color: #0f172a;
         }
 
-        /* Top KPI Grid */
+        /* ফন্টঅসাম আইকন যাতে ভেঙে না যায় */
+        #customer-ledger-view .fa-solid, 
+        #customer-ledger-view .fas, 
+        #customer-ledger-view .fa {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+        }
+
+        /* Top 4 KPI Metric Cards */
         .corp-kpi-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 16px;
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
         .corp-kpi-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
-            padding: 18px 20px;
+            padding: 16px 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
         .corp-kpi-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         .corp-kpi-title {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: #64748b;
+            color: #475569;
         }
         .corp-kpi-icon {
             font-size: 1.1rem;
-            color: #94a3b8;
+            color: #64748b;
         }
         .corp-kpi-value {
             font-size: 1.6rem;
             font-weight: 800;
             color: #0f172a;
+            font-family: 'Inter', 'Tiro Bangla', sans-serif !important;
         }
         .corp-kpi-subtitle {
-            font-size: 0.8rem;
-            color: #94a3b8;
-            margin-top: 4px;
-            font-weight: 500;
+            font-size: 0.78rem;
+            color: #64748b;
+            margin-top: 2px;
         }
 
-        /* Toolbar */
+        /* Action Toolbar */
         .corp-toolbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             flex-wrap: wrap;
         }
         .corp-search-wrapper {
@@ -87,24 +92,24 @@ const injectCorporateStyles = () => {
             left: 14px;
             top: 50%;
             transform: translateY(-50%);
-            color: #94a3b8;
-            font-size: 0.9rem;
+            color: #64748b;
+            font-size: 0.95rem;
         }
         .corp-search-input {
             width: 100%;
-            height: 44px;
-            padding: 0 12px 0 40px;
+            height: 42px;
+            padding: 0 14px 0 40px;
             border: 1.5px solid #cbd5e1;
             border-radius: 10px;
             font-size: 0.95rem;
-            color: #1e293b;
+            color: #0f172a;
             background: #ffffff;
             outline: none;
             transition: all 0.2s;
         }
         .corp-search-input:focus {
             border-color: #0f172a;
-            box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+            box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.06);
         }
         .corp-btn-group {
             display: flex;
@@ -112,10 +117,10 @@ const injectCorporateStyles = () => {
             align-items: center;
         }
         .corp-btn {
-            height: 44px;
-            padding: 0 20px;
+            height: 42px;
+            padding: 0 18px;
             border-radius: 10px;
-            font-size: 0.92rem;
+            font-size: 0.9rem;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
@@ -127,7 +132,7 @@ const injectCorporateStyles = () => {
         .corp-btn-default {
             background: #ffffff;
             border-color: #cbd5e1;
-            color: #334155;
+            color: #1e293b;
         }
         .corp-btn-default:hover {
             background: #f8fafc;
@@ -141,102 +146,103 @@ const injectCorporateStyles = () => {
             background: #1e293b;
         }
 
-        /* 1 ROW = 1 STRIP CARD */
+        /* MINIMALIST STRIP CARD (Clean & Readable) */
         .customer-card-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
 
         .cust-strip-card {
             background: #ffffff;
             border: 1.5px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 16px 22px;
+            border-radius: 12px;
+            padding: 14px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            gap: 15px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
             transition: all 0.2s;
         }
         .cust-strip-card:hover {
             border-color: #cbd5e1;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
             transform: translateY(-1px);
         }
 
+        /* Left Side: Avatar + Customer Main Info */
         .strip-left-section {
             display: flex;
             align-items: center;
-            gap: 16px;
-            min-width: 250px;
+            gap: 14px;
+            flex: 1;
         }
         .strip-avatar-img {
-            width: 52px;
-            height: 52px;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
             object-fit: cover;
-            border: 1.5px solid #e2e8f0;
+            border: 1.5px solid #cbd5e1;
             background: #f8fafc;
             flex-shrink: 0;
-            padding: 2px;
         }
-        .strip-cust-meta h3 {
+        .strip-cust-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .strip-cust-name {
             font-size: 1.15rem;
             font-weight: 700;
             color: #0f172a;
-            margin: 0 0 2px 0;
+            line-height: 1.2;
         }
-        .strip-cust-meta span {
-            font-size: 0.8rem;
-            color: #94a3b8;
-            font-weight: 600;
-        }
-
-        .strip-info-col {
+        .strip-cust-sub {
+            font-size: 0.88rem;
+            color: #475569;
+            font-weight: 500;
             display: flex;
-            flex-direction: column;
-            gap: 3px;
-            min-width: 140px;
+            align-items: center;
+            gap: 8px;
         }
-        .strip-info-col span {
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #94a3b8;
-        }
-        .strip-info-col strong {
-            font-size: 0.95rem;
-            color: #334155;
-            font-weight: 600;
+        .strip-cust-sub .dot {
+            width: 4px;
+            height: 4px;
+            background: #94a3b8;
+            border-radius: 50%;
+            display: inline-block;
         }
 
+        /* Right Side: Due Balance & Action Button */
         .strip-right-section {
             display: flex;
             align-items: center;
-            gap: 24px;
+            gap: 20px;
+        }
+        .strip-due-box {
             text-align: right;
         }
-        .strip-balance-box span {
-            font-size: 0.75rem;
+        .strip-due-label {
+            font-size: 0.72rem;
             font-weight: 700;
             text-transform: uppercase;
-            color: #94a3b8;
+            color: #64748b;
             display: block;
         }
-        .strip-balance-box strong {
-            font-size: 1.35rem;
+        .strip-due-val {
+            font-size: 1.3rem;
             font-weight: 800;
             letter-spacing: -0.3px;
+            font-family: 'Inter', 'Tiro Bangla', sans-serif !important;
         }
         .btn-strip-ledger {
             background: #0f172a;
             color: #ffffff;
             border: none;
-            padding: 10px 20px;
+            padding: 9px 18px;
             border-radius: 8px;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
@@ -248,41 +254,31 @@ const injectCorporateStyles = () => {
         .btn-strip-ledger:hover {
             background: #1e293b;
         }
-
-        .status-pill {
-            padding: 4px 10px;
+        .btn-action-delete {
+            background: #ffffff;
+            border: 1px solid #fee2e2;
+            color: #dc2626;
+            width: 32px;
+            height: 32px;
             border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            display: inline-block;
-            width: fit-content;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
         }
-        .pill-due { background: #fee2e2; color: #dc2626; }
-        .pill-settled { background: #dcfce7; color: #16a34a; }
-        .pill-advance { background: #dbeafe; color: #2563eb; }
-
-        @media (max-width: 900px) {
-            .cust-strip-card {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-            .strip-right-section {
-                width: 100%;
-                justify-content: space-between;
-                border-top: 1px solid #f1f5f9;
-                padding-top: 12px;
-            }
+        .btn-action-delete:hover {
+            background: #dc2626;
+            color: #ffffff;
         }
     `;
     document.head.appendChild(style);
 };
 
-// ২. আপনার পাঠানো ছবির মতো ফেসলেস ব্ল্যাক/গ্রে হিউম্যান ভেক্টর অ্যাভাটার
-const DEFAULT_HUMAN_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'><path d='M250 80c-55 0-95 40-95 95 0 35 15 65 40 80-5 25-10 40-10 65 0 20 20 40 65 40s65-20 65-40c0-25-5-40-10-65 25-15 40-45 40-80 0-55-40-95-95-95z' fill='%23ffffff' stroke='%231e293b' stroke-width='14'/><path d='M195 85c-20 0-40 25-35 55 5-25 20-40 40-45 25-5 45-20 85 5 15 10 25 10 35 0 5 25 10 35 15 45 5-30-10-60-40-70-35-10-70-5-100 10z' fill='%231e293b'/><path d='M110 420c0-60 60-95 140-95s140 35 140 95' fill='%23334155' stroke='%231e293b' stroke-width='14'/><path d='M200 325c15 15 30 20 50 20s35-5 50-20' fill='none' stroke='%231e293b' stroke-width='14'/></svg>";
+// হিউম্যান ভেক্টর লাইন-আর্ট অ্যাভাটার
+const DEFAULT_HUMAN_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'><path d='M250 80c-55 0-95 40-95 95 0 35 15 65 40 80-5 25-10 40-10 65 0 20 20 40 65 40s65-20 65-40c0-25-5-40-10-65 25-15 40-45 40-80 0-55-40-95-95-95z' fill='%23ffffff' stroke='%231e293b' stroke-width='16'/><path d='M195 85c-20 0-40 25-35 55 5-25 20-40 40-45 25-5 45-20 85 5 15 10 25 10 35 0 5 25 10 35 15 45 5-30-10-60-40-70-35-10-70-5-100 10z' fill='%231e293b'/><path d='M110 420c0-60 60-95 140-95s140 35 140 95' fill='%23334155' stroke='%231e293b' stroke-width='16'/><path d='M200 325c15 15 30 20 50 20s35-5 50-20' fill='none' stroke='%231e293b' stroke-width='16'/></svg>";
 
-// ৩. বকেয়া হিসাব ফাংশন
+// বকেয়া হিসাব
 window.calculateCustomerCurrentDue = function(custId) {
     const customers = window.customers || [];
     const cust = customers.find(c => c.id === custId);
@@ -299,7 +295,7 @@ window.calculateCustomerCurrentDue = function(custId) {
     return due;
 };
 
-// ৪. কাস্টমার তালিকা রেন্ডার করা
+// কাস্টমারদের পরিষ্কার ১ লাইনের কার্ডে প্রদর্শন
 window.renderCustomerListTable = function() {
     injectCorporateStyles();
 
@@ -386,7 +382,7 @@ window.renderCustomerListTable = function() {
         <div class="corp-toolbar">
             <div class="corp-search-wrapper">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="custSearchInput" class="corp-search-input" placeholder="Search by name, mobile, ID, address..." value="${filterVal}" autocomplete="off" oninput="renderCustomerListTable()">
+                <input type="text" id="custSearchInput" class="corp-search-input" placeholder="গ্রাহকের নাম, মোবাইল বা ঠিকানা দিয়ে খুঁজুন..." value="${filterVal}" autocomplete="off" oninput="renderCustomerListTable()">
             </div>
             <div class="corp-btn-group">
                 <button class="corp-btn corp-btn-default" onclick="exportOutstandingDueExcel()"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
@@ -394,7 +390,7 @@ window.renderCustomerListTable = function() {
             </div>
         </div>
 
-        <!-- HORIZONTAL STRIP CARDS -->
+        <!-- MINIMALIST STRIP CARDS -->
         <div class="customer-card-list" id="customerCardList"></div>
     `;
 
@@ -402,7 +398,7 @@ window.renderCustomerListTable = function() {
     if (!cardList) return;
 
     if (filtered.length === 0) {
-        cardList.innerHTML = `<div style="text-align: center; color: #94a3b8; padding: 60px; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0;">No customer records found.</div>`;
+        cardList.innerHTML = `<div style="text-align: center; color: #94a3b8; padding: 50px; background: #fff; border-radius: 12px; border: 1.5px solid #e2e8f0;">কোনো গ্রাহক পাওয়া যায়নি।</div>`;
         return;
     }
 
@@ -410,54 +406,42 @@ window.renderCustomerListTable = function() {
         const currentDue = window.calculateCustomerCurrentDue(c.id);
         const avatarSrc = c.avatarUrl ? c.avatarUrl : DEFAULT_HUMAN_AVATAR;
 
-        let statusPill = '<span class="status-pill pill-settled">Settled</span>';
         let dueColor = '#16a34a';
+        let dueLabel = 'PAID / SETTLED';
 
         if (currentDue > 0) {
-            statusPill = '<span class="status-pill pill-due">Pending Due</span>';
             dueColor = '#dc2626';
+            dueLabel = 'OUTSTANDING DUE';
         } else if (currentDue < 0) {
-            statusPill = '<span class="status-pill pill-advance">Advance</span>';
             dueColor = '#2563eb';
+            dueLabel = 'ADVANCE BALANCE';
         }
+
+        const locationText = c.address || c.area || 'ঠিকানা দেওয়া নেই';
 
         const card = document.createElement('div');
         card.className = 'cust-strip-card';
         card.innerHTML = `
-            <!-- Left: Human Avatar + Name + ID -->
+            <!-- Left: Avatar + Name + Phone/Address -->
             <div class="strip-left-section">
                 <img src="${avatarSrc}" class="strip-avatar-img" alt="${c.name}">
                 <div class="strip-cust-meta">
-                    <h3>${c.name}</h3>
-                    <span>ID: ${c.id}</span>
+                    <span class="strip-cust-name">${c.name}</span>
+                    <span class="strip-cust-sub">
+                        <span><i class="fa-solid fa-phone" style="font-size: 0.75rem; margin-right: 4px;"></i> ${c.phone || '-'}</span>
+                        <span class="dot"></span>
+                        <span><i class="fa-solid fa-location-dot" style="font-size: 0.75rem; margin-right: 4px;"></i> ${locationText}</span>
+                    </span>
                 </div>
             </div>
 
-            <!-- Middle: Phone -->
-            <div class="strip-info-col">
-                <span>Phone Number</span>
-                <strong style="font-size: 0.95rem;">${c.phone || '-'}</strong>
-            </div>
-
-            <!-- Middle: Address -->
-            <div class="strip-info-col">
-                <span>Address / Area</span>
-                <strong>${c.address || c.area || '-'}</strong>
-            </div>
-
-            <!-- Middle: Status -->
-            <div class="strip-info-col" style="min-width: 100px;">
-                <span>Status</span>
-                ${statusPill}
-            </div>
-
-            <!-- Right: Due Balance & Action -->
+            <!-- Right: Due Amount & Action -->
             <div class="strip-right-section">
-                <div class="strip-balance-box">
-                    <span>Outstanding Due</span>
-                    <strong style="color: ${dueColor};">
+                <div class="strip-due-box">
+                    <span class="strip-due-label">${dueLabel}</span>
+                    <span class="strip-due-val" style="color: ${dueColor};">
                         ${fmt(Math.abs(currentDue))} ${currentDue < 0 ? '<small>(Adv)</small>' : ''}
-                    </strong>
+                    </span>
                 </div>
                 <button class="btn-strip-ledger" onclick="openCustomerLedgerDirect('${c.id}')">
                     <i class="fa-solid fa-file-invoice"></i> View Ledger
@@ -468,7 +452,7 @@ window.renderCustomerListTable = function() {
     });
 };
 
-// ৫. কাস্টমার লেজার স্টেটমেন্ট
+// কাস্টমার স্টেটমেন্ট (লেজার পেজ)
 window.renderCustomerStatement = function(custId) {
     injectCorporateStyles();
     window.activeViewingCustomerId = custId;
@@ -497,39 +481,39 @@ window.renderCustomerStatement = function(custId) {
                     <button class="corp-btn corp-btn-default" onclick="switchCustomerSubSection('cust-list-section')" style="height: 40px; padding: 0 15px;">
                         <i class="fa-solid fa-arrow-left"></i> Back
                     </button>
-                    <img src="${avatarSrc}" style="width: 52px; height: 52px; border-radius: 50%; border: 1.5px solid #e2e8f0; padding: 2px;">
+                    <img src="${avatarSrc}" style="width: 50px; height: 50px; border-radius: 50%; border: 1.5px solid #cbd5e1;">
                     <div>
                         <h2 style="font-size: 1.35rem; font-weight: 700; color: #0f172a; margin: 0;">${cust.name}</h2>
-                        <span style="font-size: 0.85rem; color: #64748b;">Phone: ${cust.phone || '-'} | ID: ${cust.id} | Address: ${cust.address || '-'}</span>
+                        <span style="font-size: 0.88rem; color: #475569;">মোবাইল: ${cust.phone || '-'} | ঠিকানা: ${cust.address || '-'}</span>
                     </div>
                 </div>
 
                 <div style="text-align: right;">
-                    <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">Total Due Balance</span>
-                    <strong style="font-size: 1.7rem; color: ${currentDue > 0 ? '#dc2626' : '#16a34a'}; font-weight: 800;">${fmt(currentDue)}</strong>
+                    <span style="font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">Total Due Balance</span>
+                    <strong style="font-size: 1.7rem; color: ${currentDue > 0 ? '#dc2626' : '#16a34a'}; font-weight: 800; font-family: 'Inter', sans-serif;">${fmt(currentDue)}</strong>
                 </div>
             </div>
         </div>
 
         <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 22px; margin-bottom: 20px;">
-            <h4 style="font-size: 0.92rem; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px;">Post New Transaction</h4>
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px;">Post New Transaction</h4>
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px;">
                 <div>
-                    <label style="font-size: 0.85rem; font-weight: 600; color: #dc2626; display: block; margin-bottom: 6px;">Debit (+) [Sales / Due]</label>
+                    <label style="font-size: 0.85rem; font-weight: 600; color: #dc2626; display: block; margin-bottom: 6px;">Debit (+) [বিক্রয় / বাকি]</label>
                     <input type="number" id="modernTxDebit" class="corp-search-input" placeholder="0.00" oninput="handleDualInput('debit')">
                 </div>
                 <div>
-                    <label style="font-size: 0.85rem; font-weight: 600; color: #16a34a; display: block; margin-bottom: 6px;">Credit (-) [Payment Received]</label>
+                    <label style="font-size: 0.85rem; font-weight: 600; color: #16a34a; display: block; margin-bottom: 6px;">Credit (-) [টাকা গ্রহণ / জমা]</label>
                     <input type="number" id="modernTxCredit" class="corp-search-input" placeholder="0.00" oninput="handleDualInput('credit')">
                 </div>
                 <div>
-                    <label style="font-size: 0.85rem; font-weight: 600; color: #475569; display: block; margin-bottom: 6px;">Date</label>
+                    <label style="font-size: 0.85rem; font-weight: 600; color: #475569; display: block; margin-bottom: 6px;">তারিখ</label>
                     <input type="date" id="txDateInput" class="corp-search-input" value="${now}">
                 </div>
                 <div style="grid-column: span 2;">
-                    <label style="font-size: 0.85rem; font-weight: 600; color: #475569; display: block; margin-bottom: 6px;">Description / Particulars</label>
-                    <input type="text" id="txCommonDesc" class="corp-search-input" placeholder="Invoice details, bill or notes...">
+                    <label style="font-size: 0.85rem; font-weight: 600; color: #475569; display: block; margin-bottom: 6px;">বিবরণ / নোট</label>
+                    <input type="text" id="txCommonDesc" class="corp-search-input" placeholder="পণ্য বা বিলের বিবরণ লিখুন...">
                 </div>
             </div>
 
@@ -559,11 +543,11 @@ window.renderCustomerStatement = function(custId) {
                     </tr>
                 </thead>
                 <tbody>
-                    ${txs.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 30px;">No transaction entries found.</td></tr>` : ''}
+                    ${txs.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 30px;">কোনো লেনদেন রেকর্ড পাওয়া যায়নি।</td></tr>` : ''}
                     ${txs.map(t => `
                         <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 14px 18px; color: #64748b; font-size: 0.9rem;">${t.date} ${t.time || ''}</td>
-                            <td style="padding: 14px 18px; font-weight: 600; color: #1e293b; font-size: 0.95rem;">${t.description || '-'}</td>
+                            <td style="padding: 14px 18px; color: #475569; font-size: 0.9rem;">${t.date} ${t.time || ''}</td>
+                            <td style="padding: 14px 18px; font-weight: 600; color: #0f172a; font-size: 0.95rem;">${t.description || '-'}</td>
                             <td style="padding: 14px 18px; font-weight: 700; color: #dc2626; font-size: 0.95rem;">${t.debit > 0 ? fmt(t.debit) : '-'}</td>
                             <td style="padding: 14px 18px; font-weight: 700; color: #16a34a; font-size: 0.95rem;">${t.credit > 0 ? fmt(t.credit) : '-'}</td>
                             <td style="padding: 14px 18px; text-align: center;">
@@ -579,7 +563,7 @@ window.renderCustomerStatement = function(custId) {
     `;
 };
 
-// ৬. ডুয়াল ইনপুট লজিক
+// ডুয়াল ইনপুট
 window.handleDualInput = function(type) {
     const d = document.getElementById('modernTxDebit');
     const c = document.getElementById('modernTxCredit');
@@ -594,7 +578,7 @@ window.handleDualInput = function(type) {
     }
 };
 
-// ৭. ট্রানজ্যাকশন পোস্ট করা
+// ট্রানজ্যাকশন সেভ
 window.submitModernTransaction = async function() {
     const d = document.getElementById('modernTxDebit');
     const c = document.getElementById('modernTxCredit');
@@ -605,11 +589,11 @@ window.submitModernTransaction = async function() {
     const creditVal = parseFloat(c.value) || 0;
 
     if (debitVal === 0 && creditVal === 0) {
-        if (typeof showToast === 'function') showToast("Please enter an amount!", "warning");
+        if (typeof showToast === 'function') showToast("দয়া করে টাকার অংক লিখুন!", "warning");
         return;
     }
 
-    if (typeof showLoader === 'function') showLoader("Saving Transaction...");
+    if (typeof showLoader === 'function') showLoader("সংরক্ষণ করা হচ্ছে...");
     const now = new Date();
     const txObj = {
         id: 'tx_' + Date.now(),
@@ -619,7 +603,7 @@ window.submitModernTransaction = async function() {
         credit: creditVal,
         date: (date && date.value) ? date.value : now.toISOString().split('T')[0],
         time: now.toTimeString().split(' ')[0].substring(0,5),
-        description: desc.value.trim() || (debitVal > 0 ? 'Sales / Due' : 'Payment Received')
+        description: desc.value.trim() || (debitVal > 0 ? 'পণ্য বিক্রয়/ধার' : 'টাকা গ্রহণ')
     };
 
     try {
@@ -635,33 +619,33 @@ window.submitModernTransaction = async function() {
         renderCustomerStatement(window.activeViewingCustomerId);
         if (typeof updateDashboardCards === 'function') updateDashboardCards();
         if (typeof hideLoader === 'function') hideLoader();
-        if (typeof showToast === 'function') showToast("Transaction saved successfully!", "success");
+        if (typeof showToast === 'function') showToast("লেনদেন সফলভাবে সংরক্ষণ করা হয়েছে!", "success");
     } catch (err) {
         if (typeof hideLoader === 'function') hideLoader();
         if (typeof showToast === 'function') showToast("Error: " + err.message, "error");
     }
 };
 
-// ৮. ট্রানজ্যাকশন ডিলিট করা
+// ডিলিট ট্রানজ্যাকশন
 window.deleteCustomerTransaction = function(txId, custId) {
     if (typeof showConfirmModal === 'function') {
         showConfirmModal({
-            title: "Delete Transaction?",
-            message: "This transaction will be permanently deleted and the customer balance will be updated.",
-            confirmText: "Delete",
+            title: "লেনদেন মুছে ফেলবেন?",
+            message: "এই লেনদেনটি স্থায়ীভাবে মুছে ফেলা হবে এবং ব্যালেন্স স্বয়ংক্রিয়ভাবে আপডেট হবে।",
+            confirmText: "মুছে ফেলুন",
             onConfirm: async () => {
                 await executeTransactionDeletion(txId, custId);
             }
         });
     } else {
-        if (confirm("Are you sure you want to delete this transaction?")) {
+        if (confirm("আপনি কি নিশ্চিত এই লেনদেনটি মুছে ফেলতে চান?")) {
             executeTransactionDeletion(txId, custId);
         }
     }
 };
 
 async function executeTransactionDeletion(txId, custId) {
-    if (typeof showLoader === 'function') showLoader("Deleting...");
+    if (typeof showLoader === 'function') showLoader("মুছে ফেলা হচ্ছে...");
     try {
         let allTxs = window.customerTransactions || [];
         const updatedTxs = allTxs.filter(t => t.id !== txId);
@@ -676,7 +660,7 @@ async function executeTransactionDeletion(txId, custId) {
         if (typeof updateDashboardCards === 'function') updateDashboardCards();
 
         if (typeof hideLoader === 'function') hideLoader();
-        if (typeof showToast === 'function') showToast("Transaction deleted successfully!", "success");
+        if (typeof showToast === 'function') showToast("লেনদেন মুছে ফেলা হয়েছে!", "success");
     } catch (err) {
         if (typeof hideLoader === 'function') hideLoader();
         if (typeof showToast === 'function') showToast("Error: " + err.message, "error");
