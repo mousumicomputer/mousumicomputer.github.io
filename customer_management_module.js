@@ -1,28 +1,27 @@
 /* ==========================================================
    ENTERPRISE CUSTOMER MANAGEMENT & HORIZONTAL CARDS
-   Design: Full-Width Clean Strip Cards with Human Avatars
+   Font: 100% Tiro Bangla Everywhere
+   Avatar: Clean Faceless Human Vector Line-Art
    File: customer_management_module.js
    ========================================================== */
 
-// ১. স্টাইল ও গুগল ফন্ট ইনজেকশন
+// ১. Tiro Bangla ফন্ট এবং গ্লোবাল স্টাইল ইনজেকশন
 const injectCorporateStyles = () => {
     if (document.getElementById('erp-corporate-css')) return;
     
+    // Tiro Bangla গুগল ফন্ট লোড
     const fontLink = document.createElement('link');
     fontLink.rel = 'stylesheet';
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap';
     document.head.appendChild(fontLink);
 
     const style = document.createElement('style');
     style.id = 'erp-corporate-css';
     style.innerHTML = `
-        #customer-ledger-view {
-            font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif !important;
-            color: #0f172a;
-        }
-
-        .bangla-text {
-            font-family: 'Hind Siliguri', sans-serif !important;
+        /* পুরো মডিউলে সর্বত্র Tiro Bangla ফন্ট প্রযোজ্য হবে */
+        #customer-ledger-view, 
+        #customer-ledger-view * {
+            font-family: 'Tiro Bangla', serif !important;
         }
 
         /* Top KPI Grid */
@@ -46,7 +45,7 @@ const injectCorporateStyles = () => {
             margin-bottom: 8px;
         }
         .corp-kpi-title {
-            font-size: 0.78rem;
+            font-size: 0.85rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -57,12 +56,12 @@ const injectCorporateStyles = () => {
             color: #94a3b8;
         }
         .corp-kpi-value {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 800;
             color: #0f172a;
         }
         .corp-kpi-subtitle {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             color: #94a3b8;
             margin-top: 4px;
             font-weight: 500;
@@ -80,7 +79,7 @@ const injectCorporateStyles = () => {
         .corp-search-wrapper {
             position: relative;
             flex: 1;
-            max-width: 400px;
+            max-width: 420px;
             min-width: 260px;
         }
         .corp-search-wrapper i {
@@ -93,11 +92,11 @@ const injectCorporateStyles = () => {
         }
         .corp-search-input {
             width: 100%;
-            height: 42px;
+            height: 44px;
             padding: 0 12px 0 40px;
             border: 1.5px solid #cbd5e1;
             border-radius: 10px;
-            font-size: 0.92rem;
+            font-size: 0.95rem;
             color: #1e293b;
             background: #ffffff;
             outline: none;
@@ -113,10 +112,10 @@ const injectCorporateStyles = () => {
             align-items: center;
         }
         .corp-btn {
-            height: 42px;
-            padding: 0 18px;
+            height: 44px;
+            padding: 0 20px;
             border-radius: 10px;
-            font-size: 0.88rem;
+            font-size: 0.92rem;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
@@ -142,7 +141,7 @@ const injectCorporateStyles = () => {
             background: #1e293b;
         }
 
-        /* FULL-WIDTH HORIZONTAL STRIP CARDS (1 Per Row) */
+        /* 1 ROW = 1 STRIP CARD */
         .customer-card-list {
             display: flex;
             flex-direction: column;
@@ -151,9 +150,9 @@ const injectCorporateStyles = () => {
 
         .cust-strip-card {
             background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 14px 20px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 16px 22px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -163,58 +162,56 @@ const injectCorporateStyles = () => {
         }
         .cust-strip-card:hover {
             border-color: #cbd5e1;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.05);
             transform: translateY(-1px);
         }
 
-        /* Left Side: Avatar + Customer Main Info */
         .strip-left-section {
             display: flex;
             align-items: center;
             gap: 16px;
-            min-width: 260px;
+            min-width: 250px;
         }
         .strip-avatar-img {
-            width: 48px;
-            height: 48px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid #e2e8f0;
+            border: 1.5px solid #e2e8f0;
             background: #f8fafc;
             flex-shrink: 0;
+            padding: 2px;
         }
         .strip-cust-meta h3 {
-            font-size: 1.05rem;
+            font-size: 1.15rem;
             font-weight: 700;
             color: #0f172a;
             margin: 0 0 2px 0;
         }
         .strip-cust-meta span {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             color: #94a3b8;
             font-weight: 600;
         }
 
-        /* Middle Info: Phone & Address Columns */
         .strip-info-col {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 3px;
             min-width: 140px;
         }
         .strip-info-col span {
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
             color: #94a3b8;
         }
         .strip-info-col strong {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: #334155;
             font-weight: 600;
         }
 
-        /* Right Side: Due Balance & Action Button */
         .strip-right-section {
             display: flex;
             align-items: center;
@@ -222,14 +219,14 @@ const injectCorporateStyles = () => {
             text-align: right;
         }
         .strip-balance-box span {
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
             color: #94a3b8;
             display: block;
         }
         .strip-balance-box strong {
-            font-size: 1.25rem;
+            font-size: 1.35rem;
             font-weight: 800;
             letter-spacing: -0.3px;
         }
@@ -237,9 +234,9 @@ const injectCorporateStyles = () => {
             background: #0f172a;
             color: #ffffff;
             border: none;
-            padding: 9px 18px;
+            padding: 10px 20px;
             border-radius: 8px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
@@ -252,11 +249,10 @@ const injectCorporateStyles = () => {
             background: #1e293b;
         }
 
-        /* Status Pills */
         .status-pill {
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 6px;
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
             display: inline-block;
@@ -276,25 +272,17 @@ const injectCorporateStyles = () => {
                 width: 100%;
                 justify-content: space-between;
                 border-top: 1px solid #f1f5f9;
-                padding-top: 10px;
+                padding-top: 12px;
             }
         }
     `;
     document.head.appendChild(style);
 };
 
-// ২. হিউম্যান ইলাস্ট্রেশন অ্যাভাটার লিস্ট
-const HUMAN_AVATARS = [
-    "https://api.dicebear.com/7.x/bottts/svg?seed=Felix",
-    "https://api.dicebear.com/7.x/adventurer/svg?seed=Alexander",
-    "https://api.dicebear.com/7.x/adventurer/svg?seed=Oliver",
-    "https://api.dicebear.com/7.x/adventurer/svg?seed=Leo",
-    "https://api.dicebear.com/7.x/adventurer/svg?seed=Jack",
-    "https://api.dicebear.com/7.x/adventurer/svg?seed=Caleb",
-    "https://api.dicebear.com/7.x/adventurer/svg?seed=James"
-];
+// ২. আপনার পাঠানো ছবির মতো ফেসলেস ব্ল্যাক/গ্রে হিউম্যান ভেক্টর অ্যাভাটার
+const DEFAULT_HUMAN_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'><path d='M250 80c-55 0-95 40-95 95 0 35 15 65 40 80-5 25-10 40-10 65 0 20 20 40 65 40s65-20 65-40c0-25-5-40-10-65 25-15 40-45 40-80 0-55-40-95-95-95z' fill='%23ffffff' stroke='%231e293b' stroke-width='14'/><path d='M195 85c-20 0-40 25-35 55 5-25 20-40 40-45 25-5 45-20 85 5 15 10 25 10 35 0 5 25 10 35 15 45 5-30-10-60-40-70-35-10-70-5-100 10z' fill='%231e293b'/><path d='M110 420c0-60 60-95 140-95s140 35 140 95' fill='%23334155' stroke='%231e293b' stroke-width='14'/><path d='M200 325c15 15 30 20 50 20s35-5 50-20' fill='none' stroke='%231e293b' stroke-width='14'/></svg>";
 
-// ৩. গ্রাহকের বকেয়া হিসাব
+// ৩. বকেয়া হিসাব ফাংশন
 window.calculateCustomerCurrentDue = function(custId) {
     const customers = window.customers || [];
     const cust = customers.find(c => c.id === custId);
@@ -311,7 +299,7 @@ window.calculateCustomerCurrentDue = function(custId) {
     return due;
 };
 
-// ৪. কাস্টমারদের ১ লাইনে লম্বা কার্ডে রেন্ডার করা
+// ৪. কাস্টমার তালিকা রেন্ডার করা
 window.renderCustomerListTable = function() {
     injectCorporateStyles();
 
@@ -406,7 +394,7 @@ window.renderCustomerListTable = function() {
             </div>
         </div>
 
-        <!-- HORIZONTAL STRIP CARDS (1 per row) -->
+        <!-- HORIZONTAL STRIP CARDS -->
         <div class="customer-card-list" id="customerCardList"></div>
     `;
 
@@ -418,9 +406,9 @@ window.renderCustomerListTable = function() {
         return;
     }
 
-    filtered.forEach((c, idx) => {
+    filtered.forEach((c) => {
         const currentDue = window.calculateCustomerCurrentDue(c.id);
-        const avatarUrl = c.avatarUrl || `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(c.name || 'Customer')}&backgroundColor=f1f5f9`;
+        const avatarSrc = c.avatarUrl ? c.avatarUrl : DEFAULT_HUMAN_AVATAR;
 
         let statusPill = '<span class="status-pill pill-settled">Settled</span>';
         let dueColor = '#16a34a';
@@ -436,11 +424,11 @@ window.renderCustomerListTable = function() {
         const card = document.createElement('div');
         card.className = 'cust-strip-card';
         card.innerHTML = `
-            <!-- Left: Avatar + Name + ID -->
+            <!-- Left: Human Avatar + Name + ID -->
             <div class="strip-left-section">
-                <img src="${avatarUrl}" class="strip-avatar-img" alt="${c.name}">
+                <img src="${avatarSrc}" class="strip-avatar-img" alt="${c.name}">
                 <div class="strip-cust-meta">
-                    <h3 class="bangla-text">${c.name}</h3>
+                    <h3>${c.name}</h3>
                     <span>ID: ${c.id}</span>
                 </div>
             </div>
@@ -448,13 +436,13 @@ window.renderCustomerListTable = function() {
             <!-- Middle: Phone -->
             <div class="strip-info-col">
                 <span>Phone Number</span>
-                <strong style="font-family: monospace; font-size: 0.92rem;">${c.phone || '-'}</strong>
+                <strong style="font-size: 0.95rem;">${c.phone || '-'}</strong>
             </div>
 
             <!-- Middle: Address -->
             <div class="strip-info-col">
                 <span>Address / Area</span>
-                <strong class="bangla-text">${c.address || c.area || '-'}</strong>
+                <strong>${c.address || c.area || '-'}</strong>
             </div>
 
             <!-- Middle: Status -->
@@ -463,7 +451,7 @@ window.renderCustomerListTable = function() {
                 ${statusPill}
             </div>
 
-            <!-- Right: Balance & Ledger Action -->
+            <!-- Right: Due Balance & Action -->
             <div class="strip-right-section">
                 <div class="strip-balance-box">
                     <span>Outstanding Due</span>
@@ -500,62 +488,62 @@ window.renderCustomerStatement = function(custId) {
     let txs = allTxs.filter(t => t.customerId === custId);
     txs.sort((a,b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || ''))).reverse();
 
-    const avatarUrl = cust.avatarUrl || `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(cust.name || 'Customer')}&backgroundColor=f1f5f9`;
+    const avatarSrc = cust.avatarUrl ? cust.avatarUrl : DEFAULT_HUMAN_AVATAR;
 
     container.innerHTML = `
-        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+        <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <button class="corp-btn corp-btn-default" onclick="switchCustomerSubSection('cust-list-section')" style="height: 38px; padding: 0 14px;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <button class="corp-btn corp-btn-default" onclick="switchCustomerSubSection('cust-list-section')" style="height: 40px; padding: 0 15px;">
                         <i class="fa-solid fa-arrow-left"></i> Back
                     </button>
-                    <img src="${avatarUrl}" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid #e2e8f0;">
+                    <img src="${avatarSrc}" style="width: 52px; height: 52px; border-radius: 50%; border: 1.5px solid #e2e8f0; padding: 2px;">
                     <div>
-                        <h2 class="bangla-text" style="font-size: 1.3rem; font-weight: 700; color: #0f172a; margin: 0;">${cust.name}</h2>
-                        <span class="bangla-text" style="font-size: 0.82rem; color: #64748b;">Phone: ${cust.phone || '-'} | ID: ${cust.id} | Address: ${cust.address || '-'}</span>
+                        <h2 style="font-size: 1.35rem; font-weight: 700; color: #0f172a; margin: 0;">${cust.name}</h2>
+                        <span style="font-size: 0.85rem; color: #64748b;">Phone: ${cust.phone || '-'} | ID: ${cust.id} | Address: ${cust.address || '-'}</span>
                     </div>
                 </div>
 
                 <div style="text-align: right;">
-                    <span style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">Total Due Balance</span>
-                    <strong style="font-size: 1.6rem; color: ${currentDue > 0 ? '#dc2626' : '#16a34a'}; font-weight: 800;">${fmt(currentDue)}</strong>
+                    <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">Total Due Balance</span>
+                    <strong style="font-size: 1.7rem; color: ${currentDue > 0 ? '#dc2626' : '#16a34a'}; font-weight: 800;">${fmt(currentDue)}</strong>
                 </div>
             </div>
         </div>
 
-        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-            <h4 style="font-size: 0.88rem; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px;">Post New Transaction</h4>
+        <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 22px; margin-bottom: 20px;">
+            <h4 style="font-size: 0.92rem; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px;">Post New Transaction</h4>
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px;">
                 <div>
-                    <label style="font-size: 0.8rem; font-weight: 600; color: #dc2626; display: block; margin-bottom: 6px;">Debit (+) [Sales / Due]</label>
+                    <label style="font-size: 0.85rem; font-weight: 600; color: #dc2626; display: block; margin-bottom: 6px;">Debit (+) [Sales / Due]</label>
                     <input type="number" id="modernTxDebit" class="corp-search-input" placeholder="0.00" oninput="handleDualInput('debit')">
                 </div>
                 <div>
-                    <label style="font-size: 0.8rem; font-weight: 600; color: #16a34a; display: block; margin-bottom: 6px;">Credit (-) [Payment Received]</label>
+                    <label style="font-size: 0.85rem; font-weight: 600; color: #16a34a; display: block; margin-bottom: 6px;">Credit (-) [Payment Received]</label>
                     <input type="number" id="modernTxCredit" class="corp-search-input" placeholder="0.00" oninput="handleDualInput('credit')">
                 </div>
                 <div>
-                    <label style="font-size: 0.8rem; font-weight: 600; color: #475569; display: block; margin-bottom: 6px;">Date</label>
+                    <label style="font-size: 0.85rem; font-weight: 600; color: #475569; display: block; margin-bottom: 6px;">Date</label>
                     <input type="date" id="txDateInput" class="corp-search-input" value="${now}">
                 </div>
                 <div style="grid-column: span 2;">
-                    <label style="font-size: 0.8rem; font-weight: 600; color: #475569; display: block; margin-bottom: 6px;">Description / Particulars</label>
-                    <input type="text" id="txCommonDesc" class="corp-search-input bangla-text" placeholder="Invoice details, bill or notes...">
+                    <label style="font-size: 0.85rem; font-weight: 600; color: #475569; display: block; margin-bottom: 6px;">Description / Particulars</label>
+                    <input type="text" id="txCommonDesc" class="corp-search-input" placeholder="Invoice details, bill or notes...">
                 </div>
             </div>
 
             <div style="text-align: right;">
-                <button class="corp-btn corp-btn-primary" onclick="submitModernTransaction()" style="padding: 0 24px;">
+                <button class="corp-btn corp-btn-primary" onclick="submitModernTransaction()" style="padding: 0 26px;">
                     <i class="fa-solid fa-check"></i> Save Transaction
                 </button>
             </div>
         </div>
 
-        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+        <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
             <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                <strong style="font-size: 0.95rem; color: #0f172a;">Ledger History</strong>
-                <button class="corp-btn corp-btn-default" onclick="exportCustomerStatementExcel()" style="height: 34px; font-size: 0.8rem;">
+                <strong style="font-size: 1rem; color: #0f172a;">Ledger History</strong>
+                <button class="corp-btn corp-btn-default" onclick="exportCustomerStatementExcel()" style="height: 36px; font-size: 0.85rem;">
                     <i class="fa-solid fa-download"></i> Export Excel
                 </button>
             </div>
@@ -563,24 +551,24 @@ window.renderCustomerStatement = function(custId) {
             <table style="width: 100%; border-collapse: collapse; text-align: left;">
                 <thead>
                     <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                        <th style="padding: 12px 16px; font-size: 0.75rem; color: #64748b; font-weight: 700;">DATE</th>
-                        <th style="padding: 12px 16px; font-size: 0.75rem; color: #64748b; font-weight: 700;">PARTICULARS</th>
-                        <th style="padding: 12px 16px; font-size: 0.75rem; color: #dc2626; font-weight: 700;">DEBIT (+)</th>
-                        <th style="padding: 12px 16px; font-size: 0.75rem; color: #16a34a; font-weight: 700;">CREDIT (-)</th>
-                        <th style="padding: 12px 16px; font-size: 0.75rem; text-align: center; width: 60px;">ACTION</th>
+                        <th style="padding: 14px 18px; font-size: 0.8rem; color: #64748b; font-weight: 700;">DATE</th>
+                        <th style="padding: 14px 18px; font-size: 0.8rem; color: #64748b; font-weight: 700;">PARTICULARS</th>
+                        <th style="padding: 14px 18px; font-size: 0.8rem; color: #dc2626; font-weight: 700;">DEBIT (+)</th>
+                        <th style="padding: 14px 18px; font-size: 0.8rem; color: #16a34a; font-weight: 700;">CREDIT (-)</th>
+                        <th style="padding: 14px 18px; font-size: 0.8rem; text-align: center; width: 60px;">ACTION</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${txs.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 30px;">No transaction entries found.</td></tr>` : ''}
                     ${txs.map(t => `
                         <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 14px 16px; color: #64748b; font-size: 0.85rem;">${t.date} ${t.time || ''}</td>
-                            <td class="bangla-text" style="padding: 14px 16px; font-weight: 600; color: #1e293b;">${t.description || '-'}</td>
-                            <td style="padding: 14px 16px; font-weight: 700; color: #dc2626;">${t.debit > 0 ? fmt(t.debit) : '-'}</td>
-                            <td style="padding: 14px 16px; font-weight: 700; color: #16a34a;">${t.credit > 0 ? fmt(t.credit) : '-'}</td>
-                            <td style="padding: 14px 16px; text-align: center;">
+                            <td style="padding: 14px 18px; color: #64748b; font-size: 0.9rem;">${t.date} ${t.time || ''}</td>
+                            <td style="padding: 14px 18px; font-weight: 600; color: #1e293b; font-size: 0.95rem;">${t.description || '-'}</td>
+                            <td style="padding: 14px 18px; font-weight: 700; color: #dc2626; font-size: 0.95rem;">${t.debit > 0 ? fmt(t.debit) : '-'}</td>
+                            <td style="padding: 14px 18px; font-weight: 700; color: #16a34a; font-size: 0.95rem;">${t.credit > 0 ? fmt(t.credit) : '-'}</td>
+                            <td style="padding: 14px 18px; text-align: center;">
                                 <button class="btn-action-delete" onclick="deleteCustomerTransaction('${t.id}', '${custId}')" title="Delete">
-                                    <i class="fa-solid fa-trash-can" style="font-size: 0.8rem;"></i>
+                                    <i class="fa-solid fa-trash-can" style="font-size: 0.85rem;"></i>
                                 </button>
                             </td>
                         </tr>
