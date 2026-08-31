@@ -1,17 +1,17 @@
 /* ==========================================================
    CUSTOMER MANAGEMENT MODULE (Mousumi ERP)
    File: customer_management_module.js
-   With: Transaction Delete & Edit Feature
+   Full Features: Add, Edit, Delete Customer & Transactions
    ========================================================== */
 
-// ১. সংখ্যাকে বাংলায় রূপান্তর
+// সংখ্যাকে বাংলায় রূপান্তর
 function toBanglaDigits(num) {
     if (num === undefined || num === null) return '০';
     const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
     return num.toString().replace(/\d/g, i => bnDigits[i]);
 }
 
-// ২. গ্রাহক তালিকা ও সামারি কার্ড রেন্ডার করা
+// কাস্টমার তালিকা রেন্ডার
 window.renderCustomerListTable = function() {
     const tbody = document.getElementById('customerTableBody');
     if (!tbody) return;
@@ -62,7 +62,6 @@ window.renderCustomerListTable = function() {
     filtered.forEach(c => {
         const currentDue = typeof calculateCustomerCurrentDue === 'function' ? calculateCustomerCurrentDue(c.id) : 0;
         const firstLetter = (c.name || 'G').charAt(0).toUpperCase();
-        
         const colors = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
@@ -88,7 +87,7 @@ window.renderCustomerListTable = function() {
     });
 };
 
-// ৩. কাস্টমার লেজার স্টেটমেন্ট রেন্ডার (ডিলিট বাটন সহ)
+// কাস্টমার স্টেটমেন্ট (ডিলিট বাটনসহ)
 window.renderCustomerStatement = function(custId) {
     const area = document.getElementById('modern-statement-table-area');
     if (!area) return;
@@ -152,7 +151,58 @@ window.renderCustomerStatement = function(custId) {
     area.innerHTML = txs.length > 0 ? html : '<div style="text-align:center; padding: 30px; color: #94a3b8;">কোনো লেনদেন পাওয়া যায়নি।</div>';
 };
 
-// ৪. লেনদেন মুছে ফেলার (Delete) মূল ফাংশন
+// লেনদেন নিশ্চিত করার ফাংশন
+window.submitModernTransaction = async function() {
+    const dElement = document.getElementById('modernTxDebit');
+    const cElement = document.getElementById('modernTxCredit');
+    const descElement = document.getElementById('txCommonDesc');
+    const dateElement = document.getElementById('txDateInput');
+
+    const dValue = parseFloat(dElement.value) || 0;
+    const cValue = parseFloat(cElement.value) || 0;
+
+    if (dValue === 0 && cValue === 0) {
+        if(typeof showToast === 'function') showToast("টাকার অংক লিখুন!", "error");
+        return;
+    }
+
+    if(typeof showLoader === 'function') showLoader("সংরক্ষণ করা হচ্ছে...");
+    const now = new Date();
+    const txObj = {
+        id: 'tx_' + Date.now(),
+        customerId: window.activeViewingCustomerId,
+        type: dValue > 0 ? 'Debit' : 'Credit',
+        debit: dValue,
+        credit: cValue,
+        date: (dateElement && dateElement.value) ? dateElement.value : now.toISOString().split('T')[0],
+        time: now.toTimeString().split(' ')[0].substring(0,5),
+        description: descElement.value.trim() || (dValue > 0 ? 'পণ্য বিক্রয়/ধার' : 'টাকা গ্রহণ')
+    };
+
+    try {
+        let allTxs = window.customerTransactions || [];
+        allTxs.push(txObj);
+
+        const { getDatabase, ref, set } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+        const db = getDatabase();
+        await set(ref(db, 'transactions'), allTxs);
+
+        window.customerTransactions = allTxs;
+        dElement.value = ''; cElement.value = ''; descElement.value = '';
+        dElement.disabled = false; cElement.disabled = false;
+
+        renderCustomerStatement(window.activeViewingCustomerId);
+        renderCustomerListTable(); 
+        if(typeof updateDashboardCards === 'function') updateDashboardCards();
+        if(typeof hideLoader === 'function') hideLoader();
+        if(typeof showToast === 'function') showToast("লেনদেন সংরক্ষিত হয়েছে!", "success");
+    } catch(err) { 
+        if(typeof hideLoader === 'function') hideLoader(); 
+        if(typeof showToast === 'function') showToast("Error!", "error"); 
+    }
+};
+
+// লেনদেন মুছে ফেলার ফাংশন
 window.deleteCustomerTransaction = function(txId, custId) {
     if (typeof showConfirmModal === 'function') {
         showConfirmModal({
@@ -170,33 +220,26 @@ window.deleteCustomerTransaction = function(txId, custId) {
     }
 };
 
-// ৫. ডাটাবেজ থেকে মুছে ফেলা ও ব্যালেন্স রি-ক্যালকুলেশন
 async function executeTransactionDeletion(txId, custId) {
-    if (typeof showLoader === 'function') showLoader("লেনদেন মুছে ফেলা হচ্ছে...");
+    if (typeof showLoader === 'function') showLoader("মুছে ফেলা হচ্ছে...");
     try {
         let allTxs = window.customerTransactions || [];
-        // সিলেক্টেড ট্রানজ্যাকশন বাদ দেওয়া
         const updatedTxs = allTxs.filter(t => t.id !== txId);
 
-        // ফায়ারবেসে সেভ করা
         const { getDatabase, ref, set } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
         const db = getDatabase();
         await set(ref(db, 'transactions'), updatedTxs);
 
         window.customerTransactions = updatedTxs;
 
-        // UI আপডেট করা
-        if (typeof renderCustomerStatement === 'function') renderCustomerStatement(custId);
-        if (typeof renderCustomerListTable === 'function') renderCustomerListTable();
+        renderCustomerStatement(custId);
+        renderCustomerListTable();
         if (typeof updateDashboardCards === 'function') updateDashboardCards();
 
         if (typeof hideLoader === 'function') hideLoader();
-        if (typeof showToast === 'function') showToast("লেনদেন সফলভাবে মুছে ফেলা হয়েছে!", "success");
+        if (typeof showToast === 'function') showToast("লেনদেন মুছে ফেলা হয়েছে!", "success");
     } catch (err) {
         if (typeof hideLoader === 'function') hideLoader();
-        if (typeof showToast === 'function') showToast("লেনদেন মুছতে সমস্যা হয়েছে: " + err.message, "error");
-        console.error("Delete Error:", err);
+        if (typeof showToast === 'function') showToast("Error: " + err.message, "error");
     }
 }
-
-console.log("Customer Management Module Loaded with Delete Feature!");
