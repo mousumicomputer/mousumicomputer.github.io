@@ -1,30 +1,28 @@
 /* ==========================================================
-   ENTERPRISE CUSTOMER MANAGEMENT & CARD GRID MODULE
-   Design: Modern SaaS Grid Cards with Elegant Bangla Typography
+   ENTERPRISE CUSTOMER MANAGEMENT & HORIZONTAL CARDS
+   Design: Full-Width Clean Strip Cards with Human Avatars
    File: customer_management_module.js
    ========================================================== */
 
-// ১. ক্লাসিক বাংলা ফন্ট এবং কার্ড স্টাইল ইনজেকশন
+// ১. স্টাইল ও গুগল ফন্ট ইনজেকশন
 const injectCorporateStyles = () => {
     if (document.getElementById('erp-corporate-css')) return;
     
-    // গুগল থেকে Hind Siliguri এবং Tiro Bangla ফন্ট লোড
     const fontLink = document.createElement('link');
     fontLink.rel = 'stylesheet';
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Tiro+Bangla&display=swap';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap';
     document.head.appendChild(fontLink);
 
     const style = document.createElement('style');
     style.id = 'erp-corporate-css';
     style.innerHTML = `
         #customer-ledger-view {
-            font-family: 'Plus Jakarta Sans', 'Hind Siliguri', 'Tiro Bangla', sans-serif !important;
+            font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif !important;
             color: #0f172a;
         }
 
         .bangla-text {
-            font-family: 'Hind Siliguri', 'Tiro Bangla', serif !important;
-            letter-spacing: 0.2px;
+            font-family: 'Hind Siliguri', sans-serif !important;
         }
 
         /* Top KPI Grid */
@@ -144,124 +142,113 @@ const injectCorporateStyles = () => {
             background: #1e293b;
         }
 
-        /* CUSTOMER CARDS GRID SYSTEM */
-        .customer-card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 18px;
-        }
-
-        .cust-profile-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        /* FULL-WIDTH HORIZONTAL STRIP CARDS (1 Per Row) */
+        .customer-card-list {
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-            position: relative;
-        }
-        .cust-profile-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-            border-color: #cbd5e1;
+            gap: 12px;
         }
 
-        .card-top-header {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 15px;
-        }
-
-        .card-avatar-box {
-            width: 50px;
-            height: 50px;
+        .cust-strip-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
+            padding: 14px 20px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            font-weight: 800;
-            flex-shrink: 0;
-            background: #f1f5f9;
-            color: #334155;
-            border: 1.5px solid #e2e8f0;
-            overflow: hidden;
+            justify-content: space-between;
+            gap: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: all 0.2s;
         }
-        .card-avatar-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .cust-strip-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transform: translateY(-1px);
         }
 
-        .card-meta-info h3 {
-            font-size: 1.1rem;
+        /* Left Side: Avatar + Customer Main Info */
+        .strip-left-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-width: 260px;
+        }
+        .strip-avatar-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e2e8f0;
+            background: #f8fafc;
+            flex-shrink: 0;
+        }
+        .strip-cust-meta h3 {
+            font-size: 1.05rem;
             font-weight: 700;
             color: #0f172a;
-            margin: 0 0 3px 0;
-            line-height: 1.3;
+            margin: 0 0 2px 0;
         }
-        .card-meta-info span {
+        .strip-cust-meta span {
             font-size: 0.75rem;
             color: #94a3b8;
             font-weight: 600;
         }
 
-        .card-body-details {
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 16px;
+        /* Middle Info: Phone & Address Columns */
+        .strip-info-col {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            border: 1px solid #f1f5f9;
+            gap: 2px;
+            min-width: 140px;
         }
-        .card-detail-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.85rem;
+        .strip-info-col span {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #94a3b8;
         }
-        .card-detail-row span {
-            color: #64748b;
-            font-weight: 500;
-        }
-        .card-detail-row strong {
-            color: #1e293b;
+        .strip-info-col strong {
+            font-size: 0.9rem;
+            color: #334155;
             font-weight: 600;
         }
 
-        .card-footer-action {
+        /* Right Side: Due Balance & Action Button */
+        .strip-right-section {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding-top: 12px;
-            border-top: 1px solid #f1f5f9;
+            gap: 24px;
+            text-align: right;
         }
-        .card-due-amount {
-            font-size: 1.15rem;
+        .strip-balance-box span {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #94a3b8;
+            display: block;
+        }
+        .strip-balance-box strong {
+            font-size: 1.25rem;
             font-weight: 800;
             letter-spacing: -0.3px;
         }
-        .btn-card-ledger {
+        .btn-strip-ledger {
             background: #0f172a;
             color: #ffffff;
             border: none;
-            padding: 8px 14px;
+            padding: 9px 18px;
             border-radius: 8px;
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            transition: background 0.2s;
+            gap: 8px;
+            transition: all 0.2s;
+            white-space: nowrap;
         }
-        .btn-card-ledger:hover {
+        .btn-strip-ledger:hover {
             background: #1e293b;
         }
 
@@ -272,15 +259,42 @@ const injectCorporateStyles = () => {
             font-size: 0.72rem;
             font-weight: 700;
             text-transform: uppercase;
+            display: inline-block;
+            width: fit-content;
         }
         .pill-due { background: #fee2e2; color: #dc2626; }
         .pill-settled { background: #dcfce7; color: #16a34a; }
         .pill-advance { background: #dbeafe; color: #2563eb; }
+
+        @media (max-width: 900px) {
+            .cust-strip-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .strip-right-section {
+                width: 100%;
+                justify-content: space-between;
+                border-top: 1px solid #f1f5f9;
+                padding-top: 10px;
+            }
+        }
     `;
     document.head.appendChild(style);
 };
 
-// ২. বকেয়া ব্যালেন্স হিসাব
+// ২. হিউম্যান ইলাস্ট্রেশন অ্যাভাটার লিস্ট
+const HUMAN_AVATARS = [
+    "https://api.dicebear.com/7.x/bottts/svg?seed=Felix",
+    "https://api.dicebear.com/7.x/adventurer/svg?seed=Alexander",
+    "https://api.dicebear.com/7.x/adventurer/svg?seed=Oliver",
+    "https://api.dicebear.com/7.x/adventurer/svg?seed=Leo",
+    "https://api.dicebear.com/7.x/adventurer/svg?seed=Jack",
+    "https://api.dicebear.com/7.x/adventurer/svg?seed=Caleb",
+    "https://api.dicebear.com/7.x/adventurer/svg?seed=James"
+];
+
+// ৩. গ্রাহকের বকেয়া হিসাব
 window.calculateCustomerCurrentDue = function(custId) {
     const customers = window.customers || [];
     const cust = customers.find(c => c.id === custId);
@@ -297,7 +311,7 @@ window.calculateCustomerCurrentDue = function(custId) {
     return due;
 };
 
-// ৩. কাস্টমার কার্ড গ্রিড রেন্ডার
+// ৪. কাস্টমারদের ১ লাইনে লম্বা কার্ডে রেন্ডার করা
 window.renderCustomerListTable = function() {
     injectCorporateStyles();
 
@@ -339,16 +353,6 @@ window.renderCustomerListTable = function() {
     });
 
     const fmt = (num) => '৳ ' + (parseFloat(num) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-    // কালার প্যালেট অ্যাভাটারের জন্য
-    const avatarGradients = [
-        { bg: '#e0e7ff', text: '#4338ca' },
-        { bg: '#fef3c7', text: '#b45309' },
-        { bg: '#dcfce7', text: '#15803d' },
-        { bg: '#fee2e2', text: '#b91c1c' },
-        { bg: '#e0f2fe', text: '#0369a1' },
-        { bg: '#f3e8ff', text: '#7e22ce' }
-    ];
 
     container.innerHTML = `
         <!-- Top KPI Metric Cards -->
@@ -402,22 +406,21 @@ window.renderCustomerListTable = function() {
             </div>
         </div>
 
-        <!-- CUSTOMER PROFILE CARDS GRID -->
-        <div class="customer-card-grid" id="customerCardGrid"></div>
+        <!-- HORIZONTAL STRIP CARDS (1 per row) -->
+        <div class="customer-card-list" id="customerCardList"></div>
     `;
 
-    const grid = document.getElementById('customerCardGrid');
-    if (!grid) return;
+    const cardList = document.getElementById('customerCardList');
+    if (!cardList) return;
 
     if (filtered.length === 0) {
-        grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 60px; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0;">No customer records found.</div>`;
+        cardList.innerHTML = `<div style="text-align: center; color: #94a3b8; padding: 60px; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0;">No customer records found.</div>`;
         return;
     }
 
     filtered.forEach((c, idx) => {
         const currentDue = window.calculateCustomerCurrentDue(c.id);
-        const firstLetter = (c.name || 'C').trim().charAt(0);
-        const color = avatarGradients[idx % avatarGradients.length];
+        const avatarUrl = c.avatarUrl || `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(c.name || 'Customer')}&backgroundColor=f1f5f9`;
 
         let statusPill = '<span class="status-pill pill-settled">Settled</span>';
         let dueColor = '#16a34a';
@@ -430,58 +433,54 @@ window.renderCustomerListTable = function() {
             dueColor = '#2563eb';
         }
 
-        // ছবি থাকলে ইমেজ, না থাকলে স্টাইলিশ টেক্সট অ্যাভাটার
-        const avatarHtml = c.avatarUrl ? 
-            `<img src="${c.avatarUrl}" alt="${c.name}">` : 
-            `<span style="color: ${color.text}; font-family: 'Hind Siliguri', sans-serif;">${firstLetter}</span>`;
-
         const card = document.createElement('div');
-        card.className = 'cust-profile-card';
+        card.className = 'cust-strip-card';
         card.innerHTML = `
-            <div>
-                <div class="card-top-header">
-                    <div class="card-avatar-box" style="background: ${color.bg};">
-                        ${avatarHtml}
-                    </div>
-                    <div class="card-meta-info">
-                        <h3 class="bangla-text">${c.name}</h3>
-                        <span>ID: ${c.id}</span>
-                    </div>
-                </div>
-
-                <div class="card-body-details">
-                    <div class="card-detail-row">
-                        <span>Phone</span>
-                        <strong style="font-family: monospace; font-size: 0.9rem;">${c.phone || '-'}</strong>
-                    </div>
-                    <div class="card-detail-row">
-                        <span>Address</span>
-                        <strong class="bangla-text">${c.address || c.area || '-'}</strong>
-                    </div>
-                    <div class="card-detail-row">
-                        <span>Status</span>
-                        ${statusPill}
-                    </div>
+            <!-- Left: Avatar + Name + ID -->
+            <div class="strip-left-section">
+                <img src="${avatarUrl}" class="strip-avatar-img" alt="${c.name}">
+                <div class="strip-cust-meta">
+                    <h3 class="bangla-text">${c.name}</h3>
+                    <span>ID: ${c.id}</span>
                 </div>
             </div>
 
-            <div class="card-footer-action">
-                <div>
-                    <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; display: block;">Balance</span>
-                    <span class="card-due-amount" style="color: ${dueColor};">
+            <!-- Middle: Phone -->
+            <div class="strip-info-col">
+                <span>Phone Number</span>
+                <strong style="font-family: monospace; font-size: 0.92rem;">${c.phone || '-'}</strong>
+            </div>
+
+            <!-- Middle: Address -->
+            <div class="strip-info-col">
+                <span>Address / Area</span>
+                <strong class="bangla-text">${c.address || c.area || '-'}</strong>
+            </div>
+
+            <!-- Middle: Status -->
+            <div class="strip-info-col" style="min-width: 100px;">
+                <span>Status</span>
+                ${statusPill}
+            </div>
+
+            <!-- Right: Balance & Ledger Action -->
+            <div class="strip-right-section">
+                <div class="strip-balance-box">
+                    <span>Outstanding Due</span>
+                    <strong style="color: ${dueColor};">
                         ${fmt(Math.abs(currentDue))} ${currentDue < 0 ? '<small>(Adv)</small>' : ''}
-                    </span>
+                    </strong>
                 </div>
-                <button class="btn-card-ledger" onclick="openCustomerLedgerDirect('${c.id}')">
-                    <i class="fa-solid fa-file-invoice"></i> Ledger
+                <button class="btn-strip-ledger" onclick="openCustomerLedgerDirect('${c.id}')">
+                    <i class="fa-solid fa-file-invoice"></i> View Ledger
                 </button>
             </div>
         `;
-        grid.appendChild(card);
+        cardList.appendChild(card);
     });
 };
 
-// ৪. কাস্টমার লেজার স্টেটমেন্ট
+// ৫. কাস্টমার লেজার স্টেটমেন্ট
 window.renderCustomerStatement = function(custId) {
     injectCorporateStyles();
     window.activeViewingCustomerId = custId;
@@ -501,7 +500,7 @@ window.renderCustomerStatement = function(custId) {
     let txs = allTxs.filter(t => t.customerId === custId);
     txs.sort((a,b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || ''))).reverse();
 
-    const firstLetter = (cust.name || 'C').trim().charAt(0);
+    const avatarUrl = cust.avatarUrl || `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(cust.name || 'Customer')}&backgroundColor=f1f5f9`;
 
     container.innerHTML = `
         <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
@@ -510,9 +509,7 @@ window.renderCustomerStatement = function(custId) {
                     <button class="corp-btn corp-btn-default" onclick="switchCustomerSubSection('cust-list-section')" style="height: 38px; padding: 0 14px;">
                         <i class="fa-solid fa-arrow-left"></i> Back
                     </button>
-                    <div class="card-avatar-box" style="width: 45px; height: 45px; background: #e0e7ff; color: #4338ca;">
-                        ${cust.avatarUrl ? `<img src="${cust.avatarUrl}">` : `<span class="bangla-text">${firstLetter}</span>`}
-                    </div>
+                    <img src="${avatarUrl}" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid #e2e8f0;">
                     <div>
                         <h2 class="bangla-text" style="font-size: 1.3rem; font-weight: 700; color: #0f172a; margin: 0;">${cust.name}</h2>
                         <span class="bangla-text" style="font-size: 0.82rem; color: #64748b;">Phone: ${cust.phone || '-'} | ID: ${cust.id} | Address: ${cust.address || '-'}</span>
@@ -594,7 +591,7 @@ window.renderCustomerStatement = function(custId) {
     `;
 };
 
-// ৫. ডুয়াল ইনপুট লজিক
+// ৬. ডুয়াল ইনপুট লজিক
 window.handleDualInput = function(type) {
     const d = document.getElementById('modernTxDebit');
     const c = document.getElementById('modernTxCredit');
@@ -609,7 +606,7 @@ window.handleDualInput = function(type) {
     }
 };
 
-// ৬. ট্রানজ্যাকশন পোস্ট করা
+// ৭. ট্রানজ্যাকশন পোস্ট করা
 window.submitModernTransaction = async function() {
     const d = document.getElementById('modernTxDebit');
     const c = document.getElementById('modernTxCredit');
@@ -657,7 +654,7 @@ window.submitModernTransaction = async function() {
     }
 };
 
-// ৭. ট্রানজ্যাকশন ডিলিট করা
+// ৮. ট্রানজ্যাকশন ডিলিট করা
 window.deleteCustomerTransaction = function(txId, custId) {
     if (typeof showConfirmModal === 'function') {
         showConfirmModal({
