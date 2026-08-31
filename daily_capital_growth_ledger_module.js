@@ -1,13 +1,13 @@
 /**
  * ============================================================================
- * MOUSUMI COMPUTER ERP - DAILY CAPITAL GROWTH & COMPREHENSIVE FINANCIAL LEDGER
+ * MOUSUMI COMPUTER ERP - CAPITAL GROWTH & ROOT-CAUSE ANALYSIS LEDGER (LANDSCAPE)
  * File: daily_capital_growth_ledger_module.js
  * 
  * Features:
- * 1. পূর্ণাঙ্গ কলাম: ক্রমিক | তারিখ ও বার | প্রারম্ভিক | পেলাম | দিলাম | আয় | ব্যয় | সমাপনী স্থিতি | পরিবর্তন | অবস্থা
- * 2. মূল ক্যাশ বৃদ্ধি না হ্রাসের নিখুঁত হিসাব ও ট্র্যাকিং।
- * 3. 100% Tiro Bangla Typography, ক্রমিক (১। ২। ৩।) ও ক্লাসিক অ্যাকাউন্টিং টেবিল।
- * 4. তারিখ ফিল্টারিং, প্রিন্ট / PDF এবং মাল্টি-কলাম Excel এক্সপোর্ট।
+ * 1. A4 Landscape Mode: কোনো লেখা ২ লাইনে ভাঙবে না, এক পাতায় সম্পূর্ণ পরিপাটি।
+ * 2. কেন বৃদ্ধি বা হ্রাস পেল তার স্বয়ংক্রিয় কারণ বিশ্লেষণ (Root-Cause Analysis)।
+ * 3. 100% Tiro Bangla Typography & ক্রমিক (১। ২। ৩।)।
+ * 4. প্রিন্ট / PDF এবং মাল্টি-কলাম Excel এক্সপোর্ট।
  * ============================================================================
  */
 
@@ -38,7 +38,7 @@
         };
     };
 
-    // খরচের নির্ধারিত খাতসমূহের তালিকা
+    // খরচের খাত
     const EXPENSE_HEAD_KEYWORDS = [
         'দোকানের ব্যয়', 'দোকানের ব্যয়', 'দোকান ব্যয়', 'দোকান ব্যয়',
         'বাড়ি খরচ', 'বাড়ি খরচ', 'বাড়ি ব্যয়', 'বাড়ি ব্যয়',
@@ -52,7 +52,7 @@
         return EXPENSE_HEAD_KEYWORDS.some(keyword => name.includes(keyword.toLowerCase()));
     }
 
-    // স্টোর থেকে ডেটা প্রসেসিং
+    // ডেটা প্রসেসিং ও বৃদ্ধির/হ্রাসের কারণ বের করা
     function getCapitalGrowthData() {
         let store = {};
         if (typeof window.getERPStore === 'function') {
@@ -63,7 +63,6 @@
         const customers = store.customers || window.customers || [];
         const transactions = store.customerTransactions || window.customerTransactions || [];
 
-        // খরচের কাস্টমার আইডি সংগ্রহ
         const expenseCustomerIds = new Set();
         customers.forEach(c => {
             if (isExpenseCustomer(c.name)) {
@@ -71,7 +70,6 @@
             }
         });
 
-        // তারিখ ফিল্টার
         const fromInput = document.getElementById('hubFromDate');
         const toInput = document.getElementById('hubToDate');
         const fromDateVal = fromInput ? fromInput.value : '';
@@ -102,7 +100,6 @@
             const income = closedSnap ? (parseFloat(closedSnap.income) || 0) : 0;
             const closing = closedSnap ? (parseFloat(closedSnap.actual_closing) || 0) : 0;
 
-            // ব্যয় হিসাব
             let expense = 0;
             const dayTxs = transactions.filter(t => String(t.date) === String(dateStr));
             dayTxs.forEach(t => {
@@ -112,11 +109,37 @@
                 }
             });
 
-            // পুঁজির পরিবর্তন (সমাপনী - প্রারম্ভিক)
+            // পরিবর্তন ও লেনদেনের নিট প্রভাব
             const change = closing - opening;
+            const cashFlowNet = pelam - dilam; // পেলাম - দিলাম
+
+            // কেন বাড়ল বা কমল তার কারণ নির্ণয়
+            let reasonText = "";
             let statusText = "সমান";
-            if (change > 0.009) statusText = "বৃদ্ধি";
-            else if (change < -0.009) statusText = "হ্রাস";
+
+            if (change > 0.009) {
+                statusText = "বৃদ্ধি";
+                if (cashFlowNet > 0 && income > 0) {
+                    reasonText = "আদায় ও আয় বেশি";
+                } else if (cashFlowNet > 0) {
+                    reasonText = "নগদ আদায়/পেলাম বেশি";
+                } else {
+                    reasonText = "ব্যবসায়িক আয় বৃদ্ধি";
+                }
+            } else if (change < -0.009) {
+                statusText = "হ্রাস";
+                if (cashFlowNet < 0 && expense > 0) {
+                    reasonText = "প্রদান/বাকি ও খরচ বেশি";
+                } else if (cashFlowNet < 0) {
+                    reasonText = "প্রদান/বাকি দেওয়া বেশি";
+                } else if (income < 0) {
+                    reasonText = "আয় ঘাটতি/ক্ষতি";
+                } else {
+                    reasonText = "ক্যাশ আউটফ্লো বেশি";
+                }
+            } else {
+                reasonText = "ব্যালেন্স অপরিবর্তিত";
+            }
 
             grandTotalPelam += pelam;
             grandTotalDilam += dilam;
@@ -132,11 +155,13 @@
                 opening,
                 pelam,
                 dilam,
+                cashFlowNet,
                 income,
                 expense,
                 closing,
                 change,
-                statusText
+                statusText,
+                reasonText
             });
         });
 
@@ -161,33 +186,37 @@
         };
     }
 
-    // নতুন ট্যাবে প্রিন্ট ভিউ ওপেন
+    // নতুন ট্যাবে A4 Landscape প্রিন্ট ভিউ
     window.openCapitalGrowthLedgerTab = function (autoPrint = false) {
         const data = getCapitalGrowthData();
 
         let tbodyHTML = '';
         if (data.ledgerRows.length === 0) {
-            tbodyHTML = `<tr><td colspan="10" style="text-align:center; padding:15px; color:#555;">নির্বাচিত মেয়াদে কোনো ক্লোজিং ডাটা পাওয়া যায়নি</td></tr>`;
+            tbodyHTML = `<tr><td colspan="11" style="text-align:center; padding:15px; color:#555;">নির্বাচিত মেয়াদে কোনো ক্লোজিং ডাটা পাওয়া যায়নি</td></tr>`;
         } else {
             data.ledgerRows.forEach((r, i) => {
                 const isGrowth = r.change >= 0;
                 const changeSign = r.change > 0 ? '(+)' : (r.change < 0 ? '(-)' : '');
+                const flowSign = r.cashFlowNet > 0 ? '(+)' : (r.cashFlowNet < 0 ? '(-)' : '');
 
                 tbodyHTML += `
                     <tr>
                         <td style="text-align:center; font-weight:600;">${toBn(i + 1)}।</td>
-                        <td style="text-align:center;">${r.dateText}<br><span style="font-size:11.5px; color:#475569;">(${r.dayText})</span></td>
+                        <td style="text-align:center; font-weight:600; white-space:nowrap;">${r.dateText} (${r.dayText})</td>
                         <td style="text-align:right;">৳ ${toBnMoney(r.opening)}</td>
-                        <td style="text-align:right; font-weight:600;">৳ ${toBnMoney(r.pelam)}</td>
-                        <td style="text-align:right; font-weight:600;">৳ ${toBnMoney(r.dilam)}</td>
+                        <td style="text-align:right;">৳ ${toBnMoney(r.pelam)}</td>
+                        <td style="text-align:right;">৳ ${toBnMoney(r.dilam)}</td>
+                        <td style="text-align:right; font-weight:600; color:${r.cashFlowNet >= 0 ? '#000' : '#dc2626'};">
+                            ${flowSign} ৳ ${toBnMoney(r.cashFlowNet)}
+                        </td>
                         <td style="text-align:right; font-weight:700;">৳ ${toBnMoney(r.income)}</td>
-                        <td style="text-align:right; font-weight:600;">৳ ${toBnMoney(r.expense)}</td>
+                        <td style="text-align:right;">৳ ${toBnMoney(r.expense)}</td>
                         <td style="text-align:right; font-weight:700;">৳ ${toBnMoney(r.closing)}</td>
                         <td style="text-align:right; font-weight:800; color:${isGrowth ? '#000' : '#dc2626'};">
                             ${changeSign} ৳ ${toBnMoney(r.change)}
                         </td>
-                        <td style="text-align:center; font-weight:700; color:${isGrowth ? '#15803d' : '#dc2626'};">
-                            ${r.statusText}
+                        <td style="text-align:center; font-size:12px; font-weight:600; color:${isGrowth ? '#15803d' : '#b91c1c'}; white-space:nowrap;">
+                            ${r.statusText} (${r.reasonText})
                         </td>
                     </tr>`;
             });
@@ -195,13 +224,15 @@
 
         const overallSign = data.totalNetGrowth > 0 ? '(+)' : (data.totalNetGrowth < 0 ? '(-)' : '');
         const overallStatus = data.totalNetGrowth > 0 ? 'বৃদ্ধি পেয়েছে' : (data.totalNetGrowth < 0 ? 'হ্রাস পেয়েছে' : 'অপরিবর্তিত');
+        const grandFlow = data.grandTotalPelam - data.grandTotalDilam;
+        const grandFlowSign = grandFlow > 0 ? '(+)' : (grandFlow < 0 ? '(-)' : '');
 
         const fullHTML = `
 <!DOCTYPE html>
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <title>Daily Capital Growth & Comprehensive Ledger - Mousumi Computer</title>
+    <title>Capital Growth & Cause Analysis Ledger - Mousumi Computer</title>
     <!-- Google Fonts: Tiro Bangla -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -212,8 +243,8 @@
         * { box-sizing: border-box; }
         body {
             margin: 0;
-            padding: 20px 0;
-            background: #e2e8f0;
+            padding: 15px 0;
+            background: #cbd5e1;
             font-family: 'Tiro Bangla', serif;
             color: #000;
             font-size: 13px;
@@ -229,7 +260,7 @@
             background: #1e293b;
             padding: 8px 14px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         .btn {
             background: #0284c7;
@@ -246,29 +277,30 @@
         .btn-excel { background: #059669; }
         .btn-close { background: #64748b; }
 
+        /* A4 Landscape পেজ সাইজ */
         .page-container {
-            width: 210mm;
+            width: 297mm;
             margin: 0 auto;
             background: #fff;
-            padding: 12mm 12mm;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 10mm 12mm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.15);
         }
 
         .header {
             text-align: center;
             border-bottom: 2px solid #000;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
+            padding-bottom: 4px;
+            margin-bottom: 8px;
         }
         .header h1 {
             margin: 0;
-            font-size: 23px;
+            font-size: 22px;
             font-weight: 800;
             letter-spacing: 0.5px;
         }
         .header h2 {
             margin: 2px 0 0 0;
-            font-size: 15px;
+            font-size: 14.5px;
             font-weight: 600;
         }
 
@@ -276,17 +308,17 @@
             display: flex;
             justify-content: space-between;
             font-size: 12px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border-bottom: 1px solid #000;
-            padding-bottom: 4px;
+            padding-bottom: 3px;
         }
 
-        /* সারসংক্ষেপ টেবিল */
+        /* সারসংক্ষেপ */
         .summary-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 12.5px;
-            margin-bottom: 14px;
+            margin-bottom: 10px;
         }
         .summary-table th, .summary-table td {
             border: 1px solid #000;
@@ -297,23 +329,24 @@
             font-weight: 700;
         }
 
-        /* মূল লেজার টেবিল */
+        /* মূল লেজার টেবিল (Landscape) */
         table.main-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 12px;
-            margin-bottom: 14px;
+            font-size: 12.5px;
+            margin-bottom: 10px;
         }
         table.main-table th, table.main-table td {
             border: 1px solid #000;
-            padding: 4px 4px;
-            line-height: 1.25;
+            padding: 4px 5px;
+            line-height: 1.2;
             vertical-align: middle;
         }
         table.main-table th {
             background-color: #f1f5f9;
             font-weight: 700;
             text-align: center;
+            white-space: nowrap;
         }
         .total-row td {
             font-weight: 800;
@@ -323,13 +356,13 @@
         }
 
         .signature-block {
-            margin-top: 35px;
+            margin-top: 25px;
             display: flex;
             justify-content: space-between;
             page-break-inside: avoid;
         }
         .sig-box {
-            width: 160px;
+            width: 170px;
             text-align: center;
         }
         .sig-line {
@@ -341,7 +374,7 @@
             body { background: #fff; padding: 0; }
             .no-print-bar { display: none !important; }
             .page-container { width: 100%; padding: 0; box-shadow: none; }
-            @page { size: A4 portrait; margin: 8mm; }
+            @page { size: A4 landscape; margin: 8mm 10mm; }
             tr { page-break-inside: avoid; }
             thead { display: table-header-group; }
         }
@@ -360,7 +393,7 @@
         <!-- ১. হেডার -->
         <div class="header">
             <h1>MOUSUMI COMPUTER</h1>
-            <h2>মূল ক্যাশ বৃদ্ধি-হ্রাস ও সমন্বিত খতিয়ান (Capital Growth & Comprehensive Ledger)</h2>
+            <h2>মূল ক্যাশ বৃদ্ধি-হ্রাস ও কারণ বিশ্লেষণ খতিয়ান (Capital Growth & Cause Analysis Ledger)</h2>
         </div>
 
         <div class="meta">
@@ -368,40 +401,45 @@
             <div>প্রতিবেদন তারিখ: <strong>${data.dateInfo.full}</strong> | মোট কার্যদিবস: <strong>${toBn(data.ledgerRows.length)} দিন</strong></div>
         </div>
 
-        <!-- ২. সারসংক্ষেপ সারসংক্ষেপ -->
+        <!-- ২. সারসংক্ষেপ -->
         <table class="summary-table">
             <thead>
                 <tr>
-                    <th style="width: 35%;">মেয়াদের শুরুর মোট মূলধন</th>
-                    <th style="width: 35%;">মেয়াদের সমাপনী মোট স্থিতি</th>
-                    <th style="width: 30%;">সার্বিক মূলধন পরিবর্তন</th>
+                    <th style="width: 25%;">শুরুর মোট মূলধন</th>
+                    <th style="width: 25%;">সমাপনী মোট স্থিতি</th>
+                    <th style="width: 25%;">নগদ প্রবাহ নিট প্রভাব (পেলেন - দিলেন)</th>
+                    <th style="width: 25%;">সার্বিক মূলধন পরিবর্তন ও অবস্থা</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td style="text-align: center; font-weight: 700; font-size: 13.5px;">৳ ${toBnMoney(data.initialOpening)}</td>
-                    <td style="text-align: center; font-weight: 700; font-size: 13.5px;">৳ ${toBnMoney(data.finalClosing)}</td>
-                    <td style="text-align: center; font-weight: 800; font-size: 13.5px; border-bottom: 3px double #000;">
+                    <td style="text-align: center; font-weight: 700; font-size: 13px;">৳ ${toBnMoney(data.initialOpening)}</td>
+                    <td style="text-align: center; font-weight: 700; font-size: 13px;">৳ ${toBnMoney(data.finalClosing)}</td>
+                    <td style="text-align: center; font-weight: 700; font-size: 13px; color:${grandFlow >= 0 ? '#000' : '#dc2626'};">
+                        ${grandFlowSign} ৳ ${toBnMoney(grandFlow)}
+                    </td>
+                    <td style="text-align: center; font-weight: 800; font-size: 13px; border-bottom: 3px double #000;">
                         ${overallSign} ৳ ${toBnMoney(data.totalNetGrowth)} (${overallStatus})
                     </td>
                 </tr>
             </tbody>
         </table>
 
-        <!-- ৩. মূল সমন্বিত টেবিল -->
+        <!-- ৩. মূল ল্যান্ডস্কেপ টেবিল -->
         <table class="main-table">
             <thead>
                 <tr>
-                    <th style="width:5%;">ক্রমিক</th>
+                    <th style="width:4%;">ক্রমিক</th>
                     <th style="width:13%;">তারিখ ও বার</th>
-                    <th style="width:10%;">প্রারম্ভিক (৳)</th>
-                    <th style="width:10%;">পেলাম (+)</th>
-                    <th style="width:10%;">দিলাম (-)</th>
-                    <th style="width:10%;">আয় (৳)</th>
-                    <th style="width:9%;">ব্যয় (৳)</th>
-                    <th style="width:11%;">সমাপনী স্থিতি (৳)</th>
-                    <th style="width:13%;">পরিবর্তন (৳)</th>
-                    <th style="width:9%;">অবস্থা</th>
+                    <th style="width:9%;">প্রারম্ভিক (৳)</th>
+                    <th style="width:9%;">পেলাম (+)</th>
+                    <th style="width:9%;">দিলাম (-)</th>
+                    <th style="width:10%;">প্রভাব (পেল-দিল)</th>
+                    <th style="width:8%;">আয় (৳)</th>
+                    <th style="width:7%;">ব্যয় (৳)</th>
+                    <th style="width:10%;">সমাপনী স্থিতি (৳)</th>
+                    <th style="width:9%;">পরিবর্তন (৳)</th>
+                    <th style="width:12%;">কেন বাড়ল / কমল (কারণ)</th>
                 </tr>
             </thead>
             <tbody>
@@ -410,17 +448,18 @@
                     <td colspan="3" style="text-align:right;">সর্বমোট যোগফল:</td>
                     <td style="text-align:right;">৳ ${toBnMoney(data.grandTotalPelam)}</td>
                     <td style="text-align:right;">৳ ${toBnMoney(data.grandTotalDilam)}</td>
+                    <td style="text-align:right;">${grandFlowSign} ৳ ${toBnMoney(grandFlow)}</td>
                     <td style="text-align:right;">৳ ${toBnMoney(data.grandTotalIncome)}</td>
                     <td style="text-align:right;">৳ ${toBnMoney(data.grandTotalExpense)}</td>
                     <td style="text-align:right;">৳ ${toBnMoney(data.finalClosing)}</td>
                     <td style="text-align:right; border-bottom: 3px double #000;">${overallSign} ৳ ${toBnMoney(data.totalNetGrowth)}</td>
-                    <td style="text-align:center;">${data.totalNetGrowth >= 0 ? 'বৃদ্ধি' : 'হ্রাস'}</td>
+                    <td style="text-align:center;">${data.totalNetGrowth >= 0 ? 'সার্বিক বৃদ্ধি' : 'সার্বিক হ্রাস'}</td>
                 </tr>
             </tbody>
         </table>
 
-        <div style="font-size: 11px; color: #475569; margin-top: 4px;">
-            * ব্যয় খাতের অন্তর্ভুক্ত: দোকানের ব্যয়, বাড়ি খরচ, ইএসডিও ও টিএমএসএস।
+        <div style="font-size: 11px; color: #475569; margin-top: 3px;">
+            * সূত্র: ক্যাশের পরিবর্তন = (পেলাম - দিলাম) + আয়। ব্যয় খাতের অন্তর্ভুক্ত: দোকানের ব্যয়, বাড়ি খরচ, ইএসডিও ও টিএমএসএস।
         </div>
 
         <!-- ৪. স্বাক্ষর -->
@@ -442,44 +481,45 @@
             const wb = XLSX.utils.book_new();
 
             const rows = [
-                ["MOUSUMI COMPUTER - মূল ক্যাশ বৃদ্ধি-হ্রাস ও সমন্বিত খতিয়ান"],
+                ["MOUSUMI COMPUTER - মূল ক্যাশ বৃদ্ধি-হ্রাস ও কারণ বিশ্লেষণ খতিয়ান"],
                 ["সময়কাল:", "${data.rangeText}"],
                 ["প্রতিবেদন তারিখ:", "${data.dateInfo.full}"],
                 [],
-                ["ক্রমিক", "তারিখ", "বার", "প্রারম্ভিক (৳)", "পেলাম (+)", "দিলাম (-)", "আয় (৳)", "ব্যয় (৳)", "সমাপনী স্থিতি (৳)", "পরিবর্তন (৳)", "অবস্থা"]
+                ["ক্রমিক", "তারিখ ও বার", "প্রারম্ভিক (৳)", "পেলাম (+)", "দিলাম (-)", "প্রভাব (পেল-দিল)", "আয় (৳)", "ব্যয় (৳)", "সমাপনী স্থিতি (৳)", "পরিবর্তন (৳)", "অবস্থা ও কারণ"]
             ];
 
             ${JSON.stringify(data.ledgerRows)}.forEach((r, i) => {
                 rows.push([
                     i + 1 + "।",
-                    r.dateText,
-                    r.dayText,
+                    r.dateText + " (" + r.dayText + ")",
                     r.opening,
                     r.pelam,
                     r.dilam,
+                    r.cashFlowNet,
                     r.income,
                     r.expense,
                     r.closing,
                     r.change,
-                    r.statusText
+                    r.statusText + " (" + r.reasonText + ")"
                 ]);
             });
 
             rows.push([
-                "", "সর্বমোট যোগফল:", "",
+                "", "সর্বমোট যোগফল:",
                 ${data.initialOpening},
                 ${data.grandTotalPelam},
                 ${data.grandTotalDilam},
+                ${grandFlow},
                 ${data.grandTotalIncome},
                 ${data.grandTotalExpense},
                 ${data.finalClosing},
                 ${data.totalNetGrowth},
-                "${data.totalNetGrowth >= 0 ? 'বৃদ্ধি' : 'হ্রাস'}"
+                "${data.totalNetGrowth >= 0 ? 'সার্বিক বৃদ্ধি' : 'সার্বিক হ্রাস'}"
             ]);
 
             const ws = XLSX.utils.aoa_to_sheet(rows);
-            XLSX.utils.book_append_sheet(wb, ws, "Capital Growth Ledger");
-            XLSX.writeFile(wb, "Daily_Capital_Growth_and_Ledger.xlsx");
+            XLSX.utils.book_append_sheet(wb, ws, "Capital Growth & Cause Ledger");
+            XLSX.writeFile(wb, "Capital_Growth_and_Cause_Ledger.xlsx");
         }
 
         ${autoPrint ? 'window.onload = function() { setTimeout(() => { window.print(); }, 400); };' : ''}
@@ -520,8 +560,8 @@
                 previewCard.innerHTML = `
                     <div class="rpt-placeholder-state" style="padding: 35px 20px; text-align: center;">
                         <i class="fa-solid fa-chart-line" style="font-size:2.5rem; color:#0f172a; margin-bottom:10px;"></i>
-                        <h4 style="font-size:1.1rem; color:#000; margin-bottom:4px; font-family:'Tiro Bangla', serif;">Capital Growth & Comprehensive Ledger</h4>
-                        <p style="color:#555; margin-bottom:0; font-family:'Tiro Bangla', serif;">মূল ক্যাশ বৃদ্ধি-হ্রাসের পূর্ণাঙ্গ সমন্বিত খতিয়ান। দেখতে বা প্রিন্ট করতে <strong>Download PDF</strong> বাটনে ক্লিক করুন।</p>
+                        <h4 style="font-size:1.1rem; color:#000; margin-bottom:4px; font-family:'Tiro Bangla', serif;">Capital Growth & Cause Analysis Ledger</h4>
+                        <p style="color:#555; margin-bottom:0; font-family:'Tiro Bangla', serif;">মূল ক্যাশ বৃদ্ধি-হ্রাসের কারণ বিশ্লেষণ খতিয়ান। দেখতে বা প্রিন্ট করতে <strong>Download PDF</strong> বাটনে ক্লিক করুন।</p>
                     </div>
                 `;
             }
@@ -535,7 +575,7 @@
         if (!select.querySelector('option[value="daily_capital_growth_statement"]')) {
             const opt = document.createElement('option');
             opt.value = 'daily_capital_growth_statement';
-            opt.innerText = 'Capital Growth & Comprehensive Ledger (মূল ক্যাশ বৃদ্ধি-হ্রাস ও পূর্ণাঙ্গ খতিয়ান)';
+            opt.innerText = 'Capital Growth & Cause Analysis (মূল ক্যাশ বৃদ্ধি-হ্রাসের কারণ বিশ্লেষণ)';
             select.appendChild(opt);
         }
 
