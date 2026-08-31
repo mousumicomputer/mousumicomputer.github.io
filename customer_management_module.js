@@ -4,19 +4,16 @@
    File: customer_management_module.js
    ========================================================== */
 
-// ১. মডার্ন কর্পোরেট CSS ইনজেকশন (Clean, Compact, Minimalist)
+// ১. কর্পোরেট সিএসএস
 const injectCorporateStyles = () => {
     if (document.getElementById('erp-corporate-css')) return;
     const style = document.createElement('style');
     style.id = 'erp-corporate-css';
     style.innerHTML = `
-        /* Corporate Reset & Typography */
         #customer-ledger-view {
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
             color: #0f172a;
         }
-
-        /* KPI Metric Cards */
         .corp-kpi-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -29,7 +26,6 @@ const injectCorporateStyles = () => {
             border-radius: 10px;
             padding: 16px 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-            position: relative;
         }
         .corp-kpi-header {
             display: flex;
@@ -60,8 +56,6 @@ const injectCorporateStyles = () => {
             margin-top: 4px;
             font-weight: 500;
         }
-
-        /* Action & Filter Toolbar */
         .corp-toolbar {
             display: flex;
             justify-content: space-between;
@@ -94,11 +88,10 @@ const injectCorporateStyles = () => {
             color: #1e293b;
             background: #ffffff;
             outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: border-color 0.2s;
         }
         .corp-search-input:focus {
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            border-color: #0f172a;
         }
         .corp-btn-group {
             display: flex;
@@ -134,8 +127,6 @@ const injectCorporateStyles = () => {
         .corp-btn-primary:hover {
             background: #1e293b;
         }
-
-        /* Modern Data Grid Table */
         .corp-table-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -171,8 +162,6 @@ const injectCorporateStyles = () => {
         .corp-table tr:last-child td {
             border-bottom: none;
         }
-
-        /* Customer Info Cell */
         .corp-cust-cell {
             display: flex;
             align-items: center;
@@ -201,8 +190,6 @@ const injectCorporateStyles = () => {
             font-size: 0.75rem;
             color: #94a3b8;
         }
-
-        /* Status & Badges */
         .corp-badge {
             display: inline-block;
             padding: 3px 8px;
@@ -225,8 +212,6 @@ const injectCorporateStyles = () => {
             color: #2563eb;
             border: 1px solid #dbeafe;
         }
-
-        /* Action Buttons */
         .btn-table-action {
             background: #ffffff;
             border: 1px solid #cbd5e1;
@@ -264,7 +249,7 @@ const injectCorporateStyles = () => {
     document.head.appendChild(style);
 };
 
-// ২. কাস্টমার বর্তমান বকেয়া হিসাব ফাংশন
+// ২. কাস্টমার বর্তমান বকেয়া হিসাব
 window.calculateCustomerCurrentDue = function(custId) {
     const customers = window.customers || [];
     const cust = customers.find(c => c.id === custId);
@@ -281,17 +266,23 @@ window.calculateCustomerCurrentDue = function(custId) {
     return due;
 };
 
-// ৩. কর্পোরেট কাস্টমার লিস্ট এবং ড্যাশবোর্ড রেন্ডার
+// ৩. কাস্টমার লিস্ট এবং মডার্ন ড্যাশবোর্ড রেন্ডার
 window.renderCustomerListTable = function() {
     injectCorporateStyles();
+
+    // হেডার টাইটেল আপডেট
+    const topTitle = document.getElementById('top-title');
+    if (topTitle) topTitle.innerText = "Customer Management";
+
     const container = document.getElementById('cust-list-section');
     if (!container) return;
 
     const customers = window.customers || [];
     const customerTransactions = window.customerTransactions || [];
 
+    // সার্চ ইনপুট চেক
     const searchInput = document.getElementById('custSearchInput');
-    const filterVal = (searchInput ? searchInput.value : '').toLowerCase();
+    const filterVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
     const filtered = customers.filter(c => 
         (c.name || '').toLowerCase().includes(filterVal) ||
@@ -319,16 +310,14 @@ window.renderCustomerListTable = function() {
         todayColl += (parseFloat(t.credit) || 0);
     });
 
-    // ফর্ম্যাটেড ইংরেজি কারেন্সি
     const fmt = (num) => '৳ ' + (parseFloat(num) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    // মূল লেআউট ইনজেকশন
     container.innerHTML = `
-        <!-- Top Corporate KPI Summary Cards -->
+        <!-- Top KPI Metric Cards -->
         <div class="corp-kpi-grid">
             <div class="corp-kpi-card">
                 <div class="corp-kpi-header">
-                    <span class="corp-kpi-title">Total Customers</span>
+                    <span class="corp-kpi-title">TOTAL CUSTOMERS</span>
                     <i class="fa-solid fa-users corp-kpi-icon"></i>
                 </div>
                 <div class="corp-kpi-value">${customers.length}</div>
@@ -337,7 +326,7 @@ window.renderCustomerListTable = function() {
 
             <div class="corp-kpi-card">
                 <div class="corp-kpi-header">
-                    <span class="corp-kpi-title">Total Receivables</span>
+                    <span class="corp-kpi-title">TOTAL RECEIVABLES</span>
                     <i class="fa-solid fa-hand-holding-dollar corp-kpi-icon"></i>
                 </div>
                 <div class="corp-kpi-value" style="color: #dc2626;">${fmt(totalReceivable)}</div>
@@ -346,7 +335,7 @@ window.renderCustomerListTable = function() {
 
             <div class="corp-kpi-card">
                 <div class="corp-kpi-header">
-                    <span class="corp-kpi-title">Today's Collection</span>
+                    <span class="corp-kpi-title">TODAY'S COLLECTION</span>
                     <i class="fa-solid fa-calendar-check corp-kpi-icon"></i>
                 </div>
                 <div class="corp-kpi-value" style="color: #16a34a;">${fmt(todayColl)}</div>
@@ -355,7 +344,7 @@ window.renderCustomerListTable = function() {
 
             <div class="corp-kpi-card">
                 <div class="corp-kpi-header">
-                    <span class="corp-kpi-title">Due Accounts</span>
+                    <span class="corp-kpi-title">DUE ACCOUNTS</span>
                     <i class="fa-solid fa-user-clock corp-kpi-icon"></i>
                 </div>
                 <div class="corp-kpi-value">${dueCount}</div>
@@ -363,11 +352,11 @@ window.renderCustomerListTable = function() {
             </div>
         </div>
 
-        <!-- Corporate Action Toolbar -->
+        <!-- Action Toolbar -->
         <div class="corp-toolbar">
             <div class="corp-search-wrapper">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="custSearchInput" class="corp-search-input" placeholder="Search customer by name, phone or ID..." value="${filterVal}" oninput="renderCustomerListTable()">
+                <input type="text" id="custSearchInput" class="corp-search-input" placeholder="Search customer by name, phone or ID..." value="${filterVal}" autocomplete="off" oninput="renderCustomerListTable()">
             </div>
             <div class="corp-btn-group">
                 <button class="corp-btn corp-btn-default" onclick="exportOutstandingDueExcel()"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
@@ -375,17 +364,17 @@ window.renderCustomerListTable = function() {
             </div>
         </div>
 
-        <!-- Corporate Data Grid Table -->
+        <!-- Data Grid Table -->
         <div class="corp-table-card">
             <table class="corp-table">
                 <thead>
                     <tr>
-                        <th>Customer Details</th>
-                        <th>Phone Number</th>
-                        <th>Address / Area</th>
-                        <th>Outstanding Balance</th>
-                        <th>Status</th>
-                        <th style="text-align: right;">Action</th>
+                        <th>CUSTOMER DETAILS</th>
+                        <th>PHONE NUMBER</th>
+                        <th>ADDRESS / AREA</th>
+                        <th>OUTSTANDING BALANCE</th>
+                        <th>STATUS</th>
+                        <th style="text-align: right;">ACTION</th>
                     </tr>
                 </thead>
                 <tbody id="corpCustomerTbody"></tbody>
@@ -434,10 +423,6 @@ window.renderCustomerListTable = function() {
         `;
         tbody.appendChild(tr);
     });
-
-    // টপ হেডার টাইটেল ইংরেজি করা
-    const topTitle = document.getElementById('top-title');
-    if (topTitle) topTitle.innerText = "Customer Management";
 };
 
 // ৪. কর্পোরেট লেজার স্টেটমেন্ট রেন্ডার
@@ -461,7 +446,6 @@ window.renderCustomerStatement = function(custId) {
     txs.sort((a,b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || ''))).reverse();
 
     container.innerHTML = `
-        <!-- Top Profile & Balance Header -->
         <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                 <div style="display: flex; align-items: center; gap: 15px;">
@@ -481,7 +465,6 @@ window.renderCustomerStatement = function(custId) {
             </div>
         </div>
 
-        <!-- Transaction Entry Box -->
         <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
             <h4 style="font-size: 0.9rem; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px;">New Transaction Entry</h4>
             
@@ -511,7 +494,6 @@ window.renderCustomerStatement = function(custId) {
             </div>
         </div>
 
-        <!-- Ledger Statement Data Table -->
         <div class="corp-table-card">
             <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
                 <strong style="font-size: 0.95rem; color: #0f172a;">Transaction Ledger Statement</strong>
@@ -523,11 +505,11 @@ window.renderCustomerStatement = function(custId) {
             <table class="corp-table">
                 <thead>
                     <tr>
-                        <th>Date & Time</th>
-                        <th>Description / Particulars</th>
-                        <th style="color: #dc2626;">Debit (+)</th>
-                        <th style="color: #16a34a;">Credit (-)</th>
-                        <th style="text-align: center; width: 60px;">Action</th>
+                        <th>DATE & TIME</th>
+                        <th>DESCRIPTION / PARTICULARS</th>
+                        <th style="color: #dc2626;">DEBIT (+)</th>
+                        <th style="color: #16a34a;">CREDIT (-)</th>
+                        <th style="text-align: center; width: 60px;">ACTION</th>
                     </tr>
                 </thead>
                 <tbody>
