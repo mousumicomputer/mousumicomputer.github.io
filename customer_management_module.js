@@ -1,7 +1,7 @@
 /* ==========================================================
    CUSTOMER MANAGEMENT MODULE (Mousumi ERP)
    File: customer_management_module.js
-   Full Features: Add, Edit, Delete Customer & Transactions
+   Full Features: Due Calculation, List, Statement & Delete
    ========================================================== */
 
 // সংখ্যাকে বাংলায় রূপান্তর
@@ -11,7 +11,24 @@ function toBanglaDigits(num) {
     return num.toString().replace(/\d/g, i => bnDigits[i]);
 }
 
-// কাস্টমার তালিকা রেন্ডার
+// গ্রাহকের বর্তমান বকেয়া হিসাব করার ফাংশন (গ্লোবাল)
+window.calculateCustomerCurrentDue = function(custId) {
+    const customers = window.customers || [];
+    const cust = customers.find(c => c.id === custId);
+    if (!cust) return 0;
+
+    let due = parseFloat(cust.openingBalance) || 0;
+    const txs = (window.customerTransactions || []).filter(t => t.customerId === custId);
+
+    txs.forEach(t => {
+        due += (parseFloat(t.debit) || 0);
+        due -= (parseFloat(t.credit) || 0);
+    });
+
+    return due;
+};
+
+// কাস্টমার তালিকা ও সামারি রেন্ডার
 window.renderCustomerListTable = function() {
     const tbody = document.getElementById('customerTableBody');
     if (!tbody) return;
@@ -36,7 +53,7 @@ window.renderCustomerListTable = function() {
     const todayStr = new Date().toISOString().split('T')[0];
 
     customers.forEach(c => {
-        const currentDue = typeof calculateCustomerCurrentDue === 'function' ? calculateCustomerCurrentDue(c.id) : 0;
+        const currentDue = window.calculateCustomerCurrentDue(c.id);
         if (currentDue > 0) {
             totalReceivable += currentDue;
             dueCount++;
@@ -60,7 +77,7 @@ window.renderCustomerListTable = function() {
     }
 
     filtered.forEach(c => {
-        const currentDue = typeof calculateCustomerCurrentDue === 'function' ? calculateCustomerCurrentDue(c.id) : 0;
+        const currentDue = window.calculateCustomerCurrentDue(c.id);
         const firstLetter = (c.name || 'G').charAt(0).toUpperCase();
         const colors = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
@@ -92,6 +109,7 @@ window.renderCustomerStatement = function(custId) {
     const area = document.getElementById('modern-statement-table-area');
     if (!area) return;
     
+    window.activeViewingCustomerId = custId;
     const customers = window.customers || [];
     const cust = customers.find(c => c.id === custId);
     if (!cust) return;
@@ -107,7 +125,7 @@ window.renderCustomerStatement = function(custId) {
     const localToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     if (document.getElementById('txDateInput')) document.getElementById('txDateInput').value = localToday;
     
-    const currentDue = typeof calculateCustomerCurrentDue === 'function' ? calculateCustomerCurrentDue(cust.id) : 0;
+    const currentDue = window.calculateCustomerCurrentDue(cust.id);
     if (document.getElementById('stmtDueAmount')) {
         document.getElementById('stmtDueAmount').innerText = '৳ ' + toBanglaDigits(currentDue.toLocaleString('en-US'));
     }
@@ -149,6 +167,21 @@ window.renderCustomerStatement = function(custId) {
 
     html += `</tbody></table>`;
     area.innerHTML = txs.length > 0 ? html : '<div style="text-align:center; padding: 30px; color: #94a3b8;">কোনো লেনদেন পাওয়া যায়নি।</div>';
+};
+
+// ডুয়াল ইনপুট হ্যান্ডলার
+window.handleDualInput = function(type) {
+    const d = document.getElementById('modernTxDebit');
+    const c = document.getElementById('modernTxCredit');
+    if (!d || !c) return;
+
+    if (type === 'debit' && d.value.length > 0) {
+        c.value = ''; c.disabled = true;
+    } else if (type === 'credit' && c.value.length > 0) {
+        d.value = ''; d.disabled = true;
+    } else {
+        d.disabled = false; c.disabled = false;
+    }
 };
 
 // লেনদেন নিশ্চিত করার ফাংশন
