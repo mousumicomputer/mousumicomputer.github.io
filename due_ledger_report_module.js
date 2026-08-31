@@ -1,15 +1,13 @@
 /**
  * ============================================================================
- * MOUSUMI COMPUTER ERP - 3-PAGE DUE & ADVANCE LEDGER (DIRECT PDF GENERATOR)
+ * MOUSUMI COMPUTER ERP - DYNAMIC DUE & ADVANCE LEDGER (LARGE FONT & AUTO PAGINATION)
  * File: due_ledger_report_module.js
  * 
  * Features:
- * 1. Opens report in a clean New Tab with a Floating Action Bar.
- * 2. Directly downloads .pdf file via html2pdf.js (NO Print Dialog / No Preview).
- * 3. Page 1: আমি কতজনের কাছে টাকা পাবো (Receivables)
- * 4. Page 2: আমার কাছে কে কে টাকা পাবে (Payables)
- * 5. Page 3: দেনা-পাওনা হিসাব সমন্বয় বিবরণী (Adjustment & Summary)
- * 6. 100% Tiro Bangla Typography.
+ * 1. Dynamic Pagination: কাস্টমার যত বেশিই হোক, ফন্ট ছোট হবে না; স্বয়ংক্রিয়ভাবে পেজ বাড়বে।
+ * 2. Large & Clear Font: পড়তে সহজ ও ঝকঝকে বড় ফন্ট (13.5px - 14px)।
+ * 3. Modern Executive Summary: উপরে আকর্ষণীয় ৩টি সারসংক্ষেপ কার্ড।
+ * 4. Crisp Print & PDF Export with html2pdf.js & SheetJS.
  * ============================================================================
  */
 
@@ -97,38 +95,38 @@
         };
     }
 
-    // নতুন ট্যাবে ৩ পাতার HTML ও ফ্লোটিং ডাউনলোড বাটন খোলা
+    // নতুন ট্যাবে ডায়নামিক পেজ ও আকর্ষণীয় ড্যাশবোর্ড স্টাইল ভিউ
     window.openDueAdvanceTab = function (autoDownload = false) {
         const data = getLedgerData();
 
         let recRows = '';
         if (data.receivableList.length === 0) {
-            recRows = `<tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">কোনো গ্রাহকের নিকট বকেয়া পাওনা নেই</td></tr>`;
+            recRows = `<tr><td colspan="5" style="text-align:center; padding:18px; color:#64748b; font-size:14px;">কোনো গ্রাহকের নিকট বকেয়া পাওনা নেই</td></tr>`;
         } else {
             data.receivableList.forEach((r, i) => {
                 recRows += `
                     <tr>
-                        <td style="text-align:center;">${toBn(i + 1)}</td>
-                        <td style="font-weight:600;">${escapeHTML(r.name)}</td>
-                        <td style="text-align:center;">${toBn(r.phone)}</td>
-                        <td>${escapeHTML(r.address)}</td>
-                        <td style="text-align:right; font-weight:bold; color:#dc2626;">৳ ${toBnMoney(r.amount)}</td>
+                        <td style="text-align:center; font-weight:600;">${toBn(i + 1)}</td>
+                        <td style="font-weight:700; color:#0f172a;">${escapeHTML(r.name)}</td>
+                        <td style="text-align:center; font-weight:500;">${toBn(r.phone)}</td>
+                        <td style="color:#334155;">${escapeHTML(r.address)}</td>
+                        <td style="text-align:right; font-weight:800; color:#dc2626; font-size:14.5px;">৳ ${toBnMoney(r.amount)}</td>
                     </tr>`;
             });
         }
 
         let payRows = '';
         if (data.payableList.length === 0) {
-            payRows = `<tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">কোনো গ্রাহকের জমা বা অগ্রিম দেনা নেই</td></tr>`;
+            payRows = `<tr><td colspan="5" style="text-align:center; padding:18px; color:#64748b; font-size:14px;">কোনো গ্রাহকের জমা বা অগ্রিম দেনা নেই</td></tr>`;
         } else {
             data.payableList.forEach((p, i) => {
                 payRows += `
                     <tr>
-                        <td style="text-align:center;">${toBn(i + 1)}</td>
-                        <td style="font-weight:600;">${escapeHTML(p.name)}</td>
-                        <td style="text-align:center;">${toBn(p.phone)}</td>
-                        <td>${escapeHTML(p.address)}</td>
-                        <td style="text-align:right; font-weight:bold; color:#16a34a;">৳ ${toBnMoney(p.amount)}</td>
+                        <td style="text-align:center; font-weight:600;">${toBn(i + 1)}</td>
+                        <td style="font-weight:700; color:#0f172a;">${escapeHTML(p.name)}</td>
+                        <td style="text-align:center; font-weight:500;">${toBn(p.phone)}</td>
+                        <td style="color:#334155;">${escapeHTML(p.address)}</td>
+                        <td style="text-align:right; font-weight:800; color:#16a34a; font-size:14.5px;">৳ ${toBnMoney(p.amount)}</td>
                     </tr>`;
             });
         }
@@ -139,22 +137,26 @@
 <head>
     <meta charset="UTF-8">
     <title>Customer Due & Advance Ledger - Mousumi Computer</title>
-    <!-- Fonts & Icons -->
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- html2pdf.js & SheetJS for direct client-side download -->
+    
+    <!-- PDF & Excel Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"><\/script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap');
-
         * { box-sizing: border-box; }
         body {
             margin: 0;
-            padding: 0;
-            background: #e2e8f0;
-            font-family: 'Tiro Bangla', serif;
-            color: #000;
+            padding: 20px 0 80px 0;
+            background: #f1f5f9;
+            font-family: 'Hind Siliguri', 'Tiro Bangla', sans-serif;
+            color: #0f172a;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
         /* ঝুলন্ত ফ্লোটিং অ্যাকশন বার */
@@ -169,7 +171,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
             border: 1px solid #334155;
         }
         .float-btn {
@@ -177,126 +179,169 @@
             color: #ffffff;
             border: none;
             outline: none;
-            padding: 10px 18px;
+            padding: 10px 20px;
             border-radius: 30px;
-            font-family: 'Tiro Bangla', serif;
-            font-size: 13px;
-            font-weight: bold;
+            font-family: 'Hind Siliguri', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 8px;
-            transition: 0.2s;
+            transition: all 0.2s ease;
         }
-        .float-btn:hover { transform: translateY(-2px); }
-        .btn-pdf { background: #ef4444; }
-        .btn-pdf:hover { background: #dc2626; }
-        .btn-excel { background: #10b981; }
-        .btn-excel:hover { background: #059669; }
+        .float-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .btn-pdf { background: #dc2626; }
+        .btn-pdf:hover { background: #b91c1c; }
+        .btn-excel { background: #059669; }
+        .btn-excel:hover { background: #047857; }
         .btn-close { background: #475569; }
         .btn-close:hover { background: #334155; }
 
-        /* A4 পাতার কাঠামো */
+        /* মূল কনটেইনার */
         #report-render-wrapper {
             width: 210mm;
-            margin: 20px auto;
-        }
-        .a4-page {
-            width: 210mm;
-            min-height: 297mm;
-            padding: 15mm 15mm;
-            margin-bottom: 20px;
+            margin: 0 auto;
             background: #ffffff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            page-break-after: always;
-            break-after: page;
-        }
-        .a4-page:last-child {
-            page-break-after: avoid;
-            break-after: avoid;
+            padding: 20mm 18mm;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border-radius: 6px;
         }
 
+        /* হেডার ডিজাইন */
         .rpt-header {
             text-align: center;
-            border-bottom: 2px solid #000;
-            padding-bottom: 6px;
-            margin-bottom: 10px;
+            border-bottom: 2.5px solid #0f172a;
+            padding-bottom: 12px;
+            margin-bottom: 18px;
         }
         .rpt-header h1 {
             margin: 0;
-            font-size: 22px;
+            font-size: 26px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: 0.8px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
         .rpt-header h3 {
-            margin: 3px 0 0 0;
-            font-size: 14px;
-            font-weight: normal;
+            margin: 4px 0 0 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #4f46e5;
         }
         .rpt-meta {
             display: flex;
             justify-content: space-between;
-            font-size: 11px;
-            margin-bottom: 8px;
+            font-size: 13px;
+            margin-top: 10px;
             font-weight: 600;
+            color: #475569;
         }
 
+        /* সারসংক্ষেপ কার্ড বক্স */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+            page-break-inside: avoid;
+        }
+        .sum-card {
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 14px;
+            background: #f8fafc;
+        }
+        .sum-card.red { border-left: 5px solid #dc2626; background: #fff5f5; }
+        .sum-card.green { border-left: 5px solid #16a34a; background: #f0fdf4; }
+        .sum-card.blue { border-left: 5px solid #2563eb; background: #eff6ff; }
+        
+        .sum-card .label { font-size: 12.5px; font-weight: 600; color: #475569; margin-bottom: 4px; }
+        .sum-card .val { font-size: 18px; font-weight: 800; }
+        .sum-card.red .val { color: #dc2626; }
+        .sum-card.green .val { color: #16a34a; }
+        .sum-card.blue .val { color: #2563eb; }
+
+        /* সেকশন হেডার */
+        .section-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 20px 0 10px 0;
+            padding-bottom: 5px;
+            border-bottom: 1.5px solid #cbd5e1;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            page-break-after: avoid;
+        }
+
+        /* টেবিল ডিজাইন (বড় ও ক্লিয়ার ফন্ট) */
         table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed;
-            font-size: 11.5px;
+            font-size: 13.5px;
+            margin-bottom: 25px;
+        }
+        thead {
+            display: table-header-group;
+        }
+        tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
         th, td {
-            border: 0.5px solid #000;
-            padding: 5px 7px;
-            line-height: 1.3;
-            word-break: break-word;
+            border: 1px solid #cbd5e1;
+            padding: 8px 10px;
+            line-height: 1.4;
+            vertical-align: middle;
         }
         th {
             background-color: #f1f5f9;
-            font-weight: bold;
-            text-align: left;
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 13.5px;
         }
-        .total-row td {
-            font-weight: bold;
+        .total-row {
             background-color: #f8fafc;
+            font-size: 14.5px;
         }
 
+        /* স্বাক্ষর এরিয়া */
         .sig-container {
-            margin-top: 35px;
+            margin-top: 40px;
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: flex-end;
+            page-break-inside: avoid;
         }
         .sig-box {
-            width: 180px;
+            width: 200px;
             text-align: center;
         }
         .sig-line {
-            border-top: 0.5px solid #000;
-            margin-bottom: 4px;
+            border-top: 1.5px dashed #475569;
+            margin-bottom: 6px;
         }
         .sig-text {
-            font-size: 11px;
-            font-weight: bold;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
         }
-        .page-num {
-            text-align: center;
-            font-size: 10.5px;
-            color: #64748b;
-            margin-top: 15px;
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .floating-action-bar { display: none !important; }
+            #report-render-wrapper { width: 100%; box-shadow: none; padding: 0; }
         }
     </style>
 </head>
 <body>
 
-    <!-- ঝুলন্ত ডাউনলোড অ্যাকশন বার -->
+    <!-- অ্যাকশন বার -->
     <div class="floating-action-bar">
         <button type="button" class="float-btn btn-pdf" id="btnDownloadPDF" onclick="downloadDirectPDF()">
-            <i class="fa-solid fa-download"></i> Download PDF
+            <i class="fa-solid fa-file-pdf"></i> Download PDF
         </button>
         <button type="button" class="float-btn btn-excel" onclick="downloadExcel()">
             <i class="fa-solid fa-file-excel"></i> Export Excel
@@ -306,146 +351,118 @@
         </button>
     </div>
 
-    <!-- মূল ৩ পাতার রিপোর্ট কন্টেইনার -->
+    <!-- মূল ডায়নামিক রিপোর্ট কন্টেইনার -->
     <div id="report-render-wrapper">
         
-        <!-- পাতা ১ -->
-        <div class="a4-page">
-            <div>
-                <div class="rpt-header">
-                    <h1>MOUSUMI COMPUTER</h1>
-                    <h3>গ্রাহকদের বকেয়া তালিকা (আমি কতজনের কাছে টাকা পাবো)</h3>
-                </div>
-                <div class="rpt-meta">
-                    <div>তারিখ: ${data.dateInfo.full} (${data.dateInfo.day})</div>
-                    <div>মোট গ্রাহক: ${toBn(data.receivableList.length)} জন</div>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width:7%; text-align:center;">ক্রমিক</th>
-                            <th style="width:33%;">কাস্টমারের নাম</th>
-                            <th style="width:20%; text-align:center;">মোবাইল নম্বর</th>
-                            <th style="width:23%;">ঠিকানা</th>
-                            <th style="width:17%; text-align:right;">বকেয়া টাকা (৳)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${recRows}
-                        <tr class="total-row">
-                            <td colspan="4" style="text-align:right; font-weight:bold;">সর্বমোট বকেয়া পাওনা:</td>
-                            <td style="text-align:right; font-weight:bold; color:#dc2626;">৳ ${toBnMoney(data.totalReceivable)}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div>
-                <div class="sig-container">
-                    <div class="sig-box"><div class="sig-line"></div>Authorized Signature</div>
-                </div>
-                <div class="page-num">পাতা নং: ০১ / ০৩</div>
+        <!-- ১. হেডার -->
+        <div class="rpt-header">
+            <h1>MOUSUMI COMPUTER</h1>
+            <h3>গ্রাহক দেনা-পাওনা ও বকেয়া খতিয়ান (Due & Advance Ledger)</h3>
+            <div class="rpt-meta">
+                <div>তারিখ: <strong>${data.dateInfo.full} (${data.dateInfo.day})</strong></div>
+                <div>সময়: <strong>${data.dateInfo.time}</strong></div>
             </div>
         </div>
 
-        <!-- পাতা ২ -->
-        <div class="a4-page">
-            <div>
-                <div class="rpt-header">
-                    <h1>MOUSUMI COMPUTER</h1>
-                    <h3>গ্রাহকদের জমা / দেনা তালিকা (আমার কাছে কে কে টাকা পাবে)</h3>
-                </div>
-                <div class="rpt-meta">
-                    <div>তারিখ: ${data.dateInfo.full} (${data.dateInfo.day})</div>
-                    <div>মোট গ্রাহক: ${toBn(data.payableList.length)} জন</div>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width:7%; text-align:center;">ক্রমিক</th>
-                            <th style="width:33%;">কাস্টমারের নাম</th>
-                            <th style="width:20%; text-align:center;">মোবাইল নম্বর</th>
-                            <th style="width:23%;">ঠিকানা</th>
-                            <th style="width:17%; text-align:right;">জমা / দেনা (৳)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${payRows}
-                        <tr class="total-row">
-                            <td colspan="4" style="text-align:right; font-weight:bold;">সর্বমোট জমা / দেনা:</td>
-                            <td style="text-align:right; font-weight:bold; color:#16a34a;">৳ ${toBnMoney(data.totalPayable)}</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- ২. ড্যাশবোর্ড সারসংক্ষেপ কার্ড -->
+        <div class="summary-grid">
+            <div class="sum-card red">
+                <div class="label"><i class="fa-solid fa-arrow-down-left"></i> মোট বকেয়া পাওনা (Receivable)</div>
+                <div class="val">৳ ${toBnMoney(data.totalReceivable)}</div>
+                <div style="font-size:11.5px; color:#64748b; margin-top:2px;">গ্রাহক সংখ্যা: ${toBn(data.receivableList.length)} জন</div>
             </div>
-            <div>
-                <div class="sig-container">
-                    <div class="sig-box"><div class="sig-line"></div>Authorized Signature</div>
-                </div>
-                <div class="page-num">পাতা নং: ০২ / ০৩</div>
+            <div class="sum-card green">
+                <div class="label"><i class="fa-solid fa-arrow-up-right"></i> মোট অগ্রিম জমা (Payable)</div>
+                <div class="val">৳ ${toBnMoney(data.totalPayable)}</div>
+                <div style="font-size:11.5px; color:#64748b; margin-top:2px;">গ্রাহক সংখ্যা: ${toBn(data.payableList.length)} জন</div>
+            </div>
+            <div class="sum-card blue">
+                <div class="label"><i class="fa-solid fa-scale-balanced"></i> প্রকৃত নিট ব্যালেন্স (Net Position)</div>
+                <div class="val">৳ ${toBnMoney(data.netBalance)}</div>
+                <div style="font-size:11.5px; color:#64748b; margin-top:2px;">${data.netBalance >= 0 ? '(পাওনা বেশি)' : '(দেনা বেশি)'}</div>
             </div>
         </div>
 
-        <!-- পাতা ৩ -->
-        <div class="a4-page">
-            <div>
-                <div class="rpt-header">
-                    <h1>MOUSUMI COMPUTER</h1>
-                    <h3>দেনা-পাওনা হিসাব সমন্বয় বিবরণী (Adjustment Summary)</h3>
-                </div>
-                <div class="rpt-meta">
-                    <div>তারিখ: ${data.dateInfo.full}</div>
-                    <div>সময়: ${data.dateInfo.time}</div>
-                </div>
-                <table style="margin-top:15px;">
-                    <thead>
-                        <tr>
-                            <th style="width:70%;">বিবরণ</th>
-                            <th style="width:30%; text-align:right;">টাকা (৳)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>সর্বমোট গ্রাহকদের নিকট প্রাপ্য বকেয়া (Account Receivables) [${toBn(data.receivableList.length)} জন]</td>
-                            <td style="text-align:right; font-weight:bold; color:#dc2626;">৳ ${toBnMoney(data.totalReceivable)}</td>
-                        </tr>
-                        <tr>
-                            <td>সর্বমোট গ্রাহকদের জমা / দেনা (Account Payables) [${toBn(data.payableList.length)} জন]</td>
-                            <td style="text-align:right; font-weight:bold; color:#16a34a;">৳ ${toBnMoney(data.totalPayable)}</td>
-                        </tr>
-                        <tr class="total-row">
-                            <td style="font-size:12px;">প্রকৃত নিট অবস্থান (Net Receivable / Due)</td>
-                            <td style="text-align:right; font-size:12.5px; font-weight:bold; color:#2563eb;">৳ ${toBnMoney(data.netBalance)}</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- ৩. বকেয়া তালিকা (Receivables) -->
+        <div class="section-title">
+            <span>১. গ্রাহকদের বকেয়া তালিকা (আমি যাদের কাছে টাকা পাবো)</span>
+            <span style="font-size:13px; color:#64748b; font-weight:600;">মোট: ${toBn(data.receivableList.length)} জন</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:8%; text-align:center;">ক্রমিক</th>
+                    <th style="width:34%;">কাস্টমারের নাম</th>
+                    <th style="width:20%; text-align:center;">মোবাইল নম্বর</th>
+                    <th style="width:21%;">ঠিকানা</th>
+                    <th style="width:17%; text-align:right;">বকেয়া টাকা (৳)</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${recRows}
+                <tr class="total-row">
+                    <td colspan="4" style="text-align:right; font-weight:800;">সর্বমোট বকেয়া পাওনা:</td>
+                    <td style="text-align:right; font-weight:800; color:#dc2626;">৳ ${toBnMoney(data.totalReceivable)}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ৪. অগ্রিম দেনা তালিকা (Payables) -->
+        <div class="section-title">
+            <span>২. গ্রাহকদের জমা / অগ্রিম তালিকা (আমার কাছে যারা টাকা পাবে)</span>
+            <span style="font-size:13px; color:#64748b; font-weight:600;">মোট: ${toBn(data.payableList.length)} জন</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:8%; text-align:center;">ক্রমিক</th>
+                    <th style="width:34%;">কাস্টমারের নাম</th>
+                    <th style="width:20%; text-align:center;">মোবাইল নম্বর</th>
+                    <th style="width:21%;">ঠিকানা</th>
+                    <th style="width:17%; text-align:right;">জমা / দেনা (৳)</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${payRows}
+                <tr class="total-row">
+                    <td colspan="4" style="text-align:right; font-weight:800;">সর্বমোট জমা / দেনা:</td>
+                    <td style="text-align:right; font-weight:800; color:#16a34a;">৳ ${toBnMoney(data.totalPayable)}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ৫. স্বাক্ষর এরিয়া -->
+        <div class="sig-container">
+            <div class="sig-box">
+                <div class="sig-line"></div>
+                <div class="sig-text">হিসাবরক্ষক (Accountant)</div>
             </div>
-            <div>
-                <div class="sig-container">
-                    <div class="sig-box"><div class="sig-line"></div>Authorized Signature</div>
-                </div>
-                <div class="page-num">পাতা নং: ০৩ / ০৩</div>
+            <div class="sig-box">
+                <div class="sig-line"></div>
+                <div class="sig-text">অনুমোদনকারী (Authorized Signature)</div>
             </div>
         </div>
 
     </div>
 
-    <!-- সরাসরি PDF ও Excel ডাউনলোড স্ক্রিপ্ট -->
+    <!-- PDF ও Excel স্ক্রিপ্ট -->
     <script>
         function downloadDirectPDF() {
             const btn = document.getElementById('btnDownloadPDF');
-            if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Downloading...';
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> প্রসেসিং হচ্ছে...';
             
             const element = document.getElementById('report-render-wrapper');
             const opt = {
-                margin: 0,
+                margin: [8, 8, 10, 8],
                 filename: 'Customer_Due_and_Advance_Ledger.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
 
             html2pdf().set(opt).from(element).save().then(() => {
-                if (btn) btn.innerHTML = '<i class="fa-solid fa-download"></i> Download PDF';
+                if (btn) btn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Download PDF';
             });
         }
 
@@ -455,21 +472,20 @@
             const s1 = [["MOUSUMI COMPUTER - বকেয়া তালিকা"], ["তারিখ:", "${data.dateInfo.full}"], [], ["ক্রমিক", "কাস্টমারের নাম", "মোবাইল নম্বর", "ঠিকানা", "বকেয়া টাকা (৳)"]];
             ${JSON.stringify(data.receivableList)}.forEach((r, i) => s1.push([i + 1, r.name, r.phone, r.address, r.amount]));
             s1.push(["", "", "", "সর্বমোট বকেয়া:", ${data.totalReceivable}]);
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s1), "আমি পাবো (Receivable)");
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s1), "বকেয়া পাওনা (Receivable)");
 
             const s2 = [["MOUSUMI COMPUTER - জমা/দেনা তালিকা"], ["তারিখ:", "${data.dateInfo.full}"], [], ["ক্রমিক", "কাস্টমারের নাম", "মোবাইল নম্বর", "ঠিকানা", "জমা টাকা (৳)"]];
             ${JSON.stringify(data.payableList)}.forEach((p, i) => s2.push([i + 1, p.name, p.phone, p.address, p.amount]));
             s2.push(["", "", "", "সর্বমোট জমা:", ${data.totalPayable}]);
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s2), "আমার কাছে পাবে (Payable)");
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s2), "অগ্রিম দেনা (Payable)");
 
             const s3 = [["MOUSUMI COMPUTER - সমন্বয় বিবরণী"], ["তারিখ:", "${data.dateInfo.full}"], [], ["বিবরণ", "টাকা (৳)"], ["মোট বকেয়া পাওনা", ${data.totalReceivable}], ["মোট জমা / দেনা", ${data.totalPayable}], ["প্রকৃত নিট অবস্থান", ${data.netBalance}]];
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s3), "সমন্বয় বিবরণী (Summary)");
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s3), "সারসংক্ষেপ (Summary)");
 
             XLSX.writeFile(wb, "Customer_Due_and_Advance_Ledger.xlsx");
         }
 
-        // অটো ডাউনলোড ট্রিগার
-        ${autoDownload ? 'window.onload = function() { setTimeout(downloadDirectPDF, 500); };' : ''}
+        ${autoDownload ? 'window.onload = function() { setTimeout(downloadDirectPDF, 600); };' : ''}
     <\/script>
 </body>
 </html>
@@ -485,7 +501,7 @@
         reportWindow.document.close();
     };
 
-    // ৫. রিপোর্ট ডাউনলোড সেন্টারে ড্রপডাউন ও বাটন ইন্টিগ্রেশন
+    // ডাউনলোড সেন্টার ড্রপডাউন ও বাটন ইন্টিগ্রেশন
     function handleReportTypeChange() {
         const select = document.getElementById('hubReportType');
         if (!select) return;
@@ -507,8 +523,8 @@
                 previewCard.innerHTML = `
                     <div class="rpt-placeholder-state" style="padding: 40px 20px;">
                         <i class="fa-solid fa-file-invoice-dollar" style="font-size:2.8rem; color:#0284c7; margin-bottom:12px;"></i>
-                        <h4 style="font-size:1.1rem; color:#0f172a; margin-bottom:6px;">Customer Due & Advance Ledger (৩ পাতার খাতা)</h4>
-                        <p style="color:#64748b; margin-bottom:0;">এটি ৩ পাতার সমন্বিত খাতা। সরাসরি ডাউনলোড করতে <strong>Download PDF</strong> বাটনে ক্লিক করুন।</p>
+                        <h4 style="font-size:1.1rem; color:#0f172a; margin-bottom:6px;">Customer Due & Advance Ledger (দেনা-পাওনা সমন্বয় খাতা)</h4>
+                        <p style="color:#64748b; margin-bottom:0;">এটি পূর্ণাঙ্গ ও বড় ফন্টের সমন্বিত লেজার। সরাসরি রিপোর্ট দেখতে বা প্রিন্ট করতে <strong>Download PDF</strong> বাটনে ক্লিক করুন।</p>
                     </div>
                 `;
             }
@@ -527,7 +543,7 @@
         if (!select.querySelector('option[value="due_advance_ledger"]')) {
             const opt = document.createElement('option');
             opt.value = 'due_advance_ledger';
-            opt.innerText = 'Customer Due & Advance Ledger (দেনা-পাওনা সমন্বয় ৩ পাতার খাতা)';
+            opt.innerText = 'Customer Due & Advance Ledger (দেনা-পাওনা সমন্বয় খাতা)';
             select.appendChild(opt);
         }
 
@@ -541,7 +557,7 @@
         window.hubDownloadPDF = function () {
             const select = document.getElementById('hubReportType');
             if (select && select.value === 'due_advance_ledger') {
-                window.openDueAdvanceTab(true); // অটো PDF ডাউনলোড সহ নতুন ট্যাব খুলবে
+                window.openDueAdvanceTab(true);
                 return;
             }
             if (typeof origPDF === 'function') origPDF();
