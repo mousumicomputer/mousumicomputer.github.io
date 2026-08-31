@@ -3591,83 +3591,6 @@ safeCards.forEach(card => {
                 }
             });
         }
-window.renderCustomerListTable = function() {
-            const tbody = document.getElementById('customerTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            const filterVal = (document.getElementById('custSearchInput').value || '').toLowerCase();
-            const filtered = customers.filter(c => 
-                (c.name || '').toLowerCase().includes(filterVal) ||
-                (c.phone || '').toLowerCase().includes(filterVal) ||
-                (c.id || '').toLowerCase().includes(filterVal)
-            );
-
-// স্ট্যাটিসটিকস ক্যালকুলেশন
-let totalReceivable = 0;
-let totalPayable = 0;
-let dueCount = 0;
-let todayColl = 0;
-const todayStr = new Date().toISOString().split('T')[0];
-
-customers.forEach(c => {
-    const currentDue = calculateCustomerCurrentDue(c.id);
-
-    if (currentDue > 0) {
-        totalReceivable += currentDue;
-        dueCount++;
-    } else if (currentDue < 0) {
-        totalPayable += Math.abs(currentDue);
-    }
-});
-
-            // আজকে আদায়ের হিসাব
-            customerTransactions.filter(t => t.date === todayStr).forEach(t => {
-                todayColl += (parseFloat(t.credit) || 0);
-            });
-
-            // সামারি কার্ডে ডাটা বসানো
-            if(document.getElementById('statTotalCust')) document.getElementById('statTotalCust').innerText = customers.length;
-if(document.getElementById('statTotalDue'))
-    document.getElementById('statTotalDue').innerText =
-        '৳ ' + totalReceivable.toLocaleString('bn-BD', { minimumFractionDigits: 2 });
-            if(document.getElementById('statTodayCollection')) document.getElementById('statTodayCollection').innerText = '৳ ' + todayColl.toLocaleString('bn-BD', { minimumFractionDigits: 2 });
-            if(document.getElementById('statDueCustomers')) document.getElementById('statDueCustomers').innerText = dueCount;
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #9ca3af; padding: 20px;">কোনো গ্রাহক পাওয়া যায়নি।</td></tr>';
-                return;
-            }
-
-            filtered.forEach(c => {
-                const currentDue = calculateCustomerCurrentDue(c.id);
-                const firstLetter = (c.name || 'G').charAt(0).toUpperCase();
-                
-                // অ্যাভাটারের জন্য সুন্দর কালার সেট
-                const colors = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-                const randomColor = colors[Math.floor(Math.random() * colors.length)];
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>
-                        <div style="display: flex; align-items: center;">
-                            <div class="mc-avatar" style="background: ${randomColor}15; color: ${randomColor}; border: 1.5px solid ${randomColor}30;">${firstLetter}</div>
-                            <div style="font-family: 'Tiro Bangla', serif;">
-                                <div style="font-weight: 800; color: #1e293b;">${c.name}</div>
-                                <div style="font-size: 0.75rem; color: #94a3b8;">ID: ${c.id}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td style="color: #64748b; font-weight: 600;">${c.phone || '-'}</td>
-                    <td style="color: #64748b;">-</td> 
-                    <td style="font-weight: 800; color: ${currentDue > 0 ? '#e11d48' : '#1e293b'};">৳ ${currentDue.toLocaleString('bn-BD', { minimumFractionDigits: 2 })}</td>
-                    <td style="text-align: right;">
-                        <button class="mc-btn-details" onclick="openCustomerLedgerDirect('${c.id}')">বিস্তারিত <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem; margin-left: 5px;"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        };
         window.editCustomer = function(id) {
             const c = customers.find(item => item.id === id);
             if (!c) return;
@@ -3775,104 +3698,6 @@ if(document.getElementById('statTotalDue'))
             renderCustomerStatement(custId);
         };
 
-// ১. ইংরেজি সংখ্যাকে বাংলা সংখ্যায় রূপান্তর করার ফাংশন
-        const toBN = (num) => {
-            if(num === undefined || num === null) return '০';
-            const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-            return num.toString().replace(/\d/g, i => bnDigits[i]);
-        };
-
-        // ২. ডুয়াল ইনপুট হ্যান্ডলার (আইডি আপডেটসহ)
-        window.handleDualInput = function(type) {
-            const d = document.getElementById('modernTxDebit');
-            const c = document.getElementById('modernTxCredit');
-            if (!d || !c) return;
-
-            if (type === 'debit' && d.value.length > 0) {
-                c.value = ''; c.disabled = true;
-            } else if (type === 'credit' && c.value.length > 0) {
-                d.value = ''; d.disabled = true;
-            } else {
-                d.disabled = false; c.disabled = false;
-            }
-        };
-
-        // ৩. আধুনিক লেজার রেন্ডার ফাংশন (মোবাইল এবং বাংলা ডিজিট ফিক্সড)
-        window.renderCustomerStatement = function(custId) {
-            const area = document.getElementById('modern-statement-table-area');
-            if (!area) return;
-            const cust = customers.find(c => c.id === custId);
-            if (!cust) return;
-
-            let cleanPhone = cust.phone || '';
-            if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
-
-            document.getElementById('stmtName').innerText = cust.name;
-            document.getElementById('stmtPhone').innerText = '+৮৮০ ' + toBN(cleanPhone);
-            document.getElementById('stmtAvatar').innerText = cust.name.charAt(0).toUpperCase();
-            
-            const now = new Date();
-            const localToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-            if (document.getElementById('txDateInput')) document.getElementById('txDateInput').value = localToday;
-            
-            const currentDue = calculateCustomerCurrentDue(cust.id);
-            document.getElementById('stmtDueAmount').innerText = '৳ ' + toBN(currentDue.toLocaleString('en-US'));
-
-            let txs = customerTransactions.filter(t => t.customerId === custId);
-            txs.sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time)).reverse();
-
-            let html = `<table class="mc-table"><thead><tr><th>তারিখ</th><th>বিবরণ</th><th style="color:#ef4444;">দিলাম (+)</th><th style="color:#22c55e;">পেলাম (-)</th></tr></thead><tbody>`;
-            txs.forEach(t => {
-                html += `<tr>
-                    <td style="font-size: 0.85rem; color: #64748b; font-family: 'Tiro Bangla', serif;">${toBN(new Date(t.date).toLocaleDateString('bn-BD'))}</td>
-                    <td style="font-weight: 600; color: #1e293b;">${t.description || '-'}</td>
-                    <td style="font-weight: 800; color: #ef4444;">${t.debit > 0 ? '৳ ' + toBN(t.debit.toLocaleString()) : '-'}</td>
-                    <td style="font-weight: 800; color: #22c55e;">${t.credit > 0 ? '৳ ' + toBN(t.credit.toLocaleString()) : '-'}</td>
-                </tr>`;
-            });
-            html += `</tbody></table>`;
-            area.innerHTML = txs.length > 0 ? html : '<div style="text-align:center; padding: 30px; color: #94a3b8;">কোনো লেনদেন পাওয়া যায়নি।</div>';
-        };
-
-        // ৪. লেনদেন নিশ্চিত করার ফাংশন (এরর সলভড)
-        window.submitModernTransaction = async function() {
-            const dElement = document.getElementById('modernTxDebit');
-            const cElement = document.getElementById('modernTxCredit');
-            const descElement = document.getElementById('txCommonDesc');
-            const dateElement = document.getElementById('txDateInput');
-
-            const dValue = parseFloat(dElement.value) || 0;
-            const cValue = parseFloat(cElement.value) || 0;
-
-            if (dValue === 0 && cValue === 0) {
-                showToast("টাকার অংক লিখুন!", "error");
-                return;
-            }
-
-            showLoader("সংরক্ষণ করা হচ্ছে...");
-            const now = new Date();
-            const txObj = {
-                id: 'tx_' + Date.now(),
-                customerId: activeViewingCustomerId,
-                type: dValue > 0 ? 'Debit' : 'Credit',
-                debit: dValue,
-                credit: cValue,
-                date: dateElement.value || now.toISOString().split('T')[0],
-                time: now.toTimeString().split(' ')[0].substring(0,5),
-                description: descElement.value.trim() || (dValue > 0 ? 'পণ্য বিক্রয়/ধার' : 'টাকা গ্রহণ')
-            };
-
-            try {
-                customerTransactions.push(txObj);
-                await writeToFirebase('transactions', customerTransactions);
-                dElement.value = ''; cElement.value = ''; descElement.value = '';
-                dElement.disabled = false; cElement.disabled = false;
-                renderCustomerStatement(activeViewingCustomerId);
-                renderCustomerListTable(); 
-                hideLoader();
-                showToast("লেনদেন সংরক্ষিত হয়েছে!", "success");
-            } catch(err) { hideLoader(); showToast("Error!", "error"); }
-        };
 
         window.filterCustomerStatement = function() {
             if (activeViewingCustomerId) renderCustomerStatement(activeViewingCustomerId);
@@ -4669,51 +4494,7 @@ window.deleteDCRReport = function(reportId) {
                 handleTxTypeChange();
             }
         };
-
-        // ২. নতুন গ্রাহক ফরম খোলার ফাংশন
-        window.openAddCustomerModal = function() {
-            switchCustomerSubSection('cust-add-section');
-            document.getElementById('newCustomerModernForm').reset();
-            document.getElementById('mCustJoinDate').value = new Date().toISOString().split('T')[0];
-        };
-
-        // ৩. আধুনিক ফরম থেকে ডাটা সেভ করার লজিক
-        const modernCustForm = document.getElementById('newCustomerModernForm');
-        if (modernCustForm) {
-            modernCustForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                showLoader("গ্রাহক তথ্য সংরক্ষণ করা হচ্ছে...");
-
-                const newCust = {
-                    id: 'cust_' + Date.now(),
-                    name: document.getElementById('mCustName').value.trim(),
-                    phone: document.getElementById('mCustPhone').value.trim(),
-                    phoneAlt: document.getElementById('mCustPhoneAlt').value.trim(),
-                    fatherName: document.getElementById('mCustFather').value.trim(),
-                    address: document.getElementById('mCustAddress').value.trim(),
-                    area: document.getElementById('mCustArea').value.trim(),
-                    joinDate: document.getElementById('mCustJoinDate').value,
-                    type: document.getElementById('mCustType').value,
-                    creditLimit: parseFloat(document.getElementById('mCustLimit').value) || 0,
-                    openingBalance: parseFloat(document.getElementById('mCustOpening').value) || 0,
-                    note: document.getElementById('mCustNote').value.trim(),
-                    status: 'Active'
-                };
-
-                try {
-                    customers.push(newCust);
-                    await writeToFirebase('customers', customers);
-                    
-                    showToast("নতুন গ্রাহক সফলভাবে যুক্ত হয়েছে!", "success");
-                    switchCustomerSubSection('cust-list-section');
-                    hideLoader();
-                } catch (err) {
-                    hideLoader();
-                    showToast("তথ্য সংরক্ষণে সমস্যা হয়েছে!", "error");
-                }
-            });
-        }
-        
+                
 // ==========================================
 // মাস্টার ন্যাভিগেশন এবং প্রোফাইল কন্ট্রোল ইঞ্জিন
 // ==========================================
@@ -4902,8 +4683,5 @@ window.switchMainTab = (tab) => {
 <script src="daily_income_expense_ledger_module.js"></script>
 <script src="daily_capital_growth_ledger_module.js"></script>
 <script src="daily_audit_discrepancy_module.js"></script>
-<script src="reports_module.js"></script>
-<script src="report_download_module.js"></script>
-<script src="daily_income_report_module.js"></script>
 <script src="customer_management_module.js"></script>
 </html>
