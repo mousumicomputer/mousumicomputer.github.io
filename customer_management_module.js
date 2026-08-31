@@ -1,15 +1,28 @@
 /* ==========================================================
    ENTERPRISE CUSTOMER MANAGEMENT & HORIZONTAL CARDS
-   Color Palette: Modern Royal Blue / Indigo SaaS Theme
+   Font: 100% Guaranteed Tiro Bangla Everywhere
    File: customer_management_module.js
    ========================================================== */
 
 const injectCorporateStyles = () => {
-    if (document.getElementById('erp-corporate-css')) return;
+    if (document.getElementById('erp-tiro-bangla-font')) return;
     
+    // গুগল ফন্ট সরাসরি প্রি-কানেক্টসহ লোড
+    const linkPre1 = document.createElement('link');
+    linkPre1.rel = 'preconnect';
+    linkPre1.href = 'https://fonts.googleapis.com';
+    document.head.appendChild(linkPre1);
+
+    const linkPre2 = document.createElement('link');
+    linkPre2.rel = 'preconnect';
+    linkPre2.href = 'https://fonts.gstatic.com';
+    linkPre2.crossOrigin = 'anonymous';
+    document.head.appendChild(linkPre2);
+
     const fontLink = document.createElement('link');
+    fontLink.id = 'erp-tiro-bangla-font';
     fontLink.rel = 'stylesheet';
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Inter:wght@400;500;600;700;800&display=swap';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap';
     document.head.appendChild(fontLink);
 
     const style = document.createElement('style');
@@ -26,11 +39,19 @@ const injectCorporateStyles = () => {
             --text-muted: #64748b;
         }
 
-        #customer-ledger-view {
-            font-family: 'Tiro Bangla', 'Inter', -apple-system, sans-serif !important;
-            color: var(--text-dark);
+        /* সর্বত্র Tiro Bangla ফন্ট ১০০% জোরপূর্বক প্রয়োগ */
+        #customer-ledger-view,
+        #customer-ledger-view *,
+        .corp-search-input,
+        .btn-strip-ledger,
+        .corp-btn,
+        .strip-cust-name,
+        .strip-due-val,
+        table, th, td, tr, input, button, label, span, h2, h3, h4 {
+            font-family: 'Tiro Bangla', serif !important;
         }
 
+        /* শুধুমাত্র FontAwesome আইকনগুলো যাতে অক্ষত থাকে */
         #customer-ledger-view .fa-solid, 
         #customer-ledger-view .fas, 
         #customer-ledger-view .fa {
@@ -64,7 +85,7 @@ const injectCorporateStyles = () => {
             margin-bottom: 6px;
         }
         .corp-kpi-title {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -78,10 +99,9 @@ const injectCorporateStyles = () => {
             font-size: 1.6rem;
             font-weight: 800;
             color: var(--text-dark);
-            font-family: 'Inter', 'Tiro Bangla', sans-serif !important;
         }
         .corp-kpi-subtitle {
-            font-size: 0.78rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
             margin-top: 2px;
         }
@@ -134,7 +154,7 @@ const injectCorporateStyles = () => {
             height: 44px;
             padding: 0 20px;
             border-radius: 10px;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
@@ -209,13 +229,13 @@ const injectCorporateStyles = () => {
             gap: 2px;
         }
         .strip-cust-name {
-            font-size: 1.15rem;
+            font-size: 1.2rem;
             font-weight: 700;
             color: var(--text-dark);
             line-height: 1.2;
         }
         .strip-cust-sub {
-            font-size: 0.88rem;
+            font-size: 0.9rem;
             color: var(--text-muted);
             font-weight: 500;
             display: flex;
@@ -240,7 +260,7 @@ const injectCorporateStyles = () => {
             text-align: right;
         }
         .strip-due-label {
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
             color: #94a3b8;
@@ -248,10 +268,9 @@ const injectCorporateStyles = () => {
             margin-bottom: 2px;
         }
         .strip-due-val {
-            font-size: 1.35rem;
+            font-size: 1.4rem;
             font-weight: 800;
             letter-spacing: -0.3px;
-            font-family: 'Inter', 'Tiro Bangla', sans-serif !important;
         }
         .btn-strip-ledger {
             background: var(--brand-light);
@@ -259,7 +278,7 @@ const injectCorporateStyles = () => {
             border: 1px solid #c7d2fe;
             padding: 9px 18px;
             border-radius: 8px;
-            font-size: 0.88rem;
+            font-size: 0.92rem;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
@@ -504,36 +523,36 @@ window.renderCustomerStatement = function(custId) {
                     </button>
                     <img src="${avatarSrc}" style="width: 50px; height: 50px; border-radius: 50%; border: 1.5px solid #e2e8f0;">
                     <div>
-                        <h2 style="font-size: 1.35rem; font-weight: 700; color: #1e293b; margin: 0;">${cust.name}</h2>
-                        <span style="font-size: 0.88rem; color: #64748b;">মোবাইল: ${cust.phone || '-'} | ঠিকানা: ${cust.address || '-'}</span>
+                        <h2 style="font-size: 1.4rem; font-weight: 700; color: #1e293b; margin: 0;">${cust.name}</h2>
+                        <span style="font-size: 0.92rem; color: #64748b;">মোবাইল: ${cust.phone || '-'} | ঠিকানা: ${cust.address || '-'}</span>
                     </div>
                 </div>
 
                 <div style="text-align: right;">
-                    <span style="font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">Total Due Balance</span>
-                    <strong style="font-size: 1.7rem; color: ${currentDue > 0 ? '#e11d48' : '#10b981'}; font-weight: 800; font-family: 'Inter', sans-serif;">${fmt(currentDue)}</strong>
+                    <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">Total Due Balance</span>
+                    <strong style="font-size: 1.7rem; color: ${currentDue > 0 ? '#e11d48' : '#10b981'}; font-weight: 800;">${fmt(currentDue)}</strong>
                 </div>
             </div>
         </div>
 
         <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 22px; margin-bottom: 20px;">
-            <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px;">Post New Transaction</h4>
+            <h4 style="font-size: 1rem; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px;">Post New Transaction</h4>
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px;">
                 <div>
-                    <label style="font-size: 0.85rem; font-weight: 600; color: #e11d48; display: block; margin-bottom: 6px;">Debit (+) [বিক্রয় / বাকি]</label>
+                    <label style="font-size: 0.9rem; font-weight: 600; color: #e11d48; display: block; margin-bottom: 6px;">Debit (+) [বিক্রয় / বাকি]</label>
                     <input type="number" id="modernTxDebit" class="corp-search-input" placeholder="0.00" oninput="handleDualInput('debit')">
                 </div>
                 <div>
-                    <label style="font-size: 0.85rem; font-weight: 600; color: #10b981; display: block; margin-bottom: 6px;">Credit (-) [টাকা গ্রহণ / জমা]</label>
+                    <label style="font-size: 0.9rem; font-weight: 600; color: #10b981; display: block; margin-bottom: 6px;">Credit (-) [টাকা গ্রহণ / জমা]</label>
                     <input type="number" id="modernTxCredit" class="corp-search-input" placeholder="0.00" oninput="handleDualInput('credit')">
                 </div>
                 <div>
-                    <label style="font-size: 0.85rem; font-weight: 600; color: #64748b; display: block; margin-bottom: 6px;">তারিখ</label>
+                    <label style="font-size: 0.9rem; font-weight: 600; color: #64748b; display: block; margin-bottom: 6px;">তারিখ</label>
                     <input type="date" id="txDateInput" class="corp-search-input" value="${now}">
                 </div>
                 <div style="grid-column: span 2;">
-                    <label style="font-size: 0.85rem; font-weight: 600; color: #64748b; display: block; margin-bottom: 6px;">বিবরণ / নোট</label>
+                    <label style="font-size: 0.9rem; font-weight: 600; color: #64748b; display: block; margin-bottom: 6px;">বিবরণ / নোট</label>
                     <input type="text" id="txCommonDesc" class="corp-search-input" placeholder="পণ্য বা বিলের বিবরণ লিখুন...">
                 </div>
             </div>
@@ -547,8 +566,8 @@ window.renderCustomerStatement = function(custId) {
 
         <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
             <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                <strong style="font-size: 1rem; color: #1e293b;">Ledger History</strong>
-                <button class="corp-btn corp-btn-default" onclick="exportCustomerStatementExcel()" style="height: 36px; font-size: 0.85rem;">
+                <strong style="font-size: 1.05rem; color: #1e293b;">Ledger History</strong>
+                <button class="corp-btn corp-btn-default" onclick="exportCustomerStatementExcel()" style="height: 36px; font-size: 0.88rem;">
                     <i class="fa-solid fa-download"></i> Export Excel
                 </button>
             </div>
@@ -556,24 +575,24 @@ window.renderCustomerStatement = function(custId) {
             <table style="width: 100%; border-collapse: collapse; text-align: left;">
                 <thead>
                     <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                        <th style="padding: 14px 18px; font-size: 0.8rem; color: #64748b; font-weight: 700;">DATE</th>
-                        <th style="padding: 14px 18px; font-size: 0.8rem; color: #64748b; font-weight: 700;">PARTICULARS</th>
-                        <th style="padding: 14px 18px; font-size: 0.8rem; color: #e11d48; font-weight: 700;">DEBIT (+)</th>
-                        <th style="padding: 14px 18px; font-size: 0.8rem; color: #10b981; font-weight: 700;">CREDIT (-)</th>
-                        <th style="padding: 14px 18px; font-size: 0.8rem; text-align: center; width: 60px;">ACTION</th>
+                        <th style="padding: 14px 18px; font-size: 0.85rem; color: #64748b; font-weight: 700;">DATE</th>
+                        <th style="padding: 14px 18px; font-size: 0.85rem; color: #64748b; font-weight: 700;">PARTICULARS</th>
+                        <th style="padding: 14px 18px; font-size: 0.85rem; color: #e11d48; font-weight: 700;">DEBIT (+)</th>
+                        <th style="padding: 14px 18px; font-size: 0.85rem; color: #10b981; font-weight: 700;">CREDIT (-)</th>
+                        <th style="padding: 14px 18px; font-size: 0.85rem; text-align: center; width: 60px;">ACTION</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${txs.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 30px;">কোনো লেনদেন রেকর্ড পাওয়া যায়নি।</td></tr>` : ''}
                     ${txs.map(t => `
                         <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 14px 18px; color: #64748b; font-size: 0.9rem;">${t.date} ${t.time || ''}</td>
-                            <td style="padding: 14px 18px; font-weight: 600; color: #1e293b; font-size: 0.95rem;">${t.description || '-'}</td>
-                            <td style="padding: 14px 18px; font-weight: 700; color: #e11d48; font-size: 0.95rem;">${t.debit > 0 ? fmt(t.debit) : '-'}</td>
-                            <td style="padding: 14px 18px; font-weight: 700; color: #10b981; font-size: 0.95rem;">${t.credit > 0 ? fmt(t.credit) : '-'}</td>
+                            <td style="padding: 14px 18px; color: #475569; font-size: 0.95rem;">${t.date} ${t.time || ''}</td>
+                            <td style="padding: 14px 18px; font-weight: 600; color: #1e293b; font-size: 1rem;">${t.description || '-'}</td>
+                            <td style="padding: 14px 18px; font-weight: 700; color: #e11d48; font-size: 1rem;">${t.debit > 0 ? fmt(t.debit) : '-'}</td>
+                            <td style="padding: 14px 18px; font-weight: 700; color: #10b981; font-size: 1rem;">${t.credit > 0 ? fmt(t.credit) : '-'}</td>
                             <td style="padding: 14px 18px; text-align: center;">
                                 <button class="btn-action-delete" onclick="deleteCustomerTransaction('${t.id}', '${custId}')" title="Delete">
-                                    <i class="fa-solid fa-trash-can" style="font-size: 0.8rem;"></i>
+                                    <i class="fa-solid fa-trash-can" style="font-size: 0.85rem;"></i>
                                 </button>
                             </td>
                         </tr>
