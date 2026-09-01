@@ -1,9 +1,12 @@
 /* ==========================================================
-   ENTERPRISE CUSTOMER MANAGEMENT & TRUE CLOUD VECTOR PDF ENGINE
-   Engine: Cloud Chromium / Puppeteer HTML-to-PDF Vector API
-   Features: 100% Selectable Text, Crystal-Clear Zoom, Direct Download
+   ENTERPRISE CUSTOMER MANAGEMENT & FIREBASE CLOUD PDF ENGINE
+   Engine: Dedicated Firebase Cloud Function + Headless Chromium
+   Features: 100% Vector Text PDF, Fast & Reliable
    File: customer_management_module.js
    ========================================================== */
+
+// আপনার ফায়ারবেস ক্লাউড ফাংশনের URL (ডিপ্লয় করার পর এখানে বসিয়ে দিন)
+const FIREBASE_PDF_FUNCTION_URL = "https://us-central1-mousumi-computer.cloudfunctions.net/generateStatementPDF";
 
 const injectCorporateStyles = () => {
     if (document.getElementById('erp-tiro-bangla-font')) return;
@@ -538,7 +541,7 @@ window.renderCustomerStatement = function(custId) {
         </div>
 
         <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-            <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: gap: 10px;">
                 <strong style="font-size: 1.05rem; color: #1e293b;">Ledger History</strong>
                 <div style="display: flex; gap: 8px;">
                     <button class="corp-btn corp-btn-default" onclick="exportCustomerStatementExcel()" style="height: 36px; font-size: 0.88rem;">
@@ -582,7 +585,7 @@ window.renderCustomerStatement = function(custId) {
 };
 
 // ==========================================================
-// NEW TAB: TRUE VECTOR PDF DOWNLOAD ENGINE (NO RASTER/IMAGE)
+// NEW TAB: FIREBASE CLOUD FUNCTION VECTOR PDF GENERATOR
 // ==========================================================
 window.openCustomerStatementNewTab = function(custId) {
     const customers = window.customers || [];
@@ -777,8 +780,8 @@ window.openCustomerStatementNewTab = function(custId) {
 
     <div class="action-bar">
         <span style="font-weight: bold; color: #475569;">গ্রাহক হিসাব বিবরণী</span>
-        <!-- ক্লিক করলেই ক্লাউড ভেক্টর PDF সরাসরি ডাউনলোড হবে -->
-        <button class="btn-download-icon" id="downloadPdfBtn" onclick="downloadTrueVectorPDF()">
+        <!-- ক্লিক করলেই ফায়ারবেস ক্লাউড ফাংশন থেকে ভেক্টর PDF ডাউনলোড হবে -->
+        <button class="btn-download-icon" id="downloadPdfBtn" onclick="downloadViaFirebaseCloudFunction()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             ডাউনলোড পিডিএফ
         </button>
@@ -842,9 +845,9 @@ window.openCustomerStatementNewTab = function(custId) {
         </div>
     </div>
 
-    <!-- ক্লাউড ক্রোমিয়াম ভেক্টর রেন্ডারিং স্ক্রিপ্ট -->
+    <!-- ফায়ারবেস ব্যাকএন্ড থেকে ডাইরেক্ট ভেক্টর PDF ডাউনলোড স্ক্রিপ্ট -->
     <script>
-        async function downloadTrueVectorPDF() {
+        async function downloadViaFirebaseCloudFunction() {
             const btn = document.getElementById('downloadPdfBtn');
             btn.innerHTML = "ভেক্টর পিডিএফ তৈরি হচ্ছে...";
             btn.disabled = true;
@@ -852,21 +855,16 @@ window.openCustomerStatementNewTab = function(custId) {
             const htmlContent = document.documentElement.outerHTML;
 
             try {
-                // ক্লাউড হেডলেস ক্রোমিয়াম ইঞ্জিন API কল
-                const response = await fetch("https://api.html2pdf.app/v1/generate", {
+                const response = await fetch("${FIREBASE_PDF_FUNCTION_URL}", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        html: htmlContent,
-                        format: "A4",
-                        printBackground: true,
-                        margin: { top: "10mm", right: "10mm", bottom: "10mm", left: "10mm" }
+                        htmlContent: htmlContent,
+                        customerName: "${cust.name}"
                     })
                 });
 
-                if (!response.ok) throw new Error("API Engine Busy");
+                if (!response.ok) throw new Error("Cloud Function Error");
 
                 const blob = await response.blob();
                 const downloadUrl = window.URL.createObjectURL(blob);
@@ -879,8 +877,8 @@ window.openCustomerStatementNewTab = function(custId) {
                 window.URL.revokeObjectURL(downloadUrl);
 
             } catch (err) {
-                console.warn("Direct vector download fallback:", err);
-                // যদি API কোনো কারণে রেসপন্স না দেয় তবে ব্যাকআপ অটোমেটেড ভেক্টর ডাউনলোড
+                console.error("Cloud PDF Download Failed:", err);
+                // ফায়ারবেস ক্লাউড ফাংশন এখনও ডিপ্লয় না থাকলে ফলব্যাক প্রিন্ট অপশন
                 window.print();
             } finally {
                 btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> ডাউনলোড পিডিএফ';
