@@ -1,6 +1,6 @@
 /* ==========================================================
-   ENTERPRISE CUSTOMER MANAGEMENT & VECTOR TEXT PDF ENGINE
-   Standalone Tab Vector PDF with Clean Bengali Typography
+   ENTERPRISE CUSTOMER MANAGEMENT & DIRECT VECTOR PDF ENGINE
+   Engine: pdfmake Pure Direct Vector Generator (No Print Dialog)
    File: customer_management_module.js
    ========================================================== */
 
@@ -12,6 +12,17 @@ const injectCorporateStyles = () => {
     fontLink.rel = 'stylesheet';
     fontLink.href = 'https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Inter:wght@400;500;600;700;800&display=swap';
     document.head.appendChild(fontLink);
+
+    // pdfmake লাইব্রেরি ডায়নামিক ইনজেকশন
+    if (!window.pdfMake) {
+        const s1 = document.createElement('script');
+        s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js';
+        document.head.appendChild(s1);
+
+        const s2 = document.createElement('script');
+        s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js';
+        document.head.appendChild(s2);
+    }
 
     const style = document.createElement('style');
     style.id = 'erp-corporate-css';
@@ -543,8 +554,9 @@ window.renderCustomerStatement = function(custId) {
                     <button class="corp-btn corp-btn-default" onclick="exportCustomerStatementExcel()" style="height: 36px; font-size: 0.88rem;">
                         <i class="fa-solid fa-file-excel" style="color: #10b981;"></i> Export Excel
                     </button>
-                    <button class="corp-btn corp-btn-default" onclick="openCustomerStatementNewTab('${cust.id}')" style="height: 36px; font-size: 0.88rem; background: #eef2ff; color: #4f46e5; border-color: #c7d2fe;">
-                        <i class="fa-solid fa-file-pdf"></i> Download PDF
+                    <!-- ১ ক্লিকে কোনো প্রিন্ট ডায়ালগ ছাড়া সরাসরি ডাইরেক্ট PDF ডাউনলোড বাটন -->
+                    <button class="corp-btn corp-btn-default" id="btnInstantDownloadPDF" onclick="downloadPureVectorPDF('${cust.id}')" style="height: 36px; font-size: 0.88rem; background: #eef2ff; color: #4f46e5; border-color: #c7d2fe;">
+                        <i class="fa-solid fa-download"></i> Download PDF
                     </button>
                 </div>
             </div>
@@ -581,12 +593,18 @@ window.renderCustomerStatement = function(custId) {
 };
 
 // ==========================================================
-// OPEN STANDALONE REPORT WITH PURE VECTOR PDF DOWNLOAD
+// 100% DIRECT VECTOR PDF DOWNLOAD ENGINE (NO PRINT DIALOG)
 // ==========================================================
-window.openCustomerStatementNewTab = function(custId) {
+window.downloadPureVectorPDF = function(custId) {
     const customers = window.customers || [];
     const cust = customers.find(c => c.id === custId);
     if (!cust) return;
+
+    const btn = document.getElementById('btnInstantDownloadPDF');
+    if (btn) {
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Downloading...`;
+        btn.disabled = true;
+    }
 
     const allTxs = window.customerTransactions || [];
     let txs = allTxs.filter(t => t.customerId === custId);
@@ -598,18 +616,24 @@ window.openCustomerStatementNewTab = function(custId) {
     let totalCredit = 0;
     let runningBalance = parseFloat(cust.openingBalance) || 0;
 
-    let rowsHtml = '';
-    
+    const tableBody = [
+        [
+            { text: 'তারিখ', style: 'tableHeader', alignment: 'center' },
+            { text: 'বিবরণ', style: 'tableHeader' },
+            { text: 'দিলাম (+)', style: 'tableHeader', alignment: 'right' },
+            { text: 'পেলাম (-)', style: 'tableHeader', alignment: 'right' },
+            { text: 'ব্যালেন্স', style: 'tableHeader', alignment: 'right' }
+        ]
+    ];
+
     if (runningBalance !== 0) {
-        rowsHtml += `
-            <tr>
-                <td style="text-align: center; border: 1px solid #000; padding: 6px 8px; font-size: 13px;">-</td>
-                <td style="border: 1px solid #000; padding: 6px 8px; font-size: 13px; font-weight: bold;">প্রারম্ভিক ব্যালেন্স (Opening Balance)</td>
-                <td style="text-align: right; border: 1px solid #000; padding: 6px 8px; font-size: 13px;">-</td>
-                <td style="text-align: right; border: 1px solid #000; padding: 6px 8px; font-size: 13px;">-</td>
-                <td style="text-align: right; border: 1px solid #000; padding: 6px 8px; font-size: 13px; font-weight: bold;">${fmt(runningBalance)}</td>
-            </tr>
-        `;
+        tableBody.push([
+            { text: '-', alignment: 'center' },
+            { text: 'প্রারম্ভিক ব্যালেন্স (Opening Balance)', bold: true },
+            { text: '-', alignment: 'right' },
+            { text: '-', alignment: 'right' },
+            { text: fmt(runningBalance), alignment: 'right', bold: true }
+        ]);
     }
 
     txs.forEach((t) => {
@@ -619,245 +643,114 @@ window.openCustomerStatementNewTab = function(custId) {
         totalCredit += c;
         runningBalance += (d - c);
 
-        rowsHtml += `
-            <tr>
-                <td style="text-align: center; border: 1px solid #000; padding: 6px 8px; font-size: 13px;">${t.date} ${t.time || ''}</td>
-                <td style="border: 1px solid #000; padding: 6px 8px; font-size: 13px;">${t.description || 'পণ্য বিক্রয়/ধার'}</td>
-                <td style="text-align: right; border: 1px solid #000; padding: 6px 8px; font-size: 13px;">${d > 0 ? fmt(d) : ''}</td>
-                <td style="text-align: right; border: 1px solid #000; padding: 6px 8px; font-size: 13px;">${c > 0 ? fmt(c) : ''}</td>
-                <td style="text-align: right; border: 1px solid #000; padding: 6px 8px; font-size: 13px; font-weight: bold;">${fmt(runningBalance)}</td>
-            </tr>
-        `;
+        tableBody.push([
+            { text: `${t.date} ${t.time || ''}`, alignment: 'center', fontSize: 9 },
+            { text: t.description || 'পণ্য বিক্রয়/ধার', fontSize: 10 },
+            { text: d > 0 ? fmt(d) : '-', alignment: 'right', color: '#dc2626', fontSize: 10 },
+            { text: c > 0 ? fmt(c) : '-', alignment: 'right', color: '#16a34a', fontSize: 10 },
+            { text: fmt(runningBalance), alignment: 'right', bold: true, fontSize: 10 }
+        ]);
     });
 
-    const reportFullHtml = `
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <title>Statement_${cust.name.replace(/\\s+/g, '_')}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla&display=swap" rel="stylesheet">
+    // ডাইরেক্ট ভেক্টর PDF ডকুমেন্ট স্ট্রাকচার
+    const docDefinition = {
+        pageSize: 'A4',
+        pageMargins: [30, 30, 30, 30],
+        content: [
+            { text: 'মৌসুমি কম্পিউটার', fontSize: 20, bold: true, alignment: 'center', color: '#0f172a' },
+            { text: 'কম্পিউটার সেলস, সার্ভিসিং ও ডিজিটাল পয়েন্ট', fontSize: 11, alignment: 'center', color: '#475569', margin: [0, 2, 0, 2] },
+            { text: `স্টেটমেন্ট প্রিন্ট তারিখ: ${new Date().toLocaleString()}`, fontSize: 9, alignment: 'center', color: '#64748b', margin: [0, 0, 0, 10] },
+            { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 535, y2: 0, lineWidth: 1.5, lineColor: '#0f172a' }] },
+            { text: 'গ্রাহক হিসাব বিবরণী (ACCOUNT STATEMENT)', fontSize: 11, bold: true, alignment: 'center', margin: [0, 8, 0, 15] },
+            
+            // গ্রাহকের তথ্য বক্স
+            {
+                table: {
+                    widths: ['*'],
+                    body: [[
+                        {
+                            fillColor: '#f8fafc',
+                            margin: [8, 6, 8, 6],
+                            stack: [
+                                { text: `গ্রাহকের নাম: ${cust.name}`, bold: true, fontSize: 12 },
+                                { text: `কাস্টমার আইডি: ${cust.id} | মোবাইল: ${cust.phone || '-'} | ঠিকানা: ${cust.address || '-'}`, fontSize: 10, color: '#334155', margin: [0, 2, 0, 0] }
+                            ]
+                        }
+                    ]]
+                },
+                layout: 'lightHorizontalLines',
+                margin: [0, 0, 0, 12]
+            },
 
-    <style>
-        * { box-sizing: border-box; }
-        @page { size: A4 portrait; margin: 10mm; }
-        body {
-            font-family: 'Tiro Bangla', serif;
-            color: #111;
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 20px;
-            font-size: 14px;
-        }
-        .action-bar {
-            max-width: 800px;
-            margin: 0 auto 20px auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .btn-download-icon {
-            background-color: #0d6efd;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-family: 'Tiro Bangla', serif;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.2s;
-        }
-        .btn-download-icon:hover { background-color: #0b5ed7; }
-        .statement-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 30px;
-            border: 1px solid #ddd;
-            box-shadow: 0 0 10px rgba(0,0,0,0.05);
-        }
-        .top-heading {
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            border-bottom: 1.5px solid #222;
-            padding-bottom: 5px;
-        }
-        .customer-outbox {
-            border: 1px solid #000;
-            border-radius: 6px;
-            padding: 12px 16px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #fafafa;
-        }
-        .customer-details {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .avatar-box {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: #e2e8f0;
-            border: 1px solid #cbd5e1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .avatar-box svg {
-            width: 36px;
-            height: 36px;
-            fill: #64748b;
-        }
-        .info-text p { margin: 2px 0; font-size: 13.5px; }
-        .print-meta { text-align: right; font-size: 12.5px; color: #333; }
-        .summary-box {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        .summary-box td {
-            border: 1px solid #000;
-            padding: 7px 10px;
-            text-align: center;
-            background-color: #fff;
-        }
-        .statement-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-        }
-        .statement-table th, .statement-table td {
-            border: 1px solid #000;
-            padding: 6px 8px;
-            font-size: 13px;
-        }
-        .statement-table th {
-            background-color: #f2f2f2;
-            text-align: center;
-        }
-        .signature-section {
-            width: 100%;
-            margin-top: 50px;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .signature-box {
-            width: 220px;
-            text-align: center;
-            border-top: 1px solid #000;
-            padding-top: 5px;
-        }
-        .footer-branding {
-            border-top: 1px dashed #777;
-            padding-top: 8px;
-            text-align: center;
-            font-size: 12px;
-            color: #444;
-            margin-top: 20px;
-        }
-        .footer-branding strong { font-size: 13px; color: #000; }
-        @media print {
-            .action-bar { display: none !important; }
-            body { background: #fff; padding: 0; }
-            .statement-container { border: none; box-shadow: none; padding: 0; width: 100%; max-width: 100%; }
-        }
-    </style>
-</head>
-<body>
+            // সামারি হাইলাইটস
+            {
+                table: {
+                    widths: ['*', '*', '*'],
+                    body: [[
+                        { text: `মোট বাকি (+):\n${fmt(totalDebit)}`, alignment: 'center', fontSize: 10, bold: true, color: '#dc2626', margin: [0, 4, 0, 4] },
+                        { text: `মোট জমা (-):\n${fmt(totalCredit)}`, alignment: 'center', fontSize: 10, bold: true, color: '#16a34a', margin: [0, 4, 0, 4] },
+                        { text: `বর্তমান নিট পাওনা (DUE):\n${fmt(runningBalance)}`, alignment: 'center', fontSize: 11, bold: true, color: runningBalance > 0 ? '#dc2626' : '#16a34a', fillColor: '#fafafa', margin: [0, 4, 0, 4] }
+                    ]]
+                },
+                margin: [0, 0, 0, 15]
+            },
 
-    <div class="action-bar">
-        <span style="font-weight: bold; color: #475569;">গ্রাহক হিসাব বিবরণী</span>
-        <!-- ক্লিক করলেই পিওর ভেক্টর A4 PDF সেভ হবে -->
-        <button class="btn-download-icon" onclick="window.print()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            ডাউনলোড পিডিএফ
-        </button>
-    </div>
+            // লেজার হিস্ট্রি টেবিল
+            {
+                table: {
+                    headerRows: 1,
+                    widths: [95, '*', 75, 75, 85],
+                    body: tableBody
+                },
+                layout: {
+                    fillColor: function (rowIndex) {
+                        return (rowIndex === 0) ? '#f2f2f2' : null;
+                    },
+                    hLineWidth: function () { return 0.5; },
+                    vLineWidth: function () { return 0.5; },
+                    hLineColor: function () { return '#000000'; },
+                    vLineColor: function () { return '#000000'; }
+                }
+            },
 
-    <div class="statement-container">
-        <div class="top-heading">
-            গ্রাহক হিসাব বিবরণী (ACCOUNT STATEMENT)
-        </div>
+            // সিগনেচার সেকশন
+            {
+                columns: [
+                    { text: 'গ্রাহকের স্বাক্ষর\n\n______________________', alignment: 'center', margin: [0, 40, 0, 0], fontSize: 10 },
+                    { text: 'কর্তৃপক্ষের স্বাক্ষর\n\n______________________', alignment: 'center', margin: [0, 40, 0, 0], fontSize: 10 }
+                ]
+            },
 
-        <div class="customer-outbox">
-            <div class="customer-details">
-                <div class="avatar-box">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                    </svg>
-                </div>
-                <div class="info-text">
-                    <p><strong>গ্রাহকের নাম:</strong> ${cust.name}</p>
-                    <p><strong>কাস্টমার আইডি:</strong> ${cust.id}</p>
-                    <p><strong>মোবাইল:</strong> ${cust.phone || '-'}</p>
-                    <p><strong>ঠিকানা:</strong> ${cust.address || '-'}</p>
-                </div>
-            </div>
-            <div class="print-meta">
-                <strong>প্রিন্ট তারিখ:</strong><br>
-                ${new Date().toLocaleString()}
-            </div>
-        </div>
+            // ফুটার ব্র্যান্ডিং
+            {
+                text: 'সফটওয়্যার প্রস্তুতকারক ও সার্বিক পরিচালনায়: মৌসুমি কম্পিউটার',
+                alignment: 'center',
+                fontSize: 8,
+                color: '#64748b',
+                margin: [0, 30, 0, 0]
+            }
+        ],
+        styles: {
+            tableHeader: {
+                bold: true,
+                fontSize: 10,
+                color: '#000000'
+            }
+        }
+    };
 
-        <table class="summary-box">
-            <tr>
-                <td><strong>মোট বাকি (+):</strong> ${fmt(totalDebit)}</td>
-                <td><strong>মোট জমা (-):</strong> ${fmt(totalCredit)}</td>
-                <td><strong>বর্তমান নিট পাওনা (DUE):</strong> ${fmt(runningBalance)}</td>
-            </tr>
-        </table>
-
-        <table class="statement-table">
-            <thead>
-                <tr>
-                    <th width="18%">তারিখ</th>
-                    <th>বিবরণ</th>
-                    <th width="15%">দিলাম (+)</th>
-                    <th width="15%">পেলাম (-)</th>
-                    <th width="15%">ব্যালেন্স</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${rowsHtml || '<tr><td colspan="5" style="text-align:center; padding: 20px;">কোনো লেনদেন রেকর্ড পাওয়া যায়নি</td></tr>'}
-            </tbody>
-        </table>
-
-        <div class="signature-section">
-            <div class="signature-box">গ্রাহকের স্বাক্ষর</div>
-            <div class="signature-box">কর্তৃপক্ষের স্বাক্ষর</div>
-        </div>
-
-        <div class="footer-branding">
-            সফটওয়্যার প্রস্তুতকারক ও সার্বিক পরিচালনায়: <strong>মৌসুমি কম্পিউটার</strong> — কম্পিউটার সেলস, সার্ভিসিং ও ডিজিটাল পয়েন্ট
-        </div>
-    </div>
-
-</body>
-</html>
-    `;
-
-    const reportWindow = window.open('', '_blank');
-    if (reportWindow) {
-        reportWindow.document.open();
-        reportWindow.document.write(reportFullHtml);
-        reportWindow.document.close();
-    } else {
-        alert("পপ-আপ ব্লক করা আছে। ব্রাউজার সেটিং থেকে Pop-up Allow করুন।");
+    try {
+        // ১ ক্লিকে কোনো ডায়ালগ ছাড়া সরাসরি ভেক্টর PDF ডাউনলোড
+        pdfMake.createPdf(docDefinition).download(`Statement_${cust.name.replace(/\s+/g, '_')}.pdf`);
+        if (typeof showToast === 'function') showToast("পিডিএফ সফলভাবে ডাউনলোড হয়েছে!", "success");
+    } catch (err) {
+        console.error("PDF generation failed:", err);
+        if (typeof showToast === 'function') showToast("ডাউনলোডে সমস্যা হয়েছে!", "error");
+    } finally {
+        if (btn) {
+            btn.innerHTML = `<i class="fa-solid fa-download"></i> Download PDF`;
+            btn.disabled = false;
+        }
     }
 };
 
