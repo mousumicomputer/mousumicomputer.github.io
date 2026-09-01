@@ -1,13 +1,13 @@
 /* ==========================================================
-   ENTERPRISE CUSTOMER MANAGEMENT & HORIZONTAL CARDS
-   Font: 100% Guaranteed Tiro Bangla Everywhere
+   ENTERPRISE CUSTOMER MANAGEMENT & PRINT-READY STATEMENT
+   Font: 100% Tiro Bangla
+   Features: A4 Statement PDF / Print Engine, Excel & Live Ledger
    File: customer_management_module.js
    ========================================================== */
 
 const injectCorporateStyles = () => {
     if (document.getElementById('erp-tiro-bangla-font')) return;
     
-    // গুগল ফন্ট সরাসরি প্রি-কানেক্টসহ লোড
     const linkPre1 = document.createElement('link');
     linkPre1.rel = 'preconnect';
     linkPre1.href = 'https://fonts.googleapis.com';
@@ -39,7 +39,6 @@ const injectCorporateStyles = () => {
             --text-muted: #64748b;
         }
 
-        /* সর্বত্র Tiro Bangla ফন্ট ১০০% জোরপূর্বক প্রয়োগ */
         #customer-ledger-view,
         #customer-ledger-view *,
         .corp-search-input,
@@ -51,7 +50,6 @@ const injectCorporateStyles = () => {
             font-family: 'Tiro Bangla', serif !important;
         }
 
-        /* শুধুমাত্র FontAwesome আইকনগুলো যাতে অক্ষত থাকে */
         #customer-ledger-view .fa-solid, 
         #customer-ledger-view .fas, 
         #customer-ledger-view .fa {
@@ -207,7 +205,6 @@ const injectCorporateStyles = () => {
             transform: translateY(-1px);
         }
 
-        /* Left Side: Avatar + Customer Main Info */
         .strip-left-section {
             display: flex;
             align-items: center;
@@ -250,7 +247,6 @@ const injectCorporateStyles = () => {
             display: inline-block;
         }
 
-        /* Right Side: Due Balance & Soft Action Button */
         .strip-right-section {
             display: flex;
             align-items: center;
@@ -311,11 +307,29 @@ const injectCorporateStyles = () => {
             background: var(--due-red);
             color: #ffffff;
         }
+
+        /* PRINT-READY CSS FOR A4 STATEMENT */
+        @media print {
+            body * {
+                visibility: hidden !important;
+            }
+            #printable-statement-container, 
+            #printable-statement-container * {
+                visibility: visible !important;
+            }
+            #printable-statement-container {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                padding: 10px 20px !important;
+                background: #ffffff !important;
+            }
+        }
     `;
     document.head.appendChild(style);
 };
 
-// হিউম্যান ভেক্টর লাইন-আর্ট অ্যাভাটার
 const DEFAULT_HUMAN_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'><path d='M250 80c-55 0-95 40-95 95 0 35 15 65 40 80-5 25-10 40-10 65 0 20 20 40 65 40s65-20 65-40c0-25-5-40-10-65 25-15 40-45 40-80 0-55-40-95-95-95z' fill='%23ffffff' stroke='%23334155' stroke-width='16'/><path d='M195 85c-20 0-40 25-35 55 5-25 20-40 40-45 25-5 45-20 85 5 15 10 25 10 35 0 5 25 10 35 15 45 5-30-10-60-40-70-35-10-70-5-100 10z' fill='%23334155'/><path d='M110 420c0-60 60-95 140-95s140 35 140 95' fill='%23475569' stroke='%23334155' stroke-width='16'/><path d='M200 325c15 15 30 20 50 20s35-5 50-20' fill='none' stroke='%23334155' stroke-width='16'/></svg>";
 
 // বকেয়া হিসাব
@@ -462,7 +476,6 @@ window.renderCustomerListTable = function() {
         const card = document.createElement('div');
         card.className = 'cust-strip-card';
         card.innerHTML = `
-            <!-- Left: Avatar + Name + Phone/Address -->
             <div class="strip-left-section">
                 <img src="${avatarSrc}" class="strip-avatar-img" alt="${c.name}">
                 <div class="strip-cust-meta">
@@ -475,7 +488,6 @@ window.renderCustomerListTable = function() {
                 </div>
             </div>
 
-            <!-- Right: Due Amount & Soft Indigo Button -->
             <div class="strip-right-section">
                 <div class="strip-due-box">
                     <span class="strip-due-label">${dueLabel}</span>
@@ -565,11 +577,16 @@ window.renderCustomerStatement = function(custId) {
         </div>
 
         <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-            <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                 <strong style="font-size: 1.05rem; color: #1e293b;">Ledger History</strong>
-                <button class="corp-btn corp-btn-default" onclick="exportCustomerStatementExcel()" style="height: 36px; font-size: 0.88rem;">
-                    <i class="fa-solid fa-download"></i> Export Excel
-                </button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="corp-btn corp-btn-default" onclick="exportCustomerStatementExcel()" style="height: 36px; font-size: 0.88rem;">
+                        <i class="fa-solid fa-file-excel" style="color: #10b981;"></i> Export Excel
+                    </button>
+                    <button class="corp-btn corp-btn-default" onclick="printOfficialCustomerStatement('${cust.id}')" style="height: 36px; font-size: 0.88rem; background: #eef2ff; color: #4f46e5; border-color: #c7d2fe;">
+                        <i class="fa-solid fa-print"></i> Print / PDF
+                    </button>
+                </div>
             </div>
             
             <table style="width: 100%; border-collapse: collapse; text-align: left;">
@@ -600,7 +617,142 @@ window.renderCustomerStatement = function(custId) {
                 </tbody>
             </table>
         </div>
+
+        <!-- Hidden Container for Clean Print Document -->
+        <div id="printable-statement-container" style="display: none;"></div>
     `;
+};
+
+// ==========================================
+// OFFICIAL A4 PDF / PRINT ENGINE FOR CUSTOMER
+// ==========================================
+window.printOfficialCustomerStatement = function(custId) {
+    const customers = window.customers || [];
+    const cust = customers.find(c => c.id === custId);
+    if (!cust) return;
+
+    const allTxs = window.customerTransactions || [];
+    let txs = allTxs.filter(t => t.customerId === custId);
+    // পুরাতন থেকে নতুন ক্রমানুসারে সাজানো (Running balance এর জন্য)
+    txs.sort((a,b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
+
+    const fmt = (num) => '৳ ' + (parseFloat(num) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    
+    let totalDebit = 0;
+    let totalCredit = 0;
+    let runningBalance = parseFloat(cust.openingBalance) || 0;
+
+    let rowsHtml = '';
+    
+    // প্রারম্ভিক জের লাইন
+    if (runningBalance !== 0) {
+        rowsHtml += `
+            <tr style="border-bottom: 1px solid #e2e8f0; background: #fafafa;">
+                <td style="padding: 8px 10px; font-size: 12px; color: #64748b;">-</td>
+                <td style="padding: 8px 10px; font-size: 12px; font-weight: bold; color: #1e293b;">প্রারম্ভিক ব্যালেন্স (Opening Balance)</td>
+                <td style="padding: 8px 10px; font-size: 12px; text-align: right;">-</td>
+                <td style="padding: 8px 10px; font-size: 12px; text-align: right;">-</td>
+                <td style="padding: 8px 10px; font-size: 12px; text-align: right; font-weight: bold;">${fmt(runningBalance)}</td>
+            </tr>
+        `;
+    }
+
+    txs.forEach((t, i) => {
+        const d = parseFloat(t.debit) || 0;
+        const c = parseFloat(t.credit) || 0;
+        totalDebit += d;
+        totalCredit += c;
+        runningBalance += (d - c);
+
+        rowsHtml += `
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 8px 10px; font-size: 12px; color: #475569;">${t.date} ${t.time || ''}</td>
+                <td style="padding: 8px 10px; font-size: 12px; font-weight: 600; color: #0f172a;">${t.description || 'পণ্য/লেনদেন'}</td>
+                <td style="padding: 8px 10px; font-size: 12px; text-align: right; color: #dc2626; font-weight: bold;">${d > 0 ? fmt(d) : '-'}</td>
+                <td style="padding: 8px 10px; font-size: 12px; text-align: right; color: #16a34a; font-weight: bold;">${c > 0 ? fmt(c) : '-'}</td>
+                <td style="padding: 8px 10px; font-size: 12px; text-align: right; font-weight: bold; color: #0f172a;">${fmt(runningBalance)}</td>
+            </tr>
+        `;
+    });
+
+    const printContainer = document.getElementById('printable-statement-container');
+    if (!printContainer) return;
+
+    printContainer.innerHTML = `
+        <div style="font-family: 'Tiro Bangla', serif; color: #000; padding: 20px 25px; background: #fff; max-width: 800px; margin: 0 auto;">
+            <!-- Letterhead Header -->
+            <div style="text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 20px;">
+                <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #0f172a; letter-spacing: 0.5px;">মৌসুমি কম্পিউটার</h1>
+                <p style="margin: 3px 0; font-size: 13px; color: #475569;">কম্পিউটার সেলস, সার্ভিসিং ও ডিজিটাল পয়েন্ট</p>
+                <p style="margin: 0; font-size: 12px; color: #64748b;">মোবাইল: ০১৭১০-০০০০০০ | স্টেটমেন্ট তৈরি: ${new Date().toLocaleString()}</p>
+                <div style="display: inline-block; background: #0f172a; color: #fff; padding: 4px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-top: 10px;">
+                    গ্রাহক হিসাব বিবরণী (ACCOUNT STATEMENT)
+                </div>
+            </div>
+
+            <!-- Customer Details Card -->
+            <div style="display: flex; justify-content: space-between; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 12px 18px; margin-bottom: 20px;">
+                <div>
+                    <span style="font-size: 11px; color: #64748b; font-weight: bold; text-transform: uppercase;">গ্রাহকের বিবরণ:</span>
+                    <h3 style="margin: 2px 0; font-size: 16px; font-weight: bold; color: #0f172a;">${cust.name}</h3>
+                    <p style="margin: 0; font-size: 12px; color: #334155;">মোবাইল: ${cust.phone || '-'} | ঠিকানা: ${cust.address || '-'}</p>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 11px; color: #64748b; font-weight: bold; text-transform: uppercase;">কাস্টমার আইডি:</span>
+                    <p style="margin: 2px 0 0 0; font-size: 13px; font-weight: bold; color: #0f172a;">${cust.id}</p>
+                </div>
+            </div>
+
+            <!-- Financial Summary Box -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 10px; margin-bottom: 20px;">
+                <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; text-align: center;">
+                    <span style="font-size: 11px; color: #64748b; font-weight: bold;">মোট বিক্রয়/বাকি (+)</span>
+                    <strong style="display: block; font-size: 14px; color: #dc2626; margin-top: 2px;">${fmt(totalDebit)}</strong>
+                </div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; text-align: center;">
+                    <span style="font-size: 11px; color: #64748b; font-weight: bold;">মোট জমা/আদায় (-)</span>
+                    <strong style="display: block; font-size: 14px; color: #16a34a; margin-top: 2px;">${fmt(totalCredit)}</strong>
+                </div>
+                <div style="border: 1.5px solid #0f172a; border-radius: 6px; padding: 10px; text-align: center; background: #fafafa;">
+                    <span style="font-size: 11px; color: #0f172a; font-weight: bold;">বর্তমান নিট পাওনা (DUE)</span>
+                    <strong style="display: block; font-size: 16px; color: ${runningBalance > 0 ? '#dc2626' : '#16a34a'}; margin-top: 2px;">${fmt(runningBalance)}</strong>
+                </div>
+            </div>
+
+            <!-- Ledger Table -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px;">
+                <thead>
+                    <tr style="background: #0f172a; color: #ffffff;">
+                        <th style="padding: 8px 10px; font-size: 11px; text-align: left;">তারিখ</th>
+                        <th style="padding: 8px 10px; font-size: 11px; text-align: left;">বিবরণ</th>
+                        <th style="padding: 8px 10px; font-size: 11px; text-align: right;">দিলাম (+)</th>
+                        <th style="padding: 8px 10px; font-size: 11px; text-align: right;">পেলাম (-)</th>
+                        <th style="padding: 8px 10px; font-size: 11px; text-align: right;">ব্যালেন্স</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml || '<tr><td colspan="5" style="text-align: center; padding: 20px; font-size: 12px; color: #64748b;">কোনো লেনদেন রেকর্ড নেই</td></tr>'}
+                </tbody>
+            </table>
+
+            <!-- Signatures & Footer -->
+            <div style="display: flex; justify-content: space-between; margin-top: 60px; padding-top: 10px;">
+                <div style="text-align: center; width: 180px; border-top: 1px dashed #64748b; padding-top: 5px; font-size: 12px;">
+                    গ্রাহকের স্বাক্ষর
+                </div>
+                <div style="text-align: center; width: 180px; border-top: 1px dashed #64748b; padding-top: 5px; font-size: 12px;">
+                    মৌসুমি কম্পিউটার (কর্তৃপক্ষ)
+                </div>
+            </div>
+
+            <p style="text-align: center; font-size: 10px; color: #94a3b8; margin-top: 30px;">
+                এটি একটি কম্পিউটার জেনারেটেড ডিজিটাল হিসাব বিবরণী। কোনো অসঙ্গতি থাকলে কর্তৃপক্ষের সাথে যোগাযোগ করুন।
+            </p>
+        </div>
+    `;
+
+    // সরাসরি প্রিন্ট ডায়ালগ ওপেন
+    window.print();
 };
 
 // ডুয়াল ইনপুট
@@ -706,3 +858,38 @@ async function executeTransactionDeletion(txId, custId) {
         if (typeof showToast === 'function') showToast("Error: " + err.message, "error");
     }
 }
+
+// এক্সেল এক্সপোর্ট
+window.exportCustomerStatementExcel = function() {
+    if (!window.activeViewingCustomerId) return;
+    const customers = window.customers || [];
+    const cust = customers.find(c => c.id === window.activeViewingCustomerId);
+    if (!cust) return;
+
+    const allTxs = window.customerTransactions || [];
+    let txs = allTxs.filter(t => t.customerId === window.activeViewingCustomerId);
+    txs.sort((a,b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
+
+    let running = parseFloat(cust.openingBalance) || 0;
+    const data = [
+        ["মৌসুমি কম্পিউটার - গ্রাহক হিসাব বিবরণী"],
+        ["Customer Name:", cust.name, "ID:", cust.id],
+        ["Phone:", cust.phone || '', "Address:", cust.address || ''],
+        ["Statement Date:", new Date().toLocaleDateString()],
+        [],
+        ["Date & Time", "Description", "Debit (৳)", "Credit (৳)", "Running Balance (৳)"],
+        ["Initial", "Opening Balance", 0, 0, running]
+    ];
+
+    txs.forEach(t => {
+        const d = parseFloat(t.debit) || 0;
+        const c = parseFloat(t.credit) || 0;
+        running += (d - c);
+        data.push([`${t.date} ${t.time || ''}`, t.description || '', d, c, running]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Statement");
+    XLSX.writeFile(wb, `${cust.name}_Statement.xlsx`);
+};
