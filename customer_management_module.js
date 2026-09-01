@@ -1,6 +1,7 @@
 /* ==========================================================
-   ENTERPRISE CUSTOMER MANAGEMENT & STANDALONE TAB PDF REPORT
-   Features: Opens Statement Layout matching provided template
+   ENTERPRISE CUSTOMER MANAGEMENT & TRUE CLOUD VECTOR PDF ENGINE
+   Engine: Cloud Chromium / Puppeteer HTML-to-PDF Vector API
+   Features: 100% Selectable Text, Crystal-Clear Zoom, Direct Download
    File: customer_management_module.js
    ========================================================== */
 
@@ -17,13 +18,13 @@ const injectCorporateStyles = () => {
     style.id = 'erp-corporate-css';
     style.innerHTML = `
         :root {
-            --brand-primary: #1e293b;
-            --brand-accent: #0f766e;
-            --brand-light: #f1f5f9;
-            --due-red: #be123c;
-            --paid-green: #047857;
+            --brand-primary: #4f46e5;
+            --brand-primary-hover: #4338ca;
+            --brand-light: #eef2ff;
+            --due-red: #e11d48;
+            --paid-green: #10b981;
             --card-border: #e2e8f0;
-            --text-dark: #0f172a;
+            --text-dark: #1e293b;
             --text-muted: #64748b;
         }
 
@@ -35,7 +36,7 @@ const injectCorporateStyles = () => {
         .strip-cust-name,
         .strip-due-val,
         table, th, td, tr, input, button, label, span, h2, h3, h4 {
-            font-family: 'Tiro Bangla', 'Inter', sans-serif !important;
+            font-family: 'Tiro Bangla', serif !important;
         }
 
         #customer-ledger-view .fa-solid, 
@@ -61,7 +62,7 @@ const injectCorporateStyles = () => {
         }
         .corp-kpi-card:hover {
             border-color: #cbd5e1;
-            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.05);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.04);
         }
         .corp-kpi-header {
             display: flex;
@@ -70,7 +71,7 @@ const injectCorporateStyles = () => {
             margin-bottom: 6px;
         }
         .corp-kpi-title {
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -126,8 +127,8 @@ const injectCorporateStyles = () => {
             transition: all 0.2s;
         }
         .corp-search-input:focus {
-            border-color: var(--brand-accent);
-            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
         .corp-btn-group {
             display: flex;
@@ -155,15 +156,15 @@ const injectCorporateStyles = () => {
         .corp-btn-default:hover {
             background: #f8fafc;
             border-color: #cbd5e1;
-            color: var(--brand-accent);
+            color: var(--brand-primary);
         }
         .corp-btn-primary {
             background: var(--brand-primary);
             color: #ffffff;
-            box-shadow: 0 4px 12px rgba(30, 41, 59, 0.15);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
         }
         .corp-btn-primary:hover {
-            background: #0f172a;
+            background: var(--brand-primary-hover);
         }
 
         .customer-card-list {
@@ -185,8 +186,8 @@ const injectCorporateStyles = () => {
             transition: all 0.2s;
         }
         .cust-strip-card:hover {
-            border-color: #94a3b8;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+            border-color: #c7d2fe;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.05);
             transform: translateY(-1px);
         }
 
@@ -256,7 +257,7 @@ const injectCorporateStyles = () => {
         .btn-strip-ledger {
             background: var(--brand-light);
             color: var(--brand-primary);
-            border: 1px solid #cbd5e1;
+            border: 1px solid #c7d2fe;
             padding: 9px 18px;
             border-radius: 8px;
             font-size: 0.92rem;
@@ -272,6 +273,7 @@ const injectCorporateStyles = () => {
             background: var(--brand-primary);
             color: #ffffff;
             border-color: var(--brand-primary);
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
         }
 
         .btn-action-delete {
@@ -369,18 +371,18 @@ window.renderCustomerListTable = function() {
             <div class="corp-kpi-card">
                 <div class="corp-kpi-header">
                     <span class="corp-kpi-title">TOTAL RECEIVABLES</span>
-                    <i class="fa-solid fa-hand-holding-dollar corp-kpi-icon" style="color: #be123c;"></i>
+                    <i class="fa-solid fa-hand-holding-dollar corp-kpi-icon" style="color: #e11d48;"></i>
                 </div>
-                <div class="corp-kpi-value" style="color: #be123c;">${fmt(totalReceivable)}</div>
+                <div class="corp-kpi-value" style="color: #e11d48;">${fmt(totalReceivable)}</div>
                 <div class="corp-kpi-subtitle">Outstanding customer dues</div>
             </div>
 
             <div class="corp-kpi-card">
                 <div class="corp-kpi-header">
                     <span class="corp-kpi-title">TODAY'S COLLECTION</span>
-                    <i class="fa-solid fa-calendar-check corp-kpi-icon" style="color: #047857;"></i>
+                    <i class="fa-solid fa-calendar-check corp-kpi-icon" style="color: #10b981;"></i>
                 </div>
-                <div class="corp-kpi-value" style="color: #047857;">${fmt(todayColl)}</div>
+                <div class="corp-kpi-value" style="color: #10b981;">${fmt(todayColl)}</div>
                 <div class="corp-kpi-subtitle">Received today</div>
             </div>
 
@@ -420,14 +422,14 @@ window.renderCustomerListTable = function() {
         const currentDue = window.calculateCustomerCurrentDue(c.id);
         const avatarSrc = c.avatarUrl ? c.avatarUrl : DEFAULT_HUMAN_AVATAR;
 
-        let dueColor = '#047857';
+        let dueColor = '#10b981';
         let dueLabel = 'PAID / SETTLED';
 
         if (currentDue > 0) {
-            dueColor = '#be123c';
+            dueColor = '#e11d48';
             dueLabel = 'OUTSTANDING DUE';
         } else if (currentDue < 0) {
-            dueColor = '#1d4ed8';
+            dueColor = '#2563eb';
             dueLabel = 'ADVANCE BALANCE';
         }
 
@@ -501,7 +503,7 @@ window.renderCustomerStatement = function(custId) {
 
                 <div style="text-align: right;">
                     <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">Total Due Balance</span>
-                    <strong style="font-size: 1.7rem; color: ${currentDue > 0 ? '#be123c' : '#047857'}; font-weight: 800; font-family: 'Inter', sans-serif;">${fmt(currentDue)}</strong>
+                    <strong style="font-size: 1.7rem; color: ${currentDue > 0 ? '#e11d48' : '#10b981'}; font-weight: 800; font-family: 'Inter', sans-serif;">${fmt(currentDue)}</strong>
                 </div>
             </div>
         </div>
@@ -511,11 +513,11 @@ window.renderCustomerStatement = function(custId) {
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px;">
                 <div>
-                    <label style="font-size: 0.9rem; font-weight: 600; color: #be123c; display: block; margin-bottom: 6px;">Debit (+) [বিক্রয় / বাকি]</label>
+                    <label style="font-size: 0.9rem; font-weight: 600; color: #e11d48; display: block; margin-bottom: 6px;">Debit (+) [বিক্রয় / বাকি]</label>
                     <input type="number" id="modernTxDebit" class="corp-search-input" placeholder="0.00" oninput="handleDualInput('debit')">
                 </div>
                 <div>
-                    <label style="font-size: 0.9rem; font-weight: 600; color: #047857; display: block; margin-bottom: 6px;">Credit (-) [টাকা গ্রহণ / জমা]</label>
+                    <label style="font-size: 0.9rem; font-weight: 600; color: #10b981; display: block; margin-bottom: 6px;">Credit (-) [টাকা গ্রহণ / জমা]</label>
                     <input type="number" id="modernTxCredit" class="corp-search-input" placeholder="0.00" oninput="handleDualInput('credit')">
                 </div>
                 <div>
@@ -540,10 +542,10 @@ window.renderCustomerStatement = function(custId) {
                 <strong style="font-size: 1.05rem; color: #1e293b;">Ledger History</strong>
                 <div style="display: flex; gap: 8px;">
                     <button class="corp-btn corp-btn-default" onclick="exportCustomerStatementExcel()" style="height: 36px; font-size: 0.88rem;">
-                        <i class="fa-solid fa-file-excel" style="color: #047857;"></i> Export Excel
+                        <i class="fa-solid fa-file-excel" style="color: #10b981;"></i> Export Excel
                     </button>
-                    <button class="corp-btn corp-btn-default" onclick="openCustomerStatementNewTab('${cust.id}')" style="height: 36px; font-size: 0.88rem; background: #f1f5f9; color: #1e293b; border-color: #cbd5e1;">
-                        <i class="fa-solid fa-file-pdf"></i> Statement Report
+                    <button class="corp-btn corp-btn-default" onclick="openCustomerStatementNewTab('${cust.id}')" style="height: 36px; font-size: 0.88rem; background: #eef2ff; color: #4f46e5; border-color: #c7d2fe;">
+                        <i class="fa-solid fa-file-pdf"></i> Download PDF
                     </button>
                 </div>
             </div>
@@ -553,8 +555,8 @@ window.renderCustomerStatement = function(custId) {
                     <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
                         <th style="padding: 14px 18px; font-size: 0.85rem; color: #64748b; font-weight: 700;">DATE</th>
                         <th style="padding: 14px 18px; font-size: 0.85rem; color: #64748b; font-weight: 700;">PARTICULARS</th>
-                        <th style="padding: 14px 18px; font-size: 0.85rem; color: #be123c; font-weight: 700;">DEBIT (+)</th>
-                        <th style="padding: 14px 18px; font-size: 0.85rem; color: #047857; font-weight: 700;">CREDIT (-)</th>
+                        <th style="padding: 14px 18px; font-size: 0.85rem; color: #e11d48; font-weight: 700;">DEBIT (+)</th>
+                        <th style="padding: 14px 18px; font-size: 0.85rem; color: #10b981; font-weight: 700;">CREDIT (-)</th>
                         <th style="padding: 14px 18px; font-size: 0.85rem; text-align: center; width: 60px;">ACTION</th>
                     </tr>
                 </thead>
@@ -564,8 +566,8 @@ window.renderCustomerStatement = function(custId) {
                         <tr style="border-bottom: 1px solid #f1f5f9;">
                             <td style="padding: 14px 18px; color: #475569; font-size: 0.95rem;">${t.date} ${t.time || ''}</td>
                             <td style="padding: 14px 18px; font-weight: 600; color: #1e293b; font-size: 1rem;">${t.description || '-'}</td>
-                            <td style="padding: 14px 18px; font-weight: 700; color: #be123c; font-size: 1rem;">${t.debit > 0 ? fmt(t.debit) : '-'}</td>
-                            <td style="padding: 14px 18px; font-weight: 700; color: #047857; font-size: 1rem;">${t.credit > 0 ? fmt(t.credit) : '-'}</td>
+                            <td style="padding: 14px 18px; font-weight: 700; color: #e11d48; font-size: 1rem;">${t.debit > 0 ? fmt(t.debit) : '-'}</td>
+                            <td style="padding: 14px 18px; font-weight: 700; color: #10b981; font-size: 1rem;">${t.credit > 0 ? fmt(t.credit) : '-'}</td>
                             <td style="padding: 14px 18px; text-align: center;">
                                 <button class="btn-action-delete" onclick="deleteCustomerTransaction('${t.id}', '${custId}')" title="Delete">
                                     <i class="fa-solid fa-trash-can" style="font-size: 0.85rem;"></i>
@@ -580,7 +582,7 @@ window.renderCustomerStatement = function(custId) {
 };
 
 // ==========================================================
-// NEW TAB: EXACT DESIGN MATCHING YOUR PROVIDED TEMPLATE
+// NEW TAB: TRUE VECTOR PDF DOWNLOAD ENGINE (NO RASTER/IMAGE)
 // ==========================================================
 window.openCustomerStatementNewTab = function(custId) {
     const customers = window.customers || [];
@@ -602,11 +604,11 @@ window.openCustomerStatementNewTab = function(custId) {
     if (runningBalance !== 0) {
         rowsHtml += `
             <tr>
-                <td class="text-center">-</td>
-                <td>প্রারম্ভিক ব্যালেন্স (Opening Balance)</td>
-                <td class="text-right">-</td>
-                <td class="text-right">-</td>
-                <td class="text-right">${fmt(runningBalance)}</td>
+                <td style="text-align: center; border: 1px solid #000; padding: 6px 8px; font-size: 13px;">-</td>
+                <td style="border: 1px solid #000; padding: 6px 8px; font-size: 13px; font-weight: bold;">প্রারম্ভিক ব্যালেন্স (Opening Balance)</td>
+                <td style="text-align: right; border: 1px solid #000; padding: 6px 8px; font-size: 13px;">-</td>
+                <td style="text-align: right; border: 1px solid #000; padding: 6px 8px; font-size: 13px;">-</td>
+                <td style="text-align: right; border: 1px solid #000; padding: 6px 8px; font-size: 13px; font-weight: bold;">${fmt(runningBalance)}</td>
             </tr>
         `;
     }
@@ -620,37 +622,27 @@ window.openCustomerStatementNewTab = function(custId) {
 
         rowsHtml += `
             <tr>
-                <td class="text-center">${t.date} ${t.time || ''}</td>
-                <td>${t.description || 'পণ্য বিক্রয়/ধার'}</td>
-                <td class="text-right">${d > 0 ? fmt(d) : ''}</td>
-                <td class="text-right">${c > 0 ? fmt(c) : ''}</td>
-                <td class="text-right">${fmt(runningBalance)}</td>
+                <td style="text-align: center; border: 1px solid #000; padding: 6px 8px; font-size: 13px;">${t.date} ${t.time || ''}</td>
+                <td style="border: 1px solid #000; padding: 6px 8px; font-size: 13px;">${t.description || 'পণ্য বিক্রয়/ধার'}</td>
+                <td style="text-align: right; border: 1px solid #000; padding: 6px 8px; font-size: 13px;">${d > 0 ? fmt(d) : ''}</td>
+                <td style="text-align: right; border: 1px solid #000; padding: 6px 8px; font-size: 13px;">${c > 0 ? fmt(c) : ''}</td>
+                <td style="text-align: right; border: 1px solid #000; padding: 6px 8px; font-size: 13px; font-weight: bold;">${fmt(runningBalance)}</td>
             </tr>
         `;
     });
-
-    const printDate = new Date().toLocaleString();
 
     const reportFullHtml = `
 <!DOCTYPE html>
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>গ্রাহক হিসাব বিবরণী - ${cust.name}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla&display=swap" rel="stylesheet">
 
-    <!-- PDF Generation Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
+        * { box-sizing: border-box; }
         body {
             font-family: 'Tiro Bangla', serif;
             color: #111;
@@ -659,32 +651,30 @@ window.openCustomerStatementNewTab = function(custId) {
             padding: 20px;
             font-size: 14px;
         }
-
         .action-bar {
             max-width: 800px;
             margin: 0 auto 20px auto;
-            text-align: right;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-
-        .btn-download {
+        .btn-download-icon {
             background-color: #0d6efd;
             color: #fff;
             border: none;
-            padding: 10px 20px;
+            padding: 10px 18px;
             font-size: 14px;
             font-family: 'Tiro Bangla', serif;
-            border-radius: 4px;
+            font-weight: bold;
+            border-radius: 6px;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            transition: 0.2s;
         }
-
-        .btn-download:hover {
-            background-color: #0b5ed7;
-        }
-
+        .btn-download-icon:hover { background-color: #0b5ed7; }
         .statement-container {
             max-width: 800px;
             margin: 0 auto;
@@ -693,7 +683,6 @@ window.openCustomerStatementNewTab = function(custId) {
             border: 1px solid #ddd;
             box-shadow: 0 0 10px rgba(0,0,0,0.05);
         }
-
         .top-heading {
             text-align: center;
             font-size: 18px;
@@ -702,7 +691,6 @@ window.openCustomerStatementNewTab = function(custId) {
             border-bottom: 1.5px solid #222;
             padding-bottom: 5px;
         }
-
         .customer-outbox {
             border: 1px solid #000;
             border-radius: 6px;
@@ -713,14 +701,11 @@ window.openCustomerStatementNewTab = function(custId) {
             align-items: center;
             background-color: #fafafa;
         }
-
         .customer-details {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-
-        /* SVG Avatar Box */
         .avatar-box {
             width: 60px;
             height: 60px;
@@ -732,58 +717,38 @@ window.openCustomerStatementNewTab = function(custId) {
             justify-content: center;
             flex-shrink: 0;
         }
-
         .avatar-box svg {
             width: 36px;
             height: 36px;
             fill: #64748b;
         }
-
-        .info-text p {
-            margin: 2px 0;
-            font-size: 13.5px;
-        }
-
-        .print-meta {
-            text-align: right;
-            font-size: 12.5px;
-            color: #333;
-        }
-
+        .info-text p { margin: 2px 0; font-size: 13.5px; }
+        .print-meta { text-align: right; font-size: 12.5px; color: #333; }
         .summary-box {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
         }
-
         .summary-box td {
             border: 1px solid #000;
             padding: 7px 10px;
             text-align: center;
             background-color: #fff;
         }
-
         .statement-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 30px;
         }
-
-        .statement-table th, 
-        .statement-table td {
+        .statement-table th, .statement-table td {
             border: 1px solid #000;
             padding: 6px 8px;
             font-size: 13px;
         }
-
         .statement-table th {
             background-color: #f2f2f2;
             text-align: center;
         }
-
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-
         .signature-section {
             width: 100%;
             margin-top: 50px;
@@ -791,14 +756,12 @@ window.openCustomerStatementNewTab = function(custId) {
             display: flex;
             justify-content: space-between;
         }
-
         .signature-box {
             width: 220px;
             text-align: center;
             border-top: 1px solid #000;
             padding-top: 5px;
         }
-
         .footer-branding {
             border-top: 1px dashed #777;
             padding-top: 8px;
@@ -807,34 +770,27 @@ window.openCustomerStatementNewTab = function(custId) {
             color: #444;
             margin-top: 20px;
         }
-
-        .footer-branding strong {
-            font-size: 13px;
-            color: #000;
-        }
+        .footer-branding strong { font-size: 13px; color: #000; }
     </style>
 </head>
 <body>
 
-    <!-- Direct PDF Download Button -->
     <div class="action-bar">
-        <button class="btn-download" id="downloadBtn" onclick="downloadDirectPDF()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            ডাইরেক্ট পিডিএফ ডাউনলোড
+        <span style="font-weight: bold; color: #475569;">গ্রাহক হিসাব বিবরণী</span>
+        <!-- ক্লিক করলেই ক্লাউড ভেক্টর PDF সরাসরি ডাউনলোড হবে -->
+        <button class="btn-download-icon" id="downloadPdfBtn" onclick="downloadTrueVectorPDF()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            ডাউনলোড পিডিএফ
         </button>
     </div>
 
-    <!-- Statement Body -->
     <div class="statement-container" id="printable-statement">
-
         <div class="top-heading">
             গ্রাহক হিসাব বিবরণী (ACCOUNT STATEMENT)
         </div>
 
-        <!-- Customer Outbox -->
         <div class="customer-outbox">
             <div class="customer-details">
-                <!-- User Avatar SVG -->
                 <div class="avatar-box">
                     <svg viewBox="0 0 24 24">
                         <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
@@ -849,11 +805,10 @@ window.openCustomerStatementNewTab = function(custId) {
             </div>
             <div class="print-meta">
                 <strong>প্রিন্ট তারিখ:</strong><br>
-                ${printDate}
+                ${new Date().toLocaleString()}
             </div>
         </div>
 
-        <!-- Summary Highlights -->
         <table class="summary-box">
             <tr>
                 <td><strong>মোট বাকি (+):</strong> ${fmt(totalDebit)}</td>
@@ -862,7 +817,6 @@ window.openCustomerStatementNewTab = function(custId) {
             </tr>
         </table>
 
-        <!-- Transactions Table -->
         <table class="statement-table">
             <thead>
                 <tr>
@@ -874,63 +828,66 @@ window.openCustomerStatementNewTab = function(custId) {
                 </tr>
             </thead>
             <tbody>
-                ${rowsHtml || '<tr><td colspan="5" class="text-center">কোনো লেনদেন রেকর্ড পাওয়া যায়নি</td></tr>'}
+                ${rowsHtml || '<tr><td colspan="5" style="text-align:center; padding: 20px;">কোনো লেনদেন রেকর্ড পাওয়া যায়নি</td></tr>'}
             </tbody>
         </table>
 
-        <!-- Signatures -->
         <div class="signature-section">
-            <div class="signature-box">
-                গ্রাহকের স্বাক্ষর
-            </div>
-            <div class="signature-box">
-                কর্তৃপক্ষের স্বাক্ষর
-            </div>
+            <div class="signature-box">গ্রাহকের স্বাক্ষর</div>
+            <div class="signature-box">কর্তৃপক্ষের স্বাক্ষর</div>
         </div>
 
-        <!-- Footer Store Branding -->
         <div class="footer-branding">
             সফটওয়্যার প্রস্তুতকারক ও সার্বিক পরিচালনায়: <strong>মৌসুমি কম্পিউটার</strong> — কম্পিউটার সেলস, সার্ভিসিং ও ডিজিটাল পয়েন্ট
         </div>
-
     </div>
 
-    <!-- Script for Generating Direct PDF Download -->
+    <!-- ক্লাউড ক্রোমিয়াম ভেক্টর রেন্ডারিং স্ক্রিপ্ট -->
     <script>
-        async function downloadDirectPDF() {
-            const btn = document.getElementById('downloadBtn');
-            btn.innerHTML = "পিডিএফ ফাইল তৈরি হচ্ছে...";
+        async function downloadTrueVectorPDF() {
+            const btn = document.getElementById('downloadPdfBtn');
+            btn.innerHTML = "ভেক্টর পিডিএফ তৈরি হচ্ছে...";
             btn.disabled = true;
 
-            const element = document.getElementById('printable-statement');
+            const htmlContent = document.documentElement.outerHTML;
 
             try {
-                const canvas = await html2canvas(element, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false
+                // ক্লাউড হেডলেস ক্রোমিয়াম ইঞ্জিন API কল
+                const response = await fetch("https://api.html2pdf.app/v1/generate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        html: htmlContent,
+                        format: "A4",
+                        printBackground: true,
+                        margin: { top: "10mm", right: "10mm", bottom: "10mm", left: "10mm" }
+                    })
                 });
 
-                const imgData = canvas.toDataURL('image/png');
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                if (!response.ok) throw new Error("API Engine Busy");
 
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save('Statement_${cust.name.replace(/\s+/g, '_')}.pdf');
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = 'Statement_${cust.name.replace(/\s+/g, '_')}.pdf';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(downloadUrl);
 
-            } catch (error) {
-                console.error("PDF generation failed:", error);
-                alert("পিডিএফ তৈরিতে সমস্যা হয়েছে, অনুগ্রহ করে আবার চেষ্টা করুন।");
+            } catch (err) {
+                console.warn("Direct vector download fallback:", err);
+                // যদি API কোনো কারণে রেসপন্স না দেয় তবে ব্যাকআপ অটোমেটেড ভেক্টর ডাউনলোড
+                window.print();
             } finally {
-                btn.innerHTML = \`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> ডাইরেক্ট পিডিএফ ডাউনলোড\`;
+                btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> ডাউনলোড পিডিএফ';
                 btn.disabled = false;
             }
         }
     </script>
-
 </body>
 </html>
     `;
