@@ -1,12 +1,8 @@
 /* ==========================================================
-   ENTERPRISE CUSTOMER MANAGEMENT & FIREBASE CLOUD PDF ENGINE
-   Engine: Dedicated Firebase Cloud Function + Headless Chromium
-   Features: 100% Vector Text PDF, Fast & Reliable
+   ENTERPRISE CUSTOMER MANAGEMENT & VECTOR TEXT PDF ENGINE
+   Standalone Tab Vector PDF with Clean Bengali Typography
    File: customer_management_module.js
    ========================================================== */
-
-// আপনার ফায়ারবেস ক্লাউড ফাংশনের URL (ডিপ্লয় করার পর এখানে বসিয়ে দিন)
-const FIREBASE_PDF_FUNCTION_URL = "https://us-central1-mousumi-computer.cloudfunctions.net/generateStatementPDF";
 
 const injectCorporateStyles = () => {
     if (document.getElementById('erp-tiro-bangla-font')) return;
@@ -541,7 +537,7 @@ window.renderCustomerStatement = function(custId) {
         </div>
 
         <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-            <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: gap: 10px;">
+            <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                 <strong style="font-size: 1.05rem; color: #1e293b;">Ledger History</strong>
                 <div style="display: flex; gap: 8px;">
                     <button class="corp-btn corp-btn-default" onclick="exportCustomerStatementExcel()" style="height: 36px; font-size: 0.88rem;">
@@ -585,7 +581,7 @@ window.renderCustomerStatement = function(custId) {
 };
 
 // ==========================================================
-// NEW TAB: FIREBASE CLOUD FUNCTION VECTOR PDF GENERATOR
+// OPEN STANDALONE REPORT WITH PURE VECTOR PDF DOWNLOAD
 // ==========================================================
 window.openCustomerStatementNewTab = function(custId) {
     const customers = window.customers || [];
@@ -639,13 +635,14 @@ window.openCustomerStatementNewTab = function(custId) {
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <title>গ্রাহক হিসাব বিবরণী - ${cust.name}</title>
+    <title>Statement_${cust.name.replace(/\\s+/g, '_')}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla&display=swap" rel="stylesheet">
 
     <style>
         * { box-sizing: border-box; }
+        @page { size: A4 portrait; margin: 10mm; }
         body {
             font-family: 'Tiro Bangla', serif;
             color: #111;
@@ -665,7 +662,7 @@ window.openCustomerStatementNewTab = function(custId) {
             background-color: #0d6efd;
             color: #fff;
             border: none;
-            padding: 10px 18px;
+            padding: 10px 20px;
             font-size: 14px;
             font-family: 'Tiro Bangla', serif;
             font-weight: bold;
@@ -774,20 +771,25 @@ window.openCustomerStatementNewTab = function(custId) {
             margin-top: 20px;
         }
         .footer-branding strong { font-size: 13px; color: #000; }
+        @media print {
+            .action-bar { display: none !important; }
+            body { background: #fff; padding: 0; }
+            .statement-container { border: none; box-shadow: none; padding: 0; width: 100%; max-width: 100%; }
+        }
     </style>
 </head>
 <body>
 
     <div class="action-bar">
         <span style="font-weight: bold; color: #475569;">গ্রাহক হিসাব বিবরণী</span>
-        <!-- ক্লিক করলেই ফায়ারবেস ক্লাউড ফাংশন থেকে ভেক্টর PDF ডাউনলোড হবে -->
-        <button class="btn-download-icon" id="downloadPdfBtn" onclick="downloadViaFirebaseCloudFunction()">
+        <!-- ক্লিক করলেই পিওর ভেক্টর A4 PDF সেভ হবে -->
+        <button class="btn-download-icon" onclick="window.print()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             ডাউনলোড পিডিএফ
         </button>
     </div>
 
-    <div class="statement-container" id="printable-statement">
+    <div class="statement-container">
         <div class="top-heading">
             গ্রাহক হিসাব বিবরণী (ACCOUNT STATEMENT)
         </div>
@@ -845,47 +847,6 @@ window.openCustomerStatementNewTab = function(custId) {
         </div>
     </div>
 
-    <!-- ফায়ারবেস ব্যাকএন্ড থেকে ডাইরেক্ট ভেক্টর PDF ডাউনলোড স্ক্রিপ্ট -->
-    <script>
-        async function downloadViaFirebaseCloudFunction() {
-            const btn = document.getElementById('downloadPdfBtn');
-            btn.innerHTML = "ভেক্টর পিডিএফ তৈরি হচ্ছে...";
-            btn.disabled = true;
-
-            const htmlContent = document.documentElement.outerHTML;
-
-            try {
-                const response = await fetch("${FIREBASE_PDF_FUNCTION_URL}", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        htmlContent: htmlContent,
-                        customerName: "${cust.name}"
-                    })
-                });
-
-                if (!response.ok) throw new Error("Cloud Function Error");
-
-                const blob = await response.blob();
-                const downloadUrl = window.URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = downloadUrl;
-                a.download = 'Statement_${cust.name.replace(/\s+/g, '_')}.pdf';
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(downloadUrl);
-
-            } catch (err) {
-                console.error("Cloud PDF Download Failed:", err);
-                // ফায়ারবেস ক্লাউড ফাংশন এখনও ডিপ্লয় না থাকলে ফলব্যাক প্রিন্ট অপশন
-                window.print();
-            } finally {
-                btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> ডাউনলোড পিডিএফ';
-                btn.disabled = false;
-            }
-        }
-    </script>
 </body>
 </html>
     `;
