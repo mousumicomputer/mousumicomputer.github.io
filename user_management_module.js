@@ -1,6 +1,6 @@
 /**
  * User Management & Role-Based Fine-Grained Access Control (RBAC) Module
- * Enterprise English Standard & Realtime Firebase Cloud Database Sync
+ * Features: Granular Permissions, Realtime Sync, Audit Logs & 1-Click Admin Impersonation
  */
 
 (function () {
@@ -105,7 +105,7 @@
     window.logUserActivity = async function (actionType, details, userName) {
         const newLog = {
             id: 'log_' + Date.now(),
-            user: userName || 'Admin / Operator',
+            user: userName || 'Admin / Master',
             action: actionType,
             details: details,
             timestamp: new Date().toLocaleString('en-US', { hour12: true })
@@ -172,6 +172,8 @@
                 .um-perm-on { background: #e0f2fe; color: #0369a1; }
                 .um-perm-off { background: #f1f5f9; color: #94a3b8; text-decoration: line-through; opacity: 0.6; }
                 .um-btn-action { width: 32px; height: 32px; border-radius: 8px; border: none; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+                .um-btn-portal { background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; }
+                .um-btn-portal:hover { background: #4f46e5; color: #ffffff; }
                 .um-btn-toggle { background: #fef2f2; color: #ef4444; }
                 .um-btn-toggle:hover { background: #fee2e2; }
                 .um-btn-edit { background: #f0fdf4; color: #16a34a; }
@@ -364,6 +366,10 @@
                 <td><span class="${statusClass}">${u.status}</span></td>
                 <td style="text-align: right;">
                     <div style="display: inline-flex; gap: 6px;">
+                        <!-- 🚀 1-Click Access Portal / Impersonation Button -->
+                        <button onclick="impersonateUser(${index})" title="Access / Login to Portal Directly" class="um-btn-action um-btn-portal">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </button>
                         <button onclick="toggleUserStatus(${index})" title="${toggleTitle}" class="um-btn-action um-btn-toggle">
                             <i class="fa-solid ${toggleIcon}"></i>
                         </button>
@@ -379,6 +385,38 @@
             tbody.appendChild(tr);
         });
     }
+
+    // ================= 🚀 1-CLICK ADMIN IMPERSONATION =================
+    window.impersonateUser = function (index) {
+        const u = usersDatabase[index];
+        if (!u) return;
+
+        if (u.status !== 'Active') {
+            alert(`Cannot access portal: User '${u.name}' is currently BLOCKED. Please activate first.`);
+            return;
+        }
+
+        // অ্যাডমিন ইম্পারসোনেশন সেশন তৈরি
+        const impersonateSession = {
+            ...u,
+            isAdminImpersonating: true,
+            impersonatedAt: new Date().toISOString()
+        };
+
+        localStorage.setItem('cpscl_auth_session', JSON.stringify(impersonateSession));
+
+        window.logUserActivity(
+            "ADMIN_IMPERSONATE", 
+            `Super Admin accessed CPSCL Portal as user: ${u.name} (${u.email})`
+        );
+
+        // নতুন ট্যাবে পোর্টাল ওপেন
+        const portalUrl = (window.location.origin.includes('github.io') 
+            ? `${window.location.origin}/cpscl.html` 
+            : 'cpscl.html') + '?impersonate=true';
+
+        window.open(portalUrl, '_blank');
+    };
 
     function renderAuditLogsTable() {
         const tbody = document.getElementById('um-audit-tbody');
