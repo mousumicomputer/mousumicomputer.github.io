@@ -13,8 +13,130 @@
     </script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS (Excel ফাইল প্রসেস করার জন্য লাইব্রেরি) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        /* A4 LANDSCAPE EXACT 1:1 CALIBRATED PRINT STYLES */
+        .cpscl-a4-sheet {
+            background: #ffffff;
+            width: 297mm;
+            height: 210mm;
+            min-height: 210mm;
+            max-height: 210mm;
+            padding-top: 2.1in;
+            padding-right: 1.8in;
+            padding-bottom: 1.4in;
+            padding-left: 2.4in;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            color: #000000;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .cert-ref, 
+        .cert-ref * {
+            font-family: 'Calibri', 'Segoe UI', Arial, sans-serif !important;
+            font-size: 13pt !important;
+            font-weight: 400 !important;
+            color: #000000 !important;
+            line-height: 1.15 !important;
+        }
+        .cert-ref { margin-bottom: 18pt !important; }
+
+        .cert-body-block { width: 100%; box-sizing: border-box; }
+
+        .cert-paragraph {
+            text-indent: 0.5in !important;
+            text-align: justify !important;
+            line-height: 1.8 !important;
+            margin-top: 0pt !important;
+            margin-bottom: 10pt !important;
+            word-break: normal !important;
+        }
+
+        .cert-body-block,
+        .cert-body-block *,
+        .cert-paragraph,
+        .cert-paragraph span,
+        #prevRelation,
+        #prevExamName,
+        #prevBoard,
+        #prevPronoun,
+        #prevPronounLower,
+        #prevPossessive,
+        #prevObjective {
+            font-family: 'Monotype Corsiva', 'Corsiva Hebrew', 'Apple Chancery', cursive, serif !important;
+            font-size: 15pt !important;
+            font-weight: 400 !important;
+            color: #000000 !important;
+        }
+
+        .cert-paragraph span.cert-bold,
+        .cert-paragraph span.cert-meta-bold,
+        #prevName,
+        #prevFather,
+        #prevMother,
+        #prevRoll,
+        #prevReg,
+        #prevSession,
+        #prevYear,
+        #prevGroup,
+        #prevGpa {
+            font-family: 'Cambria', 'Georgia', serif !important;
+            font-size: 15pt !important;
+            font-weight: 700 !important;
+            font-style: italic !important;
+            color: #000000 !important;
+        }
+
+        .cert-footer-date,
+        .cert-footer-date *,
+        .cert-footer-date span {
+            font-family: 'Calibri', 'Segoe UI', Arial, sans-serif !important;
+            font-size: 9pt !important;
+            font-weight: 400 !important;
+            color: #000000 !important;
+            line-height: 1.2;
+        }
+        .cert-footer-date { margin-top: 18pt !important; }
+
+        @page { size: A4 landscape !important; margin: 0mm !important; }
+
+        @media print {
+            @page { size: A4 landscape !important; margin: 0mm !important; }
+            html, body {
+                width: 297mm !important;
+                height: 210mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                overflow: hidden !important;
+            }
+            body * { visibility: hidden !important; }
+            #cpsclPrintArea, #cpsclPrintArea * { visibility: visible !important; }
+            #cpsclPrintArea {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 297mm !important;
+                height: 210mm !important;
+                max-height: 210mm !important;
+                padding-top: 2.1in !important;
+                padding-right: 1.8in !important;
+                padding-bottom: 1.4in !important;
+                padding-left: 2.4in !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+            }
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex h-screen overflow-hidden transition-colors duration-200">
@@ -22,8 +144,8 @@
     <!-- ================= ১. বাম পাশের সাইডবার (SIDEBAR) ================= -->
     <aside id="sidebar" class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col justify-between shrink-0 h-full transition-all duration-300 ease-in-out">
         <div>
-            <!-- CPSCL লোগো এরিয়া (ক্লিক করলে মূল ড্যাশবোর্ডে ফিরে যাবে) -->
-            <div onclick="loadDashboardView()" title="Click to go to Dashboard" class="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition group">
+            <!-- CPSCL লোগো এরিয়া (ক্লিক করলে ড্যাশবোর্ডে যাবে) -->
+            <div onclick="loadDashboardView()" title="Dashboard" class="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition group">
                 <div class="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden bg-emerald-50 dark:bg-emerald-950/40 p-0.5 border border-emerald-100 dark:border-emerald-800 shadow-xs shrink-0 group-hover:scale-105 transition-transform">
                     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg-795xmOcuKYH8wjija8JrA-qVjfOp_4KieeZ1pOQJaqX2uXsqGLMo09AXsGGsfGjH9LpK5fPlUNGbebFguiAzPC_YvbRXcHePj7cORQd6GMxDUg-LCeXtmNkccGI2K4Hv73PJqJkGX0Ju9N4knQuqKOAImqB6qy_WWFXpKeIaQhRgk7YbLqBLpCmL0cio/s1600/%E0%A6%95%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%A8%E0%A7%8D%E0%A6%9F%E0%A6%A8%E0%A6%AE%E0%A7%87%E0%A6%A8%E0%A7%8D%E0%A6%9F_%E0%A6%AA%E0%A6%BE%E0%A6%AC%E0%A6%B2%E0%A6%BF%E0%A6%95_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2_%E0%A6%93_%E0%A6%95%E0%A6%B2%E0%A7%87%E0%A6%9C_%E0%A6%B2%E0%A6%BE%E0%A6%B2%E0%A6%AE%E0%A6%A8%E0%A6%BF%E0%A6%B0%E0%A6%B9%E0%A6%BE%E0%A6%9F%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" 
                          alt="CPSCL Logo" 
@@ -35,38 +157,73 @@
                 </div>
             </div>
 
-            <!-- সাইডবার মেনু এরিয়া -->
-            <div id="sidebar-menu" class="p-3 space-y-1">
-                <a href="javascript:void(0)" onclick="loadDashboardView()" class="flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 rounded-xl transition">
+            <!-- সাইডবার মেনু -->
+            <div id="sidebar-menu" class="p-3 space-y-1.5">
+                <!-- ড্যাশবোর্ড বাটন -->
+                <button onclick="loadDashboardView()" id="menu-dash-btn" class="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 rounded-xl transition">
                     <i class="fa-solid fa-house text-sm"></i>
-                    <span>Dashboard (Home)</span>
-                </a>
+                    <span>Dashboard</span>
+                </button>
+
+                <!-- CPSCL মেনু গ্রুপ -->
+                <div class="pt-2">
+                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase px-3 tracking-wider">Modules</span>
+                    <div class="mt-1 space-y-1">
+                        <!-- CPSCL ড্রপডাউন হেডার -->
+                        <div onclick="toggleCPSCLMenu()" class="flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl cursor-pointer transition">
+                            <div class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-graduation-cap text-emerald-600 text-sm"></i>
+                                <span>CPSCL Management</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="cpscl-menu-arrow"></i>
+                        </div>
+
+                        <!-- CPSCL সাব-মেনু লিংকসমূহ -->
+                        <div id="cpscl-submenu" class="pl-4 space-y-1">
+                            <button onclick="switchCPSCLSubSection('list')" id="menu-cpscl-list" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-slate-700 rounded-xl transition">
+                                <i class="fa-solid fa-users text-xs"></i>
+                                <span>Student List</span>
+                            </button>
+
+                            <button onclick="switchCPSCLSubSection('entry')" id="menu-cpscl-entry" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-slate-700 rounded-xl transition">
+                                <i class="fa-solid fa-user-plus text-xs"></i>
+                                <span>Student Entry</span>
+                            </button>
+
+                            <button onclick="switchCPSCLSubSection('preview')" id="menu-cpscl-preview" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-slate-700 rounded-xl transition">
+                                <i class="fa-solid fa-print text-xs"></i>
+                                <span>Certificate Print</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="border-t border-slate-100 dark:border-slate-700 p-3"></div>
+        <div class="border-t border-slate-100 dark:border-slate-700 p-3">
+            <span class="text-[10px] text-slate-400 block text-center">CPSCL Portal v2.0 &bull; 2026</span>
+        </div>
     </aside>
 
     <!-- ================= ২. মূল বডি এরিয়া (MAIN CONTENT) ================= -->
     <main class="flex-1 flex flex-col overflow-hidden h-full relative">
         
         <!-- টপ হেডার বার -->
-        <header class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 flex items-center justify-between shrink-0 relative z-20 transition-colors duration-200">
-            <!-- বাম পাশ -->
+        <header class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 flex items-center justify-between shrink-0 relative z-20 transition-colors duration-200 no-print">
             <div class="flex items-center gap-3">
                 <button id="sidebar-toggle-btn" title="Toggle Sidebar" class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-emerald-600 transition">
                     <i class="fa-solid fa-bars text-lg"></i>
                 </button>
                 <div class="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800/60 px-3.5 py-1.5 rounded-full text-xs font-semibold">
                     <i class="fa-solid fa-school text-emerald-600 dark:text-emerald-400"></i>
-                    <span>Cantonment Public School And College Lalmonirhat</span>
+                    <span id="top-title">Cantonment Public School And College Lalmonirhat</span>
                     <span class="bg-emerald-700 text-white px-2 py-0.5 rounded-full text-[10px]">ID: 1013</span>
                 </div>
             </div>
 
-            <!-- ডান পাশ -->
+            <!-- হেডার কন্ট্রোলস -->
             <div class="flex items-center gap-3 relative">
-                <!-- ডার্ক মোড -->
+                <!-- ডার্ক মোড বাটন -->
                 <button id="theme-toggle-btn" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-amber-400 transition">
                     <i id="theme-icon" class="fa-regular fa-moon text-base"></i>
                 </button>
@@ -93,8 +250,8 @@
                             <h4 class="font-bold text-xs">Notifications</h4>
                         </div>
                         <div class="p-3 text-xs text-slate-600 dark:text-slate-300 space-y-2">
-                            <p>● Leave Request: Md. Tanvir (Math Dept)</p>
-                            <p>● Fee Collected: ৳ 45,200 today</p>
+                            <p>● Firebase Realtime Database Synced</p>
+                            <p>● CPSCL Student module is active</p>
                         </div>
                     </div>
                 </div>
@@ -124,14 +281,6 @@
                             <div>
                                 <span class="text-[10px] font-bold text-slate-400 uppercase px-2">Activity</span>
                                 <div class="mt-1 space-y-0.5">
-                                    <a href="#" class="flex items-center gap-3 px-2.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-700 rounded-xl transition">
-                                        <div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center">
-                                            <i class="fa-solid fa-lock text-xs"></i>
-                                        </div>
-                                        <span>Change Password</span>
-                                    </a>
-
-                                    <!-- মাই প্রোফাইল বাটন (শুধুমাত্র এখানে ক্লিক করলেই আপডেট ফর্ম আসবে) -->
                                     <button onclick="loadProfileView()" class="w-full flex items-center gap-3 px-2.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-700 rounded-xl transition">
                                         <div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center">
                                             <i class="fa-regular fa-circle-user text-xs"></i>
@@ -140,19 +289,6 @@
                                     </button>
                                 </div>
                             </div>
-
-                            <div>
-                                <span class="text-[10px] font-bold text-slate-400 uppercase px-2">My Account</span>
-                                <div class="mt-1 space-y-0.5">
-                                    <a href="#" class="flex items-center gap-3 px-2.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-700 rounded-xl transition">
-                                        <div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center">
-                                            <i class="fa-regular fa-bell text-xs"></i>
-                                        </div>
-                                        <span>Notifications</span>
-                                    </a>
-                                </div>
-                            </div>
-
                             <div class="pt-2 border-t border-slate-100 dark:border-slate-700">
                                 <button class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 px-4 rounded-xl flex items-center justify-center gap-2 text-xs shadow-sm transition">
                                     <i class="fa-solid fa-right-from-bracket"></i>
@@ -165,23 +301,23 @@
 
                 <!-- সিস্টেম হেলথ ব্যাজ -->
                 <div class="relative">
-                    <button id="status-btn" class="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-xs hover:bg-emerald-100 transition">
+                    <button title="Firebase Connected" class="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-xs">
                         <i class="fa-solid fa-shield-halved text-sm"></i>
                     </button>
                 </div>
             </div>
         </header>
 
-        <!-- ================= মূল কনটেন্ট এরিয়া (MAIN CANVAS) ================= -->
+        <!-- ================= মূল কনটেন্ট এরিয়া (MAIN CONTENT AREA) ================= -->
         <div id="main-content-area" class="flex-1 p-6 overflow-y-auto bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
-            <!-- এখানে ডিফল্টভাবে ফাঁকা ড্যাশবোর্ড লোড হবে -->
+            <!-- জাভাস্ক্রিপ্ট দিয়ে ভিউ রেন্ডার হবে -->
         </div>
 
     </main>
 
-    <!-- ================= জাভাস্ক্রিপ্ট কোড ================= -->
+    <!-- ================= জাভাস্ক্রিপ্ট এবং ফায়ারবেস ইন্টিগ্রেশন ================= -->
     <script>
-        // ইউজার স্টেট অবজেক্ট
+        // ইউজার ডেটা অবজেক্ট
         let currentUser = {
             empId: "357",
             nameEn: "Md. Rabbi Hosen",
@@ -200,21 +336,30 @@
             displayOrder: "85",
             joinDate: "2025-03-05",
             empType: "Full Time",
-            fbLink: "https://facebook.com",
             nationality: "Bangladeshi",
             bloodGroup: "B+",
             nid: "6467052103",
-            email: "rabbi.cpscl@gmail.com",
-            appPin: "1234",
-            ramsId: "RAMS-357",
-            district: "Lalmonirhat",
             permanentAddress: "Lalmonirhat Sadar, Lalmonirhat",
             presentAddress: "CPSCL Staff Quarter, Lalmonirhat",
-            aboutMe: "Dedicated and proactive Office Assistant handling academic and administrative operations smoothly.",
+            aboutMe: "Office Assistant handling student registration, records and certificate operations.",
             photoUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
         };
 
-        // ড্রপডাউন ও বাটন হ্যান্ডলার
+        // CPSCL মডিউল ডেটাস্টোর
+        let studentDatabase = JSON.parse(localStorage.getItem('cpscl_students_data') || '[]');
+        let currentFilterTemplate = 'all';
+        let dbInstance = null;
+        let dbRefFunc = null;
+        let dbSetFunc = null;
+
+        const TEMPLATE_NAMES = {
+            'ssc_testimonial': 'SSC Testimonial',
+            'hsc_testimonial': 'HSC Testimonial',
+            'tc_certificate': 'Transfer Certificate (TC)',
+            'character_cert': 'Character Certificate'
+        };
+
+        // UI ড্রপডাউন হ্যান্ডলারসমূহ
         const sidebar = document.getElementById('sidebar');
         const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
         const themeToggleBtn = document.getElementById('theme-toggle-btn');
@@ -262,215 +407,670 @@
 
         document.addEventListener('click', () => closeAllExcept(null));
 
-        // ================= ১. মূল ড্যাশবোর্ড ভিউ (ফাঁকা ক্যানভাস) =================
+        function toggleCPSCLMenu() {
+            const sub = document.getElementById('cpscl-submenu');
+            const arrow = document.getElementById('cpscl-menu-arrow');
+            sub.classList.toggle('hidden');
+            arrow.classList.toggle('rotate-180');
+        }
+
+        // ================= ১. ফায়ারবেস ক্লাউড ডেটাবেজ সংযোগ =================
+        async function initFirebaseSync() {
+            try {
+                const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+                const { getDatabase, ref, set, onValue } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+
+                const firebaseConfig = {
+                    apiKey: "AIzaSyA1PhRiTkICNCd8sA4he3ZxKjHtIzM0d5E",
+                    authDomain: "mousumi-computer.firebaseapp.com",
+                    databaseURL: "https://mousumi-computer-default-rtdb.firebaseio.com",
+                    projectId: "mousumi-computer",
+                    storageBucket: "mousumi-computer.firebasestorage.app",
+                    messagingSenderId: "104820462623",
+                    appId: "1:104820462623:web:e3abae9533cc841463712a",
+                    measurementId: "G-EPYJ70W97Z"
+                };
+
+                const existingApps = getApps();
+                const app = existingApps.length > 0 ? existingApps[0] : initializeApp(firebaseConfig, "CPSCL_PORTAL_APP");
+                
+                dbInstance = getDatabase(app);
+                dbRefFunc = ref;
+                dbSetFunc = set;
+
+                const studentsRef = ref(dbInstance, 'cpscl/students');
+                onValue(studentsRef, (snapshot) => {
+                    const cloudData = snapshot.val();
+                    if (cloudData) {
+                        studentDatabase = Array.isArray(cloudData) ? cloudData : Object.values(cloudData);
+                        localStorage.setItem('cpscl_students_data', JSON.stringify(studentDatabase));
+                        if (document.getElementById('studentTableBody')) {
+                            renderStudentTable();
+                        }
+                    }
+                });
+            } catch (err) {
+                console.warn("Firebase fallback to local cache:", err);
+            }
+        }
+
+        async function syncToFirebase(newData) {
+            localStorage.setItem('cpscl_students_data', JSON.stringify(newData));
+            if (dbInstance && dbSetFunc && dbRefFunc) {
+                try {
+                    const studentsRef = dbRefFunc(dbInstance, 'cpscl/students');
+                    await dbSetFunc(studentsRef, newData);
+                } catch (e) {
+                    console.error("Firebase Sync Error:", e);
+                }
+            }
+        }
+
+        // ================= ২. ভিউ লোডারসমূহ =================
+        function setActiveMenu(activeId) {
+            document.querySelectorAll('#sidebar-menu button').forEach(b => {
+                b.classList.remove('bg-emerald-50', 'text-emerald-700', 'dark:bg-emerald-950/40', 'dark:text-emerald-300');
+            });
+            const activeBtn = document.getElementById(activeId);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-emerald-50', 'text-emerald-700', 'dark:bg-emerald-950/40', 'dark:text-emerald-300');
+            }
+        }
+
         function loadDashboardView() {
             closeAllExcept(null);
+            setActiveMenu('menu-dash-btn');
+            document.getElementById('top-title').innerText = "Cantonment Public School And College Lalmonirhat";
             const container = document.getElementById('main-content-area');
-            // ড্যাশবোর্ড বর্তমানে ফাঁকা রাখা হয়েছে (আপনার পরবর্তী নির্দেশনা অনুযায়ী এখানে জিনিস বসবে)
             container.innerHTML = ``;
         }
 
-        // ================= ২. মাই প্রোফাইল আপডেট ফর্ম ভিউ =================
-        function loadProfileView() {
+        function switchCPSCLSubSection(sectionType) {
             closeAllExcept(null);
             const container = document.getElementById('main-content-area');
-            
+
+            if (sectionType === 'list') {
+                setActiveMenu('menu-cpscl-list');
+                document.getElementById('top-title').innerText = "CPSCL - STUDENT LIST & EXCEL DATABASE";
+                renderStudentListView(container);
+                renderStudentTable();
+            } else if (sectionType === 'entry') {
+                setActiveMenu('menu-cpscl-entry');
+                document.getElementById('top-title').innerText = "CPSCL - STUDENT ENTRY FORM";
+                renderStudentEntryView(container);
+            } else if (sectionType === 'preview') {
+                setActiveMenu('menu-cpscl-preview');
+                document.getElementById('top-title').innerText = "CPSCL - CERTIFICATE PRINT PREVIEW";
+                renderCertificatePreviewView(container);
+            }
+        }
+
+        // ================= ৩. ভিউ টেমপ্লেটসমূহ =================
+
+        // ৩.১ স্টুডেন্ট লিস্ট ভিউ
+        function renderStudentListView(container) {
             container.innerHTML = `
-                <div class="max-w-6xl mx-auto space-y-4">
-                    
-                    <!-- অ্যালার্ট মেসেজ বক্স -->
-                    <div id="save-alert" class="hidden bg-emerald-100 border border-emerald-300 text-emerald-800 px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-between shadow-xs">
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
-                            <span>প্রোফাইলের তথ্য সফলভাবে আপডেট হয়েছে!</span>
-                        </div>
-                    </div>
-
-                    <!-- মূল ফর্ম কার্ড -->
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                        
-                        <!-- টপ ট্যাব বার -->
-                        <div class="flex border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-xs font-bold text-slate-500 dark:text-slate-400">
-                            <button class="px-8 py-3.5 bg-blue-600 text-white border-b-2 border-blue-600 flex items-center gap-2">
-                                <span>Basic</span>
-                            </button>
-                            <button class="px-8 py-3.5 hover:text-blue-600 transition">Spouse</button>
-                            <button class="px-8 py-3.5 hover:text-blue-600 transition">Academic</button>
-                            <button class="px-8 py-3.5 hover:text-blue-600 transition">Miscellaneous</button>
-                        </div>
-
-                        <!-- ফর্ম ইনপুট গ্রিড -->
-                        <form id="profile-form" onsubmit="saveProfile(event)" class="p-6 space-y-4 text-xs">
-                            
-                            <!-- সারি ১ -->
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Employee ID*</label>
-                                    <input type="text" id="inp-empId" value="${currentUser.empId}" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500" required>
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Name (English)*</label>
-                                    <input type="text" id="inp-nameEn" value="${currentUser.nameEn}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500" required>
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">নাম (বাংলা)*</label>
-                                    <input type="text" id="inp-nameBn" value="${currentUser.nameBn}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
-                                </div>
+                <div class="space-y-5 max-w-7xl mx-auto">
+                    <!-- এক্সেল আপলোড ও টুলবার কার্ড -->
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-file-excel text-emerald-600"></i> Student Excel Import & Database
+                                </h2>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">টেমপ্লেট অনুযায়ী এক্সেল ফাইল আপলোড করুন (ক্লাউড ফায়ারবেসে স্বয়ংক্রিয় সংরক্ষণ হবে)</p>
                             </div>
-
-                            <!-- সারি ২ -->
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Mobile No*</label>
-                                    <input type="text" id="inp-mobile" value="${currentUser.mobile}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Gender*</label>
-                                    <select id="inp-gender" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
-                                        <option ${currentUser.gender === 'Male' ? 'selected' : ''}>Male</option>
-                                        <option ${currentUser.gender === 'Female' ? 'selected' : ''}>Female</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Religion*</label>
-                                    <select id="inp-religion" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
-                                        <option ${currentUser.religion === 'Islam' ? 'selected' : ''}>Islam</option>
-                                        <option ${currentUser.religion === 'Hinduism' ? 'selected' : ''}>Hinduism</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- সারি ৩ -->
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Father's Name</label>
-                                    <input type="text" id="inp-fatherEn" value="${currentUser.fatherEn}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">পিতার নাম (বাংলা)</label>
-                                    <input type="text" id="inp-fatherBn" value="${currentUser.fatherBn}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Birth Date (DD/MM/YYYY)</label>
-                                    <input type="date" id="inp-dob" value="${currentUser.dob}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
-                                </div>
-                            </div>
-
-                            <!-- সারি ৪ -->
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Mother's Name</label>
-                                    <input type="text" id="inp-motherEn" value="${currentUser.motherEn}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">মাতার নাম (বাংলা)</label>
-                                    <input type="text" id="inp-motherBn" value="${currentUser.motherBn}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Anniversary Date</label>
-                                    <input type="date" id="inp-anniversary" value="${currentUser.anniversary}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
-                                </div>
-                            </div>
-
-                            <!-- সারি ৫ -->
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Designation*</label>
-                                    <input type="text" id="inp-designation" value="${currentUser.designation}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">School Hour</label>
-                                    <input type="text" id="inp-schoolHour" value="${currentUser.schoolHour}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Show/Display Order*</label>
-                                    <input type="text" id="inp-displayOrder" value="${currentUser.displayOrder}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
-                                </div>
-                            </div>
-
-                            <!-- সারি ৬ -->
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Nationality*</label>
-                                    <input type="text" id="inp-nationality" value="${currentUser.nationality}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Blood Group</label>
-                                    <select id="inp-bloodGroup" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
-                                        <option>A+</option><option>A-</option><option selected>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">National ID (NID)</label>
-                                    <input type="text" id="inp-nid" value="${currentUser.nid}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
-                                </div>
-                            </div>
-
-                            <!-- সারি ৭ -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Permanent Address</label>
-                                    <textarea id="inp-permAddress" rows="2" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">${currentUser.permanentAddress}</textarea>
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Present Address</label>
-                                    <textarea id="inp-presAddress" rows="2" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">${currentUser.presentAddress}</textarea>
-                                </div>
-                            </div>
-
-                            <!-- সারি ৮ -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Short Description (About Me)</label>
-                                    <textarea id="inp-aboutMe" rows="4" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">${currentUser.aboutMe}</textarea>
-                                </div>
-                                
-                                <div>
-                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Profile Photo (300 x 300 px)</label>
-                                    <div class="border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-xl p-4 flex items-center gap-4 bg-slate-50 dark:bg-slate-700/50">
-                                        <div class="w-16 h-16 rounded-full overflow-hidden bg-slate-200 border-2 border-white shadow shrink-0">
-                                            <img id="form-img-preview" src="${currentUser.photoUrl}" alt="Preview" class="w-full h-full object-cover">
-                                        </div>
-                                        <div class="flex-1">
-                                            <input type="file" id="inp-photoFile" accept="image/*" onchange="previewImage(event)" class="text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
-                                            <p class="text-[10px] text-slate-400 mt-1">Max size: 300 KB (JPG, PNG)</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- সাবমিট বাটন -->
-                            <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
-                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 text-xs shadow-md transition">
-                                    <i class="fa-solid fa-floppy-disk"></i>
-                                    <span>Update Information / Next</span>
+                            <div class="flex flex-wrap gap-2.5">
+                                <button onclick="downloadSampleExcel()" class="bg-sky-600 hover:bg-sky-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-xs transition">
+                                    <i class="fa-solid fa-download"></i> স্যাম্পল এক্সেল ডাউনলোড
+                                </button>
+                                <button onclick="switchCPSCLSubSection('entry')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-xs transition">
+                                    <i class="fa-solid fa-user-plus"></i> নতুন শিক্ষার্থী এন্ট্রি
                                 </button>
                             </div>
+                        </div>
 
-                        </form>
+                        <!-- এক্সেল ড্রপজোন -->
+                        <div onclick="document.getElementById('excelFileInput').click()" class="border-2 border-dashed border-indigo-300 dark:border-indigo-700/60 bg-indigo-50/50 dark:bg-indigo-950/20 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 p-6 rounded-2xl text-center cursor-pointer transition">
+                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-600 dark:text-indigo-400 mb-2"></i>
+                            <h4 class="font-bold text-sm text-slate-800 dark:text-white">এক্সেল ফাইল আপলোড করতে এখানে ক্লিক করুন</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">সমর্থিত ফাইল: .xlsx, .xls, .csv</p>
+                            <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
+                        </div>
                     </div>
 
+                    <!-- স্টুডেন্ট টেবিল ও ফিল্টারিং কার্ড -->
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                        <!-- টেমপ্লেট ফিল্টার ট্যাব -->
+                        <div class="flex flex-wrap gap-2 pb-3 border-b border-slate-100 dark:border-slate-700 mb-4">
+                            <button onclick="filterByTemplate('all', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow-xs">
+                                <i class="fa-solid fa-layer-group mr-1"></i> All Students
+                            </button>
+                            <button onclick="filterByTemplate('ssc_testimonial', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+                                <i class="fa-solid fa-graduation-cap mr-1"></i> SSC Testimonial
+                            </button>
+                            <button onclick="filterByTemplate('hsc_testimonial', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+                                <i class="fa-solid fa-user-graduate mr-1"></i> HSC Testimonial
+                            </button>
+                            <button onclick="filterByTemplate('tc_certificate', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+                                <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Transfer Certificate (TC)
+                            </button>
+                            <button onclick="filterByTemplate('character_cert', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+                                <i class="fa-solid fa-award mr-1"></i> Character Certificate
+                            </button>
+                        </div>
+
+                        <!-- সার্চ ও কাউন্ট বার -->
+                        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                            <div class="relative w-72">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+                                <input type="text" id="studentSearchInput" placeholder="রোল, নাম বা রেজি. দিয়ে খুঁজুন..." oninput="renderStudentTable()" class="w-full pl-9 pr-4 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white focus:outline-emerald-500">
+                            </div>
+                            <div class="flex items-center gap-3 text-xs font-bold text-slate-600 dark:text-slate-300">
+                                <span>মোট শিক্ষার্থী: <strong id="totalStudentsCount" class="text-emerald-600 text-sm">0</strong> জন</span>
+                                <button onclick="clearAllStudents()" class="text-rose-600 hover:text-rose-700 flex items-center gap-1.5 ml-2 font-bold cursor-pointer">
+                                    <i class="fa-solid fa-trash-can"></i> ডাটা ক্লিয়ার করুন
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- টেবিল -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-200 dark:border-slate-700 text-slate-400 uppercase font-bold text-[11px]">
+                                        <th class="py-3 px-3">রোল</th>
+                                        <th class="py-3 px-3">রেজিস্ট্রেশন</th>
+                                        <th class="py-3 px-3">শিক্ষার্থীর নাম</th>
+                                        <th class="py-3 px-3">পিতার নাম</th>
+                                        <th class="py-3 px-3">লিঙ্গ</th>
+                                        <th class="py-3 px-3">টেমপ্লেট</th>
+                                        <th class="py-3 px-3">গ্রুপ/শ্রেণি</th>
+                                        <th class="py-3 px-3">GPA</th>
+                                        <th class="py-3 px-3 text-right">অ্যাকশন</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/60">
+                                    <!-- ডাইনামিক ডেটা লোড হবে -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             `;
         }
 
-        // ছবি প্রিভিউ
-        function previewImage(event) {
+        // ৩.২ স্টুডেন্ট এন্ট্রি ভিউ
+        function renderStudentEntryView(container) {
+            container.innerHTML = `
+                <div class="max-w-4xl mx-auto bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
+                    <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-700">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-pen-to-square text-emerald-600"></i> Student Information Entry
+                            </h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">সার্টিফিকেট টেমপ্লেট নির্বাচন করে তথ্য এন্ট্রি দিন</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs font-bold text-slate-600 dark:text-slate-300">Certificate Type:</label>
+                            <select id="entryTemplateSelect" onchange="onTemplateChange(this.value)" class="bg-indigo-50 dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-slate-600 px-3 py-1.5 rounded-xl text-xs focus:outline-indigo-500">
+                                <option value="ssc_testimonial">SSC Testimonial (এসএসসি)</option>
+                                <option value="hsc_testimonial">HSC Testimonial (এইচএসসি)</option>
+                                <option value="tc_certificate">Transfer Certificate - TC (ছাড়পত্র)</option>
+                                <option value="character_cert">Character Certificate (চারিত্রিক সনদ)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <form onsubmit="event.preventDefault(); saveAndPreviewFromForm();" class="space-y-4 text-xs">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Reference No. *</label>
+                                <input type="text" id="inpRef" value="CPSCL/ 801023/SSC-26/001" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white" required>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Student's Full Name *</label>
+                                <input type="text" id="inpName" value="K M ANISUJJAMAN MASUM" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white" required>
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Gender *</label>
+                                <select id="inpGender" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white">
+                                    <option value="Male">Male (Son / He / His)</option>
+                                    <option value="Female">Female (Daughter / She / Her)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Father's Name *</label>
+                                <input type="text" id="inpFather" value="MD ASHRAFUL HABIB" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white" required>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Mother's Name *</label>
+                                <input type="text" id="inpMother" value="MST AKLIMA KHATUN" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white" required>
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Roll / ID No *</label>
+                                <input type="text" id="inpRoll" value="229083" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white" required>
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Registration No</label>
+                                <input type="text" id="inpReg" value="2317722960" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Session *</label>
+                                <input type="text" id="inpSession" value="2024–2025" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white" required>
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Passing Year / Year *</label>
+                                <input type="text" id="inpYear" value="2026" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white" required>
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Group / Class *</label>
+                                <input type="text" id="inpGroup" value="Science" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white" required>
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Education Board</label>
+                                <input type="text" id="inpBoard" value="Dinajpur" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">GPA / Result</label>
+                                <input type="text" id="inpGpa" value="5.00" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Date (Publication / Issue)</label>
+                                <input type="text" id="inpPubDate" value="10 August 2026" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white">
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <button type="button" onclick="switchCPSCLSubSection('list')" class="bg-slate-600 hover:bg-slate-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs">
+                                <i class="fa-solid fa-arrow-left mr-1"></i> ব্যাক টু লিস্ট
+                            </button>
+                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md">
+                                <i class="fa-solid fa-file-circle-check"></i> Generate & View Certificate
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+        }
+
+        // ৩.৩ সার্টিফিকেট প্রিন্ট প্রিভিউ ভিউ
+        function renderCertificatePreviewView(container) {
+            container.innerHTML = `
+                <div class="space-y-4 max-w-6xl mx-auto">
+                    <!-- প্রিভিউ কন্ট্রোল বার -->
+                    <div class="bg-slate-800 text-white p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 no-print shadow-sm">
+                        <button onclick="switchCPSCLSubSection('list')" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition">
+                            <i class="fa-solid fa-arrow-left"></i> Back to List
+                        </button>
+                        
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-slate-300">Template:</span>
+                            <select id="previewTemplateSelect" onchange="onTemplateChange(this.value)" class="bg-slate-700 text-white font-semibold text-xs px-3 py-1.5 rounded-lg border border-slate-600 focus:outline-none">
+                                <option value="ssc_testimonial">SSC Testimonial (এসএসসি)</option>
+                                <option value="hsc_testimonial">HSC Testimonial (এইচএসসি)</option>
+                                <option value="tc_certificate">Transfer Certificate - TC (ছাড়পত্র)</option>
+                                <option value="character_cert">Character Certificate (চারিত্রিক সনদ)</option>
+                            </select>
+                        </div>
+
+                        <button onclick="printCPSCLCertificate()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-2 rounded-xl text-xs flex items-center gap-2 shadow-lg transition">
+                            <i class="fa-solid fa-print"></i> Print / Download PDF
+                        </button>
+                    </div>
+
+                    <!-- A4 ল্যান্ডস্কেপ প্রিন্ট ক্যানভাস -->
+                    <div class="overflow-x-auto p-4 bg-slate-700/80 rounded-2xl flex justify-center">
+                        <div class="cpscl-a4-sheet" id="cpsclPrintArea">
+                            <div class="cert-ref" id="prevRef">CPSCL/ 801023/SSC-26/001</div>
+                            
+                            <div class="cert-body-block">
+                                <p class="cert-paragraph">
+                                    This is to certify that <span class="cert-bold" id="prevName">K M ANISUJJAMAN MASUM</span>, <span id="prevRelation">son of</span> <span class="cert-bold" id="prevFather">MD ASHRAFUL HABIB</span> and <span class="cert-bold" id="prevMother">MST AKLIMA KHATUN</span> bearing Roll No. <span class="cert-meta-bold" id="prevRoll">229083</span>, Registration No. <span class="cert-meta-bold" id="prevReg">2317722960</span>, Session <span class="cert-meta-bold" id="prevSession">2024–2025</span> passed <span id="prevExamName">Secondary School Certificate Examination</span> in <span class="cert-meta-bold" id="prevYear">2026</span> from <span class="cert-meta-bold" id="prevGroup">Science</span> group under the Board of Intermediate and Secondary Education, <span id="prevBoard">Dinajpur</span> as a regular student of this institution and acquired GPA- <span class="cert-meta-bold" id="prevGpa">5.00</span>.
+                                </p>
+                                <p class="cert-paragraph">
+                                    <span id="prevPronoun">He</span> bears a good moral character. To the best of my concern, <span id="prevPronounLower">he</span> did not take part in any activity subversive of the state or against discipline during <span id="prevPossessive">his</span> stay at this institution.
+                                </p>
+                                <p class="cert-paragraph">
+                                    I wish <span id="prevObjective">him</span> a bright future.
+                                </p>
+                            </div>
+
+                            <div class="cert-footer-date">
+                                [Result Publication Date: <span id="prevPubDate">10 August 2026</span>]
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            updateCertificateData();
+        }
+
+        // ৩.৪ মাই প্রোফাইল ভিউ
+        function loadProfileView() {
+            closeAllExcept(null);
+            document.getElementById('top-title').innerText = "EMPLOYEE PROFILE UPDATE";
+            const container = document.getElementById('main-content-area');
+            container.innerHTML = `
+                <div class="max-w-5xl mx-auto bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+                    <div id="save-alert" class="hidden bg-emerald-100 text-emerald-800 px-4 py-2.5 rounded-xl text-xs font-bold">
+                        প্রোফাইলের তথ্য সফলভাবে আপডেট হয়েছে!
+                    </div>
+                    <h2 class="text-base font-bold text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-3">
+                        <i class="fa-regular fa-user mr-2 text-emerald-600"></i> Edit Profile Information
+                    </h2>
+                    <form onsubmit="saveProfile(event)" class="space-y-4 text-xs">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block font-semibold mb-1">Employee ID*</label>
+                                <input type="text" id="inp-empId" value="${currentUser.empId}" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600" required>
+                            </div>
+                            <div>
+                                <label class="block font-semibold mb-1">Name (English)*</label>
+                                <input type="text" id="inp-nameEn" value="${currentUser.nameEn}" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600" required>
+                            </div>
+                            <div>
+                                <label class="block font-semibold mb-1">নাম (বাংলা)*</label>
+                                <input type="text" id="inp-nameBn" value="${currentUser.nameBn}" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600">
+                            </div>
+                            <div>
+                                <label class="block font-semibold mb-1">Mobile No*</label>
+                                <input type="text" id="inp-mobile" value="${currentUser.mobile}" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600">
+                            </div>
+                            <div>
+                                <label class="block font-semibold mb-1">Designation*</label>
+                                <input type="text" id="inp-designation" value="${currentUser.designation}" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600">
+                            </div>
+                            <div>
+                                <label class="block font-semibold mb-1">About Me</label>
+                                <input type="text" id="inp-aboutMe" value="${currentUser.aboutMe}" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600">
+                            </div>
+                        </div>
+                        <div class="flex justify-end pt-3 border-t border-slate-100 dark:border-slate-700">
+                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-xl text-xs">
+                                <i class="fa-solid fa-floppy-disk mr-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+        }
+
+        // ================= ৪. এক্সেল ও সার্টিফিকেট লজিক =================
+        function filterByTemplate(tpl, btnElement) {
+            currentFilterTemplate = tpl;
+            document.querySelectorAll('.cpscl-tab-btn').forEach(btn => {
+                btn.className = 'cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition';
+            });
+            if (btnElement) {
+                btnElement.className = 'cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow-xs';
+            }
+            renderStudentTable();
+        }
+
+        function handleExcelUpload(event) {
             const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('form-img-preview').src = e.target.result;
-                    currentUser.photoUrl = e.target.result;
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                    if (jsonData.length === 0) {
+                        alert("এক্সেল ফাইলে কোনো ডেটা পাওয়া যায়নি!");
+                        return;
+                    }
+
+                    const newStudents = jsonData.map((row, index) => {
+                        const ser = row['Ser'] || row['SL'] || row['Sl'] || (index + 1);
+                        const roll = row['Board Roll'] || row['Roll'] || row['রোল'] || ser;
+                        const studentID = row['Student ID'] || row['ID'] || '801023';
+
+                        let tpl = (row['Template'] || row['Template Type'] || '').toString().toLowerCase();
+                        if (tpl.includes('hsc')) tpl = 'hsc_testimonial';
+                        else if (tpl.includes('tc')) tpl = 'tc_certificate';
+                        else if (tpl.includes('char')) tpl = 'character_cert';
+                        else if (currentFilterTemplate !== 'all') tpl = currentFilterTemplate;
+                        else tpl = 'ssc_testimonial';
+
+                        const rawYear = String(row['Passing Year'] || row['Year'] || '2026');
+                        const yearSuffix = rawYear.slice(-2);
+                        const examCode = tpl === 'hsc_testimonial' ? 'HSC' : (tpl === 'tc_certificate' ? 'TC' : 'SSC');
+                        const serPadded = String(ser).padStart(3, '0');
+
+                        let gpaVal = (row['Result'] !== undefined ? row['Result'] : (row['GPA'] || '5.00')).toString();
+                        if (!isNaN(parseFloat(gpaVal)) && !gpaVal.includes('.')) {
+                            gpaVal = parseFloat(gpaVal).toFixed(2);
+                        }
+
+                        return {
+                            template: tpl,
+                            ser: ser,
+                            studentID: studentID,
+                            ref: row['Reference'] || `CPSCL/ ${studentID}/${examCode}-${yearSuffix}/${serPadded}`,
+                            name: (row['Student Name'] || row['Name'] || 'STUDENT NAME').toString().trim(),
+                            gender: (row['Gender'] || 'Male').toString().toLowerCase().startsWith('f') ? 'Female' : 'Male',
+                            father: (row["Father's Name"] || row['Father Name'] || '').toString().trim(),
+                            mother: (row["Mother's Name"] || row['Mother Name'] || '').toString().trim(),
+                            roll: roll,
+                            reg: row['Registration No'] || row['Reg'] || '',
+                            session: row['Session'] || '2024–2025',
+                            year: rawYear,
+                            group: (row['Group'] || row['Class'] || 'Science').toString().trim(),
+                            board: row['Board'] || 'Dinajpur',
+                            gpa: gpaVal,
+                            pubDate: row['Publication Date'] || row['Date'] || '10 August 2026'
+                        };
+                    });
+
+                    newStudents.forEach(st => {
+                        const existingIdx = studentDatabase.findIndex(s => s.roll === st.roll && s.template === st.template);
+                        if (existingIdx !== -1) studentDatabase[existingIdx] = st;
+                        else studentDatabase.push(st);
+                    });
+
+                    await syncToFirebase(studentDatabase);
+                    renderStudentTable();
+                    alert(`সফলভাবে ${newStudents.length} জন শিক্ষার্থীর তথ্য ক্লাউডে সিঙ্ক হয়েছে!`);
+                    event.target.value = '';
+                } catch (err) {
+                    alert("এক্সেল ফাইল রিড করতে সমস্যা হয়েছে: " + err.message);
                 }
-                reader.readAsDataURL(file);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function renderStudentTable() {
+            const tbody = document.getElementById('studentTableBody');
+            const countEl = document.getElementById('totalStudentsCount');
+            if (!tbody) return;
+
+            const searchVal = (document.getElementById('studentSearchInput')?.value || '').toLowerCase();
+            const filtered = studentDatabase.filter(s => {
+                const matchesSearch = String(s.roll).toLowerCase().includes(searchVal) ||
+                                      String(s.reg).toLowerCase().includes(searchVal) ||
+                                      s.name.toLowerCase().includes(searchVal);
+                const matchesTemplate = (currentFilterTemplate === 'all') || (s.template === currentFilterTemplate);
+                return matchesSearch && matchesTemplate;
+            });
+
+            if (countEl) countEl.innerText = filtered.length;
+            tbody.innerHTML = '';
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-slate-400 py-6">কোনো শিক্ষার্থীর তথ্য পাওয়া যায়নি।</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(s => {
+                const rawIndex = studentDatabase.indexOf(s);
+                const genderBadge = s.gender === 'Female' 
+                    ? '<span class="text-pink-600 font-bold"><i class="fa-solid fa-venus"></i> Female</span>' 
+                    : '<span class="text-sky-600 font-bold"><i class="fa-solid fa-mars"></i> Male</span>';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 dark:hover:bg-slate-700/40 transition";
+                tr.innerHTML = `
+                    <td class="py-3 px-3 font-bold">${s.roll}</td>
+                    <td class="py-3 px-3">${s.reg || '-'}</td>
+                    <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">${s.name}</td>
+                    <td class="py-3 px-3">${s.father || '-'}</td>
+                    <td class="py-3 px-3">${genderBadge}</td>
+                    <td class="py-3 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">${TEMPLATE_NAMES[s.template] || 'SSC'}</span></td>
+                    <td class="py-3 px-3"><span class="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-[11px] font-bold">${s.group}</span></td>
+                    <td class="py-3 px-3 font-bold text-emerald-600">${s.gpa || '-'}</td>
+                    <td class="py-3 px-3 text-right">
+                        <button onclick="loadStudentToPrint(${rawIndex})" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-bold text-xs shadow-xs transition">
+                            <i class="fa-solid fa-print mr-1"></i> Print
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function loadStudentToPrint(idx) {
+            const s = studentDatabase[idx];
+            if (!s) return;
+
+            switchCPSCLSubSection('preview');
+
+            document.getElementById('prevRef').innerText = s.ref;
+            document.getElementById('prevName').innerText = s.name;
+            document.getElementById('prevFather').innerText = s.father;
+            document.getElementById('prevMother').innerText = s.mother;
+            document.getElementById('prevRoll').innerText = s.roll;
+            document.getElementById('prevReg').innerText = s.reg;
+            document.getElementById('prevSession').innerText = s.session;
+            document.getElementById('prevYear').innerText = s.year;
+            document.getElementById('prevGroup').innerText = s.group;
+            document.getElementById('prevBoard').innerText = s.board;
+            document.getElementById('prevGpa').innerText = s.gpa;
+            document.getElementById('prevPubDate').innerText = s.pubDate;
+
+            const isMale = s.gender === 'Male';
+            document.getElementById('prevRelation').innerText = isMale ? "son of" : "daughter of";
+            document.getElementById('prevPronoun').innerText = isMale ? "He" : "She";
+            document.getElementById('prevPronounLower').innerText = isMale ? "he" : "she";
+            document.getElementById('prevPossessive').innerText = isMale ? "his" : "her";
+            document.getElementById('prevObjective').innerText = isMale ? "him" : "her";
+            document.getElementById('previewTemplateSelect').value = s.template || 'ssc_testimonial';
+        }
+
+        function printCPSCLCertificate() {
+            window.print();
+        }
+
+        function downloadSampleExcel() {
+            const sampleData = [{
+                "Ser": 1,
+                "Registration No": "2317720914",
+                "Board Roll": 228958,
+                "Student ID": 900224,
+                "Student Name": "MOST. MEHERIN AKTHER",
+                "Father's Name": "MD. MASUD RANA",
+                "Result": 5.00,
+                "Gender": "Female",
+                "Mother's Name": "MOST. MOMENA BEGUM",
+                "Group": "SCIENCE",
+                "Date of Birth": "30/04/2010",
+                "Session": "2024–2025",
+                "Passing Year": 2026,
+                "Publication Date": "10 August 2026"
+            }];
+
+            const ws = XLSX.utils.json_to_sheet(sampleData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Students_Demo");
+            XLSX.writeFile(wb, `CPSCL_Sample_Data.xlsx`);
+        }
+
+        async function clearAllStudents() {
+            if (confirm("আপনি কি নিশ্চিত যে তালিকা মুছে ফেলতে চান? এটি ক্লাউড ফায়ারবেস থেকেও মুছে যাবে।")) {
+                studentDatabase = (currentFilterTemplate === 'all') 
+                    ? [] 
+                    : studentDatabase.filter(s => s.template !== currentFilterTemplate);
+
+                await syncToFirebase(studentDatabase);
+                renderStudentTable();
+                alert("ডাটাবেজ ক্লিয়ার হয়েছে!");
             }
         }
 
-        // ফর্ম সেভ
+        function onTemplateChange(templateVal) {
+            const prevSel = document.getElementById('previewTemplateSelect');
+            if (prevSel) prevSel.value = templateVal;
+
+            const examSpan = document.getElementById('prevExamName');
+            const refInp = document.getElementById('inpRef');
+
+            if (templateVal === 'hsc_testimonial') {
+                if (examSpan) examSpan.innerText = "Higher Secondary Certificate Examination";
+                if (refInp && refInp.value.includes('SSC')) refInp.value = refInp.value.replace('SSC', 'HSC');
+            } else {
+                if (examSpan) examSpan.innerText = "Secondary School Certificate Examination";
+                if (refInp && refInp.value.includes('HSC')) refInp.value = refInp.value.replace('HSC', 'SSC');
+            }
+        }
+
+        function updateCertificateData() {
+            const nameEl = document.getElementById('inpName');
+            if (!nameEl) return;
+            const isMale = document.getElementById('inpGender').value === 'Male';
+
+            document.getElementById('prevRef').innerText = document.getElementById('inpRef').value;
+            document.getElementById('prevName').innerText = document.getElementById('inpName').value;
+            document.getElementById('prevFather').innerText = document.getElementById('inpFather').value;
+            document.getElementById('prevMother').innerText = document.getElementById('inpMother').value;
+            document.getElementById('prevRoll').innerText = document.getElementById('inpRoll').value;
+            document.getElementById('prevReg').innerText = document.getElementById('inpReg').value;
+            document.getElementById('prevSession').innerText = document.getElementById('inpSession').value;
+            document.getElementById('prevYear').innerText = document.getElementById('inpYear').value;
+            document.getElementById('prevGroup').innerText = document.getElementById('inpGroup').value;
+            document.getElementById('prevBoard').innerText = document.getElementById('inpBoard').value;
+            document.getElementById('prevGpa').innerText = document.getElementById('inpGpa').value;
+            document.getElementById('prevPubDate').innerText = document.getElementById('inpPubDate').value;
+
+            document.getElementById('prevRelation').innerText = isMale ? "son of" : "daughter of";
+            document.getElementById('prevPronoun').innerText = isMale ? "He" : "She";
+            document.getElementById('prevPronounLower').innerText = isMale ? "he" : "she";
+            document.getElementById('prevPossessive').innerText = isMale ? "his" : "her";
+            document.getElementById('prevObjective').innerText = isMale ? "him" : "her";
+        }
+
+        async function saveAndPreviewFromForm() {
+            const selectedTpl = document.getElementById('entryTemplateSelect').value;
+            const studentObj = {
+                template: selectedTpl,
+                ref: document.getElementById('inpRef').value,
+                name: document.getElementById('inpName').value,
+                gender: document.getElementById('inpGender').value,
+                father: document.getElementById('inpFather').value,
+                mother: document.getElementById('inpMother').value,
+                roll: document.getElementById('inpRoll').value,
+                reg: document.getElementById('inpReg').value,
+                session: document.getElementById('inpSession').value,
+                year: document.getElementById('inpYear').value,
+                group: document.getElementById('inpGroup').value,
+                board: document.getElementById('inpBoard').value,
+                gpa: document.getElementById('inpGpa').value,
+                pubDate: document.getElementById('inpPubDate').value
+            };
+
+            const existingIdx = studentDatabase.findIndex(s => s.roll === studentObj.roll && s.template === selectedTpl);
+            if (existingIdx !== -1) studentDatabase[existingIdx] = studentObj;
+            else studentDatabase.unshift(studentObj);
+
+            await syncToFirebase(studentDatabase);
+            switchCPSCLSubSection('preview');
+        }
+
         function saveProfile(event) {
             event.preventDefault();
-            
             currentUser.nameEn = document.getElementById('inp-nameEn').value;
             currentUser.nameBn = document.getElementById('inp-nameBn').value;
             currentUser.mobile = document.getElementById('inp-mobile').value;
@@ -479,21 +1079,15 @@
             currentUser.aboutMe = document.getElementById('inp-aboutMe').value;
 
             document.getElementById('dropdown-user-name').innerText = currentUser.nameEn;
-            document.getElementById('nav-profile-pic').src = currentUser.photoUrl;
-            document.getElementById('dropdown-profile-pic').src = currentUser.photoUrl;
-
             const alertBox = document.getElementById('save-alert');
             alertBox.classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            setTimeout(() => {
-                alertBox.classList.add('hidden');
-            }, 3500);
+            setTimeout(() => alertBox.classList.add('hidden'), 3000);
         }
 
-        // পেজ লোড হলে ডিফল্টভাবে ফাঁকা ড্যাশবোর্ড আসবে
+        // পেজ লোড ইনিট
         window.onload = function() {
             loadDashboardView();
+            initFirebaseSync();
         };
     </script>
 </body>
