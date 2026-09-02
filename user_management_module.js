@@ -1,6 +1,5 @@
 /**
- * User Management & Role-Based Access Control (RBAC) Module
- * Self-Injecting Sidebar Menu & View Panel Architecture
+ * User Management & Role-Based Fine-Grained Access Control (RBAC) Module
  * Realtime Firebase Cloud Database Sync & Live Activity Audit Log
  */
 
@@ -14,9 +13,6 @@
     let dbRefFunc = null;
     let dbSetFunc = null;
 
-    /* ==========================================================
-       ১. ফায়ারবেস ক্লাউড ডেটাবেজ সংযোগ
-       ========================================================== */
     async function initUserManagementFirebase() {
         try {
             const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
@@ -40,7 +36,6 @@
             dbRefFunc = ref;
             dbSetFunc = set;
 
-            // ইউজার লিস্ট লাইভ সিঙ্ক
             const usersRef = ref(dbInstance, 'system/users');
             onValue(usersRef, (snapshot) => {
                 const cloudData = snapshot.val();
@@ -55,7 +50,12 @@
                         email: 'cpscl@gmail.com',
                         password: 'admin123@cpscl',
                         role: 'CPSCL Operator',
-                        modules: ['CPSCL'],
+                        permissions: {
+                            can_view_print: true,
+                            can_upload_excel: false,
+                            can_manual_entry: false,
+                            can_delete_data: false
+                        },
                         status: 'Active',
                         createdAt: new Date().toLocaleString('en-US')
                     }];
@@ -63,7 +63,6 @@
                 }
             });
 
-            // অডিট লগ লাইভ সিঙ্ক
             const logsRef = ref(dbInstance, 'system/audit_logs');
             onValue(logsRef, (snapshot) => {
                 const cloudLogs = snapshot.val();
@@ -76,19 +75,6 @@
 
         } catch (err) {
             console.warn("User Management Firebase Fallback:", err);
-            if (usersDatabase.length === 0) {
-                usersDatabase = [{
-                    id: 'usr_1',
-                    name: 'cpscl',
-                    email: 'cpscl@gmail.com',
-                    password: 'admin123@cpscl',
-                    role: 'CPSCL Operator',
-                    modules: ['CPSCL'],
-                    status: 'Active',
-                    createdAt: new Date().toLocaleString('en-US')
-                }];
-                renderUsersTable();
-            }
         }
     }
 
@@ -116,13 +102,10 @@
         }
     }
 
-    /* ==========================================================
-       ২. গ্লোবাল অ্যাক্টিভিটি লগার (Activity Logger)
-       ========================================================== */
     window.logUserActivity = async function (actionType, details, userName) {
         const newLog = {
             id: 'log_' + Date.now(),
-            user: userName || 'CPSCL Operator (cpscl@gmail.com)',
+            user: userName || 'Admin / Operator',
             action: actionType,
             details: details,
             timestamp: new Date().toLocaleString('en-US', { hour12: true })
@@ -133,9 +116,6 @@
         renderAuditLogsTable();
     };
 
-    /* ==========================================================
-       ৩. সাইডবার মেনু ও ভিউ প্যানেল অটো-ইনজেকশন
-       ========================================================== */
     function initUserManagementModule() {
         const menuList = document.querySelector('.sidebar .menu-list') || document.querySelector('.menu-list');
         const mainWrapper = document.querySelector('.main-wrapper') || document.querySelector('main');
@@ -145,7 +125,6 @@
             return;
         }
 
-        // ১. সাইডবারে বাটন তৈরি (যদি আগে না থাকে)
         if (!document.getElementById('menu-user-management')) {
             const umMenuItem = document.createElement('li');
             umMenuItem.className = 'menu-item';
@@ -168,7 +147,6 @@
             }
         }
 
-        // ২. ভিউ প্যানেল তৈরি (যদি আগে না থাকে)
         let viewPanel = document.getElementById('user-management-view');
         if (!viewPanel) {
             viewPanel = document.createElement('div');
@@ -179,79 +157,29 @@
 
         viewPanel.innerHTML = `
             <style>
-                .um-card {
-                    background: #ffffff;
-                    border-radius: 16px;
-                    border: 1px solid #e2e8f0;
-                    padding: 24px;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-                    margin-bottom: 20px;
-                }
-                .um-tabs-wrap {
-                    display: flex;
-                    gap: 10px;
-                    border-bottom: 2px solid #f1f5f9;
-                    padding-bottom: 12px;
-                    margin-bottom: 20px;
-                }
-                .um-tab-btn {
-                    padding: 9px 18px;
-                    border-radius: 10px;
-                    font-weight: 700;
-                    font-size: 0.88rem;
-                    border: 1px solid #e2e8f0;
-                    background: #f8fafc;
-                    color: #475569;
-                    cursor: pointer;
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 8px;
-                    transition: all 0.2s;
-                }
-                .um-tab-btn.active {
-                    background: #4f46e5;
-                    color: #ffffff;
-                    border-color: #4f46e5;
-                    box-shadow: 0 3px 10px rgba(79, 70, 229, 0.25);
-                }
-                .um-table {
-                    width: 100%;
-                    border-collapse: separate;
-                    border-spacing: 0 8px;
-                }
-                .um-table th {
-                    padding: 12px 16px;
-                    color: #64748b;
-                    font-size: 0.84rem;
-                    font-weight: 700;
-                    text-align: left;
-                }
-                .um-table td {
-                    background: #ffffff;
-                    padding: 14px 16px;
-                    border-top: 1px solid #f1f5f9;
-                    border-bottom: 1px solid #f1f5f9;
-                    font-size: 0.9rem;
-                    color: #1e293b;
-                }
+                .um-card { background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-bottom: 20px; }
+                .um-tabs-wrap { display: flex; gap: 10px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 20px; }
+                .um-tab-btn { padding: 9px 18px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; border: 1px solid #e2e8f0; background: #f8fafc; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
+                .um-tab-btn.active { background: #4f46e5; color: #ffffff; border-color: #4f46e5; box-shadow: 0 3px 10px rgba(79, 70, 229, 0.25); }
+                .um-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+                .um-table th { padding: 12px 16px; color: #64748b; font-size: 0.84rem; font-weight: 700; text-align: left; }
+                .um-table td { background: #ffffff; padding: 14px 16px; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; color: #1e293b; }
                 .um-table tr td:first-child { border-left: 1px solid #f1f5f9; border-radius: 12px 0 0 12px; }
                 .um-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 12px 12px 0; }
                 .um-badge-active { background: #dcfce7; color: #16a34a; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.78rem; }
                 .um-badge-blocked { background: #fee2e2; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.78rem; }
-                .um-module-pill { background: #eef2ff; color: #4338ca; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.76rem; }
+                .um-perm-tag { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin: 2px; }
+                .um-perm-on { background: #e0f2fe; color: #0369a1; }
+                .um-perm-off { background: #f1f5f9; color: #94a3b8; text-decoration: line-through; }
                 .um-btn-action { width: 32px; height: 32px; border-radius: 8px; border: none; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
                 .um-btn-toggle { background: #fef2f2; color: #ef4444; }
-                .um-btn-toggle:hover { background: #fee2e2; }
                 .um-btn-edit { background: #f0fdf4; color: #16a34a; }
-                .um-btn-edit:hover { background: #dcfce7; }
                 .um-btn-del { background: #f1f5f9; color: #64748b; }
-                .um-btn-del:hover { background: #e2e8f0; color: #dc2626; }
                 .um-control { width: 100%; height: 42px; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 0 14px; font-size: 0.9rem; outline: none; }
                 .um-control:focus { border-color: #4f46e5; }
             </style>
 
             <div class="um-card">
-                <!-- টপ ট্যাব বার -->
                 <div class="um-tabs-wrap">
                     <button class="um-tab-btn active" id="tab-btn-users" onclick="switchUMTab('users')">
                         <i class="fa-solid fa-users"></i> ইউজার তালিকা ( <span id="um-count">1</span> )
@@ -264,7 +192,6 @@
                     </button>
                 </div>
 
-                <!-- ১. ইউজার তালিকা সাব-সেকশন -->
                 <div id="um-sec-users">
                     <div style="overflow-x: auto;">
                         <table class="um-table">
@@ -273,7 +200,7 @@
                                     <th>নাম ও ইমেইল</th>
                                     <th>রোল</th>
                                     <th>পাসওয়ার্ড (Admin View)</th>
-                                    <th>অনুমোদিত মডিউলসমূহ</th>
+                                    <th>অনুমোদিত ফিচারসমূহ (Permissions)</th>
                                     <th>স্ট্যাটাস</th>
                                     <th style="text-align: right;">অ্যাকশন</th>
                                 </tr>
@@ -283,7 +210,6 @@
                     </div>
                 </div>
 
-                <!-- ২. নতুন ইউজার তৈরি ও এডিট ফর্ম -->
                 <div id="um-sec-create" style="display: none; max-width: 750px;">
                     <form onsubmit="handleUserFormSubmit(event)" style="display: flex; flex-direction: column; gap: 16px;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
@@ -308,24 +234,27 @@
                                     <option value="CPSCL Operator">CPSCL Operator (স্কুল অপারেটর)</option>
                                     <option value="Accountant">Accountant (অ্যাকাউন্টস)</option>
                                     <option value="Teacher">Teacher (শিক্ষক)</option>
-                                    <option value="Manager">Manager (ম্যানেজার)</option>
                                 </select>
                             </div>
                         </div>
 
                         <div>
-                            <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 8px;">অনুমোদিত মডিউল নির্বাচন করুন (Permissions):</label>
-                            <div style="display: flex; gap: 18px; flex-wrap: wrap; background: #f8fafc; padding: 12px 16px; border-radius: 10px; border: 1px solid #e2e8f0;">
-                                <label style="font-size: 0.86rem; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                                    <input type="checkbox" id="perm-cpscl" value="CPSCL" checked> CPSCL Student & Certificate
+                            <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 8px;">ইউজারের অনুমোদিত কাজ (Fine-Grained Permissions):</label>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                                <label style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="perm-view-print" checked> ১. ভিউ ও সার্টিফিকেট প্রিন্ট
                                 </label>
-                                <label style="font-size: 0.86rem; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                                    <input type="checkbox" id="perm-fees" value="Fee Collection"> Fee Collection
+                                <label style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="perm-upload-excel"> ২. এক্সেল ফাইল আপলোড
                                 </label>
-                                <label style="font-size: 0.86rem; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                                    <input type="checkbox" id="perm-inventory" value="Inventory"> Inventory Management
+                                <label style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="perm-manual-entry"> ৩. নতুন শিক্ষার্থী এন্ট্রি
+                                </label>
+                                <label style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="perm-delete-data"> ৪. ডাটা ক্লিয়ার / ডিলিট
                                 </label>
                             </div>
+                            <p style="font-size: 0.78rem; color: #64748b; margin-top: 5px;">* ডিফল্টভাবে ইউজার শুধু সার্টিফিকেট দেখতে ও প্রিন্ট করতে পারবে।</p>
                         </div>
 
                         <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
@@ -337,7 +266,6 @@
                     </form>
                 </div>
 
-                <!-- ৩. অ্যাক্টিভিটি অডিট লগ সাব-সেকশন -->
                 <div id="um-sec-audit" style="display: none;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                         <span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">রিয়েল-টাইম ইউজার অ্যাক্টিভিটি মনিটরিং</span>
@@ -359,7 +287,6 @@
                         </table>
                     </div>
                 </div>
-
             </div>
         `;
 
@@ -367,17 +294,9 @@
         renderAuditLogsTable();
     }
 
-    /* ==========================================================
-       ৪. নেভিগেশন ও ভিউ সুইচিং
-       ========================================================== */
     window.switchUserManagementView = function () {
-        // ফ্রন্ট ড্যাশবোর্ড ও অন্যান্য ভিউ হাইড করা
-        const portalDash = document.getElementById('cpscl-portal-dash-view');
-        if (portalDash) portalDash.classList.remove('active');
-
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-        document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
 
         const panel = document.getElementById('user-management-view');
         if (panel) {
@@ -392,9 +311,6 @@
         if (topTitle) topTitle.innerText = "ইউজার ও পারমিশন কন্ট্রোল";
     };
 
-    /* ==========================================================
-       ৫. টেবিল রেন্ডারিং ফাংশনসমূহ
-       ========================================================== */
     function renderUsersTable() {
         const tbody = document.getElementById('um-users-tbody');
         const countSpan = document.getElementById('um-count');
@@ -416,7 +332,13 @@
             const toggleIcon = u.status === 'Active' ? 'fa-ban' : 'fa-check';
             const toggleTitle = u.status === 'Active' ? 'ব্লক করুন' : 'সক্রিয় করুন';
 
-            const modulePills = (u.modules || ['CPSCL']).map(m => `<span class="um-module-pill">${m}</span>`).join(' ');
+            const p = u.permissions || { can_view_print: true, can_upload_excel: false, can_manual_entry: false, can_delete_data: false };
+            const tags = `
+                <span class="um-perm-tag ${p.can_view_print ? 'um-perm-on' : 'um-perm-off'}">Print</span>
+                <span class="um-perm-tag ${p.can_upload_excel ? 'um-perm-on' : 'um-perm-off'}">Excel</span>
+                <span class="um-perm-tag ${p.can_manual_entry ? 'um-perm-on' : 'um-perm-off'}">Entry</span>
+                <span class="um-perm-tag ${p.can_delete_data ? 'um-perm-on' : 'um-perm-off'}">Delete</span>
+            `;
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -431,7 +353,7 @@
                         <i class="fa-solid ${eyeIcon}"></i>
                     </button>
                 </td>
-                <td>${modulePills}</td>
+                <td>${tags}</td>
                 <td><span class="${statusClass}">${u.status}</span></td>
                 <td style="text-align: right;">
                     <div style="display: inline-flex; gap: 6px;">
@@ -473,9 +395,6 @@
         });
     }
 
-    /* ==========================================================
-       ৬. ট্যাব ও অ্যাকশন হ্যান্ডলারসমূহ
-       ========================================================== */
     window.switchUMTab = function (tabKey) {
         document.getElementById('um-sec-users').style.display = tabKey === 'users' ? 'block' : 'none';
         document.getElementById('um-sec-create').style.display = tabKey === 'create' ? 'block' : 'none';
@@ -505,18 +424,18 @@
     window.handleUserFormSubmit = async function (event) {
         event.preventDefault();
 
-        const selectedModules = [];
-        if (document.getElementById('perm-cpscl').checked) selectedModules.push('CPSCL');
-        if (document.getElementById('perm-fees').checked) selectedModules.push('Fee Collection');
-        if (document.getElementById('perm-inventory').checked) selectedModules.push('Inventory');
-
         const userData = {
             id: editingUserId || ('usr_' + Date.now()),
             name: document.getElementById('um-inp-name').value.trim(),
             email: document.getElementById('um-inp-email').value.trim(),
             password: document.getElementById('um-inp-pass').value.trim(),
             role: document.getElementById('um-inp-role').value,
-            modules: selectedModules.length > 0 ? selectedModules : ['CPSCL'],
+            permissions: {
+                can_view_print: document.getElementById('perm-view-print').checked,
+                can_upload_excel: document.getElementById('perm-upload-excel').checked,
+                can_manual_entry: document.getElementById('perm-manual-entry').checked,
+                can_delete_data: document.getElementById('perm-delete-data').checked
+            },
             status: 'Active',
             createdAt: new Date().toLocaleString('en-US')
         };
@@ -546,9 +465,11 @@
         document.getElementById('um-inp-pass').value = u.password;
         document.getElementById('um-inp-role').value = u.role;
 
-        document.getElementById('perm-cpscl').checked = (u.modules || []).includes('CPSCL');
-        document.getElementById('perm-fees').checked = (u.modules || []).includes('Fee Collection');
-        document.getElementById('perm-inventory').checked = (u.modules || []).includes('Inventory');
+        const p = u.permissions || { can_view_print: true, can_upload_excel: false, can_manual_entry: false, can_delete_data: false };
+        document.getElementById('perm-view-print').checked = p.can_view_print !== false;
+        document.getElementById('perm-upload-excel').checked = !!p.can_upload_excel;
+        document.getElementById('perm-manual-entry').checked = !!p.can_manual_entry;
+        document.getElementById('perm-delete-data').checked = !!p.can_delete_data;
 
         switchUMTab('create');
     };
@@ -559,6 +480,10 @@
         document.getElementById('um-inp-name').value = '';
         document.getElementById('um-inp-email').value = '';
         document.getElementById('um-inp-pass').value = '';
+        document.getElementById('perm-view-print').checked = true;
+        document.getElementById('perm-upload-excel').checked = false;
+        document.getElementById('perm-manual-entry').checked = false;
+        document.getElementById('perm-delete-data').checked = false;
         switchUMTab('users');
     };
 
@@ -582,7 +507,6 @@
         }
     };
 
-    // DOM লোড হলে ইনিট করা
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             initUserManagementModule();
