@@ -1,6 +1,7 @@
 /**
  * User Management & Role-Based Access Control (RBAC) Module
- * Realtime Firebase Cloud Database Sync & Activity Audit Log
+ * Self-Injecting Sidebar Menu & View Panel Architecture
+ * Realtime Firebase Cloud Database Sync & Live Activity Audit Log
  */
 
 (function () {
@@ -19,7 +20,7 @@
     async function initUserManagementFirebase() {
         try {
             const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-            const { getDatabase, ref, set, onValue, push } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+            const { getDatabase, ref, set, onValue } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
 
             const firebaseConfig = {
                 apiKey: "AIzaSyA1PhRiTkICNCd8sA4he3ZxKjHtIzM0d5E",
@@ -39,7 +40,7 @@
             dbRefFunc = ref;
             dbSetFunc = set;
 
-            // ইউজার লিস্ট সিঙ্ক
+            // ইউজার লিস্ট লাইভ সিঙ্ক
             const usersRef = ref(dbInstance, 'system/users');
             onValue(usersRef, (snapshot) => {
                 const cloudData = snapshot.val();
@@ -48,7 +49,6 @@
                     localStorage.setItem('cpscl_system_users', JSON.stringify(usersDatabase));
                     renderUsersTable();
                 } else if (usersDatabase.length === 0) {
-                    // ডিফল্ট ডেমো ইউজার তৈরি
                     usersDatabase = [{
                         id: 'usr_' + Date.now(),
                         name: 'cpscl',
@@ -63,7 +63,7 @@
                 }
             });
 
-            // অডিট লগ সিঙ্ক
+            // অডিট লগ লাইভ সিঙ্ক
             const logsRef = ref(dbInstance, 'system/audit_logs');
             onValue(logsRef, (snapshot) => {
                 const cloudLogs = snapshot.val();
@@ -117,7 +117,7 @@
     }
 
     /* ==========================================================
-       ২. গ্লোবাল অ্যাক্টিভিটি লগার (সব মডিউল থেকে লগ রেকর্ড হবে)
+       ২. গ্লোবাল অ্যাক্টিভিটি লগার (Activity Logger)
        ========================================================== */
     window.logUserActivity = async function (actionType, details, userName) {
         const newLog = {
@@ -128,17 +128,54 @@
             timestamp: new Date().toLocaleString('en-US', { hour12: true })
         };
         auditLogsDatabase.unshift(newLog);
-        if (auditLogsDatabase.length > 200) auditLogsDatabase.pop(); // সর্বোচ্চ ২০০টি হিস্ট্রি সংরক্ষণ
+        if (auditLogsDatabase.length > 200) auditLogsDatabase.pop();
         await syncLogsToFirebase(auditLogsDatabase);
         renderAuditLogsTable();
     };
 
     /* ==========================================================
-       ৩. UI রেন্ডার ও প্যানেল ইনিশিয়ালাইজেশন
+       ৩. সাইডবার মেনু ও ভিউ প্যানেল অটো-ইনজেকশন
        ========================================================== */
-    function initUserManagementView() {
-        const viewPanel = document.getElementById('user-management-view') || document.querySelector('.view-panel#user-management-view');
-        if (!viewPanel) return;
+    function initUserManagementModule() {
+        const menuList = document.querySelector('.sidebar .menu-list') || document.querySelector('.menu-list');
+        const mainWrapper = document.querySelector('.main-wrapper') || document.querySelector('main');
+
+        if (!menuList || !mainWrapper) {
+            setTimeout(initUserManagementModule, 150);
+            return;
+        }
+
+        // ১. সাইডবারে বাটন তৈরি (যদি আগে না থাকে)
+        if (!document.getElementById('menu-user-management')) {
+            const umMenuItem = document.createElement('li');
+            umMenuItem.className = 'menu-item';
+            umMenuItem.id = 'menu-user-management';
+
+            umMenuItem.innerHTML = `
+                <a onclick="switchUserManagementView()" style="cursor: pointer;">
+                    <span class="menu-link-inner">
+                        <i class="fa-solid fa-users-gear"></i> 
+                        <span>User Management</span>
+                    </span>
+                </a>
+            `;
+
+            const eduMenu = document.getElementById('menu-education-parent') || document.querySelector('[id*="education"]');
+            if (eduMenu) {
+                menuList.insertBefore(umMenuItem, eduMenu);
+            } else {
+                menuList.appendChild(umMenuItem);
+            }
+        }
+
+        // ২. ভিউ প্যানেল তৈরি (যদি আগে না থাকে)
+        let viewPanel = document.getElementById('user-management-view');
+        if (!viewPanel) {
+            viewPanel = document.createElement('div');
+            viewPanel.className = 'view-panel';
+            viewPanel.id = 'user-management-view';
+            mainWrapper.appendChild(viewPanel);
+        }
 
         viewPanel.innerHTML = `
             <style>
@@ -252,11 +289,11 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div>
                                 <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">ইউজারনেম / নাম *</label>
-                                <input type="text" id="um-inp-name" class="um-control" placeholder="যেমন: cpscl_operator" required>
+                                <input type="text" id="um-inp-name" class="um-control" placeholder="যেমন: cpscl" required>
                             </div>
                             <div>
                                 <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">ইমেইল অ্যাড্রেস *</label>
-                                <input type="email" id="um-inp-email" class="um-control" placeholder="user@school.edu.bd" required>
+                                <input type="email" id="um-inp-email" class="um-control" placeholder="cpscl@gmail.com" required>
                             </div>
                         </div>
 
@@ -279,13 +316,13 @@
                         <div>
                             <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 8px;">অনুমোদিত মডিউল নির্বাচন করুন (Permissions):</label>
                             <div style="display: flex; gap: 18px; flex-wrap: wrap; background: #f8fafc; padding: 12px 16px; border-radius: 10px; border: 1px solid #e2e8f0;">
-                                <label style="font-size: 0.86rem; font-weight: 600; display: flex; items-center; gap: 6px; cursor: pointer;">
+                                <label style="font-size: 0.86rem; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer;">
                                     <input type="checkbox" id="perm-cpscl" value="CPSCL" checked> CPSCL Student & Certificate
                                 </label>
-                                <label style="font-size: 0.86rem; font-weight: 600; display: flex; items-center; gap: 6px; cursor: pointer;">
+                                <label style="font-size: 0.86rem; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer;">
                                     <input type="checkbox" id="perm-fees" value="Fee Collection"> Fee Collection
                                 </label>
-                                <label style="font-size: 0.86rem; font-weight: 600; display: flex; items-center; gap: 6px; cursor: pointer;">
+                                <label style="font-size: 0.86rem; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer;">
                                     <input type="checkbox" id="perm-inventory" value="Inventory"> Inventory Management
                                 </label>
                             </div>
@@ -331,7 +368,32 @@
     }
 
     /* ==========================================================
-       ৪. টেবিল রেন্ডারিং ফাংশনসমূহ
+       ৪. নেভিগেশন ও ভিউ সুইচিং
+       ========================================================== */
+    window.switchUserManagementView = function () {
+        // ফ্রন্ট ড্যাশবোর্ড ও অন্যান্য ভিউ হাইড করা
+        const portalDash = document.getElementById('cpscl-portal-dash-view');
+        if (portalDash) portalDash.classList.remove('active');
+
+        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+        document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
+
+        const panel = document.getElementById('user-management-view');
+        if (panel) {
+            panel.classList.add('active');
+            panel.style.display = 'block';
+        }
+
+        const menuItem = document.getElementById('menu-user-management');
+        if (menuItem) menuItem.classList.add('active');
+
+        const topTitle = document.getElementById('top-title') || document.querySelector('.page-title');
+        if (topTitle) topTitle.innerText = "ইউজার ও পারমিশন কন্ট্রোল";
+    };
+
+    /* ==========================================================
+       ৫. টেবিল রেন্ডারিং ফাংশনসমূহ
        ========================================================== */
     function renderUsersTable() {
         const tbody = document.getElementById('um-users-tbody');
@@ -412,7 +474,7 @@
     }
 
     /* ==========================================================
-       ৫. ইউজার অ্যাকশন ও হ্যান্ডলারসমূহ
+       ৬. ট্যাব ও অ্যাকশন হ্যান্ডলারসমূহ
        ========================================================== */
     window.switchUMTab = function (tabKey) {
         document.getElementById('um-sec-users').style.display = tabKey === 'users' ? 'block' : 'none';
@@ -520,13 +582,14 @@
         }
     };
 
+    // DOM লোড হলে ইনিট করা
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-            initUserManagementView();
+            initUserManagementModule();
             initUserManagementFirebase();
         });
     } else {
-        initUserManagementView();
+        initUserManagementModule();
         initUserManagementFirebase();
     }
 })();
