@@ -105,18 +105,11 @@
         }
         .cert-footer-date { margin-top: 18pt !important; }
 
-        /* ================= ১ পেজে লক করার জন্য নিখুঁত PRINT CSS ================= */
-        @page {
-            size: A4 landscape !important;
-            margin: 0mm !important;
-        }
+        /* ১ পেজে লক করার জন্য নিখুঁত PRINT CSS */
+        @page { size: A4 landscape !important; margin: 0mm !important; }
 
         @media print {
-            @page {
-                size: A4 landscape !important;
-                margin: 0mm !important;
-            }
-
+            @page { size: A4 landscape !important; margin: 0mm !important; }
             html, body {
                 width: 297mm !important;
                 height: 210mm !important;
@@ -126,12 +119,9 @@
                 background: #ffffff !important;
                 overflow: hidden !important;
             }
-
-            /* অপ্রয়োজনীয় সবকিছু লেআউট থেকে পুরোপুরি দূর করা */
-            aside, header, #dashboard-view, #profile-view, #cpscl-list-view, #cpscl-entry-view, .no-print {
+            aside, header, #dashboard-view, #profile-view, #cpscl-list-view, #cpscl-entry-view, #login-modal, .no-print {
                 display: none !important;
             }
-
             main, #main-content-area, #cpscl-main-wrapper, #cpscl-preview-view {
                 display: block !important;
                 position: static !important;
@@ -144,7 +134,6 @@
                 overflow: hidden !important;
                 background: #ffffff !important;
             }
-
             #cpsclPrintArea {
                 position: fixed !important;
                 left: 0 !important;
@@ -171,10 +160,64 @@
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex h-screen overflow-hidden transition-colors duration-200">
 
+    <!-- ================= 🔐 ক্লাউড লগইন গেটওয়ে স্ক্রিন (LOGIN MODAL) ================= -->
+    <div id="login-modal" class="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-700 p-8 text-center relative overflow-hidden">
+            
+            <!-- টপ ডেকোরেশন -->
+            <div class="w-20 h-20 bg-emerald-50 dark:bg-emerald-950/50 rounded-2xl mx-auto p-2 border border-emerald-100 dark:border-emerald-800/80 shadow-inner mb-4 flex items-center justify-center">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg-795xmOcuKYH8wjija8JrA-qVjfOp_4KieeZ1pOQJaqX2uXsqGLMo09AXsGGsfGjH9LpK5fPlUNGbebFguiAzPC_YvbRXcHePj7cORQd6GMxDUg-LCeXtmNkccGI2K4Hv73PJqJkGX0Ju9N4knQuqKOAImqB6qy_WWFXpKeIaQhRgk7YbLqBLpCmL0cio/s1600/%E0%A6%95%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%A8%E0%A7%8D%E0%A6%9F%E0%A6%A8%E0%A6%AE%E0%A7%87%E0%A6%A8%E0%A7%8D%E0%A6%9F_%E0%A6%AA%E0%A6%BE%E0%A6%AC%E0%A6%B2%E0%A6%BF%E0%A6%95_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2_%E0%A6%93_%E0%A6%95%E0%A6%B2%E0%A7%87%E0%A6%9C_%E0%A6%B2%E0%A6%BE%E0%A6%B2%E0%A6%AE%E0%A6%A8%E0%A6%BF%E0%A6%B0%E0%A6%B9%E0%A6%BE%E0%A6%9F%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" 
+                     alt="CPSCL Logo" 
+                     class="w-full h-full object-contain">
+            </div>
+
+            <h2 class="text-xl font-black text-slate-800 dark:text-white tracking-wide">CPSCL PORTAL</h2>
+            <p class="text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-0.5">Campus Management & Certificate System</p>
+
+            <!-- এরর মেসেজ বক্স -->
+            <div id="login-error" class="hidden mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold text-left flex items-start gap-2">
+                <i class="fa-solid fa-triangle-exclamation mt-0.5 text-sm"></i>
+                <span id="login-error-text">ভুল ইউজারনেম বা পাসওয়ার্ড!</span>
+            </div>
+
+            <!-- লগইন ফর্ম -->
+            <form onsubmit="handleUserLogin(event)" class="mt-6 space-y-4 text-left text-xs">
+                <div>
+                    <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Username or Email</label>
+                    <div class="relative">
+                        <i class="fa-regular fa-user absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                        <input type="text" id="auth-username" placeholder="যেমন: cpscl" required 
+                               class="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white focus:outline-emerald-500 font-semibold text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Password</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                        <input type="password" id="auth-password" placeholder="গোপন পাসওয়ার্ড দিন" required 
+                               class="w-full pl-10 pr-10 py-3 rounded-xl bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white focus:outline-emerald-500 font-semibold text-sm">
+                        <button type="button" onclick="toggleAuthPassVisibility()" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600">
+                            <i id="auth-pass-eye" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-login-submit" 
+                        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/40 transition text-sm flex items-center justify-center gap-2 mt-2">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    <span>Login to Portal</span>
+                </button>
+            </form>
+
+            <p class="text-[11px] text-slate-400 mt-6">&copy; 2026 Cantonment Public School and College Lalmonirhat</p>
+        </div>
+    </div>
+
     <!-- ================= ১. বাম পাশের সাইডবার (SIDEBAR) ================= -->
     <aside id="sidebar" class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col justify-between shrink-0 h-full transition-all duration-300 ease-in-out no-print">
         <div>
-            <!-- CPSCL লোগো এরিয়া (ক্লিক করলে ড্যাশবোর্ডে যাবে) -->
+            <!-- CPSCL লোগো এরিয়া -->
             <div onclick="loadDashboardView()" title="Dashboard" class="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition group">
                 <div class="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden bg-emerald-50 dark:bg-emerald-950/40 p-0.5 border border-emerald-100 dark:border-emerald-800 shadow-xs shrink-0 group-hover:scale-105 transition-transform">
                     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg-795xmOcuKYH8wjija8JrA-qVjfOp_4KieeZ1pOQJaqX2uXsqGLMo09AXsGGsfGjH9LpK5fPlUNGbebFguiAzPC_YvbRXcHePj7cORQd6GMxDUg-LCeXtmNkccGI2K4Hv73PJqJkGX0Ju9N4knQuqKOAImqB6qy_WWFXpKeIaQhRgk7YbLqBLpCmL0cio/s1600/%E0%A6%95%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%A8%E0%A7%8D%E0%A6%9F%E0%A6%A8%E0%A6%AE%E0%A7%87%E0%A6%A8%E0%A7%8D%E0%A6%9F_%E0%A6%AA%E0%A6%BE%E0%A6%AC%E0%A6%B2%E0%A6%BF%E0%A6%95_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2_%E0%A6%93_%E0%A6%95%E0%A6%B2%E0%A7%87%E0%A6%9C_%E0%A6%B2%E0%A6%BE%E0%A6%B2%E0%A6%AE%E0%A6%A8%E0%A6%BF%E0%A6%B0%E0%A6%B9%E0%A6%BE%E0%A6%9F%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" 
@@ -280,8 +323,8 @@
                             <h4 class="font-bold text-xs">Notifications</h4>
                         </div>
                         <div class="p-3 text-xs text-slate-600 dark:text-slate-300 space-y-2">
-                            <p>● Firebase Cloud Database Online</p>
-                            <p>● CPSCL Student module is active</p>
+                            <p>● Cloud Database Synced</p>
+                            <p>● User Authenticated Online</p>
                         </div>
                     </div>
                 </div>
@@ -302,8 +345,8 @@
                                 <img id="dropdown-profile-pic" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Profile Photo" class="w-full h-full object-cover">
                             </div>
                             <div>
-                                <h3 id="dropdown-user-name" class="font-bold text-sm leading-snug">Md. Rabbi Hosen</h3>
-                                <p id="dropdown-user-role" class="text-xs text-emerald-100 font-medium">Office Assistant</p>
+                                <h3 id="dropdown-user-name" class="font-bold text-sm leading-snug">CPSCL Operator</h3>
+                                <p id="dropdown-user-role" class="text-xs text-emerald-100 font-medium">cpscl@gmail.com</p>
                             </div>
                         </div>
 
@@ -320,7 +363,7 @@
                                 </div>
                             </div>
                             <div class="pt-2 border-t border-slate-100 dark:border-slate-700">
-                                <button class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 px-4 rounded-xl flex items-center justify-center gap-2 text-xs shadow-sm transition">
+                                <button onclick="handleUserLogout()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 px-4 rounded-xl flex items-center justify-center gap-2 text-xs shadow-sm transition cursor-pointer">
                                     <i class="fa-solid fa-right-from-bracket"></i>
                                     <span>Logout</span>
                                 </button>
@@ -331,7 +374,7 @@
 
                 <!-- সিস্টেম হেলথ ব্যাজ -->
                 <div class="relative">
-                    <button title="Firebase Connected" class="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-xs">
+                    <button title="Connected to Cloud" class="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-xs">
                         <i class="fa-solid fa-shield-halved text-sm"></i>
                     </button>
                 </div>
@@ -624,11 +667,14 @@
 
     </main>
 
-    <!-- ================= জাভাস্ক্রিপ্ট এবং ফায়ারবেস ইন্টিগ্রেশন ================= -->
+    <!-- ================= জাভাস্ক্রিপ্ট এবং ফায়ারবেস অথেনটিকেশন ================= -->
     <script>
         // CPSCL মডিউল ডেটাস্টোর
         let studentDatabase = JSON.parse(localStorage.getItem('cpscl_students_data') || '[]');
         let currentFilterTemplate = 'all';
+        let systemUsersList = [];
+        let loggedInSessionUser = JSON.parse(localStorage.getItem('cpscl_auth_session') || 'null');
+
         let dbInstance = null;
         let dbRefFunc = null;
         let dbSetFunc = null;
@@ -640,7 +686,7 @@
             'character_cert': 'Character Certificate'
         };
 
-        // UI ড্রপডাউন হ্যান্ডলারসমূহ
+        // UI কন্ট্রোল এলিমেন্টসমূহ
         const sidebar = document.getElementById('sidebar');
         const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
         const themeToggleBtn = document.getElementById('theme-toggle-btn');
@@ -653,6 +699,7 @@
         const profileBtn = document.getElementById('profile-btn');
         const profileDropdown = document.getElementById('profile-dropdown');
         const dropdownArrow = document.getElementById('dropdown-arrow');
+        const loginModal = document.getElementById('login-modal');
 
         const allDropdowns = [langDropdown, notifDropdown, profileDropdown];
 
@@ -695,11 +742,23 @@
             arrow.classList.toggle('rotate-180');
         }
 
-        // ================= ১. ফায়ারবেস ক্লাউড ডেটাবেজ সংযোগ =================
+        function toggleAuthPassVisibility() {
+            const passInp = document.getElementById('auth-password');
+            const eyeIcon = document.getElementById('auth-pass-eye');
+            if (passInp.type === 'password') {
+                passInp.type = 'text';
+                eyeIcon.className = 'fa-solid fa-eye-slash';
+            } else {
+                passInp.type = 'password';
+                eyeIcon.className = 'fa-solid fa-eye';
+            }
+        }
+
+        // ================= ১. ফায়ারবেস ক্লাউড ডেটাবেজ ও লাইভ অথ সংযোগ =================
         async function initFirebaseSync() {
             try {
                 const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-                const { getDatabase, ref, set, onValue } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+                const { getDatabase, ref, set, onValue, push } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
 
                 const firebaseConfig = {
                     apiKey: "AIzaSyA1PhRiTkICNCd8sA4he3ZxKjHtIzM0d5E",
@@ -719,6 +778,24 @@
                 dbRefFunc = ref;
                 dbSetFunc = set;
 
+                // ১. ইউজার ভেরিফিকেশন ও লাইভ কিল-সুইচ লিসেনার
+                const usersRef = ref(dbInstance, 'system/users');
+                onValue(usersRef, (snapshot) => {
+                    const cloudUsers = snapshot.val();
+                    if (cloudUsers) {
+                        systemUsersList = Array.isArray(cloudUsers) ? cloudUsers : Object.values(cloudUsers);
+                        
+                        // যদি কারেন্ট ইউজার লগইন থাকে তবে লাইভ স্ট্যাটাস চেক
+                        if (loggedInSessionUser) {
+                            const matchedUser = systemUsersList.find(u => u.id === loggedInSessionUser.id || u.email === loggedInSessionUser.email || u.name === loggedInSessionUser.name);
+                            if (!matchedUser || matchedUser.status !== 'Active') {
+                                handleUserLogout("আপনার অ্যাকাউন্টটি অ্যাডমিন কর্তৃক সাময়িকভাবে বন্ধ (Blocked) করা হয়েছে!");
+                            }
+                        }
+                    }
+                });
+
+                // ২. স্টুডেন্ট ডেটাবেজ সিঙ্ক
                 const studentsRef = ref(dbInstance, 'cpscl/students');
                 onValue(studentsRef, (snapshot) => {
                     const cloudData = snapshot.val();
@@ -728,8 +805,32 @@
                         renderStudentTable();
                     }
                 });
+
             } catch (err) {
-                console.warn("Firebase fallback to local cache:", err);
+                console.warn("Firebase Init Fallback:", err);
+            }
+        }
+
+        async function logCloudAudit(action, details) {
+            if (dbInstance && dbSetFunc && dbRefFunc) {
+                try {
+                    const { getDatabase, ref, set, get } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+                    const logsRef = ref(dbInstance, 'system/audit_logs');
+                    const snapshot = await get(logsRef);
+                    let currentLogs = snapshot.val() || [];
+                    if (!Array.isArray(currentLogs)) currentLogs = Object.values(currentLogs);
+
+                    currentLogs.unshift({
+                        id: 'log_' + Date.now(),
+                        user: loggedInSessionUser ? `${loggedInSessionUser.name} (${loggedInSessionUser.email})` : 'Guest User',
+                        action: action,
+                        details: details,
+                        timestamp: new Date().toLocaleString('en-US', { hour12: true })
+                    });
+
+                    if (currentLogs.length > 200) currentLogs.pop();
+                    await set(logsRef, currentLogs);
+                } catch(e) {}
             }
         }
 
@@ -745,7 +846,76 @@
             }
         }
 
-        // ================= ২. ভিউ লোডার ও ন্যাভিগেশন =================
+        // ================= ২. লগইন ও অথ হ্যান্ডলার =================
+        function handleUserLogin(event) {
+            event.preventDefault();
+            const usernameInp = document.getElementById('auth-username').value.trim().toLowerCase();
+            const passwordInp = document.getElementById('auth-password').value.trim();
+            const errBox = document.getElementById('login-error');
+            const errText = document.getElementById('login-error-text');
+
+            errBox.classList.add('hidden');
+
+            // ফায়ারবেস ইউজার লিস্ট অথবা ডিফল্ট ইউজার থেকে চেক করা
+            let validUser = systemUsersList.find(u => 
+                (u.name.toLowerCase() === usernameInp || u.email.toLowerCase() === usernameInp) && 
+                u.password === passwordInp
+            );
+
+            // ফায়ারবেস প্রথমবার কানেক্ট না হলেও ডিফল্ট ইউজার সাপোর্ট
+            if (!validUser && (usernameInp === 'cpscl' || usernameInp === 'cpscl@gmail.com') && passwordInp === 'admin123@cpscl') {
+                validUser = {
+                    id: 'usr_default',
+                    name: 'cpscl',
+                    email: 'cpscl@gmail.com',
+                    role: 'CPSCL Operator',
+                    status: 'Active'
+                };
+            }
+
+            if (!validUser) {
+                errText.innerText = "ভুল ইউজারনেম বা পাসওয়ার্ড!";
+                errBox.classList.remove('hidden');
+                return;
+            }
+
+            if (validUser.status !== 'Active') {
+                errText.innerText = "আপনার অ্যাকাউন্টটি সাময়িকভাবে বন্ধ (Blocked) আছে! অ্যাডমিনের সাথে যোগাযোগ করুন।";
+                errBox.classList.remove('hidden');
+                return;
+            }
+
+            // লগইন সফল
+            loggedInSessionUser = validUser;
+            localStorage.setItem('cpscl_auth_session', JSON.stringify(validUser));
+            
+            document.getElementById('dropdown-user-name').innerText = validUser.name;
+            document.getElementById('dropdown-user-role').innerText = validUser.role || validUser.email;
+
+            loginModal.classList.add('hidden');
+            loadDashboardView();
+            logCloudAudit("USER_LOGIN", `User logged in from CPSCL Portal`);
+        }
+
+        function handleUserLogout(customMsg) {
+            logCloudAudit("USER_LOGOUT", `User logged out`);
+            loggedInSessionUser = null;
+            localStorage.removeItem('cpscl_auth_session');
+            loginModal.classList.remove('hidden');
+            document.getElementById('auth-username').value = '';
+            document.getElementById('auth-password').value = '';
+
+            const errBox = document.getElementById('login-error');
+            const errText = document.getElementById('login-error-text');
+            if (customMsg) {
+                errText.innerText = customMsg;
+                errBox.classList.remove('hidden');
+            } else {
+                errBox.classList.add('hidden');
+            }
+        }
+
+        // ================= ৩. ভিউ লোডার ও ন্যাভিগেশন =================
         function hideAllViews() {
             document.getElementById('dashboard-view').classList.add('hidden');
             document.getElementById('profile-view').classList.add('hidden');
@@ -797,7 +967,7 @@
             }
         }
 
-        // ================= ৩. এক্সেল ও টেবিল হ্যান্ডলার =================
+        // ================= ৪. এক্সেল ও টেবিল হ্যান্ডলার =================
         function filterByTemplate(tpl, btnElement) {
             currentFilterTemplate = tpl;
             document.querySelectorAll('.cpscl-tab-btn').forEach(btn => {
@@ -876,6 +1046,7 @@
 
                     await syncToFirebase(studentDatabase);
                     renderStudentTable();
+                    logCloudAudit("EXCEL_IMPORT", `${newStudents.length} Students imported from Excel`);
                     alert(`সফলভাবে ${newStudents.length} জন শিক্ষার্থীর তথ্য ক্লাউডে সিঙ্ক হয়েছে!`);
                     event.target.value = '';
                 } catch (err) {
@@ -925,7 +1096,7 @@
                     <td class="py-3 px-3"><span class="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-[11px] font-bold">${s.group}</span></td>
                     <td class="py-3 px-3 font-bold text-emerald-600">${s.gpa || '-'}</td>
                     <td class="py-3 px-3 text-right">
-                        <button onclick="loadStudentToPrint(${rawIndex})" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-bold text-xs shadow-xs transition">
+                        <button onclick="loadStudentToPrint(${rawIndex})" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-bold text-xs shadow-xs transition cursor-pointer">
                             <i class="fa-solid fa-print mr-1"></i> Print
                         </button>
                     </td>
@@ -934,7 +1105,7 @@
             });
         }
 
-        // ================= ৪. সার্টিফিকেট প্রিন্ট ও প্রিভিউ লজিক =================
+        // ================= ৫. সার্টিফিকেট প্রিন্ট ও প্রিভিউ লজিক =================
         function loadStudentToPrint(idx) {
             const s = studentDatabase[idx];
             if (!s) return;
@@ -1008,6 +1179,9 @@
         }
 
         function printCPSCLCertificate() {
+            const studentName = document.getElementById('prevName').innerText;
+            const roll = document.getElementById('prevRoll').innerText;
+            logCloudAudit("CERTIFICATE_PRINT", `Printed for ${studentName} (Roll: ${roll})`);
             window.print();
         }
 
@@ -1043,6 +1217,7 @@
 
                 await syncToFirebase(studentDatabase);
                 renderStudentTable();
+                logCloudAudit("DATABASE_CLEAR", `Student records cleared`);
                 alert("ডাটাবেজ ক্লিয়ার হয়েছে!");
             }
         }
@@ -1071,6 +1246,7 @@
             else studentDatabase.unshift(studentObj);
 
             await syncToFirebase(studentDatabase);
+            logCloudAudit("STUDENT_SAVE", `Saved record for ${studentObj.name} (Roll: ${studentObj.roll})`);
             switchCPSCLSubSection('preview');
         }
 
@@ -1083,10 +1259,18 @@
             setTimeout(() => alertBox.classList.add('hidden'), 3000);
         }
 
-        // পেজ লোড ইনিট
+        // ================= পেজ লোড ও অটো-সেশন চেক =================
         window.onload = function() {
-            loadDashboardView();
             initFirebaseSync();
+
+            if (loggedInSessionUser) {
+                document.getElementById('dropdown-user-name').innerText = loggedInSessionUser.name;
+                document.getElementById('dropdown-user-role').innerText = loggedInSessionUser.role || loggedInSessionUser.email;
+                loginModal.classList.add('hidden');
+                loadDashboardView();
+            } else {
+                loginModal.classList.remove('hidden');
+            }
         };
     </script>
 </body>
