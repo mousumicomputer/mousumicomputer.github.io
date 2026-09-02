@@ -1,6 +1,6 @@
 /**
  * User Management & Role-Based Fine-Grained Access Control (RBAC) Module
- * Features: Granular Permissions, Realtime Sync, Audit Logs & 1-Click Admin Impersonation
+ * Enterprise English Standard & Full Profile Management with 1-Click Portal Access
  */
 
 (function () {
@@ -47,9 +47,14 @@
                     usersDatabase = [{
                         id: 'usr_' + Date.now(),
                         name: 'cpscl',
+                        nameEn: 'Md. Rabbi Hosen',
+                        nameBn: 'মোঃ রাব্বি হোসেন',
                         email: 'cpscl@gmail.com',
                         password: 'admin123@cpscl',
-                        role: 'CPSCL Operator',
+                        role: 'Office Assistant',
+                        designation: 'Office Assistant',
+                        empId: '1013',
+                        mobile: '01891542830',
                         permissions: {
                             can_view_print: true,
                             can_upload_excel: false,
@@ -185,7 +190,6 @@
             </style>
 
             <div class="um-card">
-                <!-- Top Tabs -->
                 <div class="um-tabs-wrap">
                     <button class="um-tab-btn active" id="tab-btn-users" onclick="switchUMTab('users')">
                         <i class="fa-solid fa-users"></i> Users List (<span id="um-count">0</span>)
@@ -204,10 +208,10 @@
                         <table class="um-table">
                             <thead>
                                 <tr>
-                                    <th>User & Email</th>
-                                    <th>Role</th>
-                                    <th>Password (Admin View)</th>
-                                    <th>Permissions Granted</th>
+                                    <th>User & Designation</th>
+                                    <th>Role / Mobile</th>
+                                    <th>Password</th>
+                                    <th>Permissions</th>
                                     <th>Status</th>
                                     <th style="text-align: right;">Action</th>
                                 </tr>
@@ -218,11 +222,11 @@
                 </div>
 
                 <!-- Tab 2: Create / Edit User Form -->
-                <div id="um-sec-create" style="display: none; max-width: 800px;">
+                <div id="um-sec-create" style="display: none; max-width: 850px;">
                     <form onsubmit="handleUserFormSubmit(event)" style="display: flex; flex-direction: column; gap: 16px;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div>
-                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Username *</label>
+                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Login Username *</label>
                                 <input type="text" id="um-inp-name" class="um-control" placeholder="e.g. cpscl" required>
                             </div>
                             <div>
@@ -233,11 +237,37 @@
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div>
-                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Password *</label>
-                                <input type="text" id="um-inp-pass" class="um-control" placeholder="Enter secure password" required>
+                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Full Name (English) *</label>
+                                <input type="text" id="um-inp-name-en" class="um-control" placeholder="Md. Rabbi Hosen" required>
                             </div>
                             <div>
-                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Designation / Role *</label>
+                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Full Name (Bangla)</label>
+                                <input type="text" id="um-inp-name-bn" class="um-control" placeholder="মোঃ রাব্বি হোসেন">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+                            <div>
+                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Employee ID *</label>
+                                <input type="text" id="um-inp-emp-id" class="um-control" placeholder="1013" required>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Designation / Title *</label>
+                                <input type="text" id="um-inp-designation" class="um-control" placeholder="Office Assistant" required>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Mobile Number</label>
+                                <input type="text" id="um-inp-mobile" class="um-control" placeholder="01891542830">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div>
+                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Password *</label>
+                                <input type="text" id="um-inp-pass" class="um-control" placeholder="Enter password" required>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Role / System Role *</label>
                                 <select id="um-inp-role" class="um-control">
                                     <option value="CPSCL Operator">CPSCL Operator</option>
                                     <option value="Accountant">Accountant</option>
@@ -262,7 +292,6 @@
                                     <input type="checkbox" id="perm-delete-data"> 4. Allow Delete & Clear Data
                                 </label>
                             </div>
-                            <p style="font-size: 0.78rem; color: #64748b; margin-top: 5px;">* By default, client users can only search and print certificates.</p>
                         </div>
 
                         <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
@@ -352,10 +381,10 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>
-                    <strong style="color: #1e293b; display: block;">${u.name}</strong>
-                    <span style="font-size: 0.8rem; color: #64748b;">${u.email}</span>
+                    <strong style="color: #1e293b; display: block;">${u.nameEn || u.name} (${u.empId || '1013'})</strong>
+                    <span style="font-size: 0.8rem; color: #64748b;">${u.designation || 'Office Assistant'} &bull; ${u.email}</span>
                 </td>
-                <td><strong style="color: #334155;">${u.role}</strong></td>
+                <td><strong style="color: #334155;">${u.role || 'Operator'}</strong><br><span style="font-size:0.75rem; color:#64748b;">${u.mobile || '-'}</span></td>
                 <td>
                     <span style="font-family: monospace; font-weight: 700; color: #4338ca; letter-spacing: 1px;">${passDisplay}</span>
                     <button onclick="togglePasswordView('${u.id}')" title="View Password" style="background: none; border: none; color: #6366f1; cursor: pointer; margin-left: 8px;">
@@ -366,14 +395,13 @@
                 <td><span class="${statusClass}">${u.status}</span></td>
                 <td style="text-align: right;">
                     <div style="display: inline-flex; gap: 6px;">
-                        <!-- 🚀 1-Click Access Portal / Impersonation Button -->
                         <button onclick="impersonateUser(${index})" title="Access / Login to Portal Directly" class="um-btn-action um-btn-portal">
                             <i class="fa-solid fa-arrow-up-right-from-square"></i>
                         </button>
                         <button onclick="toggleUserStatus(${index})" title="${toggleTitle}" class="um-btn-action um-btn-toggle">
                             <i class="fa-solid ${toggleIcon}"></i>
                         </button>
-                        <button onclick="editUser(${index})" title="Edit User" class="um-btn-action um-btn-edit">
+                        <button onclick="editUser(${index})" title="Edit User Profile" class="um-btn-action um-btn-edit">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
                         <button onclick="deleteUser(${index})" title="Delete User" class="um-btn-action um-btn-del">
@@ -386,7 +414,6 @@
         });
     }
 
-    // ================= 🚀 1-CLICK ADMIN IMPERSONATION =================
     window.impersonateUser = function (index) {
         const u = usersDatabase[index];
         if (!u) return;
@@ -396,7 +423,6 @@
             return;
         }
 
-        // অ্যাডমিন ইম্পারসোনেশন সেশন তৈরি
         const impersonateSession = {
             ...u,
             isAdminImpersonating: true,
@@ -410,7 +436,6 @@
             `Super Admin accessed CPSCL Portal as user: ${u.name} (${u.email})`
         );
 
-        // নতুন ট্যাবে পোর্টাল ওপেন
         const portalUrl = (window.location.origin.includes('github.io') 
             ? `${window.location.origin}/cpscl.html` 
             : 'cpscl.html') + '?impersonate=true';
@@ -472,6 +497,11 @@
         const userData = {
             id: editingUserId || ('usr_' + Date.now()),
             name: document.getElementById('um-inp-name').value.trim(),
+            nameEn: document.getElementById('um-inp-name-en').value.trim(),
+            nameBn: document.getElementById('um-inp-name-bn').value.trim(),
+            empId: document.getElementById('um-inp-emp-id').value.trim(),
+            designation: document.getElementById('um-inp-designation').value.trim(),
+            mobile: document.getElementById('um-inp-mobile').value.trim(),
             email: document.getElementById('um-inp-email').value.trim(),
             password: document.getElementById('um-inp-pass').value.trim(),
             role: document.getElementById('um-inp-role').value,
@@ -487,7 +517,7 @@
 
         if (editingUserId) {
             const idx = usersDatabase.findIndex(u => u.id === editingUserId);
-            if (idx !== -1) usersDatabase[idx] = userData;
+            if (idx !== -1) usersDatabase[idx] = { ...usersDatabase[idx], ...userData };
             window.logUserActivity("USER_EDIT", `User updated: ${userData.name}`);
         } else {
             usersDatabase.push(userData);
@@ -504,11 +534,16 @@
         if (!u) return;
 
         editingUserId = u.id;
-        document.getElementById('um-form-title').innerText = "Edit User Information";
-        document.getElementById('um-inp-name').value = u.name;
-        document.getElementById('um-inp-email').value = u.email;
-        document.getElementById('um-inp-pass').value = u.password;
-        document.getElementById('um-inp-role').value = u.role;
+        document.getElementById('um-form-title').innerText = "Edit User Profile";
+        document.getElementById('um-inp-name').value = u.name || '';
+        document.getElementById('um-inp-name-en').value = u.nameEn || u.name || '';
+        document.getElementById('um-inp-name-bn').value = u.nameBn || '';
+        document.getElementById('um-inp-emp-id').value = u.empId || '1013';
+        document.getElementById('um-inp-designation').value = u.designation || 'Office Assistant';
+        document.getElementById('um-inp-mobile').value = u.mobile || '';
+        document.getElementById('um-inp-email').value = u.email || '';
+        document.getElementById('um-inp-pass').value = u.password || '';
+        document.getElementById('um-inp-role').value = u.role || 'CPSCL Operator';
 
         const p = u.permissions || { can_view_print: true, can_upload_excel: false, can_manual_entry: false, can_delete_data: false };
         document.getElementById('perm-view-print').checked = p.can_view_print !== false;
@@ -523,6 +558,11 @@
         editingUserId = null;
         document.getElementById('um-form-title').innerText = "Create New User";
         document.getElementById('um-inp-name').value = '';
+        document.getElementById('um-inp-name-en').value = '';
+        document.getElementById('um-inp-name-bn').value = '';
+        document.getElementById('um-inp-emp-id').value = '';
+        document.getElementById('um-inp-designation').value = '';
+        document.getElementById('um-inp-mobile').value = '';
         document.getElementById('um-inp-email').value = '';
         document.getElementById('um-inp-pass').value = '';
         document.getElementById('perm-view-print').checked = true;
