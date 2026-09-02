@@ -16,7 +16,6 @@
     <!-- SheetJS (Excel Processor) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <!-- ================= 🖨️ EXACT ADMIN MODULE CSS ================= -->
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
@@ -140,381 +139,391 @@
         }
     </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex h-screen overflow-hidden transition-colors duration-200">
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col h-screen overflow-hidden transition-colors duration-200">
 
-    <!-- ================= 🔐 LOGIN GATEWAY ================= -->
-    <div id="login-modal" class="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-700 p-8 text-center relative overflow-hidden">
-            
-            <div class="w-20 h-20 bg-emerald-50 dark:bg-emerald-950/50 rounded-2xl mx-auto p-2 border border-emerald-100 dark:border-emerald-800/80 shadow-inner mb-4 flex items-center justify-center">
-                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg-795xmOcuKYH8wjija8JrA-qVjfOp_4KieeZ1pOQJaqX2uXsqGLMo09AXsGGsfGjH9LpK5fPlUNGbebFguiAzPC_YvbRXcHePj7cORQd6GMxDUg-LCeXtmNkccGI2K4Hv73PJqJkGX0Ju9N4knQuqKOAImqB6qy_WWFXpKeIaQhRgk7YbLqBLpCmL0cio/s1600/%E0%A6%95%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%A8%E0%A7%8D%E0%A6%9F%E0%A6%A8%E0%A6%AE%E0%A7%87%E0%A6%A8%E0%A7%8D%E0%A6%9F_%E0%A6%AA%E0%A6%BE%E0%A6%AC%E0%A6%B2%E0%A6%BF%E0%A6%95_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2_%E0%A6%93_%E0%A6%95%E0%A6%B2%E0%A7%87%E0%A6%9C_%E0%A6%B2%E0%A6%BE%E0%A6%B2%E0%A6%AE%E0%A6%A8%E0%A6%BF%E0%A6%B0%E0%A6%B9%E0%A6%BE%E0%A6%9F%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" 
-                     alt="CPSCL Logo" class="w-full h-full object-contain">
-            </div>
-
-            <h2 class="text-xl font-black text-slate-800 dark:text-white tracking-wide">CPSCL PORTAL</h2>
-            <p class="text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-0.5">Campus Management</p>
-
-            <div id="login-error" class="hidden mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold text-left flex items-start gap-2">
-                <i class="fa-solid fa-triangle-exclamation mt-0.5 text-sm"></i>
-                <span id="login-error-text">Invalid username or password!</span>
-            </div>
-
-            <form onsubmit="handleUserLogin(event)" class="mt-6 space-y-4 text-left text-xs">
-                <div>
-                    <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Username or Email</label>
-                    <div class="relative">
-                        <i class="fa-regular fa-user absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
-                        <input type="text" id="auth-username" placeholder="e.g. cpscl" required 
-                               class="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white focus:outline-emerald-500 font-semibold text-sm">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Password</label>
-                    <div class="relative">
-                        <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
-                        <input type="password" id="auth-password" placeholder="Enter your password" required 
-                               class="w-full pl-10 pr-10 py-3 rounded-xl bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white focus:outline-emerald-500 font-semibold text-sm">
-                        <button type="button" onclick="toggleAuthPassVisibility()" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600">
-                            <i id="auth-pass-eye" class="fa-solid fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <button type="submit" 
-                        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/40 transition text-sm flex items-center justify-center gap-2 mt-2 cursor-pointer">
-                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
-                    <span>Login to Portal</span>
-                </button>
-            </form>
-
-            <p class="text-[11px] text-slate-400 mt-6">&copy; 2026 Cantonment Public School and College Lalmonirhat</p>
+    <!-- ================= 🛠️ ADMIN IMPERSONATION BANNER ================= -->
+    <div id="admin-impersonate-banner" class="hidden bg-indigo-600 text-white px-6 py-2.5 text-xs font-bold flex items-center justify-between shadow-md z-[120] shrink-0 no-print">
+        <div class="flex items-center gap-2">
+            <span class="bg-indigo-800 text-indigo-200 px-2 py-0.5 rounded uppercase tracking-wider text-[10px]">Super Admin</span>
+            <span>🛠️ Impersonation Mode: You are viewing CPSCL Portal as <strong id="impersonate-user-display" class="underline">Operator</strong> (Troubleshooting / Support)</span>
         </div>
+        <button onclick="exitImpersonationMode()" class="bg-white text-indigo-700 hover:bg-indigo-50 font-bold px-3 py-1 rounded-lg shadow-sm transition flex items-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-arrow-left"></i> Exit & Return to Admin ERP
+        </button>
     </div>
 
-    <!-- ================= 1. SIDEBAR ================= -->
-    <aside id="sidebar" class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col justify-between shrink-0 h-full transition-all duration-300 ease-in-out no-print">
-        <div>
-            <!-- CPSCL Logo Section -->
-            <div onclick="switchCPSCLSubSection('list')" title="Student List" class="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition group">
-                <div class="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden bg-emerald-50 dark:bg-emerald-950/40 p-0.5 border border-emerald-100 dark:border-emerald-800 shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+    <div class="flex flex-1 overflow-hidden">
+
+        <!-- ================= 🔐 LOGIN GATEWAY ================= -->
+        <div id="login-modal" class="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300">
+            <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-700 p-8 text-center relative overflow-hidden">
+                
+                <div class="w-20 h-20 bg-emerald-50 dark:bg-emerald-950/50 rounded-2xl mx-auto p-2 border border-emerald-100 dark:border-emerald-800/80 shadow-inner mb-4 flex items-center justify-center">
                     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg-795xmOcuKYH8wjija8JrA-qVjfOp_4KieeZ1pOQJaqX2uXsqGLMo09AXsGGsfGjH9LpK5fPlUNGbebFguiAzPC_YvbRXcHePj7cORQd6GMxDUg-LCeXtmNkccGI2K4Hv73PJqJkGX0Ju9N4knQuqKOAImqB6qy_WWFXpKeIaQhRgk7YbLqBLpCmL0cio/s1600/%E0%A6%95%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%A8%E0%A7%8D%E0%A6%9F%E0%A6%A8%E0%A6%AE%E0%A7%87%E0%A6%A8%E0%A7%8D%E0%A6%9F_%E0%A6%AA%E0%A6%BE%E0%A6%AC%E0%A6%B2%E0%A6%BF%E0%A6%95_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2_%E0%A6%93_%E0%A6%95%E0%A6%B2%E0%A7%87%E0%A6%9C_%E0%A6%B2%E0%A6%BE%E0%A6%B2%E0%A6%AE%E0%A6%A8%E0%A6%BF%E0%A6%B0%E0%A6%B9%E0%A6%BE%E0%A6%9F%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" 
                          alt="CPSCL Logo" class="w-full h-full object-contain">
                 </div>
-                <div>
-                    <h1 class="font-extrabold text-slate-800 dark:text-white text-base tracking-wider leading-tight group-hover:text-emerald-600 transition-colors">CPSCL</h1>
-                    <span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold tracking-tight block">Campus Management</span>
+
+                <h2 class="text-xl font-black text-slate-800 dark:text-white tracking-wide">CPSCL PORTAL</h2>
+                <p class="text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-0.5">Campus Management</p>
+
+                <div id="login-error" class="hidden mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold text-left flex items-start gap-2">
+                    <i class="fa-solid fa-triangle-exclamation mt-0.5 text-sm"></i>
+                    <span id="login-error-text">Invalid username or password!</span>
                 </div>
-            </div>
 
-            <!-- Sidebar Menus -->
-            <div id="sidebar-menu" class="p-3 space-y-1.5">
-                <div class="pt-2">
-                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase px-3 tracking-wider">Modules</span>
-                    <div class="mt-1 space-y-1">
-                        <div onclick="toggleCPSCLMenu()" class="flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl cursor-pointer transition">
-                            <div class="flex items-center gap-2.5">
-                                <i class="fa-solid fa-graduation-cap text-emerald-600 text-sm"></i>
-                                <span>CPSCL Management</span>
-                            </div>
-                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="cpscl-menu-arrow"></i>
+                <form onsubmit="handleUserLogin(event)" class="mt-6 space-y-4 text-left text-xs">
+                    <div>
+                        <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Username or Email</label>
+                        <div class="relative">
+                            <i class="fa-regular fa-user absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                            <input type="text" id="auth-username" placeholder="e.g. cpscl" required 
+                                   class="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white focus:outline-emerald-500 font-semibold text-sm">
                         </div>
+                    </div>
 
-                        <div id="cpscl-submenu" class="pl-4 space-y-1">
-                            <button onclick="switchCPSCLSubSection('list')" id="menu-cpscl-list" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl transition cursor-pointer">
-                                <i class="fa-solid fa-users text-xs"></i>
-                                <span>Student List</span>
-                            </button>
-
-                            <!-- এন্ট্রি মেনুটি বাই-ডিফল্ট লুকানো থাকবে -->
-                            <button onclick="switchCPSCLSubSection('entry')" id="menu-cpscl-entry" style="display: none;" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer">
-                                <i class="fa-solid fa-user-plus text-xs"></i>
-                                <span>Student Entry</span>
-                            </button>
-
-                            <button onclick="switchCPSCLSubSection('preview')" id="menu-cpscl-preview" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer">
-                                <i class="fa-solid fa-print text-xs"></i>
-                                <span>Certificate Print</span>
+                    <div>
+                        <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Password</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                            <input type="password" id="auth-password" placeholder="Enter your password" required 
+                                   class="w-full pl-10 pr-10 py-3 rounded-xl bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white focus:outline-emerald-500 font-semibold text-sm">
+                            <button type="button" onclick="toggleAuthPassVisibility()" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600">
+                                <i id="auth-pass-eye" class="fa-solid fa-eye"></i>
                             </button>
                         </div>
                     </div>
-                </div>
+
+                    <button type="submit" 
+                            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/40 transition text-sm flex items-center justify-center gap-2 mt-2 cursor-pointer">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                        <span>Login to Portal</span>
+                    </button>
+                </form>
+
+                <p class="text-[11px] text-slate-400 mt-6">&copy; 2026 Cantonment Public School and College Lalmonirhat</p>
             </div>
         </div>
 
-        <div class="border-t border-slate-100 dark:border-slate-700 p-3">
-            <span class="text-[10px] text-slate-400 block text-center">CPSCL Portal v2.0 &bull; 2026</span>
-        </div>
-    </aside>
-
-    <!-- ================= 2. MAIN CONTENT ================= -->
-    <main class="flex-1 flex flex-col overflow-hidden h-full relative">
-        
-        <header class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 flex items-center justify-between shrink-0 relative z-20 transition-colors duration-200 no-print">
-            <div class="flex items-center gap-3">
-                <button id="sidebar-toggle-btn" title="Toggle Sidebar" class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-emerald-600 transition cursor-pointer">
-                    <i class="fa-solid fa-bars text-lg"></i>
-                </button>
-                <div class="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800/60 px-3.5 py-1.5 rounded-full text-xs font-semibold">
-                    <i class="fa-solid fa-school text-emerald-600 dark:text-emerald-400"></i>
-                    <span id="top-title">CPSCL - STUDENT LIST</span>
-                    <span class="bg-emerald-700 text-white px-2 py-0.5 rounded-full text-[10px]">ID: 1013</span>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-3 relative">
-                <button id="theme-toggle-btn" title="Toggle Dark/Light Mode" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-amber-400 transition cursor-pointer">
-                    <i id="theme-icon" class="fa-regular fa-moon text-base"></i>
-                </button>
-
-                <div class="relative">
-                    <div id="profile-btn" class="flex items-center gap-1.5 cursor-pointer select-none group">
-                        <div class="w-9 h-9 rounded-full ring-2 ring-emerald-500/30 dark:ring-emerald-400/40 p-0.5 shadow-xs overflow-hidden flex items-center justify-center">
-                            <img id="nav-profile-pic" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Profile" class="w-full h-full rounded-full object-cover">
-                        </div>
-                        <i class="fa-solid fa-chevron-down text-[11px] text-slate-400 group-hover:text-emerald-600 transition-transform duration-200" id="dropdown-arrow"></i>
+        <!-- ================= 1. SIDEBAR ================= -->
+        <aside id="sidebar" class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col justify-between shrink-0 h-full transition-all duration-300 ease-in-out no-print">
+            <div>
+                <div onclick="switchCPSCLSubSection('list')" title="Student List" class="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition group">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden bg-emerald-50 dark:bg-emerald-950/40 p-0.5 border border-emerald-100 dark:border-emerald-800 shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+                        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg-795xmOcuKYH8wjija8JrA-qVjfOp_4KieeZ1pOQJaqX2uXsqGLMo09AXsGGsfGjH9LpK5fPlUNGbebFguiAzPC_YvbRXcHePj7cORQd6GMxDUg-LCeXtmNkccGI2K4Hv73PJqJkGX0Ju9N4knQuqKOAImqB6qy_WWFXpKeIaQhRgk7YbLqBLpCmL0cio/s1600/%E0%A6%95%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%A8%E0%A7%8D%E0%A6%9F%E0%A6%A8%E0%A6%AE%E0%A7%87%E0%A6%A8%E0%A7%8D%E0%A6%9F_%E0%A6%AA%E0%A6%BE%E0%A6%AC%E0%A6%B2%E0%A6%BF%E0%A6%95_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2_%E0%A6%93_%E0%A6%95%E0%A6%B2%E0%A7%87%E0%A6%9C_%E0%A6%B2%E0%A6%BE%E0%A6%B2%E0%A6%AE%E0%A6%A8%E0%A6%BF%E0%A6%B0%E0%A6%B9%E0%A6%BE%E0%A6%9F%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" 
+                             alt="CPSCL Logo" class="w-full h-full object-contain">
                     </div>
+                    <div>
+                        <h1 class="font-extrabold text-slate-800 dark:text-white text-base tracking-wider leading-tight group-hover:text-emerald-600 transition-colors">CPSCL</h1>
+                        <span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold tracking-tight block">Campus Management</span>
+                    </div>
+                </div>
 
-                    <div id="profile-dropdown" class="hidden absolute right-0 top-12 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden z-50">
-                        <div class="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-700 p-4 flex items-center gap-3 text-white">
-                            <div>
-                                <h3 id="dropdown-user-name" class="font-bold text-sm leading-snug">CPSCL Operator</h3>
-                                <p id="dropdown-user-role" class="text-xs text-emerald-100 font-medium">cpscl@gmail.com</p>
+                <div id="sidebar-menu" class="p-3 space-y-1.5">
+                    <div class="pt-2">
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase px-3 tracking-wider">Modules</span>
+                        <div class="mt-1 space-y-1">
+                            <div onclick="toggleCPSCLMenu()" class="flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl cursor-pointer transition">
+                                <div class="flex items-center gap-2.5">
+                                    <i class="fa-solid fa-graduation-cap text-emerald-600 text-sm"></i>
+                                    <span>CPSCL Management</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="cpscl-menu-arrow"></i>
+                            </div>
+
+                            <div id="cpscl-submenu" class="pl-4 space-y-1">
+                                <button onclick="switchCPSCLSubSection('list')" id="menu-cpscl-list" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl transition cursor-pointer">
+                                    <i class="fa-solid fa-users text-xs"></i>
+                                    <span>Student List</span>
+                                </button>
+
+                                <button onclick="switchCPSCLSubSection('entry')" id="menu-cpscl-entry" style="display: none;" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer">
+                                    <i class="fa-solid fa-user-plus text-xs"></i>
+                                    <span>Student Entry</span>
+                                </button>
+
+                                <button onclick="switchCPSCLSubSection('preview')" id="menu-cpscl-preview" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer">
+                                    <i class="fa-solid fa-print text-xs"></i>
+                                    <span>Certificate Print</span>
+                                </button>
                             </div>
                         </div>
-
-                        <div class="p-3">
-                            <button onclick="handleUserLogout()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 px-4 rounded-xl flex items-center justify-center gap-2 text-xs shadow-sm transition cursor-pointer">
-                                <i class="fa-solid fa-right-from-bracket"></i>
-                                <span>Logout</span>
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
-        </header>
 
-        <!-- ================= MAIN CONTENT AREA ================= -->
-        <div id="main-content-area" class="flex-1 p-6 overflow-y-auto bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
+            <div class="border-t border-slate-100 dark:border-slate-700 p-3">
+                <span class="text-[10px] text-slate-400 block text-center">CPSCL Portal v2.0 &bull; 2026</span>
+            </div>
+        </aside>
+
+        <!-- ================= 2. MAIN CONTENT ================= -->
+        <main class="flex-1 flex flex-col overflow-hidden h-full relative">
             
-            <div id="cpscl-main-wrapper" class="space-y-5">
+            <header class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 flex items-center justify-between shrink-0 relative z-20 transition-colors duration-200 no-print">
+                <div class="flex items-center gap-3">
+                    <button id="sidebar-toggle-btn" title="Toggle Sidebar" class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-emerald-600 transition cursor-pointer">
+                        <i class="fa-solid fa-bars text-lg"></i>
+                    </button>
+                    <div class="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800/60 px-3.5 py-1.5 rounded-full text-xs font-semibold">
+                        <i class="fa-solid fa-school text-emerald-600 dark:text-emerald-400"></i>
+                        <span id="top-title">CPSCL - STUDENT LIST</span>
+                        <span class="bg-emerald-700 text-white px-2 py-0.5 rounded-full text-[10px]">ID: 1013</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 relative">
+                    <button id="theme-toggle-btn" title="Toggle Dark/Light Mode" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-amber-400 transition cursor-pointer">
+                        <i id="theme-icon" class="fa-regular fa-moon text-base"></i>
+                    </button>
+
+                    <div class="relative">
+                        <div id="profile-btn" class="flex items-center gap-1.5 cursor-pointer select-none group">
+                            <div class="w-9 h-9 rounded-full ring-2 ring-emerald-500/30 dark:ring-emerald-400/40 p-0.5 shadow-xs overflow-hidden flex items-center justify-center">
+                                <img id="nav-profile-pic" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Profile" class="w-full h-full rounded-full object-cover">
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-[11px] text-slate-400 group-hover:text-emerald-600 transition-transform duration-200" id="dropdown-arrow"></i>
+                        </div>
+
+                        <div id="profile-dropdown" class="hidden absolute right-0 top-12 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden z-50">
+                            <div class="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-700 p-4 flex items-center gap-3 text-white">
+                                <div>
+                                    <h3 id="dropdown-user-name" class="font-bold text-sm leading-snug">CPSCL Operator</h3>
+                                    <p id="dropdown-user-role" class="text-xs text-emerald-100 font-medium">cpscl@gmail.com</p>
+                                </div>
+                            </div>
+
+                            <div class="p-3">
+                                <button onclick="handleUserLogout()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 px-4 rounded-xl flex items-center justify-center gap-2 text-xs shadow-sm transition cursor-pointer">
+                                    <i class="fa-solid fa-right-from-bracket"></i>
+                                    <span>Logout</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ================= MAIN CONTENT AREA ================= -->
+            <div id="main-content-area" class="flex-1 p-6 overflow-y-auto bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
                 
-                <!-- 3.1 Student List Section -->
-                <div id="cpscl-list-view" class="space-y-5 max-w-7xl mx-auto">
+                <div id="cpscl-main-wrapper" class="space-y-5">
                     
-                    <!-- এক্সেল আপলোড বক্সটি ডিফল্টভাবে লুকানো (Hidden by default) -->
-                    <div id="excel-upload-container" style="display: none;" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 no-print">
-                        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                    <!-- 3.1 Student List Section -->
+                    <div id="cpscl-list-view" class="space-y-5 max-w-7xl mx-auto">
+                        
+                        <!-- এক্সেল আপলোড বক্স (ডিফল্টভাবে লুকানো) -->
+                        <div id="excel-upload-container" style="display: none;" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 no-print">
+                            <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                                <div>
+                                    <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                        <i class="fa-solid fa-file-excel text-emerald-600"></i> Student Excel Import & Database
+                                    </h2>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Upload Excel file according to template (Auto-syncs with Cloud Database)</p>
+                                </div>
+                                <div class="flex flex-wrap gap-2.5">
+                                    <button onclick="downloadSampleExcel()" class="bg-sky-600 hover:bg-sky-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-xs transition cursor-pointer">
+                                        <i class="fa-solid fa-download"></i> Download Sample Excel
+                                    </button>
+                                    <button onclick="switchCPSCLSubSection('entry')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-xs transition cursor-pointer">
+                                        <i class="fa-solid fa-user-plus"></i> Add New Student
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div onclick="document.getElementById('excelFileInput').click()" class="border-2 border-dashed border-indigo-300 dark:border-indigo-700/60 bg-indigo-50/50 dark:bg-indigo-950/20 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 p-6 rounded-2xl text-center cursor-pointer transition">
+                                <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-600 dark:text-indigo-400 mb-2"></i>
+                                <h4 class="font-bold text-sm text-slate-800 dark:text-white">Click here to upload Excel file</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Supported formats: .xlsx, .xls, .csv</p>
+                                <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
+                            </div>
+                        </div>
+
+                        <!-- স্টুডেন্ট টেবিল -->
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 no-print">
+                            <div class="flex flex-wrap gap-2 pb-3 border-b border-slate-100 dark:border-slate-700 mb-4">
+                                <button onclick="filterByTemplate('all', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow-xs cursor-pointer">
+                                    <i class="fa-solid fa-layer-group mr-1"></i> All Students
+                                </button>
+                                <button onclick="filterByTemplate('ssc_testimonial', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
+                                    <i class="fa-solid fa-graduation-cap mr-1"></i> SSC Testimonial
+                                </button>
+                                <button onclick="filterByTemplate('hsc_testimonial', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
+                                    <i class="fa-solid fa-user-graduate mr-1"></i> HSC Testimonial
+                                </button>
+                                <button onclick="filterByTemplate('tc_certificate', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
+                                    <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Transfer Certificate (TC)
+                                </button>
+                                <button onclick="filterByTemplate('character_cert', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
+                                    <i class="fa-solid fa-award mr-1"></i> Character Certificate
+                                </button>
+                            </div>
+
+                            <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                                <div class="relative w-72">
+                                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+                                    <input type="text" id="studentSearchInput" placeholder="Search by Roll, Name or Reg..." oninput="renderStudentTable()" class="w-full pl-9 pr-4 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white focus:outline-emerald-500">
+                                </div>
+                                <div class="flex items-center gap-3 text-xs font-bold text-slate-600 dark:text-slate-300">
+                                    <span>Total Students: <strong id="totalStudentsCount" class="text-emerald-600 text-sm">0</strong></span>
+                                    
+                                    <button id="btn-clear-all" onclick="clearAllStudents()" style="display: none;" class="text-rose-600 hover:text-rose-700 flex items-center gap-1.5 ml-2 font-bold cursor-pointer">
+                                        <i class="fa-solid fa-trash-can"></i> Clear Data
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="border-b border-slate-200 dark:border-slate-700 text-slate-400 uppercase font-bold text-[11px]">
+                                            <th class="py-3 px-3">Roll</th>
+                                            <th class="py-3 px-3">Registration</th>
+                                            <th class="py-3 px-3">Student Name</th>
+                                            <th class="py-3 px-3">Father's Name</th>
+                                            <th class="py-3 px-3">Gender</th>
+                                            <th class="py-3 px-3">Template</th>
+                                            <th class="py-3 px-3">Group/Class</th>
+                                            <th class="py-3 px-3">GPA</th>
+                                            <th class="py-3 px-3 text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="studentTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/60">
+                                        <!-- Dynamic rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3.2 Student Entry Section -->
+                    <div id="cpscl-entry-view" class="hidden max-w-4xl mx-auto bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-6 no-print">
+                        <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-700">
                             <div>
                                 <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                                    <i class="fa-solid fa-file-excel text-emerald-600"></i> Student Excel Import & Database
+                                    <i class="fa-solid fa-pen-to-square text-emerald-600"></i> Student Information Entry
                                 </h2>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Upload Excel file according to template (Auto-syncs with Cloud Database)</p>
-                            </div>
-                            <div class="flex flex-wrap gap-2.5">
-                                <button onclick="downloadSampleExcel()" class="bg-sky-600 hover:bg-sky-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-xs transition cursor-pointer">
-                                    <i class="fa-solid fa-download"></i> Download Sample Excel
-                                </button>
-                                <button onclick="switchCPSCLSubSection('entry')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-xs transition cursor-pointer">
-                                    <i class="fa-solid fa-user-plus"></i> Add New Student
-                                </button>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Select certificate template and enter details</p>
                             </div>
                         </div>
 
-                        <div onclick="document.getElementById('excelFileInput').click()" class="border-2 border-dashed border-indigo-300 dark:border-indigo-700/60 bg-indigo-50/50 dark:bg-indigo-950/20 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 p-6 rounded-2xl text-center cursor-pointer transition">
-                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-600 dark:text-indigo-400 mb-2"></i>
-                            <h4 class="font-bold text-sm text-slate-800 dark:text-white">Click here to upload Excel file</h4>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Supported formats: .xlsx, .xls, .csv</p>
-                            <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
-                        </div>
+                        <form onsubmit="event.preventDefault(); saveAndPreviewFromForm();" class="space-y-4 text-xs">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2">
+                                    <label class="block font-bold mb-1">Reference No. *</label>
+                                    <input type="text" id="inpRef" value="CPSCL/ 801023/SSC-26/001" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border" required>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block font-bold mb-1">Student's Full Name *</label>
+                                    <input type="text" id="inpName" value="" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border" required>
+                                </div>
+                                <div>
+                                    <label class="block font-bold mb-1">Gender *</label>
+                                    <select id="inpGender" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border">
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block font-bold mb-1">Father's Name *</label>
+                                    <input type="text" id="inpFather" value="" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border" required>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block font-bold mb-1">Mother's Name *</label>
+                                    <input type="text" id="inpMother" value="" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border" required>
+                                </div>
+                                <div>
+                                    <label class="block font-bold mb-1">Roll *</label>
+                                    <input type="text" id="inpRoll" value="" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border" required>
+                                </div>
+                                <div>
+                                    <label class="block font-bold mb-1">Registration</label>
+                                    <input type="text" id="inpReg" value="" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border">
+                                </div>
+                                <div>
+                                    <label class="block font-bold mb-1">Session *</label>
+                                    <input type="text" id="inpSession" value="2024–2025" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border" required>
+                                </div>
+                                <div>
+                                    <label class="block font-bold mb-1">Year *</label>
+                                    <input type="text" id="inpYear" value="2026" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border" required>
+                                </div>
+                                <div>
+                                    <label class="block font-bold mb-1">Group *</label>
+                                    <input type="text" id="inpGroup" value="Science" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border" required>
+                                </div>
+                                <div>
+                                    <label class="block font-bold mb-1">Board</label>
+                                    <input type="text" id="inpBoard" value="Dinajpur" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border">
+                                </div>
+                                <div>
+                                    <label class="block font-bold mb-1">GPA</label>
+                                    <input type="text" id="inpGpa" value="5.00" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border">
+                                </div>
+                                <div>
+                                    <label class="block font-bold mb-1">Date</label>
+                                    <input type="text" id="inpPubDate" value="10 August 2026" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border">
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end gap-3 pt-4 border-t">
+                                <button type="button" onclick="switchCPSCLSubSection('list')" class="bg-slate-600 text-white font-bold px-5 py-2.5 rounded-xl text-xs">Back</button>
+                                <button type="submit" class="bg-emerald-600 text-white font-bold px-6 py-2.5 rounded-xl text-xs">Generate</button>
+                            </div>
+                        </form>
                     </div>
 
-                    <!-- স্টুডেন্ট টেবিল সেকশন -->
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 no-print">
-                        <div class="flex flex-wrap gap-2 pb-3 border-b border-slate-100 dark:border-slate-700 mb-4">
-                            <button onclick="filterByTemplate('all', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow-xs cursor-pointer">
-                                <i class="fa-solid fa-layer-group mr-1"></i> All Students
-                            </button>
-                            <button onclick="filterByTemplate('ssc_testimonial', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
-                                <i class="fa-solid fa-graduation-cap mr-1"></i> SSC Testimonial
-                            </button>
-                            <button onclick="filterByTemplate('hsc_testimonial', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
-                                <i class="fa-solid fa-user-graduate mr-1"></i> HSC Testimonial
-                            </button>
-                            <button onclick="filterByTemplate('tc_certificate', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
-                                <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Transfer Certificate (TC)
-                            </button>
-                            <button onclick="filterByTemplate('character_cert', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
-                                <i class="fa-solid fa-award mr-1"></i> Character Certificate
-                            </button>
-                        </div>
-
-                        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-                            <div class="relative w-72">
-                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
-                                <input type="text" id="studentSearchInput" placeholder="Search by Roll, Name or Reg..." oninput="renderStudentTable()" class="w-full pl-9 pr-4 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white focus:outline-emerald-500">
-                            </div>
-                            <div class="flex items-center gap-3 text-xs font-bold text-slate-600 dark:text-slate-300">
-                                <span>Total Students: <strong id="totalStudentsCount" class="text-emerald-600 text-sm">0</strong></span>
+                    <!-- 3.3 Certificate Print Preview Section -->
+                    <div id="cpscl-preview-view" class="hidden">
+                        <div class="cpscl-preview-wrapper">
+                            <div class="cpscl-toolbar no-print">
+                                <button onclick="switchCPSCLSubSection('list')" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-2 transition cursor-pointer">
+                                    <i class="fa-solid fa-arrow-left"></i> Back to Student List
+                                </button>
                                 
-                                <!-- ডাটা ক্লিয়ার বাটন ডিফল্টভাবে লুকানো -->
-                                <button id="btn-clear-all" onclick="clearAllStudents()" style="display: none;" class="text-rose-600 hover:text-rose-700 flex items-center gap-1.5 ml-2 font-bold cursor-pointer">
-                                    <i class="fa-solid fa-trash-can"></i> Clear Data
+                                <div class="flex items-center gap-2 bg-white px-3 py-1 rounded-lg">
+                                    <span class="text-xs font-bold text-slate-600">Template:</span>
+                                    <select id="previewTemplateSelect" onchange="onTemplateChange(this.value)" class="bg-transparent text-indigo-900 font-bold text-xs px-2 py-1 outline-none cursor-pointer">
+                                        <option value="ssc_testimonial">SSC Testimonial</option>
+                                        <option value="hsc_testimonial">HSC Testimonial</option>
+                                        <option value="tc_certificate">Transfer Certificate (TC)</option>
+                                        <option value="character_cert">Character Certificate</option>
+                                    </select>
+                                </div>
+
+                                <button onclick="printCPSCLCertificate()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2 rounded-lg text-xs flex items-center gap-2 shadow-md transition cursor-pointer">
+                                    <i class="fa-solid fa-print"></i> Print / Download PDF
                                 </button>
                             </div>
-                        </div>
 
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs border-collapse">
-                                <thead>
-                                    <tr class="border-b border-slate-200 dark:border-slate-700 text-slate-400 uppercase font-bold text-[11px]">
-                                        <th class="py-3 px-3">Roll</th>
-                                        <th class="py-3 px-3">Registration</th>
-                                        <th class="py-3 px-3">Student Name</th>
-                                        <th class="py-3 px-3">Father's Name</th>
-                                        <th class="py-3 px-3">Gender</th>
-                                        <th class="py-3 px-3">Template</th>
-                                        <th class="py-3 px-3">Group/Class</th>
-                                        <th class="py-3 px-3">GPA</th>
-                                        <th class="py-3 px-3 text-right">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="studentTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/60">
-                                    <!-- Dynamic rows -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                            <div class="cpscl-a4-sheet" id="cpsclPrintArea">
+                                <div class="cert-ref" id="prevRef">CPSCL/ 801023/SSC-26/001</div>
+                                
+                                <div class="cert-body-block">
+                                    <p class="cert-paragraph">
+                                        This is to certify that <span class="cert-bold" id="prevName">K M ANISUJJAMAN MASUM</span>, <span id="prevRelation">son of</span> <span class="cert-bold" id="prevFather">MD ASHRAFUL HABIB</span> and <span class="cert-bold" id="prevMother">MST AKLIMA KHATUN</span> bearing Roll No. <span class="cert-meta-bold" id="prevRoll">229083</span>, Registration No. <span class="cert-meta-bold" id="prevReg">2317722960</span>, Session <span class="cert-meta-bold" id="prevSession">2024–2025</span> passed <span id="prevExamName">Secondary School Certificate Examination</span> in <span class="cert-meta-bold" id="prevYear">2026</span> from <span class="cert-meta-bold" id="prevGroup">Science</span> group under the Board of Intermediate and Secondary Education, <span id="prevBoard">Dinajpur</span> as a regular student of this institution and acquired GPA- <span class="cert-meta-bold" id="prevGpa">5.00</span>.
+                                    </p>
+                                    <p class="cert-paragraph">
+                                        <span id="prevPronoun">He</span> bears a good moral character. To the best of my concern, <span id="prevPronounLower">he</span> did not take part in any activity subversive of the state or against discipline during <span id="prevPossessive">his</span> stay at this institution.
+                                    </p>
+                                    <p class="cert-paragraph">
+                                        I wish <span id="prevObjective">him</span> a bright future.
+                                    </p>
+                                </div>
 
-                <!-- 3.2 Student Entry Section -->
-                <div id="cpscl-entry-view" class="hidden max-w-4xl mx-auto bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-6 no-print">
-                    <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-700">
-                        <div>
-                            <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                                <i class="fa-solid fa-pen-to-square text-emerald-600"></i> Student Information Entry
-                            </h2>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">Select certificate template and enter details</p>
+                                <div class="cert-footer-date">
+                                    [Result Publication Date: <span id="prevPubDate">10 August 2026</span>]
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <form onsubmit="event.preventDefault(); saveAndPreviewFromForm();" class="space-y-4 text-xs">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="md:col-span-2">
-                                <label class="block font-bold mb-1">Reference No. *</label>
-                                <input type="text" id="inpRef" value="CPSCL/ 801023/SSC-26/001" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border" required>
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block font-bold mb-1">Student's Full Name *</label>
-                                <input type="text" id="inpName" value="" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border" required>
-                            </div>
-                            <div>
-                                <label class="block font-bold mb-1">Gender *</label>
-                                <select id="inpGender" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border">
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block font-bold mb-1">Father's Name *</label>
-                                <input type="text" id="inpFather" value="" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border" required>
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block font-bold mb-1">Mother's Name *</label>
-                                <input type="text" id="inpMother" value="" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border" required>
-                            </div>
-                            <div>
-                                <label class="block font-bold mb-1">Roll *</label>
-                                <input type="text" id="inpRoll" value="" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border" required>
-                            </div>
-                            <div>
-                                <label class="block font-bold mb-1">Registration</label>
-                                <input type="text" id="inpReg" value="" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border">
-                            </div>
-                            <div>
-                                <label class="block font-bold mb-1">Session *</label>
-                                <input type="text" id="inpSession" value="2024–2025" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border" required>
-                            </div>
-                            <div>
-                                <label class="block font-bold mb-1">Year *</label>
-                                <input type="text" id="inpYear" value="2026" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border" required>
-                            </div>
-                            <div>
-                                <label class="block font-bold mb-1">Group *</label>
-                                <input type="text" id="inpGroup" value="Science" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border" required>
-                            </div>
-                            <div>
-                                <label class="block font-bold mb-1">Board</label>
-                                <input type="text" id="inpBoard" value="Dinajpur" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border">
-                            </div>
-                            <div>
-                                <label class="block font-bold mb-1">GPA</label>
-                                <input type="text" id="inpGpa" value="5.00" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border">
-                            </div>
-                            <div>
-                                <label class="block font-bold mb-1">Date</label>
-                                <input type="text" id="inpPubDate" value="10 August 2026" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border">
-                            </div>
-                        </div>
-
-                        <div class="flex justify-end gap-3 pt-4 border-t">
-                            <button type="button" onclick="switchCPSCLSubSection('list')" class="bg-slate-600 text-white font-bold px-5 py-2.5 rounded-xl text-xs">Back</button>
-                            <button type="submit" class="bg-emerald-600 text-white font-bold px-6 py-2.5 rounded-xl text-xs">Generate</button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- 3.3 Certificate Print Preview Section -->
-                <div id="cpscl-preview-view" class="hidden">
-                    <div class="cpscl-preview-wrapper">
-                        <div class="cpscl-toolbar no-print">
-                            <button onclick="switchCPSCLSubSection('list')" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-2 transition cursor-pointer">
-                                <i class="fa-solid fa-arrow-left"></i> Back to Student List
-                            </button>
-                            
-                            <div class="flex items-center gap-2 bg-white px-3 py-1 rounded-lg">
-                                <span class="text-xs font-bold text-slate-600">Template:</span>
-                                <select id="previewTemplateSelect" onchange="onTemplateChange(this.value)" class="bg-transparent text-indigo-900 font-bold text-xs px-2 py-1 outline-none cursor-pointer">
-                                    <option value="ssc_testimonial">SSC Testimonial</option>
-                                    <option value="hsc_testimonial">HSC Testimonial</option>
-                                    <option value="tc_certificate">Transfer Certificate (TC)</option>
-                                    <option value="character_cert">Character Certificate</option>
-                                </select>
-                            </div>
-
-                            <button onclick="printCPSCLCertificate()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2 rounded-lg text-xs flex items-center gap-2 shadow-md transition cursor-pointer">
-                                <i class="fa-solid fa-print"></i> Print / Download PDF
-                            </button>
-                        </div>
-
-                        <!-- EXACT 1:1 CALIBRATED A4 SHEET -->
-                        <div class="cpscl-a4-sheet" id="cpsclPrintArea">
-                            <div class="cert-ref" id="prevRef">CPSCL/ 801023/SSC-26/001</div>
-                            
-                            <div class="cert-body-block">
-                                <p class="cert-paragraph">
-                                    This is to certify that <span class="cert-bold" id="prevName">K M ANISUJJAMAN MASUM</span>, <span id="prevRelation">son of</span> <span class="cert-bold" id="prevFather">MD ASHRAFUL HABIB</span> and <span class="cert-bold" id="prevMother">MST AKLIMA KHATUN</span> bearing Roll No. <span class="cert-meta-bold" id="prevRoll">229083</span>, Registration No. <span class="cert-meta-bold" id="prevReg">2317722960</span>, Session <span class="cert-meta-bold" id="prevSession">2024–2025</span> passed <span id="prevExamName">Secondary School Certificate Examination</span> in <span class="cert-meta-bold" id="prevYear">2026</span> from <span class="cert-meta-bold" id="prevGroup">Science</span> group under the Board of Intermediate and Secondary Education, <span id="prevBoard">Dinajpur</span> as a regular student of this institution and acquired GPA- <span class="cert-meta-bold" id="prevGpa">5.00</span>.
-                                </p>
-                                <p class="cert-paragraph">
-                                    <span id="prevPronoun">He</span> bears a good moral character. To the best of my concern, <span id="prevPronounLower">he</span> did not take part in any activity subversive of the state or against discipline during <span id="prevPossessive">his</span> stay at this institution.
-                                </p>
-                                <p class="cert-paragraph">
-                                    I wish <span id="prevObjective">him</span> a bright future.
-                                </p>
-                            </div>
-
-                            <div class="cert-footer-date">
-                                [Result Publication Date: <span id="prevPubDate">10 August 2026</span>]
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
             </div>
 
-        </div>
+        </main>
 
-    </main>
+    </div>
 
     <!-- ================= JAVASCRIPT & CLOUD RBAC SECURITY ================= -->
     <script>
@@ -586,7 +595,7 @@
             }
         }
 
-        // ================= ১. ফায়ারবেস কানেকশন ও লাইভ সিঙ্ক =================
+        // ================= ১. ফায়ারবেস সিঙ্ক ও লাইভ সিকিউরিটি =================
         async function initFirebaseSync() {
             try {
                 const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
@@ -630,14 +639,17 @@
                             );
                             
                             if (!matchedUser) {
-                                handleUserLogout("আপনার অ্যাকাউন্টটি অ্যাডমিন কর্তৃক বাতিল করা হয়েছে!");
+                                handleUserLogout("Your account was removed by administrator!");
                             } else if (matchedUser.status !== 'Active') {
-                                handleUserLogout("অ্যাডমিন কর্তৃক আপনার অ্যাকাউন্ট সাময়িকভাবে ব্লক (Blocked) করা হয়েছে!");
-                            } else if (matchedUser.password !== loggedInSessionUser.password) {
-                                handleUserLogout("পাসওয়ার্ড পরিবর্তন হয়েছে, দয়া করে পুনরায় লগইন করুন।");
+                                handleUserLogout("Your account is currently BLOCKED by administrator!");
+                            } else if (matchedUser.password !== loggedInSessionUser.password && !loggedInSessionUser.isAdminImpersonating) {
+                                handleUserLogout("Password was changed. Please login again.");
                             } else {
-                                loggedInSessionUser = matchedUser;
-                                localStorage.setItem('cpscl_auth_session', JSON.stringify(matchedUser));
+                                loggedInSessionUser = {
+                                    ...matchedUser,
+                                    isAdminImpersonating: loggedInSessionUser.isAdminImpersonating
+                                };
+                                localStorage.setItem('cpscl_auth_session', JSON.stringify(loggedInSessionUser));
                                 applyUserPermissions();
                             }
                         }
@@ -715,10 +727,16 @@
             }
         }
 
-        // ================= ২. পারমিশন অনুযায়ী ইন্টারফেস নিয়ন্ত্রণ =================
+        // ================= ২. পারমিশন ও অ্যাডমিন মোড ইন্টারফেস =================
         function applyUserPermissions() {
             if (!loggedInSessionUser) return;
-            const p = loggedInSessionUser.permissions || { can_view_print: true, can_upload_excel: false, can_manual_entry: false, can_delete_data: false };
+            
+            const p = loggedInSessionUser.permissions || { 
+                can_view_print: true, 
+                can_upload_excel: false, 
+                can_manual_entry: false, 
+                can_delete_data: false 
+            };
 
             // ১. এক্সেল আপলোড বক্স দেখাবে কি না
             const excelBox = document.getElementById('excel-upload-container');
@@ -737,7 +755,24 @@
             if (clearBtn) {
                 clearBtn.style.display = p.can_delete_data ? 'inline-flex' : 'none';
             }
+
+            // ৪. অ্যাডমিন মোড ব্যানার প্রদর্শন
+            const adminBanner = document.getElementById('admin-impersonate-banner');
+            const impersonateDisplay = document.getElementById('impersonate-user-display');
+            if (loggedInSessionUser.isAdminImpersonating) {
+                if (adminBanner) adminBanner.classList.remove('hidden');
+                if (impersonateDisplay) impersonateDisplay.innerText = `${loggedInSessionUser.name} (${loggedInSessionUser.role})`;
+            } else {
+                if (adminBanner) adminBanner.classList.add('hidden');
+            }
         }
+
+        window.exitImpersonationMode = function () {
+            localStorage.removeItem('cpscl_auth_session');
+            window.close(); // নতুন ট্যাব বন্ধ হবে
+            // যদি একই ট্যাবে থাকে তবে অ্যাডমিনে ফিরবে
+            window.location.href = window.location.origin.includes('github.io') ? `${window.location.origin}/admin.html` : 'admin.html';
+        };
 
         // ================= ৩. লগইন ও অথেনটিকেশন =================
         function handleUserLogin(event) {
@@ -750,7 +785,7 @@
             errBox.classList.add('hidden');
 
             if (systemUsersList.length === 0) {
-                errText.innerText = "ক্লাউড থেকে ইউজার তালিকা লোড হচ্ছে, ৫ সেকেন্ড পর আবার চেষ্টা করুন...";
+                errText.innerText = "Loading cloud user registry, please try again in 5 seconds...";
                 errBox.classList.remove('hidden');
                 return;
             }
@@ -761,13 +796,13 @@
             );
 
             if (!validUser) {
-                errText.innerText = "ভুল ইউজারনেম বা পাসওয়ার্ড! অ্যাডমিনের সাথে যোগাযোগ করুন।";
+                errText.innerText = "Invalid username or password! Contact system administrator.";
                 errBox.classList.remove('hidden');
                 return;
             }
 
             if (validUser.status !== 'Active') {
-                errText.innerText = "আপনার অ্যাকাউন্টটি সাময়িকভাবে ব্লক (Blocked) করা হয়েছে!";
+                errText.innerText = "Your account is currently BLOCKED by administrator!";
                 errBox.classList.remove('hidden');
                 return;
             }
@@ -822,7 +857,7 @@
                 renderStudentTable();
             } else if (sectionType === 'entry') {
                 if (!loggedInSessionUser?.permissions?.can_manual_entry) {
-                    alert("আপনার নতুন শিক্ষার্থী এন্ট্রি দেওয়ার অনুমতি নেই!");
+                    alert("Permission denied: You do not have permission for manual student entry.");
                     switchCPSCLSubSection('list');
                     return;
                 }
@@ -850,7 +885,7 @@
 
         function handleExcelUpload(event) {
             if (!loggedInSessionUser?.permissions?.can_upload_excel) {
-                alert("আপনার এক্সেল ফাইল আপলোড করার অনুমতি নেই!");
+                alert("Permission denied: Excel upload is disabled for your account.");
                 event.target.value = '';
                 return;
             }
@@ -867,7 +902,7 @@
                     const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
                     if (jsonData.length === 0) {
-                        alert("এক্সেল ফাইলে কোনো তথ্য পাওয়া যায়নি!");
+                        alert("No data found in Excel file!");
                         return;
                     }
 
@@ -922,7 +957,7 @@
                     await syncToFirebase(studentDatabase);
                     renderStudentTable();
                     logCloudAudit("EXCEL_IMPORT", `${newStudents.length} Students imported from Excel`);
-                    alert(`সফলভাবে ${newStudents.length} জন শিক্ষার্থীর তথ্য ক্লাউডে সেভ হয়েছে!`);
+                    alert(`Successfully imported ${newStudents.length} students to Cloud!`);
                     event.target.value = '';
                 } catch (err) {
                     alert("Error reading Excel file: " + err.message);
@@ -949,7 +984,7 @@
             tbody.innerHTML = '';
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-slate-400 py-6">কোনো শিক্ষার্থীর তথ্য পাওয়া যায়নি।</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-slate-400 py-6">No students found.</td></tr>`;
                 return;
             }
 
@@ -1083,11 +1118,11 @@
 
         async function clearAllStudents() {
             if (!loggedInSessionUser?.permissions?.can_delete_data) {
-                alert("আপনার ডাটা ক্লিয়ার করার অনুমতি নেই!");
+                alert("Permission denied: You do not have permission to clear data.");
                 return;
             }
 
-            if (confirm("আপনি কি নিশ্চিত যে সকল শিক্ষার্থীর তালিকা মুছে ফেলতে চান?")) {
+            if (confirm("Are you sure you want to permanently clear all student records?")) {
                 studentDatabase = (currentFilterTemplate === 'all') 
                     ? [] 
                     : studentDatabase.filter(s => s.template !== currentFilterTemplate);
@@ -1095,13 +1130,13 @@
                 await syncToFirebase(studentDatabase);
                 renderStudentTable();
                 logCloudAudit("DATABASE_CLEAR", `Student records cleared`);
-                alert("ডাটাবেজ ক্লিয়ার হয়েছে!");
+                alert("Database cleared successfully!");
             }
         }
 
         async function saveAndPreviewFromForm() {
             if (!loggedInSessionUser?.permissions?.can_manual_entry) {
-                alert("আপনার শিক্ষার্থী এন্ট্রি দেওয়ার অনুমতি নেই!");
+                alert("Permission denied: You do not have permission for manual student entry.");
                 return;
             }
 
