@@ -13,7 +13,7 @@
     </script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- SheetJS (Excel ফাইল প্রসেসিং লাইব্রেরি) -->
+    <!-- SheetJS (Excel ফাইল প্রসেসিং) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
@@ -105,26 +105,48 @@
         }
         .cert-footer-date { margin-top: 18pt !important; }
 
-        @page { size: A4 landscape !important; margin: 0mm !important; }
+        /* ================= ১ পেজে লক করার জন্য নিখুঁত PRINT CSS ================= */
+        @page {
+            size: A4 landscape !important;
+            margin: 0mm !important;
+        }
 
-        /* প্রিন্ট করার সময় ফুল-স্ক্রিন নির্ভুল লেআউট */
         @media print {
-            @page { size: A4 landscape !important; margin: 0mm !important; }
-            html, body, main, #main-content-area, #cpscl-main-wrapper, #cpscl-preview-view {
+            @page {
+                size: A4 landscape !important;
+                margin: 0mm !important;
+            }
+
+            html, body {
                 width: 297mm !important;
                 height: 210mm !important;
-                min-height: 210mm !important;
+                max-height: 210mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
-                overflow: visible !important;
+                overflow: hidden !important;
+            }
+
+            /* অপ্রয়োজনীয় সবকিছু লেআউট থেকে পুরোপুরি দূর করা */
+            aside, header, #dashboard-view, #profile-view, #cpscl-list-view, #cpscl-entry-view, .no-print {
+                display: none !important;
+            }
+
+            main, #main-content-area, #cpscl-main-wrapper, #cpscl-preview-view {
                 display: block !important;
                 position: static !important;
+                width: 297mm !important;
+                height: 210mm !important;
+                max-height: 210mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                overflow: hidden !important;
+                background: #ffffff !important;
             }
-            body * { visibility: hidden !important; }
-            #cpsclPrintArea, #cpsclPrintArea * { visibility: visible !important; }
+
             #cpsclPrintArea {
-                position: absolute !important;
+                position: fixed !important;
                 left: 0 !important;
                 top: 0 !important;
                 width: 297mm !important;
@@ -139,8 +161,11 @@
                 box-sizing: border-box !important;
                 overflow: hidden !important;
                 background: #ffffff !important;
+                page-break-inside: avoid !important;
+                page-break-after: avoid !important;
+                page-break-before: avoid !important;
+                break-inside: avoid !important;
             }
-            .no-print { display: none !important; }
         }
     </style>
 </head>
@@ -313,10 +338,10 @@
             </div>
         </header>
 
-        <!-- ================= মূল কনটেন্ট এরিয়া (PERMANENT DOM STRUCTURE) ================= -->
+        <!-- ================= মূল কনটেন্ট এরিয়া ================= -->
         <div id="main-content-area" class="flex-1 p-6 overflow-y-auto bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
             
-            <!-- ১. ড্যাশবোর্ড ভিউ (ডিফল্ট ফাঁকা) -->
+            <!-- ১. ড্যাশবোর্ড ভিউ -->
             <div id="dashboard-view" class="hidden"></div>
 
             <!-- ২. মাই প্রোফাইল ভিউ -->
@@ -364,7 +389,7 @@
                 </div>
             </div>
 
-            <!-- ৩. CPSCL সম্পূর্ণ মডিউল কন্টেইনার (অ্যাডমিন প্যানেলের মতো পারমানেন্ট DOM) -->
+            <!-- ৩. CPSCL সম্পূর্ণ মডিউল কন্টেইনার -->
             <div id="cpscl-main-wrapper" class="hidden space-y-5">
                 
                 <!-- ৩.১ স্টুডেন্ট লিস্ট সেকশন -->
@@ -1058,7 +1083,7 @@
             setTimeout(() => alertBox.classList.add('hidden'), 3000);
         }
 
-        // পেজ লোড হলে ডিফল্টভাবে ফাঁকা ড্যাশবোর্ড আসবে ও ফায়ারবেস সিঙ্ক হবে
+        // পেজ লোড ইনিট
         window.onload = function() {
             loadDashboardView();
             initFirebaseSync();
