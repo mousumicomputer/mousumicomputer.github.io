@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="bn" class="light">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CPSCL - Campus Management System</title>
+    <title>CPSCL - Campus Management</title>
     <!-- Tailwind CSS with Dark Mode -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -13,7 +13,7 @@
     </script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- SheetJS (Excel ফাইল প্রসেসিং) -->
+    <!-- SheetJS (Excel Processor) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
@@ -105,7 +105,7 @@
         }
         .cert-footer-date { margin-top: 18pt !important; }
 
-        /* ১ পেজে লক করার জন্য নিখুঁত PRINT CSS */
+        /* EXACT 1-PAGE PRINT LOCK */
         @page { size: A4 landscape !important; margin: 0mm !important; }
 
         @media print {
@@ -160,11 +160,10 @@
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex h-screen overflow-hidden transition-colors duration-200">
 
-    <!-- ================= 🔐 ক্লাউড লগইন গেটওয়ে স্ক্রিন (LOGIN MODAL) ================= -->
+    <!-- ================= 🔐 LOGIN GATEWAY ================= -->
     <div id="login-modal" class="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300">
         <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-700 p-8 text-center relative overflow-hidden">
             
-            <!-- টপ ডেকোরেশন -->
             <div class="w-20 h-20 bg-emerald-50 dark:bg-emerald-950/50 rounded-2xl mx-auto p-2 border border-emerald-100 dark:border-emerald-800/80 shadow-inner mb-4 flex items-center justify-center">
                 <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg-795xmOcuKYH8wjija8JrA-qVjfOp_4KieeZ1pOQJaqX2uXsqGLMo09AXsGGsfGjH9LpK5fPlUNGbebFguiAzPC_YvbRXcHePj7cORQd6GMxDUg-LCeXtmNkccGI2K4Hv73PJqJkGX0Ju9N4knQuqKOAImqB6qy_WWFXpKeIaQhRgk7YbLqBLpCmL0cio/s1600/%E0%A6%95%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%A8%E0%A7%8D%E0%A6%9F%E0%A6%A8%E0%A6%AE%E0%A7%87%E0%A6%A8%E0%A7%8D%E0%A6%9F_%E0%A6%AA%E0%A6%BE%E0%A6%AC%E0%A6%B2%E0%A6%BF%E0%A6%95_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2_%E0%A6%93_%E0%A6%95%E0%A6%B2%E0%A7%87%E0%A6%9C_%E0%A6%B2%E0%A6%BE%E0%A6%B2%E0%A6%AE%E0%A6%A8%E0%A6%BF%E0%A6%B0%E0%A6%B9%E0%A6%BE%E0%A6%9F%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" 
                      alt="CPSCL Logo" 
@@ -172,21 +171,21 @@
             </div>
 
             <h2 class="text-xl font-black text-slate-800 dark:text-white tracking-wide">CPSCL PORTAL</h2>
-            <p class="text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-0.5">Campus Management & Certificate System</p>
+            <p class="text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-0.5">Campus Management</p>
 
-            <!-- এরর মেসেজ বক্স -->
+            <!-- Error Box -->
             <div id="login-error" class="hidden mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold text-left flex items-start gap-2">
                 <i class="fa-solid fa-triangle-exclamation mt-0.5 text-sm"></i>
-                <span id="login-error-text">ভুল ইউজারনেম বা পাসওয়ার্ড!</span>
+                <span id="login-error-text">Invalid username or password!</span>
             </div>
 
-            <!-- লগইন ফর্ম -->
+            <!-- Login Form -->
             <form onsubmit="handleUserLogin(event)" class="mt-6 space-y-4 text-left text-xs">
                 <div>
                     <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Username or Email</label>
                     <div class="relative">
                         <i class="fa-regular fa-user absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
-                        <input type="text" id="auth-username" placeholder="যেমন: cpscl" required 
+                        <input type="text" id="auth-username" placeholder="e.g. cpscl" required 
                                class="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white focus:outline-emerald-500 font-semibold text-sm">
                     </div>
                 </div>
@@ -195,7 +194,7 @@
                     <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Password</label>
                     <div class="relative">
                         <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
-                        <input type="password" id="auth-password" placeholder="গোপন পাসওয়ার্ড দিন" required 
+                        <input type="password" id="auth-password" placeholder="Enter your password" required 
                                class="w-full pl-10 pr-10 py-3 rounded-xl bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white focus:outline-emerald-500 font-semibold text-sm">
                         <button type="button" onclick="toggleAuthPassVisibility()" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600">
                             <i id="auth-pass-eye" class="fa-solid fa-eye"></i>
@@ -203,8 +202,8 @@
                     </div>
                 </div>
 
-                <button type="submit" id="btn-login-submit" 
-                        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/40 transition text-sm flex items-center justify-center gap-2 mt-2">
+                <button type="submit" 
+                        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/40 transition text-sm flex items-center justify-center gap-2 mt-2 cursor-pointer">
                     <i class="fa-solid fa-arrow-right-to-bracket"></i>
                     <span>Login to Portal</span>
                 </button>
@@ -214,10 +213,10 @@
         </div>
     </div>
 
-    <!-- ================= ১. বাম পাশের সাইডবার (SIDEBAR) ================= -->
+    <!-- ================= 1. SIDEBAR ================= -->
     <aside id="sidebar" class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col justify-between shrink-0 h-full transition-all duration-300 ease-in-out no-print">
         <div>
-            <!-- CPSCL লোগো এরিয়া -->
+            <!-- CPSCL Logo Section -->
             <div onclick="loadDashboardView()" title="Dashboard" class="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition group">
                 <div class="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden bg-emerald-50 dark:bg-emerald-950/40 p-0.5 border border-emerald-100 dark:border-emerald-800 shadow-xs shrink-0 group-hover:scale-105 transition-transform">
                     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg-795xmOcuKYH8wjija8JrA-qVjfOp_4KieeZ1pOQJaqX2uXsqGLMo09AXsGGsfGjH9LpK5fPlUNGbebFguiAzPC_YvbRXcHePj7cORQd6GMxDUg-LCeXtmNkccGI2K4Hv73PJqJkGX0Ju9N4knQuqKOAImqB6qy_WWFXpKeIaQhRgk7YbLqBLpCmL0cio/s1600/%E0%A6%95%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%A8%E0%A7%8D%E0%A6%9F%E0%A6%A8%E0%A6%AE%E0%A7%87%E0%A6%A8%E0%A7%8D%E0%A6%9F_%E0%A6%AA%E0%A6%BE%E0%A6%AC%E0%A6%B2%E0%A6%BF%E0%A6%95_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2_%E0%A6%93_%E0%A6%95%E0%A6%B2%E0%A7%87%E0%A6%9C_%E0%A6%B2%E0%A6%BE%E0%A6%B2%E0%A6%AE%E0%A6%A8%E0%A6%BF%E0%A6%B0%E0%A6%B9%E0%A6%BE%E0%A6%9F%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" 
@@ -226,23 +225,23 @@
                 </div>
                 <div>
                     <h1 class="font-extrabold text-slate-800 dark:text-white text-base tracking-wider leading-tight group-hover:text-emerald-600 transition-colors">CPSCL</h1>
-                    <span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold tracking-tight block">Campus Management System</span>
+                    <span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold tracking-tight block">Campus Management</span>
                 </div>
             </div>
 
-            <!-- সাইডবার মেনু -->
+            <!-- Sidebar Menus -->
             <div id="sidebar-menu" class="p-3 space-y-1.5">
-                <!-- ড্যাশবোর্ড বাটন -->
-                <button onclick="loadDashboardView()" id="menu-dash-btn" class="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 rounded-xl transition">
+                <!-- Dashboard Button -->
+                <button onclick="loadDashboardView()" id="menu-dash-btn" class="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 rounded-xl transition cursor-pointer">
                     <i class="fa-solid fa-house text-sm"></i>
                     <span>Dashboard</span>
                 </button>
 
-                <!-- CPSCL মেনু গ্রুপ -->
+                <!-- CPSCL Module Group -->
                 <div class="pt-2">
                     <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase px-3 tracking-wider">Modules</span>
                     <div class="mt-1 space-y-1">
-                        <!-- CPSCL ড্রপডাউন হেডার -->
+                        <!-- CPSCL Dropdown Header -->
                         <div onclick="toggleCPSCLMenu()" class="flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl cursor-pointer transition">
                             <div class="flex items-center gap-2.5">
                                 <i class="fa-solid fa-graduation-cap text-emerald-600 text-sm"></i>
@@ -251,19 +250,19 @@
                             <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="cpscl-menu-arrow"></i>
                         </div>
 
-                        <!-- CPSCL সাব-মেনু লিংকসমূহ -->
+                        <!-- CPSCL Sub-menus -->
                         <div id="cpscl-submenu" class="pl-4 space-y-1">
-                            <button onclick="switchCPSCLSubSection('list')" id="menu-cpscl-list" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-slate-700 rounded-xl transition">
+                            <button onclick="switchCPSCLSubSection('list')" id="menu-cpscl-list" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer">
                                 <i class="fa-solid fa-users text-xs"></i>
                                 <span>Student List</span>
                             </button>
 
-                            <button onclick="switchCPSCLSubSection('entry')" id="menu-cpscl-entry" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-slate-700 rounded-xl transition">
+                            <button onclick="switchCPSCLSubSection('entry')" id="menu-cpscl-entry" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer">
                                 <i class="fa-solid fa-user-plus text-xs"></i>
                                 <span>Student Entry</span>
                             </button>
 
-                            <button onclick="switchCPSCLSubSection('preview')" id="menu-cpscl-preview" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-slate-700 rounded-xl transition">
+                            <button onclick="switchCPSCLSubSection('preview')" id="menu-cpscl-preview" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer">
                                 <i class="fa-solid fa-print text-xs"></i>
                                 <span>Certificate Print</span>
                             </button>
@@ -278,13 +277,13 @@
         </div>
     </aside>
 
-    <!-- ================= ২. মূল বডি এরিয়া (MAIN CONTENT) ================= -->
+    <!-- ================= 2. MAIN CONTENT ================= -->
     <main class="flex-1 flex flex-col overflow-hidden h-full relative">
         
-        <!-- টপ হেডার বার -->
+        <!-- Header Bar -->
         <header class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 flex items-center justify-between shrink-0 relative z-20 transition-colors duration-200 no-print">
             <div class="flex items-center gap-3">
-                <button id="sidebar-toggle-btn" title="Toggle Sidebar" class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-emerald-600 transition">
+                <button id="sidebar-toggle-btn" title="Toggle Sidebar" class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-emerald-600 transition cursor-pointer">
                     <i class="fa-solid fa-bars text-lg"></i>
                 </button>
                 <div class="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800/60 px-3.5 py-1.5 rounded-full text-xs font-semibold">
@@ -294,27 +293,16 @@
                 </div>
             </div>
 
-            <!-- হেডার কন্ট্রোলস -->
+            <!-- Header Controls -->
             <div class="flex items-center gap-3 relative">
-                <!-- ডার্ক মোড বাটন -->
-                <button id="theme-toggle-btn" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-amber-400 transition">
+                <!-- Dark Mode Toggle -->
+                <button id="theme-toggle-btn" title="Toggle Dark/Light Mode" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-amber-400 transition cursor-pointer">
                     <i id="theme-icon" class="fa-regular fa-moon text-base"></i>
                 </button>
 
-                <!-- ভাষা সিলেক্টর -->
+                <!-- Notifications Button -->
                 <div class="relative">
-                    <button id="lang-btn" class="w-9 h-9 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center bg-white dark:bg-slate-700 shadow-xs hover:bg-slate-50 transition">
-                        <span id="current-lang-flag" class="text-sm">🇺🇸</span>
-                    </button>
-                    <div id="lang-dropdown" class="hidden absolute right-0 top-12 w-36 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 py-1.5 z-50 text-xs font-semibold">
-                        <button onclick="changeLanguage('bn', '🇧🇩')" class="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700"><span>🇧🇩</span><span>বাংলা</span></button>
-                        <button onclick="changeLanguage('en', '🇺🇸')" class="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700"><span>🇺🇸</span><span>English</span></button>
-                    </div>
-                </div>
-
-                <!-- নোটিফিকেশন বাটন -->
-                <div class="relative">
-                    <button id="notif-btn" class="w-9 h-9 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-emerald-600 shadow-xs transition relative">
+                    <button id="notif-btn" title="Notifications" class="w-9 h-9 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-emerald-600 shadow-xs transition relative cursor-pointer">
                         <i class="fa-regular fa-bell text-sm"></i>
                         <span class="w-2 h-2 rounded-full bg-rose-500 absolute top-2 right-2"></span>
                     </button>
@@ -329,7 +317,7 @@
                     </div>
                 </div>
 
-                <!-- প্রোফাইল বাটন -->
+                <!-- User Profile Button -->
                 <div class="relative">
                     <div id="profile-btn" class="flex items-center gap-1.5 cursor-pointer select-none group">
                         <div class="w-9 h-9 rounded-full ring-2 ring-emerald-500/30 dark:ring-emerald-400/40 p-0.5 shadow-xs overflow-hidden flex items-center justify-center">
@@ -338,7 +326,7 @@
                         <i class="fa-solid fa-chevron-down text-[11px] text-slate-400 group-hover:text-emerald-600 transition-transform duration-200" id="dropdown-arrow"></i>
                     </div>
 
-                    <!-- প্রোফাইল ড্রপডাউন মেনু -->
+                    <!-- Profile Dropdown Menu -->
                     <div id="profile-dropdown" class="hidden absolute right-0 top-12 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden z-50">
                         <div class="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-700 p-4 flex items-center gap-3 text-white">
                             <div class="w-12 h-12 rounded-full border-2 border-white/80 overflow-hidden shadow-sm shrink-0">
@@ -354,7 +342,7 @@
                             <div>
                                 <span class="text-[10px] font-bold text-slate-400 uppercase px-2">Activity</span>
                                 <div class="mt-1 space-y-0.5">
-                                    <button onclick="loadProfileView()" class="w-full flex items-center gap-3 px-2.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-700 rounded-xl transition">
+                                    <button onclick="loadProfileView()" class="w-full flex items-center gap-3 px-2.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer">
                                         <div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center">
                                             <i class="fa-regular fa-circle-user text-xs"></i>
                                         </div>
@@ -372,7 +360,7 @@
                     </div>
                 </div>
 
-                <!-- সিস্টেম হেলথ ব্যাজ -->
+                <!-- System Health Status Badge -->
                 <div class="relative">
                     <button title="Connected to Cloud" class="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-xs">
                         <i class="fa-solid fa-shield-halved text-sm"></i>
@@ -381,17 +369,17 @@
             </div>
         </header>
 
-        <!-- ================= মূল কনটেন্ট এরিয়া ================= -->
+        <!-- ================= MAIN CONTENT AREA ================= -->
         <div id="main-content-area" class="flex-1 p-6 overflow-y-auto bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
             
-            <!-- ১. ড্যাশবোর্ড ভিউ -->
+            <!-- 1. Dashboard View (Default Home) -->
             <div id="dashboard-view" class="hidden"></div>
 
-            <!-- ২. মাই প্রোফাইল ভিউ -->
+            <!-- 2. My Profile View -->
             <div id="profile-view" class="hidden">
                 <div class="max-w-5xl mx-auto bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
                     <div id="save-alert" class="hidden bg-emerald-100 text-emerald-800 px-4 py-2.5 rounded-xl text-xs font-bold">
-                        প্রোফাইলের তথ্য সফলভাবে আপডেট হয়েছে!
+                        Profile updated successfully!
                     </div>
                     <h2 class="text-base font-bold text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-3">
                         <i class="fa-regular fa-user mr-2 text-emerald-600"></i> Edit Profile Information
@@ -407,7 +395,7 @@
                                 <input type="text" id="prof-nameEn" value="Md. Rabbi Hosen" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600" required>
                             </div>
                             <div>
-                                <label class="block font-semibold mb-1">নাম (বাংলা)*</label>
+                                <label class="block font-semibold mb-1">Name (Bangla)</label>
                                 <input type="text" id="prof-nameBn" value="মোঃ রাব্বি হোসেন" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600">
                             </div>
                             <div>
@@ -424,7 +412,7 @@
                             </div>
                         </div>
                         <div class="flex justify-end pt-3 border-t border-slate-100 dark:border-slate-700">
-                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-xl text-xs">
+                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-xl text-xs cursor-pointer">
                                 <i class="fa-solid fa-floppy-disk mr-1"></i> Save Changes
                             </button>
                         </div>
@@ -432,114 +420,114 @@
                 </div>
             </div>
 
-            <!-- ৩. CPSCL সম্পূর্ণ মডিউল কন্টেইনার -->
+            <!-- 3. CPSCL Complete Module Container -->
             <div id="cpscl-main-wrapper" class="hidden space-y-5">
                 
-                <!-- ৩.১ স্টুডেন্ট লিস্ট সেকশন -->
+                <!-- 3.1 Student List Section -->
                 <div id="cpscl-list-view" class="space-y-5 max-w-7xl mx-auto">
-                    <!-- এক্সেল আপলোড ও টুলবার কার্ড -->
+                    <!-- Excel Import & Toolbar Card -->
                     <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 no-print">
                         <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
                             <div>
                                 <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
                                     <i class="fa-solid fa-file-excel text-emerald-600"></i> Student Excel Import & Database
                                 </h2>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">টেমপ্লেট অনুযায়ী এক্সেল ফাইল আপলোড করুন (ক্লাউড ফায়ারবেসে স্বয়ংক্রিয় সংরক্ষণ হবে)</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Upload Excel file according to template (Auto-syncs with Cloud Database)</p>
                             </div>
                             <div class="flex flex-wrap gap-2.5">
-                                <button onclick="downloadSampleExcel()" class="bg-sky-600 hover:bg-sky-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-xs transition">
-                                    <i class="fa-solid fa-download"></i> স্যাম্পল এক্সেল ডাউনলোড
+                                <button onclick="downloadSampleExcel()" class="bg-sky-600 hover:bg-sky-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-xs transition cursor-pointer">
+                                    <i class="fa-solid fa-download"></i> Download Sample Excel
                                 </button>
-                                <button onclick="switchCPSCLSubSection('entry')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-xs transition">
-                                    <i class="fa-solid fa-user-plus"></i> নতুন শিক্ষার্থী এন্ট্রি
+                                <button onclick="switchCPSCLSubSection('entry')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-xs transition cursor-pointer">
+                                    <i class="fa-solid fa-user-plus"></i> Add New Student
                                 </button>
                             </div>
                         </div>
 
-                        <!-- এক্সেল ড্রপজোন -->
+                        <!-- Excel Dropzone -->
                         <div onclick="document.getElementById('excelFileInput').click()" class="border-2 border-dashed border-indigo-300 dark:border-indigo-700/60 bg-indigo-50/50 dark:bg-indigo-950/20 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 p-6 rounded-2xl text-center cursor-pointer transition">
                             <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-600 dark:text-indigo-400 mb-2"></i>
-                            <h4 class="font-bold text-sm text-slate-800 dark:text-white">এক্সেল ফাইল আপলোড করতে এখানে ক্লিক করুন</h4>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">সমর্থিত ফাইল: .xlsx, .xls, .csv</p>
+                            <h4 class="font-bold text-sm text-slate-800 dark:text-white">Click here to upload Excel file</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Supported formats: .xlsx, .xls, .csv</p>
                             <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
                         </div>
                     </div>
 
-                    <!-- স্টুডেন্ট টেবিল ও ফিল্টারিং কার্ড -->
+                    <!-- Student Table & Filter Card -->
                     <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 no-print">
-                        <!-- টেমপ্লেট ফিল্টার ট্যাব -->
+                        <!-- Template Filter Tabs -->
                         <div class="flex flex-wrap gap-2 pb-3 border-b border-slate-100 dark:border-slate-700 mb-4">
-                            <button onclick="filterByTemplate('all', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow-xs">
+                            <button onclick="filterByTemplate('all', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow-xs cursor-pointer">
                                 <i class="fa-solid fa-layer-group mr-1"></i> All Students
                             </button>
-                            <button onclick="filterByTemplate('ssc_testimonial', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+                            <button onclick="filterByTemplate('ssc_testimonial', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
                                 <i class="fa-solid fa-graduation-cap mr-1"></i> SSC Testimonial
                             </button>
-                            <button onclick="filterByTemplate('hsc_testimonial', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+                            <button onclick="filterByTemplate('hsc_testimonial', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
                                 <i class="fa-solid fa-user-graduate mr-1"></i> HSC Testimonial
                             </button>
-                            <button onclick="filterByTemplate('tc_certificate', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+                            <button onclick="filterByTemplate('tc_certificate', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
                                 <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Transfer Certificate (TC)
                             </button>
-                            <button onclick="filterByTemplate('character_cert', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+                            <button onclick="filterByTemplate('character_cert', this)" class="cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
                                 <i class="fa-solid fa-award mr-1"></i> Character Certificate
                             </button>
                         </div>
 
-                        <!-- সার্চ ও কাউন্ট বার -->
+                        <!-- Search & Counter Bar -->
                         <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
                             <div class="relative w-72">
                                 <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
-                                <input type="text" id="studentSearchInput" placeholder="রোল, নাম বা রেজি. দিয়ে খুঁজুন..." oninput="renderStudentTable()" class="w-full pl-9 pr-4 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white focus:outline-emerald-500">
+                                <input type="text" id="studentSearchInput" placeholder="Search by Roll, Name or Reg..." oninput="renderStudentTable()" class="w-full pl-9 pr-4 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white focus:outline-emerald-500">
                             </div>
                             <div class="flex items-center gap-3 text-xs font-bold text-slate-600 dark:text-slate-300">
-                                <span>মোট শিক্ষার্থী: <strong id="totalStudentsCount" class="text-emerald-600 text-sm">0</strong> জন</span>
+                                <span>Total Students: <strong id="totalStudentsCount" class="text-emerald-600 text-sm">0</strong></span>
                                 <button onclick="clearAllStudents()" class="text-rose-600 hover:text-rose-700 flex items-center gap-1.5 ml-2 font-bold cursor-pointer">
-                                    <i class="fa-solid fa-trash-can"></i> ডাটা ক্লিয়ার করুন
+                                    <i class="fa-solid fa-trash-can"></i> Clear Data
                                 </button>
                             </div>
                         </div>
 
-                        <!-- টেবিল -->
+                        <!-- Table -->
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs border-collapse">
                                 <thead>
                                     <tr class="border-b border-slate-200 dark:border-slate-700 text-slate-400 uppercase font-bold text-[11px]">
-                                        <th class="py-3 px-3">রোল</th>
-                                        <th class="py-3 px-3">রেজিস্ট্রেশন</th>
-                                        <th class="py-3 px-3">শিক্ষার্থীর নাম</th>
-                                        <th class="py-3 px-3">পিতার নাম</th>
-                                        <th class="py-3 px-3">লিঙ্গ</th>
-                                        <th class="py-3 px-3">টেমপ্লেট</th>
-                                        <th class="py-3 px-3">গ্রুপ/শ্রেণি</th>
+                                        <th class="py-3 px-3">Roll</th>
+                                        <th class="py-3 px-3">Registration</th>
+                                        <th class="py-3 px-3">Student Name</th>
+                                        <th class="py-3 px-3">Father's Name</th>
+                                        <th class="py-3 px-3">Gender</th>
+                                        <th class="py-3 px-3">Template</th>
+                                        <th class="py-3 px-3">Group/Class</th>
                                         <th class="py-3 px-3">GPA</th>
-                                        <th class="py-3 px-3 text-right">অ্যাকশন</th>
+                                        <th class="py-3 px-3 text-right">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="studentTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/60">
-                                    <!-- ডেটা লোড হবে -->
+                                    <!-- Dynamic records -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
-                <!-- ৩.২ স্টুডেন্ট এন্ট্রি সেকশন -->
+                <!-- 3.2 Student Entry Section -->
                 <div id="cpscl-entry-view" class="hidden max-w-4xl mx-auto bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-6 no-print">
                     <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-700">
                         <div>
                             <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
                                 <i class="fa-solid fa-pen-to-square text-emerald-600"></i> Student Information Entry
                             </h2>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">সার্টিফিকেট টেমপ্লেট নির্বাচন করে তথ্য এন্ট্রি দিন</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Select certificate template and enter details</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <label class="text-xs font-bold text-slate-600 dark:text-slate-300">Certificate Type:</label>
-                            <select id="entryTemplateSelect" onchange="onTemplateChange(this.value)" class="bg-indigo-50 dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-slate-600 px-3 py-1.5 rounded-xl text-xs focus:outline-indigo-500">
-                                <option value="ssc_testimonial">SSC Testimonial (এসএসসি)</option>
-                                <option value="hsc_testimonial">HSC Testimonial (এইচএসসি)</option>
-                                <option value="tc_certificate">Transfer Certificate - TC (ছাড়পত্র)</option>
-                                <option value="character_cert">Character Certificate (চারিত্রিক সনদ)</option>
+                            <select id="entryTemplateSelect" onchange="onTemplateChange(this.value)" class="bg-indigo-50 dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-slate-600 px-3 py-1.5 rounded-xl text-xs focus:outline-indigo-500 cursor-pointer">
+                                <option value="ssc_testimonial">SSC Testimonial</option>
+                                <option value="hsc_testimonial">HSC Testimonial</option>
+                                <option value="tc_certificate">Transfer Certificate (TC)</option>
+                                <option value="character_cert">Character Certificate</option>
                             </select>
                         </div>
                     </div>
@@ -556,7 +544,7 @@
                             </div>
                             <div>
                                 <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Gender *</label>
-                                <select id="inpGender" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white">
+                                <select id="inpGender" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white cursor-pointer">
                                     <option value="Male">Male (Son / He / His)</option>
                                     <option value="Female">Female (Daughter / She / Her)</option>
                                 </select>
@@ -604,40 +592,40 @@
                         </div>
 
                         <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
-                            <button type="button" onclick="switchCPSCLSubSection('list')" class="bg-slate-600 hover:bg-slate-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs">
-                                <i class="fa-solid fa-arrow-left mr-1"></i> ব্যাক টু লিস্ট
+                            <button type="button" onclick="switchCPSCLSubSection('list')" class="bg-slate-600 hover:bg-slate-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs cursor-pointer">
+                                <i class="fa-solid fa-arrow-left mr-1"></i> Back to List
                             </button>
-                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md">
+                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md cursor-pointer">
                                 <i class="fa-solid fa-file-circle-check"></i> Generate & View Certificate
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <!-- ৩.৩ সার্টিফিকেট প্রিন্ট প্রিভিউ সেকশন -->
+                <!-- 3.3 Certificate Print Preview Section -->
                 <div id="cpscl-preview-view" class="hidden space-y-4 max-w-6xl mx-auto">
-                    <!-- প্রিভিউ কন্ট্রোল বার -->
+                    <!-- Preview Toolbar -->
                     <div class="bg-slate-800 text-white p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 no-print shadow-sm">
-                        <button onclick="switchCPSCLSubSection('list')" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition">
+                        <button onclick="switchCPSCLSubSection('list')" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition cursor-pointer">
                             <i class="fa-solid fa-arrow-left"></i> Back to Student List
                         </button>
                         
                         <div class="flex items-center gap-2">
                             <span class="text-xs font-bold text-slate-300">Template:</span>
-                            <select id="previewTemplateSelect" onchange="onTemplateChange(this.value)" class="bg-slate-700 text-white font-semibold text-xs px-3 py-1.5 rounded-lg border border-slate-600 focus:outline-none">
-                                <option value="ssc_testimonial">SSC Testimonial (এসএসসি)</option>
-                                <option value="hsc_testimonial">HSC Testimonial (এইচএসসি)</option>
-                                <option value="tc_certificate">Transfer Certificate - TC (ছাড়পত্র)</option>
-                                <option value="character_cert">Character Certificate (চারিত্রিক সনদ)</option>
+                            <select id="previewTemplateSelect" onchange="onTemplateChange(this.value)" class="bg-slate-700 text-white font-semibold text-xs px-3 py-1.5 rounded-lg border border-slate-600 focus:outline-none cursor-pointer">
+                                <option value="ssc_testimonial">SSC Testimonial</option>
+                                <option value="hsc_testimonial">HSC Testimonial</option>
+                                <option value="tc_certificate">Transfer Certificate (TC)</option>
+                                <option value="character_cert">Character Certificate</option>
                             </select>
                         </div>
 
-                        <button onclick="printCPSCLCertificate()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-2 rounded-xl text-xs flex items-center gap-2 shadow-lg transition">
+                        <button onclick="printCPSCLCertificate()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-2 rounded-xl text-xs flex items-center gap-2 shadow-lg transition cursor-pointer">
                             <i class="fa-solid fa-print"></i> Print / Download PDF
                         </button>
                     </div>
 
-                    <!-- A4 ল্যান্ডস্কেপ প্রিন্ট ক্যানভাস (১:১ নিখুঁত প্রিন্ট শিট) -->
+                    <!-- A4 Sheet Container -->
                     <div class="overflow-x-auto p-4 bg-slate-700/80 rounded-2xl flex justify-center">
                         <div class="cpscl-a4-sheet" id="cpsclPrintArea">
                             <div class="cert-ref" id="prevRef">CPSCL/ 801023/SSC-26/001</div>
@@ -667,9 +655,8 @@
 
     </main>
 
-    <!-- ================= জাভাস্ক্রিপ্ট এবং ফায়ারবেস অথেনটিকেশন ================= -->
+    <!-- ================= JAVASCRIPT & FIREBASE ================= -->
     <script>
-        // CPSCL মডিউল ডেটাস্টোর
         let studentDatabase = JSON.parse(localStorage.getItem('cpscl_students_data') || '[]');
         let currentFilterTemplate = 'all';
         let systemUsersList = [];
@@ -686,14 +673,10 @@
             'character_cert': 'Character Certificate'
         };
 
-        // UI কন্ট্রোল এলিমেন্টসমূহ
         const sidebar = document.getElementById('sidebar');
         const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
         const themeToggleBtn = document.getElementById('theme-toggle-btn');
         const themeIcon = document.getElementById('theme-icon');
-        const langBtn = document.getElementById('lang-btn');
-        const langDropdown = document.getElementById('lang-dropdown');
-        const currentLangFlag = document.getElementById('current-lang-flag');
         const notifBtn = document.getElementById('notif-btn');
         const notifDropdown = document.getElementById('notif-dropdown');
         const profileBtn = document.getElementById('profile-btn');
@@ -701,7 +684,7 @@
         const dropdownArrow = document.getElementById('dropdown-arrow');
         const loginModal = document.getElementById('login-modal');
 
-        const allDropdowns = [langDropdown, notifDropdown, profileDropdown];
+        const allDropdowns = [notifDropdown, profileDropdown];
 
         sidebarToggleBtn.addEventListener('click', () => sidebar.classList.toggle('-ml-64'));
 
@@ -720,9 +703,6 @@
             allDropdowns.forEach(d => { if (d !== target) d.classList.add('hidden'); });
             if (target !== profileDropdown) dropdownArrow.classList.remove('rotate-180');
         }
-
-        langBtn.addEventListener('click', (e) => { e.stopPropagation(); closeAllExcept(langDropdown); langDropdown.classList.toggle('hidden'); });
-        function changeLanguage(lang, flag) { currentLangFlag.innerText = flag; langDropdown.classList.add('hidden'); }
 
         notifBtn.addEventListener('click', (e) => { e.stopPropagation(); closeAllExcept(notifDropdown); notifDropdown.classList.toggle('hidden'); });
 
@@ -754,11 +734,11 @@
             }
         }
 
-        // ================= ১. ফায়ারবেস ক্লাউড ডেটাবেজ ও লাইভ অথ সংযোগ =================
+        // ================= 1. FIREBASE REALTIME CLOUD SYNC =================
         async function initFirebaseSync() {
             try {
                 const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-                const { getDatabase, ref, set, onValue, push } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+                const { getDatabase, ref, set, onValue } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
 
                 const firebaseConfig = {
                     apiKey: "AIzaSyA1PhRiTkICNCd8sA4he3ZxKjHtIzM0d5E",
@@ -778,24 +758,22 @@
                 dbRefFunc = ref;
                 dbSetFunc = set;
 
-                // ১. ইউজার ভেরিফিকেশন ও লাইভ কিল-সুইচ লিসেনার
+                // Live User Auth Listener & Kill-Switch
                 const usersRef = ref(dbInstance, 'system/users');
                 onValue(usersRef, (snapshot) => {
                     const cloudUsers = snapshot.val();
                     if (cloudUsers) {
                         systemUsersList = Array.isArray(cloudUsers) ? cloudUsers : Object.values(cloudUsers);
-                        
-                        // যদি কারেন্ট ইউজার লগইন থাকে তবে লাইভ স্ট্যাটাস চেক
                         if (loggedInSessionUser) {
                             const matchedUser = systemUsersList.find(u => u.id === loggedInSessionUser.id || u.email === loggedInSessionUser.email || u.name === loggedInSessionUser.name);
                             if (!matchedUser || matchedUser.status !== 'Active') {
-                                handleUserLogout("আপনার অ্যাকাউন্টটি অ্যাডমিন কর্তৃক সাময়িকভাবে বন্ধ (Blocked) করা হয়েছে!");
+                                handleUserLogout("Your account has been temporarily blocked by administrator.");
                             }
                         }
                     }
                 });
 
-                // ২. স্টুডেন্ট ডেটাবেজ সিঙ্ক
+                // Student Records Sync
                 const studentsRef = ref(dbInstance, 'cpscl/students');
                 onValue(studentsRef, (snapshot) => {
                     const cloudData = snapshot.val();
@@ -846,7 +824,7 @@
             }
         }
 
-        // ================= ২. লগইন ও অথ হ্যান্ডলার =================
+        // ================= 2. AUTHENTICATION HANDLERS =================
         function handleUserLogin(event) {
             event.preventDefault();
             const usernameInp = document.getElementById('auth-username').value.trim().toLowerCase();
@@ -856,13 +834,11 @@
 
             errBox.classList.add('hidden');
 
-            // ফায়ারবেস ইউজার লিস্ট অথবা ডিফল্ট ইউজার থেকে চেক করা
             let validUser = systemUsersList.find(u => 
                 (u.name.toLowerCase() === usernameInp || u.email.toLowerCase() === usernameInp) && 
                 u.password === passwordInp
             );
 
-            // ফায়ারবেস প্রথমবার কানেক্ট না হলেও ডিফল্ট ইউজার সাপোর্ট
             if (!validUser && (usernameInp === 'cpscl' || usernameInp === 'cpscl@gmail.com') && passwordInp === 'admin123@cpscl') {
                 validUser = {
                     id: 'usr_default',
@@ -874,18 +850,17 @@
             }
 
             if (!validUser) {
-                errText.innerText = "ভুল ইউজারনেম বা পাসওয়ার্ড!";
+                errText.innerText = "Invalid username or password!";
                 errBox.classList.remove('hidden');
                 return;
             }
 
             if (validUser.status !== 'Active') {
-                errText.innerText = "আপনার অ্যাকাউন্টটি সাময়িকভাবে বন্ধ (Blocked) আছে! অ্যাডমিনের সাথে যোগাযোগ করুন।";
+                errText.innerText = "Your account is temporarily blocked! Contact administrator.";
                 errBox.classList.remove('hidden');
                 return;
             }
 
-            // লগইন সফল
             loggedInSessionUser = validUser;
             localStorage.setItem('cpscl_auth_session', JSON.stringify(validUser));
             
@@ -915,7 +890,7 @@
             }
         }
 
-        // ================= ৩. ভিউ লোডার ও ন্যাভিগেশন =================
+        // ================= 3. NAVIGATION & VIEW SWITCHING =================
         function hideAllViews() {
             document.getElementById('dashboard-view').classList.add('hidden');
             document.getElementById('profile-view').classList.add('hidden');
@@ -967,14 +942,14 @@
             }
         }
 
-        // ================= ৪. এক্সেল ও টেবিল হ্যান্ডলার =================
+        // ================= 4. EXCEL & DATA TABLE =================
         function filterByTemplate(tpl, btnElement) {
             currentFilterTemplate = tpl;
             document.querySelectorAll('.cpscl-tab-btn').forEach(btn => {
-                btn.className = 'cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition';
+                btn.className = 'cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer';
             });
             if (btnElement) {
-                btnElement.className = 'cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow-xs';
+                btnElement.className = 'cpscl-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow-xs cursor-pointer';
             }
             renderStudentTable();
         }
@@ -992,13 +967,13 @@
                     const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
                     if (jsonData.length === 0) {
-                        alert("এক্সেল ফাইলে কোনো ডেটা পাওয়া যায়নি!");
+                        alert("No data found in the Excel file!");
                         return;
                     }
 
                     const newStudents = jsonData.map((row, index) => {
                         const ser = row['Ser'] || row['SL'] || row['Sl'] || (index + 1);
-                        const roll = row['Board Roll'] || row['Roll'] || row['রোল'] || ser;
+                        const roll = row['Board Roll'] || row['Roll'] || ser;
                         const studentID = row['Student ID'] || row['ID'] || '801023';
 
                         let tpl = (row['Template'] || row['Template Type'] || '').toString().toLowerCase();
@@ -1047,10 +1022,10 @@
                     await syncToFirebase(studentDatabase);
                     renderStudentTable();
                     logCloudAudit("EXCEL_IMPORT", `${newStudents.length} Students imported from Excel`);
-                    alert(`সফলভাবে ${newStudents.length} জন শিক্ষার্থীর তথ্য ক্লাউডে সিঙ্ক হয়েছে!`);
+                    alert(`Successfully synced ${newStudents.length} student records to Cloud!`);
                     event.target.value = '';
                 } catch (err) {
-                    alert("এক্সেল ফাইল রিড করতে সমস্যা হয়েছে: " + err.message);
+                    alert("Error reading Excel file: " + err.message);
                 }
             };
             reader.readAsArrayBuffer(file);
@@ -1074,7 +1049,7 @@
             tbody.innerHTML = '';
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-slate-400 py-6">কোনো শিক্ষার্থীর তথ্য পাওয়া যায়নি।</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-slate-400 py-6">No student records found.</td></tr>`;
                 return;
             }
 
@@ -1105,7 +1080,7 @@
             });
         }
 
-        // ================= ৫. সার্টিফিকেট প্রিন্ট ও প্রিভিউ লজিক =================
+        // ================= 5. CERTIFICATE PRINT PREVIEW =================
         function loadStudentToPrint(idx) {
             const s = studentDatabase[idx];
             if (!s) return;
@@ -1210,7 +1185,7 @@
         }
 
         async function clearAllStudents() {
-            if (confirm("আপনি কি নিশ্চিত যে তালিকা মুছে ফেলতে চান? এটি ক্লাউড ফায়ারবেস থেকেও মুছে যাবে।")) {
+            if (confirm("Are you sure you want to clear all student records? This will also remove them from Cloud Database.")) {
                 studentDatabase = (currentFilterTemplate === 'all') 
                     ? [] 
                     : studentDatabase.filter(s => s.template !== currentFilterTemplate);
@@ -1218,7 +1193,7 @@
                 await syncToFirebase(studentDatabase);
                 renderStudentTable();
                 logCloudAudit("DATABASE_CLEAR", `Student records cleared`);
-                alert("ডাটাবেজ ক্লিয়ার হয়েছে!");
+                alert("Database cleared successfully!");
             }
         }
 
@@ -1259,7 +1234,7 @@
             setTimeout(() => alertBox.classList.add('hidden'), 3000);
         }
 
-        // ================= পেজ লোড ও অটো-সেশন চেক =================
+        // ================= PAGE INITIALIZATION =================
         window.onload = function() {
             initFirebaseSync();
 
