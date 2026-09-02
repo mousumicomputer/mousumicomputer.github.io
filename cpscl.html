@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="bn" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPSCL - Campus Management System</title>
+    <!-- Tailwind CSS with Dark Mode -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex h-screen overflow-hidden transition-colors duration-200">
+
+    <!-- ================= ১. বাম পাশের সাইডবার (SIDEBAR) ================= -->
+    <aside id="sidebar" class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col justify-between shrink-0 h-full transition-all duration-300 ease-in-out">
+        <div>
+            <!-- CPSCL লোগো এরিয়া (ক্লিক করলে মূল ড্যাশবোর্ডে ফিরে যাবে) -->
+            <div onclick="loadDashboardView()" title="Click to go to Dashboard" class="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition group">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden bg-emerald-50 dark:bg-emerald-950/40 p-0.5 border border-emerald-100 dark:border-emerald-800 shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg-795xmOcuKYH8wjija8JrA-qVjfOp_4KieeZ1pOQJaqX2uXsqGLMo09AXsGGsfGjH9LpK5fPlUNGbebFguiAzPC_YvbRXcHePj7cORQd6GMxDUg-LCeXtmNkccGI2K4Hv73PJqJkGX0Ju9N4knQuqKOAImqB6qy_WWFXpKeIaQhRgk7YbLqBLpCmL0cio/s1600/%E0%A6%95%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%A8%E0%A7%8D%E0%A6%9F%E0%A6%A8%E0%A6%AE%E0%A7%87%E0%A6%A8%E0%A7%8D%E0%A6%9F_%E0%A6%AA%E0%A6%BE%E0%A6%AC%E0%A6%B2%E0%A6%BF%E0%A6%95_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2_%E0%A6%93_%E0%A6%95%E0%A6%B2%E0%A7%87%E0%A6%9C_%E0%A6%B2%E0%A6%BE%E0%A6%B2%E0%A6%AE%E0%A6%A8%E0%A6%BF%E0%A6%B0%E0%A6%B9%E0%A6%BE%E0%A6%9F%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" 
+                         alt="CPSCL Logo" 
+                         class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-slate-800 dark:text-white text-base tracking-wider leading-tight group-hover:text-emerald-600 transition-colors">CPSCL</h1>
+                    <span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold tracking-tight block">Campus Management System</span>
+                </div>
+            </div>
+
+            <!-- সাইডবার মেনু এরিয়া -->
+            <div id="sidebar-menu" class="p-3 space-y-1">
+                <a href="javascript:void(0)" onclick="loadDashboardView()" class="flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 rounded-xl transition">
+                    <i class="fa-solid fa-house text-sm"></i>
+                    <span>Dashboard (Home)</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-100 dark:border-slate-700 p-3"></div>
+    </aside>
+
+    <!-- ================= ২. মূল বডি এরিয়া (MAIN CONTENT) ================= -->
+    <main class="flex-1 flex flex-col overflow-hidden h-full relative">
+        
+        <!-- টপ হেডার বার -->
+        <header class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 flex items-center justify-between shrink-0 relative z-20 transition-colors duration-200">
+            <!-- বাম পাশ -->
+            <div class="flex items-center gap-3">
+                <button id="sidebar-toggle-btn" title="Toggle Sidebar" class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-emerald-600 transition">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+                <div class="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800/60 px-3.5 py-1.5 rounded-full text-xs font-semibold">
+                    <i class="fa-solid fa-school text-emerald-600 dark:text-emerald-400"></i>
+                    <span>Cantonment Public School And College Lalmonirhat</span>
+                    <span class="bg-emerald-700 text-white px-2 py-0.5 rounded-full text-[10px]">ID: 1013</span>
+                </div>
+            </div>
+
+            <!-- ডান পাশ -->
+            <div class="flex items-center gap-3 relative">
+                <!-- ডার্ক মোড -->
+                <button id="theme-toggle-btn" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-amber-400 transition">
+                    <i id="theme-icon" class="fa-regular fa-moon text-base"></i>
+                </button>
+
+                <!-- ভাষা সিলেক্টর -->
+                <div class="relative">
+                    <button id="lang-btn" class="w-9 h-9 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center bg-white dark:bg-slate-700 shadow-xs hover:bg-slate-50 transition">
+                        <span id="current-lang-flag" class="text-sm">🇺🇸</span>
+                    </button>
+                    <div id="lang-dropdown" class="hidden absolute right-0 top-12 w-36 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 py-1.5 z-50 text-xs font-semibold">
+                        <button onclick="changeLanguage('bn', '🇧🇩')" class="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700"><span>🇧🇩</span><span>বাংলা</span></button>
+                        <button onclick="changeLanguage('en', '🇺🇸')" class="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700"><span>🇺🇸</span><span>English</span></button>
+                    </div>
+                </div>
+
+                <!-- নোটিফিকেশন বাটন -->
+                <div class="relative">
+                    <button id="notif-btn" class="w-9 h-9 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-emerald-600 shadow-xs transition relative">
+                        <i class="fa-regular fa-bell text-sm"></i>
+                        <span class="w-2 h-2 rounded-full bg-rose-500 absolute top-2 right-2"></span>
+                    </button>
+                    <div id="notif-dropdown" class="hidden absolute right-0 top-12 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden z-50">
+                        <div class="p-3.5 bg-emerald-700 text-white flex items-center justify-between">
+                            <h4 class="font-bold text-xs">Notifications</h4>
+                        </div>
+                        <div class="p-3 text-xs text-slate-600 dark:text-slate-300 space-y-2">
+                            <p>● Leave Request: Md. Tanvir (Math Dept)</p>
+                            <p>● Fee Collected: ৳ 45,200 today</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- প্রোফাইল বাটন -->
+                <div class="relative">
+                    <div id="profile-btn" class="flex items-center gap-1.5 cursor-pointer select-none group">
+                        <div class="w-9 h-9 rounded-full ring-2 ring-emerald-500/30 dark:ring-emerald-400/40 p-0.5 shadow-xs overflow-hidden flex items-center justify-center">
+                            <img id="nav-profile-pic" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Profile" class="w-full h-full rounded-full object-cover">
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-[11px] text-slate-400 group-hover:text-emerald-600 transition-transform duration-200" id="dropdown-arrow"></i>
+                    </div>
+
+                    <!-- প্রোফাইল ড্রপডাউন মেনু -->
+                    <div id="profile-dropdown" class="hidden absolute right-0 top-12 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden z-50">
+                        <div class="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-700 p-4 flex items-center gap-3 text-white">
+                            <div class="w-12 h-12 rounded-full border-2 border-white/80 overflow-hidden shadow-sm shrink-0">
+                                <img id="dropdown-profile-pic" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Profile Photo" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <h3 id="dropdown-user-name" class="font-bold text-sm leading-snug">Md. Rabbi Hosen</h3>
+                                <p id="dropdown-user-role" class="text-xs text-emerald-100 font-medium">Office Assistant</p>
+                            </div>
+                        </div>
+
+                        <div class="p-3 space-y-3">
+                            <div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase px-2">Activity</span>
+                                <div class="mt-1 space-y-0.5">
+                                    <a href="#" class="flex items-center gap-3 px-2.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-700 rounded-xl transition">
+                                        <div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center">
+                                            <i class="fa-solid fa-lock text-xs"></i>
+                                        </div>
+                                        <span>Change Password</span>
+                                    </a>
+
+                                    <!-- মাই প্রোফাইল বাটন (শুধুমাত্র এখানে ক্লিক করলেই আপডেট ফর্ম আসবে) -->
+                                    <button onclick="loadProfileView()" class="w-full flex items-center gap-3 px-2.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-700 rounded-xl transition">
+                                        <div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center">
+                                            <i class="fa-regular fa-circle-user text-xs"></i>
+                                        </div>
+                                        <span class="font-bold text-emerald-700 dark:text-emerald-400">My Profile</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase px-2">My Account</span>
+                                <div class="mt-1 space-y-0.5">
+                                    <a href="#" class="flex items-center gap-3 px-2.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-700 rounded-xl transition">
+                                        <div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center">
+                                            <i class="fa-regular fa-bell text-xs"></i>
+                                        </div>
+                                        <span>Notifications</span>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="pt-2 border-t border-slate-100 dark:border-slate-700">
+                                <button class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 px-4 rounded-xl flex items-center justify-center gap-2 text-xs shadow-sm transition">
+                                    <i class="fa-solid fa-right-from-bracket"></i>
+                                    <span>Logout</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- সিস্টেম হেলথ ব্যাজ -->
+                <div class="relative">
+                    <button id="status-btn" class="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-xs hover:bg-emerald-100 transition">
+                        <i class="fa-solid fa-shield-halved text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- ================= মূল কনটেন্ট এরিয়া (MAIN CANVAS) ================= -->
+        <div id="main-content-area" class="flex-1 p-6 overflow-y-auto bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
+            <!-- এখানে ডিফল্টভাবে ফাঁকা ড্যাশবোর্ড লোড হবে -->
+        </div>
+
+    </main>
+
+    <!-- ================= জাভাস্ক্রিপ্ট কোড ================= -->
+    <script>
+        // ইউজার স্টেট অবজেক্ট
+        let currentUser = {
+            empId: "357",
+            nameEn: "Md. Rabbi Hosen",
+            nameBn: "মোঃ রাব্বি হোসেন",
+            mobile: "01891542830",
+            gender: "Male",
+            religion: "Islam",
+            fatherEn: "Md. Moslem Uddin",
+            fatherBn: "মোঃ মোসলেম উদ্দিন",
+            dob: "2003-08-17",
+            motherEn: "Mst. Rabeya Begum",
+            motherBn: "মোছাঃ রাবেয়া বেগম",
+            anniversary: "",
+            designation: "Office Assistant (Category: Office Staff, SL: 5)",
+            schoolHour: "Office Staffs [07:55 - 14:20]",
+            displayOrder: "85",
+            joinDate: "2025-03-05",
+            empType: "Full Time",
+            fbLink: "https://facebook.com",
+            nationality: "Bangladeshi",
+            bloodGroup: "B+",
+            nid: "6467052103",
+            email: "rabbi.cpscl@gmail.com",
+            appPin: "1234",
+            ramsId: "RAMS-357",
+            district: "Lalmonirhat",
+            permanentAddress: "Lalmonirhat Sadar, Lalmonirhat",
+            presentAddress: "CPSCL Staff Quarter, Lalmonirhat",
+            aboutMe: "Dedicated and proactive Office Assistant handling academic and administrative operations smoothly.",
+            photoUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
+        };
+
+        // ড্রপডাউন ও বাটন হ্যান্ডলার
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        const themeIcon = document.getElementById('theme-icon');
+        const langBtn = document.getElementById('lang-btn');
+        const langDropdown = document.getElementById('lang-dropdown');
+        const currentLangFlag = document.getElementById('current-lang-flag');
+        const notifBtn = document.getElementById('notif-btn');
+        const notifDropdown = document.getElementById('notif-dropdown');
+        const profileBtn = document.getElementById('profile-btn');
+        const profileDropdown = document.getElementById('profile-dropdown');
+        const dropdownArrow = document.getElementById('dropdown-arrow');
+
+        const allDropdowns = [langDropdown, notifDropdown, profileDropdown];
+
+        sidebarToggleBtn.addEventListener('click', () => sidebar.classList.toggle('-ml-64'));
+
+        themeToggleBtn.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            if (isDark) {
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
+                themeIcon.classList.add('text-amber-400');
+            } else {
+                themeIcon.classList.replace('fa-sun', 'fa-moon');
+                themeIcon.classList.remove('text-amber-400');
+            }
+        });
+
+        function closeAllExcept(target) {
+            allDropdowns.forEach(d => { if (d !== target) d.classList.add('hidden'); });
+            if (target !== profileDropdown) dropdownArrow.classList.remove('rotate-180');
+        }
+
+        langBtn.addEventListener('click', (e) => { e.stopPropagation(); closeAllExcept(langDropdown); langDropdown.classList.toggle('hidden'); });
+        function changeLanguage(lang, flag) { currentLangFlag.innerText = flag; langDropdown.classList.add('hidden'); }
+
+        notifBtn.addEventListener('click', (e) => { e.stopPropagation(); closeAllExcept(notifDropdown); notifDropdown.classList.toggle('hidden'); });
+
+        profileBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeAllExcept(profileDropdown);
+            profileDropdown.classList.toggle('hidden');
+            dropdownArrow.classList.toggle('rotate-180');
+        });
+
+        document.addEventListener('click', () => closeAllExcept(null));
+
+        // ================= ১. মূল ড্যাশবোর্ড ভিউ (ফাঁকা ক্যানভাস) =================
+        function loadDashboardView() {
+            closeAllExcept(null);
+            const container = document.getElementById('main-content-area');
+            // ড্যাশবোর্ড বর্তমানে ফাঁকা রাখা হয়েছে (আপনার পরবর্তী নির্দেশনা অনুযায়ী এখানে জিনিস বসবে)
+            container.innerHTML = ``;
+        }
+
+        // ================= ২. মাই প্রোফাইল আপডেট ফর্ম ভিউ =================
+        function loadProfileView() {
+            closeAllExcept(null);
+            const container = document.getElementById('main-content-area');
+            
+            container.innerHTML = `
+                <div class="max-w-6xl mx-auto space-y-4">
+                    
+                    <!-- অ্যালার্ট মেসেজ বক্স -->
+                    <div id="save-alert" class="hidden bg-emerald-100 border border-emerald-300 text-emerald-800 px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-between shadow-xs">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+                            <span>প্রোফাইলের তথ্য সফলভাবে আপডেট হয়েছে!</span>
+                        </div>
+                    </div>
+
+                    <!-- মূল ফর্ম কার্ড -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                        
+                        <!-- টপ ট্যাব বার -->
+                        <div class="flex border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-xs font-bold text-slate-500 dark:text-slate-400">
+                            <button class="px-8 py-3.5 bg-blue-600 text-white border-b-2 border-blue-600 flex items-center gap-2">
+                                <span>Basic</span>
+                            </button>
+                            <button class="px-8 py-3.5 hover:text-blue-600 transition">Spouse</button>
+                            <button class="px-8 py-3.5 hover:text-blue-600 transition">Academic</button>
+                            <button class="px-8 py-3.5 hover:text-blue-600 transition">Miscellaneous</button>
+                        </div>
+
+                        <!-- ফর্ম ইনপুট গ্রিড -->
+                        <form id="profile-form" onsubmit="saveProfile(event)" class="p-6 space-y-4 text-xs">
+                            
+                            <!-- সারি ১ -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Employee ID*</label>
+                                    <input type="text" id="inp-empId" value="${currentUser.empId}" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500" required>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Name (English)*</label>
+                                    <input type="text" id="inp-nameEn" value="${currentUser.nameEn}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500" required>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">নাম (বাংলা)*</label>
+                                    <input type="text" id="inp-nameBn" value="${currentUser.nameBn}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
+                                </div>
+                            </div>
+
+                            <!-- সারি ২ -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Mobile No*</label>
+                                    <input type="text" id="inp-mobile" value="${currentUser.mobile}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Gender*</label>
+                                    <select id="inp-gender" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
+                                        <option ${currentUser.gender === 'Male' ? 'selected' : ''}>Male</option>
+                                        <option ${currentUser.gender === 'Female' ? 'selected' : ''}>Female</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Religion*</label>
+                                    <select id="inp-religion" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
+                                        <option ${currentUser.religion === 'Islam' ? 'selected' : ''}>Islam</option>
+                                        <option ${currentUser.religion === 'Hinduism' ? 'selected' : ''}>Hinduism</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- সারি ৩ -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Father's Name</label>
+                                    <input type="text" id="inp-fatherEn" value="${currentUser.fatherEn}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">পিতার নাম (বাংলা)</label>
+                                    <input type="text" id="inp-fatherBn" value="${currentUser.fatherBn}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Birth Date (DD/MM/YYYY)</label>
+                                    <input type="date" id="inp-dob" value="${currentUser.dob}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
+                                </div>
+                            </div>
+
+                            <!-- সারি ৪ -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Mother's Name</label>
+                                    <input type="text" id="inp-motherEn" value="${currentUser.motherEn}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">মাতার নাম (বাংলা)</label>
+                                    <input type="text" id="inp-motherBn" value="${currentUser.motherBn}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Anniversary Date</label>
+                                    <input type="date" id="inp-anniversary" value="${currentUser.anniversary}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
+                                </div>
+                            </div>
+
+                            <!-- সারি ৫ -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Designation*</label>
+                                    <input type="text" id="inp-designation" value="${currentUser.designation}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">School Hour</label>
+                                    <input type="text" id="inp-schoolHour" value="${currentUser.schoolHour}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Show/Display Order*</label>
+                                    <input type="text" id="inp-displayOrder" value="${currentUser.displayOrder}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
+                                </div>
+                            </div>
+
+                            <!-- সারি ৬ -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Nationality*</label>
+                                    <input type="text" id="inp-nationality" value="${currentUser.nationality}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Blood Group</label>
+                                    <select id="inp-bloodGroup" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
+                                        <option>A+</option><option>A-</option><option selected>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">National ID (NID)</label>
+                                    <input type="text" id="inp-nid" value="${currentUser.nid}" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">
+                                </div>
+                            </div>
+
+                            <!-- সারি ৭ -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Permanent Address</label>
+                                    <textarea id="inp-permAddress" rows="2" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">${currentUser.permanentAddress}</textarea>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Present Address</label>
+                                    <textarea id="inp-presAddress" rows="2" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">${currentUser.presentAddress}</textarea>
+                                </div>
+                            </div>
+
+                            <!-- সারি ৮ -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Short Description (About Me)</label>
+                                    <textarea id="inp-aboutMe" rows="4" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-blue-500">${currentUser.aboutMe}</textarea>
+                                </div>
+                                
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Profile Photo (300 x 300 px)</label>
+                                    <div class="border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-xl p-4 flex items-center gap-4 bg-slate-50 dark:bg-slate-700/50">
+                                        <div class="w-16 h-16 rounded-full overflow-hidden bg-slate-200 border-2 border-white shadow shrink-0">
+                                            <img id="form-img-preview" src="${currentUser.photoUrl}" alt="Preview" class="w-full h-full object-cover">
+                                        </div>
+                                        <div class="flex-1">
+                                            <input type="file" id="inp-photoFile" accept="image/*" onchange="previewImage(event)" class="text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                                            <p class="text-[10px] text-slate-400 mt-1">Max size: 300 KB (JPG, PNG)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- সাবমিট বাটন -->
+                            <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
+                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 text-xs shadow-md transition">
+                                    <i class="fa-solid fa-floppy-disk"></i>
+                                    <span>Update Information / Next</span>
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+
+                </div>
+            `;
+        }
+
+        // ছবি প্রিভিউ
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('form-img-preview').src = e.target.result;
+                    currentUser.photoUrl = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // ফর্ম সেভ
+        function saveProfile(event) {
+            event.preventDefault();
+            
+            currentUser.nameEn = document.getElementById('inp-nameEn').value;
+            currentUser.nameBn = document.getElementById('inp-nameBn').value;
+            currentUser.mobile = document.getElementById('inp-mobile').value;
+            currentUser.empId = document.getElementById('inp-empId').value;
+            currentUser.designation = document.getElementById('inp-designation').value;
+            currentUser.aboutMe = document.getElementById('inp-aboutMe').value;
+
+            document.getElementById('dropdown-user-name').innerText = currentUser.nameEn;
+            document.getElementById('nav-profile-pic').src = currentUser.photoUrl;
+            document.getElementById('dropdown-profile-pic').src = currentUser.photoUrl;
+
+            const alertBox = document.getElementById('save-alert');
+            alertBox.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            setTimeout(() => {
+                alertBox.classList.add('hidden');
+            }, 3500);
+        }
+
+        // পেজ লোড হলে ডিফল্টভাবে ফাঁকা ড্যাশবোর্ড আসবে
+        window.onload = function() {
+            loadDashboardView();
+        };
+    </script>
+</body>
+</html>
