@@ -1,6 +1,6 @@
 /**
  * User Management & Role-Based Fine-Grained Access Control (RBAC) Module
- * Realtime Firebase Cloud Database Sync & Live Activity Audit Log
+ * Enterprise English Standard & Realtime Firebase Cloud Database Sync
  */
 
 (function () {
@@ -162,47 +162,52 @@
                 .um-tab-btn { padding: 9px 18px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; border: 1px solid #e2e8f0; background: #f8fafc; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
                 .um-tab-btn.active { background: #4f46e5; color: #ffffff; border-color: #4f46e5; box-shadow: 0 3px 10px rgba(79, 70, 229, 0.25); }
                 .um-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
-                .um-table th { padding: 12px 16px; color: #64748b; font-size: 0.84rem; font-weight: 700; text-align: left; }
+                .um-table th { padding: 12px 16px; color: #64748b; font-size: 0.84rem; font-weight: 700; text-align: left; text-transform: uppercase; }
                 .um-table td { background: #ffffff; padding: 14px 16px; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; color: #1e293b; }
                 .um-table tr td:first-child { border-left: 1px solid #f1f5f9; border-radius: 12px 0 0 12px; }
                 .um-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 12px 12px 0; }
-                .um-badge-active { background: #dcfce7; color: #16a34a; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.78rem; }
-                .um-badge-blocked { background: #fee2e2; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.78rem; }
-                .um-perm-tag { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin: 2px; }
+                .um-badge-active { background: #dcfce7; color: #16a34a; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; }
+                .um-badge-blocked { background: #fee2e2; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; }
+                .um-perm-tag { display: inline-block; padding: 3px 8px; border-radius: 5px; font-size: 0.74rem; font-weight: 700; margin: 2px; }
                 .um-perm-on { background: #e0f2fe; color: #0369a1; }
-                .um-perm-off { background: #f1f5f9; color: #94a3b8; text-decoration: line-through; }
+                .um-perm-off { background: #f1f5f9; color: #94a3b8; text-decoration: line-through; opacity: 0.6; }
                 .um-btn-action { width: 32px; height: 32px; border-radius: 8px; border: none; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
                 .um-btn-toggle { background: #fef2f2; color: #ef4444; }
+                .um-btn-toggle:hover { background: #fee2e2; }
                 .um-btn-edit { background: #f0fdf4; color: #16a34a; }
+                .um-btn-edit:hover { background: #dcfce7; }
                 .um-btn-del { background: #f1f5f9; color: #64748b; }
+                .um-btn-del:hover { background: #e2e8f0; color: #dc2626; }
                 .um-control { width: 100%; height: 42px; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 0 14px; font-size: 0.9rem; outline: none; }
                 .um-control:focus { border-color: #4f46e5; }
             </style>
 
             <div class="um-card">
+                <!-- Top Tabs -->
                 <div class="um-tabs-wrap">
                     <button class="um-tab-btn active" id="tab-btn-users" onclick="switchUMTab('users')">
-                        <i class="fa-solid fa-users"></i> ইউজার তালিকা ( <span id="um-count">1</span> )
+                        <i class="fa-solid fa-users"></i> Users List (<span id="um-count">0</span>)
                     </button>
                     <button class="um-tab-btn" id="tab-btn-create" onclick="switchUMTab('create')">
-                        <i class="fa-solid fa-user-plus"></i> <span id="um-form-title">নতুন ইউজার তৈরি</span>
+                        <i class="fa-solid fa-user-plus"></i> <span id="um-form-title">Create New User</span>
                     </button>
                     <button class="um-tab-btn" id="tab-btn-audit" onclick="switchUMTab('audit')">
-                        <i class="fa-solid fa-clock-rotate-left"></i> অ্যাক্টিভিটি অডিট লগ
+                        <i class="fa-solid fa-clock-rotate-left"></i> Activity Audit Logs
                     </button>
                 </div>
 
+                <!-- Tab 1: Users List -->
                 <div id="um-sec-users">
                     <div style="overflow-x: auto;">
                         <table class="um-table">
                             <thead>
                                 <tr>
-                                    <th>নাম ও ইমেইল</th>
-                                    <th>রোল</th>
-                                    <th>পাসওয়ার্ড (Admin View)</th>
-                                    <th>অনুমোদিত ফিচারসমূহ (Permissions)</th>
-                                    <th>স্ট্যাটাস</th>
-                                    <th style="text-align: right;">অ্যাকশন</th>
+                                    <th>User & Email</th>
+                                    <th>Role</th>
+                                    <th>Password (Admin View)</th>
+                                    <th>Permissions Granted</th>
+                                    <th>Status</th>
+                                    <th style="text-align: right;">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="um-users-tbody"></tbody>
@@ -210,77 +215,79 @@
                     </div>
                 </div>
 
-                <div id="um-sec-create" style="display: none; max-width: 750px;">
+                <!-- Tab 2: Create / Edit User Form -->
+                <div id="um-sec-create" style="display: none; max-width: 800px;">
                     <form onsubmit="handleUserFormSubmit(event)" style="display: flex; flex-direction: column; gap: 16px;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div>
-                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">ইউজারনেম / নাম *</label>
-                                <input type="text" id="um-inp-name" class="um-control" placeholder="যেমন: cpscl" required>
+                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Username *</label>
+                                <input type="text" id="um-inp-name" class="um-control" placeholder="e.g. cpscl" required>
                             </div>
                             <div>
-                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">ইমেইল অ্যাড্রেস *</label>
+                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Email Address *</label>
                                 <input type="email" id="um-inp-email" class="um-control" placeholder="cpscl@gmail.com" required>
                             </div>
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div>
-                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">পাসওয়ার্ড *</label>
-                                <input type="text" id="um-inp-pass" class="um-control" placeholder="গোপন পাসওয়ার্ড দিন" required>
+                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Password *</label>
+                                <input type="text" id="um-inp-pass" class="um-control" placeholder="Enter secure password" required>
                             </div>
                             <div>
-                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">ব্যবহারকারীর পদবী / রোল *</label>
+                                <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Designation / Role *</label>
                                 <select id="um-inp-role" class="um-control">
-                                    <option value="CPSCL Operator">CPSCL Operator (স্কুল অপারেটর)</option>
-                                    <option value="Accountant">Accountant (অ্যাকাউন্টস)</option>
-                                    <option value="Teacher">Teacher (শিক্ষক)</option>
+                                    <option value="CPSCL Operator">CPSCL Operator</option>
+                                    <option value="Accountant">Accountant</option>
+                                    <option value="Manager">Manager</option>
                                 </select>
                             </div>
                         </div>
 
                         <div>
-                            <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 8px;">ইউজারের অনুমোদিত কাজ (Fine-Grained Permissions):</label>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <label style="font-size: 0.84rem; font-weight: 700; color: #475569; display: block; margin-bottom: 8px;">Fine-Grained Permissions (Feature Controls):</label>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
                                 <label style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                    <input type="checkbox" id="perm-view-print" checked> ১. ভিউ ও সার্টিফিকেট প্রিন্ট
+                                    <input type="checkbox" id="perm-view-print" checked> 1. View & Print Certificates
                                 </label>
                                 <label style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                    <input type="checkbox" id="perm-upload-excel"> ২. এক্সেল ফাইল আপলোড
+                                    <input type="checkbox" id="perm-upload-excel"> 2. Allow Excel Import
                                 </label>
                                 <label style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                    <input type="checkbox" id="perm-manual-entry"> ৩. নতুন শিক্ষার্থী এন্ট্রি
+                                    <input type="checkbox" id="perm-manual-entry"> 3. Allow Manual Student Entry
                                 </label>
                                 <label style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                    <input type="checkbox" id="perm-delete-data"> ৪. ডাটা ক্লিয়ার / ডিলিট
+                                    <input type="checkbox" id="perm-delete-data"> 4. Allow Delete & Clear Data
                                 </label>
                             </div>
-                            <p style="font-size: 0.78rem; color: #64748b; margin-top: 5px;">* ডিফল্টভাবে ইউজার শুধু সার্টিফিকেট দেখতে ও প্রিন্ট করতে পারবে।</p>
+                            <p style="font-size: 0.78rem; color: #64748b; margin-top: 5px;">* By default, client users can only search and print certificates.</p>
                         </div>
 
                         <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
-                            <button type="button" onclick="cancelUserEdit()" style="padding: 10px 20px; background: #94a3b8; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">বাতিল</button>
+                            <button type="button" onclick="cancelUserEdit()" style="padding: 10px 20px; background: #94a3b8; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Cancel</button>
                             <button type="submit" style="padding: 10px 28px; background: #4f46e5; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
-                                <i class="fa-solid fa-floppy-disk mr-1"></i> সংরক্ষণ করুন
+                                <i class="fa-solid fa-floppy-disk mr-1"></i> Save User
                             </button>
                         </div>
                     </form>
                 </div>
 
+                <!-- Tab 3: Activity Audit Logs -->
                 <div id="um-sec-audit" style="display: none;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">রিয়েল-টাইম ইউজার অ্যাক্টিভিটি মনিটরিং</span>
+                        <span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">Realtime Live Activity Tracking</span>
                         <button onclick="clearAuditLogs()" style="background: none; border: none; color: #ef4444; font-weight: 700; font-size: 0.82rem; cursor: pointer;">
-                            <i class="fa-solid fa-trash-can mr-1"></i> লগ হিস্ট্রি ক্লিয়ার
+                            <i class="fa-solid fa-trash-can mr-1"></i> Clear Audit Logs
                         </button>
                     </div>
                     <div style="overflow-x: auto;">
                         <table class="um-table">
                             <thead>
                                 <tr>
-                                    <th>সময় ও তারিখ</th>
-                                    <th>ব্যবহারকারী</th>
-                                    <th>অ্যাকশন</th>
-                                    <th>বিস্তারিত বিবরণ</th>
+                                    <th>Timestamp</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
                                 </tr>
                             </thead>
                             <tbody id="um-audit-tbody"></tbody>
@@ -308,7 +315,7 @@
         if (menuItem) menuItem.classList.add('active');
 
         const topTitle = document.getElementById('top-title') || document.querySelector('.page-title');
-        if (topTitle) topTitle.innerText = "ইউজার ও পারমিশন কন্ট্রোল";
+        if (topTitle) topTitle.innerText = "User & Access Management";
     };
 
     function renderUsersTable() {
@@ -320,7 +327,7 @@
         tbody.innerHTML = '';
 
         if (usersDatabase.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 25px;">কোনো ইউজার পাওয়া যায়নি।</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 25px;">No users found.</td></tr>`;
             return;
         }
 
@@ -330,7 +337,7 @@
             const eyeIcon = isShown ? 'fa-eye-slash' : 'fa-eye';
             const statusClass = u.status === 'Active' ? 'um-badge-active' : 'um-badge-blocked';
             const toggleIcon = u.status === 'Active' ? 'fa-ban' : 'fa-check';
-            const toggleTitle = u.status === 'Active' ? 'ব্লক করুন' : 'সক্রিয় করুন';
+            const toggleTitle = u.status === 'Active' ? 'Block User' : 'Activate User';
 
             const p = u.permissions || { can_view_print: true, can_upload_excel: false, can_manual_entry: false, can_delete_data: false };
             const tags = `
@@ -349,7 +356,7 @@
                 <td><strong style="color: #334155;">${u.role}</strong></td>
                 <td>
                     <span style="font-family: monospace; font-weight: 700; color: #4338ca; letter-spacing: 1px;">${passDisplay}</span>
-                    <button onclick="togglePasswordView('${u.id}')" style="background: none; border: none; color: #6366f1; cursor: pointer; margin-left: 8px;">
+                    <button onclick="togglePasswordView('${u.id}')" title="View Password" style="background: none; border: none; color: #6366f1; cursor: pointer; margin-left: 8px;">
                         <i class="fa-solid ${eyeIcon}"></i>
                     </button>
                 </td>
@@ -360,10 +367,10 @@
                         <button onclick="toggleUserStatus(${index})" title="${toggleTitle}" class="um-btn-action um-btn-toggle">
                             <i class="fa-solid ${toggleIcon}"></i>
                         </button>
-                        <button onclick="editUser(${index})" title="এডিট করুন" class="um-btn-action um-btn-edit">
+                        <button onclick="editUser(${index})" title="Edit User" class="um-btn-action um-btn-edit">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
-                        <button onclick="deleteUser(${index})" title="মুছে ফেলুন" class="um-btn-action um-btn-del">
+                        <button onclick="deleteUser(${index})" title="Delete User" class="um-btn-action um-btn-del">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
@@ -379,7 +386,7 @@
 
         tbody.innerHTML = '';
         if (auditLogsDatabase.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #94a3b8; padding: 25px;">এখনো কোনো অ্যাক্টিভিটি রেকর্ড হয়নি।</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #94a3b8; padding: 25px;">No activity logged yet.</td></tr>`;
             return;
         }
 
@@ -443,7 +450,7 @@
         if (editingUserId) {
             const idx = usersDatabase.findIndex(u => u.id === editingUserId);
             if (idx !== -1) usersDatabase[idx] = userData;
-            window.logUserActivity("USER_EDIT", `User details updated for ${userData.name}`);
+            window.logUserActivity("USER_EDIT", `User updated: ${userData.name}`);
         } else {
             usersDatabase.push(userData);
             window.logUserActivity("USER_CREATE", `New user created: ${userData.name} (${userData.role})`);
@@ -459,7 +466,7 @@
         if (!u) return;
 
         editingUserId = u.id;
-        document.getElementById('um-form-title').innerText = "ইউজার এডিট করুন";
+        document.getElementById('um-form-title').innerText = "Edit User Information";
         document.getElementById('um-inp-name').value = u.name;
         document.getElementById('um-inp-email').value = u.email;
         document.getElementById('um-inp-pass').value = u.password;
@@ -476,7 +483,7 @@
 
     window.cancelUserEdit = function () {
         editingUserId = null;
-        document.getElementById('um-form-title').innerText = "নতুন ইউজার তৈরি";
+        document.getElementById('um-form-title').innerText = "Create New User";
         document.getElementById('um-inp-name').value = '';
         document.getElementById('um-inp-email').value = '';
         document.getElementById('um-inp-pass').value = '';
@@ -491,7 +498,7 @@
         const u = usersDatabase[index];
         if (!u) return;
 
-        if (confirm(`আপনি কি নিশ্চিত যে '${u.name}' ইউজারটিকে মুছে ফেলতে চান?`)) {
+        if (confirm(`Are you sure you want to permanently delete '${u.name}'?`)) {
             usersDatabase.splice(index, 1);
             await syncUsersToFirebase(usersDatabase);
             renderUsersTable();
@@ -500,7 +507,7 @@
     };
 
     window.clearAuditLogs = async function () {
-        if (confirm("আপনি কি সকল অ্যাক্টিভিটি হিস্ট্রি মুছে ফেলতে চান?")) {
+        if (confirm("Are you sure you want to clear all activity audit history?")) {
             auditLogsDatabase = [];
             await syncLogsToFirebase([]);
             renderAuditLogsTable();
