@@ -1,11 +1,12 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module
- * Minimalist & Clean Edition:
- * - Direct inline SVG icons (No broken [] boxes).
- * - Ultra-clean minimal top bar (No clutter/busy text).
- * - Removed '#' from Receipt numbers.
- * - Short & fast 'Paid successfully' notice.
- * - Flat, clean table fitting screen perfectly without scrollbar.
+ * Minimalist, Clean & Business-Priority Edition:
+ * - Filter by Due Months: Instant 2+ Months (Urgent Fine Risk ⚠️) filter.
+ * - Filter by Class: Pay class-wise urgent batches.
+ * - Dynamic Tap Balance: Top total recalculates based on active filters.
+ * - Visual ⚠️ Warning on rows with 2+ months due.
+ * - Inline SVG icons (Zero broken [] boxes).
+ * - Receipt numbers without '#' and short toasts.
  */
 
 (function () {
@@ -16,15 +17,17 @@
     let selectedStudentRawDue = 0;
     let selectedStudentData = null;
 
-    // সিলেকশন স্টেট
+    // সিলেকশন ও ফিল্টার স্টেট
     let selectedPendingTxId = null;
+    let pendingFilterClass = "all";
+    let pendingFilterMonths = "all";
 
     // পেজিনেশন
     let currentPage = 1;
     let rowsPerPage = 25;
     let currentSearchQuery = "";
 
-    // মিনিমাল আইকন SVG (কখনো মিস হবে না)
+    // মিনিমাল আইকন SVG
     const ICONS = {
         pay: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>`,
         trash: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`,
@@ -119,13 +122,34 @@
             font-weight: 600;
         }
 
+        /* FILTERS BAR IN PENDING */
+        .pending-filter-strip {
+            padding: 12px 20px 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .filter-select-mini {
+            height: 36px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 0 10px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: #1e293b;
+            background: #ffffff;
+            outline: none;
+        }
+        .filter-select-mini:focus { border-color: #0f172a; }
+
         /* MINIMAL TOOLBAR */
         .pending-action-bar-strip {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
             padding: 8px 16px;
-            margin: 15px 20px 0 20px;
+            margin: 10px 20px 0 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -379,18 +403,39 @@
                     </div>
                 </div>
 
-                <!-- PANEL 2: PENDING CLEARANCE (মিনিমালিস্ট ডিজাইন) -->
+                <!-- PANEL 2: PENDING CLEARANCE (ফিল্টার ও প্রায়োরিটি পে সহ) -->
                 <div class="view-panel" id="edu-pending-clearance-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
                             <h3>Pending Clearance (To Pay via Tap)</h3>
                             <div>
                                 <span class="edu-pill-badge badge-pending" id="pendingCountBadge">0 Pending</span>
-                                <span style="font-size:0.88rem; font-weight:700; margin-left:12px;">Tap Total: ৳ <span id="pendingTotalSum" style="color:#10b981;">0.00</span></span>
+                                <span style="font-size:0.88rem; font-weight:700; margin-left:12px;">Filtered Tap Total: ৳ <span id="pendingTotalSum" style="color:#10b981;">0.00</span></span>
                             </div>
                         </div>
 
-                        <!-- ক্লিন ও মিনিমাল শীর্ষ কন্ট্রোল বার -->
+                        <!-- দ্রুত ফিল্টারিং বার (Due Month & Class) -->
+                        <div class="pending-filter-strip">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:0.8rem; font-weight:700; color:#475569;">MONTHS DUE:</span>
+                                <select id="filterPendingMonths" class="filter-select-mini" onchange="window.onPendingMonthFilterChange(this.value)">
+                                    <option value="all">All Months</option>
+                                    <option value="urgent" style="color:#dc2626; font-weight:bold;">2+ Months (Urgent / Fine Risk ⚠️)</option>
+                                    <option value="1">1 Month</option>
+                                    <option value="2">2 Months</option>
+                                    <option value="3+">3+ Months</option>
+                                </select>
+                            </div>
+
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:0.8rem; font-weight:700; color:#475569;">CLASS:</span>
+                                <select id="filterPendingClass" class="filter-select-mini" onchange="window.onPendingClassFilterChange(this.value)">
+                                    <option value="all">All Classes</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- ক্লিন ও মিনিমাল শীর্ষ অ্যাকশন বার -->
                         <div class="pending-action-bar-strip">
                             <div class="selection-status-badge" id="pendingSelectedLabel">
                                 <span>No student selected</span>
@@ -417,13 +462,15 @@
                                         <th>DATE</th>
                                         <th>STUDENT ID</th>
                                         <th>STUDENT NAME</th>
+                                        <th>CLASS</th>
+                                        <th>MONTHS</th>
                                         <th>TUITION FEE</th>
                                         <th>TAP PAYABLE</th>
                                         <th style="text-align:right;">COLLECTED</th>
                                     </tr>
                                 </thead>
                                 <tbody id="pendingClearanceTableBody">
-                                    <tr><td colspan="7" style="text-align:center; padding:25px; color:#94a3b8;">No pending clearance records.</td></tr>
+                                    <tr><td colspan="9" style="text-align:center; padding:25px; color:#94a3b8;">No pending clearance records.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -816,7 +863,20 @@
         }
     };
 
-    // ১১. টেবিল রেন্ডারিং
+    // ফিল্টার ইভেন্টস
+    window.onPendingMonthFilterChange = function (val) {
+        pendingFilterMonths = val;
+        selectedPendingTxId = null;
+        renderPendingTable();
+    };
+
+    window.onPendingClassFilterChange = function (val) {
+        pendingFilterClass = val;
+        selectedPendingTxId = null;
+        renderPendingTable();
+    };
+
+    // ১১. টেবিল রেন্ডারিং ও প্রায়োরিটি ফিল্টারিং
     function renderPendingTable() {
         const tbody = document.getElementById('pendingClearanceTableBody');
         const badge = document.getElementById('pendingCountBadge');
@@ -825,16 +885,52 @@
         const btnPay = document.getElementById('btnTopPay');
         const btnVoid = document.getElementById('btnTopVoid');
         const btnPrint = document.getElementById('btnTopPrint');
+        const classSelect = document.getElementById('filterPendingClass');
 
         if (!tbody) return;
 
-        const pendingList = feeTransactionsList.filter(t => t.status !== 'Paid');
+        const rawPending = feeTransactionsList.filter(t => t.status !== 'Paid');
+
+        // ড্রপডাউনে ক্লাস অটো-পপুলেট করা
+        if (classSelect) {
+            const existingClasses = [...new Set(rawPending.map(t => (t.class || '').trim()).filter(Boolean))];
+            const currentVal = classSelect.value;
+            let classOptions = '<option value="all">All Classes</option>';
+            existingClasses.forEach(c => {
+                classOptions += `<option value="${c}">${c}</option>`;
+            });
+            classSelect.innerHTML = classOptions;
+            if (existingClasses.includes(currentVal)) {
+                classSelect.value = currentVal;
+            }
+        }
+
+        // ফিল্টারিং প্রয়োগ
+        let filteredPending = rawPending;
+
+        // ১. ক্লাস ফিল্টার
+        if (pendingFilterClass !== "all") {
+            filteredPending = filteredPending.filter(t => (t.class || '').toLowerCase() === pendingFilterClass.toLowerCase());
+        }
+
+        // ২. বকেয়া মাস ফিল্টার (Urgent Fine Risk)
+        if (pendingFilterMonths === "urgent") {
+            // ২ মাস বা তার বেশি বকেয়া
+            filteredPending = filteredPending.filter(t => (parseInt(t.month) || 1) >= 2);
+        } else if (pendingFilterMonths === "1") {
+            filteredPending = filteredPending.filter(t => (parseInt(t.month) || 1) === 1);
+        } else if (pendingFilterMonths === "2") {
+            filteredPending = filteredPending.filter(t => (parseInt(t.month) || 1) === 2);
+        } else if (pendingFilterMonths === "3+") {
+            filteredPending = filteredPending.filter(t => (parseInt(t.month) || 1) >= 3);
+        }
+
         let totalGrossSum = 0;
 
-        const selectedRecord = pendingList.find(t => t.id === selectedPendingTxId);
+        const selectedRecord = filteredPending.find(t => t.id === selectedPendingTxId);
         if (!selectedRecord) selectedPendingTxId = null;
 
-        // টুলবার টেক্সট (অতিরিক্ত লেখা মুক্ত)
+        // টুলবার টেক্সট
         if (selectedRecord) {
             if (selectedLabel) {
                 selectedLabel.innerHTML = `<strong style="color:#0f172a;">${selectedRecord.receiptNo || ''} - ${selectedRecord.studentName || ''}</strong>`;
@@ -851,15 +947,15 @@
             if (btnPrint) btnPrint.disabled = true;
         }
 
-        if (pendingList.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:25px; color:#94a3b8;">No pending records.</td></tr>';
+        if (filteredPending.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:25px; color:#94a3b8;">No matching pending records found.</td></tr>';
             if (badge) badge.innerText = '0 Pending';
             if (sumEl) sumEl.innerText = '0.00';
             return;
         }
 
         let html = '';
-        pendingList.forEach(t => {
+        filteredPending.forEach(t => {
             const tuition = parseFloat(t.netDue || 0);
             const netRec = parseFloat(t.netReceived || 0);
             const tapFee = Math.min(tuition * 0.01, 60);
@@ -868,12 +964,21 @@
             totalGrossSum += grossPayable;
             const isSelected = (t.id === selectedPendingTxId);
 
+            // মাসের ওয়ার্নিং লজিক (২ মাস বা তার বেশি হলে লাল সতর্কতা)
+            const dueMonths = parseInt(t.month || 1);
+            let monthCol = `${dueMonths} Mo`;
+            if (dueMonths >= 2) {
+                monthCol = `<span style="color:#dc2626; font-weight:800;" title="Urgent: Fine Risk!">${dueMonths} Mos ⚠️</span>`;
+            }
+
             html += `
                 <tr class="row-selectable ${isSelected ? 'row-selected' : ''}" onclick="selectPendingRow('${t.id}')">
                     <td style="font-weight:700; color:#2563eb;">${t.receiptNo || '-'}</td>
                     <td>${t.date}</td>
                     <td><strong>${t.customerId}</strong></td>
                     <td style="font-weight:600;">${t.studentName}</td>
+                    <td>${t.class || '-'}</td>
+                    <td>${monthCol}</td>
                     <td>৳ ${tuition.toFixed(2)}</td>
                     <td style="font-weight:700; color:#b45309;">৳ ${grossPayable.toFixed(2)}</td>
                     <td style="color:#15803d; font-weight:700; text-align:right;">৳ ${netRec.toFixed(2)}</td>
@@ -881,7 +986,8 @@
             `;
         });
         tbody.innerHTML = html;
-        if (badge) badge.innerText = `${pendingList.length} Pending`;
+        if (badge) badge.innerText = `${filteredPending.length} Pending`;
+        // ফিল্টার অনুযায়ী ট্যাপে মোট কত টাকা লাগবে তা সরাসরি দেখাবে
         if (sumEl) sumEl.innerText = totalGrossSum.toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
