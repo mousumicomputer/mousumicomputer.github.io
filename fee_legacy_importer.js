@@ -1,10 +1,16 @@
 /**
  * Mousumi Computer ERP - Google Sheet Legacy Migration & Import Module
  * Dedicated Section to Upload, Track, and Manage Sheet Pending Records
+ * With Clean 25-Row Pagination & Filter System
  */
 
 (function () {
     let firebaseCore = null;
+
+    // পেজিনেশন স্টেট
+    let legacyCurrentPage = 1;
+    let legacyRowsPerPage = 25;
+    let legacySearchQuery = "";
 
     // ১. ফায়ারবেস কানেক্টর
     async function getFirebase() {
@@ -55,7 +61,7 @@
         return true;
     }
 
-    // ৩. নতুন ভিউ প্যানেল ইনজেক্ট
+    // ৩. নতুন ভিউ প্যানেল ইনজেক্ট (পেজিনেশন ও ড্রপডাউন সহ)
     function injectLegacyPanel() {
         const container = document.getElementById('edu-module-container');
         if (!container || document.getElementById('edu-legacy-import-view')) return false;
@@ -71,8 +77,8 @@
                         </div>
                     </div>
 
-                    <!-- আপলোড ও ক্লিয়ারিং কন্ট্রোল বার -->
-                    <div style="padding:14px 20px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <!-- আপলোড বার -->
+                    <div style="padding:12px 20px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                             <input type="file" id="legacyExcelFileInput" accept=".xlsx, .xls, .csv" style="display:none;">
                             <button type="button" class="btn-act btn-act-undo" onclick="document.getElementById('legacyExcelFileInput').click()">
@@ -86,8 +92,15 @@
                                 Clear Sheet Data ✕
                             </button>
                         </div>
-                        <div>
-                            <input type="text" id="legacySearchInput" class="edu-input" placeholder="Search Records..." style="height:35px; width:220px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:0.8rem; font-weight:700; color:#64748b;">Show</span>
+                            <select id="legacyPageSizeSelect" class="edu-input" style="height:35px; width:70px; padding:0 6px;">
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="-1">All</option>
+                            </select>
+                            <input type="text" id="legacySearchInput" class="edu-input" placeholder="Search Records..." style="height:35px; width:200px;">
                         </div>
                     </div>
 
@@ -113,6 +126,12 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- পেজিনেশন বার -->
+                    <div style="padding:10px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <span id="legacyPaginationInfo" style="font-size:0.82rem; color:#64748b; font-weight:600;">Showing 0 to 0 of 0 entries</span>
+                        <div id="legacyPaginationBtns" style="display:flex; gap:5px;"></div>
+                    </div>
                 </div>
             </div>
         `;
@@ -121,7 +140,7 @@
         return true;
     }
 
-    // ৪. টেক্সট ও নাম্বার স্যানিটাইজার
+    // ৪. টেক্সট ও ডেট স্যানিটাইজার
     function sanitizeNumber(val) {
         if (!val) return 0;
         const cleaned = String(val).replace(/,/g, '').replace(/[^0-9.-]/g, '');
@@ -138,7 +157,6 @@
     function sanitizeDate(val) {
         if (!val) return new Date().toISOString().split('T')[0];
         
-        // এক্সেল সিরিয়াল ডেট হ্যান্ডলিং
         if (typeof val === 'number' || (!isNaN(val) && String(val).trim().length >= 4 && !String(val).includes('-') && !String(val).includes('/'))) {
             try {
                 const numericDate = parseFloat(val);
@@ -206,7 +224,6 @@
                 const snap = await fb.get(fb.ref(fb.db, 'erp/feeTransactions'));
                 let currentTransactions = snap.exists() ? (Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val())) : [];
 
-                // আগের শিট ডাটা থাকলে মুছে ফ্রেশ করা হবে কি না
                 const hasOldSheetData = currentTransactions.some(t => t.source === 'Excel Sheet');
                 if (hasOldSheetData) {
                     const confirmClean = confirm("Replace previous uploaded sheet records with this new file?");
@@ -263,6 +280,7 @@
                 await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), currentTransactions);
 
                 alert(`Success! ${addedCount} records uploaded cleanly with correct Receipt numbers.`);
+                legacyCurrentPage = 1;
                 renderLegacyTable();
 
             } catch (err) {
@@ -286,20 +304,22 @@
         if (!snap.exists()) return;
 
         let allData = Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val());
-        // শুধুমাত্র Excel Sheet সোর্সের ডাটা বাদ দেওয়া
         const filteredData = allData.filter(t => t.source !== 'Excel Sheet');
 
         await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), filteredData);
         alert("All imported sheet records cleared!");
+        legacyCurrentPage = 1;
         renderLegacyTable();
     }
 
-    // ৬. ডাটা রেন্ডার করা
+    // ৬. পেজিনেশন সহ ডাটা রেন্ডার করা
     async function renderLegacyTable() {
         const tbody = document.getElementById('legacyTableBody');
         const badge = document.getElementById('legacyCountBadge');
         const totalEl = document.getElementById('legacyTotalPayable');
-        const searchInput = document.getElementById('legacySearchInput');
+        const paginationInfo = document.getElementById('legacyPaginationInfo');
+        const paginationBtns = document.getElementById('legacyPaginationBtns');
+
         if (!tbody) return;
 
         const fb = await getFirebase();
@@ -308,14 +328,17 @@
         const snap = await fb.get(fb.ref(fb.db, 'erp/feeTransactions'));
         if (!snap.exists()) {
             tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:25px; color:#94a3b8;">No records found.</td></tr>`;
+            if (paginationInfo) paginationInfo.innerText = "Showing 0 to 0 of 0 entries";
+            if (paginationBtns) paginationBtns.innerHTML = "";
             return;
         }
 
         const allData = Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val());
         let sheetRecords = allData.filter(t => t.source === 'Excel Sheet');
 
-        if (searchInput && searchInput.value.trim() !== '') {
-            const q = searchInput.value.trim().toLowerCase();
+        // সার্চ ফিল্টার
+        if (legacySearchQuery) {
+            const q = legacySearchQuery.toLowerCase();
             sheetRecords = sheetRecords.filter(r => 
                 (r.studentName && r.studentName.toLowerCase().includes(q)) ||
                 (r.customerId && r.customerId.toLowerCase().includes(q)) ||
@@ -325,19 +348,30 @@
         }
 
         let totalPayable = 0;
-        if (badge) badge.innerText = `${sheetRecords.length} Imported`;
+        sheetRecords.forEach(r => totalPayable += parseFloat(r.grossPayment || r.netDue || 0));
 
-        if (sheetRecords.length === 0) {
+        const totalEntries = sheetRecords.length;
+        if (badge) badge.innerText = `${totalEntries} Imported`;
+        if (totalEl) totalEl.innerText = totalPayable.toLocaleString('en-US', { minimumFractionDigits: 2 });
+
+        if (totalEntries === 0) {
             tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:25px; color:#94a3b8;">No Excel sheet records found.</td></tr>`;
-            if (totalEl) totalEl.innerText = '0.00';
+            if (paginationInfo) paginationInfo.innerText = "Showing 0 to 0 of 0 entries";
+            if (paginationBtns) paginationBtns.innerHTML = "";
             return;
         }
 
-        let html = '';
-        sheetRecords.forEach(r => {
-            const payable = parseFloat(r.grossPayment || r.netDue || 0);
-            totalPayable += payable;
+        // পেজিনেশন হিসাব
+        const effectivePageSize = legacyRowsPerPage === -1 ? totalEntries : legacyRowsPerPage;
+        const totalPages = Math.max(1, Math.ceil(totalEntries / (effectivePageSize || 1)));
 
+        if (legacyCurrentPage > totalPages) legacyCurrentPage = totalPages;
+        const startIndex = (legacyCurrentPage - 1) * effectivePageSize;
+        const currentSlice = legacyRowsPerPage === -1 ? sheetRecords : sheetRecords.slice(startIndex, startIndex + effectivePageSize);
+
+        let html = '';
+        currentSlice.forEach(r => {
+            const payable = parseFloat(r.grossPayment || r.netDue || 0);
             const isPaid = (r.status === 'Paid');
             const statusBadge = isPaid 
                 ? `<span class="edu-pill-badge badge-paid">Paid</span>` 
@@ -358,9 +392,31 @@
                 </tr>
             `;
         });
-
         tbody.innerHTML = html;
-        if (totalEl) totalEl.innerText = totalPayable.toLocaleString('en-US', { minimumFractionDigits: 2 });
+
+        // পেজিনেশন ইনফো আপডেট
+        if (paginationInfo) {
+            const endIdx = Math.min(startIndex + effectivePageSize, totalEntries);
+            paginationInfo.innerText = `Showing ${startIndex + 1} to ${endIdx} of ${totalEntries} entries`;
+        }
+
+        // পেজিনেশন বাটন তৈরি
+        if (paginationBtns) {
+            paginationBtns.innerHTML = '';
+            if (totalPages > 1) {
+                for (let i = 1; i <= Math.min(totalPages, 8); i++) {
+                    const btn = document.createElement('button');
+                    btn.className = `btn-act ${i === legacyCurrentPage ? 'btn-act-print' : 'btn-act-undo'}`;
+                    btn.innerText = i;
+                    btn.style.padding = "4px 10px";
+                    btn.onclick = () => { 
+                        legacyCurrentPage = i; 
+                        renderLegacyTable(); 
+                    };
+                    paginationBtns.appendChild(btn);
+                }
+            }
+        }
     }
 
     // ৭. ইভেন্ট লিসেনার
@@ -370,6 +426,7 @@
         const btnUpload = document.getElementById('btnProcessLegacyExcel');
         const btnClear = document.getElementById('btnClearSheetImports');
         const searchInp = document.getElementById('legacySearchInput');
+        const pageSizeSelect = document.getElementById('legacyPageSizeSelect');
 
         if (fileInp && fileNameEl) {
             fileInp.onchange = function () {
@@ -392,7 +449,19 @@
         }
 
         if (searchInp) {
-            searchInp.oninput = renderLegacyTable;
+            searchInp.oninput = function() {
+                legacySearchQuery = this.value.trim();
+                legacyCurrentPage = 1;
+                renderLegacyTable();
+            };
+        }
+
+        if (pageSizeSelect) {
+            pageSizeSelect.onchange = function() {
+                legacyRowsPerPage = parseInt(this.value);
+                legacyCurrentPage = 1;
+                renderLegacyTable();
+            };
         }
     }
 
