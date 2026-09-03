@@ -1,6 +1,9 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module (Enterprise Edition)
- * Fixed: Sidebar Submenu Dropdown, 1-Click Tap Pay, Reason Void, Reports Hub, A5 Print.
+ * Fixed: 
+ * 1. Working 'Sample Sheet' Excel Download with exact headers.
+ * 2. Full Student Profile columns: Category, Due Items, Father & Mother Details added.
+ * 3. Master Table upgraded with responsive layout and expanded search.
  */
 
 (function () {
@@ -26,7 +29,7 @@
             font-family: 'Plus Jakarta Sans', 'Kalpurush', sans-serif !important;
         }
 
-        /* ড্রপডাউন সাবমেনু ফিক্স (ডিফল্টভাবে বন্ধ থাকবে) */
+        /* ড্রপডাউন সাবমেনু */
         #menu-edu-parent .submenu-list {
             display: none !important;
         }
@@ -124,35 +127,36 @@
 
         /* TABLES */
         .edu-table-responsive { overflow-x: auto; padding: 15px 20px; }
-        .edu-clean-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; min-width: 900px; }
+        .edu-clean-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; min-width: 1100px; }
         .edu-clean-table th {
-            padding: 10px 14px;
-            font-size: 0.78rem;
+            padding: 10px 12px;
+            font-size: 0.76rem;
             font-weight: 800;
             text-transform: uppercase;
             color: #64748b;
             text-align: left;
             border: none;
+            white-space: nowrap;
         }
         .edu-clean-table td {
             background: #ffffff;
-            padding: 14px;
-            font-size: 0.88rem;
+            padding: 12px 12px;
+            font-size: 0.85rem;
             font-weight: 600;
             color: #1e293b;
             border-top: 1px solid #f1f5f9;
             border-bottom: 1px solid #f1f5f9;
         }
         .edu-clean-table tr td:first-child { border-left: 1px solid #f1f5f9; border-radius: 8px 0 0 8px; }
-        .edu-clean-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 8px 8px 0; text-align: right; }
+        .edu-clean-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 8px 8px 0; }
         .edu-clean-table tr:hover td { background: #f8fafc; }
 
         /* ACTION BUTTONS */
         .btn-act {
             border: none;
-            padding: 6px 12px;
+            padding: 7px 14px;
             border-radius: 6px;
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
@@ -207,6 +211,13 @@
             width: 90%;
             box-shadow: 0 20px 40px rgba(0,0,0,0.25);
         }
+
+        .sub-contact-info {
+            font-size: 0.76rem;
+            color: #64748b;
+            display: block;
+            margin-top: 2px;
+        }
     `;
     const styleSheet = document.createElement("style");
     styleSheet.innerText = css;
@@ -240,7 +251,7 @@
         }
     }
 
-    // ৩. গ্লোবাল মেনু টগল ফাংশন
+    // ৩. মেনু টগল
     window.toggleEduMenu = function () {
         const item = document.getElementById('menu-edu-parent');
         if (item) {
@@ -250,7 +261,7 @@
         }
     };
 
-    // ৪. সাইডবার মেনু ইনজেকশন (show ক্লাস সরিয়ে ডিফল্ট ক্লোজ করা হয়েছে)
+    // ৪. সাইডবার ইনজেকশন
     function injectMenu() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList || document.getElementById('menu-edu-parent')) return;
@@ -282,7 +293,7 @@
         const panelsHTML = `
             <div id="edu-module-container">
                 
-                <!-- PANEL 1: FEE COLLECTION (NEW ENTRY) -->
+                <!-- PANEL 1: FEE COLLECTION -->
                 <div class="view-panel" id="edu-fee-form-view">
                     <div class="edu-view-card edu-form-container">
                         <div class="edu-card-header-clean" style="padding:0 0 18px 0; margin-bottom:20px;">
@@ -290,7 +301,6 @@
                             <span class="edu-pill-badge badge-pending">Instant Receipt</span>
                         </div>
 
-                        <!-- DYNAMIC ADJUSTMENT NOTIFICATION BOX -->
                         <div class="edu-adjustment-box" id="adjustmentAlertBox">
                             <div><i class="fa-solid fa-circle-info"></i> <span id="adjustmentDetailsText">Previous payment found and adjusted.</span></div>
                             <span class="edu-pill-badge badge-paid" id="adjustmentAmountTag">Adjusted: ৳ 0</span>
@@ -341,7 +351,7 @@
                     </div>
                 </div>
 
-                <!-- PANEL 2: PENDING CLEARANCE (TAP PAYMENT CHECKLIST) -->
+                <!-- PANEL 2: PENDING CLEARANCE -->
                 <div class="view-panel" id="edu-pending-clearance-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
@@ -372,7 +382,7 @@
                     </div>
                 </div>
 
-                <!-- PANEL 3: PAID SETTLEMENT (PAID RECORDS WITH REVERT/UNDO) -->
+                <!-- PANEL 3: PAID SETTLEMENT -->
                 <div class="view-panel" id="edu-paid-settlement-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
@@ -403,7 +413,7 @@
                     </div>
                 </div>
 
-                <!-- PANEL 4: DUE DATABASE (MASTER EXCEL) -->
+                <!-- PANEL 4: DUE DATABASE (ALL DETAILS UPDATED) -->
                 <div class="view-panel" id="edu-due-data-view">
                     <div class="edu-view-card" style="padding:20px;">
                         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; align-items:center;">
@@ -421,18 +431,29 @@
                                     <option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="-1">All</option>
                                 </select>
                             </div>
-                            <input type="text" id="dueTableSearch" class="edu-input" placeholder="Search student, id, mobile..." style="height:38px; width:260px;">
+                            <input type="text" id="dueTableSearch" class="edu-input" placeholder="Search ID, student, parents, mobile..." style="height:38px; width:300px;">
                         </div>
 
                         <div class="edu-table-responsive" style="padding:0;">
                             <table class="edu-clean-table">
                                 <thead>
                                     <tr>
-                                        <th>SL</th><th>Class</th><th>Section</th><th>STD ID</th><th>Student Name</th><th>Due Month</th><th>Due Amount (৳)</th><th>Mobile</th>
+                                        <th>SL</th>
+                                        <th>Class</th>
+                                        <th>Section</th>
+                                        <th>STD ID</th>
+                                        <th>Student Name</th>
+                                        <th>Category</th>
+                                        <th>Due Month</th>
+                                        <th>Due Items</th>
+                                        <th>Due Amount (৳)</th>
+                                        <th>Mobile</th>
+                                        <th>Father's Info</th>
+                                        <th>Mother's Info</th>
                                     </tr>
                                 </thead>
                                 <tbody id="dueDataTableBody">
-                                    <tr><td colspan="8" style="text-align:center; padding:25px; color:#94a3b8;">No due records loaded.</td></tr>
+                                    <tr><td colspan="12" style="text-align:center; padding:25px; color:#94a3b8;">No due records loaded.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -543,7 +564,7 @@
         wrapper.insertAdjacentHTML('beforeend', panelsHTML);
     }
 
-    // ৬. রসিদ নতুন ট্যাবে ওপেন (Restored Exact Design & Clean Icon-Only Toolbar)
+    // ৬. রসিদ ওপেন
     window.openReceiptInNewTab = function (d) {
         const receiptWindow = window.open('', '_blank');
         if (!receiptWindow) {
@@ -644,7 +665,7 @@
         receiptWindow.document.close();
     };
 
-    // ৭. অটো ক্যালকুলেশন
+    // ৭. অটো হিসাব
     function calculateAutoValues() {
         const discountInp = document.getElementById('origDisc');
         const txnInp = document.getElementById('origTxn');
@@ -671,7 +692,7 @@
         return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : dateStr;
     }
 
-    // ৮. ১-ক্লিকে Tap Pay এবং Revert লজিক
+    // ৮. ১-ক্লিক Tap Pay
     window.markAsTapPaid = async function(txId) {
         const tx = feeTransactionsList.find(t => t.id === txId);
         if (!tx) return;
@@ -700,7 +721,7 @@
         } catch(e) { console.error(e); }
     };
 
-    // ৯. Void / Delete Modal
+    // ৯. Void মোডাল
     window.openVoidModal = function(txId) {
         document.getElementById('voidTargetTxId').value = txId;
         document.getElementById('voidReasonModal').style.display = 'flex';
@@ -864,7 +885,7 @@
         if (badge) badge.innerText = `${voidLogsList.length} Voided`;
     }
 
-    // ১১. মাস্টার এক্সেল এক্সপোর্ট
+    // ১১. মাস্টার এক্সেল এক্সপোর্ট (সব কলামসহ)
     window.exportDataToExcel = function(type) {
         if (typeof XLSX === 'undefined') {
             alert("SheetJS library not loaded!");
@@ -888,9 +909,27 @@
             });
         } else if (type === 'due') {
             fileName = "Master_Due_Database.xlsx";
-            data.push(["STD ID", "Student Name", "Class", "Section", "Category", "Month Due", "Due Amount", "Mobile"]);
+            data.push([
+                "Class", "Section", "STD ID", "Student Name", "Category", 
+                "Month Due", "Due items", "Due Amount", "Mobile", 
+                "Fathers Name", "Fathers Mobile", "Mothers Name", "Mothers Mobile"
+            ]);
             studentDueList.forEach(s => {
-                data.push([s.stdId, s.studentName, s.class, s.section, s.category, s.monthDue, s.dueAmount, s.mobile]);
+                data.push([
+                    s.class || '',
+                    s.section || '',
+                    s.stdId || '',
+                    s.studentName || '',
+                    s.category || '',
+                    s.monthDue || '',
+                    s.dueItems || '',
+                    s.dueAmount || 0,
+                    s.mobile || '',
+                    s.fathersName || '',
+                    s.fathersMobile || '',
+                    s.mothersName || '',
+                    s.mothersMobile || ''
+                ]);
             });
         } else if (type === 'void') {
             fileName = "Void_Audit_Log.xlsx";
@@ -906,7 +945,7 @@
         XLSX.writeFile(wb, fileName);
     };
 
-    // ১২. পেজিনেশন ও বকেয়া টেবিল
+    // ১২. পেজিনেশন ও সম্পূর্ণ শিক্ষার্থী তালিকা টেবিল
     function renderDueDataTable() {
         const tbody = document.getElementById('dueDataTableBody');
         const paginationBtns = document.getElementById('duePaginationBtns');
@@ -919,7 +958,12 @@
                 (item.studentName && item.studentName.toLowerCase().includes(q)) ||
                 (item.stdId && item.stdId.toLowerCase().includes(q)) ||
                 (item.class && item.class.toLowerCase().includes(q)) ||
-                (item.mobile && item.mobile.toLowerCase().includes(q))
+                (item.mobile && item.mobile.toLowerCase().includes(q)) ||
+                (item.fathersName && item.fathersName.toLowerCase().includes(q)) ||
+                (item.fathersMobile && item.fathersMobile.toLowerCase().includes(q)) ||
+                (item.mothersName && item.mothersName.toLowerCase().includes(q)) ||
+                (item.mothersMobile && item.mothersMobile.toLowerCase().includes(q)) ||
+                (item.category && item.category.toLowerCase().includes(q))
             );
         }
 
@@ -932,13 +976,16 @@
         const currentSlice = rowsPerPage === -1 ? filtered : filtered.slice(startIndex, startIndex + effectivePageSize);
 
         if (totalEntries === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:25px; color:#94a3b8;">No records found.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; padding:25px; color:#94a3b8;">No records found.</td></tr>`;
             if (paginationBtns) paginationBtns.innerHTML = '';
             return;
         }
 
         let html = '';
         currentSlice.forEach((item, index) => {
+            const fatherText = [item.fathersName, item.fathersMobile].filter(x => x && x !== '-').join(' | ') || '-';
+            const motherText = [item.mothersName, item.mothersMobile].filter(x => x && x !== '-').join(' | ') || '-';
+
             html += `
                 <tr>
                     <td style="font-weight:700; color:#64748b;">${startIndex + index + 1}</td>
@@ -946,9 +993,13 @@
                     <td>${item.section || '-'}</td>
                     <td><strong>${item.stdId || '-'}</strong></td>
                     <td>${item.studentName || '-'}</td>
+                    <td><span style="font-size:0.8rem; background:#f1f5f9; padding:2px 8px; border-radius:4px;">${item.category || '-'}</span></td>
                     <td>${item.monthDue || '-'}</td>
+                    <td style="font-size:0.8rem; color:#475569;">${item.dueItems || '-'}</td>
                     <td style="font-weight:800; color:#e11d48;">৳ ${item.dueAmount || 0}</td>
                     <td>${item.mobile || '-'}</td>
+                    <td><div style="max-width:160px; font-size:0.82rem;">${fatherText}</div></td>
+                    <td><div style="max-width:160px; font-size:0.82rem;">${motherText}</div></td>
                 </tr>
             `;
         });
@@ -957,7 +1008,7 @@
         if (paginationBtns) {
             paginationBtns.innerHTML = '';
             if (totalPages > 1) {
-                for (let i = 1; i <= Math.min(totalPages, 6); i++) {
+                for (let i = 1; i <= Math.min(totalPages, 8); i++) {
                     const btn = document.createElement('button');
                     btn.className = `btn-act ${i === currentPage ? 'btn-act-print' : 'btn-act-undo'}`;
                     btn.innerText = i;
@@ -1037,7 +1088,12 @@
                     return;
                 }
 
-                const dueFound = studentDueList.find(s => String(s.stdId).trim() === val || String(s.mobile).trim() === val);
+                const dueFound = studentDueList.find(s => 
+                    String(s.stdId).trim() === val || 
+                    String(s.mobile).trim() === val ||
+                    String(s.fathersMobile).trim() === val ||
+                    String(s.mothersMobile).trim() === val
+                );
                 const prevPayments = feeTransactionsList.filter(t => String(t.customerId).trim() === val && t.status === 'Pending');
                 let prevPaidSum = 0;
                 prevPayments.forEach(p => prevPaidSum += (parseFloat(p.netDue) || 0));
@@ -1104,7 +1160,10 @@
                     class: selectedStudentData ? (selectedStudentData.class || '-') : '-',
                     month: selectedStudentData ? (selectedStudentData.monthDue || '-') : '-',
                     category: selectedStudentData ? (selectedStudentData.category || '-') : '-',
+                    dueItems: selectedStudentData ? (selectedStudentData.dueItems || '-') : '-',
                     mobile: selectedStudentData ? (selectedStudentData.mobile || '-') : '-',
+                    fathersName: selectedStudentData ? (selectedStudentData.fathersName || '-') : '-',
+                    mothersName: selectedStudentData ? (selectedStudentData.mothersName || '-') : '-',
                     netDue: netDue,
                     txnFee: txnFee,
                     totalCharge: totalCharge,
@@ -1152,6 +1211,35 @@
             };
         }
 
+        // SAMPLE SHEET ডাউলোড (সংশোধিত ও সচল)
+        const btnDownloadSample = document.getElementById('btnDownloadSample');
+        if (btnDownloadSample) {
+            btnDownloadSample.addEventListener('click', function () {
+                if (typeof XLSX === 'undefined') {
+                    alert("SheetJS library is loading, please wait a moment!");
+                    return;
+                }
+
+                const sampleHeaders = [
+                    "Class", "Section", "STD ID", "Student Name", "Category", 
+                    "Month Due", "Due items", "Due Amount", "Mobile", 
+                    "Fathers Name", "Fathers Mobile", "Mothers Name", "Mothers Mobile"
+                ];
+
+                const sampleData = [
+                    sampleHeaders,
+                    ["Nursery", "Dhorola", "1400626", "MOST NAFISA KHANDOKER", "Regular", "1", "Tuition Fee", 600, "01774258066", "Md. Rafiq", "01774258066", "Mst. Nasima", "01712000000"],
+                    ["Nursery", "Dhorola", "1400726", "Sehrish Anaya", "Regular", "2", "Tuition Fee, Exam Fee", 2400, "01749492670", "Kamrul Hasan", "01749492670", "Farhana Akter", "01749000000"],
+                    ["Nursery", "Dhorola", "1400826", "Afia Sultana Tamanna", "Regular", "2", "Tuition Fee", 2550, "01712550232", "Sultan Ahmed", "01712550232", "Tamanna Begum", "01700000000"]
+                ];
+
+                const ws = XLSX.utils.aoa_to_sheet(sampleData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Master Due Sample");
+                XLSX.writeFile(wb, "Student_Due_Master_Sample.xlsx");
+            });
+        }
+
         // EXCEL UPLOAD
         const fileInput = document.getElementById('dueFileInput');
         const fileNameDisplay = document.getElementById('dueFileNameDisplay');
@@ -1189,11 +1277,16 @@
                             class: r['Class'] || r['class'] || '-',
                             section: r['Section'] || r['section'] || '-',
                             stdId: String(r['STD ID'] || r['Std Id'] || r['Student ID'] || r['ID'] || '').trim(),
-                            studentName: r['Student Name'] || r['Name'] || '-',
-                            category: r['Category'] || '-',
+                            studentName: r['Student Name'] || r['Student Na'] || r['Name'] || '-',
+                            category: r['Category'] || r['category'] || '-',
                             monthDue: r['Month Due'] || r['Month'] || '-',
+                            dueItems: r['Due items'] || r['Due Items'] || r['Items'] || '-',
                             dueAmount: parseFloat(r['Due Amount'] || r['Amount'] || 0) || 0,
-                            mobile: String(r['Mobile'] || '').trim()
+                            mobile: String(r['Mobile'] || '').trim(),
+                            fathersName: r['Fathers Name'] || r['Fathers na'] || r['Father Name'] || '-',
+                            fathersMobile: String(r['Fathers Mobile'] || r['Fathers Mo'] || r['Father Mobile'] || '').trim(),
+                            mothersName: r['Mothers Name'] || r['Mothers N'] || r['Mother Name'] || '-',
+                            mothersMobile: String(r['Mothers Mobile'] || r['Mother Mobile'] || '').trim()
                         }));
 
                         const fb = await getFirebase();
