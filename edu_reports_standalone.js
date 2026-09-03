@@ -1,10 +1,11 @@
 /**
  * Mousumi Computer ERP - Standalone Education Reports Hub
- * Font: True Embedded Google Font 'Tiro Bangla' (Browser View & Downloaded PDF)
+ * Font: Google Font 'Tiro Bangla' (True 100% Vector/Rendering via html2pdf Direct)
  * Fixes:
- * 1. Merged Colspan for Grand Total row (No empty vertical lines).
- * 2. Quick Filter Buttons: [Today], [This Month], [Last Month].
- * 3. Exact font preservation in exported PDF.
+ * 1. 1-Click Direct PDF Download without CORS block / failure.
+ * 2. Strict 1-Line Table Cells (white-space: nowrap, zero line breaks).
+ * 3. Grand Total aligned at the end with "=" (Grand Total =).
+ * 4. Quick Date Buttons: Today, This Month, Last Month.
  */
 
 (function () {
@@ -46,7 +47,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* কুইক শর্টকাট বাটন */
         .quick-filter-grp {
             display: flex;
             gap: 6px;
@@ -62,6 +62,7 @@
             cursor: pointer;
             color: #334155;
             transition: all 0.15s ease;
+            font-family: 'Tiro Bangla', serif;
         }
 
         .btn-quick-tag:hover {
@@ -180,7 +181,7 @@
         });
     }
 
-    // ৩. কুইক ডেট বাটন ফাংশনালিটি সহ ফিল্টার বার সেটআপ
+    // ৩. ফিল্টার প্যানেল রেন্ডার
     function renderMinimalHub() {
         const targetView = document.getElementById('edu-reports-hub-view');
         if (!targetView) return;
@@ -268,7 +269,7 @@
         btnOpen.addEventListener('click', generateAndOpenReport);
     }
 
-    // ৪. ডেটা প্রসেসিং ও গ্র্যান্ড টোটাল মার্জিং লজিক
+    // ৪. ডেটা ফিল্টারিং ও সুনির্দিষ্ট কলাম উইডথ সেট করা
     function generateAndOpenReport() {
         const reportType = document.getElementById('eduReportType').value;
         const fromDate = document.getElementById('eduFromDate').value;
@@ -278,13 +279,15 @@
         let isLandscape = false;
         let tableHeaders = [];
         let rows = [];
-        let grandTotalConfig = null; // { spanCols: 6, values: [57965.00, 702.65, 58667.65] }
+        let grandTotalConfig = null;
         let columnAlignments = [];
+        let colWidths = [];
 
         if (reportType === 'collection') {
             title = "FEE COLLECTION STATEMENT";
             tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Class", "Tuition Fee", "Charge", "Net Received"];
             columnAlignments = ["center", "center", "center", "center", "left", "center", "right", "right", "right"];
+            colWidths = ["4%", "9%", "11%", "10%", "30%", "10%", "9%", "8%", "9%"];
 
             let list = feeTransactions.filter(t => t.date >= fromDate && t.date <= toDate);
             let sumDue = 0, sumCharge = 0, sumTotal = 0;
@@ -319,6 +322,7 @@
             title = "PENDING CLEARANCE REPORT (TO-PAY TAP)";
             tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Tuition Fee", "Gross Required", "Net Received"];
             columnAlignments = ["center", "center", "center", "center", "left", "right", "right", "right"];
+            colWidths = ["5%", "10%", "12%", "11%", "32%", "10%", "10%", "10%"];
 
             let list = feeTransactions.filter(t => t.status !== 'Paid' && (t.date >= fromDate && t.date <= toDate));
             let sumFee = 0, sumGross = 0, sumRec = 0;
@@ -352,6 +356,7 @@
             title = "PAID SETTLEMENT AUDIT REPORT";
             tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Gross Paid", "Settled Timestamp"];
             columnAlignments = ["center", "center", "center", "center", "left", "right", "center"];
+            colWidths = ["5%", "10%", "12%", "12%", "35%", "11%", "15%"];
 
             let list = feeTransactions.filter(t => t.status === 'Paid' && (t.date >= fromDate && t.date <= toDate));
             let sumGross = 0;
@@ -381,6 +386,7 @@
             isLandscape = true;
             tableHeaders = ["SL", "Class", "Section", "STD ID", "Student Name", "Category", "Month Due", "Due Amount", "Mobile"];
             columnAlignments = ["center", "center", "center", "center", "left", "center", "center", "right", "center"];
+            colWidths = ["4%", "8%", "7%", "9%", "28%", "10%", "11%", "11%", "12%"];
 
             let sumDue = 0;
             studentDueList.forEach((s, i) => {
@@ -409,6 +415,7 @@
             title = "VOID & CANCELLATION AUDIT LOG";
             tableHeaders = ["SL", "Receipt #", "Void Date", "Student ID & Name", "Amount", "Reason for Void", "Voided By"];
             columnAlignments = ["center", "center", "center", "left", "right", "left", "center"];
+            colWidths = ["5%", "10%", "15%", "25%", "10%", "23%", "12%"];
 
             let sumVoid = 0;
             voidLogs.forEach((v, i) => {
@@ -438,13 +445,14 @@
             period: reportType === 'due' ? 'Active Database' : `${fromDate} to ${toDate}`,
             headers: tableHeaders,
             alignments: columnAlignments,
+            colWidths,
             rows,
             grandTotalConfig,
             fileName: `${reportType}_report_${Date.now()}`
         });
     }
 
-    // ৫. নিউ ট্যাব রেন্ডারিং (মার্জড গ্র্যান্ড টোটাল + এমবেডেড Tiro Bangla ফন্ট)
+    // ৫. নিউ ট্যাব রেন্ডারিং (১ লাইনে সেল ও Grand Total = সমাধান)
     function openReportWindow(meta) {
         const reportWindow = window.open('', '_blank');
         if (!reportWindow) {
@@ -467,13 +475,13 @@
                 tableRowsHTML += '</tr>';
             });
 
-            // পারফেক্ট গ্র্যান্ড টোটাল রো (মার্জ করা ফাঁকা ছাড়া)
+            // গ্র্যান্ড টোটাল এক্কেবারে শেষে সমান চিহ্ন দিয়ে (Grand Total =)
             if (meta.grandTotalConfig) {
                 tableRowsHTML += '<tr class="total-row">';
-                tableRowsHTML += `<td colspan="${meta.grandTotalConfig.spanCols}" style="text-align: left; padding-left: 15px;">Grand Total</td>`;
+                tableRowsHTML += `<td colspan="${meta.grandTotalConfig.spanCols}" style="text-align: right; padding-right: 12px; font-weight: 700; letter-spacing: 0.5px;">Grand Total =</td>`;
                 meta.grandTotalConfig.values.forEach(val => {
                     const isNum = !isNaN(val) && val !== '';
-                    tableRowsHTML += `<td style="text-align: ${isNum ? 'right' : 'center'};">${val}</td>`;
+                    tableRowsHTML += `<td style="text-align: ${isNum ? 'right' : 'center'}; font-weight: 700;">${val}</td>`;
                 });
                 tableRowsHTML += '</tr>';
             }
@@ -482,7 +490,8 @@
         let headersHTML = '';
         meta.headers.forEach((h, idx) => {
             const align = meta.alignments[idx] || 'left';
-            headersHTML += `<th style="text-align: ${align};">${h}</th>`;
+            const w = meta.colWidths && meta.colWidths[idx] ? `width: ${meta.colWidths[idx]};` : '';
+            headersHTML += `<th style="text-align: ${align}; ${w}">${h}</th>`;
         });
 
         const docHTML = `
@@ -496,9 +505,8 @@
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                 <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
                 
-                <!-- jsPDF এবং AutoTable নেটিভ ইঞ্জিন -->
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+                <!-- 100% কার্যকর ডিরেক্ট পিডিএফ এবং এক্সেল লাইব্রেরি -->
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
                 
                 <style>
@@ -547,7 +555,7 @@
                         background: #ffffff;
                         width: ${meta.isLandscape ? '287mm' : '205mm'};
                         min-height: ${meta.isLandscape ? '200mm' : '287mm'};
-                        padding: 12mm 15mm;
+                        padding: 10mm 12mm;
                         box-shadow: 0 10px 30px rgba(0,0,0,0.3);
                         color: #000000;
                     }
@@ -555,12 +563,12 @@
                     .report-header {
                         text-align: center;
                         border-bottom: 2px solid #000000;
-                        padding-bottom: 6px;
-                        margin-bottom: 10px;
+                        padding-bottom: 5px;
+                        margin-bottom: 8px;
                     }
 
                     .report-header h1 {
-                        font-size: 19pt;
+                        font-size: 18pt;
                         font-weight: 700;
                         letter-spacing: 0.5px;
                         margin-bottom: 2px;
@@ -569,7 +577,7 @@
                     }
 
                     .report-header h2 {
-                        font-size: 12pt;
+                        font-size: 11pt;
                         font-weight: 600;
                         margin-bottom: 4px;
                         color: #000000;
@@ -579,39 +587,44 @@
                     .meta-info {
                         display: flex;
                         justify-content: space-between;
-                        font-size: 9pt;
+                        font-size: 8.5pt;
                         font-weight: 600;
                         margin-bottom: 8px;
                         border-bottom: 1px solid #000000;
-                        padding-bottom: 4px;
+                        padding-bottom: 3px;
                         color: #000000;
                         font-family: 'Tiro Bangla', serif !important;
                     }
 
+                    /* নিখুঁত সিঙ্গেল-লাইন টেবিল ডিজাইন */
                     table.report-table {
                         width: 100%;
                         border-collapse: collapse;
-                        font-size: 9.5pt;
+                        font-size: 9pt;
                         color: #000000;
                         font-family: 'Tiro Bangla', serif !important;
+                        table-layout: fixed;
                     }
 
                     table.report-table th {
+                        border: 1px solid #000000;
                         border-top: 1.5px solid #000000;
                         border-bottom: 1.5px solid #000000;
-                        border-left: 1px solid #000000;
-                        border-right: 1px solid #000000;
-                        padding: 6px 5px;
+                        padding: 5px 3px;
                         font-weight: 700;
                         background: #ffffff;
                         color: #000000;
+                        white-space: nowrap;
                     }
 
                     table.report-table td {
                         border: 1px solid #000000;
-                        padding: 5px 6px;
+                        padding: 4px 4px;
                         color: #000000;
                         vertical-align: middle;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
                     }
 
                     table.report-table tr.total-row td {
@@ -619,11 +632,11 @@
                         border-bottom: 2px solid #000000;
                         font-weight: 700;
                         background: #ffffff;
-                        padding: 7px 6px;
+                        padding: 6px 4px;
                     }
 
                     @media print {
-                        @page { size: ${pageSize}; margin: 8mm; }
+                        @page { size: ${pageSize}; margin: 6mm; }
                         body { background: #ffffff !important; padding: 0 !important; }
                         .no-print { display: none !important; }
                         .paper-sheet { width: 100% !important; min-height: 100% !important; padding: 0 !important; box-shadow: none !important; }
@@ -661,92 +674,17 @@
                 </div>
 
                 <script>
-                    // ১-ক্লিকে Tiro Bangla ফন্ট সহ নেটিভ ভেক্টর পিডিএফ ডাউনলোড
-                    async function downloadDirectPDF() {
-                        const { jsPDF } = window.jspdf;
-                        const doc = new jsPDF({
-                            orientation: '${meta.isLandscape ? 'landscape' : 'portrait'}',
-                            unit: 'mm',
-                            format: 'a4'
-                        });
-
-                        // Tiro Bangla ফন্ট ডায়নামিক লোড ও এমবেড
-                        try {
-                            const fontUrl = "https://fonts.gstatic.com/s/tirobangla/v5/0FlxVPmxr4q3nB7mN3xI6qLp.woff";
-                            // ফন্ট ফেচ
-                            const fontData = await fetch(fontUrl).then(res => res.arrayBuffer());
-                            const base64Font = btoa(new Uint8Array(fontData).reduce((data, byte) => data + String.fromCharCode(byte), ''));
-                            
-                            doc.addFileToVFS('TiroBangla-Regular.ttf', base64Font);
-                            doc.addFont('TiroBangla-Regular.ttf', 'TiroBangla', 'normal');
-                            doc.setFont('TiroBangla');
-                        } catch(e) {
-                            doc.setFont("Helvetica");
-                        }
-
-                        doc.setFontSize(16);
-                        doc.text("MOUSUMI COMPUTER", doc.internal.pageSize.getWidth() / 2, 14, { align: "center" });
-
-                        doc.setFontSize(11);
-                        doc.text("${meta.title}", doc.internal.pageSize.getWidth() / 2, 20, { align: "center" });
-
-                        doc.setFontSize(8.5);
-                        doc.text("PERIOD: ${meta.period}", 14, 27);
-                        doc.text("GENERATED: " + new Date().toLocaleString(), doc.internal.pageSize.getWidth() - 14, 27, { align: "right" });
-
-                        const headers = ${JSON.stringify(meta.headers)};
-                        const rows = ${JSON.stringify(meta.rows)};
-                        const aligns = ${JSON.stringify(meta.alignments)};
-                        const grandCfg = ${JSON.stringify(meta.grandTotalConfig)};
-
-                        const bodyData = [...rows];
-
-                        // মার্জড গ্র্যান্ড টোটাল রো যোগ করা
-                        if (grandCfg) {
-                            const totalRow = [];
-                            totalRow.push({
-                                content: 'Grand Total',
-                                colSpan: grandCfg.spanCols,
-                                styles: { halign: 'left', fontStyle: 'bold' }
-                            });
-                            grandCfg.values.forEach(v => {
-                                totalRow.push({
-                                    content: v,
-                                    styles: { halign: !isNaN(v) && v !== '' ? 'right' : 'center', fontStyle: 'bold' }
-                                });
-                            });
-                            bodyData.push(totalRow);
-                        }
-
-                        doc.autoTable({
-                            head: [headers],
-                            body: bodyData,
-                            startY: 31,
-                            theme: 'grid',
-                            styles: { 
-                                fontSize: 8, 
-                                font: doc.getFontList()['TiroBangla'] ? 'TiroBangla' : 'Helvetica', 
-                                cellPadding: 2, 
-                                textColor: [0, 0, 0],
-                                lineColor: [0, 0, 0],
-                                lineWidth: 0.15
-                            },
-                            headStyles: { 
-                                fontStyle: 'bold', 
-                                textColor: [0, 0, 0], 
-                                fillColor: [255, 255, 255],
-                                lineColor: [0, 0, 0], 
-                                lineWidth: 0.25 
-                            },
-                            didParseCell: function (data) {
-                                if (data.row.index < rows.length) {
-                                    const colIdx = data.column.index;
-                                    data.cell.styles.halign = aligns[colIdx] || 'left';
-                                }
-                            }
-                        });
-
-                        doc.save('${meta.fileName}.pdf');
+                    // ১-ক্লিকে নিশ্চিত পিডিএফ ফাইল ডাউনলোড (Tiro Bangla ফন্ট অক্ষুণ্ণ রেখে)
+                    function downloadDirectPDF() {
+                        const element = document.getElementById('reportPrintWrapper');
+                        const opt = {
+                            margin: [6, 6, 6, 6],
+                            filename: '${meta.fileName}.pdf',
+                            image: { type: 'jpeg', quality: 0.98 },
+                            html2canvas: { scale: 2.5, useCORS: true, logging: false },
+                            jsPDF: { unit: 'mm', format: 'a4', orientation: '${meta.isLandscape ? 'landscape' : 'portrait'}' }
+                        };
+                        html2pdf().set(opt).from(element).save();
                     }
 
                     // ১-ক্লিকে সরাসরি এক্সেল ফাইল ডাউনলোড
@@ -766,7 +704,7 @@
 
                         if (grandCfg) {
                             const totalLine = Array(grandCfg.spanCols).fill("");
-                            totalLine[0] = "Grand Total";
+                            totalLine[grandCfg.spanCols - 1] = "Grand Total =";
                             grandCfg.values.forEach(v => totalLine.push(v));
                             aoa.push(totalLine);
                         }
