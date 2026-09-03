@@ -1,12 +1,11 @@
 /**
- * Mousumi Computer ERP - Education & Digital Services Module (Enterprise Edition)
- * Fixed & Upgraded:
- * 1. Top Action Toolbar (Image 2): [Pay] | [Delete/Void] [Print].
- * 2. 1-Click Interactive Row Selection (Highlights selected student).
- * 3. Gross Payment Column (Tap Payable: Tuition + 1% Tap Fee) added.
- * 4. Top Total displays Grand Sum of Gross Payments required for Tap clearance.
- * 5. Watermark opacity & instant preload fixed.
- * 6. Smart Fuzzy Excel upload & Sample Sheet download active.
+ * Mousumi Computer ERP - Education & Digital Services Module
+ * Minimalist & Clean Edition:
+ * - Direct inline SVG icons (No broken [] boxes).
+ * - Ultra-clean minimal top bar (No clutter/busy text).
+ * - Removed '#' from Receipt numbers.
+ * - Short & fast 'Paid successfully' notice.
+ * - Flat, clean table fitting screen perfectly without scrollbar.
  */
 
 (function () {
@@ -17,46 +16,40 @@
     let selectedStudentRawDue = 0;
     let selectedStudentData = null;
 
-    // সিলেকশন স্টেট (Pending Clearance Toolbar)
+    // সিলেকশন স্টেট
     let selectedPendingTxId = null;
 
-    // পেজিনেশন স্টেট
+    // পেজিনেশন
     let currentPage = 1;
     let rowsPerPage = 25;
     let currentSearchQuery = "";
 
-    // ১. মডিউল সিএসএস
+    // মিনিমাল আইকন SVG (কখনো মিস হবে না)
+    const ICONS = {
+        pay: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>`,
+        trash: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`,
+        print: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>`
+    };
+
+    // ১. মিনিমাল সিএসএস
     const css = `
         @import url('https://fonts.maateen.me/kalpurush/font.css');
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&display=swap');
 
         #edu-module-container, #edu-module-container * {
             box-sizing: border-box !important;
             font-family: 'Plus Jakarta Sans', 'Kalpurush', sans-serif !important;
         }
 
-        #menu-edu-parent .submenu-list {
-            display: none !important;
-        }
-
+        #menu-edu-parent .submenu-list { display: none !important; }
         #menu-edu-parent.open > .submenu-list,
-        #menu-edu-parent .submenu-list.show {
-            display: flex !important;
-            flex-direction: column;
-        }
-
-        #menu-edu-parent .chevron-icon {
-            transition: transform 0.25s ease;
-        }
-
-        #menu-edu-parent.open .chevron-icon {
-            transform: rotate(180deg);
-        }
+        #menu-edu-parent .submenu-list.show { display: flex !important; flex-direction: column; }
+        #menu-edu-parent .chevron-icon { transition: transform 0.2s ease; }
+        #menu-edu-parent.open .chevron-icon { transform: rotate(180deg); }
 
         .edu-view-card {
             background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+            border-radius: 8px;
             border: 1px solid #e2e8f0;
             overflow: hidden;
             margin-bottom: 25px;
@@ -64,8 +57,8 @@
 
         .edu-card-header-clean {
             background: #ffffff;
-            padding: 18px 24px;
-            border-bottom: 1.5px solid #f1f5f9;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -74,262 +67,187 @@
         }
 
         .edu-card-header-clean h3 {
-            font-size: 1.15rem;
-            font-weight: 800;
+            font-size: 1.05rem;
+            font-weight: 700;
             color: #0f172a;
             margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .edu-pill-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.78rem;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-        }
-
-        .badge-pending { background: #fef3c7; color: #b45309; }
-        .badge-paid { background: #dcfce7; color: #15803d; }
-        .badge-void { background: #fee2e2; color: #b91c1c; }
-
-        /* FORM STYLING */
-        .edu-form-container { padding: 25px; max-width: 950px; margin: 0 auto; }
-        .edu-form-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-bottom: 18px; }
-        .edu-field-box label { display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 6px; }
-        .edu-input {
-            width: 100%;
-            height: 46px;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 0 14px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #1e293b;
-            outline: none;
-            transition: all 0.2s;
-            background: #ffffff;
-        }
-        .edu-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
-        .edu-input[readonly] { background: #f8fafc; color: #475569; font-weight: 700; }
-
-        .edu-adjustment-box {
-            background: #eff6ff;
-            border: 1.5px dashed #3b82f6;
-            border-radius: 8px;
-            padding: 12px 18px;
-            margin-bottom: 18px;
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            color: #1e40af;
-            font-size: 0.88rem;
-            font-weight: 600;
-        }
-
-        /* TOP ACTION BAR STRIP (ছবি ২ অনুযায়ী ডিজাইন) */
-        .pending-action-bar-strip {
-            background: #ffffff;
-            border: 1.5px dashed #cbd5e1;
-            border-radius: 10px;
-            padding: 10px 18px;
-            margin: 18px 24px 8px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .selection-status-badge {
-            font-size: 0.88rem;
-            font-weight: 700;
-            color: #64748b;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .selection-status-badge.has-selection {
-            color: #0f172a;
+        .edu-pill-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.76rem;
+            font-weight: 700;
+        }
+        .badge-pending { background: #fef3c7; color: #b45309; }
+        .badge-paid { background: #dcfce7; color: #15803d; }
+        .badge-void { background: #fee2e2; color: #b91c1c; }
+
+        /* FORM */
+        .edu-form-container { padding: 20px; max-width: 900px; margin: 0 auto; }
+        .edu-form-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .edu-field-box label { display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 5px; }
+        .edu-input {
+            width: 100%;
+            height: 42px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 0 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1e293b;
+            outline: none;
+            background: #ffffff;
+        }
+        .edu-input:focus { border-color: #0f172a; }
+        .edu-input[readonly] { background: #f8fafc; color: #475569; }
+
+        .edu-adjustment-box {
+            background: #eff6ff;
+            border: 1px dashed #3b82f6;
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            color: #1e40af;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* MINIMAL TOOLBAR */
+        .pending-action-bar-strip {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px 16px;
+            margin: 15px 20px 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .selection-status-badge {
+            font-size: 0.85rem;
+            color: #64748b;
         }
 
         .pending-action-btns {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .btn-top-act {
-            border: none;
-            padding: 7px 20px;
-            border-radius: 30px;
-            font-size: 0.88rem;
-            font-weight: 800;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-        }
-
-        .btn-top-pay {
-            background: #10b981;
-            color: #ffffff;
-            border: 1.5px solid #059669;
-        }
-
-        .btn-top-pay:hover:not(:disabled) {
-            background: #059669;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-            transform: translateY(-1px);
-        }
-
-        .btn-top-separator {
-            width: 1.5px;
-            height: 24px;
-            background: #cbd5e1;
-            margin: 0 4px;
-        }
-
-        .btn-top-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            border: 1.5px solid #cbd5e1;
-            background: #ffffff;
-            color: #334155;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            transition: all 0.2s ease;
-        }
-
-        .btn-top-void:hover:not(:disabled) {
-            background: #fee2e2;
-            color: #dc2626;
-            border-color: #f87171;
-            transform: translateY(-1px);
-        }
-
-        .btn-top-print:hover:not(:disabled) {
-            background: #0f172a;
-            color: #ffffff;
-            border-color: #0f172a;
-            transform: translateY(-1px);
-        }
-
-        .btn-top-act:disabled, .btn-top-icon:disabled {
-            opacity: 0.35;
-            cursor: not-allowed;
-            filter: grayscale(0.5);
-            transform: none !important;
-            box-shadow: none !important;
-        }
-
-        /* TABLES */
-        .edu-table-responsive { overflow-x: auto; padding: 15px 20px; }
-        .edu-clean-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; min-width: 1050px; }
-        .edu-clean-table th {
-            padding: 10px 12px;
-            font-size: 0.76rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            color: #64748b;
-            text-align: left;
-            border: none;
-            white-space: nowrap;
-        }
-        .edu-clean-table td {
-            background: #ffffff;
-            padding: 12px 14px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #1e293b;
-            border-top: 1px solid #f1f5f9;
-            border-bottom: 1px solid #f1f5f9;
-            vertical-align: middle;
-        }
-        .edu-clean-table tr td:first-child { border-left: 1px solid #f1f5f9; border-radius: 8px 0 0 8px; }
-        .edu-clean-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 8px 8px 0; }
-        
-        /* রো সিলেকশন হাইলাইট */
-        .edu-clean-table tbody tr.row-selectable {
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-        .edu-clean-table tbody tr.row-selectable:hover td {
-            background: #f8fafc;
-        }
-        .edu-clean-table tbody tr.row-selected td {
-            background: #f0fdf4 !important;
-            border-top: 1.5px solid #10b981 !important;
-            border-bottom: 1.5px solid #10b981 !important;
-        }
-        .edu-clean-table tbody tr.row-selected td:first-child {
-            border-left: 3.5px solid #10b981 !important;
-        }
-        .edu-clean-table tbody tr.row-selected td:last-child {
-            border-right: 1.5px solid #10b981 !important;
-        }
-
-        .btn-act {
-            border: none;
-            padding: 7px 14px;
-            border-radius: 6px;
+            border: 1px solid #059669;
+            padding: 6px 16px;
+            border-radius: 4px;
             font-size: 0.82rem;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            transition: all 0.2s;
+            background: #10b981;
+            color: #ffffff;
+            transition: opacity 0.15s;
+        }
+        .btn-top-act:hover:not(:disabled) { background: #059669; }
+
+        .btn-top-separator {
+            width: 1px;
+            height: 20px;
+            background: #cbd5e1;
+            margin: 0 4px;
+        }
+
+        .btn-top-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #334155;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+        }
+        .btn-top-void:hover:not(:disabled) { background: #fee2e2; color: #dc2626; border-color: #f87171; }
+        .btn-top-print:hover:not(:disabled) { background: #0f172a; color: #ffffff; border-color: #0f172a; }
+
+        .btn-top-act:disabled, .btn-top-icon:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* TABLES */
+        .edu-table-responsive { width: 100%; overflow-x: auto; padding: 12px 20px 20px 20px; }
+        .edu-clean-table { width: 100%; border-collapse: collapse; }
+        .edu-clean-table th {
+            padding: 10px 10px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            background: #ffffff;
+            white-space: nowrap;
+        }
+        .edu-clean-table td {
+            background: #ffffff;
+            padding: 11px 10px;
+            font-size: 0.85rem;
+            color: #1e293b;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        /* রো সিলেকশন */
+        .edu-clean-table tbody tr.row-selectable { cursor: pointer; }
+        .edu-clean-table tbody tr.row-selectable:hover td { background: #f8fafc; }
+        .edu-clean-table tbody tr.row-selected td {
+            background: #f0fdf4 !important;
+            border-top: 1px solid #10b981 !important;
+            border-bottom: 1px solid #10b981 !important;
+        }
+
+        .btn-act {
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         .btn-act-undo { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
         .btn-act-undo:hover { background: #e2e8f0; }
         .btn-act-print { background: #0f172a; color: #ffffff; }
         .btn-act-print:hover { background: #334155; }
+        .btn-act-pay { background: #10b981; color: #ffffff; }
+        .btn-act-void { background: #fee2e2; color: #dc2626; }
 
-        .report-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
-            padding: 25px;
-        }
-        .report-card-item {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 22px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .report-card-item h4 { font-size: 1rem; color: #0f172a; margin-bottom: 6px; }
-        .report-card-item p { font-size: 0.8rem; color: #64748b; margin-bottom: 16px; line-height: 1.4; }
+        .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; padding: 20px; }
+        .report-card-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; }
+        .report-card-item h4 { font-size: 0.95rem; color: #0f172a; margin-bottom: 6px; }
+        .report-card-item p { font-size: 0.78rem; color: #64748b; margin-bottom: 14px; }
 
         .edu-modal-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(4px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 999999;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.5); display: none; align-items: center; justify-content: center; z-index: 999999;
         }
-        .edu-modal-box {
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 25px;
-            max-width: 440px;
-            width: 90%;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
-        }
+        .edu-modal-box { background: #ffffff; border-radius: 8px; padding: 22px; max-width: 400px; width: 90%; }
     `;
     const styleSheet = document.createElement("style");
     styleSheet.innerText = css;
@@ -363,7 +281,7 @@
         }
     }
 
-    // ৩. গ্লোবাল মেনু টগল
+    // ৩. মেনু টগল
     window.toggleEduMenu = function () {
         const item = document.getElementById('menu-edu-parent');
         if (item) {
@@ -408,13 +326,13 @@
                 <!-- PANEL 1: FEE COLLECTION -->
                 <div class="view-panel" id="edu-fee-form-view">
                     <div class="edu-view-card edu-form-container">
-                        <div class="edu-card-header-clean" style="padding:0 0 18px 0; margin-bottom:20px;">
-                            <h3><i class="fa-solid fa-receipt" style="color:#2563eb;"></i> Fee Collection Terminal</h3>
+                        <div class="edu-card-header-clean" style="padding:0 0 15px 0; margin-bottom:18px;">
+                            <h3>Fee Collection Terminal</h3>
                             <span class="edu-pill-badge badge-pending">Instant Receipt</span>
                         </div>
 
                         <div class="edu-adjustment-box" id="adjustmentAlertBox">
-                            <div><i class="fa-solid fa-circle-info"></i> <span id="adjustmentDetailsText">Previous payment found and adjusted.</span></div>
+                            <div><span id="adjustmentDetailsText">Previous payment found and adjusted.</span></div>
                             <span class="edu-pill-badge badge-paid" id="adjustmentAmountTag">Adjusted: ৳ 0</span>
                         </div>
 
@@ -426,7 +344,7 @@
                                 </div>
                                 <div class="edu-field-box">
                                     <label>Student ID / Mobile</label>
-                                    <input type="text" id="origId" class="edu-input" placeholder="Enter ID or Mobile..." required autocomplete="off">
+                                    <input type="text" id="origId" class="edu-input" placeholder="ID or Mobile..." required autocomplete="off">
                                 </div>
                                 <div class="edu-field-box">
                                     <label>Student Name</label>
@@ -441,11 +359,11 @@
                                 <div class="edu-field-box">
                                     <label>Service Charge (৳)</label>
                                     <input type="number" step="any" id="origTxn" class="edu-input" value="6.00">
-                                    <div style="font-size:0.75rem; color:#2563eb; font-weight:700; margin-top:4px;">Total Charge: ৳ <span id="origCharge">6.00</span></div>
+                                    <div style="font-size:0.75rem; color:#2563eb; font-weight:700; margin-top:3px;">Total Charge: ৳ <span id="origCharge">6.00</span></div>
                                 </div>
                                 <div class="edu-field-box">
                                     <label>Total Received (৳)</label>
-                                    <input type="text" id="origRec" class="edu-input" value="0.00" readonly style="color:#15803d; font-size:1.1rem;">
+                                    <input type="text" id="origRec" class="edu-input" value="0.00" readonly style="color:#15803d; font-size:1.05rem;">
                                 </div>
                             </div>
                             <div class="edu-form-grid-3">
@@ -454,60 +372,58 @@
                                     <input type="number" step="any" id="origDisc" class="edu-input" value="0.00">
                                 </div>
                             </div>
-                            <div style="display:flex; justify-content:flex-end; margin-top:15px;">
-                                <button type="submit" class="btn-act btn-act-print" style="padding:12px 30px; font-size:0.95rem; border-radius:8px;">
-                                    <i class="fa-solid fa-print"></i> Submit & Open Receipt
-                                </button>
+                            <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+                                <button type="submit" class="btn-act btn-act-print" style="padding:10px 24px; font-size:0.9rem;">Submit & Open Receipt</button>
                             </div>
                         </form>
                     </div>
                 </div>
 
-                <!-- PANEL 2: PENDING CLEARANCE (টপ অ্যাকশন বার সহ ছবি ২ এর ডিজাইন) -->
+                <!-- PANEL 2: PENDING CLEARANCE (মিনিমালিস্ট ডিজাইন) -->
                 <div class="view-panel" id="edu-pending-clearance-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
-                            <h3><i class="fa-solid fa-clock-rotate-left" style="color:#b45309;"></i> Pending Clearance (To Pay via Tap)</h3>
+                            <h3>Pending Clearance (To Pay via Tap)</h3>
                             <div>
                                 <span class="edu-pill-badge badge-pending" id="pendingCountBadge">0 Pending</span>
-                                <span style="font-size:0.9rem; font-weight:800; margin-left:14px;">Total Tap Required: ৳ <span id="pendingTotalSum" style="color:#10b981;">0.00</span></span>
+                                <span style="font-size:0.88rem; font-weight:700; margin-left:12px;">Tap Total: ৳ <span id="pendingTotalSum" style="color:#10b981;">0.00</span></span>
                             </div>
                         </div>
 
-                        <!-- শীর্ষ অ্যাকশন বার (মকআপ অনুযায়ী) -->
+                        <!-- ক্লিন ও মিনিমাল শীর্ষ কন্ট্রোল বার -->
                         <div class="pending-action-bar-strip">
                             <div class="selection-status-badge" id="pendingSelectedLabel">
-                                <i class="fa-solid fa-hand-pointer" style="color:#3b82f6;"></i> <span>Click on any student row to activate action bar</span>
+                                <span>No student selected</span>
                             </div>
                             <div class="pending-action-btns">
                                 <button type="button" class="btn-top-act btn-top-pay" id="btnTopPay" onclick="executeTopPendingAction('pay')" disabled>
-                                    <i class="fa-solid fa-paper-plane"></i> Pay
+                                    ${ICONS.pay} Pay
                                 </button>
                                 <div class="btn-top-separator"></div>
-                                <button type="button" class="btn-top-icon btn-top-void" id="btnTopVoid" onclick="executeTopPendingAction('void')" title="Void / Cancel Record" disabled>
-                                    <i class="fa-solid fa-trash-can"></i>
+                                <button type="button" class="btn-top-icon btn-top-void" id="btnTopVoid" onclick="executeTopPendingAction('void')" title="Void" disabled>
+                                    ${ICONS.trash}
                                 </button>
-                                <button type="button" class="btn-top-icon btn-top-print" id="btnTopPrint" onclick="executeTopPendingAction('print')" title="Print Receipt" disabled>
-                                    <i class="fa-solid fa-print"></i>
+                                <button type="button" class="btn-top-icon btn-top-print" id="btnTopPrint" onclick="executeTopPendingAction('print')" title="Print" disabled>
+                                    ${ICONS.print}
                                 </button>
                             </div>
                         </div>
 
-                        <div class="edu-table-responsive" style="padding-top: 5px;">
+                        <div class="edu-table-responsive">
                             <table class="edu-clean-table">
                                 <thead>
                                     <tr>
-                                        <th>RECEIPT #</th>
+                                        <th>RECEIPT NO</th>
                                         <th>DATE</th>
                                         <th>STUDENT ID</th>
                                         <th>STUDENT NAME</th>
                                         <th>TUITION FEE</th>
-                                        <th>GROSS PAYABLE (TAP)</th>
-                                        <th style="text-align:right;">TOTAL COLLECTED</th>
+                                        <th>TAP PAYABLE</th>
+                                        <th style="text-align:right;">COLLECTED</th>
                                     </tr>
                                 </thead>
                                 <tbody id="pendingClearanceTableBody">
-                                    <tr><td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">No pending clearance records.</td></tr>
+                                    <tr><td colspan="7" style="text-align:center; padding:25px; color:#94a3b8;">No pending clearance records.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -518,17 +434,17 @@
                 <div class="view-panel" id="edu-paid-settlement-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
-                            <h3><i class="fa-solid fa-circle-check" style="color:#10b981;"></i> Paid Settlement Records</h3>
+                            <h3>Paid Settlement Records</h3>
                             <div>
                                 <span class="edu-pill-badge badge-paid" id="paidCountBadge">0 Paid</span>
-                                <span style="font-size:0.9rem; font-weight:800; margin-left:12px;">Total: ৳ <span id="paidTotalSum">0.00</span></span>
+                                <span style="font-size:0.88rem; font-weight:700; margin-left:12px;">Total: ৳ <span id="paidTotalSum">0.00</span></span>
                             </div>
                         </div>
                         <div class="edu-table-responsive">
                             <table class="edu-clean-table">
                                 <thead>
                                     <tr>
-                                        <th>Receipt #</th>
+                                        <th>Receipt No</th>
                                         <th>Date</th>
                                         <th>Student ID</th>
                                         <th>Student Name</th>
@@ -538,7 +454,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="paidSettlementTableBody">
-                                    <tr><td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">No paid records found.</td></tr>
+                                    <tr><td colspan="7" style="text-align:center; padding:25px; color:#94a3b8;">No paid records found.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -547,41 +463,30 @@
 
                 <!-- PANEL 4: DUE DATABASE -->
                 <div class="view-panel" id="edu-due-data-view">
-                    <div class="edu-view-card" style="padding:20px;">
-                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; align-items:center;">
+                    <div class="edu-view-card" style="padding:18px;">
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; align-items:center;">
                             <input type="file" id="dueFileInput" accept=".xlsx, .xls, .csv" style="display:none;">
-                            <button type="button" class="btn-act btn-act-undo" onclick="document.getElementById('dueFileInput').click()"><i class="fa-solid fa-file-excel"></i> Choose Excel File</button>
-                            <span id="dueFileNameDisplay" style="font-size:0.85rem; color:#64748b; font-weight:600;">No file chosen</span>
-                            <button type="button" class="btn-act btn-act-print" id="btnUploadDueData"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Master Data</button>
-                            <button type="button" class="btn-act btn-act-pay" id="btnDownloadSample"><i class="fa-solid fa-download"></i> Sample Sheet</button>
+                            <button type="button" class="btn-act btn-act-undo" onclick="document.getElementById('dueFileInput').click()">Choose Excel</button>
+                            <span id="dueFileNameDisplay" style="font-size:0.82rem; color:#64748b;">No file chosen</span>
+                            <button type="button" class="btn-act btn-act-print" id="btnUploadDueData">Upload Master Data</button>
+                            <button type="button" class="btn-act btn-act-pay" id="btnDownloadSample">Sample Sheet</button>
                         </div>
 
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <span style="font-size:0.85rem; font-weight:700; color:#475569;">Show</span>
-                                <select id="duePageSizeSelect" class="edu-input" style="height:36px; width:80px; padding:0 8px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <span style="font-size:0.82rem; font-weight:700; color:#475569;">Show</span>
+                                <select id="duePageSizeSelect" class="edu-input" style="height:34px; width:75px; padding:0 6px;">
                                     <option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="-1">All</option>
                                 </select>
                             </div>
-                            <input type="text" id="dueTableSearch" class="edu-input" placeholder="Search ID, Student, Parents, Mobile..." style="height:38px; width:320px;">
+                            <input type="text" id="dueTableSearch" class="edu-input" placeholder="Search ID, Student, Mobile..." style="height:36px; width:280px;">
                         </div>
 
                         <div class="edu-table-responsive" style="padding:0;">
                             <table class="edu-clean-table">
                                 <thead>
                                     <tr>
-                                        <th>SL</th>
-                                        <th>Class</th>
-                                        <th>Section</th>
-                                        <th>STD ID</th>
-                                        <th>Student Name</th>
-                                        <th>Category</th>
-                                        <th>Due Month</th>
-                                        <th>Due Items</th>
-                                        <th>Due Amount (৳)</th>
-                                        <th>Mobile</th>
-                                        <th>Father's Info</th>
-                                        <th>Mother's Info</th>
+                                        <th>SL</th><th>Class</th><th>Section</th><th>STD ID</th><th>Student Name</th><th>Category</th><th>Due Month</th><th>Due Items</th><th>Due Amount (৳)</th><th>Mobile</th><th>Father's Info</th><th>Mother's Info</th>
                                     </tr>
                                 </thead>
                                 <tbody id="dueDataTableBody">
@@ -589,7 +494,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div id="duePaginationBtns" style="display:flex; justify-content:flex-end; gap:6px; margin-top:15px;"></div>
+                        <div id="duePaginationBtns" style="display:flex; justify-content:flex-end; gap:5px; margin-top:12px;"></div>
                     </div>
                 </div>
 
@@ -597,24 +502,18 @@
                 <div class="view-panel" id="edu-void-logs-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
-                            <h3><i class="fa-solid fa-trash-can" style="color:#dc2626;"></i> Voided & Deleted Records Log</h3>
+                            <h3>Void & Deleted Records Log</h3>
                             <span class="edu-pill-badge badge-void" id="voidCountBadge">0 Voided</span>
                         </div>
                         <div class="edu-table-responsive">
                             <table class="edu-clean-table">
                                 <thead>
                                     <tr>
-                                        <th>Receipt #</th>
-                                        <th>Void Date</th>
-                                        <th>Student ID & Name</th>
-                                        <th>Amount (৳)</th>
-                                        <th>Reason for Void</th>
-                                        <th>Voided By</th>
-                                        <th style="text-align:right;">Action</th>
+                                        <th>Receipt No</th><th>Void Date</th><th>Student ID & Name</th><th>Amount (৳)</th><th>Reason for Void</th><th>Voided By</th><th style="text-align:right;">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="voidLogsTableBody">
-                                    <tr><td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">No void logs found.</td></tr>
+                                    <tr><td colspan="7" style="text-align:center; padding:25px; color:#94a3b8;">No void logs found.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -625,47 +524,28 @@
                 <div class="view-panel" id="edu-reports-hub-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
-                            <h3><i class="fa-solid fa-file-export" style="color:#2563eb;"></i> Reports & Export Hub</h3>
+                            <h3>Reports & Export Hub</h3>
                         </div>
                         <div class="report-grid">
                             <div class="report-card-item">
-                                <div>
-                                    <h4><i class="fa-solid fa-clock" style="color:#b45309;"></i> Pending Clearance Report</h4>
-                                    <p>Export all fees currently collected at shop but not yet cleared/paid to Tap.</p>
-                                </div>
-                                <div style="display:flex; gap:8px;">
-                                    <button class="btn-act btn-act-pay" onclick="exportDataToExcel('pending')"><i class="fa-solid fa-file-excel"></i> Excel</button>
-                                </div>
+                                <h4>Pending Clearance Report</h4>
+                                <p>Export all pending fees collected at shop.</p>
+                                <button class="btn-act btn-act-pay" onclick="exportDataToExcel('pending')">Export Excel</button>
                             </div>
-
                             <div class="report-card-item">
-                                <div>
-                                    <h4><i class="fa-solid fa-circle-check" style="color:#10b981;"></i> Paid Settlement Report</h4>
-                                    <p>Export all successful Tap payment settlement logs with timestamps.</p>
-                                </div>
-                                <div style="display:flex; gap:8px;">
-                                    <button class="btn-act btn-act-pay" onclick="exportDataToExcel('paid')"><i class="fa-solid fa-file-excel"></i> Excel</button>
-                                </div>
+                                <h4>Paid Settlement Report</h4>
+                                <p>Export all settled Tap payment records.</p>
+                                <button class="btn-act btn-act-pay" onclick="exportDataToExcel('paid')">Export Excel</button>
                             </div>
-
                             <div class="report-card-item">
-                                <div>
-                                    <h4><i class="fa-solid fa-table-list" style="color:#0f172a;"></i> Master Due Database</h4>
-                                    <p>Export the complete student due database currently stored in system.</p>
-                                </div>
-                                <div style="display:flex; gap:8px;">
-                                    <button class="btn-act btn-act-pay" onclick="exportDataToExcel('due')"><i class="fa-solid fa-file-excel"></i> Excel</button>
-                                </div>
+                                <h4>Master Due Database</h4>
+                                <p>Export master student dues.</p>
+                                <button class="btn-act btn-act-pay" onclick="exportDataToExcel('due')">Export Excel</button>
                             </div>
-
                             <div class="report-card-item">
-                                <div>
-                                    <h4><i class="fa-solid fa-trash-can" style="color:#dc2626;"></i> Void / Deleted Audit Log</h4>
-                                    <p>Export all deleted entries along with mandatory audit reasons.</p>
-                                </div>
-                                <div style="display:flex; gap:8px;">
-                                    <button class="btn-act btn-act-void" onclick="exportDataToExcel('void')"><i class="fa-solid fa-file-excel"></i> Excel</button>
-                                </div>
+                                <h4>Void / Trash Log</h4>
+                                <p>Export cancelled audit logs.</p>
+                                <button class="btn-act btn-act-void" onclick="exportDataToExcel('void')">Export Excel</button>
                             </div>
                         </div>
                     </div>
@@ -676,19 +556,18 @@
             <!-- VOID MODAL -->
             <div class="edu-modal-bg" id="voidReasonModal">
                 <div class="edu-modal-box">
-                    <h3 style="font-size:1.1rem; font-weight:800; color:#0f172a; margin-bottom:10px;"><i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i> Reason for Voiding Record</h3>
-                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Please provide the reason why this fee record is being cancelled:</p>
+                    <h3 style="font-size:1.05rem; font-weight:700; color:#0f172a; margin-bottom:8px;">Reason for Voiding</h3>
                     <input type="hidden" id="voidTargetTxId" value="">
-                    <select id="voidReasonPreset" class="edu-input" style="margin-bottom:10px;" onchange="if(this.value!=='Other') document.getElementById('voidCustomReason').value=this.value;">
+                    <select id="voidReasonPreset" class="edu-input" style="margin-bottom:8px;" onchange="if(this.value!=='Other') document.getElementById('voidCustomReason').value=this.value;">
                         <option value="Student did not pay / Cancelled">Student did not pay / Cancelled</option>
                         <option value="Incorrect Student ID / Amount">Incorrect Student ID / Amount</option>
                         <option value="Paid through another channel">Paid through another channel</option>
-                        <option value="Other">Other (Type below)</option>
+                        <option value="Other">Other</option>
                     </select>
-                    <input type="text" id="voidCustomReason" class="edu-input" placeholder="Type reason here..." style="margin-bottom:20px;" value="Student did not pay / Cancelled">
-                    <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <input type="text" id="voidCustomReason" class="edu-input" placeholder="Type reason here..." style="margin-bottom:15px;" value="Student did not pay / Cancelled">
+                    <div style="display:flex; justify-content:flex-end; gap:8px;">
                         <button class="btn-act btn-act-undo" onclick="document.getElementById('voidReasonModal').style.display='none'">Cancel</button>
-                        <button class="btn-act btn-act-void" onclick="confirmVoidTransaction()"><i class="fa-solid fa-trash"></i> Confirm Void</button>
+                        <button class="btn-act btn-act-void" onclick="confirmVoidTransaction()">Confirm</button>
                     </div>
                 </div>
             </div>
@@ -714,10 +593,8 @@
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Receipt_${d.receiptNo}_${d.studentName}</title>
-                
                 <link rel="preload" as="image" href="${watermarkImgUrl}">
                 <link rel="preload" as="image" href="${paidStampImgUrl}">
-
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -733,27 +610,8 @@
                     .btn-close { background: rgba(255, 255, 255, 0.1); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.15); }
                     .btn-close:hover { background: #ef4444; color: #ffffff; }
                     .receipt-wrapper-card { background: #ffffff; width: 148mm; min-height: 210mm; padding: 12mm 15mm; box-shadow: 0 15px 40px rgba(0,0,0,0.5); border-radius: 2px; position: relative; box-sizing: border-box; color: #000000; overflow: hidden; }
-                    
-                    .receipt-watermark { 
-                        position: absolute; 
-                        top: 48mm; 
-                        left: 21mm; 
-                        width: 106mm; 
-                        opacity: 0.58; 
-                        pointer-events: none; 
-                        z-index: 1; 
-                        text-align: center; 
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
-                    .receipt-watermark img { 
-                        width: 100%; 
-                        height: auto; 
-                        display: block; 
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
-
+                    .receipt-watermark { position: absolute; top: 48mm; left: 21mm; width: 106mm; opacity: 0.58; pointer-events: none; z-index: 1; text-align: center; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                    .receipt-watermark img { width: 100%; height: auto; display: block; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
                     .receipt-body { position: relative; z-index: 2; }
                     .rc-bismillah { text-align: center; font-family: 'Caveat', cursive !important; font-size: 13.5pt; font-weight: 600; color: #000; margin-bottom: 2px; line-height: 1.2; }
                     .rc-brand-title { text-align: center; font-family: 'Lobster', cursive !important; font-size: 30pt; color: #000; margin: 0 0 4px 0; line-height: 1.1; }
@@ -766,28 +624,11 @@
                     .rc-section-end td { border-bottom: 1.5px dotted #000; padding-bottom: 8px !important; }
                     .rc-section-start td { padding-top: 8px !important; }
                     .rc-payment-received-row td { text-align: center !important; font-weight: bold; font-size: 14pt; padding: 7px 0 !important; border-bottom: 1.5px dotted #000 !important; border-right: none !important; }
-                    
-                    .paid-stamp-wrapper { 
-                        text-align: center; 
-                        margin: 14px 0 16px 0; 
-                        position: relative; 
-                        z-index: 5; 
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
-                    .paid-stamp-img { 
-                        width: 78px; 
-                        height: auto; 
-                        object-fit: contain; 
-                        display: inline-block; 
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
-
+                    .paid-stamp-wrapper { text-align: center; margin: 14px 0 16px 0; position: relative; z-index: 5; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                    .paid-stamp-img { width: 78px; height: auto; object-fit: contain; display: inline-block; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
                     .rc-footer-sign { font-family: 'Tiro Bangla', 'Times New Roman', serif !important; font-size: 11pt; margin: 0 0 18px 0; color: #000; }
                     .rc-disclaimer-mono { text-align: center; font-family: 'Roboto Mono', monospace !important; font-size: 9pt; line-height: 1.35; color: #000; margin-bottom: 6px; }
                     .rc-disclaimer-lora { text-align: center; font-family: 'Lora', serif !important; font-size: 9pt; font-style: italic; line-height: 1.3; color: #000; }
-                    
                     @media print {
                         @page { size: A5 portrait; margin: 0; }
                         body { background: #ffffff !important; padding: 0 !important; margin: 0 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -800,14 +641,12 @@
             </head>
             <body>
                 <div class="icon-action-bar no-print">
-                    <button class="icon-btn btn-print" onclick="window.print()" title="Print (A5)"><i class="fa-solid fa-print"></i></button>
+                    <button class="icon-btn btn-print" onclick="window.print()" title="Print"><i class="fa-solid fa-print"></i></button>
                     <button class="icon-btn btn-download" onclick="downloadReceiptPDF()" title="Download PDF"><i class="fa-solid fa-file-arrow-down"></i></button>
                     <button class="icon-btn btn-close" onclick="window.close()" title="Close"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="receipt-wrapper-card" id="printableReceiptCard">
-                    <div class="receipt-watermark">
-                        <img src="${watermarkImgUrl}" alt="Watermark" loading="eager" />
-                    </div>
+                    <div class="receipt-watermark"><img src="${watermarkImgUrl}" alt="Watermark" loading="eager" /></div>
                     <div class="receipt-body">
                         <div class="rc-bismillah">“In the name of Allah, the Most Gracious, the Most Merciful”</div>
                         <div class="rc-brand-title">Mousumi Computer</div>
@@ -823,9 +662,7 @@
                             <tr class="rc-section-end"><td class="rc-col-b">Total</td><td class="rc-col-c">${d.total}</td></tr>
                             <tr class="rc-payment-received-row"><td colspan="2">Payment Received: ${d.received}</td></tr>
                         </table>
-                        <div class="paid-stamp-wrapper">
-                            <img src="${paidStampImgUrl}" alt="PAID Stamp" class="paid-stamp-img" loading="eager" />
-                        </div>
+                        <div class="paid-stamp-wrapper"><img src="${paidStampImgUrl}" alt="PAID Stamp" class="paid-stamp-img" loading="eager" /></div>
                         <div class="rc-footer-sign"><strong>Received By:</strong> ${d.receivedBy || 'Riyal Robiul'}</div>
                         <div class="rc-disclaimer-mono">This is a computer-generated receipt.<br>Thank you for your payment.</div>
                         <div class="rc-disclaimer-lora">For any queries or assistance, please contact<br>Md. Robiul Islam at 01608-314552 or 01893-201584.</div>
@@ -852,7 +689,7 @@
         receiptWindow.document.close();
     };
 
-    // ৭. অটো হিসাব
+    // ৭. হিসাব
     function calculateAutoValues() {
         const discountInp = document.getElementById('origDisc');
         const txnInp = document.getElementById('origTxn');
@@ -890,8 +727,8 @@
         try {
             const fb = await getFirebase();
             if (fb) await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), feeTransactionsList);
-            if (typeof showToast === 'function') showToast(`✔ ${tx.studentName} marked as PAID to Tap!`, "success");
             selectedPendingTxId = null;
+            if (typeof showToast === 'function') showToast("Paid successfully", "success");
         } catch(e) { console.error(e); }
     };
 
@@ -905,11 +742,11 @@
         try {
             const fb = await getFirebase();
             if (fb) await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), feeTransactionsList);
-            if (typeof showToast === 'function') showToast(`↩ ${tx.studentName} restored to Pending Clearance!`, "info");
+            if (typeof showToast === 'function') showToast("Restored to Pending", "info");
         } catch(e) { console.error(e); }
     };
 
-    // ৯. Void মোডাল
+    // ৯. Void
     window.openVoidModal = function(txId) {
         document.getElementById('voidTargetTxId').value = txId;
         document.getElementById('voidReasonModal').style.display = 'flex';
@@ -936,7 +773,7 @@
             }
             document.getElementById('voidReasonModal').style.display = 'none';
             selectedPendingTxId = null;
-            if (typeof showToast === 'function') showToast("Record voided and moved to Trash Log.", "warning");
+            if (typeof showToast === 'function') showToast("Record voided", "warning");
         } catch(e) { console.error(e); }
     };
 
@@ -957,25 +794,18 @@
                 await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), feeTransactionsList);
                 await fb.set(fb.ref(fb.db, 'erp/feeVoidLogs'), voidLogsList);
             }
-            if (typeof showToast === 'function') showToast("Record restored to Pending Clearance!", "success");
+            if (typeof showToast === 'function') showToast("Record restored", "success");
         } catch(e) { console.error(e); }
     };
 
-    // ১০. পেন্ডিং রো সিলেকশন ও টপ অ্যাকশন হ্যান্ডলার
+    // ১০. পেন্ডিং রো সিলেকশন ও টপ অ্যাকশন
     window.selectPendingRow = function(txId) {
-        if (selectedPendingTxId === txId) {
-            selectedPendingTxId = null; // Unselect if clicked again
-        } else {
-            selectedPendingTxId = txId;
-        }
+        selectedPendingTxId = (selectedPendingTxId === txId) ? null : txId;
         renderPendingTable();
     };
 
     window.executeTopPendingAction = function(actionType) {
-        if (!selectedPendingTxId) {
-            alert("Please select a student row first!");
-            return;
-        }
+        if (!selectedPendingTxId) return;
 
         if (actionType === 'pay') {
             markAsTapPaid(selectedPendingTxId);
@@ -999,31 +829,22 @@
         if (!tbody) return;
 
         const pendingList = feeTransactionsList.filter(t => t.status !== 'Paid');
-        let totalGrossSum = 0; // ট্যাপে পরিশোধ করার সর্বমোট গ্রস টাকা
+        let totalGrossSum = 0;
 
-        // চেক করা সিলেক্টেড রো এখনো বিদ্যমান কি না
         const selectedRecord = pendingList.find(t => t.id === selectedPendingTxId);
-        if (!selectedRecord) {
-            selectedPendingTxId = null;
-        }
+        if (!selectedRecord) selectedPendingTxId = null;
 
-        // টুলবার বাটন ও টেক্সট আপডেট
+        // টুলবার টেক্সট (অতিরিক্ত লেখা মুক্ত)
         if (selectedRecord) {
-            const selDue = parseFloat(selectedRecord.netDue || 0);
-            const selTapFee = Math.min(selDue * 0.01, 60);
-            const selGross = selectedRecord.grossPayment ? parseFloat(selectedRecord.grossPayment) : (selDue + selTapFee);
-
             if (selectedLabel) {
-                selectedLabel.className = 'selection-status-badge has-selection';
-                selectedLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#10b981;"></i> <span>Selected: <strong>#${selectedRecord.receiptNo || '-'}</strong> — ${selectedRecord.studentName} (Gross Tap: ৳ ${selGross.toFixed(2)})</span>`;
+                selectedLabel.innerHTML = `<strong style="color:#0f172a;">${selectedRecord.receiptNo || ''} - ${selectedRecord.studentName || ''}</strong>`;
             }
             if (btnPay) btnPay.disabled = false;
             if (btnVoid) btnVoid.disabled = false;
             if (btnPrint) btnPrint.disabled = false;
         } else {
             if (selectedLabel) {
-                selectedLabel.className = 'selection-status-badge';
-                selectedLabel.innerHTML = `<i class="fa-solid fa-hand-pointer" style="color:#3b82f6;"></i> <span>Click on any student row to activate action bar</span>`;
+                selectedLabel.innerHTML = `<span>No student selected</span>`;
             }
             if (btnPay) btnPay.disabled = true;
             if (btnVoid) btnVoid.disabled = true;
@@ -1031,7 +852,7 @@
         }
 
         if (pendingList.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">No pending clearance records. All fees cleared!</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:25px; color:#94a3b8;">No pending records.</td></tr>';
             if (badge) badge.innerText = '0 Pending';
             if (sumEl) sumEl.innerText = '0.00';
             return;
@@ -1041,30 +862,26 @@
         pendingList.forEach(t => {
             const tuition = parseFloat(t.netDue || 0);
             const netRec = parseFloat(t.netReceived || 0);
-
-            // গ্রস পেমেন্ট হিসাব (Tuition + ১% ট্যাপ চার্জ, সর্বোচ্চ ৬০ টাকা)
             const tapFee = Math.min(tuition * 0.01, 60);
             const grossPayable = t.grossPayment ? parseFloat(t.grossPayment) : (tuition + tapFee);
 
-            totalGrossSum += grossPayable; // উপরে যোগ করার জন্য
-
+            totalGrossSum += grossPayable;
             const isSelected = (t.id === selectedPendingTxId);
 
             html += `
                 <tr class="row-selectable ${isSelected ? 'row-selected' : ''}" onclick="selectPendingRow('${t.id}')">
-                    <td style="font-weight:800; color:#2563eb;">#${t.receiptNo || '-'}</td>
+                    <td style="font-weight:700; color:#2563eb;">${t.receiptNo || '-'}</td>
                     <td>${t.date}</td>
                     <td><strong>${t.customerId}</strong></td>
-                    <td style="font-weight:700;">${t.studentName}</td>
+                    <td style="font-weight:600;">${t.studentName}</td>
                     <td>৳ ${tuition.toFixed(2)}</td>
-                    <td style="font-weight:800; color:#b45309;">৳ ${grossPayable.toFixed(2)}</td>
-                    <td style="color:#15803d; font-weight:800; text-align:right;">৳ ${netRec.toFixed(2)}</td>
+                    <td style="font-weight:700; color:#b45309;">৳ ${grossPayable.toFixed(2)}</td>
+                    <td style="color:#15803d; font-weight:700; text-align:right;">৳ ${netRec.toFixed(2)}</td>
                 </tr>
             `;
         });
         tbody.innerHTML = html;
         if (badge) badge.innerText = `${pendingList.length} Pending`;
-        // সবার উপরে গ্রস পেমেন্টের মোট টাকা দেখানো হচ্ছে
         if (sumEl) sumEl.innerText = totalGrossSum.toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
@@ -1078,7 +895,7 @@
         let total = 0;
 
         if (paidList.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">No paid records found yet.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:25px; color:#94a3b8;">No paid records found.</td></tr>';
             if (badge) badge.innerText = '0 Paid';
             if (sumEl) sumEl.innerText = '0.00';
             return;
@@ -1090,15 +907,15 @@
             total += gross;
             html += `
                 <tr>
-                    <td style="font-weight:800; color:#10b981;">#${t.receiptNo || '-'}</td>
+                    <td style="font-weight:700; color:#10b981;">${t.receiptNo || '-'}</td>
                     <td>${t.date}</td>
                     <td><strong>${t.customerId}</strong></td>
                     <td>${t.studentName}</td>
-                    <td style="font-weight:800; color:#15803d;">৳ ${gross.toFixed(2)}</td>
+                    <td style="font-weight:700; color:#15803d;">৳ ${gross.toFixed(2)}</td>
                     <td style="font-size:0.8rem; color:#64748b;">${t.paidTimestamp || '-'}</td>
                     <td style="text-align:right;">
-                        <button class="btn-act btn-act-undo" onclick="revertTapPaidToPending('${t.id}')" title="Revert to Pending"><i class="fa-solid fa-rotate-left"></i> Revert</button>
-                        <button class="btn-act btn-act-print" onclick="printRowReceipt('${t.id}')"><i class="fa-solid fa-print"></i></button>
+                        <button class="btn-act btn-act-undo" onclick="revertTapPaidToPending('${t.id}')">Revert</button>
+                        <button class="btn-act btn-act-print" onclick="printRowReceipt('${t.id}')">Print</button>
                     </td>
                 </tr>
             `;
@@ -1114,7 +931,7 @@
         if (!tbody) return;
 
         if (voidLogsList.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">No void logs found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:25px; color:#94a3b8;">No void logs found.</td></tr>';
             if (badge) badge.innerText = '0 Voided';
             return;
         }
@@ -1123,14 +940,14 @@
         voidLogsList.forEach(v => {
             html += `
                 <tr>
-                    <td style="font-weight:800; color:#dc2626;">#${v.receiptNo || '-'}</td>
+                    <td style="font-weight:700; color:#dc2626;">${v.receiptNo || '-'}</td>
                     <td style="font-size:0.8rem;">${v.voidDate || '-'}</td>
                     <td><strong>${v.customerId}</strong> (${v.studentName})</td>
                     <td>৳ ${parseFloat(v.netReceived||0).toFixed(2)}</td>
-                    <td style="color:#b91c1c; font-style:italic;">${v.voidReason || 'Cancelled'}</td>
+                    <td style="color:#b91c1c;">${v.voidReason || 'Cancelled'}</td>
                     <td style="font-size:0.8rem;">${v.voidedBy || 'Admin'}</td>
                     <td style="text-align:right;">
-                        <button class="btn-act btn-act-undo" onclick="restoreVoidedRecord('${v.id}')"><i class="fa-solid fa-trash-arrow-up"></i> Restore</button>
+                        <button class="btn-act btn-act-undo" onclick="restoreVoidedRecord('${v.id}')">Restore</button>
                     </td>
                 </tr>
             `;
@@ -1141,17 +958,14 @@
 
     // ১২. মাস্টার এক্সেল এক্সপোর্ট
     window.exportDataToExcel = function(type) {
-        if (typeof XLSX === 'undefined') {
-            alert("SheetJS library not loaded!");
-            return;
-        }
+        if (typeof XLSX === 'undefined') return;
 
         let data = [];
         let fileName = "";
 
         if (type === 'pending') {
-            fileName = "Pending_Clearance_List.xlsx";
-            data.push(["Receipt No", "Date", "Student ID", "Student Name", "Class", "Tuition Fee", "Gross Payable (Tap)", "Net Collected"]);
+            fileName = "Pending_Clearance.xlsx";
+            data.push(["Receipt No", "Date", "Student ID", "Student Name", "Class", "Tuition Fee", "Tap Payable", "Net Collected"]);
             feeTransactionsList.filter(t => t.status !== 'Paid').forEach(t => {
                 const tuition = parseFloat(t.netDue || 0);
                 const tapFee = Math.min(tuition * 0.01, 60);
@@ -1159,34 +973,16 @@
                 data.push([t.receiptNo, t.date, t.customerId, t.studentName, t.class, tuition, gross, t.netReceived]);
             });
         } else if (type === 'paid') {
-            fileName = "Paid_Settlement_List.xlsx";
+            fileName = "Paid_Settlement.xlsx";
             data.push(["Receipt No", "Date", "Student ID", "Student Name", "Class", "Gross Payment", "Settled Time"]);
             feeTransactionsList.filter(t => t.status === 'Paid').forEach(t => {
                 data.push([t.receiptNo, t.date, t.customerId, t.studentName, t.class, t.grossPayment, t.paidTimestamp]);
             });
         } else if (type === 'due') {
-            fileName = "Master_Due_Database.xlsx";
-            data.push([
-                "Class", "Section", "STD ID", "Student Name", "Category", 
-                "Month Due", "Due items", "Due Amount", "Mobile", 
-                "Fathers Name", "Fathers Mobile", "Mothers Name", "Mothers Mobile"
-            ]);
+            fileName = "Master_Due.xlsx";
+            data.push(["Class", "Section", "STD ID", "Student Name", "Category", "Month Due", "Due items", "Due Amount", "Mobile", "Fathers Name", "Fathers Mobile", "Mothers Name", "Mothers Mobile"]);
             studentDueList.forEach(s => {
-                data.push([
-                    s.class || '',
-                    s.section || '',
-                    s.stdId || '',
-                    s.studentName || '',
-                    s.category || '',
-                    s.monthDue || '',
-                    s.dueItems || '',
-                    s.dueAmount || 0,
-                    s.mobile || '',
-                    s.fathersName || '',
-                    s.fathersMobile || '',
-                    s.mothersName || '',
-                    s.mothersMobile || ''
-                ]);
+                data.push([s.class || '', s.section || '', s.stdId || '', s.studentName || '', s.category || '', s.monthDue || '', s.dueItems || '', s.dueAmount || 0, s.mobile || '', s.fathersName || '', s.fathersMobile || '', s.mothersName || '', s.mothersMobile || '']);
             });
         } else if (type === 'void') {
             fileName = "Void_Audit_Log.xlsx";
@@ -1202,7 +998,7 @@
         XLSX.writeFile(wb, fileName);
     };
 
-    // ১৩. পেজিনেশন ও সম্পূর্ণ শিক্ষার্থী তালিকা টেবিল
+    // ১৩. বকেয়া তালিকা টেবিল
     function renderDueDataTable() {
         const tbody = document.getElementById('dueDataTableBody');
         const paginationBtns = document.getElementById('duePaginationBtns');
@@ -1220,9 +1016,7 @@
                 (item.fathersName && item.fathersName.toLowerCase().includes(q)) ||
                 (item.fathersMobile && item.fathersMobile.toLowerCase().includes(q)) ||
                 (item.mothersName && item.mothersName.toLowerCase().includes(q)) ||
-                (item.mothersMobile && item.mothersMobile.toLowerCase().includes(q)) ||
-                (item.category && item.category.toLowerCase().includes(q)) ||
-                (item.dueItems && item.dueItems.toLowerCase().includes(q))
+                (item.mothersMobile && item.mothersMobile.toLowerCase().includes(q))
             );
         }
 
@@ -1242,29 +1036,13 @@
 
         let html = '';
         currentSlice.forEach((item, index) => {
-            let fatherDisplay = '-';
             const fName = (item.fathersName && item.fathersName !== '-') ? item.fathersName : '';
             const fMob = (item.fathersMobile && item.fathersMobile !== '-') ? item.fathersMobile : '';
-            if (fName || fMob) {
-                fatherDisplay = `
-                    <div style="font-weight:700; color:#0f172a; line-height:1.2;">${fName || '-'}</div>
-                    ${fMob ? `<div style="font-size:0.75rem; color:#2563eb; margin-top:3px;"><i class="fa-solid fa-phone" style="font-size:0.68rem;"></i> ${fMob}</div>` : ''}
-                `;
-            }
+            const fatherDisplay = (fName || fMob) ? `${fName} ${fMob ? '(' + fMob + ')' : ''}` : '-';
 
-            let motherDisplay = '-';
             const mName = (item.mothersName && item.mothersName !== '-') ? item.mothersName : '';
             const mMob = (item.mothersMobile && item.mothersMobile !== '-') ? item.mothersMobile : '';
-            if (mName || mMob) {
-                motherDisplay = `
-                    <div style="font-weight:700; color:#0f172a; line-height:1.2;">${mName || '-'}</div>
-                    ${mMob ? `<div style="font-size:0.75rem; color:#2563eb; margin-top:3px;"><i class="fa-solid fa-phone" style="font-size:0.68rem;"></i> ${mMob}</div>` : ''}
-                `;
-            }
-
-            const dueItemsDisplay = (item.dueItems && item.dueItems !== '-')
-                ? `<div style="max-width:240px; font-size:0.78rem; color:#334155; line-height:1.3; word-break:break-word;">${item.dueItems}</div>`
-                : '-';
+            const motherDisplay = (mName || mMob) ? `${mName} ${mMob ? '(' + mMob + ')' : ''}` : '-';
 
             html += `
                 <tr>
@@ -1272,14 +1050,14 @@
                     <td>${item.class || '-'}</td>
                     <td>${item.section || '-'}</td>
                     <td><strong>${item.stdId || '-'}</strong></td>
-                    <td style="font-weight:700;">${item.studentName || '-'}</td>
-                    <td><span style="font-size:0.78rem; background:#f1f5f9; padding:3px 8px; border-radius:4px; font-weight:700;">${item.category || '-'}</span></td>
+                    <td style="font-weight:600;">${item.studentName || '-'}</td>
+                    <td>${item.category || '-'}</td>
                     <td style="text-align:center;">${item.monthDue || '-'}</td>
-                    <td>${dueItemsDisplay}</td>
-                    <td style="font-weight:800; color:#e11d48; font-size:0.92rem;">৳ ${parseFloat(item.dueAmount || 0).toLocaleString()}</td>
+                    <td style="font-size:0.78rem; color:#475569;">${item.dueItems || '-'}</td>
+                    <td style="font-weight:700; color:#e11d48;">৳ ${parseFloat(item.dueAmount || 0).toLocaleString()}</td>
                     <td>${item.mobile || '-'}</td>
-                    <td>${fatherDisplay}</td>
-                    <td>${motherDisplay}</td>
+                    <td style="font-size:0.8rem;">${fatherDisplay}</td>
+                    <td style="font-size:0.8rem;">${motherDisplay}</td>
                 </tr>
             `;
         });
@@ -1521,26 +1299,16 @@
             };
         }
 
-        // SAMPLE SHEET ডাউনলোড বাটন
+        // SAMPLE SHEET
         const btnDownloadSample = document.getElementById('btnDownloadSample');
         if (btnDownloadSample) {
             btnDownloadSample.addEventListener('click', function () {
-                if (typeof XLSX === 'undefined') {
-                    alert("SheetJS library is loading, please wait a moment!");
-                    return;
-                }
+                if (typeof XLSX === 'undefined') return;
 
-                const sampleHeaders = [
-                    "Class", "Section", "STD ID", "Student Name", "Category", 
-                    "Month Due", "Due items", "Due Amount", "Mobile", 
-                    "Fathers Name", "Fathers Mobile", "Mothers Name", "Mothers Mobile"
-                ];
-
+                const sampleHeaders = ["Class", "Section", "STD ID", "Student Name", "Category", "Month Due", "Due items", "Due Amount", "Mobile", "Fathers Name", "Fathers Mobile", "Mothers Name", "Mothers Mobile"];
                 const sampleData = [
                     sampleHeaders,
-                    ["Nursery", "Dhorola", "1400126", "Md Abrar Awsaf Abid", "Army", "1", "Tuition Fee (September-2026), Badges, Solders, Diaries and Cards - ID Cards Fita", 650, "01722695846", "Md Samsujjaman Mia", "01722695846", "Argina Khatun", "01794914861"],
-                    ["Nursery", "Dhorola", "1400226", "Md Abdullah Ayaan", "Army", "1", "Tuition Fee (September-2026)", 600, "01744952790", "Md Shafiqul Islam", "01687391221", "Most Morseda Afroz", "01744952790"],
-                    ["Nursery", "Dhorola", "1400326", "Mst Azmeri Alaina Anha", "Civil", "1", "Tuition Fee (September-2026)", 1200, "01701940370", "Md Ashrafuzzaman", "01701940370", "Most Afroza Khatun", "01725940004"]
+                    ["Nursery", "Dhorola", "1400126", "Md Abrar Awsaf Abid", "Army", "1", "Tuition Fee", 650, "01722695846", "Md Samsujjaman", "01722695846", "Argina Khatun", "01794914861"]
                 ];
 
                 const ws = XLSX.utils.aoa_to_sheet(sampleData);
@@ -1550,7 +1318,7 @@
             });
         }
 
-        // এক্সেল আপলোড ও ফাজি রিডার
+        // EXCEL UPLOAD
         const fileInput = document.getElementById('dueFileInput');
         const fileNameDisplay = document.getElementById('dueFileNameDisplay');
         if (fileInput && fileNameDisplay) {
@@ -1605,10 +1373,9 @@
                             studentDueList = formatted;
                             currentPage = 1;
                             renderDueDataTable();
-                            if (typeof showToast === 'function') showToast(`✔ ${formatted.length} students loaded to Due Database!`, "success");
+                            if (typeof showToast === 'function') showToast("Data loaded successfully!", "success");
                         }
                     } catch(err) {
-                        console.error("Excel Upload Error:", err);
                         if (typeof showToast === 'function') showToast("Excel upload failed!", "error");
                     }
                 };
