@@ -1,9 +1,10 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module (Enterprise Edition)
- * Fixed: 
- * 1. Working 'Sample Sheet' Excel Download with exact headers.
- * 2. Full Student Profile columns: Category, Due Items, Father & Mother Details added.
- * 3. Master Table upgraded with responsive layout and expanded search.
+ * Fixed:
+ * 1. Smart Fuzzy Header Matcher (Fixes missing Due Items, Father & Mother info regardless of Excel header spacing/case).
+ * 2. Professional 2-line layout for Parents' Name & Phone with icons.
+ * 3. 100% Working Sample Sheet Download with exact matching schema.
+ * 4. Multi-field smart search across student, parents, IDs, and phones.
  */
 
 (function () {
@@ -14,7 +15,7 @@
     let selectedStudentRawDue = 0;
     let selectedStudentData = null;
 
-    // পেজিনেশন স্টেট (Due Database)
+    // পেজিনেশন স্টেট
     let currentPage = 1;
     let rowsPerPage = 25;
     let currentSearchQuery = "";
@@ -29,7 +30,6 @@
             font-family: 'Plus Jakarta Sans', 'Kalpurush', sans-serif !important;
         }
 
-        /* ড্রপডাউন সাবমেনু */
         #menu-edu-parent .submenu-list {
             display: none !important;
         }
@@ -110,7 +110,6 @@
         .edu-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
         .edu-input[readonly] { background: #f8fafc; color: #475569; font-weight: 700; }
 
-        /* ADJUSTMENT BANNER */
         .edu-adjustment-box {
             background: #eff6ff;
             border: 1.5px dashed #3b82f6;
@@ -127,7 +126,7 @@
 
         /* TABLES */
         .edu-table-responsive { overflow-x: auto; padding: 15px 20px; }
-        .edu-clean-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; min-width: 1100px; }
+        .edu-clean-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; min-width: 1250px; }
         .edu-clean-table th {
             padding: 10px 12px;
             font-size: 0.76rem;
@@ -146,12 +145,12 @@
             color: #1e293b;
             border-top: 1px solid #f1f5f9;
             border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
         }
         .edu-clean-table tr td:first-child { border-left: 1px solid #f1f5f9; border-radius: 8px 0 0 8px; }
         .edu-clean-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 8px 8px 0; }
         .edu-clean-table tr:hover td { background: #f8fafc; }
 
-        /* ACTION BUTTONS */
         .btn-act {
             border: none;
             padding: 7px 14px;
@@ -173,7 +172,6 @@
         .btn-act-void { background: #fee2e2; color: #dc2626; }
         .btn-act-void:hover { background: #fecaca; }
 
-        /* REPORT HUB CARDS */
         .report-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -192,7 +190,6 @@
         .report-card-item h4 { font-size: 1rem; color: #0f172a; margin-bottom: 6px; }
         .report-card-item p { font-size: 0.8rem; color: #64748b; margin-bottom: 16px; line-height: 1.4; }
 
-        /* VOID MODAL */
         .edu-modal-bg {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -210,13 +207,6 @@
             max-width: 440px;
             width: 90%;
             box-shadow: 0 20px 40px rgba(0,0,0,0.25);
-        }
-
-        .sub-contact-info {
-            font-size: 0.76rem;
-            color: #64748b;
-            display: block;
-            margin-top: 2px;
         }
     `;
     const styleSheet = document.createElement("style");
@@ -251,7 +241,7 @@
         }
     }
 
-    // ৩. মেনু টগল
+    // ৩. গ্লোবাল মেনু টগল
     window.toggleEduMenu = function () {
         const item = document.getElementById('menu-edu-parent');
         if (item) {
@@ -314,7 +304,7 @@
                                 </div>
                                 <div class="edu-field-box">
                                     <label>Student ID / Mobile</label>
-                                    <input type="text" id="origId" class="edu-input" placeholder="Enter ID..." required autocomplete="off">
+                                    <input type="text" id="origId" class="edu-input" placeholder="Enter ID or Mobile..." required autocomplete="off">
                                 </div>
                                 <div class="edu-field-box">
                                     <label>Student Name</label>
@@ -413,7 +403,7 @@
                     </div>
                 </div>
 
-                <!-- PANEL 4: DUE DATABASE (ALL DETAILS UPDATED) -->
+                <!-- PANEL 4: DUE DATABASE -->
                 <div class="view-panel" id="edu-due-data-view">
                     <div class="edu-view-card" style="padding:20px;">
                         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; align-items:center;">
@@ -431,7 +421,7 @@
                                     <option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="-1">All</option>
                                 </select>
                             </div>
-                            <input type="text" id="dueTableSearch" class="edu-input" placeholder="Search ID, student, parents, mobile..." style="height:38px; width:300px;">
+                            <input type="text" id="dueTableSearch" class="edu-input" placeholder="Search ID, Student, Parents, Mobile..." style="height:38px; width:320px;">
                         </div>
 
                         <div class="edu-table-responsive" style="padding:0;">
@@ -461,7 +451,7 @@
                     </div>
                 </div>
 
-                <!-- PANEL 5: VOID & TRASH LOG -->
+                <!-- PANEL 5: VOID LOG -->
                 <div class="view-panel" id="edu-void-logs-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
@@ -489,7 +479,7 @@
                     </div>
                 </div>
 
-                <!-- PANEL 6: REPORTS & EXPORT HUB -->
+                <!-- PANEL 6: REPORTS HUB -->
                 <div class="view-panel" id="edu-reports-hub-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
@@ -541,7 +531,7 @@
 
             </div>
 
-            <!-- MANDATORY VOID REASON MODAL -->
+            <!-- VOID MODAL -->
             <div class="edu-modal-bg" id="voidReasonModal">
                 <div class="edu-modal-box">
                     <h3 style="font-size:1.1rem; font-weight:800; color:#0f172a; margin-bottom:10px;"><i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i> Reason for Voiding Record</h3>
@@ -885,7 +875,7 @@
         if (badge) badge.innerText = `${voidLogsList.length} Voided`;
     }
 
-    // ১১. মাস্টার এক্সেল এক্সপোর্ট (সব কলামসহ)
+    // ১১. মাস্টার এক্সেল এক্সপোর্ট
     window.exportDataToExcel = function(type) {
         if (typeof XLSX === 'undefined') {
             alert("SheetJS library not loaded!");
@@ -958,12 +948,14 @@
                 (item.studentName && item.studentName.toLowerCase().includes(q)) ||
                 (item.stdId && item.stdId.toLowerCase().includes(q)) ||
                 (item.class && item.class.toLowerCase().includes(q)) ||
+                (item.section && item.section.toLowerCase().includes(q)) ||
                 (item.mobile && item.mobile.toLowerCase().includes(q)) ||
                 (item.fathersName && item.fathersName.toLowerCase().includes(q)) ||
                 (item.fathersMobile && item.fathersMobile.toLowerCase().includes(q)) ||
                 (item.mothersName && item.mothersName.toLowerCase().includes(q)) ||
                 (item.mothersMobile && item.mothersMobile.toLowerCase().includes(q)) ||
-                (item.category && item.category.toLowerCase().includes(q))
+                (item.category && item.category.toLowerCase().includes(q)) ||
+                (item.dueItems && item.dueItems.toLowerCase().includes(q))
             );
         }
 
@@ -983,8 +975,32 @@
 
         let html = '';
         currentSlice.forEach((item, index) => {
-            const fatherText = [item.fathersName, item.fathersMobile].filter(x => x && x !== '-').join(' | ') || '-';
-            const motherText = [item.mothersName, item.mothersMobile].filter(x => x && x !== '-').join(' | ') || '-';
+            // পিতা সম্পর্কিত তথ্য
+            let fatherDisplay = '-';
+            const fName = (item.fathersName && item.fathersName !== '-') ? item.fathersName : '';
+            const fMob = (item.fathersMobile && item.fathersMobile !== '-') ? item.fathersMobile : '';
+            if (fName || fMob) {
+                fatherDisplay = `
+                    <div style="font-weight:700; color:#0f172a; line-height:1.2;">${fName || '-'}</div>
+                    ${fMob ? `<div style="font-size:0.75rem; color:#2563eb; margin-top:3px;"><i class="fa-solid fa-phone" style="font-size:0.68rem;"></i> ${fMob}</div>` : ''}
+                `;
+            }
+
+            // মাতা সম্পর্কিত তথ্য
+            let motherDisplay = '-';
+            const mName = (item.mothersName && item.mothersName !== '-') ? item.mothersName : '';
+            const mMob = (item.mothersMobile && item.mothersMobile !== '-') ? item.mothersMobile : '';
+            if (mName || mMob) {
+                motherDisplay = `
+                    <div style="font-weight:700; color:#0f172a; line-height:1.2;">${mName || '-'}</div>
+                    ${mMob ? `<div style="font-size:0.75rem; color:#2563eb; margin-top:3px;"><i class="fa-solid fa-phone" style="font-size:0.68rem;"></i> ${mMob}</div>` : ''}
+                `;
+            }
+
+            // বকেয়া আইটেমস
+            const dueItemsDisplay = (item.dueItems && item.dueItems !== '-')
+                ? `<div style="max-width:240px; font-size:0.78rem; color:#334155; line-height:1.3; word-break:break-word;">${item.dueItems}</div>`
+                : '-';
 
             html += `
                 <tr>
@@ -992,14 +1008,14 @@
                     <td>${item.class || '-'}</td>
                     <td>${item.section || '-'}</td>
                     <td><strong>${item.stdId || '-'}</strong></td>
-                    <td>${item.studentName || '-'}</td>
-                    <td><span style="font-size:0.8rem; background:#f1f5f9; padding:2px 8px; border-radius:4px;">${item.category || '-'}</span></td>
-                    <td>${item.monthDue || '-'}</td>
-                    <td style="font-size:0.8rem; color:#475569;">${item.dueItems || '-'}</td>
-                    <td style="font-weight:800; color:#e11d48;">৳ ${item.dueAmount || 0}</td>
+                    <td style="font-weight:700;">${item.studentName || '-'}</td>
+                    <td><span style="font-size:0.78rem; background:#f1f5f9; padding:3px 8px; border-radius:4px; font-weight:700;">${item.category || '-'}</span></td>
+                    <td style="text-align:center;">${item.monthDue || '-'}</td>
+                    <td>${dueItemsDisplay}</td>
+                    <td style="font-weight:800; color:#e11d48; font-size:0.92rem;">৳ ${parseFloat(item.dueAmount || 0).toLocaleString()}</td>
                     <td>${item.mobile || '-'}</td>
-                    <td><div style="max-width:160px; font-size:0.82rem;">${fatherText}</div></td>
-                    <td><div style="max-width:160px; font-size:0.82rem;">${motherText}</div></td>
+                    <td>${fatherDisplay}</td>
+                    <td>${motherDisplay}</td>
                 </tr>
             `;
         });
@@ -1062,6 +1078,40 @@
 
         window.openReceiptInNewTab(receiptData);
     };
+
+    // স্মার্ট এক্সেল ভ্যালু এক্সট্রাক্টর (স্পেস ও বড়/ছোট হাতের অক্ষরের ভুল দূর করার জন্য)
+    function extractExcelValue(row, possibleKeys) {
+        const keys = Object.keys(row);
+        
+        // ১. হুবহু মিল খোঁজা (আলফানিউমেরিক ফিল্টার সহ)
+        for (const p of possibleKeys) {
+            const cleanTarget = p.toLowerCase().replace(/[^a-z0-9]/g, '');
+            for (const k of keys) {
+                const cleanKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (cleanKey === cleanTarget) {
+                    const val = row[k];
+                    if (val !== undefined && val !== null && String(val).trim() !== '') {
+                        return String(val).trim();
+                    }
+                }
+            }
+        }
+
+        // ২. আংশিক মিল খোঁজা
+        for (const p of possibleKeys) {
+            const cleanTarget = p.toLowerCase().replace(/[^a-z0-9]/g, '');
+            for (const k of keys) {
+                const cleanKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (cleanKey.startsWith(cleanTarget)) {
+                    const val = row[k];
+                    if (val !== undefined && val !== null && String(val).trim() !== '') {
+                        return String(val).trim();
+                    }
+                }
+            }
+        }
+        return '';
+    }
 
     // ১৪. ফর্ম ও ইভেন্ট লজিক
     function initLogic() {
@@ -1158,6 +1208,7 @@
                     customerId: studentId,
                     studentName: studentName || '-',
                     class: selectedStudentData ? (selectedStudentData.class || '-') : '-',
+                    section: selectedStudentData ? (selectedStudentData.section || '-') : '-',
                     month: selectedStudentData ? (selectedStudentData.monthDue || '-') : '-',
                     category: selectedStudentData ? (selectedStudentData.category || '-') : '-',
                     dueItems: selectedStudentData ? (selectedStudentData.dueItems || '-') : '-',
@@ -1211,7 +1262,7 @@
             };
         }
 
-        // SAMPLE SHEET ডাউলোড (সংশোধিত ও সচল)
+        // SAMPLE SHEET ডাউনলোড বাটন
         const btnDownloadSample = document.getElementById('btnDownloadSample');
         if (btnDownloadSample) {
             btnDownloadSample.addEventListener('click', function () {
@@ -1228,9 +1279,9 @@
 
                 const sampleData = [
                     sampleHeaders,
-                    ["Nursery", "Dhorola", "1400626", "MOST NAFISA KHANDOKER", "Regular", "1", "Tuition Fee", 600, "01774258066", "Md. Rafiq", "01774258066", "Mst. Nasima", "01712000000"],
-                    ["Nursery", "Dhorola", "1400726", "Sehrish Anaya", "Regular", "2", "Tuition Fee, Exam Fee", 2400, "01749492670", "Kamrul Hasan", "01749492670", "Farhana Akter", "01749000000"],
-                    ["Nursery", "Dhorola", "1400826", "Afia Sultana Tamanna", "Regular", "2", "Tuition Fee", 2550, "01712550232", "Sultan Ahmed", "01712550232", "Tamanna Begum", "01700000000"]
+                    ["Nursery", "Dhorola", "1400126", "Md Abrar Awsaf Abid", "Army", "1", "Tuition Fee (September-2026), Badges, Solders, Diaries and Cards - ID Cards Fita", 650, "01722695846", "Md Samsujjaman Mia", "01722695846", "Argina Khatun", "01794914861"],
+                    ["Nursery", "Dhorola", "1400226", "Md Abdullah Ayaan", "Army", "1", "Tuition Fee (September-2026)", 600, "01744952790", "Md Shafiqul Islam", "01687391221", "Most Morseda Afroz", "01744952790"],
+                    ["Nursery", "Dhorola", "1400326", "Mst Azmeri Alaina Anha", "Civil", "1", "Tuition Fee (September-2026)", 1200, "01701940370", "Md Ashrafuzzaman", "01701940370", "Most Afroza Khatun", "01725940004"]
                 ];
 
                 const ws = XLSX.utils.aoa_to_sheet(sampleData);
@@ -1240,7 +1291,7 @@
             });
         }
 
-        // EXCEL UPLOAD
+        // এক্সেল আপলোড ও ফাজি রিডার
         const fileInput = document.getElementById('dueFileInput');
         const fileNameDisplay = document.getElementById('dueFileNameDisplay');
         if (fileInput && fileNameDisplay) {
@@ -1269,24 +1320,24 @@
                 const reader = new FileReader();
                 reader.onload = async function(e) {
                     try {
-                        const data = e.target.result;
-                        const workbook = XLSX.read(data, { type: 'binary' });
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
                         const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: '' });
 
                         const formatted = json.map(r => ({
-                            class: r['Class'] || r['class'] || '-',
-                            section: r['Section'] || r['section'] || '-',
-                            stdId: String(r['STD ID'] || r['Std Id'] || r['Student ID'] || r['ID'] || '').trim(),
-                            studentName: r['Student Name'] || r['Student Na'] || r['Name'] || '-',
-                            category: r['Category'] || r['category'] || '-',
-                            monthDue: r['Month Due'] || r['Month'] || '-',
-                            dueItems: r['Due items'] || r['Due Items'] || r['Items'] || '-',
-                            dueAmount: parseFloat(r['Due Amount'] || r['Amount'] || 0) || 0,
-                            mobile: String(r['Mobile'] || '').trim(),
-                            fathersName: r['Fathers Name'] || r['Fathers na'] || r['Father Name'] || '-',
-                            fathersMobile: String(r['Fathers Mobile'] || r['Fathers Mo'] || r['Father Mobile'] || '').trim(),
-                            mothersName: r['Mothers Name'] || r['Mothers N'] || r['Mother Name'] || '-',
-                            mothersMobile: String(r['Mothers Mobile'] || r['Mother Mobile'] || '').trim()
+                            class: extractExcelValue(r, ['class']) || '-',
+                            section: extractExcelValue(r, ['section', 'sec']) || '-',
+                            stdId: extractExcelValue(r, ['stdid', 'studentid', 'id', 'roll']) || '-',
+                            studentName: extractExcelValue(r, ['studentname', 'studentna', 'name']) || '-',
+                            category: extractExcelValue(r, ['category', 'cat']) || '-',
+                            monthDue: extractExcelValue(r, ['monthdue', 'duemonth', 'month']) || '-',
+                            dueItems: extractExcelValue(r, ['dueitems', 'dueitem', 'items', 'item']) || '-',
+                            dueAmount: parseFloat(extractExcelValue(r, ['dueamount', 'amount', 'due', 'totaldue'])) || 0,
+                            mobile: extractExcelValue(r, ['mobile', 'stdmobile', 'studentmobile', 'phone']) || '-',
+                            fathersName: extractExcelValue(r, ['fathersname', 'fathername', 'fathersna', 'father']) || '-',
+                            fathersMobile: extractExcelValue(r, ['fathersmobile', 'fathermobile', 'fathersmo', 'fatherno', 'fatherphone']) || '',
+                            mothersName: extractExcelValue(r, ['mothersname', 'mothername', 'mothersn', 'mother']) || '-',
+                            mothersMobile: extractExcelValue(r, ['mothersmobile', 'mothermobile', 'mothersmo', 'motherno', 'motherphone']) || ''
                         }));
 
                         const fb = await getFirebase();
@@ -1298,10 +1349,11 @@
                             if (typeof showToast === 'function') showToast(`✔ ${formatted.length} students loaded to Due Database!`, "success");
                         }
                     } catch(err) {
+                        console.error("Excel Upload Error:", err);
                         if (typeof showToast === 'function') showToast("Excel upload failed!", "error");
                     }
                 };
-                reader.readAsBinaryString(fileInput.files[0]);
+                reader.readAsArrayBuffer(fileInput.files[0]);
             });
         }
 
