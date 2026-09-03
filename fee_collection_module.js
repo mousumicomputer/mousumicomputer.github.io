@@ -1,14 +1,11 @@
 /**
- * Mousumi Computer ERP - Education & Digital Services Module
- * Minimalist, Clean & Business-Priority Edition:
- * - Filter by Category: Instant Army / Civil batch clearance.
- * - Filter by Due Months: Instant 2+ Months (Urgent Fine Risk ⚠️) filter.
- * - Filter by Class: Pay class-wise urgent batches.
- * - Combined Smart Filtering: Filter by Army + Class + Months simultaneously.
- * - Dynamic Tap Balance: Top total recalculates based on active filters.
- * - Visual ⚠️ Warning on rows with 2+ months due.
- * - Inline SVG icons (Zero broken [] boxes).
- * - Receipt numbers without '#' and short toasts.
+ * Mousumi Computer ERP - Education & Digital Services Module (Enterprise Edition)
+ * Super-Smart Multi-Tag Filtering & Full Student Profile Edition:
+ * - Unified Multi-Tag Filter ([Army ✕] [2+ Mos ⚠️ ✕] [Class ✕]).
+ * - Complete Database Profile in Table (Class/Sec, Cat, Due Items, Father & Mother Info).
+ * - Auto-Enrichment from Master Due DB if previous entries missed parent info.
+ * - Dynamic Top Tap Gross Total based on active combined tags.
+ * - Direct inline SVGs, Receipt numbers without '#', short notification.
  */
 
 (function () {
@@ -19,11 +16,13 @@
     let selectedStudentRawDue = 0;
     let selectedStudentData = null;
 
-    // সিলেকশন ও ফিল্টার স্টেট
+    // সিলেকশন ও মাল্টি-ট্যাগ ফিল্টার স্টেট
     let selectedPendingTxId = null;
-    let pendingFilterClass = "all";
-    let pendingFilterMonths = "all";
-    let pendingFilterCategory = "all";
+    let pendingFilters = {
+        category: null, // 'Army', 'Civil'
+        months: null,   // 'urgent', '1', '2', '3+'
+        class: null     // 'Nursery', 'KG', etc.
+    };
 
     // পেজিনেশন
     let currentPage = 1;
@@ -37,10 +36,10 @@
         print: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>`
     };
 
-    // ১. মিনিমাল সিএসএস
+    // ১. মডিউল সিএসএস
     const css = `
         @import url('https://fonts.maateen.me/kalpurush/font.css');
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
         #edu-module-container, #edu-module-container * {
             box-sizing: border-box !important;
@@ -125,34 +124,156 @@
             font-weight: 600;
         }
 
-        /* FILTERS STRIP IN PENDING */
-        .pending-filter-strip {
-            padding: 12px 20px 0 20px;
+        /* SMART MULTI-TAG FILTER BAR */
+        .filter-tag-wrapper {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px 16px;
+            margin: 15px 20px 0 20px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .filter-tag-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .filter-label {
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #475569;
+        }
+
+        .tag-chip-list {
+            display: flex;
+            align-items: center;
+            gap: 6px;
             flex-wrap: wrap;
         }
-        .filter-select-mini {
-            height: 36px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 0 10px;
-            font-size: 0.84rem;
-            font-weight: 600;
-            color: #1e293b;
-            background: #ffffff;
-            outline: none;
-        }
-        .filter-select-mini:focus { border-color: #0f172a; }
 
-        /* MINIMAL TOOLBAR */
+        .tag-chip {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #0f172a;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tag-chip.tag-urgent {
+            background: #fee2e2;
+            border-color: #fca5a5;
+            color: #dc2626;
+        }
+
+        .tag-close-x {
+            cursor: pointer;
+            font-size: 0.82rem;
+            color: #64748b;
+            line-height: 1;
+        }
+        .tag-close-x:hover { color: #dc2626; }
+
+        .no-filter-text {
+            font-size: 0.82rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .filter-dropdown-wrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        .btn-filter-add {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 5px 12px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            color: #2563eb;
+            transition: all 0.15s;
+        }
+        .btn-filter-add:hover { background: #eff6ff; border-color: #2563eb; }
+
+        .filter-menu-popup {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 6px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            padding: 12px 14px;
+            z-index: 9999;
+            min-width: 240px;
+            display: none;
+        }
+
+        .filter-section-title {
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #64748b;
+            margin: 6px 0 4px 0;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 2px;
+        }
+
+        .filter-options-grid {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin-bottom: 6px;
+        }
+
+        .filter-opt-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        .filter-opt-btn:hover { background: #0f172a; color: #ffffff; border-color: #0f172a; }
+        .filter-opt-btn.opt-active { background: #2563eb; color: #ffffff; border-color: #2563eb; }
+
+        .btn-filter-clear {
+            background: transparent;
+            border: none;
+            color: #dc2626;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* MINIMAL ACTION TOOLBAR */
         .pending-action-bar-strip {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
             padding: 8px 16px;
-            margin: 10px 20px 0 20px;
+            margin: 8px 20px 0 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -160,16 +281,8 @@
             gap: 10px;
         }
 
-        .selection-status-badge {
-            font-size: 0.85rem;
-            color: #64748b;
-        }
-
-        .pending-action-btns {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .selection-status-badge { font-size: 0.85rem; color: #64748b; }
+        .pending-action-btns { display: flex; align-items: center; gap: 8px; }
 
         .btn-top-act {
             border: 1px solid #059669;
@@ -187,12 +300,7 @@
         }
         .btn-top-act:hover:not(:disabled) { background: #059669; }
 
-        .btn-top-separator {
-            width: 1px;
-            height: 20px;
-            background: #cbd5e1;
-            margin: 0 4px;
-        }
+        .btn-top-separator { width: 1px; height: 20px; background: #cbd5e1; margin: 0 4px; }
 
         .btn-top-icon {
             width: 32px;
@@ -217,28 +325,27 @@
 
         /* TABLES */
         .edu-table-responsive { width: 100%; overflow-x: auto; padding: 12px 20px 20px 20px; }
-        .edu-clean-table { width: 100%; border-collapse: collapse; }
+        .edu-clean-table { width: 100%; border-collapse: collapse; min-width: 1300px; }
         .edu-clean-table th {
-            padding: 10px 10px;
-            font-size: 0.74rem;
-            font-weight: 700;
+            padding: 10px 8px;
+            font-size: 0.73rem;
+            font-weight: 800;
             text-transform: uppercase;
             color: #64748b;
             text-align: left;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1.5px solid #cbd5e1;
             background: #ffffff;
             white-space: nowrap;
         }
         .edu-clean-table td {
             background: #ffffff;
-            padding: 11px 10px;
-            font-size: 0.85rem;
+            padding: 10px 8px;
+            font-size: 0.83rem;
             color: #1e293b;
             border-bottom: 1px solid #f1f5f9;
             vertical-align: middle;
         }
 
-        /* রো সিলেকশন */
         .edu-clean-table tbody tr.row-selectable { cursor: pointer; }
         .edu-clean-table tbody tr.row-selectable:hover td { background: #f8fafc; }
         .edu-clean-table tbody tr.row-selected td {
@@ -406,7 +513,7 @@
                     </div>
                 </div>
 
-                <!-- PANEL 2: PENDING CLEARANCE (ক্যাটাগরি, মাস ও ক্লাস ফিল্টার সহ) -->
+                <!-- PANEL 2: PENDING CLEARANCE (স্মার্ট মাল্টি-ট্যাগ ফিল্টার ও পূর্ণাঙ্গ ডাটা) -->
                 <div class="view-panel" id="edu-pending-clearance-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
@@ -417,34 +524,41 @@
                             </div>
                         </div>
 
-                        <!-- দ্রুত ফিল্টারিং বার (Category, Months & Class) -->
-                        <div class="pending-filter-strip">
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <span style="font-size:0.8rem; font-weight:700; color:#475569;">CATEGORY:</span>
-                                <select id="filterPendingCategory" class="filter-select-mini" onchange="window.onPendingCategoryFilterChange(this.value)">
-                                    <option value="all">All (Army/Civil)</option>
-                                    <option value="Army">Army</option>
-                                    <option value="Civil">Civil</option>
-                                </select>
-                            </div>
+                        <!-- অল-ইন-ওয়ান মাল্টি-ট্যাগ ফিল্টার বার -->
+                        <div class="filter-tag-wrapper">
+                            <div class="filter-tag-box">
+                                <span class="filter-label">Filter Tags:</span>
+                                <div id="filterTagContainer" class="tag-chip-list">
+                                    <span class="no-filter-text">None (Showing all)</span>
+                                </div>
+                                <div class="filter-dropdown-wrap">
+                                    <button type="button" class="btn-filter-add" id="btnFilterAddTrigger">+ Add Filter ▾</button>
+                                    <div id="filterMenuPopup" class="filter-menu-popup">
+                                        <!-- ক্যাটাগরি সেকশন -->
+                                        <div class="filter-section-title">Category</div>
+                                        <div class="filter-options-grid">
+                                            <button type="button" class="filter-opt-btn" onclick="applyPendingTag('category', 'Army')">Army</button>
+                                            <button type="button" class="filter-opt-btn" onclick="applyPendingTag('category', 'Civil')">Civil</button>
+                                        </div>
 
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <span style="font-size:0.8rem; font-weight:700; color:#475569;">MONTHS DUE:</span>
-                                <select id="filterPendingMonths" class="filter-select-mini" onchange="window.onPendingMonthFilterChange(this.value)">
-                                    <option value="all">All Months</option>
-                                    <option value="urgent" style="color:#dc2626; font-weight:bold;">2+ Months (Urgent Fine Risk ⚠️)</option>
-                                    <option value="1">1 Month</option>
-                                    <option value="2">2 Months</option>
-                                    <option value="3+">3+ Months</option>
-                                </select>
-                            </div>
+                                        <!-- বকেয়া মাস সেকশন -->
+                                        <div class="filter-section-title">Months Due</div>
+                                        <div class="filter-options-grid">
+                                            <button type="button" class="filter-opt-btn" style="color:#dc2626; font-weight:800;" onclick="applyPendingTag('months', 'urgent')">2+ Mos (Fine ⚠️)</button>
+                                            <button type="button" class="filter-opt-btn" onclick="applyPendingTag('months', '1')">1 Month</button>
+                                            <button type="button" class="filter-opt-btn" onclick="applyPendingTag('months', '2')">2 Months</button>
+                                            <button type="button" class="filter-opt-btn" onclick="applyPendingTag('months', '3+')">3+ Months</button>
+                                        </div>
 
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <span style="font-size:0.8rem; font-weight:700; color:#475569;">CLASS:</span>
-                                <select id="filterPendingClass" class="filter-select-mini" onchange="window.onPendingClassFilterChange(this.value)">
-                                    <option value="all">All Classes</option>
-                                </select>
+                                        <!-- ক্লাস সেকশন -->
+                                        <div class="filter-section-title">Class</div>
+                                        <div class="filter-options-grid" id="filterClassMenuGrid">
+                                            <span style="font-size:0.75rem; color:#94a3b8;">Loading classes...</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                            <button type="button" class="btn-filter-clear" onclick="clearAllPendingFilters()">Clear All ✕</button>
                         </div>
 
                         <!-- শীর্ষ অ্যাকশন কন্ট্রোল বার -->
@@ -470,20 +584,22 @@
                             <table class="edu-clean-table">
                                 <thead>
                                     <tr>
-                                        <th>RECEIPT NO</th>
+                                        <th>REC NO</th>
                                         <th>DATE</th>
-                                        <th>STUDENT ID</th>
+                                        <th>STD ID</th>
                                         <th>STUDENT NAME</th>
-                                        <th>CLASS</th>
-                                        <th>CATEGORY</th>
+                                        <th>CLASS / SEC</th>
+                                        <th>CAT</th>
                                         <th>MONTHS</th>
-                                        <th>TUITION FEE</th>
+                                        <th>DUE ITEMS</th>
+                                        <th>TUITION</th>
                                         <th>TAP PAYABLE</th>
-                                        <th style="text-align:right;">COLLECTED</th>
+                                        <th>COLLECTED</th>
+                                        <th>STUDENT & PARENTS CONTACT</th>
                                     </tr>
                                 </thead>
                                 <tbody id="pendingClearanceTableBody">
-                                    <tr><td colspan="10" style="text-align:center; padding:25px; color:#94a3b8;">No pending clearance records.</td></tr>
+                                    <tr><td colspan="12" style="text-align:center; padding:25px; color:#94a3b8;">No pending clearance records.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -876,26 +992,63 @@
         }
     };
 
-    // ফিল্টার ইভেন্টস
-    window.onPendingCategoryFilterChange = function (val) {
-        pendingFilterCategory = val;
+    // ১১. স্মার্ট মাল্টি-ট্যাগ ফিল্টার লজিক
+    window.applyPendingTag = function(type, value) {
+        pendingFilters[type] = value;
+        selectedPendingTxId = null;
+        closeFilterMenu();
+        renderPendingTable();
+    };
+
+    window.removePendingTag = function(type) {
+        pendingFilters[type] = null;
         selectedPendingTxId = null;
         renderPendingTable();
     };
 
-    window.onPendingMonthFilterChange = function (val) {
-        pendingFilterMonths = val;
+    window.clearAllPendingFilters = function() {
+        pendingFilters.category = null;
+        pendingFilters.months = null;
+        pendingFilters.class = null;
         selectedPendingTxId = null;
+        closeFilterMenu();
         renderPendingTable();
     };
 
-    window.onPendingClassFilterChange = function (val) {
-        pendingFilterClass = val;
-        selectedPendingTxId = null;
-        renderPendingTable();
-    };
+    function toggleFilterMenu() {
+        const popup = document.getElementById('filterMenuPopup');
+        if (popup) {
+            popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
+        }
+    }
 
-    // ১১. টেবিল রেন্ডারিং ও কম্বাইন্ড ফিল্টারিং
+    function closeFilterMenu() {
+        const popup = document.getElementById('filterMenuPopup');
+        if (popup) popup.style.display = 'none';
+    }
+
+    // মাস্টার ডাটাবেস থেকে শিক্ষার্থীর পূর্ণাঙ্গ প্রোফাইল সমৃদ্ধ করার ফাংশন
+    function enrichTransactionData(t) {
+        const master = studentDueList.find(s => 
+            String(s.stdId).trim() === String(t.customerId).trim() || 
+            (s.mobile && String(s.mobile).trim() === String(t.customerId).trim())
+        );
+
+        return {
+            ...t,
+            section: t.section && t.section !== '-' ? t.section : (master ? master.section : '-'),
+            category: t.category && t.category !== '-' ? t.category : (master ? master.category : '-'),
+            month: t.month && t.month !== '-' ? t.month : (master ? master.monthDue : '1'),
+            dueItems: t.dueItems && t.dueItems !== '-' ? t.dueItems : (master ? master.dueItems : '-'),
+            mobile: t.mobile && t.mobile !== '-' ? t.mobile : (master ? master.mobile : '-'),
+            fathersName: t.fathersName && t.fathersName !== '-' ? t.fathersName : (master ? master.fathersName : '-'),
+            fathersMobile: t.fathersMobile ? t.fathersMobile : (master ? master.fathersMobile : ''),
+            mothersName: t.mothersName && t.mothersName !== '-' ? t.mothersName : (master ? master.mothersName : '-'),
+            mothersMobile: t.mothersMobile ? t.mothersMobile : (master ? master.mothersMobile : '')
+        };
+    }
+
+    // ১২. টেবিল ও মাল্টি-ট্যাগ রেন্ডারিং
     function renderPendingTable() {
         const tbody = document.getElementById('pendingClearanceTableBody');
         const badge = document.getElementById('pendingCountBadge');
@@ -904,48 +1057,81 @@
         const btnPay = document.getElementById('btnTopPay');
         const btnVoid = document.getElementById('btnTopVoid');
         const btnPrint = document.getElementById('btnTopPrint');
-        const classSelect = document.getElementById('filterPendingClass');
+        const tagContainer = document.getElementById('filterTagContainer');
+        const classGrid = document.getElementById('filterClassMenuGrid');
 
         if (!tbody) return;
 
-        const rawPending = feeTransactionsList.filter(t => t.status !== 'Paid');
+        // সমস্ত পেন্ডিং ডাটা পূর্ণাঙ্গ তথ্য দিয়ে সমৃদ্ধ করা
+        const rawPending = feeTransactionsList
+            .filter(t => t.status !== 'Paid')
+            .map(t => enrichTransactionData(t));
 
-        // ড্রপডাউনে ক্লাস অটো-পপুলেট করা
-        if (classSelect) {
+        // ক্লাস ড্রপডাউন মেনু তৈরি করা
+        if (classGrid) {
             const existingClasses = [...new Set(rawPending.map(t => (t.class || '').trim()).filter(Boolean))];
-            const currentVal = classSelect.value;
-            let classOptions = '<option value="all">All Classes</option>';
-            existingClasses.forEach(c => {
-                classOptions += `<option value="${c}">${c}</option>`;
-            });
-            classSelect.innerHTML = classOptions;
-            if (existingClasses.includes(currentVal)) {
-                classSelect.value = currentVal;
+            if (existingClasses.length === 0) {
+                classGrid.innerHTML = `<span style="font-size:0.75rem; color:#94a3b8;">No classes found</span>`;
+            } else {
+                let html = '';
+                existingClasses.forEach(c => {
+                    const isSel = (pendingFilters.class === c);
+                    html += `<button type="button" class="filter-opt-btn ${isSel ? 'opt-active' : ''}" onclick="applyPendingTag('class', '${c}')">${c}</button>`;
+                });
+                classGrid.innerHTML = html;
             }
         }
 
-        // ফিল্টারিং প্রয়োগ
+        // ট্যাগ চিপস (Filter Chips) রেন্ডার করা
+        if (tagContainer) {
+            let tagsHtml = '';
+            let hasActiveFilter = false;
+
+            if (pendingFilters.category) {
+                hasActiveFilter = true;
+                tagsHtml += `<span class="tag-chip">Cat: ${pendingFilters.category} <span class="tag-close-x" onclick="removePendingTag('category')">✕</span></span>`;
+            }
+
+            if (pendingFilters.months) {
+                hasActiveFilter = true;
+                const mText = (pendingFilters.months === 'urgent') ? '2+ Mos ⚠️' : `${pendingFilters.months} Mo`;
+                const isUrg = (pendingFilters.months === 'urgent' || parseInt(pendingFilters.months) >= 2);
+                tagsHtml += `<span class="tag-chip ${isUrg ? 'tag-urgent' : ''}">${mText} <span class="tag-close-x" onclick="removePendingTag('months')">✕</span></span>`;
+            }
+
+            if (pendingFilters.class) {
+                hasActiveFilter = true;
+                tagsHtml += `<span class="tag-chip">Class: ${pendingFilters.class} <span class="tag-close-x" onclick="removePendingTag('class')">✕</span></span>`;
+            }
+
+            if (!hasActiveFilter) {
+                tagContainer.innerHTML = `<span class="no-filter-text">None (Showing all)</span>`;
+            } else {
+                tagContainer.innerHTML = tagsHtml;
+            }
+        }
+
+        // ফিল্টারিং প্রয়োগ (Category + Month + Class একসাথে)
         let filteredPending = rawPending;
 
-        // ১. ক্যাটাগরি ফিল্টার (Army / Civil)
-        if (pendingFilterCategory !== "all") {
-            filteredPending = filteredPending.filter(t => (t.category || '').toLowerCase().trim() === pendingFilterCategory.toLowerCase().trim());
+        if (pendingFilters.category) {
+            filteredPending = filteredPending.filter(t => (t.category || '').toLowerCase().trim() === pendingFilters.category.toLowerCase().trim());
         }
 
-        // ২. ক্লাস ফিল্টার
-        if (pendingFilterClass !== "all") {
-            filteredPending = filteredPending.filter(t => (t.class || '').toLowerCase().trim() === pendingFilterClass.toLowerCase().trim());
+        if (pendingFilters.months) {
+            if (pendingFilters.months === "urgent") {
+                filteredPending = filteredPending.filter(t => (parseInt(t.month) || 1) >= 2);
+            } else if (pendingFilters.months === "1") {
+                filteredPending = filteredPending.filter(t => (parseInt(t.month) || 1) === 1);
+            } else if (pendingFilters.months === "2") {
+                filteredPending = filteredPending.filter(t => (parseInt(t.month) || 1) === 2);
+            } else if (pendingFilters.months === "3+") {
+                filteredPending = filteredPending.filter(t => (parseInt(t.month) || 1) >= 3);
+            }
         }
 
-        // ৩. বকেয়া মাস ফিল্টার (Urgent Fine Risk)
-        if (pendingFilterMonths === "urgent") {
-            filteredPending = filteredPending.filter(t => (parseInt(t.month) || 1) >= 2);
-        } else if (pendingFilterMonths === "1") {
-            filteredPending = filteredPending.filter(t => (parseInt(t.month) || 1) === 1);
-        } else if (pendingFilterMonths === "2") {
-            filteredPending = filteredPending.filter(t => (parseInt(t.month) || 1) === 2);
-        } else if (pendingFilterMonths === "3+") {
-            filteredPending = filteredPending.filter(t => (parseInt(t.month) || 1) >= 3);
+        if (pendingFilters.class) {
+            filteredPending = filteredPending.filter(t => (t.class || '').toLowerCase().trim() === pendingFilters.class.toLowerCase().trim());
         }
 
         let totalGrossSum = 0;
@@ -971,7 +1157,7 @@
         }
 
         if (filteredPending.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:25px; color:#94a3b8;">No matching pending records found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding:25px; color:#94a3b8;">No matching pending records found.</td></tr>';
             if (badge) badge.innerText = '0 Pending';
             if (sumEl) sumEl.innerText = '0.00';
             return;
@@ -987,12 +1173,24 @@
             totalGrossSum += grossPayable;
             const isSelected = (t.id === selectedPendingTxId);
 
-            // মাসের ওয়ার্নিং লজিক (২ মাস বা তার বেশি হলে লাল সতর্কতা)
+            // মাসের ওয়ার্নিং লজিক
             const dueMonths = parseInt(t.month || 1);
             let monthCol = `${dueMonths} Mo`;
             if (dueMonths >= 2) {
-                monthCol = `<span style="color:#dc2626; font-weight:800;" title="Urgent: Fine Risk!">${dueMonths} Mos ⚠️</span>`;
+                monthCol = `<span style="color:#dc2626; font-weight:800;" title="Urgent Fine Risk!">${dueMonths} Mos ⚠️</span>`;
             }
+
+            // ক্লাস ও সেকশন
+            const classSec = `${t.class || '-'} ${t.section && t.section !== '-' ? '(' + t.section + ')' : ''}`;
+
+            // শিক্ষার্থী ও পিতা-মাতার সম্পূর্ণ যোগাযোগ তথ্য
+            const contactBlock = `
+                <div style="font-size:0.78rem; line-height:1.25;">
+                    <div><strong>Std:</strong> ${t.mobile || '-'}</div>
+                    ${t.fathersName && t.fathersName !== '-' ? `<div style="color:#0f172a;"><strong>F:</strong> ${t.fathersName} ${t.fathersMobile ? '(' + t.fathersMobile + ')' : ''}</div>` : ''}
+                    ${t.mothersName && t.mothersName !== '-' ? `<div style="color:#475569;"><strong>M:</strong> ${t.mothersName} ${t.mothersMobile ? '(' + t.mothersMobile + ')' : ''}</div>` : ''}
+                </div>
+            `;
 
             html += `
                 <tr class="row-selectable ${isSelected ? 'row-selected' : ''}" onclick="selectPendingRow('${t.id}')">
@@ -1000,12 +1198,14 @@
                     <td>${t.date}</td>
                     <td><strong>${t.customerId}</strong></td>
                     <td style="font-weight:600;">${t.studentName}</td>
-                    <td>${t.class || '-'}</td>
-                    <td><span style="font-size:0.8rem; font-weight:600; color:#334155;">${t.category || '-'}</span></td>
-                    <td>${monthCol}</td>
+                    <td>${classSec}</td>
+                    <td><span style="font-size:0.78rem; font-weight:700; background:#f1f5f9; padding:2px 6px; border-radius:4px;">${t.category || '-'}</span></td>
+                    <td style="text-align:center;">${monthCol}</td>
+                    <td><div style="max-width:180px; font-size:0.78rem; color:#475569; line-height:1.25; word-break:break-word;">${t.dueItems || '-'}</div></td>
                     <td>৳ ${tuition.toFixed(2)}</td>
                     <td style="font-weight:700; color:#b45309;">৳ ${grossPayable.toFixed(2)}</td>
-                    <td style="color:#15803d; font-weight:700; text-align:right;">৳ ${netRec.toFixed(2)}</td>
+                    <td style="color:#15803d; font-weight:700;">৳ ${netRec.toFixed(2)}</td>
+                    <td>${contactBlock}</td>
                 </tr>
             `;
         });
@@ -1094,12 +1294,17 @@
 
         if (type === 'pending') {
             fileName = "Pending_Clearance.xlsx";
-            data.push(["Receipt No", "Date", "Student ID", "Student Name", "Class", "Category", "Tuition Fee", "Tap Payable", "Net Collected"]);
+            data.push(["Receipt No", "Date", "Student ID", "Student Name", "Class", "Section", "Category", "Months Due", "Due Items", "Tuition Fee", "Tap Payable", "Net Collected", "Mobile", "Father", "Mother"]);
             feeTransactionsList.filter(t => t.status !== 'Paid').forEach(t => {
-                const tuition = parseFloat(t.netDue || 0);
+                const en = enrichTransactionData(t);
+                const tuition = parseFloat(en.netDue || 0);
                 const tapFee = Math.min(tuition * 0.01, 60);
-                const gross = t.grossPayment ? parseFloat(t.grossPayment) : (tuition + tapFee);
-                data.push([t.receiptNo, t.date, t.customerId, t.studentName, t.class, t.category, tuition, gross, t.netReceived]);
+                const gross = en.grossPayment ? parseFloat(en.grossPayment) : (tuition + tapFee);
+                data.push([
+                    en.receiptNo, en.date, en.customerId, en.studentName, en.class, en.section, en.category, 
+                    en.month, en.dueItems, tuition, gross, en.netReceived, en.mobile, 
+                    `${en.fathersName} ${en.fathersMobile}`, `${en.mothersName} ${en.mothersMobile}`
+                ]);
             });
         } else if (type === 'paid') {
             fileName = "Paid_Settlement.xlsx";
@@ -1381,7 +1586,9 @@
                     dueItems: selectedStudentData ? (selectedStudentData.dueItems || '-') : '-',
                     mobile: selectedStudentData ? (selectedStudentData.mobile || '-') : '-',
                     fathersName: selectedStudentData ? (selectedStudentData.fathersName || '-') : '-',
+                    fathersMobile: selectedStudentData ? (selectedStudentData.fathersMobile || '') : '',
                     mothersName: selectedStudentData ? (selectedStudentData.mothersName || '-') : '-',
+                    mothersMobile: selectedStudentData ? (selectedStudentData.mothersMobile || '') : '',
                     netDue: netDue,
                     txnFee: txnFee,
                     totalCharge: totalCharge,
@@ -1521,6 +1728,24 @@
                 renderDueDataTable();
             });
         }
+
+        // মেনু বাইরে ক্লিক করলে ফিল্টার ড্রপডাউন বন্ধ হওয়া
+        const btnFilterTrigger = document.getElementById('btnFilterAddTrigger');
+        if (btnFilterTrigger) {
+            btnFilterTrigger.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleFilterMenu();
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            const popup = document.getElementById('filterMenuPopup');
+            if (popup && popup.style.display === 'block') {
+                if (!popup.contains(e.target) && e.target.id !== 'btnFilterAddTrigger') {
+                    popup.style.display = 'none';
+                }
+            }
+        });
     }
 
     window.addEventListener('load', () => {
