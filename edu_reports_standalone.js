@@ -1,11 +1,12 @@
 /**
  * Mousumi Computer ERP - Standalone Education Reports Hub
- * Engine: Native jsPDF (v2.5.1) + jspdf-autotable (v3.8.2) Plugin + SheetJS
- * Strict Behaviors:
- * 1. PDF icon DIRECTLY downloads .pdf file via doc.save() (ZERO Print Preview dialog).
- * 2. Pure native vector rendering (No HTML2Canvas, zero image blurriness, no blank page 2).
- * 3. Title Case for Student Names ('Md Rabbi Hosen').
- * 4. Merged 'Grand Total =' aligned at right end.
+ * Font: Google Font 'Tiro Bangla' Embedded in View & Downloaded PDF
+ * Engine: jsPDF + jspdf-autotable (Native Vector) + SheetJS
+ * Business Rules:
+ * - Tap Charge: 1% capped at Max 60 Tk.
+ * - Net Profit: Total Cash Received - Tap Payable Amount.
+ * - Replaced 'Receipt #' with 'Receipt No'.
+ * - Clean Financial & Earnings Audit Box below tables.
  */
 
 (function () {
@@ -181,7 +182,7 @@
         });
     }
 
-    // ৩. ফিল্টার প্যানেল সেটআপ
+    // ৩. ফিল্টার প্যানেল রেন্ডার
     function renderMinimalHub() {
         const targetView = document.getElementById('edu-reports-hub-view');
         if (!targetView) return;
@@ -286,7 +287,7 @@
         return (str === "-" || str === "undefined" || str === "null") ? "" : str;
     }
 
-    // ৪. ডেটা ফিল্টারিং
+    // ৪. ডেটা ফিল্টারিং ও কমিশন হিসাব
     function generateAndOpenReport() {
         const reportType = document.getElementById('eduReportType').value;
         const fromDate = document.getElementById('eduFromDate').value;
@@ -299,23 +300,30 @@
         let grandTotalConfig = null;
         let columnAlignments = [];
         let colWidths = [];
+        let financialAudit = null; // কমিশন ও ইনকাম সামারি
 
         if (reportType === 'collection') {
             title = "FEE COLLECTION STATEMENT";
-            tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Class", "Tuition Fee", "Charge", "Net Received"];
+            tableHeaders = ["SL", "Receipt No", "Date", "Student ID", "Student Name", "Class", "Tuition Fee", "Charge", "Net Received"];
             columnAlignments = ["center", "center", "center", "center", "left", "center", "right", "right", "right"];
-            colWidths = ["4%", "8%", "10%", "10%", "30%", "9%", "12%", "8%", "9%"];
+            colWidths = ["4%", "9%", "10%", "10%", "30%", "8%", "12%", "8%", "9%"];
 
             let list = feeTransactions.filter(t => t.date >= fromDate && t.date <= toDate);
-            let sumDue = 0, sumCharge = 0, sumTotal = 0;
+            let sumDue = 0, sumCharge = 0, sumTotal = 0, sumTapPayable = 0;
 
             list.forEach((t, i) => {
                 const due = parseFloat(t.netDue || 0);
                 const charge = parseFloat(t.totalCharge || 0);
                 const rec = parseFloat(t.netReceived || 0);
+
+                // ট্যাপ চার্জ লজিক: ১% তবে সর্বোচ্চ ৬০ টাকা
+                const tapFee = Math.min(due * 0.01, 60);
+                const itemTapPayable = due + tapFee;
+
                 sumDue += due;
                 sumCharge += charge;
                 sumTotal += rec;
+                sumTapPayable += itemTapPayable;
 
                 rows.push([
                     i + 1,
@@ -335,22 +343,32 @@
                 values: [sumDue.toFixed(2), sumCharge.toFixed(2), sumTotal.toFixed(2)]
             };
 
+            financialAudit = {
+                totalTuitionFee: sumDue.toFixed(2),
+                tapPayable: sumTapPayable.toFixed(2),
+                totalReceived: sumTotal.toFixed(2),
+                netProfit: (sumTotal - sumTapPayable).toFixed(2)
+            };
+
         } else if (reportType === 'pending') {
             title = "PENDING CLEARANCE REPORT (TO-PAY TAP)";
-            tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Tuition Fee", "Gross Required", "Net Received"];
+            tableHeaders = ["SL", "Receipt No", "Date", "Student ID", "Student Name", "Tuition Fee", "Gross Required", "Net Received"];
             columnAlignments = ["center", "center", "center", "center", "left", "right", "right", "right"];
-            colWidths = ["4%", "8%", "11%", "10%", "33%", "12%", "11%", "11%"];
+            colWidths = ["4%", "9%", "11%", "10%", "33%", "11%", "11%", "11%"];
 
             let list = feeTransactions.filter(t => t.status !== 'Paid' && (t.date >= fromDate && t.date <= toDate));
-            let sumFee = 0, sumGross = 0, sumRec = 0;
+            let sumFee = 0, sumGross = 0, sumRec = 0, sumTapPayable = 0;
 
             list.forEach((t, i) => {
                 const fee = parseFloat(t.netDue || 0);
-                const gross = parseFloat(t.grossPayment || fee);
                 const rec = parseFloat(t.netReceived || 0);
+                const tapFee = Math.min(fee * 0.01, 60);
+                const tapPay = fee + tapFee;
+
                 sumFee += fee;
-                sumGross += gross;
+                sumGross += tapPay;
                 sumRec += rec;
+                sumTapPayable += tapPay;
 
                 rows.push([
                     i + 1,
@@ -359,7 +377,7 @@
                     cleanValue(t.customerId || t.studentId || t.stdId),
                     toTitleCase(t.studentName || t.student_name || t.name),
                     fee.toFixed(2),
-                    gross.toFixed(2),
+                    tapPay.toFixed(2),
                     rec.toFixed(2)
                 ]);
             });
@@ -369,11 +387,18 @@
                 values: [sumFee.toFixed(2), sumGross.toFixed(2), sumRec.toFixed(2)]
             };
 
+            financialAudit = {
+                totalTuitionFee: sumFee.toFixed(2),
+                tapPayable: sumTapPayable.toFixed(2),
+                totalReceived: sumRec.toFixed(2),
+                netProfit: (sumRec - sumTapPayable).toFixed(2)
+            };
+
         } else if (reportType === 'settled') {
             title = "PAID SETTLEMENT AUDIT REPORT";
-            tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Gross Paid", "Settled Timestamp"];
+            tableHeaders = ["SL", "Receipt No", "Date", "Student ID", "Student Name", "Gross Paid", "Settled Timestamp"];
             columnAlignments = ["center", "center", "center", "center", "left", "right", "center"];
-            colWidths = ["4%", "9%", "11%", "10%", "36%", "12%", "18%"];
+            colWidths = ["4%", "10%", "11%", "10%", "35%", "12%", "18%"];
 
             let list = feeTransactions.filter(t => t.status === 'Paid' && (t.date >= fromDate && t.date <= toDate));
             let sumGross = 0;
@@ -430,7 +455,7 @@
 
         } else if (reportType === 'void') {
             title = "VOID & CANCELLATION AUDIT LOG";
-            tableHeaders = ["SL", "Receipt #", "Void Date", "Student ID & Name", "Amount", "Reason for Void", "Voided By"];
+            tableHeaders = ["SL", "Receipt No", "Void Date", "Student ID & Name", "Amount", "Reason for Void", "Voided By"];
             columnAlignments = ["center", "center", "center", "left", "right", "left", "center"];
             colWidths = ["4%", "9%", "14%", "26%", "11%", "24%", "12%"];
 
@@ -467,11 +492,12 @@
             colWidths,
             rows,
             grandTotalConfig,
+            financialAudit,
             fileName: `${reportType}_report_${Date.now()}`
         });
     }
 
-    // ৫. নিউ ট্যাব রেন্ডারিং এবং jsPDF AutoTable ইঞ্জিন দিয়ে ১-ক্লিকে সরাসরি ডাউনলোড
+    // ৫. নিউ ট্যাব রেন্ডারিং এবং সামারি বক্স
     function openReportWindow(meta) {
         const reportWindow = window.open('', '_blank');
         if (!reportWindow) {
@@ -496,7 +522,7 @@
 
             if (meta.grandTotalConfig) {
                 tableRowsHTML += '<tr class="total-row">';
-                tableRowsHTML += `<td colspan="${meta.grandTotalConfig.spanCols}" style="text-align: right; padding-right: 12px; font-weight: 700; letter-spacing: 0.5px;">Grand Total =</td>`;
+                tableRowsHTML += `<td colspan="${meta.grandTotalConfig.spanCols}" style="text-align: right; padding-right: 12px; font-weight: 700;">Grand Total =</td>`;
                 meta.grandTotalConfig.values.forEach(val => {
                     const isNum = !isNaN(val) && val !== '';
                     tableRowsHTML += `<td style="text-align: ${isNum ? 'right' : 'center'}; font-weight: 700;">${val}</td>`;
@@ -512,6 +538,33 @@
             headersHTML += `<th style="text-align: ${align}; ${w}">${h}</th>`;
         });
 
+        let auditBoxHTML = '';
+        if (meta.financialAudit) {
+            auditBoxHTML = `
+                <div class="audit-summary-card">
+                    <div class="audit-summary-title">FINANCIAL & COMMISSION AUDIT SUMMARY</div>
+                    <table class="audit-summary-table">
+                        <tr>
+                            <td class="lbl">Total Tuition Fee Collected:</td>
+                            <td class="val">৳ ${meta.financialAudit.totalTuitionFee}</td>
+                        </tr>
+                        <tr>
+                            <td class="lbl">Tap Gateway Payable Amount:</td>
+                            <td class="val">৳ ${meta.financialAudit.tapPayable} <span style="font-size: 7.5pt; font-weight: normal; color: #333;">(Tuition Fee + 1% Tap Fee, Max ৳60)</span></td>
+                        </tr>
+                        <tr>
+                            <td class="lbl">Total Cash Received at Counter:</td>
+                            <td class="val">৳ ${meta.financialAudit.totalReceived} <span style="font-size: 7.5pt; font-weight: normal; color: #333;">(Tuition Fee + Service Charges)</span></td>
+                        </tr>
+                        <tr class="highlight-profit">
+                            <td class="lbl" style="font-weight: 800;">Net Shop Income (Profit):</td>
+                            <td class="val" style="font-weight: 800; font-size: 9.5pt;">৳ ${meta.financialAudit.netProfit}</td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+        }
+
         const docHTML = `
             <!DOCTYPE html>
             <html lang="en">
@@ -523,7 +576,6 @@
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                 <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
                 
-                <!-- নেটিভ ভেক্টর ইঞ্জিন jsPDF এবং AutoTable সিডিএন -->
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -649,12 +701,56 @@
                         padding: 6px 4px;
                     }
 
+                    /* কমিশন ও অডিট সামারি বক্স */
+                    .audit-summary-card {
+                        margin-top: 15px;
+                        border: 1.5px solid #000000;
+                        padding: 8px 12px;
+                        background: #ffffff;
+                        width: 100%;
+                    }
+
+                    .audit-summary-title {
+                        font-size: 9pt;
+                        font-weight: 800;
+                        text-transform: uppercase;
+                        border-bottom: 1px solid #000000;
+                        padding-bottom: 4px;
+                        margin-bottom: 6px;
+                    }
+
+                    table.audit-summary-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        font-size: 8.5pt;
+                    }
+
+                    table.audit-summary-table td {
+                        padding: 3px 0;
+                        border: none !important;
+                    }
+
+                    table.audit-summary-table td.lbl {
+                        width: 45%;
+                        font-weight: 600;
+                    }
+
+                    table.audit-summary-table td.val {
+                        width: 55%;
+                        font-weight: 700;
+                    }
+
+                    table.audit-summary-table tr.highlight-profit td {
+                        border-top: 1px dashed #000000 !important;
+                        padding-top: 5px;
+                    }
+
                     @media print {
                         @page { size: ${pageSize}; margin: 6mm; }
                         body { background: #ffffff !important; padding: 0 !important; }
                         .no-print { display: none !important; }
                         .paper-sheet { width: 100% !important; padding: 0 !important; box-shadow: none !important; margin: 0 !important; }
-                        table.report-table th, table.report-table td { border-color: #000000 !important; color: #000000 !important; }
+                        table.report-table th, table.report-table td, .audit-summary-card { border-color: #000000 !important; color: #000000 !important; }
                     }
                 </style>
             </head>
@@ -685,11 +781,13 @@
                             ${tableRowsHTML}
                         </tbody>
                     </table>
+
+                    ${auditBoxHTML}
                 </div>
 
                 <script>
-                    // ১-ক্লিকে সরাসরি নেটিভ ভেক্টর পিডিএফ ডাউনলোড (Zero Print Preview, Zero Canvas Image)
-                    function downloadDirectPDF() {
+                    // ১-ক্লিকে সরাসরি নেটিভ ভেক্টর পিডিএফ ডাউনলোড (Tiro Bangla ফন্ট সহ)
+                    async function downloadDirectPDF() {
                         const { jsPDF } = window.jspdf;
                         const doc = new jsPDF({
                             orientation: '${meta.isLandscape ? 'landscape' : 'portrait'}',
@@ -697,28 +795,36 @@
                             format: 'a4'
                         });
 
-                        // হেডার ও মেটা টেক্সট
-                        doc.setFont("Helvetica", "bold");
+                        // Tiro Bangla ফন্ট এমবেড
+                        try {
+                            const fontRes = await fetch("https://fonts.gstatic.com/s/tirobangla/v5/0FlxVPmxr4q3nB7mN3xI6qLp.woff");
+                            const fontBlob = await fontRes.arrayBuffer();
+                            const base64Font = btoa(new Uint8Array(fontBlob).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+                            doc.addFileToVFS('TiroBangla-Regular.ttf', base64Font);
+                            doc.addFont('TiroBangla-Regular.ttf', 'TiroBangla', 'normal');
+                            doc.setFont('TiroBangla');
+                        } catch(e) {
+                            doc.setFont("Helvetica");
+                        }
+
                         doc.setFontSize(16);
                         doc.text("MOUSUMI COMPUTER", doc.internal.pageSize.getWidth() / 2, 14, { align: "center" });
 
                         doc.setFontSize(11);
                         doc.text("${meta.title}", doc.internal.pageSize.getWidth() / 2, 20, { align: "center" });
 
-                        doc.setFont("Helvetica", "normal");
                         doc.setFontSize(8.5);
                         doc.text("PERIOD: ${meta.period}", 12, 27);
                         doc.text("GENERATED: " + new Date().toLocaleString(), doc.internal.pageSize.getWidth() - 12, 27, { align: "right" });
 
-                        // টেবিল বডি ও গ্র্যান্ড টোটাল প্রস্তুতকরণ
                         const headers = ${JSON.stringify(meta.headers)};
                         const rows = ${JSON.stringify(meta.rows)};
                         const aligns = ${JSON.stringify(meta.alignments)};
                         const grandCfg = ${JSON.stringify(meta.grandTotalConfig)};
+                        const finAudit = ${JSON.stringify(meta.financialAudit)};
 
                         const bodyData = [...rows];
 
-                        // মার্জড গ্র্যান্ড টোটাল রো যোগ করা
                         if (grandCfg) {
                             const totalRow = [];
                             totalRow.push({
@@ -735,7 +841,7 @@
                             bodyData.push(totalRow);
                         }
 
-                        // নেটিভ AutoTable রেন্ডার (সলিড ব্ল্যাক বর্ডার ও সঠিক অ্যালাইনমেন্ট)
+                        // মূল টেবিল রেন্ডার
                         doc.autoTable({
                             head: [headers],
                             body: bodyData,
@@ -744,7 +850,7 @@
                             theme: 'grid',
                             styles: { 
                                 fontSize: 8, 
-                                font: "Helvetica", 
+                                font: doc.getFontList()['TiroBangla'] ? 'TiroBangla' : 'Helvetica', 
                                 cellPadding: 2, 
                                 textColor: [0, 0, 0],
                                 lineColor: [0, 0, 0],
@@ -766,7 +872,32 @@
                             }
                         });
 
-                        // কোনো ডায়ালগ ছাড়া ১-ক্লিকে সরাসরি ফাইল সেভ শুরু
+                        // যদি কমিশন ও অডিট সামারি থাকে, তবে টেবিলের নিচে সুন্দরভাবে যুক্ত করা
+                        if (finAudit) {
+                            let endY = doc.lastAutoTable.finalY + 8;
+                            if (endY > doc.internal.pageSize.getHeight() - 40) {
+                                doc.addPage();
+                                endY = 15;
+                            }
+
+                            doc.setFontSize(9);
+                            doc.setFont("Helvetica", "bold");
+                            doc.text("FINANCIAL & COMMISSION AUDIT SUMMARY", 12, endY);
+                            doc.setLineWidth(0.3);
+                            doc.line(12, endY + 1.5, doc.internal.pageSize.getWidth() - 12, endY + 1.5);
+
+                            doc.setFontSize(8.5);
+                            doc.setFont("Helvetica", "normal");
+                            doc.text("Total Tuition Fee Collected  :  " + finAudit.totalTuitionFee + " Tk", 14, endY + 7);
+                            doc.text("Tap Gateway Payable Amount   :  " + finAudit.tapPayable + " Tk  (Tuition Fee + 1% Tap Fee, Max 60 Tk)", 14, endY + 12);
+                            doc.text("Total Cash Received at Shop  :  " + finAudit.totalReceived + " Tk  (Tuition Fee + Service Charges)", 14, endY + 17);
+
+                            doc.setFont("Helvetica", "bold");
+                            doc.text("Net Shop Income (Profit)     :  " + finAudit.netProfit + " Tk", 14, endY + 23);
+                            doc.line(12, endY + 26, doc.internal.pageSize.getWidth() - 12, endY + 26);
+                        }
+
+                        // সরাসরি ফাইল সেভ (কোনো প্রিভিউ ছাড়া)
                         doc.save('${meta.fileName}.pdf');
                     }
 
@@ -775,6 +906,7 @@
                         const headers = ${JSON.stringify(meta.headers)};
                         const rows = ${JSON.stringify(meta.rows)};
                         const grandCfg = ${JSON.stringify(meta.grandTotalConfig)};
+                        const finAudit = ${JSON.stringify(meta.financialAudit)};
 
                         const aoa = [
                             ["MOUSUMI COMPUTER"],
@@ -790,6 +922,15 @@
                             totalLine[grandCfg.spanCols - 1] = "Grand Total =";
                             grandCfg.values.forEach(v => totalLine.push(v));
                             aoa.push(totalLine);
+                        }
+
+                        if (finAudit) {
+                            aoa.push([]);
+                            aoa.push(["FINANCIAL & COMMISSION AUDIT SUMMARY"]);
+                            aoa.push(["Total Tuition Fee Collected", finAudit.totalTuitionFee]);
+                            aoa.push(["Tap Gateway Payable Amount", finAudit.tapPayable]);
+                            aoa.push(["Total Cash Received at Counter", finAudit.totalReceived]);
+                            aoa.push(["Net Shop Income (Profit)", finAudit.netProfit]);
                         }
 
                         const ws = XLSX.utils.aoa_to_sheet(aoa);
