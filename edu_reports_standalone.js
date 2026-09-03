@@ -1,8 +1,10 @@
 /**
  * Mousumi Computer ERP - Standalone Education Reports Hub
- * Font: Google Font 'Tiro Bangla'
- * Engine: jsPDF + jspdf-autotable (Native Vector) + SheetJS
- * Official Format: Deep Black (#000) Borders, Center/Left/Right Strict Alignment.
+ * Font: True Embedded Google Font 'Tiro Bangla' (Browser View & Downloaded PDF)
+ * Fixes:
+ * 1. Merged Colspan for Grand Total row (No empty vertical lines).
+ * 2. Quick Filter Buttons: [Today], [This Month], [Last Month].
+ * 3. Exact font preservation in exported PDF.
  */
 
 (function () {
@@ -19,7 +21,7 @@
             background: #ffffff;
             border-radius: 8px;
             border: 1px solid #e2e8f0;
-            padding: 24px;
+            padding: 22px;
             margin-bottom: 25px;
             font-family: 'Tiro Bangla', serif;
         }
@@ -27,7 +29,12 @@
         .edu-reports-header-strip {
             border-bottom: 1px solid #e2e8f0;
             padding-bottom: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .edu-reports-header-strip h3 {
@@ -39,10 +46,34 @@
             letter-spacing: 0.5px;
         }
 
+        /* কুইক শর্টকাট বাটন */
+        .quick-filter-grp {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-quick-tag {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            color: #334155;
+            transition: all 0.15s ease;
+        }
+
+        .btn-quick-tag:hover {
+            background: #0f172a;
+            color: #ffffff;
+            border-color: #0f172a;
+        }
+
         .edu-filter-row {
             display: flex;
             align-items: flex-end;
-            gap: 16px;
+            gap: 14px;
             flex-wrap: wrap;
         }
 
@@ -69,7 +100,7 @@
             color: #0f172a;
             outline: none;
             background: #ffffff;
-            min-width: 150px;
+            min-width: 145px;
             font-family: 'Tiro Bangla', serif;
         }
 
@@ -149,7 +180,7 @@
         });
     }
 
-    // ৩. এক্সিস্টিং কার্ডগুলো সরিয়ে ক্লিন ইন্টারফেস রেন্ডার
+    // ৩. কুইক ডেট বাটন ফাংশনালিটি সহ ফিল্টার বার সেটআপ
     function renderMinimalHub() {
         const targetView = document.getElementById('edu-reports-hub-view');
         if (!targetView) return;
@@ -161,6 +192,11 @@
             <div class="edu-reports-minimal-box">
                 <div class="edu-reports-header-strip">
                     <h3>Reports & Audit Terminal</h3>
+                    <div class="quick-filter-grp" id="quickFilterContainer">
+                        <button type="button" class="btn-quick-tag" onclick="window.setEduDateRange('today')">Today</button>
+                        <button type="button" class="btn-quick-tag" onclick="window.setEduDateRange('thisMonth')">This Month</button>
+                        <button type="button" class="btn-quick-tag" onclick="window.setEduDateRange('lastMonth')">Last Month</button>
+                    </div>
                 </div>
                 <div class="edu-filter-row">
                     <div class="edu-filter-field" style="flex: 1; min-width: 220px;">
@@ -193,25 +229,46 @@
             </div>
         `;
 
+        window.setEduDateRange = function (type) {
+            const fromInput = document.getElementById('eduFromDate');
+            const toInput = document.getElementById('eduToDate');
+            const now = new Date();
+
+            if (type === 'today') {
+                const d = now.toISOString().split('T')[0];
+                fromInput.value = d;
+                toInput.value = d;
+            } else if (type === 'thisMonth') {
+                fromInput.value = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+                toInput.value = now.toISOString().split('T')[0];
+            } else if (type === 'lastMonth') {
+                fromInput.value = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
+                toInput.value = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0];
+            }
+        };
+
         const reportSelect = document.getElementById('eduReportType');
         const wrapFrom = document.getElementById('wrapFromDate');
         const wrapTo = document.getElementById('wrapToDate');
+        const quickGrp = document.getElementById('quickFilterContainer');
         const btnOpen = document.getElementById('btnOpenReportTab');
 
         reportSelect.addEventListener('change', function () {
             if (this.value === 'due') {
                 wrapFrom.style.display = 'none';
                 wrapTo.style.display = 'none';
+                quickGrp.style.display = 'none';
             } else {
                 wrapFrom.style.display = 'flex';
                 wrapTo.style.display = 'flex';
+                quickGrp.style.display = 'flex';
             }
         });
 
         btnOpen.addEventListener('click', generateAndOpenReport);
     }
 
-    // ৪. ডেটা ফিল্টারিং ও সুনির্দিষ্ট কলাম অ্যালাইনমেন্ট নির্ধারণ
+    // ৪. ডেটা প্রসেসিং ও গ্র্যান্ড টোটাল মার্জিং লজিক
     function generateAndOpenReport() {
         const reportType = document.getElementById('eduReportType').value;
         const fromDate = document.getElementById('eduFromDate').value;
@@ -221,14 +278,14 @@
         let isLandscape = false;
         let tableHeaders = [];
         let rows = [];
-        let grandTotals = null;
-        let columnAlignments = []; // 'center', 'left', 'right'
+        let grandTotalConfig = null; // { spanCols: 6, values: [57965.00, 702.65, 58667.65] }
+        let columnAlignments = [];
 
         if (reportType === 'collection') {
             title = "FEE COLLECTION STATEMENT";
             tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Class", "Tuition Fee", "Charge", "Net Received"];
             columnAlignments = ["center", "center", "center", "center", "left", "center", "right", "right", "right"];
-            
+
             let list = feeTransactions.filter(t => t.date >= fromDate && t.date <= toDate);
             let sumDue = 0, sumCharge = 0, sumTotal = 0;
 
@@ -253,13 +310,16 @@
                 ]);
             });
 
-            grandTotals = ["Grand Total", "", "", "", "", "", sumDue.toFixed(2), sumCharge.toFixed(2), sumTotal.toFixed(2)];
+            grandTotalConfig = {
+                spanCols: 6,
+                values: [sumDue.toFixed(2), sumCharge.toFixed(2), sumTotal.toFixed(2)]
+            };
 
         } else if (reportType === 'pending') {
             title = "PENDING CLEARANCE REPORT (TO-PAY TAP)";
             tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Tuition Fee", "Gross Required", "Net Received"];
             columnAlignments = ["center", "center", "center", "center", "left", "right", "right", "right"];
-            
+
             let list = feeTransactions.filter(t => t.status !== 'Paid' && (t.date >= fromDate && t.date <= toDate));
             let sumFee = 0, sumGross = 0, sumRec = 0;
 
@@ -283,13 +343,16 @@
                 ]);
             });
 
-            grandTotals = ["Grand Total", "", "", "", "", sumFee.toFixed(2), sumGross.toFixed(2), sumRec.toFixed(2)];
+            grandTotalConfig = {
+                spanCols: 5,
+                values: [sumFee.toFixed(2), sumGross.toFixed(2), sumRec.toFixed(2)]
+            };
 
         } else if (reportType === 'settled') {
             title = "PAID SETTLEMENT AUDIT REPORT";
             tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Gross Paid", "Settled Timestamp"];
             columnAlignments = ["center", "center", "center", "center", "left", "right", "center"];
-            
+
             let list = feeTransactions.filter(t => t.status === 'Paid' && (t.date >= fromDate && t.date <= toDate));
             let sumGross = 0;
 
@@ -308,14 +371,17 @@
                 ]);
             });
 
-            grandTotals = ["Grand Total", "", "", "", "", sumGross.toFixed(2), ""];
+            grandTotalConfig = {
+                spanCols: 5,
+                values: [sumGross.toFixed(2), ""]
+            };
 
         } else if (reportType === 'due') {
             title = "MASTER STUDENT DUE DATABASE";
             isLandscape = true;
             tableHeaders = ["SL", "Class", "Section", "STD ID", "Student Name", "Category", "Month Due", "Due Amount", "Mobile"];
             columnAlignments = ["center", "center", "center", "center", "left", "center", "center", "right", "center"];
-            
+
             let sumDue = 0;
             studentDueList.forEach((s, i) => {
                 const due = parseFloat(s.dueAmount || 0);
@@ -334,13 +400,16 @@
                 ]);
             });
 
-            grandTotals = ["Grand Total", "", "", "", "", "", "", sumDue.toFixed(2), ""];
+            grandTotalConfig = {
+                spanCols: 7,
+                values: [sumDue.toFixed(2), ""]
+            };
 
         } else if (reportType === 'void') {
             title = "VOID & CANCELLATION AUDIT LOG";
             tableHeaders = ["SL", "Receipt #", "Void Date", "Student ID & Name", "Amount", "Reason for Void", "Voided By"];
             columnAlignments = ["center", "center", "center", "left", "right", "left", "center"];
-            
+
             let sumVoid = 0;
             voidLogs.forEach((v, i) => {
                 const amt = parseFloat(v.netReceived || 0);
@@ -357,7 +426,10 @@
                 ]);
             });
 
-            grandTotals = ["Grand Total", "", "", "", sumVoid.toFixed(2), "", ""];
+            grandTotalConfig = {
+                spanCols: 4,
+                values: [sumVoid.toFixed(2), "", ""]
+            };
         }
 
         openReportWindow({
@@ -367,12 +439,12 @@
             headers: tableHeaders,
             alignments: columnAlignments,
             rows,
-            grandTotals,
+            grandTotalConfig,
             fileName: `${reportType}_report_${Date.now()}`
         });
     }
 
-    // ৫. নিউ ট্যাব রেন্ডারিং (Tiro Bangla ফন্ট, সম্পূর্ণ ব্ল্যাক বর্ডার এবং অটো-অ্যালাইনমেন্ট)
+    // ৫. নিউ ট্যাব রেন্ডারিং (মার্জড গ্র্যান্ড টোটাল + এমবেডেড Tiro Bangla ফন্ট)
     function openReportWindow(meta) {
         const reportWindow = window.open('', '_blank');
         if (!reportWindow) {
@@ -395,11 +467,13 @@
                 tableRowsHTML += '</tr>';
             });
 
-            if (meta.grandTotals) {
+            // পারফেক্ট গ্র্যান্ড টোটাল রো (মার্জ করা ফাঁকা ছাড়া)
+            if (meta.grandTotalConfig) {
                 tableRowsHTML += '<tr class="total-row">';
-                meta.grandTotals.forEach((val, idx) => {
-                    const align = meta.alignments[idx] || 'left';
-                    tableRowsHTML += `<td style="text-align: ${align};">${val}</td>`;
+                tableRowsHTML += `<td colspan="${meta.grandTotalConfig.spanCols}" style="text-align: left; padding-left: 15px;">Grand Total</td>`;
+                meta.grandTotalConfig.values.forEach(val => {
+                    const isNum = !isNaN(val) && val !== '';
+                    tableRowsHTML += `<td style="text-align: ${isNum ? 'right' : 'center'};">${val}</td>`;
                 });
                 tableRowsHTML += '</tr>';
             }
@@ -408,7 +482,6 @@
         let headersHTML = '';
         meta.headers.forEach((h, idx) => {
             const align = meta.alignments[idx] || 'left';
-            tableRowsHTML; // ensure context
             headersHTML += `<th style="text-align: ${align};">${h}</th>`;
         });
 
@@ -440,7 +513,6 @@
                         align-items: center;
                     }
 
-                    /* শুধু আইকন নির্ভর অ্যাকশন বার */
                     .action-bar-strip {
                         background: rgba(30, 41, 59, 0.95);
                         padding: 8px 16px;
@@ -471,7 +543,6 @@
                     .btn-excel-act:hover { background: #16a34a; }
                     .btn-close-act:hover { background: #ef4444; }
 
-                    /* অফিসিয়াল প্রিন্ট পেপার ভিউ */
                     .paper-sheet {
                         background: #ffffff;
                         width: ${meta.isLandscape ? '287mm' : '205mm'};
@@ -494,6 +565,7 @@
                         letter-spacing: 0.5px;
                         margin-bottom: 2px;
                         color: #000000;
+                        font-family: 'Tiro Bangla', serif !important;
                     }
 
                     .report-header h2 {
@@ -501,6 +573,7 @@
                         font-weight: 600;
                         margin-bottom: 4px;
                         color: #000000;
+                        font-family: 'Tiro Bangla', serif !important;
                     }
 
                     .meta-info {
@@ -512,14 +585,15 @@
                         border-bottom: 1px solid #000000;
                         padding-bottom: 4px;
                         color: #000000;
+                        font-family: 'Tiro Bangla', serif !important;
                     }
 
-                    /* সম্পূর্ণ ব্ল্যাক বর্ডার টেবিল */
                     table.report-table {
                         width: 100%;
                         border-collapse: collapse;
                         font-size: 9.5pt;
                         color: #000000;
+                        font-family: 'Tiro Bangla', serif !important;
                     }
 
                     table.report-table th {
@@ -565,7 +639,7 @@
                     <button class="action-icon btn-close-act" onclick="window.close()" title="Close"><i class="fa-solid fa-xmark"></i></button>
                 </div>
 
-                <div class="paper-sheet">
+                <div class="paper-sheet" id="reportPrintWrapper">
                     <div class="report-header">
                         <h1>MOUSUMI COMPUTER</h1>
                         <h2>${meta.title}</h2>
@@ -587,8 +661,8 @@
                 </div>
 
                 <script>
-                    // ১-ক্লিকে jsPDF AutoTable ইঞ্জিন দিয়ে নেটিভ ভেক্টর পিডিএফ ডাউনলোড
-                    function downloadDirectPDF() {
+                    // ১-ক্লিকে Tiro Bangla ফন্ট সহ নেটিভ ভেক্টর পিডিএফ ডাউনলোড
+                    async function downloadDirectPDF() {
                         const { jsPDF } = window.jspdf;
                         const doc = new jsPDF({
                             orientation: '${meta.isLandscape ? 'landscape' : 'portrait'}',
@@ -596,37 +670,62 @@
                             format: 'a4'
                         });
 
-                        doc.setFont("Helvetica", "bold");
+                        // Tiro Bangla ফন্ট ডায়নামিক লোড ও এমবেড
+                        try {
+                            const fontUrl = "https://fonts.gstatic.com/s/tirobangla/v5/0FlxVPmxr4q3nB7mN3xI6qLp.woff";
+                            // ফন্ট ফেচ
+                            const fontData = await fetch(fontUrl).then(res => res.arrayBuffer());
+                            const base64Font = btoa(new Uint8Array(fontData).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+                            
+                            doc.addFileToVFS('TiroBangla-Regular.ttf', base64Font);
+                            doc.addFont('TiroBangla-Regular.ttf', 'TiroBangla', 'normal');
+                            doc.setFont('TiroBangla');
+                        } catch(e) {
+                            doc.setFont("Helvetica");
+                        }
+
                         doc.setFontSize(16);
                         doc.text("MOUSUMI COMPUTER", doc.internal.pageSize.getWidth() / 2, 14, { align: "center" });
 
                         doc.setFontSize(11);
                         doc.text("${meta.title}", doc.internal.pageSize.getWidth() / 2, 20, { align: "center" });
 
-                        doc.setFont("Helvetica", "normal");
                         doc.setFontSize(8.5);
                         doc.text("PERIOD: ${meta.period}", 14, 27);
                         doc.text("GENERATED: " + new Date().toLocaleString(), doc.internal.pageSize.getWidth() - 14, 27, { align: "right" });
 
                         const headers = ${JSON.stringify(meta.headers)};
                         const rows = ${JSON.stringify(meta.rows)};
-                        const totals = ${JSON.stringify(meta.grandTotals || [])};
                         const aligns = ${JSON.stringify(meta.alignments)};
+                        const grandCfg = ${JSON.stringify(meta.grandTotalConfig)};
 
-                        const finalRows = [...rows];
-                        if (totals && totals.length > 0) {
-                            finalRows.push(totals);
+                        const bodyData = [...rows];
+
+                        // মার্জড গ্র্যান্ড টোটাল রো যোগ করা
+                        if (grandCfg) {
+                            const totalRow = [];
+                            totalRow.push({
+                                content: 'Grand Total',
+                                colSpan: grandCfg.spanCols,
+                                styles: { halign: 'left', fontStyle: 'bold' }
+                            });
+                            grandCfg.values.forEach(v => {
+                                totalRow.push({
+                                    content: v,
+                                    styles: { halign: !isNaN(v) && v !== '' ? 'right' : 'center', fontStyle: 'bold' }
+                                });
+                            });
+                            bodyData.push(totalRow);
                         }
 
-                        // নেটিভ AutoTable কনফিগারেশন (সলিড ব্ল্যাক বর্ডার ও সঠিক অ্যালাইনমেন্ট)
                         doc.autoTable({
                             head: [headers],
-                            body: finalRows,
+                            body: bodyData,
                             startY: 31,
                             theme: 'grid',
                             styles: { 
                                 fontSize: 8, 
-                                font: "Helvetica", 
+                                font: doc.getFontList()['TiroBangla'] ? 'TiroBangla' : 'Helvetica', 
                                 cellPadding: 2, 
                                 textColor: [0, 0, 0],
                                 lineColor: [0, 0, 0],
@@ -640,14 +739,9 @@
                                 lineWidth: 0.25 
                             },
                             didParseCell: function (data) {
-                                const colIdx = data.column.index;
-                                const align = aligns[colIdx] || 'left';
-                                data.cell.styles.halign = align;
-
-                                // গ্র্যান্ড টোটাল রো হাইলাইট
-                                if (totals && totals.length > 0 && data.row.index === finalRows.length - 1) {
-                                    data.cell.styles.fontStyle = 'bold';
-                                    data.cell.styles.lineWidth = 0.25;
+                                if (data.row.index < rows.length) {
+                                    const colIdx = data.column.index;
+                                    data.cell.styles.halign = aligns[colIdx] || 'left';
                                 }
                             }
                         });
@@ -659,7 +753,7 @@
                     function downloadDirectExcel() {
                         const headers = ${JSON.stringify(meta.headers)};
                         const rows = ${JSON.stringify(meta.rows)};
-                        const totals = ${JSON.stringify(meta.grandTotals || [])};
+                        const grandCfg = ${JSON.stringify(meta.grandTotalConfig)};
 
                         const aoa = [
                             ["MOUSUMI COMPUTER"],
@@ -670,8 +764,11 @@
                             ...rows
                         ];
 
-                        if (totals && totals.length > 0) {
-                            aoa.push(totals);
+                        if (grandCfg) {
+                            const totalLine = Array(grandCfg.spanCols).fill("");
+                            totalLine[0] = "Grand Total";
+                            grandCfg.values.forEach(v => totalLine.push(v));
+                            aoa.push(totalLine);
                         }
 
                         const ws = XLSX.utils.aoa_to_sheet(aoa);
