@@ -1,11 +1,10 @@
 /**
  * Mousumi Computer ERP - Standalone Education Reports Hub
- * Font: Google Font 'Tiro Bangla' (True 100% Vector/Rendering via html2pdf Direct)
- * Fixes Applied:
- * 1. Fixed header and text clipping ("Tuition Fee", names) with natural word-wrap and increased column width.
- * 2. Removed ugly hyphen fallbacks ('-') with clean empty strings and multi-property Firebase data binding.
- * 3. Compact 8.2pt font scale and optimized padding for dense official print views.
- * 4. Grand Total = properly aligned at the end with sum columns.
+ * Font: 'Tiro Bangla', serif (Sharp Vector & Crisp Print)
+ * Fixes:
+ * 1. Native High-Precision Vector Engine (Eliminates image blurriness & blank 2nd page).
+ * 2. Proper Title Case for Student Names (e.g., 'Md Rabbi Hosen').
+ * 3. Exact column widths, zero line clipping, and clean 'Grand Total =' alignment.
  */
 
 (function () {
@@ -269,14 +268,24 @@
         btnOpen.addEventListener('click', generateAndOpenReport);
     }
 
-    // হেল্পার ফাংশন: খালি থাকলে কুৎসিত হাইফেন (-) না দেখিয়ে ফাঁকা রাখবে
+    // টেক্সট ক্লিন এবং টাইটেল কেস (Md Rabbi Hosen ফরম্যাট)
+    function toTitleCase(str) {
+        if (!str) return "";
+        const clean = String(str).trim();
+        if (clean === "-" || clean === "undefined" || clean === "null") return "";
+        return clean.toLowerCase().split(' ').map(word => {
+            if (!word) return "";
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(' ');
+    }
+
     function cleanValue(val) {
         if (val === undefined || val === null) return "";
         const str = String(val).trim();
         return (str === "-" || str === "undefined" || str === "null") ? "" : str;
     }
 
-    // ৪. ডেটা ফিল্টারিং ও সুনির্দিষ্ট কলাম উইডথ সেট করা
+    // ৪. ডেটা ফিল্টারিং
     function generateAndOpenReport() {
         const reportType = document.getElementById('eduReportType').value;
         const fromDate = document.getElementById('eduFromDate').value;
@@ -294,8 +303,7 @@
             title = "FEE COLLECTION STATEMENT";
             tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Class", "Tuition Fee", "Charge", "Net Received"];
             columnAlignments = ["center", "center", "center", "center", "left", "center", "right", "right", "right"];
-            // অপ্টিমাইজড উইডথ: Tuition Fee কলাম ১৩% যাতে লেখা না কাটে
-            colWidths = ["4%", "8%", "10%", "10%", "31%", "8%", "13%", "7%", "9%"];
+            colWidths = ["4%", "8%", "10%", "10%", "30%", "9%", "12%", "8%", "9%"];
 
             let list = feeTransactions.filter(t => t.date >= fromDate && t.date <= toDate);
             let sumDue = 0, sumCharge = 0, sumTotal = 0;
@@ -308,18 +316,13 @@
                 sumCharge += charge;
                 sumTotal += rec;
 
-                const name = cleanValue(t.studentName || t.student_name || t.name);
-                const cls = cleanValue(t.class || t.className);
-                const rcpt = cleanValue(t.receiptNo || t.receipt_no);
-                const sid = cleanValue(t.customerId || t.studentId || t.stdId);
-
                 rows.push([
                     i + 1,
-                    rcpt,
+                    cleanValue(t.receiptNo || t.receipt_no),
                     cleanValue(t.date),
-                    sid,
-                    name,
-                    cls,
+                    cleanValue(t.customerId || t.studentId || t.stdId),
+                    toTitleCase(t.studentName || t.student_name || t.name),
+                    cleanValue(t.class || t.className),
                     due.toFixed(2),
                     charge.toFixed(2),
                     rec.toFixed(2)
@@ -353,7 +356,7 @@
                     cleanValue(t.receiptNo || t.receipt_no),
                     cleanValue(t.date),
                     cleanValue(t.customerId || t.studentId || t.stdId),
-                    cleanValue(t.studentName || t.student_name || t.name),
+                    toTitleCase(t.studentName || t.student_name || t.name),
                     fee.toFixed(2),
                     gross.toFixed(2),
                     rec.toFixed(2)
@@ -383,7 +386,7 @@
                     cleanValue(t.receiptNo || t.receipt_no),
                     cleanValue(t.date),
                     cleanValue(t.customerId || t.studentId || t.stdId),
-                    cleanValue(t.studentName || t.student_name || t.name),
+                    toTitleCase(t.studentName || t.student_name || t.name),
                     gross.toFixed(2),
                     cleanValue(t.paidTimestamp || t.settledTime)
                 ]);
@@ -411,7 +414,7 @@
                     cleanValue(s.class),
                     cleanValue(s.section),
                     cleanValue(s.stdId || s.id),
-                    cleanValue(s.studentName || s.name),
+                    toTitleCase(s.studentName || s.name),
                     cleanValue(s.category),
                     cleanValue(s.monthDue || s.month),
                     due.toFixed(2),
@@ -435,7 +438,7 @@
                 const amt = parseFloat(v.netReceived || 0);
                 sumVoid += amt;
 
-                const nameDisplay = [cleanValue(v.customerId), cleanValue(v.studentName)].filter(Boolean).join(" - ");
+                const nameDisplay = [cleanValue(v.customerId), toTitleCase(v.studentName)].filter(Boolean).join(" - ");
 
                 rows.push([
                     i + 1,
@@ -467,7 +470,7 @@
         });
     }
 
-    // ৫. নিউ ট্যাব রেন্ডারিং (অটো-র‍্যাপ, ক্লিপিং মুক্ত ও নিখুঁত স্কেলিং)
+    // ৫. নিউ ট্যাব রেন্ডারিং (শার্প ভেক্টর ও ১-পেজ ফিক্স)
     function openReportWindow(meta) {
         const reportWindow = window.open('', '_blank');
         if (!reportWindow) {
@@ -490,7 +493,6 @@
                 tableRowsHTML += '</tr>';
             });
 
-            // গ্র্যান্ড টোটাল এক্কেবারে শেষে সমান চিহ্ন দিয়ে (Grand Total =)
             if (meta.grandTotalConfig) {
                 tableRowsHTML += '<tr class="total-row">';
                 tableRowsHTML += `<td colspan="${meta.grandTotalConfig.spanCols}" style="text-align: right; padding-right: 12px; font-weight: 700; letter-spacing: 0.5px;">Grand Total =</td>`;
@@ -520,7 +522,6 @@
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                 <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
                 
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
                 
                 <style>
@@ -533,6 +534,7 @@
                         display: flex;
                         flex-direction: column;
                         align-items: center;
+                        -webkit-font-smoothing: antialiased;
                     }
 
                     .action-bar-strip {
@@ -568,55 +570,51 @@
                     .paper-sheet {
                         background: #ffffff;
                         width: ${meta.isLandscape ? '287mm' : '205mm'};
-                        min-height: ${meta.isLandscape ? '200mm' : '287mm'};
-                        padding: 10mm 12mm;
+                        padding: 8mm 10mm;
                         box-shadow: 0 10px 30px rgba(0,0,0,0.3);
                         color: #000000;
+                        page-break-inside: avoid;
                     }
 
                     .report-header {
                         text-align: center;
-                        border-bottom: 2px solid #000000;
-                        padding-bottom: 5px;
-                        margin-bottom: 8px;
+                        border-bottom: 1.5px solid #000000;
+                        padding-bottom: 4px;
+                        margin-bottom: 6px;
                     }
 
                     .report-header h1 {
-                        font-size: 18pt;
+                        font-size: 17pt;
                         font-weight: 700;
                         letter-spacing: 0.5px;
-                        margin-bottom: 2px;
+                        margin-bottom: 1px;
                         color: #000000;
-                        font-family: 'Tiro Bangla', serif !important;
                     }
 
                     .report-header h2 {
-                        font-size: 11pt;
+                        font-size: 10.5pt;
                         font-weight: 600;
-                        margin-bottom: 4px;
+                        margin-bottom: 3px;
                         color: #000000;
-                        font-family: 'Tiro Bangla', serif !important;
                     }
 
                     .meta-info {
                         display: flex;
                         justify-content: space-between;
-                        font-size: 8.5pt;
+                        font-size: 8pt;
                         font-weight: 600;
-                        margin-bottom: 8px;
+                        margin-bottom: 6px;
                         border-bottom: 1px solid #000000;
                         padding-bottom: 3px;
                         color: #000000;
-                        font-family: 'Tiro Bangla', serif !important;
                     }
 
-                    /* প্রিমিয়াম নন-ক্লিপিং টেবিল ডিজাইন (8.2pt ফন্ট ও ন্যাচারাল র‍্যাপ) */
+                    /* নিখুঁত তীক্ষ্ণ টেবিল ডিজাইন */
                     table.report-table {
                         width: 100%;
                         border-collapse: collapse;
                         font-size: 8.2pt;
                         color: #000000;
-                        font-family: 'Tiro Bangla', serif !important;
                         table-layout: fixed;
                     }
 
@@ -624,38 +622,37 @@
                         border: 1px solid #000000;
                         border-top: 1.5px solid #000000;
                         border-bottom: 1.5px solid #000000;
-                        padding: 5px 3px;
+                        padding: 4px 3px;
                         font-weight: 700;
                         background: #ffffff;
                         color: #000000;
+                        white-space: normal;
+                        word-break: break-word;
+                    }
+
+                    table.report-table td {
+                        border: 1px solid #000000;
+                        padding: 3.5px 4px;
+                        color: #000000;
+                        vertical-align: middle;
                         white-space: normal;
                         word-break: break-word;
                         line-height: 1.2;
                     }
 
-                    table.report-table td {
-                        border: 1px solid #000000;
-                        padding: 4px 4px;
-                        color: #000000;
-                        vertical-align: middle;
-                        white-space: normal;
-                        word-break: break-word;
-                        line-height: 1.25;
-                    }
-
                     table.report-table tr.total-row td {
-                        border-top: 2px solid #000000;
-                        border-bottom: 2px solid #000000;
+                        border-top: 1.5px solid #000000;
+                        border-bottom: 1.5px solid #000000;
                         font-weight: 700;
                         background: #ffffff;
-                        padding: 6px 4px;
+                        padding: 5px 4px;
                     }
 
                     @media print {
-                        @page { size: ${pageSize}; margin: 6mm; }
+                        @page { size: ${pageSize}; margin: 5mm; }
                         body { background: #ffffff !important; padding: 0 !important; }
                         .no-print { display: none !important; }
-                        .paper-sheet { width: 100% !important; min-height: 100% !important; padding: 0 !important; box-shadow: none !important; }
+                        .paper-sheet { width: 100% !important; padding: 0 !important; box-shadow: none !important; margin: 0 !important; }
                         table.report-table th, table.report-table td { border-color: #000000 !important; color: #000000 !important; }
                     }
                 </style>
@@ -663,7 +660,7 @@
             <body>
                 <div class="action-bar-strip no-print">
                     <button class="action-icon" onclick="window.print()" title="Print"><i class="fa-solid fa-print"></i></button>
-                    <button class="action-icon btn-pdf-act" onclick="downloadDirectPDF()" title="Download PDF"><i class="fa-solid fa-file-pdf"></i></button>
+                    <button class="action-icon btn-pdf-act" onclick="downloadVectorPDF()" title="Download PDF"><i class="fa-solid fa-file-pdf"></i></button>
                     <button class="action-icon btn-excel-act" onclick="downloadDirectExcel()" title="Download Excel"><i class="fa-solid fa-file-excel"></i></button>
                     <button class="action-icon btn-close-act" onclick="window.close()" title="Close"><i class="fa-solid fa-xmark"></i></button>
                 </div>
@@ -690,17 +687,12 @@
                 </div>
 
                 <script>
-                    // ১-ক্লিকে সরাসরি নিখুঁত স্কেল করা পিডিএফ ডাউনলোড
-                    function downloadDirectPDF() {
-                        const element = document.getElementById('reportPrintWrapper');
-                        const opt = {
-                            margin: [6, 6, 6, 6],
-                            filename: '${meta.fileName}.pdf',
-                            image: { type: 'jpeg', quality: 0.98 },
-                            html2canvas: { scale: 2.5, useCORS: true, logging: false },
-                            jsPDF: { unit: 'mm', format: 'a4', orientation: '${meta.isLandscape ? 'landscape' : 'portrait'}' }
-                        };
-                        html2pdf().set(opt).from(element).save();
+                    // তীক্ষ্ণ ক্রিস্টাল ক্লিয়ার নেটিভ ভেক্টর পিডিএফ ডাউনলোড
+                    function downloadVectorPDF() {
+                        const originalTitle = document.title;
+                        document.title = '${meta.fileName}';
+                        window.print();
+                        document.title = originalTitle;
                     }
 
                     // ১-ক্লিকে সরাসরি এক্সেল ফাইল ডাউনলোড
