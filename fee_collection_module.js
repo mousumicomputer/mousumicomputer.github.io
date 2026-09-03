@@ -1,8 +1,10 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module
  * Minimalist, Clean & Business-Priority Edition:
+ * - Filter by Category: Instant Army / Civil batch clearance.
  * - Filter by Due Months: Instant 2+ Months (Urgent Fine Risk ⚠️) filter.
  * - Filter by Class: Pay class-wise urgent batches.
+ * - Combined Smart Filtering: Filter by Army + Class + Months simultaneously.
  * - Dynamic Tap Balance: Top total recalculates based on active filters.
  * - Visual ⚠️ Warning on rows with 2+ months due.
  * - Inline SVG icons (Zero broken [] boxes).
@@ -21,6 +23,7 @@
     let selectedPendingTxId = null;
     let pendingFilterClass = "all";
     let pendingFilterMonths = "all";
+    let pendingFilterCategory = "all";
 
     // পেজিনেশন
     let currentPage = 1;
@@ -122,7 +125,7 @@
             font-weight: 600;
         }
 
-        /* FILTERS BAR IN PENDING */
+        /* FILTERS STRIP IN PENDING */
         .pending-filter-strip {
             padding: 12px 20px 0 20px;
             display: flex;
@@ -403,7 +406,7 @@
                     </div>
                 </div>
 
-                <!-- PANEL 2: PENDING CLEARANCE (ফিল্টার ও প্রায়োরিটি পে সহ) -->
+                <!-- PANEL 2: PENDING CLEARANCE (ক্যাটাগরি, মাস ও ক্লাস ফিল্টার সহ) -->
                 <div class="view-panel" id="edu-pending-clearance-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
@@ -414,13 +417,22 @@
                             </div>
                         </div>
 
-                        <!-- দ্রুত ফিল্টারিং বার (Due Month & Class) -->
+                        <!-- দ্রুত ফিল্টারিং বার (Category, Months & Class) -->
                         <div class="pending-filter-strip">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:0.8rem; font-weight:700; color:#475569;">CATEGORY:</span>
+                                <select id="filterPendingCategory" class="filter-select-mini" onchange="window.onPendingCategoryFilterChange(this.value)">
+                                    <option value="all">All (Army/Civil)</option>
+                                    <option value="Army">Army</option>
+                                    <option value="Civil">Civil</option>
+                                </select>
+                            </div>
+
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <span style="font-size:0.8rem; font-weight:700; color:#475569;">MONTHS DUE:</span>
                                 <select id="filterPendingMonths" class="filter-select-mini" onchange="window.onPendingMonthFilterChange(this.value)">
                                     <option value="all">All Months</option>
-                                    <option value="urgent" style="color:#dc2626; font-weight:bold;">2+ Months (Urgent / Fine Risk ⚠️)</option>
+                                    <option value="urgent" style="color:#dc2626; font-weight:bold;">2+ Months (Urgent Fine Risk ⚠️)</option>
                                     <option value="1">1 Month</option>
                                     <option value="2">2 Months</option>
                                     <option value="3+">3+ Months</option>
@@ -435,7 +447,7 @@
                             </div>
                         </div>
 
-                        <!-- ক্লিন ও মিনিমাল শীর্ষ অ্যাকশন বার -->
+                        <!-- শীর্ষ অ্যাকশন কন্ট্রোল বার -->
                         <div class="pending-action-bar-strip">
                             <div class="selection-status-badge" id="pendingSelectedLabel">
                                 <span>No student selected</span>
@@ -463,6 +475,7 @@
                                         <th>STUDENT ID</th>
                                         <th>STUDENT NAME</th>
                                         <th>CLASS</th>
+                                        <th>CATEGORY</th>
                                         <th>MONTHS</th>
                                         <th>TUITION FEE</th>
                                         <th>TAP PAYABLE</th>
@@ -470,7 +483,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="pendingClearanceTableBody">
-                                    <tr><td colspan="9" style="text-align:center; padding:25px; color:#94a3b8;">No pending clearance records.</td></tr>
+                                    <tr><td colspan="10" style="text-align:center; padding:25px; color:#94a3b8;">No pending clearance records.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -864,6 +877,12 @@
     };
 
     // ফিল্টার ইভেন্টস
+    window.onPendingCategoryFilterChange = function (val) {
+        pendingFilterCategory = val;
+        selectedPendingTxId = null;
+        renderPendingTable();
+    };
+
     window.onPendingMonthFilterChange = function (val) {
         pendingFilterMonths = val;
         selectedPendingTxId = null;
@@ -876,7 +895,7 @@
         renderPendingTable();
     };
 
-    // ১১. টেবিল রেন্ডারিং ও প্রায়োরিটি ফিল্টারিং
+    // ১১. টেবিল রেন্ডারিং ও কম্বাইন্ড ফিল্টারিং
     function renderPendingTable() {
         const tbody = document.getElementById('pendingClearanceTableBody');
         const badge = document.getElementById('pendingCountBadge');
@@ -908,14 +927,18 @@
         // ফিল্টারিং প্রয়োগ
         let filteredPending = rawPending;
 
-        // ১. ক্লাস ফিল্টার
-        if (pendingFilterClass !== "all") {
-            filteredPending = filteredPending.filter(t => (t.class || '').toLowerCase() === pendingFilterClass.toLowerCase());
+        // ১. ক্যাটাগরি ফিল্টার (Army / Civil)
+        if (pendingFilterCategory !== "all") {
+            filteredPending = filteredPending.filter(t => (t.category || '').toLowerCase().trim() === pendingFilterCategory.toLowerCase().trim());
         }
 
-        // ২. বকেয়া মাস ফিল্টার (Urgent Fine Risk)
+        // ২. ক্লাস ফিল্টার
+        if (pendingFilterClass !== "all") {
+            filteredPending = filteredPending.filter(t => (t.class || '').toLowerCase().trim() === pendingFilterClass.toLowerCase().trim());
+        }
+
+        // ৩. বকেয়া মাস ফিল্টার (Urgent Fine Risk)
         if (pendingFilterMonths === "urgent") {
-            // ২ মাস বা তার বেশি বকেয়া
             filteredPending = filteredPending.filter(t => (parseInt(t.month) || 1) >= 2);
         } else if (pendingFilterMonths === "1") {
             filteredPending = filteredPending.filter(t => (parseInt(t.month) || 1) === 1);
@@ -948,7 +971,7 @@
         }
 
         if (filteredPending.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:25px; color:#94a3b8;">No matching pending records found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:25px; color:#94a3b8;">No matching pending records found.</td></tr>';
             if (badge) badge.innerText = '0 Pending';
             if (sumEl) sumEl.innerText = '0.00';
             return;
@@ -978,6 +1001,7 @@
                     <td><strong>${t.customerId}</strong></td>
                     <td style="font-weight:600;">${t.studentName}</td>
                     <td>${t.class || '-'}</td>
+                    <td><span style="font-size:0.8rem; font-weight:600; color:#334155;">${t.category || '-'}</span></td>
                     <td>${monthCol}</td>
                     <td>৳ ${tuition.toFixed(2)}</td>
                     <td style="font-weight:700; color:#b45309;">৳ ${grossPayable.toFixed(2)}</td>
@@ -987,7 +1011,6 @@
         });
         tbody.innerHTML = html;
         if (badge) badge.innerText = `${filteredPending.length} Pending`;
-        // ফিল্টার অনুযায়ী ট্যাপে মোট কত টাকা লাগবে তা সরাসরি দেখাবে
         if (sumEl) sumEl.innerText = totalGrossSum.toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
@@ -1071,12 +1094,12 @@
 
         if (type === 'pending') {
             fileName = "Pending_Clearance.xlsx";
-            data.push(["Receipt No", "Date", "Student ID", "Student Name", "Class", "Tuition Fee", "Tap Payable", "Net Collected"]);
+            data.push(["Receipt No", "Date", "Student ID", "Student Name", "Class", "Category", "Tuition Fee", "Tap Payable", "Net Collected"]);
             feeTransactionsList.filter(t => t.status !== 'Paid').forEach(t => {
                 const tuition = parseFloat(t.netDue || 0);
                 const tapFee = Math.min(tuition * 0.01, 60);
                 const gross = t.grossPayment ? parseFloat(t.grossPayment) : (tuition + tapFee);
-                data.push([t.receiptNo, t.date, t.customerId, t.studentName, t.class, tuition, gross, t.netReceived]);
+                data.push([t.receiptNo, t.date, t.customerId, t.studentName, t.class, t.category, tuition, gross, t.netReceived]);
             });
         } else if (type === 'paid') {
             fileName = "Paid_Settlement.xlsx";
@@ -1118,6 +1141,7 @@
                 (item.stdId && item.stdId.toLowerCase().includes(q)) ||
                 (item.class && item.class.toLowerCase().includes(q)) ||
                 (item.section && item.section.toLowerCase().includes(q)) ||
+                (item.category && item.category.toLowerCase().includes(q)) ||
                 (item.mobile && item.mobile.toLowerCase().includes(q)) ||
                 (item.fathersName && item.fathersName.toLowerCase().includes(q)) ||
                 (item.fathersMobile && item.fathersMobile.toLowerCase().includes(q)) ||
