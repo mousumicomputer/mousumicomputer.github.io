@@ -1,6 +1,6 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module (Enterprise Edition)
- * Super-Smart Multi-Tag Filtering & Clean Focused Terminal Edition
+ * Super-Smart Multi-Tag Filtering & Multi-Select Bulk Terminal Edition
  */
 
 (function () {
@@ -11,8 +11,10 @@
     let selectedStudentRawDue = 0;
     let selectedStudentData = null;
 
-    // সিলেকশন ও মাল্টি-ট্যাগ ফিল্টার স্টেট
-    let selectedPendingTxId = null;
+    // মাল্টিপল সিলেকশন সেট (একের অধিক আইডি ধরে রাখার জন্য)
+    let selectedPendingTxIds = new Set();
+
+    // ফিল্টার স্টেট
     let pendingFilters = {
         category: null, // 'Army', 'Civil'
         months: null,   // 'urgent', '1', '2', '3+'
@@ -318,6 +320,16 @@
             cursor: not-allowed;
         }
 
+        /* CHECKBOX STYLING */
+        .edu-checkbox {
+            width: 17px;
+            height: 17px;
+            cursor: pointer;
+            accent-color: #10b981;
+            vertical-align: middle;
+            margin: 0;
+        }
+
         /* CLEAN FOCUSED TABLE WITH ROUNDED ROW CARD BORDERS */
         .edu-table-responsive { 
             width: 100%; 
@@ -332,7 +344,7 @@
         }
 
         .edu-clean-table th {
-            padding: 8px 14px;
+            padding: 8px 12px;
             font-size: 0.74rem;
             font-weight: 800;
             text-transform: uppercase;
@@ -345,7 +357,7 @@
 
         .edu-clean-table td {
             background: #ffffff;
-            padding: 10px 14px;
+            padding: 10px 12px;
             font-size: 0.84rem;
             color: #1e293b;
             vertical-align: middle;
@@ -480,7 +492,7 @@
         menuList.insertAdjacentHTML('beforeend', html);
     }
 
-    // ৫. ভিউ প্যানেল ইনজেকশন (ক্লিন ও সংক্ষিপ্ত ভাষা)
+    // ৫. ভিউ প্যানেল ইনজেকশন
     function injectPanels() {
         const wrapper = document.querySelector('.main-wrapper');
         if (!wrapper) return;
@@ -544,7 +556,7 @@
                     </div>
                 </div>
 
-                <!-- PANEL 2: PENDING CLEARANCE (ক্লিন ও ফোকাসড) -->
+                <!-- PANEL 2: PENDING CLEARANCE (মাল্টি-সিলেক্ট এবং ক্লিন ভিউ) -->
                 <div class="view-panel" id="edu-pending-clearance-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
@@ -555,7 +567,7 @@
                             </div>
                         </div>
 
-                        <!-- অল-ইন-ওয়ান মাল্টি-ট্যাগ ফিল্টার বার -->
+                        <!-- ফিল্টার বার -->
                         <div class="filter-tag-wrapper">
                             <div class="filter-tag-box">
                                 <span class="filter-label">Tags:</span>
@@ -565,14 +577,12 @@
                                 <div class="filter-dropdown-wrap">
                                     <button type="button" class="btn-filter-add" id="btnFilterAddTrigger">+ Filter ▾</button>
                                     <div id="filterMenuPopup" class="filter-menu-popup">
-                                        <!-- ক্যাটাগরি -->
                                         <div class="filter-section-title">Category</div>
                                         <div class="filter-options-grid">
                                             <button type="button" class="filter-opt-btn" onclick="applyPendingTag('category', 'Army')">Army</button>
                                             <button type="button" class="filter-opt-btn" onclick="applyPendingTag('category', 'Civil')">Civil</button>
                                         </div>
 
-                                        <!-- বকেয়া মাস -->
                                         <div class="filter-section-title">Months Due</div>
                                         <div class="filter-options-grid">
                                             <button type="button" class="filter-opt-btn" style="color:#dc2626; font-weight:800;" onclick="applyPendingTag('months', 'urgent')">2+ Mos ⚠️</button>
@@ -581,7 +591,6 @@
                                             <button type="button" class="filter-opt-btn" onclick="applyPendingTag('months', '3+')">3+ Mos</button>
                                         </div>
 
-                                        <!-- ক্লাস -->
                                         <div class="filter-section-title">Class</div>
                                         <div class="filter-options-grid" id="filterClassMenuGrid">
                                             <span style="font-size:0.75rem; color:#94a3b8;">Loading...</span>
@@ -592,30 +601,33 @@
                             <button type="button" class="btn-filter-clear" onclick="clearAllPendingFilters()">Clear ✕</button>
                         </div>
 
-                        <!-- শীর্ষ অ্যাকশন বার -->
+                        <!-- সিলেকশন অ্যাকশন কন্ট্রোল বার -->
                         <div class="pending-action-bar-strip">
                             <div class="selection-status-badge" id="pendingSelectedLabel">
                                 <span>No student selected</span>
                             </div>
                             <div class="pending-action-btns">
-                                <button type="button" class="btn-top-act btn-top-pay" id="btnTopPay" onclick="executeTopPendingAction('pay')" disabled>
-                                    ${ICONS.pay} Pay
+                                <button type="button" class="btn-top-act btn-top-pay" id="btnTopPay" onclick="executeBulkPendingAction('pay')" disabled>
+                                    ${ICONS.pay} Pay Selected
                                 </button>
                                 <div class="btn-top-separator"></div>
-                                <button type="button" class="btn-top-icon btn-top-void" id="btnTopVoid" onclick="executeTopPendingAction('void')" title="Void" disabled>
+                                <button type="button" class="btn-top-icon btn-top-void" id="btnTopVoid" onclick="executeBulkPendingAction('void')" title="Void Selected" disabled>
                                     ${ICONS.trash}
                                 </button>
-                                <button type="button" class="btn-top-icon btn-top-print" id="btnTopPrint" onclick="executeTopPendingAction('print')" title="Print" disabled>
+                                <button type="button" class="btn-top-icon btn-top-print" id="btnTopPrint" onclick="executeBulkPendingAction('print')" title="Print (Single)" disabled>
                                     ${ICONS.print}
                                 </button>
                             </div>
                         </div>
 
-                        <!-- প্রয়োজনীয় মূল কলাম টেবিল -->
+                        <!-- ক্লিন টেবিল (চেকবক্স সহ) -->
                         <div class="edu-table-responsive">
                             <table class="edu-clean-table">
                                 <thead>
                                     <tr>
+                                        <th style="width:36px; text-align:center;">
+                                            <input type="checkbox" id="selectAllPendingCheckbox" class="edu-checkbox" title="Select All">
+                                        </th>
                                         <th>REC</th>
                                         <th>DATE & TIME</th>
                                         <th>STD ID</th>
@@ -626,7 +638,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="pendingClearanceTableBody">
-                                    <tr><td colspan="7" style="text-align:center; padding:25px; color:#94a3b8;">No pending records.</td></tr>
+                                    <tr><td colspan="8" style="text-align:center; padding:25px; color:#94a3b8;">No pending records.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -919,21 +931,28 @@
         return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : dateStr;
     }
 
-    // ৮. ১-ক্লিক Tap Pay
-    window.markAsTapPaid = async function(txId) {
-        const tx = feeTransactionsList.find(t => t.id === txId);
-        if (!tx) return;
-
-        tx.status = 'Paid';
-        tx.paidTimestamp = new Date().toLocaleDateString('en-GB').replace(/\//g, '-') + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    // ৮. বাল্ক Tap Pay (একের অধিক বা একক একসাথে পে করা)
+    async function markBulkAsTapPaid(txIds) {
+        if (!txIds || txIds.length === 0) return;
+        const nowFormatted = new Date().toLocaleDateString('en-GB').replace(/\//g, '-') + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
+        let count = 0;
+        feeTransactionsList.forEach(t => {
+            if (txIds.includes(t.id) && t.status !== 'Paid') {
+                t.status = 'Paid';
+                t.paidTimestamp = nowFormatted;
+                count++;
+            }
+        });
+
         try {
             const fb = await getFirebase();
             if (fb) await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), feeTransactionsList);
-            selectedPendingTxId = null;
-            if (typeof showToast === 'function') showToast("Paid successfully", "success");
+            selectedPendingTxIds.clear();
+            if (typeof showToast === 'function') showToast(`${count} records paid successfully`, "success");
+            renderPendingTable();
         } catch(e) { console.error(e); }
-    };
+    }
 
     window.revertTapPaidToPending = async function(txId) {
         const tx = feeTransactionsList.find(t => t.id === txId);
@@ -950,23 +969,29 @@
     };
 
     // ৯. Void
-    window.openVoidModal = function(txId) {
-        document.getElementById('voidTargetTxId').value = txId;
+    window.openVoidModalForSelection = function() {
+        if (selectedPendingTxIds.size === 0) return;
         document.getElementById('voidReasonModal').style.display = 'flex';
     };
 
     window.confirmVoidTransaction = async function() {
-        const txId = document.getElementById('voidTargetTxId').value;
         const reason = document.getElementById('voidCustomReason').value.trim() || 'Cancelled';
-        const txIndex = feeTransactionsList.findIndex(t => t.id === txId);
-        if (txIndex === -1) return;
+        const nowFormatted = new Date().toLocaleDateString('en-GB').replace(/\//g, '-') + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const user = (window.profileSettings && window.profileSettings.fullName) || 'Admin';
 
-        const [removedTx] = feeTransactionsList.splice(txIndex, 1);
-        removedTx.voidReason = reason;
-        removedTx.voidDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-') + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        removedTx.voidedBy = (window.profileSettings && window.profileSettings.fullName) || 'Admin';
+        const idsToVoid = Array.from(selectedPendingTxIds);
+        let voidCount = 0;
 
-        voidLogsList.unshift(removedTx);
+        for (let i = feeTransactionsList.length - 1; i >= 0; i--) {
+            if (idsToVoid.includes(feeTransactionsList[i].id)) {
+                const [removedTx] = feeTransactionsList.splice(i, 1);
+                removedTx.voidReason = reason;
+                removedTx.voidDate = nowFormatted;
+                removedTx.voidedBy = user;
+                voidLogsList.unshift(removedTx);
+                voidCount++;
+            }
+        }
 
         try {
             const fb = await getFirebase();
@@ -975,8 +1000,9 @@
                 await fb.set(fb.ref(fb.db, 'erp/feeVoidLogs'), voidLogsList);
             }
             document.getElementById('voidReasonModal').style.display = 'none';
-            selectedPendingTxId = null;
-            if (typeof showToast === 'function') showToast("Record voided", "warning");
+            selectedPendingTxIds.clear();
+            if (typeof showToast === 'function') showToast(`${voidCount} record(s) voided`, "warning");
+            renderPendingTable();
         } catch(e) { console.error(e); }
     };
 
@@ -1001,35 +1027,51 @@
         } catch(e) { console.error(e); }
     };
 
-    // ১০. পেন্ডিং রো সিলেকশন ও টপ অ্যাকশন
-    window.selectPendingRow = function(txId) {
-        selectedPendingTxId = (selectedPendingTxId === txId) ? null : txId;
+    // ১০. মাল্টি-সিলেকশন লজিক
+    window.togglePendingRowSelection = function(txId, event) {
+        if (event && event.stopPropagation) event.stopPropagation();
+        if (selectedPendingTxIds.has(txId)) {
+            selectedPendingTxIds.delete(txId);
+        } else {
+            selectedPendingTxIds.add(txId);
+        }
         renderPendingTable();
     };
 
-    window.executeTopPendingAction = function(actionType) {
-        if (!selectedPendingTxId) return;
+    window.toggleSelectAllPending = function(checked, visibleIds) {
+        if (checked) {
+            visibleIds.forEach(id => selectedPendingTxIds.add(id));
+        } else {
+            visibleIds.forEach(id => selectedPendingTxIds.delete(id));
+        }
+        renderPendingTable();
+    };
+
+    window.executeBulkPendingAction = function(actionType) {
+        if (selectedPendingTxIds.size === 0) return;
 
         if (actionType === 'pay') {
-            markAsTapPaid(selectedPendingTxId);
+            markBulkAsTapPaid(Array.from(selectedPendingTxIds));
         } else if (actionType === 'void') {
-            openVoidModal(selectedPendingTxId);
+            openVoidModalForSelection();
         } else if (actionType === 'print') {
-            printRowReceipt(selectedPendingTxId);
+            // প্রিন্ট শুধুমাত্র প্রথম সিলেক্ট করাটির রসিদ বের করবে
+            const firstId = Array.from(selectedPendingTxIds)[0];
+            printRowReceipt(firstId);
         }
     };
 
     // ১১. স্মার্ট মাল্টি-ট্যাগ ফিল্টার লজিক
     window.applyPendingTag = function(type, value) {
         pendingFilters[type] = value;
-        selectedPendingTxId = null;
+        selectedPendingTxIds.clear();
         closeFilterMenu();
         renderPendingTable();
     };
 
     window.removePendingTag = function(type) {
         pendingFilters[type] = null;
-        selectedPendingTxId = null;
+        selectedPendingTxIds.clear();
         renderPendingTable();
     };
 
@@ -1037,7 +1079,7 @@
         pendingFilters.category = null;
         pendingFilters.months = null;
         pendingFilters.class = null;
-        selectedPendingTxId = null;
+        selectedPendingTxIds.clear();
         closeFilterMenu();
         renderPendingTable();
     };
@@ -1054,7 +1096,7 @@
         if (popup) popup.style.display = 'none';
     }
 
-    // মাস্টার ডাটাবেস থেকে তথ্য সিঙ্ক
+    // মাস্টার ডাটাবেস থেকে তথ্য সমৃদ্ধ করা
     function enrichTransactionData(t) {
         const master = studentDueList.find(s => 
             String(s.stdId).trim() === String(t.customerId).trim() || 
@@ -1068,15 +1110,11 @@
             category: t.category && t.category !== '-' ? t.category : (master ? master.category : '-'),
             month: t.month && t.month !== '-' ? t.month : (master ? master.monthDue : '1'),
             dueItems: t.dueItems && t.dueItems !== '-' ? t.dueItems : (master ? master.dueItems : '-'),
-            mobile: t.mobile && t.mobile !== '-' ? t.mobile : (master ? master.mobile : '-'),
-            fathersName: t.fathersName && t.fathersName !== '-' ? t.fathersName : (master ? master.fathersName : '-'),
-            fathersMobile: t.fathersMobile ? t.fathersMobile : (master ? master.fathersMobile : ''),
-            mothersName: t.mothersName && t.mothersName !== '-' ? t.mothersName : (master ? master.mothersName : '-'),
-            mothersMobile: t.mothersMobile ? t.mothersMobile : (master ? master.mothersMobile : '')
+            mobile: t.mobile && t.mobile !== '-' ? t.mobile : (master ? master.mobile : '-')
         };
     }
 
-    // ১২. টেবিল ও মাল্টি-ট্যাগ রেন্ডারিং (ক্লিন ভিউ)
+    // ১২. পেন্ডিং টেবিল ও মাল্টি-সিলেক্ট কন্ট্রোল রেন্ডারিং
     function renderPendingTable() {
         const tbody = document.getElementById('pendingClearanceTableBody');
         const badge = document.getElementById('pendingCountBadge');
@@ -1087,15 +1125,15 @@
         const btnPrint = document.getElementById('btnTopPrint');
         const tagContainer = document.getElementById('filterTagContainer');
         const classGrid = document.getElementById('filterClassMenuGrid');
+        const selectAllCheckbox = document.getElementById('selectAllPendingCheckbox');
 
         if (!tbody) return;
 
-        // সমস্ত পেন্ডিং ডাটা পূর্ণাঙ্গ তথ্য দিয়ে সমৃদ্ধ করা
         const rawPending = feeTransactionsList
             .filter(t => t.status !== 'Paid')
             .map(t => enrichTransactionData(t));
 
-        // ক্লাস ড্রপডাউন মেনু তৈরি করা
+        // ক্লাস ড্রপডাউন মেনু তৈরি
         if (classGrid) {
             const existingClasses = [...new Set(rawPending.map(t => (t.class || '').trim()).filter(Boolean))];
             if (existingClasses.length === 0) {
@@ -1110,7 +1148,7 @@
             }
         }
 
-        // ট্যাগ চিপস (Filter Chips) রেন্ডার করা
+        // ট্যাগ চিপস
         if (tagContainer) {
             let tagsHtml = '';
             let hasActiveFilter = false;
@@ -1132,14 +1170,10 @@
                 tagsHtml += `<span class="tag-chip">${pendingFilters.class} <span class="tag-close-x" onclick="removePendingTag('class')">✕</span></span>`;
             }
 
-            if (!hasActiveFilter) {
-                tagContainer.innerHTML = `<span class="no-filter-text">All</span>`;
-            } else {
-                tagContainer.innerHTML = tagsHtml;
-            }
+            tagContainer.innerHTML = hasActiveFilter ? tagsHtml : `<span class="no-filter-text">All</span>`;
         }
 
-        // ফিল্টারিং প্রয়োগ (ব্যাকগ্রাউন্ডে সম্পূর্ণ কাজ করবে)
+        // ফিল্টারিং প্রয়োগ
         let filteredPending = rawPending;
 
         if (pendingFilters.category) {
@@ -1162,30 +1196,59 @@
             filteredPending = filteredPending.filter(t => (t.class || '').toLowerCase().trim() === pendingFilters.class.toLowerCase().trim());
         }
 
+        const visibleIds = filteredPending.map(t => t.id);
+
+        // সিলেকশন ক্লিনআপ (যদি ফিল্টারে কিছু হাইড হয়ে যায়)
+        for (let id of selectedPendingTxIds) {
+            if (!visibleIds.includes(id)) selectedPendingTxIds.delete(id);
+        }
+
+        // মোট হিসাব ও সিলেক্টেড সামারি
         let totalGrossSum = 0;
+        let selectedGrossSum = 0;
 
-        const selectedRecord = filteredPending.find(t => t.id === selectedPendingTxId);
-        if (!selectedRecord) selectedPendingTxId = null;
-
-        // টুলবার টেক্সট
-        if (selectedRecord) {
-            if (selectedLabel) {
-                selectedLabel.innerHTML = `<strong style="color:#0f172a;">${selectedRecord.receiptNo || ''} - ${selectedRecord.studentName || ''}</strong>`;
+        filteredPending.forEach(t => {
+            const tuition = parseFloat(t.netDue || 0);
+            const tapFee = Math.min(tuition * 0.01, 60);
+            const gross = t.grossPayment ? parseFloat(t.grossPayment) : (tuition + tapFee);
+            totalGrossSum += gross;
+            if (selectedPendingTxIds.has(t.id)) {
+                selectedGrossSum += gross;
             }
-            if (btnPay) btnPay.disabled = false;
+        });
+
+        // সিলেকশন স্ট্যাটাস বার টেক্সট
+        const selCount = selectedPendingTxIds.size;
+        if (selCount > 0) {
+            if (selectedLabel) {
+                selectedLabel.innerHTML = `<strong style="color:#0f172a;">${selCount} Selected</strong> <span style="color:#10b981; font-weight:700; margin-left:8px;">(Tap: ৳ ${selectedGrossSum.toLocaleString('en-US', { minimumFractionDigits: 2 })})</span>`;
+            }
+            if (btnPay) {
+                btnPay.disabled = false;
+                btnPay.innerHTML = `${ICONS.pay} Pay (${selCount})`;
+            }
             if (btnVoid) btnVoid.disabled = false;
-            if (btnPrint) btnPrint.disabled = false;
+            if (btnPrint) btnPrint.disabled = (selCount !== 1); // প্রিন্ট শুধুমাত্র ১ জন সিলেক্ট হলে এনাবল হবে
         } else {
             if (selectedLabel) {
                 selectedLabel.innerHTML = `<span>No student selected</span>`;
             }
-            if (btnPay) btnPay.disabled = true;
+            if (btnPay) {
+                btnPay.disabled = true;
+                btnPay.innerHTML = `${ICONS.pay} Pay`;
+            }
             if (btnVoid) btnVoid.disabled = true;
             if (btnPrint) btnPrint.disabled = true;
         }
 
+        // সিলেক্ট অল চেকবক্স আপডেট
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = (visibleIds.length > 0 && selCount === visibleIds.length);
+            selectAllCheckbox.onclick = (e) => toggleSelectAllPending(e.target.checked, visibleIds);
+        }
+
         if (filteredPending.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:25px; color:#94a3b8;">No matching pending records.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:25px; color:#94a3b8;">No matching pending records.</td></tr>';
             if (badge) badge.innerText = '0 Pending';
             if (sumEl) sumEl.innerText = '0.00';
             return;
@@ -1198,18 +1261,16 @@
             const tapFee = Math.min(tuition * 0.01, 60);
             const grossPayable = t.grossPayment ? parseFloat(t.grossPayment) : (tuition + tapFee);
 
-            totalGrossSum += grossPayable;
-            const isSelected = (t.id === selectedPendingTxId);
-
-            // ক্লাস ও সেকশন
+            const isSelected = selectedPendingTxIds.has(t.id);
             const classSec = `${t.class || '-'} ${t.section && t.section !== '-' ? '(' + t.section + ')' : ''}`;
-
-            // তারিখ ও সুন্দর সময় ফরম্যাট
             const formattedDate = formatDateToDDMMYYYY(t.date);
             const formattedTime = t.time ? `<span style="font-size:0.75rem; color:#64748b; margin-left:5px;">${t.time}</span>` : '';
 
             html += `
-                <tr class="row-selectable ${isSelected ? 'row-selected' : ''}" onclick="selectPendingRow('${t.id}')">
+                <tr class="row-selectable ${isSelected ? 'row-selected' : ''}" onclick="togglePendingRowSelection('${t.id}')">
+                    <td style="text-align:center;" onclick="event.stopPropagation();">
+                        <input type="checkbox" class="edu-checkbox" ${isSelected ? 'checked' : ''} onchange="togglePendingRowSelection('${t.id}', event)">
+                    </td>
                     <td style="font-weight:700; color:#2563eb;">${t.receiptNo || '-'}</td>
                     <td>${formattedDate} ${formattedTime}</td>
                     <td><strong style="font-family:monospace; font-size:0.9rem;">${t.customerId}</strong></td>
@@ -1299,7 +1360,7 @@
         if (badge) badge.innerText = `${voidLogsList.length} Voided`;
     }
 
-    // ১২. মাস্টার এক্সেল এক্সপোর্ট
+    // মাস্টার এক্সেল এক্সপোর্ট
     window.exportDataToExcel = function(type) {
         if (typeof XLSX === 'undefined') return;
 
@@ -1308,7 +1369,7 @@
 
         if (type === 'pending') {
             fileName = "Pending_Clearance.xlsx";
-            data.push(["Receipt No", "Date", "Student ID", "Student Name", "Class", "Section", "Category", "Months Due", "Due Items", "Tuition Fee", "Tap Payable", "Net Collected", "Mobile", "Father", "Mother"]);
+            data.push(["Receipt No", "Date", "Student ID", "Student Name", "Class", "Section", "Category", "Months Due", "Due Items", "Tuition Fee", "Tap Payable", "Net Collected", "Mobile"]);
             feeTransactionsList.filter(t => t.status !== 'Paid').forEach(t => {
                 const en = enrichTransactionData(t);
                 const tuition = parseFloat(en.netDue || 0);
@@ -1316,8 +1377,7 @@
                 const gross = en.grossPayment ? parseFloat(en.grossPayment) : (tuition + tapFee);
                 data.push([
                     en.receiptNo, en.date, en.customerId, en.studentName, en.class, en.section, en.category, 
-                    en.month, en.dueItems, tuition, gross, en.netReceived, en.mobile, 
-                    `${en.fathersName} ${en.fathersMobile}`, `${en.mothersName} ${en.mothersMobile}`
+                    en.month, en.dueItems, tuition, gross, en.netReceived, en.mobile
                 ]);
             });
         } else if (type === 'paid') {
@@ -1328,9 +1388,9 @@
             });
         } else if (type === 'due') {
             fileName = "Master_Due.xlsx";
-            data.push(["Class", "Section", "STD ID", "Student Name", "Category", "Month Due", "Due items", "Due Amount", "Mobile", "Fathers Name", "Fathers Mobile", "Mothers Name", "Mothers Mobile"]);
+            data.push(["Class", "Section", "STD ID", "Student Name", "Category", "Month Due", "Due items", "Due Amount", "Mobile"]);
             studentDueList.forEach(s => {
-                data.push([s.class || '', s.section || '', s.stdId || '', s.studentName || '', s.category || '', s.monthDue || '', s.dueItems || '', s.dueAmount || 0, s.mobile || '', s.fathersName || '', s.fathersMobile || '', s.mothersName || '', s.mothersMobile || '']);
+                data.push([s.class || '', s.section || '', s.stdId || '', s.studentName || '', s.category || '', s.monthDue || '', s.dueItems || '', s.dueAmount || 0, s.mobile || '']);
             });
         } else if (type === 'void') {
             fileName = "Void_Audit_Log.xlsx";
@@ -1361,11 +1421,7 @@
                 (item.class && item.class.toLowerCase().includes(q)) ||
                 (item.section && item.section.toLowerCase().includes(q)) ||
                 (item.category && item.category.toLowerCase().includes(q)) ||
-                (item.mobile && item.mobile.toLowerCase().includes(q)) ||
-                (item.fathersName && item.fathersName.toLowerCase().includes(q)) ||
-                (item.fathersMobile && item.fathersMobile.toLowerCase().includes(q)) ||
-                (item.mothersName && item.mothersName.toLowerCase().includes(q)) ||
-                (item.mothersMobile && item.mothersMobile.toLowerCase().includes(q))
+                (item.mobile && item.mobile.toLowerCase().includes(q))
             );
         }
 
@@ -1484,22 +1540,10 @@
                 }
             }
         }
-        for (const p of possibleKeys) {
-            const cleanTarget = p.toLowerCase().replace(/[^a-z0-9]/g, '');
-            for (const k of keys) {
-                const cleanKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
-                if (cleanKey.startsWith(cleanTarget)) {
-                    const val = row[k];
-                    if (val !== undefined && val !== null && String(val).trim() !== '') {
-                        return String(val).trim();
-                    }
-                }
-            }
-        }
         return '';
     }
 
-    // ১৫. ফর্ম ও ইভেন্ট লজিক
+    // ১৫. ফর্ম ও ইভেন্ট ইনিশিয়ালাইজেশন
     function initLogic() {
         const idInp = document.getElementById('origId');
         const nameInp = document.getElementById('origName');
@@ -1564,7 +1608,7 @@
         if (discInp) discInp.addEventListener('input', calculateAutoValues);
         if (txnInp) txnInp.addEventListener('input', calculateAutoValues);
 
-        // FORM SUBMIT
+        // ফর্ম সাবমিট
         const origForm = document.getElementById('feeFormOriginal');
         if (origForm) {
             origForm.onsubmit = async function(e) {
@@ -1587,8 +1631,6 @@
                 const percentCapCharge = Math.min(netDue * 0.01, 60);
                 const calculatedGross = netDue + percentCapCharge;
                 const receiptNumeric = (feeTransactionsList.length + voidLogsList.length + 1) + 3400;
-
-                // বর্তমান সময় তৈরি (AM/PM সহ)
                 const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                 const txData = {
@@ -1602,10 +1644,6 @@
                     category: selectedStudentData ? (selectedStudentData.category || '-') : '-',
                     dueItems: selectedStudentData ? (selectedStudentData.dueItems || '-') : '-',
                     mobile: selectedStudentData ? (selectedStudentData.mobile || '-') : '-',
-                    fathersName: selectedStudentData ? (selectedStudentData.fathersName || '-') : '-',
-                    fathersMobile: selectedStudentData ? (selectedStudentData.fathersMobile || '') : '',
-                    mothersName: selectedStudentData ? (selectedStudentData.mothersName || '-') : '-',
-                    mothersMobile: selectedStudentData ? (selectedStudentData.mothersMobile || '') : '',
                     netDue: netDue,
                     txnFee: txnFee,
                     totalCharge: totalCharge,
@@ -1653,7 +1691,7 @@
             };
         }
 
-        // SAMPLE SHEET
+        // এক্সেল স্যাম্পল
         const btnDownloadSample = document.getElementById('btnDownloadSample');
         if (btnDownloadSample) {
             btnDownloadSample.addEventListener('click', function () {
@@ -1672,7 +1710,7 @@
             });
         }
 
-        // EXCEL UPLOAD
+        // এক্সেল আপলোড
         const fileInput = document.getElementById('dueFileInput');
         const fileNameDisplay = document.getElementById('dueFileNameDisplay');
         if (fileInput && fileNameDisplay) {
@@ -1746,7 +1784,7 @@
             });
         }
 
-        // ড্রপডাউন ইভেন্ট
+        // ফিল্টার ড্রপডাউন ট্রিপল-ক্লিক প্রতিরোধ
         const btnFilterTrigger = document.getElementById('btnFilterAddTrigger');
         if (btnFilterTrigger) {
             btnFilterTrigger.addEventListener('click', function(e) {
