@@ -34,7 +34,7 @@
         }
     }
 
-    // ২. সাইডবারে নতুন সাব-মেনু ইনজেক্ট (অটো-রিট্রাই মেকানিজম)
+    // ২. সাইডবারে নতুন সাব-মেনু ইনজেক্ট
     function injectLegacyMenuItem() {
         const parentMenu = document.getElementById('menu-edu-parent');
         if (!parentMenu) return false;
@@ -76,7 +76,7 @@
                         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                             <input type="file" id="legacyExcelFileInput" accept=".xlsx, .xls, .csv" style="display:none;">
                             <button type="button" class="btn-act btn-act-undo" onclick="document.getElementById('legacyExcelFileInput').click()">
-                                Choose Excel
+                                Choose File
                             </button>
                             <span id="legacyFileName" style="font-size:0.82rem; color:#64748b;">No file chosen</span>
                             <button type="button" class="btn-act btn-act-pay" id="btnProcessLegacyExcel">
@@ -84,7 +84,7 @@
                             </button>
                         </div>
                         <div>
-                            <input type="text" id="legacySearchInput" class="edu-input" placeholder="Search Sheet Records..." style="height:35px; width:220px;">
+                            <input type="text" id="legacySearchInput" class="edu-input" placeholder="Search Records..." style="height:35px; width:220px;">
                         </div>
                     </div>
 
@@ -93,7 +93,7 @@
                         <table class="edu-clean-table">
                             <thead>
                                 <tr>
-                                    <th>REC</th>
+                                    <th>REC NO</th>
                                     <th>DATE</th>
                                     <th>STD ID</th>
                                     <th>STUDENT NAME</th>
@@ -126,29 +126,67 @@
     }
 
     function sanitizeText(val) {
-        if (!val) return '-';
+        if (val === undefined || val === null) return '-';
         const str = String(val).trim();
         if (str.includes('#REF!') || str.includes('#N/A') || str === '') return '-';
         return str;
     }
 
+    // এক্সেল সিরিয়াল ডেট এবং টেক্সট ডেট কনভার্টার
     function sanitizeDate(val) {
         if (!val) return new Date().toISOString().split('T')[0];
+        
+        // ১. যদি এক্সেল সিরিয়াল নাম্বার হয় (যেমন: 46031.0002)
+        if (typeof val === 'number' || (!isNaN(val) && String(val).trim().length >= 4 && !String(val).includes('-') && !String(val).includes('/'))) {
+            try {
+                const numericDate = parseFloat(val);
+                const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+                const realDate = new Date(excelEpoch.getTime() + numericDate * 86400000);
+                return realDate.toISOString().split('T')[0];
+            } catch(e) {}
+        }
+
         const str = String(val).trim();
-        if (str.includes('-')) {
-            const parts = str.split('-');
+        // ২. যদি DD-MM-YYYY বা DD/MM/YYYY হয়
+        if (str.includes('-') || str.includes('/')) {
+            const delimiter = str.includes('-') ? '-' : '/';
+            const parts = str.split(delimiter);
             if (parts.length === 3) {
-                if (parts[2].length === 4) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+                if (parts[2].length === 4) {
+                    return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                }
                 return str;
             }
         }
         return str;
     }
 
-    // ৫. গুগল শিট এক্সেল প্রসেসিং
+    // রসিদ নাম্বার পার্সার (Rcv. No কে অগ্রাধিকার দেওয়া)
+    function extractReceiptNo(row, fallbackIndex) {
+        const keys = Object.keys(row);
+        // প্রথমে "rcv. no", "rcv no", "receipt", "voucher" চেক করবে
+        for (let k of keys) {
+            const clean = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (clean === 'rcvno' || clean === 'receiptno' || clean === 'recno' || clean === 'receipt' || clean === 'voucherno') {
+                const v = String(row[k]).trim();
+                if (v && v.toLowerCase() !== 'total') return v;
+            }
+        }
+        // না পেলে তখন "sl" চেক করবে
+        for (let k of keys) {
+            const clean = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (clean === 'sl' || clean === 'slno') {
+                const v = String(row[k]).trim();
+                if (v && v.toLowerCase() !== 'total') return v;
+            }
+        }
+        return String(3400 + fallbackIndex);
+    }
+
+    // ৫. গুগল শিট / CSV প্রসেসিং
     async function processSheetExcel(file) {
         if (typeof XLSX === 'undefined') {
-            alert("XLSX library not loaded! Please make sure xlsx.full.min.js is present.");
+            alert("XLSX library not ready!");
             return;
         }
 
@@ -160,7 +198,7 @@
                 const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: '' });
 
                 if (!json || json.length === 0) {
-                    alert("Excel file is empty!");
+                    alert("File has no data!");
                     return;
                 }
 
@@ -173,10 +211,17 @@
                 let addedCount = 0;
 
                 json.forEach((row, idx) => {
+                    const studentName = sanitizeText(row['Student Name'] || row['Name']);
                     const stdId = sanitizeText(row['Id'] || row['ID'] || row['Std Id'] || row['stdid']);
-                    if (stdId === '-' || !stdId) return;
+                    
+                    // টোটাল বা ফাঁকা লাইন স্কিপ করা
+                    if (String(row['Sl']).toLowerCase() === 'total' || String(row['Rcv. No']).toLowerCase() === 'total' || (!studentName && !stdId) || stdId === '-') {
+                        return;
+                    }
 
-                    const slNo = sanitizeText(row['Sl'] || row['SL'] || row['Rec No'] || (3400 + idx));
+                    // সঠিক রসিদ নাম্বার নেওয়া (Rcv. No)
+                    const slNo = extractReceiptNo(row, idx);
+
                     const rawDate = row['Date'] || row['DATE'];
                     const dateFormatted = sanitizeDate(rawDate);
 
@@ -188,9 +233,9 @@
 
                     const record = {
                         id: 'SHEET-' + Date.now() + '-' + idx,
-                        receiptNo: slNo,
+                        receiptNo: slNo, // এখন থেকে ৩২৮৯, ৩৩১৬ ইত্যাদি বসবে
                         customerId: stdId,
-                        studentName: sanitizeText(row['Student Name'] || row['Name']),
+                        studentName: studentName,
                         class: sanitizeText(row['Class']),
                         category: sanitizeText(row['Category'] || row['Cat']),
                         month: sanitizeText(row['Month'] || '1'),
@@ -219,16 +264,16 @@
                 await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), currentTransactions);
 
                 if (typeof showToast === 'function') {
-                    showToast(`${addedCount} records uploaded to Pending!`, 'success');
+                    showToast(`${addedCount} records synced with correct Receipt numbers!`, 'success');
                 } else {
-                    alert(`${addedCount} records uploaded to Pending!`);
+                    alert(`${addedCount} records synced with correct Receipt numbers!`);
                 }
 
                 renderLegacyTable();
 
             } catch (err) {
                 console.error(err);
-                alert("Error processing Excel file!");
+                alert("Error processing file!");
             }
         };
         reader.readAsArrayBuffer(file);
@@ -319,7 +364,7 @@
         if (btnUpload && fileInp) {
             btnUpload.onclick = function () {
                 if (!fileInp.files || fileInp.files.length === 0) {
-                    alert("Please select your Google Sheet Excel file first!");
+                    alert("Please select your Google Sheet file first!");
                     return;
                 }
                 processSheetExcel(fileInp.files[0]);
@@ -331,7 +376,7 @@
         }
     }
 
-    // ৮. স্বয়ংক্রিয় টাইমার (যতক্ষণ না মূল মেনু লোড হয়)
+    // ৮. স্বয়ংক্রিয় টাইমার
     let retryTimer = setInterval(() => {
         const menuOk = injectLegacyMenuItem();
         const panelOk = injectLegacyPanel();
