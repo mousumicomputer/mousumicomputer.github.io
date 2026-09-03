@@ -1,11 +1,11 @@
 /**
  * Mousumi Computer ERP - Standalone Education Reports Hub
  * Font: Google Font 'Tiro Bangla' (True 100% Vector/Rendering via html2pdf Direct)
- * Fixes:
- * 1. 1-Click Direct PDF Download without CORS block / failure.
- * 2. Strict 1-Line Table Cells (white-space: nowrap, zero line breaks).
- * 3. Grand Total aligned at the end with "=" (Grand Total =).
- * 4. Quick Date Buttons: Today, This Month, Last Month.
+ * Fixes Applied:
+ * 1. Fixed header and text clipping ("Tuition Fee", names) with natural word-wrap and increased column width.
+ * 2. Removed ugly hyphen fallbacks ('-') with clean empty strings and multi-property Firebase data binding.
+ * 3. Compact 8.2pt font scale and optimized padding for dense official print views.
+ * 4. Grand Total = properly aligned at the end with sum columns.
  */
 
 (function () {
@@ -269,6 +269,13 @@
         btnOpen.addEventListener('click', generateAndOpenReport);
     }
 
+    // হেল্পার ফাংশন: খালি থাকলে কুৎসিত হাইফেন (-) না দেখিয়ে ফাঁকা রাখবে
+    function cleanValue(val) {
+        if (val === undefined || val === null) return "";
+        const str = String(val).trim();
+        return (str === "-" || str === "undefined" || str === "null") ? "" : str;
+    }
+
     // ৪. ডেটা ফিল্টারিং ও সুনির্দিষ্ট কলাম উইডথ সেট করা
     function generateAndOpenReport() {
         const reportType = document.getElementById('eduReportType').value;
@@ -287,7 +294,8 @@
             title = "FEE COLLECTION STATEMENT";
             tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Class", "Tuition Fee", "Charge", "Net Received"];
             columnAlignments = ["center", "center", "center", "center", "left", "center", "right", "right", "right"];
-            colWidths = ["4%", "9%", "11%", "10%", "30%", "10%", "9%", "8%", "9%"];
+            // অপ্টিমাইজড উইডথ: Tuition Fee কলাম ১৩% যাতে লেখা না কাটে
+            colWidths = ["4%", "8%", "10%", "10%", "31%", "8%", "13%", "7%", "9%"];
 
             let list = feeTransactions.filter(t => t.date >= fromDate && t.date <= toDate);
             let sumDue = 0, sumCharge = 0, sumTotal = 0;
@@ -300,13 +308,18 @@
                 sumCharge += charge;
                 sumTotal += rec;
 
+                const name = cleanValue(t.studentName || t.student_name || t.name);
+                const cls = cleanValue(t.class || t.className);
+                const rcpt = cleanValue(t.receiptNo || t.receipt_no);
+                const sid = cleanValue(t.customerId || t.studentId || t.stdId);
+
                 rows.push([
                     i + 1,
-                    t.receiptNo || '-',
-                    t.date,
-                    t.customerId || '-',
-                    t.studentName || '-',
-                    t.class || '-',
+                    rcpt,
+                    cleanValue(t.date),
+                    sid,
+                    name,
+                    cls,
                     due.toFixed(2),
                     charge.toFixed(2),
                     rec.toFixed(2)
@@ -322,7 +335,7 @@
             title = "PENDING CLEARANCE REPORT (TO-PAY TAP)";
             tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Tuition Fee", "Gross Required", "Net Received"];
             columnAlignments = ["center", "center", "center", "center", "left", "right", "right", "right"];
-            colWidths = ["5%", "10%", "12%", "11%", "32%", "10%", "10%", "10%"];
+            colWidths = ["4%", "8%", "11%", "10%", "33%", "12%", "11%", "11%"];
 
             let list = feeTransactions.filter(t => t.status !== 'Paid' && (t.date >= fromDate && t.date <= toDate));
             let sumFee = 0, sumGross = 0, sumRec = 0;
@@ -337,10 +350,10 @@
 
                 rows.push([
                     i + 1,
-                    t.receiptNo || '-',
-                    t.date,
-                    t.customerId || '-',
-                    t.studentName || '-',
+                    cleanValue(t.receiptNo || t.receipt_no),
+                    cleanValue(t.date),
+                    cleanValue(t.customerId || t.studentId || t.stdId),
+                    cleanValue(t.studentName || t.student_name || t.name),
                     fee.toFixed(2),
                     gross.toFixed(2),
                     rec.toFixed(2)
@@ -356,7 +369,7 @@
             title = "PAID SETTLEMENT AUDIT REPORT";
             tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Gross Paid", "Settled Timestamp"];
             columnAlignments = ["center", "center", "center", "center", "left", "right", "center"];
-            colWidths = ["5%", "10%", "12%", "12%", "35%", "11%", "15%"];
+            colWidths = ["4%", "9%", "11%", "10%", "36%", "12%", "18%"];
 
             let list = feeTransactions.filter(t => t.status === 'Paid' && (t.date >= fromDate && t.date <= toDate));
             let sumGross = 0;
@@ -367,12 +380,12 @@
 
                 rows.push([
                     i + 1,
-                    t.receiptNo || '-',
-                    t.date,
-                    t.customerId || '-',
-                    t.studentName || '-',
+                    cleanValue(t.receiptNo || t.receipt_no),
+                    cleanValue(t.date),
+                    cleanValue(t.customerId || t.studentId || t.stdId),
+                    cleanValue(t.studentName || t.student_name || t.name),
                     gross.toFixed(2),
-                    t.paidTimestamp || '-'
+                    cleanValue(t.paidTimestamp || t.settledTime)
                 ]);
             });
 
@@ -386,7 +399,7 @@
             isLandscape = true;
             tableHeaders = ["SL", "Class", "Section", "STD ID", "Student Name", "Category", "Month Due", "Due Amount", "Mobile"];
             columnAlignments = ["center", "center", "center", "center", "left", "center", "center", "right", "center"];
-            colWidths = ["4%", "8%", "7%", "9%", "28%", "10%", "11%", "11%", "12%"];
+            colWidths = ["4%", "7%", "6%", "9%", "30%", "9%", "11%", "12%", "12%"];
 
             let sumDue = 0;
             studentDueList.forEach((s, i) => {
@@ -395,14 +408,14 @@
 
                 rows.push([
                     i + 1,
-                    s.class || '-',
-                    s.section || '-',
-                    s.stdId || '-',
-                    s.studentName || '-',
-                    s.category || '-',
-                    s.monthDue || '-',
+                    cleanValue(s.class),
+                    cleanValue(s.section),
+                    cleanValue(s.stdId || s.id),
+                    cleanValue(s.studentName || s.name),
+                    cleanValue(s.category),
+                    cleanValue(s.monthDue || s.month),
                     due.toFixed(2),
-                    s.mobile || '-'
+                    cleanValue(s.mobile)
                 ]);
             });
 
@@ -415,21 +428,23 @@
             title = "VOID & CANCELLATION AUDIT LOG";
             tableHeaders = ["SL", "Receipt #", "Void Date", "Student ID & Name", "Amount", "Reason for Void", "Voided By"];
             columnAlignments = ["center", "center", "center", "left", "right", "left", "center"];
-            colWidths = ["5%", "10%", "15%", "25%", "10%", "23%", "12%"];
+            colWidths = ["4%", "9%", "14%", "26%", "11%", "24%", "12%"];
 
             let sumVoid = 0;
             voidLogs.forEach((v, i) => {
                 const amt = parseFloat(v.netReceived || 0);
                 sumVoid += amt;
 
+                const nameDisplay = [cleanValue(v.customerId), cleanValue(v.studentName)].filter(Boolean).join(" - ");
+
                 rows.push([
                     i + 1,
-                    v.receiptNo || '-',
-                    v.voidDate || '-',
-                    `${v.customerId || ''} - ${v.studentName || ''}`,
+                    cleanValue(v.receiptNo),
+                    cleanValue(v.voidDate),
+                    nameDisplay,
                     amt.toFixed(2),
-                    v.voidReason || 'Cancelled',
-                    v.voidedBy || 'Admin'
+                    cleanValue(v.voidReason || 'Cancelled'),
+                    cleanValue(v.voidedBy || 'Admin')
                 ]);
             });
 
@@ -452,7 +467,7 @@
         });
     }
 
-    // ৫. নিউ ট্যাব রেন্ডারিং (১ লাইনে সেল ও Grand Total = সমাধান)
+    // ৫. নিউ ট্যাব রেন্ডারিং (অটো-র‍্যাপ, ক্লিপিং মুক্ত ও নিখুঁত স্কেলিং)
     function openReportWindow(meta) {
         const reportWindow = window.open('', '_blank');
         if (!reportWindow) {
@@ -505,7 +520,6 @@
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                 <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
                 
-                <!-- 100% কার্যকর ডিরেক্ট পিডিএফ এবং এক্সেল লাইব্রেরি -->
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
                 
@@ -596,11 +610,11 @@
                         font-family: 'Tiro Bangla', serif !important;
                     }
 
-                    /* নিখুঁত সিঙ্গেল-লাইন টেবিল ডিজাইন */
+                    /* প্রিমিয়াম নন-ক্লিপিং টেবিল ডিজাইন (8.2pt ফন্ট ও ন্যাচারাল র‍্যাপ) */
                     table.report-table {
                         width: 100%;
                         border-collapse: collapse;
-                        font-size: 9pt;
+                        font-size: 8.2pt;
                         color: #000000;
                         font-family: 'Tiro Bangla', serif !important;
                         table-layout: fixed;
@@ -614,7 +628,9 @@
                         font-weight: 700;
                         background: #ffffff;
                         color: #000000;
-                        white-space: nowrap;
+                        white-space: normal;
+                        word-break: break-word;
+                        line-height: 1.2;
                     }
 
                     table.report-table td {
@@ -622,9 +638,9 @@
                         padding: 4px 4px;
                         color: #000000;
                         vertical-align: middle;
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
+                        white-space: normal;
+                        word-break: break-word;
+                        line-height: 1.25;
                     }
 
                     table.report-table tr.total-row td {
@@ -674,7 +690,7 @@
                 </div>
 
                 <script>
-                    // ১-ক্লিকে নিশ্চিত পিডিএফ ফাইল ডাউনলোড (Tiro Bangla ফন্ট অক্ষুণ্ণ রেখে)
+                    // ১-ক্লিকে সরাসরি নিখুঁত স্কেল করা পিডিএফ ডাউনলোড
                     function downloadDirectPDF() {
                         const element = document.getElementById('reportPrintWrapper');
                         const opt = {
