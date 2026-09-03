@@ -1,14 +1,12 @@
 /**
  * Mousumi Computer ERP - Standalone Education Reports Hub
+ * Engine: jsPDF + jspdf-autotable (Native Vector Engine) + SheetJS
  * Features:
- * - Overrides the default 4-card layout with a minimalist filter bar.
- * - From-Date to To-Date filtering.
- * - Opens preview in a new tab.
- * - New tab toolbar has ICONS ONLY (No text buttons).
- * - PDF icon directly triggers background .pdf file download (No print preview).
- * - Excel icon directly downloads .xlsx file.
- * - Print icon opens paper print dialog.
- * - Minimalist, text-focused monochrome design.
+ * - Minimalist filter strip replacing cards
+ * - Date Range (From - To)
+ * - Opens new tab with pure icon toolbar (Print, Native PDF, Excel, Close)
+ * - 1-Click Direct Vector PDF download using jsPDF AutoTable
+ * - 1-Click Direct Excel download using SheetJS
  */
 
 (function () {
@@ -151,7 +149,7 @@
         });
     }
 
-    // ৩. এক্সিস্টিং প্যানেল ক্লিয়ার করে নতুন মিনিমালিস্ট ইন্টারফেস বসানো
+    // ৩. এক্সিস্টিং কার্ডগুলো সরিয়ে মিনিমালিস্ট ইন্টারফেস সেট করা
     function renderMinimalHub() {
         const targetView = document.getElementById('edu-reports-hub-view');
         if (!targetView) return;
@@ -213,7 +211,7 @@
         btnOpen.addEventListener('click', generateAndOpenReport);
     }
 
-    // ৪. রিপোর্ট জেনারেশন ও নিউ ট্যাবে রেন্ডার
+    // ৪. ডেটা ফিল্টারিং লজিক
     function generateAndOpenReport() {
         const reportType = document.getElementById('eduReportType').value;
         const fromDate = document.getElementById('eduFromDate').value;
@@ -225,7 +223,6 @@
         let rows = [];
         let grandTotals = null;
 
-        // ডেটা ফিল্টারিং লজিক
         if (reportType === 'collection') {
             title = "FEE COLLECTION STATEMENT";
             tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Class", "Tuition Fee", "Charge", "Net Received"];
@@ -365,7 +362,7 @@
         });
     }
 
-    // ৫. নিউ ট্যাব ভিউ তৈরি (শুধু আইকন বার এবং ডিরেক্ট ডাউনলোড মেকানিজম)
+    // ৫. নিউ ট্যাব রেন্ডারিং এবং jsPDF AutoTable ইঞ্জিন দিয়ে ডাউনলোড
     function openReportWindow(meta) {
         const reportWindow = window.open('', '_blank');
         if (!reportWindow) {
@@ -399,7 +396,7 @@
         }
 
         let headersHTML = '';
-        meta.headers.forEach((h, idx) => {
+        meta.headers.forEach(h => {
             const alignRight = h.includes('Fee') || h.includes('Charge') || h.includes('Received') || h.includes('Amount') || h.includes('Gross');
             headersHTML += `<th style="${alignRight ? 'text-align: right;' : 'text-align: left;'}">${h}</th>`;
         });
@@ -411,8 +408,12 @@
                 <meta charset="UTF-8">
                 <title>${meta.title}</title>
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+                
+                <!-- jsPDF এবং AutoTable নেটিভ ইঞ্জিন -->
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+                
                 <style>
                     * { box-sizing: border-box; margin: 0; padding: 0; }
                     body {
@@ -456,7 +457,7 @@
                     .btn-excel-act:hover { background: #16a34a; }
                     .btn-close-act:hover { background: #94a3b8; }
 
-                    /* পেপার ডিজাইন (সাধারণ ও মার্জিত) */
+                    /* ক্লিন টেক্সট-বেসড পেপার ভিউ */
                     .paper-sheet {
                         background: #ffffff;
                         width: ${meta.isLandscape ? '287mm' : '200mm'};
@@ -539,7 +540,7 @@
                     <button class="action-icon btn-close-act" onclick="window.close()" title="Close"><i class="fa-solid fa-xmark"></i></button>
                 </div>
 
-                <div class="paper-sheet" id="reportContentArea">
+                <div class="paper-sheet">
                     <div class="report-header">
                         <h1>MOUSUMI COMPUTER</h1>
                         <h2>${meta.title}</h2>
@@ -561,20 +562,78 @@
                 </div>
 
                 <script>
-                    // ১ ক্লিকে কোনো ডায়ালগ ছাড়া সরাসরি পিডিএফ ডাউনলোড
+                    // ১-ক্লিকে jsPDF AutoTable ইঞ্জিন দিয়ে নেটিভ ভেক্টর পিডিএফ ডাউনলোড
                     function downloadDirectPDF() {
-                        const element = document.getElementById('reportContentArea');
-                        const opt = {
-                            margin: [8, 8, 8, 8],
-                            filename: '${meta.fileName}.pdf',
-                            image: { type: 'jpeg', quality: 0.98 },
-                            html2canvas: { scale: 2, useCORS: true },
-                            jsPDF: { unit: 'mm', format: 'a4', orientation: '${meta.isLandscape ? 'landscape' : 'portrait'}' }
-                        };
-                        html2pdf().set(opt).from(element).save();
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF({
+                            orientation: '${meta.isLandscape ? 'landscape' : 'portrait'}',
+                            unit: 'mm',
+                            format: 'a4'
+                        });
+
+                        // শিরোনাম ও মেটা ডেটা
+                        doc.setFont("Helvetica", "bold");
+                        doc.setFontSize(16);
+                        doc.text("MOUSUMI COMPUTER", doc.internal.pageSize.getWidth() / 2, 14, { align: "center" });
+
+                        doc.setFontSize(11);
+                        doc.text("${meta.title}", doc.internal.pageSize.getWidth() / 2, 20, { align: "center" });
+
+                        doc.setFont("Helvetica", "normal");
+                        doc.setFontSize(8.5);
+                        doc.text("PERIOD: ${meta.period}", 14, 27);
+                        doc.text("GENERATED: " + new Date().toLocaleString(), doc.internal.pageSize.getWidth() - 14, 27, { align: "right" });
+
+                        // টেবিল কন্টেন্ট প্রিপারেশন
+                        const headers = ${JSON.stringify(meta.headers)};
+                        const rows = ${JSON.stringify(meta.rows)};
+                        const totals = ${JSON.stringify(meta.grandTotals || [])};
+
+                        const finalRows = [...rows];
+                        if (totals && totals.length > 0) {
+                            finalRows.push(totals);
+                        }
+
+                        // নেটিভ AutoTable জেনারেশন
+                        doc.autoTable({
+                            head: [headers],
+                            body: finalRows,
+                            startY: 31,
+                            theme: 'plain',
+                            styles: { 
+                                fontSize: 8, 
+                                font: "Helvetica", 
+                                cellPadding: 2, 
+                                textColor: [0, 0, 0],
+                                lineColor: [200, 200, 200],
+                                lineWidth: 0.1
+                            },
+                            headStyles: { 
+                                fontStyle: 'bold', 
+                                textColor: [0, 0, 0], 
+                                lineColor: [0, 0, 0], 
+                                lineWidth: { top: 0.3, bottom: 0.3 } 
+                            },
+                            didParseCell: function (data) {
+                                // গ্র্যান্ড টোটাল রো হাইলাইট
+                                if (totals && totals.length > 0 && data.row.index === finalRows.length - 1) {
+                                    data.cell.styles.fontStyle = 'bold';
+                                    data.cell.styles.lineColor = [0, 0, 0];
+                                    data.cell.styles.lineWidth = { top: 0.3, bottom: 0.3 };
+                                }
+                                // সংখ্যা কলাম ডানপাশে অ্যালাইন করা
+                                const hName = headers[data.column.index] || '';
+                                if (hName.includes('Fee') || hName.includes('Charge') || hName.includes('Received') || hName.includes('Amount') || hName.includes('Gross')) {
+                                    data.cell.styles.halign = 'right';
+                                }
+                            }
+                        });
+
+                        // ১ ক্লিকে কোনো ডায়ালগ ছাড়া সরাসরি ফাইল ডাউনলোড
+                        doc.save('${meta.fileName}.pdf');
                     }
 
-                    // ১ ক্লিকে সরাসরি এক্সেল ডাউনলোড
+                    // ১-ক্লিকে সরাসরি এক্সেল ফাইল ডাউনলোড
                     function downloadDirectExcel() {
                         const headers = ${JSON.stringify(meta.headers)};
                         const rows = ${JSON.stringify(meta.rows)};
