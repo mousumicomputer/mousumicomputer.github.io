@@ -1,10 +1,11 @@
 /**
  * Mousumi Computer ERP - Standalone Education Reports Hub
- * Font: 'Tiro Bangla', serif (Sharp Vector & Crisp Print)
- * Fixes:
- * 1. Native High-Precision Vector Engine (Eliminates image blurriness & blank 2nd page).
- * 2. Proper Title Case for Student Names (e.g., 'Md Rabbi Hosen').
- * 3. Exact column widths, zero line clipping, and clean 'Grand Total =' alignment.
+ * Engine: Native jsPDF (v2.5.1) + jspdf-autotable (v3.8.2) Plugin + SheetJS
+ * Strict Behaviors:
+ * 1. PDF icon DIRECTLY downloads .pdf file via doc.save() (ZERO Print Preview dialog).
+ * 2. Pure native vector rendering (No HTML2Canvas, zero image blurriness, no blank page 2).
+ * 3. Title Case for Student Names ('Md Rabbi Hosen').
+ * 4. Merged 'Grand Total =' aligned at right end.
  */
 
 (function () {
@@ -180,7 +181,7 @@
         });
     }
 
-    // ৩. ফিল্টার প্যানেল রেন্ডার
+    // ৩. ফিল্টার প্যানেল সেটআপ
     function renderMinimalHub() {
         const targetView = document.getElementById('edu-reports-hub-view');
         if (!targetView) return;
@@ -470,7 +471,7 @@
         });
     }
 
-    // ৫. নিউ ট্যাব রেন্ডারিং (শার্প ভেক্টর ও ১-পেজ ফিক্স)
+    // ৫. নিউ ট্যাব রেন্ডারিং এবং jsPDF AutoTable ইঞ্জিন দিয়ে ১-ক্লিকে সরাসরি ডাউনলোড
     function openReportWindow(meta) {
         const reportWindow = window.open('', '_blank');
         if (!reportWindow) {
@@ -522,6 +523,9 @@
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                 <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
                 
+                <!-- নেটিভ ভেক্টর ইঞ্জিন jsPDF এবং AutoTable সিডিএন -->
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
                 
                 <style>
@@ -534,7 +538,6 @@
                         display: flex;
                         flex-direction: column;
                         align-items: center;
-                        -webkit-font-smoothing: antialiased;
                     }
 
                     .action-bar-strip {
@@ -570,50 +573,48 @@
                     .paper-sheet {
                         background: #ffffff;
                         width: ${meta.isLandscape ? '287mm' : '205mm'};
-                        padding: 8mm 10mm;
+                        padding: 10mm 12mm;
                         box-shadow: 0 10px 30px rgba(0,0,0,0.3);
                         color: #000000;
-                        page-break-inside: avoid;
                     }
 
                     .report-header {
                         text-align: center;
-                        border-bottom: 1.5px solid #000000;
-                        padding-bottom: 4px;
-                        margin-bottom: 6px;
+                        border-bottom: 2px solid #000000;
+                        padding-bottom: 5px;
+                        margin-bottom: 8px;
                     }
 
                     .report-header h1 {
-                        font-size: 17pt;
+                        font-size: 18pt;
                         font-weight: 700;
                         letter-spacing: 0.5px;
-                        margin-bottom: 1px;
+                        margin-bottom: 2px;
                         color: #000000;
                     }
 
                     .report-header h2 {
-                        font-size: 10.5pt;
+                        font-size: 11pt;
                         font-weight: 600;
-                        margin-bottom: 3px;
+                        margin-bottom: 4px;
                         color: #000000;
                     }
 
                     .meta-info {
                         display: flex;
                         justify-content: space-between;
-                        font-size: 8pt;
+                        font-size: 8.5pt;
                         font-weight: 600;
-                        margin-bottom: 6px;
+                        margin-bottom: 8px;
                         border-bottom: 1px solid #000000;
                         padding-bottom: 3px;
                         color: #000000;
                     }
 
-                    /* নিখুঁত তীক্ষ্ণ টেবিল ডিজাইন */
                     table.report-table {
                         width: 100%;
                         border-collapse: collapse;
-                        font-size: 8.2pt;
+                        font-size: 8.5pt;
                         color: #000000;
                         table-layout: fixed;
                     }
@@ -622,7 +623,7 @@
                         border: 1px solid #000000;
                         border-top: 1.5px solid #000000;
                         border-bottom: 1.5px solid #000000;
-                        padding: 4px 3px;
+                        padding: 5px 3px;
                         font-weight: 700;
                         background: #ffffff;
                         color: #000000;
@@ -632,24 +633,24 @@
 
                     table.report-table td {
                         border: 1px solid #000000;
-                        padding: 3.5px 4px;
+                        padding: 4px 4px;
                         color: #000000;
                         vertical-align: middle;
                         white-space: normal;
                         word-break: break-word;
-                        line-height: 1.2;
+                        line-height: 1.25;
                     }
 
                     table.report-table tr.total-row td {
-                        border-top: 1.5px solid #000000;
-                        border-bottom: 1.5px solid #000000;
+                        border-top: 2px solid #000000;
+                        border-bottom: 2px solid #000000;
                         font-weight: 700;
                         background: #ffffff;
-                        padding: 5px 4px;
+                        padding: 6px 4px;
                     }
 
                     @media print {
-                        @page { size: ${pageSize}; margin: 5mm; }
+                        @page { size: ${pageSize}; margin: 6mm; }
                         body { background: #ffffff !important; padding: 0 !important; }
                         .no-print { display: none !important; }
                         .paper-sheet { width: 100% !important; padding: 0 !important; box-shadow: none !important; margin: 0 !important; }
@@ -660,12 +661,12 @@
             <body>
                 <div class="action-bar-strip no-print">
                     <button class="action-icon" onclick="window.print()" title="Print"><i class="fa-solid fa-print"></i></button>
-                    <button class="action-icon btn-pdf-act" onclick="downloadVectorPDF()" title="Download PDF"><i class="fa-solid fa-file-pdf"></i></button>
+                    <button class="action-icon btn-pdf-act" onclick="downloadDirectPDF()" title="Download PDF"><i class="fa-solid fa-file-pdf"></i></button>
                     <button class="action-icon btn-excel-act" onclick="downloadDirectExcel()" title="Download Excel"><i class="fa-solid fa-file-excel"></i></button>
                     <button class="action-icon btn-close-act" onclick="window.close()" title="Close"><i class="fa-solid fa-xmark"></i></button>
                 </div>
 
-                <div class="paper-sheet" id="reportPrintWrapper">
+                <div class="paper-sheet">
                     <div class="report-header">
                         <h1>MOUSUMI COMPUTER</h1>
                         <h2>${meta.title}</h2>
@@ -687,12 +688,86 @@
                 </div>
 
                 <script>
-                    // তীক্ষ্ণ ক্রিস্টাল ক্লিয়ার নেটিভ ভেক্টর পিডিএফ ডাউনলোড
-                    function downloadVectorPDF() {
-                        const originalTitle = document.title;
-                        document.title = '${meta.fileName}';
-                        window.print();
-                        document.title = originalTitle;
+                    // ১-ক্লিকে সরাসরি নেটিভ ভেক্টর পিডিএফ ডাউনলোড (Zero Print Preview, Zero Canvas Image)
+                    function downloadDirectPDF() {
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF({
+                            orientation: '${meta.isLandscape ? 'landscape' : 'portrait'}',
+                            unit: 'mm',
+                            format: 'a4'
+                        });
+
+                        // হেডার ও মেটা টেক্সট
+                        doc.setFont("Helvetica", "bold");
+                        doc.setFontSize(16);
+                        doc.text("MOUSUMI COMPUTER", doc.internal.pageSize.getWidth() / 2, 14, { align: "center" });
+
+                        doc.setFontSize(11);
+                        doc.text("${meta.title}", doc.internal.pageSize.getWidth() / 2, 20, { align: "center" });
+
+                        doc.setFont("Helvetica", "normal");
+                        doc.setFontSize(8.5);
+                        doc.text("PERIOD: ${meta.period}", 12, 27);
+                        doc.text("GENERATED: " + new Date().toLocaleString(), doc.internal.pageSize.getWidth() - 12, 27, { align: "right" });
+
+                        // টেবিল বডি ও গ্র্যান্ড টোটাল প্রস্তুতকরণ
+                        const headers = ${JSON.stringify(meta.headers)};
+                        const rows = ${JSON.stringify(meta.rows)};
+                        const aligns = ${JSON.stringify(meta.alignments)};
+                        const grandCfg = ${JSON.stringify(meta.grandTotalConfig)};
+
+                        const bodyData = [...rows];
+
+                        // মার্জড গ্র্যান্ড টোটাল রো যোগ করা
+                        if (grandCfg) {
+                            const totalRow = [];
+                            totalRow.push({
+                                content: 'Grand Total =',
+                                colSpan: grandCfg.spanCols,
+                                styles: { halign: 'right', fontStyle: 'bold' }
+                            });
+                            grandCfg.values.forEach(v => {
+                                totalRow.push({
+                                    content: v,
+                                    styles: { halign: !isNaN(v) && v !== '' ? 'right' : 'center', fontStyle: 'bold' }
+                                });
+                            });
+                            bodyData.push(totalRow);
+                        }
+
+                        // নেটিভ AutoTable রেন্ডার (সলিড ব্ল্যাক বর্ডার ও সঠিক অ্যালাইনমেন্ট)
+                        doc.autoTable({
+                            head: [headers],
+                            body: bodyData,
+                            startY: 31,
+                            margin: { left: 10, right: 10 },
+                            theme: 'grid',
+                            styles: { 
+                                fontSize: 8, 
+                                font: "Helvetica", 
+                                cellPadding: 2, 
+                                textColor: [0, 0, 0],
+                                lineColor: [0, 0, 0],
+                                lineWidth: 0.15,
+                                overflow: 'linebreak'
+                            },
+                            headStyles: { 
+                                fontStyle: 'bold', 
+                                textColor: [0, 0, 0], 
+                                fillColor: [255, 255, 255],
+                                lineColor: [0, 0, 0], 
+                                lineWidth: 0.25 
+                            },
+                            didParseCell: function (data) {
+                                if (data.row.index < rows.length) {
+                                    const colIdx = data.column.index;
+                                    data.cell.styles.halign = aligns[colIdx] || 'left';
+                                }
+                            }
+                        });
+
+                        // কোনো ডায়ালগ ছাড়া ১-ক্লিকে সরাসরি ফাইল সেভ শুরু
+                        doc.save('${meta.fileName}.pdf');
                     }
 
                     // ১-ক্লিকে সরাসরি এক্সেল ফাইল ডাউনলোড
