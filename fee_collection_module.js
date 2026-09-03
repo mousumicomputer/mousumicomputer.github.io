@@ -1,11 +1,6 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module (Enterprise Edition)
- * Super-Smart Multi-Tag Filtering & Full Student Profile Edition:
- * - Unified Multi-Tag Filter ([Army ✕] [2+ Mos ⚠️ ✕] [Class ✕]).
- * - Complete Database Profile in Table (Class/Sec, Cat, Due Items, Father & Mother Info).
- * - Auto-Enrichment from Master Due DB if previous entries missed parent info.
- * - Dynamic Top Tap Gross Total based on active combined tags.
- * - Direct inline SVGs, Receipt numbers without '#', short notification.
+ * Super-Smart Multi-Tag Filtering & Clean Focused Terminal Edition
  */
 
 (function () {
@@ -62,7 +57,7 @@
 
         .edu-card-header-clean {
             background: #ffffff;
-            padding: 16px 20px;
+            padding: 14px 20px;
             border-bottom: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
@@ -130,7 +125,7 @@
             border: 1px solid #e2e8f0;
             border-radius: 6px;
             padding: 8px 16px;
-            margin: 15px 20px 0 20px;
+            margin: 12px 20px 0 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -323,35 +318,71 @@
             cursor: not-allowed;
         }
 
-        /* TABLES */
-        .edu-table-responsive { width: 100%; overflow-x: auto; padding: 12px 20px 20px 20px; }
-        .edu-clean-table { width: 100%; border-collapse: collapse; min-width: 1300px; }
+        /* CLEAN FOCUSED TABLE WITH ROUNDED ROW CARD BORDERS */
+        .edu-table-responsive { 
+            width: 100%; 
+            padding: 10px 20px 18px 20px; 
+            overflow-x: auto;
+        }
+        
+        .edu-clean-table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0 5px; 
+        }
+
         .edu-clean-table th {
-            padding: 10px 8px;
-            font-size: 0.73rem;
+            padding: 8px 14px;
+            font-size: 0.74rem;
             font-weight: 800;
             text-transform: uppercase;
             color: #64748b;
             text-align: left;
-            border-bottom: 1.5px solid #cbd5e1;
-            background: #ffffff;
+            border-bottom: 2px solid #e2e8f0;
+            background: transparent;
             white-space: nowrap;
         }
+
         .edu-clean-table td {
             background: #ffffff;
-            padding: 10px 8px;
-            font-size: 0.83rem;
+            padding: 10px 14px;
+            font-size: 0.84rem;
             color: #1e293b;
-            border-bottom: 1px solid #f1f5f9;
             vertical-align: middle;
+            white-space: nowrap;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            transition: all 0.15s ease;
+        }
+
+        .edu-clean-table td:first-child {
+            border-left: 1px solid #e2e8f0;
+            border-top-left-radius: 6px;
+            border-bottom-left-radius: 6px;
+        }
+
+        .edu-clean-table td:last-child {
+            border-right: 1px solid #e2e8f0;
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
         }
 
         .edu-clean-table tbody tr.row-selectable { cursor: pointer; }
-        .edu-clean-table tbody tr.row-selectable:hover td { background: #f8fafc; }
+        .edu-clean-table tbody tr.row-selectable:hover td { 
+            background: #f8fafc; 
+            border-color: #cbd5e1;
+        }
+
         .edu-clean-table tbody tr.row-selected td {
             background: #f0fdf4 !important;
             border-top: 1px solid #10b981 !important;
             border-bottom: 1px solid #10b981 !important;
+        }
+        .edu-clean-table tbody tr.row-selected td:first-child {
+            border-left: 1px solid #10b981 !important;
+        }
+        .edu-clean-table tbody tr.row-selected td:last-child {
+            border-right: 1px solid #10b981 !important;
         }
 
         .btn-act {
@@ -449,7 +480,7 @@
         menuList.insertAdjacentHTML('beforeend', html);
     }
 
-    // ৫. ভিউ প্যানেল ইনজেকশন
+    // ৫. ভিউ প্যানেল ইনজেকশন (ক্লিন ও সংক্ষিপ্ত ভাষা)
     function injectPanels() {
         const wrapper = document.querySelector('.main-wrapper');
         if (!wrapper) return;
@@ -513,55 +544,55 @@
                     </div>
                 </div>
 
-                <!-- PANEL 2: PENDING CLEARANCE (স্মার্ট মাল্টি-ট্যাগ ফিল্টার ও পূর্ণাঙ্গ ডাটা) -->
+                <!-- PANEL 2: PENDING CLEARANCE (ক্লিন ও ফোকাসড) -->
                 <div class="view-panel" id="edu-pending-clearance-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
-                            <h3>Pending Clearance (To Pay via Tap)</h3>
+                            <h3>Pending Clearance</h3>
                             <div>
                                 <span class="edu-pill-badge badge-pending" id="pendingCountBadge">0 Pending</span>
-                                <span style="font-size:0.88rem; font-weight:700; margin-left:12px;">Filtered Tap Total: ৳ <span id="pendingTotalSum" style="color:#10b981;">0.00</span></span>
+                                <span style="font-size:0.88rem; font-weight:700; margin-left:12px;">Tap Total: ৳ <span id="pendingTotalSum" style="color:#10b981;">0.00</span></span>
                             </div>
                         </div>
 
                         <!-- অল-ইন-ওয়ান মাল্টি-ট্যাগ ফিল্টার বার -->
                         <div class="filter-tag-wrapper">
                             <div class="filter-tag-box">
-                                <span class="filter-label">Filter Tags:</span>
+                                <span class="filter-label">Tags:</span>
                                 <div id="filterTagContainer" class="tag-chip-list">
-                                    <span class="no-filter-text">None (Showing all)</span>
+                                    <span class="no-filter-text">All</span>
                                 </div>
                                 <div class="filter-dropdown-wrap">
-                                    <button type="button" class="btn-filter-add" id="btnFilterAddTrigger">+ Add Filter ▾</button>
+                                    <button type="button" class="btn-filter-add" id="btnFilterAddTrigger">+ Filter ▾</button>
                                     <div id="filterMenuPopup" class="filter-menu-popup">
-                                        <!-- ক্যাটাগরি সেকশন -->
+                                        <!-- ক্যাটাগরি -->
                                         <div class="filter-section-title">Category</div>
                                         <div class="filter-options-grid">
                                             <button type="button" class="filter-opt-btn" onclick="applyPendingTag('category', 'Army')">Army</button>
                                             <button type="button" class="filter-opt-btn" onclick="applyPendingTag('category', 'Civil')">Civil</button>
                                         </div>
 
-                                        <!-- বকেয়া মাস সেকশন -->
+                                        <!-- বকেয়া মাস -->
                                         <div class="filter-section-title">Months Due</div>
                                         <div class="filter-options-grid">
-                                            <button type="button" class="filter-opt-btn" style="color:#dc2626; font-weight:800;" onclick="applyPendingTag('months', 'urgent')">2+ Mos (Fine ⚠️)</button>
-                                            <button type="button" class="filter-opt-btn" onclick="applyPendingTag('months', '1')">1 Month</button>
-                                            <button type="button" class="filter-opt-btn" onclick="applyPendingTag('months', '2')">2 Months</button>
-                                            <button type="button" class="filter-opt-btn" onclick="applyPendingTag('months', '3+')">3+ Months</button>
+                                            <button type="button" class="filter-opt-btn" style="color:#dc2626; font-weight:800;" onclick="applyPendingTag('months', 'urgent')">2+ Mos ⚠️</button>
+                                            <button type="button" class="filter-opt-btn" onclick="applyPendingTag('months', '1')">1 Mo</button>
+                                            <button type="button" class="filter-opt-btn" onclick="applyPendingTag('months', '2')">2 Mos</button>
+                                            <button type="button" class="filter-opt-btn" onclick="applyPendingTag('months', '3+')">3+ Mos</button>
                                         </div>
 
-                                        <!-- ক্লাস সেকশন -->
+                                        <!-- ক্লাস -->
                                         <div class="filter-section-title">Class</div>
                                         <div class="filter-options-grid" id="filterClassMenuGrid">
-                                            <span style="font-size:0.75rem; color:#94a3b8;">Loading classes...</span>
+                                            <span style="font-size:0.75rem; color:#94a3b8;">Loading...</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <button type="button" class="btn-filter-clear" onclick="clearAllPendingFilters()">Clear All ✕</button>
+                            <button type="button" class="btn-filter-clear" onclick="clearAllPendingFilters()">Clear ✕</button>
                         </div>
 
-                        <!-- শীর্ষ অ্যাকশন কন্ট্রোল বার -->
+                        <!-- শীর্ষ অ্যাকশন বার -->
                         <div class="pending-action-bar-strip">
                             <div class="selection-status-badge" id="pendingSelectedLabel">
                                 <span>No student selected</span>
@@ -580,26 +611,22 @@
                             </div>
                         </div>
 
+                        <!-- প্রয়োজনীয় মূল কলাম টেবিল -->
                         <div class="edu-table-responsive">
                             <table class="edu-clean-table">
                                 <thead>
                                     <tr>
-                                        <th>REC NO</th>
-                                        <th>DATE</th>
+                                        <th>REC</th>
+                                        <th>DATE & TIME</th>
                                         <th>STD ID</th>
                                         <th>STUDENT NAME</th>
-                                        <th>CLASS / SEC</th>
-                                        <th>CAT</th>
-                                        <th>MONTHS</th>
-                                        <th>DUE ITEMS</th>
-                                        <th>TUITION</th>
+                                        <th>CLASS</th>
                                         <th>TAP PAYABLE</th>
                                         <th>COLLECTED</th>
-                                        <th>STUDENT & PARENTS CONTACT</th>
                                     </tr>
                                 </thead>
                                 <tbody id="pendingClearanceTableBody">
-                                    <tr><td colspan="12" style="text-align:center; padding:25px; color:#94a3b8;">No pending clearance records.</td></tr>
+                                    <tr><td colspan="7" style="text-align:center; padding:25px; color:#94a3b8;">No pending records.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -610,7 +637,7 @@
                 <div class="view-panel" id="edu-paid-settlement-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
-                            <h3>Paid Settlement Records</h3>
+                            <h3>Paid Settlement</h3>
                             <div>
                                 <span class="edu-pill-badge badge-paid" id="paidCountBadge">0 Paid</span>
                                 <span style="font-size:0.88rem; font-weight:700; margin-left:12px;">Total: ৳ <span id="paidTotalSum">0.00</span></span>
@@ -620,13 +647,13 @@
                             <table class="edu-clean-table">
                                 <thead>
                                     <tr>
-                                        <th>Receipt No</th>
-                                        <th>Date</th>
-                                        <th>Student ID</th>
-                                        <th>Student Name</th>
-                                        <th>Gross Paid</th>
-                                        <th>Paid Time</th>
-                                        <th style="text-align:right;">Actions</th>
+                                        <th>REC</th>
+                                        <th>DATE & TIME</th>
+                                        <th>STD ID</th>
+                                        <th>STUDENT NAME</th>
+                                        <th>GROSS PAID</th>
+                                        <th>SETTLED TIME</th>
+                                        <th style="text-align:right;">ACTION</th>
                                     </tr>
                                 </thead>
                                 <tbody id="paidSettlementTableBody">
@@ -678,14 +705,14 @@
                 <div class="view-panel" id="edu-void-logs-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
-                            <h3>Void & Deleted Records Log</h3>
+                            <h3>Void & Deleted Records</h3>
                             <span class="edu-pill-badge badge-void" id="voidCountBadge">0 Voided</span>
                         </div>
                         <div class="edu-table-responsive">
                             <table class="edu-clean-table">
                                 <thead>
                                     <tr>
-                                        <th>Receipt No</th><th>Void Date</th><th>Student ID & Name</th><th>Amount (৳)</th><th>Reason for Void</th><th>Voided By</th><th style="text-align:right;">Action</th>
+                                        <th>REC</th><th>VOID DATE</th><th>STUDENT</th><th>AMOUNT</th><th>REASON</th><th>BY</th><th style="text-align:right;">ACTION</th>
                                     </tr>
                                 </thead>
                                 <tbody id="voidLogsTableBody">
@@ -898,7 +925,7 @@
         if (!tx) return;
 
         tx.status = 'Paid';
-        tx.paidTimestamp = new Date().toLocaleString();
+        tx.paidTimestamp = new Date().toLocaleDateString('en-GB').replace(/\//g, '-') + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
         try {
             const fb = await getFirebase();
@@ -936,7 +963,7 @@
 
         const [removedTx] = feeTransactionsList.splice(txIndex, 1);
         removedTx.voidReason = reason;
-        removedTx.voidDate = new Date().toLocaleString();
+        removedTx.voidDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-') + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         removedTx.voidedBy = (window.profileSettings && window.profileSettings.fullName) || 'Admin';
 
         voidLogsList.unshift(removedTx);
@@ -1027,7 +1054,7 @@
         if (popup) popup.style.display = 'none';
     }
 
-    // মাস্টার ডাটাবেস থেকে শিক্ষার্থীর পূর্ণাঙ্গ প্রোফাইল সমৃদ্ধ করার ফাংশন
+    // মাস্টার ডাটাবেস থেকে তথ্য সিঙ্ক
     function enrichTransactionData(t) {
         const master = studentDueList.find(s => 
             String(s.stdId).trim() === String(t.customerId).trim() || 
@@ -1036,6 +1063,7 @@
 
         return {
             ...t,
+            class: t.class && t.class !== '-' ? t.class : (master ? master.class : '-'),
             section: t.section && t.section !== '-' ? t.section : (master ? master.section : '-'),
             category: t.category && t.category !== '-' ? t.category : (master ? master.category : '-'),
             month: t.month && t.month !== '-' ? t.month : (master ? master.monthDue : '1'),
@@ -1048,7 +1076,7 @@
         };
     }
 
-    // ১২. টেবিল ও মাল্টি-ট্যাগ রেন্ডারিং
+    // ১২. টেবিল ও মাল্টি-ট্যাগ রেন্ডারিং (ক্লিন ভিউ)
     function renderPendingTable() {
         const tbody = document.getElementById('pendingClearanceTableBody');
         const badge = document.getElementById('pendingCountBadge');
@@ -1071,7 +1099,7 @@
         if (classGrid) {
             const existingClasses = [...new Set(rawPending.map(t => (t.class || '').trim()).filter(Boolean))];
             if (existingClasses.length === 0) {
-                classGrid.innerHTML = `<span style="font-size:0.75rem; color:#94a3b8;">No classes found</span>`;
+                classGrid.innerHTML = `<span style="font-size:0.75rem; color:#94a3b8;">No classes</span>`;
             } else {
                 let html = '';
                 existingClasses.forEach(c => {
@@ -1089,7 +1117,7 @@
 
             if (pendingFilters.category) {
                 hasActiveFilter = true;
-                tagsHtml += `<span class="tag-chip">Cat: ${pendingFilters.category} <span class="tag-close-x" onclick="removePendingTag('category')">✕</span></span>`;
+                tagsHtml += `<span class="tag-chip">${pendingFilters.category} <span class="tag-close-x" onclick="removePendingTag('category')">✕</span></span>`;
             }
 
             if (pendingFilters.months) {
@@ -1101,17 +1129,17 @@
 
             if (pendingFilters.class) {
                 hasActiveFilter = true;
-                tagsHtml += `<span class="tag-chip">Class: ${pendingFilters.class} <span class="tag-close-x" onclick="removePendingTag('class')">✕</span></span>`;
+                tagsHtml += `<span class="tag-chip">${pendingFilters.class} <span class="tag-close-x" onclick="removePendingTag('class')">✕</span></span>`;
             }
 
             if (!hasActiveFilter) {
-                tagContainer.innerHTML = `<span class="no-filter-text">None (Showing all)</span>`;
+                tagContainer.innerHTML = `<span class="no-filter-text">All</span>`;
             } else {
                 tagContainer.innerHTML = tagsHtml;
             }
         }
 
-        // ফিল্টারিং প্রয়োগ (Category + Month + Class একসাথে)
+        // ফিল্টারিং প্রয়োগ (ব্যাকগ্রাউন্ডে সম্পূর্ণ কাজ করবে)
         let filteredPending = rawPending;
 
         if (pendingFilters.category) {
@@ -1157,7 +1185,7 @@
         }
 
         if (filteredPending.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding:25px; color:#94a3b8;">No matching pending records found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:25px; color:#94a3b8;">No matching pending records.</td></tr>';
             if (badge) badge.innerText = '0 Pending';
             if (sumEl) sumEl.innerText = '0.00';
             return;
@@ -1173,39 +1201,22 @@
             totalGrossSum += grossPayable;
             const isSelected = (t.id === selectedPendingTxId);
 
-            // মাসের ওয়ার্নিং লজিক
-            const dueMonths = parseInt(t.month || 1);
-            let monthCol = `${dueMonths} Mo`;
-            if (dueMonths >= 2) {
-                monthCol = `<span style="color:#dc2626; font-weight:800;" title="Urgent Fine Risk!">${dueMonths} Mos ⚠️</span>`;
-            }
-
             // ক্লাস ও সেকশন
             const classSec = `${t.class || '-'} ${t.section && t.section !== '-' ? '(' + t.section + ')' : ''}`;
 
-            // শিক্ষার্থী ও পিতা-মাতার সম্পূর্ণ যোগাযোগ তথ্য
-            const contactBlock = `
-                <div style="font-size:0.78rem; line-height:1.25;">
-                    <div><strong>Std:</strong> ${t.mobile || '-'}</div>
-                    ${t.fathersName && t.fathersName !== '-' ? `<div style="color:#0f172a;"><strong>F:</strong> ${t.fathersName} ${t.fathersMobile ? '(' + t.fathersMobile + ')' : ''}</div>` : ''}
-                    ${t.mothersName && t.mothersName !== '-' ? `<div style="color:#475569;"><strong>M:</strong> ${t.mothersName} ${t.mothersMobile ? '(' + t.mothersMobile + ')' : ''}</div>` : ''}
-                </div>
-            `;
+            // তারিখ ও সুন্দর সময় ফরম্যাট
+            const formattedDate = formatDateToDDMMYYYY(t.date);
+            const formattedTime = t.time ? `<span style="font-size:0.75rem; color:#64748b; margin-left:5px;">${t.time}</span>` : '';
 
             html += `
                 <tr class="row-selectable ${isSelected ? 'row-selected' : ''}" onclick="selectPendingRow('${t.id}')">
                     <td style="font-weight:700; color:#2563eb;">${t.receiptNo || '-'}</td>
-                    <td>${t.date}</td>
-                    <td><strong>${t.customerId}</strong></td>
+                    <td>${formattedDate} ${formattedTime}</td>
+                    <td><strong style="font-family:monospace; font-size:0.9rem;">${t.customerId}</strong></td>
                     <td style="font-weight:600;">${t.studentName}</td>
                     <td>${classSec}</td>
-                    <td><span style="font-size:0.78rem; font-weight:700; background:#f1f5f9; padding:2px 6px; border-radius:4px;">${t.category || '-'}</span></td>
-                    <td style="text-align:center;">${monthCol}</td>
-                    <td><div style="max-width:180px; font-size:0.78rem; color:#475569; line-height:1.25; word-break:break-word;">${t.dueItems || '-'}</div></td>
-                    <td>৳ ${tuition.toFixed(2)}</td>
-                    <td style="font-weight:700; color:#b45309;">৳ ${grossPayable.toFixed(2)}</td>
-                    <td style="color:#15803d; font-weight:700;">৳ ${netRec.toFixed(2)}</td>
-                    <td>${contactBlock}</td>
+                    <td style="font-weight:800; color:#b45309; font-size:0.92rem;">৳ ${grossPayable.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td style="color:#15803d; font-weight:700;">৳ ${netRec.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                 </tr>
             `;
         });
@@ -1234,13 +1245,16 @@
         paidList.forEach(t => {
             const gross = parseFloat(t.grossPayment || t.netReceived || 0);
             total += gross;
+            const formattedDate = formatDateToDDMMYYYY(t.date);
+            const formattedTime = t.time ? `<span style="font-size:0.75rem; color:#64748b; margin-left:5px;">${t.time}</span>` : '';
+
             html += `
                 <tr>
                     <td style="font-weight:700; color:#10b981;">${t.receiptNo || '-'}</td>
-                    <td>${t.date}</td>
-                    <td><strong>${t.customerId}</strong></td>
-                    <td>${t.studentName}</td>
-                    <td style="font-weight:700; color:#15803d;">৳ ${gross.toFixed(2)}</td>
+                    <td>${formattedDate} ${formattedTime}</td>
+                    <td><strong style="font-family:monospace;">${t.customerId}</strong></td>
+                    <td style="font-weight:600;">${t.studentName}</td>
+                    <td style="font-weight:700; color:#15803d;">৳ ${gross.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                     <td style="font-size:0.8rem; color:#64748b;">${t.paidTimestamp || '-'}</td>
                     <td style="text-align:right;">
                         <button class="btn-act btn-act-undo" onclick="revertTapPaidToPending('${t.id}')">Revert</button>
@@ -1574,6 +1588,9 @@
                 const calculatedGross = netDue + percentCapCharge;
                 const receiptNumeric = (feeTransactionsList.length + voidLogsList.length + 1) + 3400;
 
+                // বর্তমান সময় তৈরি (AM/PM সহ)
+                const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
                 const txData = {
                     id: 'EDU-' + Date.now(),
                     receiptNo: String(receiptNumeric),
@@ -1596,7 +1613,7 @@
                     netReceived: netReceived,
                     grossPayment: calculatedGross,
                     date: dateInp ? dateInp.value : new Date().toISOString().split('T')[0],
-                    time: new Date().toLocaleTimeString(),
+                    time: nowTime,
                     status: 'Pending',
                     receivedBy: (window.profileSettings && window.profileSettings.fullName) || 'Riyal Robiul'
                 };
@@ -1729,7 +1746,7 @@
             });
         }
 
-        // মেনু বাইরে ক্লিক করলে ফিল্টার ড্রপডাউন বন্ধ হওয়া
+        // ড্রপডাউন ইভেন্ট
         const btnFilterTrigger = document.getElementById('btnFilterAddTrigger');
         if (btnFilterTrigger) {
             btnFilterTrigger.addEventListener('click', function(e) {
