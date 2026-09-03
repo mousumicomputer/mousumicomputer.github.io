@@ -1,12 +1,8 @@
 /**
  * Mousumi Computer ERP - Standalone Education Reports Hub
- * Engine: jsPDF + jspdf-autotable (Native Vector Engine) + SheetJS
- * Features:
- * - Minimalist filter strip replacing cards
- * - Date Range (From - To)
- * - Opens new tab with pure icon toolbar (Print, Native PDF, Excel, Close)
- * - 1-Click Direct Vector PDF download using jsPDF AutoTable
- * - 1-Click Direct Excel download using SheetJS
+ * Font: Google Font 'Tiro Bangla'
+ * Engine: jsPDF + jspdf-autotable (Native Vector) + SheetJS
+ * Official Format: Deep Black (#000) Borders, Center/Left/Right Strict Alignment.
  */
 
 (function () {
@@ -17,12 +13,15 @@
 
     // ১. মিনিমালিস্ট ড্যাশবোর্ড ফিল্টার বার সিএসএস
     const hubCSS = `
+        @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap');
+
         .edu-reports-minimal-box {
             background: #ffffff;
             border-radius: 8px;
             border: 1px solid #e2e8f0;
             padding: 24px;
             margin-bottom: 25px;
+            font-family: 'Tiro Bangla', serif;
         }
 
         .edu-reports-header-strip {
@@ -32,7 +31,7 @@
         }
 
         .edu-reports-header-strip h3 {
-            font-size: 1rem;
+            font-size: 1.05rem;
             font-weight: 700;
             color: #0f172a;
             margin: 0;
@@ -54,10 +53,10 @@
         }
 
         .edu-filter-field label {
-            font-size: 0.75rem;
+            font-size: 0.78rem;
             font-weight: 700;
             text-transform: uppercase;
-            color: #64748b;
+            color: #475569;
             letter-spacing: 0.5px;
         }
 
@@ -66,11 +65,12 @@
             border: 1px solid #cbd5e1;
             border-radius: 6px;
             padding: 0 10px;
-            font-size: 0.88rem;
+            font-size: 0.9rem;
             color: #0f172a;
             outline: none;
             background: #ffffff;
-            min-width: 140px;
+            min-width: 150px;
+            font-family: 'Tiro Bangla', serif;
         }
 
         .edu-field-input:focus {
@@ -101,7 +101,7 @@
     styleEl.innerText = hubCSS;
     document.head.appendChild(styleEl);
 
-    // ২. ফায়ারবেস কানেকশন ও ডেটা রিড
+    // ২. ফায়ারবেস কানেকশন
     async function getFirebaseInstance() {
         if (firebaseCore) return firebaseCore;
         try {
@@ -149,7 +149,7 @@
         });
     }
 
-    // ৩. এক্সিস্টিং কার্ডগুলো সরিয়ে মিনিমালিস্ট ইন্টারফেস সেট করা
+    // ৩. এক্সিস্টিং কার্ডগুলো সরিয়ে ক্লিন ইন্টারফেস রেন্ডার
     function renderMinimalHub() {
         const targetView = document.getElementById('edu-reports-hub-view');
         if (!targetView) return;
@@ -211,7 +211,7 @@
         btnOpen.addEventListener('click', generateAndOpenReport);
     }
 
-    // ৪. ডেটা ফিল্টারিং লজিক
+    // ৪. ডেটা ফিল্টারিং ও সুনির্দিষ্ট কলাম অ্যালাইনমেন্ট নির্ধারণ
     function generateAndOpenReport() {
         const reportType = document.getElementById('eduReportType').value;
         const fromDate = document.getElementById('eduFromDate').value;
@@ -222,10 +222,13 @@
         let tableHeaders = [];
         let rows = [];
         let grandTotals = null;
+        let columnAlignments = []; // 'center', 'left', 'right'
 
         if (reportType === 'collection') {
             title = "FEE COLLECTION STATEMENT";
             tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Class", "Tuition Fee", "Charge", "Net Received"];
+            columnAlignments = ["center", "center", "center", "center", "left", "center", "right", "right", "right"];
+            
             let list = feeTransactions.filter(t => t.date >= fromDate && t.date <= toDate);
             let sumDue = 0, sumCharge = 0, sumTotal = 0;
 
@@ -255,6 +258,8 @@
         } else if (reportType === 'pending') {
             title = "PENDING CLEARANCE REPORT (TO-PAY TAP)";
             tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Tuition Fee", "Gross Required", "Net Received"];
+            columnAlignments = ["center", "center", "center", "center", "left", "right", "right", "right"];
+            
             let list = feeTransactions.filter(t => t.status !== 'Paid' && (t.date >= fromDate && t.date <= toDate));
             let sumFee = 0, sumGross = 0, sumRec = 0;
 
@@ -283,6 +288,8 @@
         } else if (reportType === 'settled') {
             title = "PAID SETTLEMENT AUDIT REPORT";
             tableHeaders = ["SL", "Receipt #", "Date", "Student ID", "Student Name", "Gross Paid", "Settled Timestamp"];
+            columnAlignments = ["center", "center", "center", "center", "left", "right", "center"];
+            
             let list = feeTransactions.filter(t => t.status === 'Paid' && (t.date >= fromDate && t.date <= toDate));
             let sumGross = 0;
 
@@ -307,8 +314,9 @@
             title = "MASTER STUDENT DUE DATABASE";
             isLandscape = true;
             tableHeaders = ["SL", "Class", "Section", "STD ID", "Student Name", "Category", "Month Due", "Due Amount", "Mobile"];
+            columnAlignments = ["center", "center", "center", "center", "left", "center", "center", "right", "center"];
+            
             let sumDue = 0;
-
             studentDueList.forEach((s, i) => {
                 const due = parseFloat(s.dueAmount || 0);
                 sumDue += due;
@@ -331,8 +339,9 @@
         } else if (reportType === 'void') {
             title = "VOID & CANCELLATION AUDIT LOG";
             tableHeaders = ["SL", "Receipt #", "Void Date", "Student ID & Name", "Amount", "Reason for Void", "Voided By"];
+            columnAlignments = ["center", "center", "center", "left", "right", "left", "center"];
+            
             let sumVoid = 0;
-
             voidLogs.forEach((v, i) => {
                 const amt = parseFloat(v.netReceived || 0);
                 sumVoid += amt;
@@ -356,13 +365,14 @@
             isLandscape,
             period: reportType === 'due' ? 'Active Database' : `${fromDate} to ${toDate}`,
             headers: tableHeaders,
+            alignments: columnAlignments,
             rows,
             grandTotals,
             fileName: `${reportType}_report_${Date.now()}`
         });
     }
 
-    // ৫. নিউ ট্যাব রেন্ডারিং এবং jsPDF AutoTable ইঞ্জিন দিয়ে ডাউনলোড
+    // ৫. নিউ ট্যাব রেন্ডারিং (Tiro Bangla ফন্ট, সম্পূর্ণ ব্ল্যাক বর্ডার এবং অটো-অ্যালাইনমেন্ট)
     function openReportWindow(meta) {
         const reportWindow = window.open('', '_blank');
         if (!reportWindow) {
@@ -374,13 +384,13 @@
 
         let tableRowsHTML = '';
         if (meta.rows.length === 0) {
-            tableRowsHTML = `<tr><td colspan="${meta.headers.length}" style="text-align: center; padding: 25px; color: #555;">No records found for the selected period.</td></tr>`;
+            tableRowsHTML = `<tr><td colspan="${meta.headers.length}" style="text-align: center; padding: 25px; color: #000;">No records found for the selected period.</td></tr>`;
         } else {
             meta.rows.forEach(r => {
                 tableRowsHTML += '<tr>';
                 r.forEach((val, idx) => {
-                    const isNumeric = !isNaN(val) && val !== '' && typeof val !== 'boolean' && idx > 0;
-                    tableRowsHTML += `<td style="${isNumeric ? 'text-align: right;' : 'text-align: left;'}">${val}</td>`;
+                    const align = meta.alignments[idx] || 'left';
+                    tableRowsHTML += `<td style="text-align: ${align};">${val}</td>`;
                 });
                 tableRowsHTML += '</tr>';
             });
@@ -388,17 +398,18 @@
             if (meta.grandTotals) {
                 tableRowsHTML += '<tr class="total-row">';
                 meta.grandTotals.forEach((val, idx) => {
-                    const isNumeric = !isNaN(val) && val !== '';
-                    tableRowsHTML += `<td style="${isNumeric ? 'text-align: right;' : 'text-align: left;'}">${val}</td>`;
+                    const align = meta.alignments[idx] || 'left';
+                    tableRowsHTML += `<td style="text-align: ${align};">${val}</td>`;
                 });
                 tableRowsHTML += '</tr>';
             }
         }
 
         let headersHTML = '';
-        meta.headers.forEach(h => {
-            const alignRight = h.includes('Fee') || h.includes('Charge') || h.includes('Received') || h.includes('Amount') || h.includes('Gross');
-            headersHTML += `<th style="${alignRight ? 'text-align: right;' : 'text-align: left;'}">${h}</th>`;
+        meta.headers.forEach((h, idx) => {
+            const align = meta.alignments[idx] || 'left';
+            tableRowsHTML; // ensure context
+            headersHTML += `<th style="text-align: ${align};">${h}</th>`;
         });
 
         const docHTML = `
@@ -408,6 +419,9 @@
                 <meta charset="UTF-8">
                 <title>${meta.title}</title>
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
                 
                 <!-- jsPDF এবং AutoTable নেটিভ ইঞ্জিন -->
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -417,8 +431,8 @@
                 <style>
                     * { box-sizing: border-box; margin: 0; padding: 0; }
                     body {
-                        background-color: #1e293b;
-                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+                        background-color: #0f172a;
+                        font-family: 'Tiro Bangla', serif !important;
                         color: #000000;
                         padding: 20px 0 40px 0;
                         display: flex;
@@ -428,100 +442,110 @@
 
                     /* শুধু আইকন নির্ভর অ্যাকশন বার */
                     .action-bar-strip {
-                        background: #0f172a;
-                        padding: 8px 14px;
-                        border-radius: 30px;
+                        background: rgba(30, 41, 59, 0.95);
+                        padding: 8px 16px;
+                        border-radius: 40px;
                         display: flex;
                         gap: 12px;
                         margin-bottom: 20px;
-                        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                        box-shadow: 0 6px 20px rgba(0,0,0,0.4);
                     }
 
                     .action-icon {
-                        width: 38px;
-                        height: 38px;
+                        width: 40px;
+                        height: 40px;
                         border-radius: 50%;
                         border: none;
-                        background: #334155;
+                        background: #1e293b;
                         color: #ffffff;
                         display: inline-flex;
                         align-items: center;
                         justify-content: center;
-                        font-size: 15px;
+                        font-size: 16px;
                         cursor: pointer;
                         transition: all 0.2s ease;
                     }
 
-                    .action-icon:hover { background: #475569; }
+                    .action-icon:hover { background: #334155; }
                     .btn-pdf-act:hover { background: #dc2626; }
                     .btn-excel-act:hover { background: #16a34a; }
-                    .btn-close-act:hover { background: #94a3b8; }
+                    .btn-close-act:hover { background: #ef4444; }
 
-                    /* ক্লিন টেক্সট-বেসড পেপার ভিউ */
+                    /* অফিসিয়াল প্রিন্ট পেপার ভিউ */
                     .paper-sheet {
                         background: #ffffff;
-                        width: ${meta.isLandscape ? '287mm' : '200mm'};
+                        width: ${meta.isLandscape ? '287mm' : '205mm'};
                         min-height: ${meta.isLandscape ? '200mm' : '287mm'};
-                        padding: 15mm;
-                        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+                        padding: 12mm 15mm;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                        color: #000000;
                     }
 
                     .report-header {
                         text-align: center;
-                        border-bottom: 1.5px solid #000;
-                        padding-bottom: 10px;
-                        margin-bottom: 12px;
+                        border-bottom: 2px solid #000000;
+                        padding-bottom: 6px;
+                        margin-bottom: 10px;
                     }
 
                     .report-header h1 {
-                        font-size: 16pt;
-                        font-weight: 800;
-                        letter-spacing: 1px;
-                        margin-bottom: 3px;
+                        font-size: 19pt;
+                        font-weight: 700;
+                        letter-spacing: 0.5px;
+                        margin-bottom: 2px;
+                        color: #000000;
                     }
 
                     .report-header h2 {
-                        font-size: 11pt;
+                        font-size: 12pt;
                         font-weight: 600;
                         margin-bottom: 4px;
+                        color: #000000;
                     }
 
                     .meta-info {
                         display: flex;
                         justify-content: space-between;
-                        font-size: 8.5pt;
+                        font-size: 9pt;
                         font-weight: 600;
-                        margin-bottom: 10px;
-                        border-bottom: 1px solid #ccc;
-                        padding-bottom: 5px;
+                        margin-bottom: 8px;
+                        border-bottom: 1px solid #000000;
+                        padding-bottom: 4px;
+                        color: #000000;
                     }
 
+                    /* সম্পূর্ণ ব্ল্যাক বর্ডার টেবিল */
                     table.report-table {
                         width: 100%;
                         border-collapse: collapse;
-                        font-size: 8.5pt;
+                        font-size: 9.5pt;
+                        color: #000000;
                     }
 
                     table.report-table th {
-                        border-top: 1px solid #000;
-                        border-bottom: 1px solid #000;
-                        padding: 6px 4px;
+                        border-top: 1.5px solid #000000;
+                        border-bottom: 1.5px solid #000000;
+                        border-left: 1px solid #000000;
+                        border-right: 1px solid #000000;
+                        padding: 6px 5px;
                         font-weight: 700;
-                        text-transform: uppercase;
-                        background: #f8fafc;
+                        background: #ffffff;
+                        color: #000000;
                     }
 
                     table.report-table td {
-                        border-bottom: 1px solid #e2e8f0;
-                        padding: 5px 4px;
+                        border: 1px solid #000000;
+                        padding: 5px 6px;
+                        color: #000000;
+                        vertical-align: middle;
                     }
 
                     table.report-table tr.total-row td {
-                        border-top: 1.5px solid #000;
-                        border-bottom: 1.5px solid #000;
-                        font-weight: 800;
-                        background: #f8fafc;
-                        padding: 7px 4px;
+                        border-top: 2px solid #000000;
+                        border-bottom: 2px solid #000000;
+                        font-weight: 700;
+                        background: #ffffff;
+                        padding: 7px 6px;
                     }
 
                     @media print {
@@ -529,6 +553,7 @@
                         body { background: #ffffff !important; padding: 0 !important; }
                         .no-print { display: none !important; }
                         .paper-sheet { width: 100% !important; min-height: 100% !important; padding: 0 !important; box-shadow: none !important; }
+                        table.report-table th, table.report-table td { border-color: #000000 !important; color: #000000 !important; }
                     }
                 </style>
             </head>
@@ -571,7 +596,6 @@
                             format: 'a4'
                         });
 
-                        // শিরোনাম ও মেটা ডেটা
                         doc.setFont("Helvetica", "bold");
                         doc.setFontSize(16);
                         doc.text("MOUSUMI COMPUTER", doc.internal.pageSize.getWidth() / 2, 14, { align: "center" });
@@ -584,52 +608,50 @@
                         doc.text("PERIOD: ${meta.period}", 14, 27);
                         doc.text("GENERATED: " + new Date().toLocaleString(), doc.internal.pageSize.getWidth() - 14, 27, { align: "right" });
 
-                        // টেবিল কন্টেন্ট প্রিপারেশন
                         const headers = ${JSON.stringify(meta.headers)};
                         const rows = ${JSON.stringify(meta.rows)};
                         const totals = ${JSON.stringify(meta.grandTotals || [])};
+                        const aligns = ${JSON.stringify(meta.alignments)};
 
                         const finalRows = [...rows];
                         if (totals && totals.length > 0) {
                             finalRows.push(totals);
                         }
 
-                        // নেটিভ AutoTable জেনারেশন
+                        // নেটিভ AutoTable কনফিগারেশন (সলিড ব্ল্যাক বর্ডার ও সঠিক অ্যালাইনমেন্ট)
                         doc.autoTable({
                             head: [headers],
                             body: finalRows,
                             startY: 31,
-                            theme: 'plain',
+                            theme: 'grid',
                             styles: { 
                                 fontSize: 8, 
                                 font: "Helvetica", 
                                 cellPadding: 2, 
                                 textColor: [0, 0, 0],
-                                lineColor: [200, 200, 200],
-                                lineWidth: 0.1
+                                lineColor: [0, 0, 0],
+                                lineWidth: 0.15
                             },
                             headStyles: { 
                                 fontStyle: 'bold', 
                                 textColor: [0, 0, 0], 
+                                fillColor: [255, 255, 255],
                                 lineColor: [0, 0, 0], 
-                                lineWidth: { top: 0.3, bottom: 0.3 } 
+                                lineWidth: 0.25 
                             },
                             didParseCell: function (data) {
+                                const colIdx = data.column.index;
+                                const align = aligns[colIdx] || 'left';
+                                data.cell.styles.halign = align;
+
                                 // গ্র্যান্ড টোটাল রো হাইলাইট
                                 if (totals && totals.length > 0 && data.row.index === finalRows.length - 1) {
                                     data.cell.styles.fontStyle = 'bold';
-                                    data.cell.styles.lineColor = [0, 0, 0];
-                                    data.cell.styles.lineWidth = { top: 0.3, bottom: 0.3 };
-                                }
-                                // সংখ্যা কলাম ডানপাশে অ্যালাইন করা
-                                const hName = headers[data.column.index] || '';
-                                if (hName.includes('Fee') || hName.includes('Charge') || hName.includes('Received') || hName.includes('Amount') || hName.includes('Gross')) {
-                                    data.cell.styles.halign = 'right';
+                                    data.cell.styles.lineWidth = 0.25;
                                 }
                             }
                         });
 
-                        // ১ ক্লিকে কোনো ডায়ালগ ছাড়া সরাসরি ফাইল ডাউনলোড
                         doc.save('${meta.fileName}.pdf');
                     }
 
