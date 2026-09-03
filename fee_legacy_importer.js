@@ -71,7 +71,7 @@
                         </div>
                     </div>
 
-                    <!-- আপলোড বার -->
+                    <!-- আপলোড ও ক্লিয়ারিং কন্ট্রোল বার -->
                     <div style="padding:14px 20px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                             <input type="file" id="legacyExcelFileInput" accept=".xlsx, .xls, .csv" style="display:none;">
@@ -80,7 +80,10 @@
                             </button>
                             <span id="legacyFileName" style="font-size:0.82rem; color:#64748b;">No file chosen</span>
                             <button type="button" class="btn-act btn-act-pay" id="btnProcessLegacyExcel">
-                                Upload & Sync to Pending
+                                Upload & Sync
+                            </button>
+                            <button type="button" class="btn-act btn-act-void" id="btnClearSheetImports" title="Delete only sheet imported data">
+                                Clear Sheet Data ✕
                             </button>
                         </div>
                         <div>
@@ -132,11 +135,10 @@
         return str;
     }
 
-    // এক্সেল সিরিয়াল ডেট এবং টেক্সট ডেট কনভার্টার
     function sanitizeDate(val) {
         if (!val) return new Date().toISOString().split('T')[0];
         
-        // ১. যদি এক্সেল সিরিয়াল নাম্বার হয় (যেমন: 46031.0002)
+        // এক্সেল সিরিয়াল ডেট হ্যান্ডলিং
         if (typeof val === 'number' || (!isNaN(val) && String(val).trim().length >= 4 && !String(val).includes('-') && !String(val).includes('/'))) {
             try {
                 const numericDate = parseFloat(val);
@@ -147,7 +149,6 @@
         }
 
         const str = String(val).trim();
-        // ২. যদি DD-MM-YYYY বা DD/MM/YYYY হয়
         if (str.includes('-') || str.includes('/')) {
             const delimiter = str.includes('-') ? '-' : '/';
             const parts = str.split(delimiter);
@@ -161,10 +162,8 @@
         return str;
     }
 
-    // রসিদ নাম্বার পার্সার (Rcv. No কে অগ্রাধিকার দেওয়া)
     function extractReceiptNo(row, fallbackIndex) {
         const keys = Object.keys(row);
-        // প্রথমে "rcv. no", "rcv no", "receipt", "voucher" চেক করবে
         for (let k of keys) {
             const clean = k.toLowerCase().replace(/[^a-z0-9]/g, '');
             if (clean === 'rcvno' || clean === 'receiptno' || clean === 'recno' || clean === 'receipt' || clean === 'voucherno') {
@@ -172,7 +171,6 @@
                 if (v && v.toLowerCase() !== 'total') return v;
             }
         }
-        // না পেলে তখন "sl" চেক করবে
         for (let k of keys) {
             const clean = k.toLowerCase().replace(/[^a-z0-9]/g, '');
             if (clean === 'sl' || clean === 'slno') {
@@ -183,7 +181,7 @@
         return String(3400 + fallbackIndex);
     }
 
-    // ৫. গুগল শিট / CSV প্রসেসিং
+    // ৫. প্রসেসিং ও অটো রিপ্লেস
     async function processSheetExcel(file) {
         if (typeof XLSX === 'undefined') {
             alert("XLSX library not ready!");
@@ -208,20 +206,26 @@
                 const snap = await fb.get(fb.ref(fb.db, 'erp/feeTransactions'));
                 let currentTransactions = snap.exists() ? (Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val())) : [];
 
+                // আগের শিট ডাটা থাকলে মুছে ফ্রেশ করা হবে কি না
+                const hasOldSheetData = currentTransactions.some(t => t.source === 'Excel Sheet');
+                if (hasOldSheetData) {
+                    const confirmClean = confirm("Replace previous uploaded sheet records with this new file?");
+                    if (confirmClean) {
+                        currentTransactions = currentTransactions.filter(t => t.source !== 'Excel Sheet');
+                    }
+                }
+
                 let addedCount = 0;
 
                 json.forEach((row, idx) => {
                     const studentName = sanitizeText(row['Student Name'] || row['Name']);
                     const stdId = sanitizeText(row['Id'] || row['ID'] || row['Std Id'] || row['stdid']);
                     
-                    // টোটাল বা ফাঁকা লাইন স্কিপ করা
                     if (String(row['Sl']).toLowerCase() === 'total' || String(row['Rcv. No']).toLowerCase() === 'total' || (!studentName && !stdId) || stdId === '-') {
                         return;
                     }
 
-                    // সঠিক রসিদ নাম্বার নেওয়া (Rcv. No)
                     const slNo = extractReceiptNo(row, idx);
-
                     const rawDate = row['Date'] || row['DATE'];
                     const dateFormatted = sanitizeDate(rawDate);
 
@@ -233,7 +237,7 @@
 
                     const record = {
                         id: 'SHEET-' + Date.now() + '-' + idx,
-                        receiptNo: slNo, // এখন থেকে ৩২৮৯, ৩৩১৬ ইত্যাদি বসবে
+                        receiptNo: slNo,
                         customerId: stdId,
                         studentName: studentName,
                         class: sanitizeText(row['Class']),
@@ -252,23 +256,13 @@
                         receivedBy: 'Google Sheet Migration'
                     };
 
-                    const existsIndex = currentTransactions.findIndex(t => String(t.receiptNo) === String(slNo));
-                    if (existsIndex !== -1) {
-                        currentTransactions[existsIndex] = record;
-                    } else {
-                        currentTransactions.unshift(record);
-                    }
+                    currentTransactions.unshift(record);
                     addedCount++;
                 });
 
                 await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), currentTransactions);
 
-                if (typeof showToast === 'function') {
-                    showToast(`${addedCount} records synced with correct Receipt numbers!`, 'success');
-                } else {
-                    alert(`${addedCount} records synced with correct Receipt numbers!`);
-                }
-
+                alert(`Success! ${addedCount} records uploaded cleanly with correct Receipt numbers.`);
                 renderLegacyTable();
 
             } catch (err) {
@@ -277,6 +271,27 @@
             }
         };
         reader.readAsArrayBuffer(file);
+    }
+
+    // আগের শিট ডাটা পুরোপুরি ক্লিন করার ফাংশন
+    async function clearAllSheetImports() {
+        if (!confirm("Are you sure you want to remove all imported sheet records? (Normal shop records will NOT be deleted)")) {
+            return;
+        }
+
+        const fb = await getFirebase();
+        if (!fb) return;
+
+        const snap = await fb.get(fb.ref(fb.db, 'erp/feeTransactions'));
+        if (!snap.exists()) return;
+
+        let allData = Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val());
+        // শুধুমাত্র Excel Sheet সোর্সের ডাটা বাদ দেওয়া
+        const filteredData = allData.filter(t => t.source !== 'Excel Sheet');
+
+        await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), filteredData);
+        alert("All imported sheet records cleared!");
+        renderLegacyTable();
     }
 
     // ৬. ডাটা রেন্ডার করা
@@ -353,6 +368,7 @@
         const fileInp = document.getElementById('legacyExcelFileInput');
         const fileNameEl = document.getElementById('legacyFileName');
         const btnUpload = document.getElementById('btnProcessLegacyExcel');
+        const btnClear = document.getElementById('btnClearSheetImports');
         const searchInp = document.getElementById('legacySearchInput');
 
         if (fileInp && fileNameEl) {
@@ -371,12 +387,16 @@
             };
         }
 
+        if (btnClear) {
+            btnClear.onclick = clearAllSheetImports;
+        }
+
         if (searchInp) {
             searchInp.oninput = renderLegacyTable;
         }
     }
 
-    // ৮. স্বয়ংক্রিয় টাইমার
+    // ৮. টাইমার
     let retryTimer = setInterval(() => {
         const menuOk = injectLegacyMenuItem();
         const panelOk = injectLegacyPanel();
@@ -386,7 +406,6 @@
         }
     }, 250);
 
-    // ফায়ারবেস লাইভ সিঙ্ক
     getFirebase().then(fb => {
         if (fb) {
             fb.onValue(fb.ref(fb.db, 'erp/feeTransactions'), () => {
