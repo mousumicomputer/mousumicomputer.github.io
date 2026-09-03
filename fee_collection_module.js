@@ -26,10 +26,23 @@
             font-family: 'Plus Jakarta Sans', 'Kalpurush', sans-serif !important;
         }
 
-        /* ড্রপডাউন সাবমেনু ফিক্স */
-        #menu-edu-parent .submenu-list.show,
-        #menu-edu-parent.open .submenu-list {
+        /* ড্রপডাউন সাবমেনু ফিক্স (ডিফল্টভাবে বন্ধ থাকবে) */
+        #menu-edu-parent .submenu-list {
+            display: none !important;
+        }
+
+        #menu-edu-parent.open > .submenu-list,
+        #menu-edu-parent .submenu-list.show {
             display: flex !important;
+            flex-direction: column;
+        }
+
+        #menu-edu-parent .chevron-icon {
+            transition: transform 0.25s ease;
+        }
+
+        #menu-edu-parent.open .chevron-icon {
+            transform: rotate(180deg);
         }
 
         .edu-view-card {
@@ -237,18 +250,18 @@
         }
     };
 
-    // ৪. সাইডবার মেনু ইনজেকশন (হুবহু admin.html স্টাইলে)
+    // ৪. সাইডবার মেনু ইনজেকশন (show ক্লাস সরিয়ে ডিফল্ট ক্লোজ করা হয়েছে)
     function injectMenu() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList || document.getElementById('menu-edu-parent')) return;
 
         const html = `
             <li class="menu-item" id="menu-edu-parent">
-                <a onclick="toggleEduMenu()">
+                <a onclick="toggleEduMenu()" style="cursor: pointer;">
                     <span class="menu-link-inner"><i class="fa-solid fa-graduation-cap"></i> <span>Education & Digital</span></span>
                     <i class="fa-solid fa-chevron-down chevron-icon" style="font-size: 0.7rem;"></i>
                 </a>
-                <ul class="submenu-list show">
+                <ul class="submenu-list">
                     <li class="submenu-item"><a onclick="switchMainTab('edu-fee-form')"><i class="fa-solid fa-angle-right"></i> <span>Fee Collection</span></a></li>
                     <li class="submenu-item"><a onclick="switchMainTab('edu-pending-clearance')"><i class="fa-solid fa-angle-right"></i> <span>Pending Clearance</span></a></li>
                     <li class="submenu-item"><a onclick="switchMainTab('edu-paid-settlement')"><i class="fa-solid fa-angle-right"></i> <span>Paid Settlement</span></a></li>
