@@ -1,12 +1,13 @@
 /**
  * Mousumi Computer ERP - Standalone Education Reports Hub
- * Font: Google Font 'Tiro Bangla' Embedded in View & Downloaded PDF
- * Engine: jsPDF + jspdf-autotable (Native Vector) + SheetJS
- * Business Rules:
- * - Tap Charge: 1% capped at Max 60 Tk.
- * - Net Profit: Total Cash Received - Tap Payable Amount.
- * - Replaced 'Receipt #' with 'Receipt No'.
- * - Clean Financial & Earnings Audit Box below tables.
+ * Engine: Native jsPDF (v2.5.1) + jspdf-autotable (v3.8.2) + SheetJS
+ * Fixes:
+ * 1. Fixed PDF Button: Removed blocking font fetch, now downloads instantly on click.
+ * 2. All table headers are strictly CENTER aligned (th { text-align: center }).
+ * 3. Replaced 'Receipt #' with 'Receipt No'.
+ * 4. Title Case for Student Names ('Md Rabbi Hosen').
+ * 5. Grand Total = aligned cleanly at the end.
+ * 6. Financial & Commission Audit Summary box below table.
  */
 
 (function () {
@@ -300,7 +301,7 @@
         let grandTotalConfig = null;
         let columnAlignments = [];
         let colWidths = [];
-        let financialAudit = null; // কমিশন ও ইনকাম সামারি
+        let financialAudit = null;
 
         if (reportType === 'collection') {
             title = "FEE COLLECTION STATEMENT";
@@ -316,7 +317,7 @@
                 const charge = parseFloat(t.totalCharge || 0);
                 const rec = parseFloat(t.netReceived || 0);
 
-                // ট্যাপ চার্জ লজিক: ১% তবে সর্বোচ্চ ৬০ টাকা
+                // ট্যাপ চার্জ: ১% তবে সর্বোচ্চ ৬০ টাকা
                 const tapFee = Math.min(due * 0.01, 60);
                 const itemTapPayable = due + tapFee;
 
@@ -497,7 +498,7 @@
         });
     }
 
-    // ৫. নিউ ট্যাব রেন্ডারিং এবং সামারি বক্স
+    // ৫. নিউ ট্যাব রেন্ডারিং (সব হেডিং সেন্টার + ১-ক্লিকে নিশ্চিত পিডিএফ ডাউনলোড)
     function openReportWindow(meta) {
         const reportWindow = window.open('', '_blank');
         if (!reportWindow) {
@@ -531,11 +532,11 @@
             }
         }
 
+        // সমস্ত টেবিল হেডার সেন্টার করা
         let headersHTML = '';
         meta.headers.forEach((h, idx) => {
-            const align = meta.alignments[idx] || 'left';
             const w = meta.colWidths && meta.colWidths[idx] ? `width: ${meta.colWidths[idx]};` : '';
-            headersHTML += `<th style="text-align: ${align}; ${w}">${h}</th>`;
+            headersHTML += `<th style="text-align: center !important; ${w}">${h}</th>`;
         });
 
         let auditBoxHTML = '';
@@ -671,6 +672,7 @@
                         table-layout: fixed;
                     }
 
+                    /* হেডার সেন্টার এলাইনমেন্ট */
                     table.report-table th {
                         border: 1px solid #000000;
                         border-top: 1.5px solid #000000;
@@ -679,6 +681,7 @@
                         font-weight: 700;
                         background: #ffffff;
                         color: #000000;
+                        text-align: center !important;
                         white-space: normal;
                         word-break: break-word;
                     }
@@ -701,7 +704,6 @@
                         padding: 6px 4px;
                     }
 
-                    /* কমিশন ও অডিট সামারি বক্স */
                     .audit-summary-card {
                         margin-top: 15px;
                         border: 1.5px solid #000000;
@@ -786,8 +788,8 @@
                 </div>
 
                 <script>
-                    // ১-ক্লিকে সরাসরি নেটিভ ভেক্টর পিডিএফ ডাউনলোড (Tiro Bangla ফন্ট সহ)
-                    async function downloadDirectPDF() {
+                    // ১-ক্লিকে নিশ্চিত সরাসরি নেটিভ ভেক্টর পিডিএফ ডাউনলোড (Zero Error / Zero Block)
+                    function downloadDirectPDF() {
                         const { jsPDF } = window.jspdf;
                         const doc = new jsPDF({
                             orientation: '${meta.isLandscape ? 'landscape' : 'portrait'}',
@@ -795,24 +797,14 @@
                             format: 'a4'
                         });
 
-                        // Tiro Bangla ফন্ট এমবেড
-                        try {
-                            const fontRes = await fetch("https://fonts.gstatic.com/s/tirobangla/v5/0FlxVPmxr4q3nB7mN3xI6qLp.woff");
-                            const fontBlob = await fontRes.arrayBuffer();
-                            const base64Font = btoa(new Uint8Array(fontBlob).reduce((data, byte) => data + String.fromCharCode(byte), ''));
-                            doc.addFileToVFS('TiroBangla-Regular.ttf', base64Font);
-                            doc.addFont('TiroBangla-Regular.ttf', 'TiroBangla', 'normal');
-                            doc.setFont('TiroBangla');
-                        } catch(e) {
-                            doc.setFont("Helvetica");
-                        }
-
+                        doc.setFont("Helvetica", "bold");
                         doc.setFontSize(16);
                         doc.text("MOUSUMI COMPUTER", doc.internal.pageSize.getWidth() / 2, 14, { align: "center" });
 
                         doc.setFontSize(11);
                         doc.text("${meta.title}", doc.internal.pageSize.getWidth() / 2, 20, { align: "center" });
 
+                        doc.setFont("Helvetica", "normal");
                         doc.setFontSize(8.5);
                         doc.text("PERIOD: ${meta.period}", 12, 27);
                         doc.text("GENERATED: " + new Date().toLocaleString(), doc.internal.pageSize.getWidth() - 12, 27, { align: "right" });
@@ -841,7 +833,7 @@
                             bodyData.push(totalRow);
                         }
 
-                        // মূল টেবিল রেন্ডার
+                        // নেটিভ AutoTable রেন্ডার (হেডার সম্পূর্ণ সেন্টার)
                         doc.autoTable({
                             head: [headers],
                             body: bodyData,
@@ -850,7 +842,7 @@
                             theme: 'grid',
                             styles: { 
                                 fontSize: 8, 
-                                font: doc.getFontList()['TiroBangla'] ? 'TiroBangla' : 'Helvetica', 
+                                font: "Helvetica", 
                                 cellPadding: 2, 
                                 textColor: [0, 0, 0],
                                 lineColor: [0, 0, 0],
@@ -862,17 +854,19 @@
                                 textColor: [0, 0, 0], 
                                 fillColor: [255, 255, 255],
                                 lineColor: [0, 0, 0], 
-                                lineWidth: 0.25 
+                                lineWidth: 0.25,
+                                halign: 'center' // হেডারের সব লেখা সেন্টার
                             },
                             didParseCell: function (data) {
-                                if (data.row.index < rows.length) {
+                                // ডেটা সেলগুলোর অ্যালাইনমেন্ট ঠিক রাখা
+                                if (data.section === 'body' && data.row.index < rows.length) {
                                     const colIdx = data.column.index;
                                     data.cell.styles.halign = aligns[colIdx] || 'left';
                                 }
                             }
                         });
 
-                        // যদি কমিশন ও অডিট সামারি থাকে, তবে টেবিলের নিচে সুন্দরভাবে যুক্ত করা
+                        // কমিশন সামারি যোগ করা
                         if (finAudit) {
                             let endY = doc.lastAutoTable.finalY + 8;
                             if (endY > doc.internal.pageSize.getHeight() - 40) {
@@ -897,7 +891,7 @@
                             doc.line(12, endY + 26, doc.internal.pageSize.getWidth() - 12, endY + 26);
                         }
 
-                        // সরাসরি ফাইল সেভ (কোনো প্রিভিউ ছাড়া)
+                        // কোনো ডায়ালগ ছাড়া সরাসরি সেভ
                         doc.save('${meta.fileName}.pdf');
                     }
 
