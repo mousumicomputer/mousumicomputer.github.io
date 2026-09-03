@@ -1,9 +1,12 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module (Enterprise Edition)
- * Fixed:
- * 1. Watermark opacity boosted for crystal clear visibility.
- * 2. Instant Preload added so Watermark & Paid Stamp NEVER fail to render.
- * 3. 100% exact design, fonts, tables, decorations kept completely untouched.
+ * Fixed & Upgraded:
+ * 1. Top Action Toolbar (Image 2): [Pay] | [Delete/Void] [Print].
+ * 2. 1-Click Interactive Row Selection (Highlights selected student).
+ * 3. Gross Payment Column (Tap Payable: Tuition + 1% Tap Fee) added.
+ * 4. Top Total displays Grand Sum of Gross Payments required for Tap clearance.
+ * 5. Watermark opacity & instant preload fixed.
+ * 6. Smart Fuzzy Excel upload & Sample Sheet download active.
  */
 
 (function () {
@@ -13,6 +16,9 @@
     let voidLogsList = [];
     let selectedStudentRawDue = 0;
     let selectedStudentData = null;
+
+    // সিলেকশন স্টেট (Pending Clearance Toolbar)
+    let selectedPendingTxId = null;
 
     // পেজিনেশন স্টেট
     let currentPage = 1;
@@ -123,9 +129,111 @@
             font-weight: 600;
         }
 
+        /* TOP ACTION BAR STRIP (ছবি ২ অনুযায়ী ডিজাইন) */
+        .pending-action-bar-strip {
+            background: #ffffff;
+            border: 1.5px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 10px 18px;
+            margin: 18px 24px 8px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .selection-status-badge {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .selection-status-badge.has-selection {
+            color: #0f172a;
+        }
+
+        .pending-action-btns {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-top-act {
+            border: none;
+            padding: 7px 20px;
+            border-radius: 30px;
+            font-size: 0.88rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-top-pay {
+            background: #10b981;
+            color: #ffffff;
+            border: 1.5px solid #059669;
+        }
+
+        .btn-top-pay:hover:not(:disabled) {
+            background: #059669;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-top-separator {
+            width: 1.5px;
+            height: 24px;
+            background: #cbd5e1;
+            margin: 0 4px;
+        }
+
+        .btn-top-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1.5px solid #cbd5e1;
+            background: #ffffff;
+            color: #334155;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-top-void:hover:not(:disabled) {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #f87171;
+            transform: translateY(-1px);
+        }
+
+        .btn-top-print:hover:not(:disabled) {
+            background: #0f172a;
+            color: #ffffff;
+            border-color: #0f172a;
+            transform: translateY(-1px);
+        }
+
+        .btn-top-act:disabled, .btn-top-icon:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            filter: grayscale(0.5);
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
         /* TABLES */
         .edu-table-responsive { overflow-x: auto; padding: 15px 20px; }
-        .edu-clean-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; min-width: 1250px; }
+        .edu-clean-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; min-width: 1050px; }
         .edu-clean-table th {
             padding: 10px 12px;
             font-size: 0.76rem;
@@ -138,7 +246,7 @@
         }
         .edu-clean-table td {
             background: #ffffff;
-            padding: 12px 12px;
+            padding: 12px 14px;
             font-size: 0.85rem;
             font-weight: 600;
             color: #1e293b;
@@ -148,7 +256,26 @@
         }
         .edu-clean-table tr td:first-child { border-left: 1px solid #f1f5f9; border-radius: 8px 0 0 8px; }
         .edu-clean-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 8px 8px 0; }
-        .edu-clean-table tr:hover td { background: #f8fafc; }
+        
+        /* রো সিলেকশন হাইলাইট */
+        .edu-clean-table tbody tr.row-selectable {
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .edu-clean-table tbody tr.row-selectable:hover td {
+            background: #f8fafc;
+        }
+        .edu-clean-table tbody tr.row-selected td {
+            background: #f0fdf4 !important;
+            border-top: 1.5px solid #10b981 !important;
+            border-bottom: 1.5px solid #10b981 !important;
+        }
+        .edu-clean-table tbody tr.row-selected td:first-child {
+            border-left: 3.5px solid #10b981 !important;
+        }
+        .edu-clean-table tbody tr.row-selected td:last-child {
+            border-right: 1.5px solid #10b981 !important;
+        }
 
         .btn-act {
             border: none;
@@ -162,14 +289,10 @@
             gap: 6px;
             transition: all 0.2s;
         }
-        .btn-act-pay { background: #10b981; color: #ffffff; }
-        .btn-act-pay:hover { background: #059669; }
         .btn-act-undo { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
         .btn-act-undo:hover { background: #e2e8f0; }
         .btn-act-print { background: #0f172a; color: #ffffff; }
         .btn-act-print:hover { background: #334155; }
-        .btn-act-void { background: #fee2e2; color: #dc2626; }
-        .btn-act-void:hover { background: #fecaca; }
 
         .report-grid {
             display: grid;
@@ -340,27 +463,47 @@
                     </div>
                 </div>
 
-                <!-- PANEL 2: PENDING CLEARANCE -->
+                <!-- PANEL 2: PENDING CLEARANCE (টপ অ্যাকশন বার সহ ছবি ২ এর ডিজাইন) -->
                 <div class="view-panel" id="edu-pending-clearance-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
                             <h3><i class="fa-solid fa-clock-rotate-left" style="color:#b45309;"></i> Pending Clearance (To Pay via Tap)</h3>
                             <div>
                                 <span class="edu-pill-badge badge-pending" id="pendingCountBadge">0 Pending</span>
-                                <span style="font-size:0.9rem; font-weight:800; margin-left:12px;">Total: ৳ <span id="pendingTotalSum">0.00</span></span>
+                                <span style="font-size:0.9rem; font-weight:800; margin-left:14px;">Total Tap Required: ৳ <span id="pendingTotalSum" style="color:#10b981;">0.00</span></span>
                             </div>
                         </div>
-                        <div class="edu-table-responsive">
+
+                        <!-- শীর্ষ অ্যাকশন বার (মকআপ অনুযায়ী) -->
+                        <div class="pending-action-bar-strip">
+                            <div class="selection-status-badge" id="pendingSelectedLabel">
+                                <i class="fa-solid fa-hand-pointer" style="color:#3b82f6;"></i> <span>Click on any student row to activate action bar</span>
+                            </div>
+                            <div class="pending-action-btns">
+                                <button type="button" class="btn-top-act btn-top-pay" id="btnTopPay" onclick="executeTopPendingAction('pay')" disabled>
+                                    <i class="fa-solid fa-paper-plane"></i> Pay
+                                </button>
+                                <div class="btn-top-separator"></div>
+                                <button type="button" class="btn-top-icon btn-top-void" id="btnTopVoid" onclick="executeTopPendingAction('void')" title="Void / Cancel Record" disabled>
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                <button type="button" class="btn-top-icon btn-top-print" id="btnTopPrint" onclick="executeTopPendingAction('print')" title="Print Receipt" disabled>
+                                    <i class="fa-solid fa-print"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="edu-table-responsive" style="padding-top: 5px;">
                             <table class="edu-clean-table">
                                 <thead>
                                     <tr>
-                                        <th>Receipt #</th>
-                                        <th>Date</th>
-                                        <th>Student ID</th>
-                                        <th>Student Name</th>
-                                        <th>Tuition Fee</th>
-                                        <th>Total Collected</th>
-                                        <th style="text-align:right;">Action (Tap Pay)</th>
+                                        <th>RECEIPT #</th>
+                                        <th>DATE</th>
+                                        <th>STUDENT ID</th>
+                                        <th>STUDENT NAME</th>
+                                        <th>TUITION FEE</th>
+                                        <th>GROSS PAYABLE (TAP)</th>
+                                        <th style="text-align:right;">TOTAL COLLECTED</th>
                                     </tr>
                                 </thead>
                                 <tbody id="pendingClearanceTableBody">
@@ -553,7 +696,7 @@
         wrapper.insertAdjacentHTML('beforeend', panelsHTML);
     }
 
-    // ৬. রসিদ ওপেন (স্মার্ট ওয়াটারমার্ক ও ১০০% ফিক্সড প্রি-লোড সিল)
+    // ৬. রসিদ ওপেন
     window.openReceiptInNewTab = function (d) {
         const receiptWindow = window.open('', '_blank');
         if (!receiptWindow) {
@@ -572,7 +715,6 @@
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Receipt_${d.receiptNo}_${d.studentName}</title>
                 
-                <!-- তাৎক্ষণিক লোড নিশ্চিত করার জন্য Preload -->
                 <link rel="preload" as="image" href="${watermarkImgUrl}">
                 <link rel="preload" as="image" href="${paidStampImgUrl}">
 
@@ -592,7 +734,6 @@
                     .btn-close:hover { background: #ef4444; color: #ffffff; }
                     .receipt-wrapper-card { background: #ffffff; width: 148mm; min-height: 210mm; padding: 12mm 15mm; box-shadow: 0 15px 40px rgba(0,0,0,0.5); border-radius: 2px; position: relative; box-sizing: border-box; color: #000000; overflow: hidden; }
                     
-                    /* অপাসিটি ০.৫৮ করা হয়েছে যাতে স্পষ্ট ও পরিষ্কার বোঝা যায় */
                     .receipt-watermark { 
                         position: absolute; 
                         top: 48mm; 
@@ -750,6 +891,7 @@
             const fb = await getFirebase();
             if (fb) await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), feeTransactionsList);
             if (typeof showToast === 'function') showToast(`✔ ${tx.studentName} marked as PAID to Tap!`, "success");
+            selectedPendingTxId = null;
         } catch(e) { console.error(e); }
     };
 
@@ -793,6 +935,7 @@
                 await fb.set(fb.ref(fb.db, 'erp/feeVoidLogs'), voidLogsList);
             }
             document.getElementById('voidReasonModal').style.display = 'none';
+            selectedPendingTxId = null;
             if (typeof showToast === 'function') showToast("Record voided and moved to Trash Log.", "warning");
         } catch(e) { console.error(e); }
     };
@@ -818,15 +961,74 @@
         } catch(e) { console.error(e); }
     };
 
-    // ১০. টেবিল রেন্ডারিং
+    // ১০. পেন্ডিং রো সিলেকশন ও টপ অ্যাকশন হ্যান্ডলার
+    window.selectPendingRow = function(txId) {
+        if (selectedPendingTxId === txId) {
+            selectedPendingTxId = null; // Unselect if clicked again
+        } else {
+            selectedPendingTxId = txId;
+        }
+        renderPendingTable();
+    };
+
+    window.executeTopPendingAction = function(actionType) {
+        if (!selectedPendingTxId) {
+            alert("Please select a student row first!");
+            return;
+        }
+
+        if (actionType === 'pay') {
+            markAsTapPaid(selectedPendingTxId);
+        } else if (actionType === 'void') {
+            openVoidModal(selectedPendingTxId);
+        } else if (actionType === 'print') {
+            printRowReceipt(selectedPendingTxId);
+        }
+    };
+
+    // ১১. টেবিল রেন্ডারিং
     function renderPendingTable() {
         const tbody = document.getElementById('pendingClearanceTableBody');
         const badge = document.getElementById('pendingCountBadge');
         const sumEl = document.getElementById('pendingTotalSum');
+        const selectedLabel = document.getElementById('pendingSelectedLabel');
+        const btnPay = document.getElementById('btnTopPay');
+        const btnVoid = document.getElementById('btnTopVoid');
+        const btnPrint = document.getElementById('btnTopPrint');
+
         if (!tbody) return;
 
         const pendingList = feeTransactionsList.filter(t => t.status !== 'Paid');
-        let total = 0;
+        let totalGrossSum = 0; // ট্যাপে পরিশোধ করার সর্বমোট গ্রস টাকা
+
+        // চেক করা সিলেক্টেড রো এখনো বিদ্যমান কি না
+        const selectedRecord = pendingList.find(t => t.id === selectedPendingTxId);
+        if (!selectedRecord) {
+            selectedPendingTxId = null;
+        }
+
+        // টুলবার বাটন ও টেক্সট আপডেট
+        if (selectedRecord) {
+            const selDue = parseFloat(selectedRecord.netDue || 0);
+            const selTapFee = Math.min(selDue * 0.01, 60);
+            const selGross = selectedRecord.grossPayment ? parseFloat(selectedRecord.grossPayment) : (selDue + selTapFee);
+
+            if (selectedLabel) {
+                selectedLabel.className = 'selection-status-badge has-selection';
+                selectedLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#10b981;"></i> <span>Selected: <strong>#${selectedRecord.receiptNo || '-'}</strong> — ${selectedRecord.studentName} (Gross Tap: ৳ ${selGross.toFixed(2)})</span>`;
+            }
+            if (btnPay) btnPay.disabled = false;
+            if (btnVoid) btnVoid.disabled = false;
+            if (btnPrint) btnPrint.disabled = false;
+        } else {
+            if (selectedLabel) {
+                selectedLabel.className = 'selection-status-badge';
+                selectedLabel.innerHTML = `<i class="fa-solid fa-hand-pointer" style="color:#3b82f6;"></i> <span>Click on any student row to activate action bar</span>`;
+            }
+            if (btnPay) btnPay.disabled = true;
+            if (btnVoid) btnVoid.disabled = true;
+            if (btnPrint) btnPrint.disabled = true;
+        }
 
         if (pendingList.length === 0) {
             tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">No pending clearance records. All fees cleared!</td></tr>';
@@ -837,27 +1039,33 @@
 
         let html = '';
         pendingList.forEach(t => {
+            const tuition = parseFloat(t.netDue || 0);
             const netRec = parseFloat(t.netReceived || 0);
-            total += netRec;
+
+            // গ্রস পেমেন্ট হিসাব (Tuition + ১% ট্যাপ চার্জ, সর্বোচ্চ ৬০ টাকা)
+            const tapFee = Math.min(tuition * 0.01, 60);
+            const grossPayable = t.grossPayment ? parseFloat(t.grossPayment) : (tuition + tapFee);
+
+            totalGrossSum += grossPayable; // উপরে যোগ করার জন্য
+
+            const isSelected = (t.id === selectedPendingTxId);
+
             html += `
-                <tr>
+                <tr class="row-selectable ${isSelected ? 'row-selected' : ''}" onclick="selectPendingRow('${t.id}')">
                     <td style="font-weight:800; color:#2563eb;">#${t.receiptNo || '-'}</td>
                     <td>${t.date}</td>
                     <td><strong>${t.customerId}</strong></td>
-                    <td>${t.studentName}</td>
-                    <td>৳ ${parseFloat(t.netDue||0).toFixed(2)}</td>
-                    <td style="color:#15803d; font-weight:800;">৳ ${netRec.toFixed(2)}</td>
-                    <td style="text-align:right;">
-                        <button class="btn-act btn-act-pay" onclick="markAsTapPaid('${t.id}')"><i class="fa-solid fa-check"></i> Pay</button>
-                        <button class="btn-act btn-act-print" onclick="printRowReceipt('${t.id}')"><i class="fa-solid fa-print"></i></button>
-                        <button class="btn-act btn-act-void" onclick="openVoidModal('${t.id}')"><i class="fa-solid fa-trash"></i></button>
-                    </td>
+                    <td style="font-weight:700;">${t.studentName}</td>
+                    <td>৳ ${tuition.toFixed(2)}</td>
+                    <td style="font-weight:800; color:#b45309;">৳ ${grossPayable.toFixed(2)}</td>
+                    <td style="color:#15803d; font-weight:800; text-align:right;">৳ ${netRec.toFixed(2)}</td>
                 </tr>
             `;
         });
         tbody.innerHTML = html;
         if (badge) badge.innerText = `${pendingList.length} Pending`;
-        if (sumEl) sumEl.innerText = total.toLocaleString('en-US', { minimumFractionDigits: 2 });
+        // সবার উপরে গ্রস পেমেন্টের মোট টাকা দেখানো হচ্ছে
+        if (sumEl) sumEl.innerText = totalGrossSum.toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
     function renderPaidTable() {
@@ -931,7 +1139,7 @@
         if (badge) badge.innerText = `${voidLogsList.length} Voided`;
     }
 
-    // ১১. মাস্টার এক্সেল এক্সপোর্ট
+    // ১২. মাস্টার এক্সেল এক্সপোর্ট
     window.exportDataToExcel = function(type) {
         if (typeof XLSX === 'undefined') {
             alert("SheetJS library not loaded!");
@@ -943,9 +1151,12 @@
 
         if (type === 'pending') {
             fileName = "Pending_Clearance_List.xlsx";
-            data.push(["Receipt No", "Date", "Student ID", "Student Name", "Class", "Tuition Fee", "Net Collected"]);
+            data.push(["Receipt No", "Date", "Student ID", "Student Name", "Class", "Tuition Fee", "Gross Payable (Tap)", "Net Collected"]);
             feeTransactionsList.filter(t => t.status !== 'Paid').forEach(t => {
-                data.push([t.receiptNo, t.date, t.customerId, t.studentName, t.class, t.netDue, t.netReceived]);
+                const tuition = parseFloat(t.netDue || 0);
+                const tapFee = Math.min(tuition * 0.01, 60);
+                const gross = t.grossPayment ? parseFloat(t.grossPayment) : (tuition + tapFee);
+                data.push([t.receiptNo, t.date, t.customerId, t.studentName, t.class, tuition, gross, t.netReceived]);
             });
         } else if (type === 'paid') {
             fileName = "Paid_Settlement_List.xlsx";
@@ -991,7 +1202,7 @@
         XLSX.writeFile(wb, fileName);
     };
 
-    // ১২. পেজিনেশন ও সম্পূর্ণ শিক্ষার্থী তালিকা টেবিল
+    // ১৩. পেজিনেশন ও সম্পূর্ণ শিক্ষার্থী তালিকা টেবিল
     function renderDueDataTable() {
         const tbody = document.getElementById('dueDataTableBody');
         const paginationBtns = document.getElementById('duePaginationBtns');
@@ -1088,7 +1299,7 @@
         }
     }
 
-    // ১৩. Firebase লিসেনার
+    // ১৪. Firebase লিসেনার
     async function listenFirebaseData() {
         const fb = await getFirebase();
         if (!fb) return;
@@ -1161,7 +1372,7 @@
         return '';
     }
 
-    // ১৪. ফর্ম ও ইভেন্ট লজিক
+    // ১৫. ফর্ম ও ইভেন্ট লজিক
     function initLogic() {
         const idInp = document.getElementById('origId');
         const nameInp = document.getElementById('origName');
