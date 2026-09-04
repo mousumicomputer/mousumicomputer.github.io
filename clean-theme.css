@@ -1,0 +1,211 @@
+/* =========================================================
+   CLEAN & MINIMAL THEME OVERLAY (Inspired by Screenshot 2)
+   Author: Mousumi Computer Modern Theme
+   ========================================================= */
+
+:root {
+    --primary-color: #0d9488 !important;   /* ক্লিন মডার্ন টিল/সায়ান */
+    --primary-light: #f0fdfa !important;   /* খুব হালকা ব্যাকগ্রাউন্ড হাইলাইট */
+    --primary-dark: #0f172a !important;    /* সফট ডার্ক স্লেট টেক্সট */
+    --sidebar-width: 250px !important;
+    --bg-color: #f8fafc !important;        /* পরিষ্কার ফ্রেশ ব্যাকগ্রাউন্ড */
+    --card-bg: #ffffff !important;
+    --text-color: #1e293b !important;
+    --text-muted: #64748b !important;
+    --border-color: #e2e8f0 !important;    /* সফট ক্লিন বর্ডার */
+    --border-radius: 12px !important;
+}
+
+/* ১. পুরো ফন্টকে প্রফেশনাল ও পরিষ্কার লুক দেয়া */
+* {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+body {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color) !important;
+}
+
+/* ২. সাইডবার: গাঢ় কালার বাদ দিয়ে সফট লাইট লুক (ছবি ২ এর মতো) */
+.sidebar {
+    background-color: #ffffff !important;
+    border-right: 1px solid var(--border-color) !important;
+    color: var(--text-color) !important;
+    padding: 16px 12px !important;
+    box-shadow: none !important;
+}
+
+.brand-logo {
+    background: transparent !important;
+    border: none !important;
+    padding: 6px 10px !important;
+    margin-bottom: 20px !important;
+}
+
+.brand-logo-img-wrapper {
+    background: #ffffff !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+}
+
+.brand-text h3 {
+    color: var(--primary-dark) !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+}
+
+.brand-text span {
+    color: var(--primary-color) !important;
+    font-size: 0.65rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* ৩. সাইডবার মেনু আইটেম */
+.menu-item a {
+    color: var(--text-muted) !important;
+    font-weight: 600 !important;
+    font-size: 0.86rem !important;
+    border-radius: 8px !important;
+    padding: 9px 12px !important;
+    transition: all 0.15s ease !important;
+}
+
+.menu-item a:hover {
+    background-color: #f1f5f9 !important;
+    color: var(--primary-dark) !important;
+}
+
+.menu-item.active > a {
+    background-color: var(--primary-light) !important;
+    color: var(--primary-color) !important;
+    font-weight: 700 !important;
+    box-shadow: none !important;
+}
+
+.submenu-list {
+    padding-left: 14px !important;
+}
+
+.submenu-item a {
+    font-size: 0.8rem !important;
+    color: var(--text-muted) !important;
+    padding: 7px 10px !important;
+}
+
+.submenu-item a:hover, .submenu-item.active a {
+    color: var(--primary-color) !important;
+    background: #f8fafc !important;
+}
+
+/* ৪. টপ ন্যাভবার: একদম হালকা এবং পরিচ্ছন্ন */
+.top-navbar {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 12px 24px !important;
+}
+
+#top-title {
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    color: var(--primary-color) !important;
+    background: var(--primary-light) !important;
+    border: 1px solid #ccfbf1 !important;
+    padding: 6px 14px !important;
+    border-radius: 20px !important;
+    display: inline-block !important;
+}
+
+.menu-toggle-btn {
+    background: #ffffff !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-muted) !important;
+    border-radius: 8px !important;
+}
+
+.user-profile-avatar {
+    border: 1.5px solid var(--border-color) !important;
+}
+
+/* ৫. হিরো ব্যানার (Total Net Balance): অতিরিক্ত নীল ও গ্র্যাডিয়েন্ট দূর করে ফ্ল্যাট ক্লিন লুক */
+.fintech-hero-card {
+    background: #ffffff !important;
+    color: var(--primary-dark) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--border-radius) !important;
+    box-shadow: none !important;
+    padding: 20px 24px !important;
+    margin-bottom: 18px !important;
+    text-align: left !important;
+}
+
+.fintech-hero-card h3 {
+    color: var(--text-muted) !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.6px !important;
+}
+
+.fintech-hero-card .hero-amount {
+    color: var(--primary-color) !important;
+    font-size: 1.85rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.5px !important;
+    margin-top: 4px !important;
+}
+
+/* ৬. ড্যাশবোর্ড কার্ডস: হিজিবিজি কালার বর্ডার বন্ধ করে পরিষ্কার কার্ড গ্রিড */
+.summary-grid {
+    gap: 14px !important;
+}
+
+.fintech-card {
+    background: #ffffff !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--border-radius) !important;
+    padding: 16px 18px !important;
+    box-shadow: none !important;
+    transition: border-color 0.2s ease !important;
+}
+
+.fintech-card::before {
+    display: none !important; /* বামের মোটা কালার বার বন্ধ */
+}
+
+.fintech-card:hover {
+    border-color: #cbd5e1 !important;
+}
+
+.card-icon {
+    display: none !important; /* হিজিবিজি দূর করতে কার্ডের ভেতরের রঙিন আইকন হাইড */
+}
+
+.fintech-card h4 {
+    color: var(--text-muted) !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 6px !important;
+    text-transform: capitalize !important;
+}
+
+.fintech-card .amount {
+    color: var(--primary-dark) !important;
+    font-size: 1.25rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.3px !important;
+}
+
+/* ৭. টেবিল ও কনটেইনারের ফ্রেশ ফিনিশিং */
+.erp-form-card, .table-container, .mc-form-card {
+    border: 1px solid var(--border-color) !important;
+    box-shadow: none !important;
+    border-radius: var(--border-radius) !important;
+}
+
+th {
+    background: #f8fafc !important;
+    color: var(--text-muted) !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+}
