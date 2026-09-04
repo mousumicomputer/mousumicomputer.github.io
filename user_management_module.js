@@ -1,7 +1,7 @@
 /**
  * User Management & Granular RBAC Engine
- * Features: Separated Profile Setup, Dedicated Permissions Manager, 
- * Dropdown Submenus & Real User Portal Isolation (Auto-Navigation Fix)
+ * Architecture: Separated Profile & Dedicated Permissions Manager
+ * Fix: Complete Isolation of Global Download Reports Menu
  * Mousumi Computer ERP Core Engine
  */
 
@@ -20,7 +20,7 @@
     let dbRefFunc = null;
     let dbSetFunc = null;
 
-    // ERP Module Definitions
+    // ERP Module Definitions (Strictly Isolated Keys)
     const SYSTEM_MODULES = [
         {
             groupName: "Education & Digital Services",
@@ -32,7 +32,7 @@
                 { key: "edu_paid_settlement", label: "Paid Settlement" },
                 { key: "edu_due_database", label: "Due Master Database" },
                 { key: "edu_void_trash", label: "Void & Cancelled Logs" },
-                { key: "edu_reports_export", label: "Reports & Data Export" },
+                { key: "edu_reports_export", label: "Edu Reports & Export" },
                 { key: "edu_sheet_import", label: "Sheet Pending Import" }
             ]
         },
@@ -82,12 +82,13 @@
             ]
         },
         {
-            groupName: "Settings & Configuration",
+            groupName: "Settings & System Access",
             prefix: "config_",
             menuId: "menu-settings-parent",
             permissions: [
                 { key: "config_categories", label: "Category & Accounts Setup" },
-                { key: "config_cards", label: "Master Card Configuration" }
+                { key: "config_cards", label: "Master Card Configuration" },
+                { key: "global_download_reports", label: "Global Download Reports Center" } // স্বতন্ত্র চাবি
             ]
         }
     ];
@@ -269,19 +270,16 @@
                 .um-sub-section { display: none; }
                 .um-card { background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 20px; }
                 
-                /* Clean Table */
                 .um-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
                 .um-table th { background: #f8fafc; padding: 12px 14px; color: #64748b; font-weight: 700; border-bottom: 1px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
                 .um-table td { padding: 14px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; color: #1e293b; }
                 .um-table tbody tr:hover { background-color: #fafbfc; }
 
-                /* Minimalist Stat Cards */
                 .um-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px; }
                 .um-stat-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 18px; }
                 .um-stat-box p { font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 4px; text-transform: uppercase; }
                 .um-stat-box h3 { font-size: 22px; font-weight: 800; color: #0f172a; margin: 0; }
 
-                /* Action Buttons */
                 .um-btn-clean { border: 1px solid #e2e8f0; background: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; color: #334155; transition: 0.2s; }
                 .um-btn-clean:hover { background: #f1f5f9; }
                 .um-btn-primary { background: #4f46e5; color: #ffffff; border: 1px solid #4f46e5; }
@@ -293,7 +291,6 @@
                 .um-btn-perm { color: #059669; border-color: #a7f3d0; background: #ecfdf5; }
                 .um-btn-perm:hover { background: #d1fae5; }
 
-                /* Badges */
                 .um-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
                 .um-badge-active { background: #dcfce7; color: #15803d; }
                 .um-badge-blocked { background: #fee2e2; color: #dc2626; }
@@ -418,7 +415,7 @@
                 </div>
             </div>
 
-            <!-- SUB-SECTION 3: ADD / EDIT PROFILE ONLY (NO CHECKBOXES) -->
+            <!-- SUB-SECTION 3: ADD / EDIT PROFILE ONLY -->
             <div id="um-form-section" class="um-sub-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <div>
@@ -454,7 +451,7 @@
                             </div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                             <div>
                                 <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">Employee ID *</label>
                                 <input type="text" id="um-inp-emp-id" class="um-control" placeholder="MC-101" required>
@@ -604,7 +601,7 @@
     };
 
     /* ==========================================================
-       4. Real User Portal Login (Smart Whitelist Scanner)
+       4. Real User Portal Login (Fixed Isolation & Whitelist)
        ========================================================== */
     window.impersonateUser = function (userId) {
         const target = usersDatabase.find(u => u.id === userId);
@@ -619,13 +616,13 @@
             isImpersonating = true;
             impersonatedUser = target;
 
-            // 1. Immediately deactivate and hide all view panels
+            // 1. Immediately deactivate all panels
             document.querySelectorAll('.view-panel').forEach(p => {
                 p.classList.remove('active');
                 p.style.display = 'none';
             });
 
-            // 2. Create Top Red Bar
+            // 2. Create Top Sticky Bar
             let stickyBar = document.getElementById('global-impersonation-sticky-bar');
             if (!stickyBar) {
                 stickyBar = document.createElement('div');
@@ -652,7 +649,7 @@
             stickyBar.style.display = 'flex';
             document.body.style.paddingTop = "42px";
 
-            // 3. Universal Whitelist Scanner (Hides Download Reports, Finance, Settings, etc.)
+            // 3. Apply Strict Sidebar Lockdown
             applyPortalPermissionsSmart(target.permissions || {});
 
             if (document.getElementById('dropdownName')) document.getElementById('dropdownName').innerText = target.nameEn || target.name;
@@ -660,7 +657,7 @@
 
             window.logUserActivity("IMPERSONATION_START", `Admin switched to user portal: ${target.name}`);
 
-            // 4. Navigate directly to user's permitted sub-item (e.g. CPSCL Student List)
+            // 4. Auto-redirect to first allowed section
             setTimeout(() => {
                 navigateToFirstAllowedSmart(target.permissions || {});
             }, 60);
@@ -671,28 +668,47 @@
         const has = (prefix) => Object.keys(perms).some(k => k.startsWith(prefix) && perms[k]);
 
         document.querySelectorAll('.sidebar .menu-list > li').forEach(li => {
-            const text = li.innerText.toLowerCase();
+            const text = li.innerText.toLowerCase().trim();
 
+            // Dashboard View
             if (text.includes('dashboard')) {
                 li.style.display = perms['fin_dashboard_view'] ? '' : 'none';
-            } else if (text.includes('balance')) {
+            } 
+            // Balance Management
+            else if (text.includes('balance')) {
                 li.style.display = perms['fin_balance_update'] ? '' : 'none';
-            } else if (text.includes('inventory')) {
+            } 
+            // Inventory
+            else if (text.includes('inventory')) {
                 li.style.display = (perms['fin_cash_inventory'] || perms['fin_card_inventory']) ? '' : 'none';
-            } else if (text.includes('customer')) {
+            } 
+            // Customer
+            else if (text.includes('customer')) {
                 li.style.display = has('cust_') ? '' : 'none';
-            } else if (text.includes('closing')) {
+            } 
+            // Daily Closing
+            else if (text.includes('closing')) {
                 li.style.display = has('closing_') ? '' : 'none';
-            } else if (text.includes('download reports') || text.includes('reports')) {
-                li.style.display = perms['edu_reports_export'] ? '' : 'none';
-            } else if (text.includes('cpscl')) {
+            } 
+            // CPSCL
+            else if (text.includes('cpscl')) {
                 li.style.display = has('cpscl_') ? '' : 'none';
-            } else if (text.includes('education')) {
+            } 
+            // Education
+            else if (text.includes('education')) {
                 li.style.display = has('edu_') ? '' : 'none';
-            } else if (text.includes('settings') || text.includes('configuration')) {
+            } 
+            // Settings
+            else if (text.includes('settings') || text.includes('configuration')) {
                 li.style.display = has('config_') ? '' : 'none';
-            } else if (text.includes('user management')) {
+            } 
+            // User Management (Always hidden in portal mode)
+            else if (text.includes('user management')) {
                 li.style.display = 'none';
+            }
+            // Global "Download Reports" (Strictly hidden unless explicitly granted)
+            else if (text.startsWith('download reports') || text.includes('download reports')) {
+                li.style.display = perms['global_download_reports'] ? '' : 'none';
             }
         });
     }
@@ -700,7 +716,7 @@
     function navigateToFirstAllowedSmart(perms) {
         const has = (prefix) => Object.keys(perms).some(k => k.startsWith(prefix) && perms[k]);
 
-        // 1. CPSCL (e.g. MD Rabbi Hosen) -> Clicks directly on Student List submenu
+        // 1. CPSCL (e.g. MD Rabbi Hosen) -> Open Student List
         if (has('cpscl_')) {
             const parent = document.getElementById('menu-cpscl-parent') || 
                            Array.from(document.querySelectorAll('.sidebar li')).find(li => li.innerText.includes('CPSCL'));
@@ -716,7 +732,7 @@
             }
         }
 
-        // 2. Education
+        // 2. Education (e.g. MD Robiul Islam) -> Open Fee Collection
         if (has('edu_')) {
             const eduParent = document.getElementById('menu-edu-parent') || 
                               Array.from(document.querySelectorAll('.sidebar li')).find(li => li.innerText.includes('Education'));
