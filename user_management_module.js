@@ -1,6 +1,6 @@
 /**
  * User Management & Comprehensive Dynamic RBAC Module
- * Full Enterprise Standard: Sub-Section Architecture & User Impersonation
+ * Real Portal Impersonation & Sidebar Dropdown Submenu
  * Mousumi Computer ERP Core Engine
  */
 
@@ -11,15 +11,15 @@
     let viewingUserId = null;
     let showPasswordMap = {};
 
-    // ইমপারসনেশন ট্র্যাকার (Login As User)
-    let originalAdminSession = null;
+    // আসল পোর্টাল ইমপারসনেশন ট্র্যাকার
     let isImpersonating = false;
+    let impersonatedUser = null;
 
     let dbInstance = null;
     let dbRefFunc = null;
     let dbSetFunc = null;
 
-    // ERP-এর সকল মডিউল ও সাব-মডিউল তালিকা (Granular Permissions)
+    // ERP-এর সকল মডিউল ও পারমিশন তালিকা
     const SYSTEM_MODULES = [
         {
             groupName: "Education & Digital Services",
@@ -171,7 +171,7 @@
     window.logUserActivity = async function (actionType, details, userName) {
         const newLog = {
             id: 'log_' + Date.now(),
-            user: userName || (isImpersonating ? originalAdminSession?.name + " (as User)" : 'Admin'),
+            user: userName || (isImpersonating ? impersonatedUser?.name + " (Portal Mode)" : 'Admin'),
             action: actionType,
             details: details,
             timestamp: new Date().toLocaleString('en-US', { hour12: true })
@@ -183,7 +183,7 @@
     };
 
     /* ==========================================================
-       ২. মডিউল UI তৈরি (Sub-Sections Architecture)
+       ২. সাইডবারে আসল ড্রপডাউন মেনু তৈরি (Customer Management-এর মতো)
        ========================================================== */
     function initUserManagementModule() {
         const menuList = document.querySelector('.sidebar .menu-list') || document.querySelector('.menu-list');
@@ -194,30 +194,39 @@
             return;
         }
 
-        // সাইডবার মেনু ইনজেকশন
-        if (!document.getElementById('menu-user-management')) {
+        // সাইডবারে ড্রপডাউন প্যারেন্ট মেনু তৈরি
+        if (!document.getElementById('menu-user-parent')) {
             const umMenuItem = document.createElement('li');
             umMenuItem.className = 'menu-item';
-            umMenuItem.id = 'menu-user-management';
+            umMenuItem.id = 'menu-user-parent';
 
             umMenuItem.innerHTML = `
-                <a onclick="switchUserManagementView()" style="cursor: pointer;">
-                    <span class="menu-link-inner">
-                        <i class="fa-solid fa-users-gear"></i> 
-                        <span>User Management</span>
-                    </span>
+                <a onclick="toggleParentMenu('menu-user-parent')">
+                    <span class="menu-link-inner"><i class="fa-solid fa-users-gear"></i> <span>User Management</span></span>
+                    <i class="fa-solid fa-chevron-down chevron-icon"></i>
                 </a>
+                <ul class="submenu-list">
+                    <li class="submenu-item" id="sub-um-list">
+                        <a onclick="switchUserManagementSubSection('um-list-section')"><i class="fa-solid fa-angle-right"></i> <span>User Directory</span></a>
+                    </li>
+                    <li class="submenu-item" id="sub-um-add">
+                        <a onclick="openCreateUserForm()"><i class="fa-solid fa-angle-right"></i> <span>Add New User</span></a>
+                    </li>
+                    <li class="submenu-item" id="sub-um-audit">
+                        <a onclick="switchUserManagementSubSection('um-audit-section')"><i class="fa-solid fa-angle-right"></i> <span>Audit Logs</span></a>
+                    </li>
+                </ul>
             `;
 
-            const eduMenu = document.getElementById('menu-settings-parent');
-            if (eduMenu) {
-                menuList.insertBefore(umMenuItem, eduMenu);
+            const settingsMenu = document.getElementById('menu-settings-parent');
+            if (settingsMenu) {
+                menuList.insertBefore(umMenuItem, settingsMenu);
             } else {
                 menuList.appendChild(umMenuItem);
             }
         }
 
-        // মূল ভিউ প্যানেল তৈরি
+        // ভিউ প্যানেল তৈরি
         let viewPanel = document.getElementById('user-management-view');
         if (!viewPanel) {
             viewPanel = document.createElement('div');
@@ -232,7 +241,7 @@
             let permItems = '';
             mod.permissions.forEach(p => {
                 permItems += `
-                    <label style="font-size: 0.84rem; font-weight: 600; color: #334155; display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 6px 10px; border-radius: 8px; background: #fff; border: 1px solid #f1f5f9; transition: 0.2s;">
+                    <label style="font-size: 0.84rem; font-weight: 600; color: #334155; display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 6px 10px; border-radius: 8px; background: #fff; border: 1px solid #f1f5f9;">
                         <input type="checkbox" class="perm-checkbox perm-group-${gIdx}" data-key="${p.key}" style="width: 17px; height: 17px; accent-color: #4f46e5;">
                         <span>${p.label}</span>
                     </label>
@@ -250,7 +259,7 @@
                             Toggle All
                         </button>
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
+                    <div style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); display: grid; gap: 10px;">
                         ${permItems}
                     </div>
                 </div>
@@ -262,20 +271,6 @@
                 .um-sub-section { display: none; animation: umFadeIn 0.25s ease-out; }
                 @keyframes umFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-                /* ইমপারসনেশন ফ্লোটিং ব্যানার */
-                #um-impersonation-bar {
-                    display: none;
-                    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-                    color: #fff;
-                    padding: 12px 20px;
-                    border-radius: 12px;
-                    margin-bottom: 20px;
-                    align-items: center;
-                    justify-content: space-between;
-                    box-shadow: 0 4px 15px rgba(217, 119, 6, 0.3);
-                }
-
-                /* কার্ড ও টেবিল ডিজাইন */
                 .um-card { background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-bottom: 20px; }
                 .um-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; font-family: 'Plus Jakarta Sans', 'Tiro Bangla', serif; }
                 .um-table th { padding: 0 18px; color: #94a3b8; font-size: 0.88rem; font-weight: 700; text-align: left; text-transform: uppercase; }
@@ -283,19 +278,16 @@
                 .um-table tr td:first-child { border-radius: 14px 0 0 14px; }
                 .um-table tr td:last-child { border-radius: 0 14px 14px 0; text-align: right; }
 
-                /* ৪-কলাম ডাটা টেবিল (প্রোফাইলের জন্য) */
                 .um-profile-data-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
                 .um-profile-data-table th, .um-profile-data-table td { padding: 12px 18px; border: 1px solid #e2e8f0; font-size: 0.92rem; }
                 .um-profile-data-table th { width: 20%; background-color: #f8fafc; color: #64748b; font-weight: 600; }
                 .um-profile-data-table td { width: 30%; font-weight: 700; color: #1e293b; }
 
-                /* সামারি কার্ড */
                 .um-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
                 .um-stat-card { background: #fff; border-radius: 14px; padding: 16px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
                 .um-stat-icon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
 
-                /* অ্যাকশন বাটন */
-                .um-btn-action { padding: 7px 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; color: #475569; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; transition: 0.2s; }
+                .um-btn-action { padding: 8px 14px; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; color: #475569; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; transition: 0.2s; }
                 .um-btn-action:hover { background: #e2e8f0; }
                 .um-btn-view { color: #4f46e5; border-color: #c7d2fe; background: #eef2ff; }
                 .um-btn-view:hover { background: #4f46e5; color: #fff; }
@@ -304,30 +296,17 @@
                 .um-btn-danger { color: #ef4444; border-color: #fecaca; background: #fef2f2; }
                 .um-btn-danger:hover { background: #ef4444; color: #fff; }
 
-                /* ব্যাজ */
                 .um-badge-active { background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 0.78rem; }
                 .um-badge-blocked { background: #fee2e2; color: #dc2626; padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 0.78rem; }
                 .um-control { width: 100%; height: 45px; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 0 14px; font-size: 0.95rem; outline: none; }
-                .um-control:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+                .um-control:focus { border-color: #4f46e5; }
             </style>
 
-            <!-- ইমপারসনেশন সক্রিয় থাকলে এই ব্যানারটি দেখাবে -->
-            <div id="um-impersonation-bar">
-                <div style="display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.95rem;">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                    <span>Currently Browsing System as: <strong id="impersonatingUserName">Staff</strong> (<span id="impersonatingUserRole">Role</span>)</span>
-                </div>
-                <button onclick="exitImpersonation()" style="background: #fff; color: #d97706; border: none; padding: 7px 16px; border-radius: 8px; font-weight: 800; cursor: pointer;">
-                    <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Exit to Admin Account
-                </button>
-            </div>
-
             <!-- ============================================================== -->
-            <!-- SUB-SECTION 1: ইউজার তালিকা ও ডিরেক্টরি (MAIN LIST)              -->
+            <!-- SUB-SECTION 1: USER DIRECTORY (MAIN LIST)                      -->
             <!-- ============================================================== -->
             <div id="um-list-section" class="um-sub-section" style="display: block;">
                 
-                <!-- ৪টি পরিসংখ্যান কার্ড -->
                 <div class="um-stats-grid">
                     <div class="um-stat-card">
                         <div class="um-stat-icon" style="background: #eef2ff; color: #4f46e5;"><i class="fa-solid fa-users"></i></div>
@@ -339,32 +318,31 @@
                     <div class="um-stat-card">
                         <div class="um-stat-icon" style="background: #f0fdf4; color: #16a34a;"><i class="fa-solid fa-user-check"></i></div>
                         <div>
-                            <p style="font-size: 0.85rem; color: #64748b; margin: 0; font-weight: 700;">সক্রিয় ইউজার</p>
+                            <p style="font-size: 0.85rem; color: #64748b; margin: 0; font-weight: 700;">সক্রিয় স্টাফ</p>
                             <h3 id="statActiveUsers" style="font-size: 1.4rem; color: #16a34a; margin: 0; font-weight: 800;">০</h3>
                         </div>
                     </div>
                     <div class="um-stat-card">
                         <div class="um-stat-icon" style="background: #fef2f2; color: #dc2626;"><i class="fa-solid fa-user-lock"></i></div>
                         <div>
-                            <p style="font-size: 0.85rem; color: #64748b; margin: 0; font-weight: 700;">ব্লকড একাউন্ট</p>
+                            <p style="font-size: 0.85rem; color: #64748b; margin: 0; font-weight: 700;">ব্লকড ইউজার</p>
                             <h3 id="statBlockedUsers" style="font-size: 1.4rem; color: #dc2626; margin: 0; font-weight: 800;">০</h3>
                         </div>
                     </div>
                     <div class="um-stat-card">
                         <div class="um-stat-icon" style="background: #fffbeb; color: #d97706;"><i class="fa-solid fa-shield-halved"></i></div>
                         <div>
-                            <p style="font-size: 0.85rem; color: #64748b; margin: 0; font-weight: 700;">মডিউল পারমিশন</p>
+                            <p style="font-size: 0.85rem; color: #64748b; margin: 0; font-weight: 700;">ডিপার্টমেন্ট</p>
                             <h3 style="font-size: 1.4rem; color: #d97706; margin: 0; font-weight: 800;">৬ টি বিভাগ</h3>
                         </div>
                     </div>
                 </div>
 
-                <!-- সার্চ ও অ্যাকশন বার -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
                     <div style="display: flex; gap: 10px; flex: 1; max-width: 500px;">
-                        <input type="text" id="umSearchInput" class="um-control" placeholder="নাম, ইউজারনেম বা আইডি দিয়ে খুঁজুন..." oninput="filterUMUsers()">
+                        <input type="text" id="umSearchInput" class="um-control" placeholder="ইউজারের নাম বা আইডি দিয়ে খুঁজুন..." oninput="filterUMUsers()">
                         <select id="umRoleFilter" class="um-control" style="width: 180px;" onchange="filterUMUsers()">
-                            <option value="">সকল রোল (All)</option>
+                            <option value="">সকল রোল</option>
                             <option value="Super Admin">Super Admin</option>
                             <option value="Education Staff">Education Staff</option>
                             <option value="CPSCL Operator">CPSCL Operator</option>
@@ -372,17 +350,11 @@
                             <option value="Custom">Custom</option>
                         </select>
                     </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="um-btn-action" onclick="switchUMSubSection('um-audit-section')">
-                            <i class="fa-solid fa-clock-rotate-left"></i> অডিট হিস্ট্রি
-                        </button>
-                        <button class="um-btn-action" style="background: #4f46e5; color: #fff; border: none; padding: 10px 20px;" onclick="openCreateUserForm()">
-                            <i class="fa-solid fa-user-plus"></i> নতুন ইউজার তৈরি
-                        </button>
-                    </div>
+                    <button class="um-btn-action" style="background: #4f46e5; color: #fff; border: none; padding: 10px 22px;" onclick="openCreateUserForm()">
+                        <i class="fa-solid fa-plus"></i> নতুন ইউজার যুক্ত করুন
+                    </button>
                 </div>
 
-                <!-- মূল ইউজার তালিকা টেবিল -->
                 <div style="overflow-x: auto;">
                     <table class="um-table">
                         <thead>
@@ -390,7 +362,7 @@
                                 <th>ইউজার ও পদবী</th>
                                 <th>রোল ও যোগাযোগ</th>
                                 <th>পাসওয়ার্ড</th>
-                                <th>এক্সেস স্কোপ</th>
+                                <th>অনুমোদিত বিভাগ</th>
                                 <th>স্ট্যাটাস</th>
                                 <th style="text-align: right;">অ্যাকশন</th>
                             </tr>
@@ -401,20 +373,17 @@
             </div>
 
             <!-- ============================================================== -->
-            <!-- SUB-SECTION 2: বিস্তারিত ইউজার প্রোফাইল শিট (PROFILE VIEW)         -->
+            <!-- SUB-SECTION 2: USER PROFILE & ACCESS INSPECTION                -->
             <!-- ============================================================== -->
             <div id="um-profile-section" class="um-sub-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
-                    <button class="um-btn-action" onclick="switchUMSubSection('um-list-section')" style="font-size: 0.9rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 15px;">
+                    <button class="um-btn-action" onclick="switchUserManagementSubSection('um-list-section')" style="font-size: 0.9rem;">
                         <i class="fa-solid fa-arrow-left"></i> ইউজার তালিকায় ফিরে যান
                     </button>
-                    <div style="display: flex; gap: 10px;" id="profileTopActionBtns">
-                        <!-- জাভাস্ক্রিপ্ট দিয়ে বাটন রেন্ডার হবে -->
-                    </div>
+                    <div style="display: flex; gap: 10px;" id="profileTopActionBtns"></div>
                 </div>
 
                 <div class="um-card">
-                    <!-- হেডার মেটা -->
                     <div style="display: flex; align-items: center; gap: 18px; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9;">
                         <div style="width: 75px; height: 75px; border-radius: 50%; background: #eef2ff; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; border: 2px solid #c7d2fe;" id="profAvatar">
                             U
@@ -426,8 +395,7 @@
                         <div style="margin-left: auto;" id="profStatusBadge"></div>
                     </div>
 
-                    <!-- টেবিল ১: ব্যক্তিগত ও প্রাতিষ্ঠানিক তথ্য -->
-                    <h3 style="font-size: 1rem; color: #1e293b; margin-bottom: 12px; font-weight: 700;"><i class="fa-solid fa-id-card-clip text-primary mr-1"></i> ব্যক্তিগত ও প্রাতিষ্ঠানিক তথ্য</h3>
+                    <h3 style="font-size: 1rem; color: #1e293b; margin-bottom: 12px; font-weight: 700;"><i class="fa-solid fa-id-card-clip text-primary mr-1"></i> ব্যক্তিগত ও অ্যাকাউন্টিং তথ্য</h3>
                     <div style="overflow-x: auto;">
                         <table class="um-profile-data-table">
                             <tbody>
@@ -459,48 +427,32 @@
                         </table>
                     </div>
 
-                    <!-- টেবিল ২: পারমিশন ব্রেকডাউন অডিট টেবিল -->
-                    <h3 style="font-size: 1rem; color: #1e293b; margin: 25px 0 12px 0; font-weight: 700;"><i class="fa-solid fa-shield-halved text-success mr-1"></i> মডিউল পারমিশন অডিট ম্যাট্রিক্স</h3>
+                    <h3 style="font-size: 1rem; color: #1e293b; margin: 25px 0 12px 0; font-weight: 700;"><i class="fa-solid fa-shield-halved text-success mr-1"></i> অনুমোদিত মডিউল ও মেনু অডিট</h3>
                     <div style="overflow-x: auto;">
                         <table style="width: 100%; border-collapse: collapse; border: 1px solid #e2e8f0;">
                             <thead>
                                 <tr style="background: #f8fafc;">
-                                    <th style="padding: 10px 15px; border: 1px solid #e2e8f0; font-size: 0.85rem; text-align: left;">বিভাগ (Department / Group)</th>
-                                    <th style="padding: 10px 15px; border: 1px solid #e2e8f0; font-size: 0.85rem; text-align: left;">অনুমোদিত ফিচারসমূহ (Allowed Privileges)</th>
+                                    <th style="padding: 10px 15px; border: 1px solid #e2e8f0; font-size: 0.85rem; text-align: left;">বিভাগ (Department)</th>
+                                    <th style="padding: 10px 15px; border: 1px solid #e2e8f0; font-size: 0.85rem; text-align: left;">অনুমোদিত ফিচারসমূহ (Allowed Scope)</th>
                                     <th style="padding: 10px 15px; border: 1px solid #e2e8f0; font-size: 0.85rem; text-align: center; width: 120px;">স্ট্যাটাস</th>
                                 </tr>
                             </thead>
                             <tbody id="profPermissionsMatrixBody"></tbody>
                         </table>
                     </div>
-
-                    <!-- টেবিল ৩: এই ইউজারের সাম্প্রতিক কর্মকাণ্ড -->
-                    <h3 style="font-size: 1rem; color: #1e293b; margin: 25px 0 12px 0; font-weight: 700;"><i class="fa-solid fa-user-clock text-warning mr-1"></i> এই ইউজারের সাম্প্রতিক অ্যাক্টিভিটি হিস্ট্রি</h3>
-                    <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse; border: 1px solid #e2e8f0;">
-                            <thead>
-                                <tr style="background: #f8fafc;">
-                                    <th style="padding: 8px 12px; border: 1px solid #e2e8f0; font-size: 0.8rem; text-align: left;">সময়</th>
-                                    <th style="padding: 8px 12px; border: 1px solid #e2e8f0; font-size: 0.8rem; text-align: left;">অ্যাকশন</th>
-                                    <th style="padding: 8px 12px; border: 1px solid #e2e8f0; font-size: 0.8rem; text-align: left;">বিবরণ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="profUserAuditBody"></tbody>
-                        </table>
-                    </div>
                 </div>
             </div>
 
             <!-- ============================================================== -->
-            <!-- SUB-SECTION 3: ইউজার তৈরি ও পারমিশন এডিটর (CREATE / EDIT FORM)    -->
+            <!-- SUB-SECTION 3: CREATE / EDIT USER FORM                         -->
             <!-- ============================================================== -->
             <div id="um-form-section" class="um-sub-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <div>
-                        <h2 style="font-size: 1.4rem; color: #1e293b; font-weight: 800;" id="um-form-page-title">Create New User</h2>
-                        <p style="font-size: 0.88rem; color: #64748b; margin-top: 3px;">User Management <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem; margin: 0 5px;"></i> Access Scope</p>
+                        <h2 style="font-size: 1.4rem; color: #1e293b; font-weight: 800;" id="um-form-page-title">নতুন ইউজার যোগ করুন</h2>
+                        <p style="font-size: 0.88rem; color: #64748b; margin-top: 3px;">ইউজার ম্যানেজমেন্ট <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem; margin: 0 5px;"></i> পারমিশন সেটআপ</p>
                     </div>
-                    <button class="um-btn-action" onclick="switchUMSubSection('um-list-section')">
+                    <button class="um-btn-action" onclick="switchUserManagementSubSection('um-list-section')">
                         <i class="fa-solid fa-arrow-left"></i> বাতিল করুন
                     </button>
                 </div>
@@ -510,18 +462,18 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div>
                                 <label style="font-size: 0.85rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Login Username *</label>
-                                <input type="text" id="um-inp-name" class="um-control" placeholder="e.g. staff" required>
+                                <input type="text" id="um-inp-name" class="um-control" placeholder="staff1" required>
                             </div>
                             <div>
                                 <label style="font-size: 0.85rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Email Address *</label>
-                                <input type="email" id="um-inp-email" class="um-control" placeholder="staff@gmail.com" required>
+                                <input type="email" id="um-inp-email" class="um-control" placeholder="staff@example.com" required>
                             </div>
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div>
                                 <label style="font-size: 0.85rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Full Name (English) *</label>
-                                <input type="text" id="um-inp-name-en" class="um-control" placeholder="e.g. Md. Ashiqur Rahman" required>
+                                <input type="text" id="um-inp-name-en" class="um-control" placeholder="Md. Ashiqur Rahman" required>
                             </div>
                             <div>
                                 <label style="font-size: 0.85rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Full Name (Bangla)</label>
@@ -536,7 +488,7 @@
                             </div>
                             <div>
                                 <label style="font-size: 0.85rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Designation / Title *</label>
-                                <input type="text" id="um-inp-designation" class="um-control" placeholder="Counter Operator" required>
+                                <input type="text" id="um-inp-designation" class="um-control" placeholder="Counter Staff" required>
                             </div>
                             <div>
                                 <label style="font-size: 0.85rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Mobile Number</label>
@@ -547,7 +499,7 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div>
                                 <label style="font-size: 0.85rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Password *</label>
-                                <input type="text" id="um-inp-pass" class="um-control" placeholder="Set password" required>
+                                <input type="text" id="um-inp-pass" class="um-control" placeholder="পাসওয়ার্ড সেট করুন" required>
                             </div>
                             <div>
                                 <label style="font-size: 0.85rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Quick Preset Role *</label>
@@ -561,12 +513,12 @@
                             </div>
                         </div>
 
-                        <!-- মডিউলার পারমিশন গ্রিড -->
+                        <!-- পারমিশন চেকবক্স গ্রিড -->
                         <div style="margin-top: 15px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                                 <div>
-                                    <h4 style="font-size: 1rem; font-weight: 800; color: #1e293b; margin: 0;">মডিউলার মেনু ও ফিচার পারমিশন নির্বাচন</h4>
-                                    <p style="font-size: 0.8rem; color: #64748b; margin: 2px 0 0 0;">যেসব ফিচারে টিক থাকবে, ইউজার শুধুমাত্র সেগুলোতে এক্সেস পাবে।</p>
+                                    <h4 style="font-size: 1rem; font-weight: 800; color: #1e293b; margin: 0;">মডিউলার অ্যাক্সেস স্কোপ নির্বাচন করুন</h4>
+                                    <p style="font-size: 0.8rem; color: #64748b; margin: 2px 0 0 0;">যেসব ফিচারে টিক দেওয়া থাকবে, স্টাফ শুধু সেই মেনুগুলো দেখতে পারবে।</p>
                                 </div>
                                 <div style="display: flex; gap: 8px;">
                                     <button type="button" onclick="toggleAllGlobalPerms(true)" style="background: #eef2ff; border: 1px solid #c7d2fe; color: #4338ca; padding: 4px 12px; border-radius: 6px; font-weight: 700; font-size: 0.78rem; cursor: pointer;">Select All</button>
@@ -580,7 +532,7 @@
                         </div>
 
                         <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
-                            <button type="button" onclick="switchUMSubSection('um-list-section')" style="padding: 12px 25px; background: #94a3b8; color: #fff; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">বাতিল</button>
+                            <button type="button" onclick="switchUserManagementSubSection('um-list-section')" style="padding: 12px 25px; background: #94a3b8; color: #fff; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">বাতিল</button>
                             <button type="submit" style="padding: 12px 35px; background: #4f46e5; color: #fff; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 1rem;">
                                 <i class="fa-solid fa-floppy-disk mr-1"></i> সংরক্ষণ করুন
                             </button>
@@ -590,11 +542,11 @@
             </div>
 
             <!-- ============================================================== -->
-            <!-- SUB-SECTION 4: গ্লোবাল অডিট লগ (AUDIT LOGS)                    -->
+            <!-- SUB-SECTION 4: AUDIT TRAIL                                     -->
             <!-- ============================================================== -->
             <div id="um-audit-section" class="um-sub-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <button class="um-btn-action" onclick="switchUMSubSection('um-list-section')">
+                    <button class="um-btn-action" onclick="switchUserManagementSubSection('um-list-section')">
                         <i class="fa-solid fa-arrow-left"></i> ইউজার তালিকায় ফিরুন
                     </button>
                     <button onclick="clearAuditLogs()" class="um-btn-action um-btn-danger">
@@ -603,7 +555,7 @@
                 </div>
 
                 <div class="um-card">
-                    <h3 style="font-size: 1.1rem; color: #1e293b; margin-bottom: 15px; font-weight: 800;"><i class="fa-solid fa-clock-rotate-left mr-1 text-primary"></i> সিস্টেম লাইভ অ্যাক্টিভিটি লগ (Last 100)</h3>
+                    <h3 style="font-size: 1.1rem; color: #1e293b; margin-bottom: 15px; font-weight: 800;"><i class="fa-solid fa-clock-rotate-left mr-1 text-primary"></i> সিস্টেম লাইভ অ্যাক্টিভিটি লগ</h3>
                     <div style="overflow-x: auto;">
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead>
@@ -627,41 +579,266 @@
     }
 
     /* ==========================================================
-       ৩. সাব-সেকশন সুইচিং ও ন্যাভিগেশন কন্ট্রোল
+       ৩. সাব-সেকশন সুইচিং ইঞ্জিন (কাস্টমার মডিউলের হুবহু অনুরূপ)
        ========================================================== */
-    window.switchUMSubSection = function (sectionId) {
+    window.switchUserManagementSubSection = function (sectionId) {
+        // ১. সব মেইন ভিউ প্যানেল বন্ধ করে User Management ভিউ চালু
+        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+        const umView = document.getElementById('user-management-view');
+        if (umView) umView.classList.add('active');
+
+        // ২. সাইডবার প্যারেন্ট ও সাবমেনু হাইলাইট
+        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+        const parentMenu = document.getElementById('menu-user-parent');
+        if (parentMenu) {
+            parentMenu.classList.add('active');
+            const subList = parentMenu.querySelector('.submenu-list');
+            if (subList) subList.classList.add('show');
+        }
+
+        document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
+        if (sectionId === 'um-list-section' && document.getElementById('sub-um-list')) document.getElementById('sub-um-list').classList.add('active');
+        if (sectionId === 'um-form-section' && document.getElementById('sub-um-add')) document.getElementById('sub-um-add').classList.add('active');
+        if (sectionId === 'um-audit-section' && document.getElementById('sub-um-audit')) document.getElementById('sub-um-audit').classList.add('active');
+
+        // ৩. সাব-সেকশনগুলো হাইড করে টার্গেট সেকশন ওপেন
         document.querySelectorAll('.um-sub-section').forEach(sec => sec.style.display = 'none');
         const target = document.getElementById(sectionId);
         if (target) target.style.display = 'block';
 
         const topTitle = document.getElementById('top-title');
         if (topTitle) {
-            if (sectionId === 'um-list-section') topTitle.innerText = "USER & ACCESS MANAGEMENT";
-            if (sectionId === 'um-profile-section') topTitle.innerText = "USER PROFILE INSPECTION";
-            if (sectionId === 'um-form-section') topTitle.innerText = editingUserId ? "EDIT USER PERMISSIONS" : "CREATE NEW USER";
-            if (sectionId === 'um-audit-section') topTitle.innerText = "SYSTEM AUDIT TRAIL";
+            if (sectionId === 'um-list-section') topTitle.innerText = "ইউজার ডিরেক্টরি";
+            if (sectionId === 'um-profile-section') topTitle.innerText = "ইউজার প্রোফাইল ও অ্যাক্সেস অডিট";
+            if (sectionId === 'um-form-section') topTitle.innerText = editingUserId ? "ইউজার পারমিশন সংশোধন" : "নতুন ইউজার তৈরি";
+            if (sectionId === 'um-audit-section') topTitle.innerText = "অ্যাক্টিভিটি অডিট ট্রেইল";
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     window.switchUserManagementView = function () {
-        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-
-        const panel = document.getElementById('user-management-view');
-        if (panel) {
-            panel.classList.add('active');
-            panel.style.display = 'block';
-        }
-
-        const menuItem = document.getElementById('menu-user-management');
-        if (menuItem) menuItem.classList.add('active');
-
-        switchUMSubSection('um-list-section');
+        switchUserManagementSubSection('um-list-section');
     };
 
     /* ==========================================================
-       ৪. ইউজার তালিকা ও পরিসংখ্যান রেন্ডারার
+       ৪. বাস্তব ইউজার পোর্টাল সুইচিং (TRUE PORTAL IMPERSONATION)
+       ========================================================== */
+    window.impersonateUser = function (userId) {
+        const target = usersDatabase.find(u => u.id === userId);
+        if (!target) return;
+
+        if (target.status !== 'Active') {
+            alert("এই অ্যাকাউন্টটি ব্লক করা! ব্লকড পোর্টালে ঢোকা সম্ভব নয়।");
+            return;
+        }
+
+        if (confirm(`আপনি কি '${target.nameEn || target.name}' এর পোর্টালে ঢুকতে চান? আপনি শুধু এই ইউজারের অনুমোদিত মেনুগুলোই দেখতে পাবেন।`)) {
+            isImpersonating = true;
+            impersonatedUser = target;
+
+            // ১. স্ক্রিনের একদম ওপরে ফিক্সড লাল ব্যানার তৈরি (যাতে যেকোনো সময় বের হওয়া যায়)
+            let stickyBar = document.getElementById('global-impersonation-sticky-bar');
+            if (!stickyBar) {
+                stickyBar = document.createElement('div');
+                stickyBar.id = 'global-impersonation-sticky-bar';
+                stickyBar.style.cssText = `
+                    position: fixed; top: 0; left: 0; width: 100%; height: 46px; 
+                    background: linear-gradient(135deg, #e11d48 0%, #be123c 100%); 
+                    color: #fff; z-index: 999999; display: flex; align-items: center; 
+                    justify-content: space-between; padding: 0 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                    font-family: 'Plus Jakarta Sans', sans-serif;
+                `;
+                document.body.appendChild(stickyBar);
+            }
+
+            stickyBar.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.95rem;">
+                    <i class="fa-solid fa-user-secret" style="font-size: 1.2rem;"></i>
+                    <span>[USER PORTAL MODE]: আপনি এখন <strong>${target.nameEn || target.name}</strong> (${target.role}) এর পোর্টালে আছেন। অননুমোদিত অ্যাডমিন মেনুসমূহ লক করা হয়েছে।</span>
+                </div>
+                <button onclick="exitImpersonation()" style="background: #fff; color: #be123c; border: none; padding: 7px 18px; border-radius: 8px; font-weight: 800; cursor: pointer;">
+                    <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Exit Portal & Return to Admin
+                </button>
+            `;
+            stickyBar.style.display = 'flex';
+            document.body.style.paddingTop = "46px";
+
+            // ২. এই ইউজারের পারমিশন অনুযায়ী সাইডবারের অ্যাডমিন মেনুগুলো হাইড (লক) করা
+            applyUserPortalMenuRestrictions(target.permissions || {});
+
+            // ৩. ন্যাভবারে ইউজারের নাম বসানো
+            if (document.getElementById('dropdownName')) document.getElementById('dropdownName').innerText = target.nameEn || target.name;
+            if (document.getElementById('dropdownRole')) document.getElementById('dropdownRole').innerText = target.role;
+
+            window.logUserActivity("IMPERSONATION_START", `Admin logged into portal of user '${target.name}'`);
+
+            if (typeof showToast === 'function') {
+                showToast(`Switched into ${target.nameEn || target.name}'s portal!`, "warning");
+            }
+
+            // ইউজারের প্রথম অনুমোদিত পেজে ন্যাভিগেট করা
+            navigateToAllowedUserModule(target.permissions || {});
+        }
+    };
+
+    // পারমিশন অনুযায়ী সাইডবার লক করার ইঞ্জিন
+    function applyUserPortalMenuRestrictions(perms) {
+        const check = (key) => !!perms[key];
+
+        // ১. ব্যালেন্স ম্যানেজমেন্ট লক
+        const balMenu = document.getElementById('menu-bal-parent');
+        if (balMenu) balMenu.style.display = check('fin_balance_update') ? '' : 'none';
+
+        // ২. ইনভেন্টরি লক
+        const invMenu = document.getElementById('menu-inv-parent');
+        if (invMenu) invMenu.style.display = (check('fin_cash_inventory') || check('fin_card_inventory')) ? '' : 'none';
+
+        // ৩. কাস্টমার ম্যানেজমেন্ট লক
+        const custMenu = document.getElementById('menu-cust-parent');
+        const hasCust = Object.keys(perms).some(k => k.startsWith('cust_') && perms[k]);
+        if (custMenu) custMenu.style.display = hasCust ? '' : 'none';
+
+        // ৪. ডেইলি ক্লোজিং লক
+        const closeMenu = document.getElementById('menu-closing-parent');
+        const hasClose = Object.keys(perms).some(k => k.startsWith('closing_') && perms[k]);
+        if (closeMenu) closeMenu.style.display = hasClose ? '' : 'none';
+
+        // ৫. সেটিংস লক
+        const setMenu = document.getElementById('menu-settings-parent');
+        const hasConfig = Object.keys(perms).some(k => k.startsWith('config_') && perms[k]);
+        if (setMenu) setMenu.style.display = hasConfig ? '' : 'none';
+
+        // ৬. ইউজার ম্যানেজমেন্ট সাইডবার থেকে পুরোপুরি হাইড (স্টাফ কখনো ইউজার ম্যানেজমেন্ট দেখবে না)
+        const userMenu = document.getElementById('menu-user-parent');
+        if (userMenu) userMenu.style.display = 'none';
+
+        // ড্যাশবোর্ড মেনু
+        const dashMenu = document.getElementById('menu-dash');
+        if (dashMenu) dashMenu.style.display = check('fin_dashboard_view') ? '' : 'none';
+    }
+
+    function navigateToAllowedUserModule(perms) {
+        // যদি ড্যাশবোর্ড পারমিশন থাকে তবে ড্যাশবোর্ডে যাবে
+        if (perms['fin_dashboard_view'] && typeof switchMainTab === 'function') {
+            switchMainTab('dashboard');
+            return;
+        }
+        // যদি কাস্টমার পারমিশন থাকে তবে কাস্টমার সেকশনে যাবে
+        if (Object.keys(perms).some(k => k.startsWith('cust_') && perms[k]) && typeof switchCustomerSubSection === 'function') {
+            switchCustomerSubSection('cust-list-section');
+            return;
+        }
+        // ক্যাশ ইনভেন্টরি
+        if (perms['fin_cash_inventory'] && typeof switchMainTab === 'function') {
+            switchMainTab('cash-inventory');
+            return;
+        }
+        // বাই-ডিফল্ট ড্যাশবোর্ড
+        if (typeof switchMainTab === 'function') switchMainTab('dashboard');
+    }
+
+    window.exitImpersonation = function () {
+        if (!isImpersonating) return;
+
+        isImpersonating = false;
+        impersonatedUser = null;
+
+        // ব্যানার রিমুভ ও মার্জিন রিস্টোর
+        const stickyBar = document.getElementById('global-impersonation-sticky-bar');
+        if (stickyBar) stickyBar.style.display = 'none';
+        document.body.style.paddingTop = "0px";
+
+        // সব সাইডবার মেনু পুনরায় আনলক করা (Full Admin View)
+        const allMenuIds = ['menu-dash', 'menu-bal-parent', 'menu-inv-parent', 'menu-cust-parent', 'menu-closing-parent', 'menu-settings-parent', 'menu-user-parent'];
+        allMenuIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = '';
+        });
+
+        // অ্যাডমিন তথ্য রিস্টোর
+        if (document.getElementById('dropdownName')) document.getElementById('dropdownName').innerText = "Admin";
+        if (document.getElementById('dropdownRole')) document.getElementById('dropdownRole').innerText = "Super Admin";
+
+        window.logUserActivity("IMPERSONATION_EXIT", "Admin exited user portal mode and restored full session.");
+        if (typeof showToast === 'function') showToast("Returned to full Admin session!", "success");
+
+        switchUserManagementSubSection('um-list-section');
+    };
+
+    /* ==========================================================
+       ৫. প্রোফাইল শিট ভিউ ইঞ্জিন
+       ========================================================== */
+    window.openUserProfile = function (userId) {
+        viewingUserId = userId;
+        renderUserProfileDetails(userId);
+        switchUserManagementSubSection('um-profile-section');
+    };
+
+    function renderUserProfileDetails(userId) {
+        const u = usersDatabase.find(item => item.id === userId);
+        if (!u) return;
+
+        document.getElementById('profAvatar').innerText = (u.nameEn || u.name || 'U').charAt(0).toUpperCase();
+        document.getElementById('profHeadingName').innerText = `${u.nameEn || u.name} ${u.nameBn ? '(' + u.nameBn + ')' : ''}`;
+        document.getElementById('profHeadingSub').innerText = `Employee ID: #${u.empId || 'N/A'} • Role: ${u.role} • Designation: ${u.designation || 'Staff'}`;
+        document.getElementById('profStatusBadge').innerHTML = `<span class="${u.status === 'Active' ? 'um-badge-active' : 'um-badge-blocked'}" style="font-size: 0.9rem; padding: 6px 16px;">${u.status}</span>`;
+
+        document.getElementById('profileTopActionBtns').innerHTML = `
+            <button onclick="impersonateUser('${u.id}')" class="um-btn-action um-btn-impersonate" style="padding: 9px 18px; font-size: 0.88rem;">
+                <i class="fa-solid fa-key"></i> Login as User (ঐ পোর্টালে যান)
+            </button>
+            <button onclick="editUserById('${u.id}')" class="um-btn-action" style="padding: 9px 18px; font-size: 0.88rem;">
+                <i class="fa-solid fa-pen-to-square"></i> পারমিশন সংশোধন
+            </button>
+            <button onclick="toggleUserStatusById('${u.id}')" class="um-btn-action um-btn-danger" style="padding: 9px 18px; font-size: 0.88rem;">
+                <i class="fa-solid fa-ban"></i> ${u.status === 'Active' ? 'অ্যাকাউন্ট ব্লক করুন' : 'অ্যাক্টিভ করুন'}
+            </button>
+        `;
+
+        document.getElementById('profRowNameEn').innerText = u.nameEn || u.name || '-';
+        document.getElementById('profRowNameBn').innerText = u.nameBn || '-';
+        document.getElementById('profRowDesignation').innerText = u.designation || '-';
+        document.getElementById('profRowRole').innerText = u.role || 'Custom';
+        document.getElementById('profRowEmpId').innerText = u.empId || '-';
+        document.getElementById('profRowMobile').innerHTML = u.mobile ? `<a href="tel:${u.mobile}" style="color: #4f46e5; text-decoration: none;">${u.mobile}</a>` : '-';
+        document.getElementById('profRowEmail').innerHTML = u.email ? `<a href="mailto:${u.email}" style="color: #4f46e5; text-decoration: none;">${u.email}</a>` : '-';
+        document.getElementById('profRowPass').innerHTML = `<span style="font-family: monospace; letter-spacing: 1px;">${u.password}</span>`;
+
+        const matrixBody = document.getElementById('profPermissionsMatrixBody');
+        matrixBody.innerHTML = '';
+        const userPerms = u.permissions || {};
+
+        SYSTEM_MODULES.forEach(mod => {
+            let activeBadges = '';
+            let enabledCount = 0;
+
+            mod.permissions.forEach(p => {
+                if (userPerms[p.key]) {
+                    enabledCount++;
+                    activeBadges += `<span style="display:inline-block; background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; padding:3px 8px; border-radius:5px; font-size:0.75rem; font-weight:700; margin:2px 4px;">${p.label}</span>`;
+                }
+            });
+
+            if (!activeBadges) {
+                activeBadges = `<span style="color: #94a3b8; font-size: 0.8rem; font-style: italic;">No permissions granted.</span>`;
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding: 10px 15px; border: 1px solid #e2e8f0; font-weight: 700; color: ${mod.color};">
+                    <i class="fa-solid ${mod.icon} mr-1"></i> ${mod.groupName}
+                </td>
+                <td style="padding: 10px 15px; border: 1px solid #e2e8f0;">${activeBadges}</td>
+                <td style="padding: 10px 15px; border: 1px solid #e2e8f0; text-align: center;">
+                    ${enabledCount > 0 ? '<span style="color:#15803d; font-weight:800; font-size:0.8rem;">● ENABLED</span>' : '<span style="color:#94a3b8; font-size:0.8rem;">LOCKED</span>'}
+                </td>
+            `;
+            matrixBody.appendChild(tr);
+        });
+    }
+
+    /* ==========================================================
+       ৬. ইউজার টেবিল ও ফর্ম হ্যান্ডলার
        ========================================================== */
     function renderSummaryStats() {
         const total = usersDatabase.length;
@@ -679,17 +856,16 @@
         tbody.innerHTML = '';
 
         if (usersDatabase.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 35px;">No users configured yet. Click '+ Create New User' to add one.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 35px;">কোনো ইউজার কনফিগার করা নেই। নতুন ইউজার যোগ করতে 'নতুন ইউজার যোগ করুন' বাটনে চাপ দিন।</td></tr>`;
             return;
         }
 
-        usersDatabase.forEach((u, index) => {
+        usersDatabase.forEach(u => {
             const isShown = showPasswordMap[u.id];
             const passDisplay = isShown ? u.password : '••••••••';
             const eyeIcon = isShown ? 'fa-eye-slash' : 'fa-eye';
             const statusClass = u.status === 'Active' ? 'um-badge-active' : 'um-badge-blocked';
 
-            // মডিউল স্কোপ ব্যাজ
             let scopeBadges = '';
             const perms = u.permissions || {};
             const hasEdu = Object.keys(perms).some(k => k.startsWith('edu_') && perms[k]);
@@ -730,16 +906,16 @@
                 <td><span class="${statusClass}">${u.status}</span></td>
                 <td style="text-align: right;">
                     <div style="display: inline-flex; gap: 6px;">
-                        <button onclick="openUserProfile('${u.id}')" class="um-btn-action um-btn-view" title="View Detailed Profile">
+                        <button onclick="openUserProfile('${u.id}')" class="um-btn-action um-btn-view" title="বিস্তারিত প্রোফাইল দেখুন">
                             <i class="fa-solid fa-eye"></i> View
                         </button>
-                        <button onclick="impersonateUser('${u.id}')" class="um-btn-action um-btn-impersonate" title="Login As This User">
+                        <button onclick="impersonateUser('${u.id}')" class="um-btn-action um-btn-impersonate" title="এই ইউজারের পোর্টালে ঢুকুন">
                             <i class="fa-solid fa-key"></i> Login As
                         </button>
-                        <button onclick="editUserById('${u.id}')" class="um-btn-action" title="Edit Permissions">
+                        <button onclick="editUserById('${u.id}')" class="um-btn-action" title="সংশোধন">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
-                        <button onclick="deleteUser('${u.id}')" class="um-btn-action um-btn-danger" title="Delete User">
+                        <button onclick="deleteUser('${u.id}')" class="um-btn-action um-btn-danger" title="মুছে ফেলুন">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
@@ -762,166 +938,9 @@
         });
     };
 
-    /* ==========================================================
-       ৫. প্রোফাইল শিট ভিউ ইঞ্জিন (SUB-SECTION 2)
-       ========================================================== */
-    window.openUserProfile = function (userId) {
-        viewingUserId = userId;
-        renderUserProfileDetails(userId);
-        switchUMSubSection('um-profile-section');
-    };
-
-    function renderUserProfileDetails(userId) {
-        const u = usersDatabase.find(item => item.id === userId);
-        if (!u) return;
-
-        // হেডার
-        document.getElementById('profAvatar').innerText = (u.nameEn || u.name || 'U').charAt(0).toUpperCase();
-        document.getElementById('profHeadingName').innerText = `${u.nameEn || u.name} ${u.nameBn ? '(' + u.nameBn + ')' : ''}`;
-        document.getElementById('profHeadingSub').innerText = `Employee ID: #${u.empId || 'N/A'} • Role: ${u.role} • Designation: ${u.designation || 'Staff'}`;
-        document.getElementById('profStatusBadge').innerHTML = `<span class="${u.status === 'Active' ? 'um-badge-active' : 'um-badge-blocked'}" style="font-size: 0.9rem; padding: 6px 16px;">${u.status}</span>`;
-
-        // টপ বাটনসমূহ
-        document.getElementById('profileTopActionBtns').innerHTML = `
-            <button onclick="impersonateUser('${u.id}')" class="um-btn-action um-btn-impersonate" style="padding: 8px 16px;">
-                <i class="fa-solid fa-key"></i> Login as User
-            </button>
-            <button onclick="editUserById('${u.id}')" class="um-btn-action" style="padding: 8px 16px;">
-                <i class="fa-solid fa-pen-to-square"></i> Edit Permissions
-            </button>
-            <button onclick="toggleUserStatusById('${u.id}')" class="um-btn-action um-btn-danger" style="padding: 8px 16px;">
-                <i class="fa-solid fa-ban"></i> ${u.status === 'Active' ? 'Block Account' : 'Activate Account'}
-            </button>
-        `;
-
-        // টেবিল ১ ডাটা
-        document.getElementById('profRowNameEn').innerText = u.nameEn || u.name || '-';
-        document.getElementById('profRowNameBn').innerText = u.nameBn || '-';
-        document.getElementById('profRowDesignation').innerText = u.designation || '-';
-        document.getElementById('profRowRole').innerText = u.role || 'Custom';
-        document.getElementById('profRowEmpId').innerText = u.empId || '-';
-        document.getElementById('profRowMobile').innerHTML = u.mobile ? `<a href="tel:${u.mobile}" style="color: #4f46e5; text-decoration: none;">${u.mobile}</a>` : '-';
-        document.getElementById('profRowEmail').innerHTML = u.email ? `<a href="mailto:${u.email}" style="color: #4f46e5; text-decoration: none;">${u.email}</a>` : '-';
-        document.getElementById('profRowPass').innerHTML = `<span style="font-family: monospace; letter-spacing: 1px;">${u.password}</span>`;
-
-        // টেবিল ২ পারমিশন ম্যাট্রিক্স
-        const matrixBody = document.getElementById('profPermissionsMatrixBody');
-        matrixBody.innerHTML = '';
-        const userPerms = u.permissions || {};
-
-        SYSTEM_MODULES.forEach(mod => {
-            let activeBadges = '';
-            let enabledCount = 0;
-
-            mod.permissions.forEach(p => {
-                if (userPerms[p.key]) {
-                    enabledCount++;
-                    activeBadges += `<span style="display:inline-block; background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; padding:3px 8px; border-radius:5px; font-size:0.75rem; font-weight:700; margin:2px 4px;">${p.label}</span>`;
-                }
-            });
-
-            if (!activeBadges) {
-                activeBadges = `<span style="color: #94a3b8; font-size: 0.8rem; font-style: italic;">No permissions granted in this module.</span>`;
-            }
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="padding: 10px 15px; border: 1px solid #e2e8f0; font-weight: 700; color: ${mod.color};">
-                    <i class="fa-solid ${mod.icon} mr-1"></i> ${mod.groupName}
-                </td>
-                <td style="padding: 10px 15px; border: 1px solid #e2e8f0;">${activeBadges}</td>
-                <td style="padding: 10px 15px; border: 1px solid #e2e8f0; text-align: center;">
-                    ${enabledCount > 0 ? '<span style="color:#15803d; font-weight:800; font-size:0.8rem;">● ENABLED</span>' : '<span style="color:#94a3b8; font-size:0.8rem;">OFF</span>'}
-                </td>
-            `;
-            matrixBody.appendChild(tr);
-        });
-
-        // টেবিল ৩ এই ইউজারের ব্যক্তিগত হিস্ট্রি
-        const auditBody = document.getElementById('profUserAuditBody');
-        auditBody.innerHTML = '';
-        const userLogs = auditLogsDatabase.filter(l => l.user === u.name || l.details.includes(u.name)).slice(0, 10);
-
-        if (userLogs.length === 0) {
-            auditBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #94a3b8; padding: 15px;">No specific logs recorded for this user.</td></tr>`;
-        } else {
-            userLogs.forEach(log => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="padding: 8px 12px; border: 1px solid #e2e8f0; font-size: 0.8rem; color: #64748b;">${log.timestamp}</td>
-                    <td style="padding: 8px 12px; border: 1px solid #e2e8f0;"><span style="background: #eef2ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">${log.action}</span></td>
-                    <td style="padding: 8px 12px; border: 1px solid #e2e8f0; font-size: 0.82rem; color: #334155;">${log.details}</td>
-                `;
-                auditBody.appendChild(tr);
-            });
-        }
-    }
-
-    /* ==========================================================
-       ৬. ইউজার ইমপারসনেশন (LOGIN AS USER ENGINE)
-       ========================================================== */
-    window.impersonateUser = function (userId) {
-        const target = usersDatabase.find(u => u.id === userId);
-        if (!target) return;
-
-        if (target.status !== 'Active') {
-            alert("This account is blocked! Cannot login to a suspended account.");
-            return;
-        }
-
-        if (confirm(`Are you sure you want to login to '${target.nameEn || target.name}' portal without a password?`)) {
-            isImpersonating = true;
-            originalAdminSession = {
-                name: document.getElementById('dropdownName')?.innerText || 'Admin',
-                role: document.getElementById('dropdownRole')?.innerText || 'Super Admin'
-            };
-
-            // ওপরের ব্যানার চালু করা
-            document.getElementById('impersonatingUserName').innerText = target.nameEn || target.name;
-            document.getElementById('impersonatingUserRole').innerText = target.role;
-            document.getElementById('um-impersonation-bar').style.display = 'flex';
-
-            // ন্যাভবার তথ্য পরিবর্তন
-            if (document.getElementById('dropdownName')) document.getElementById('dropdownName').innerText = target.nameEn || target.name;
-            if (document.getElementById('dropdownRole')) document.getElementById('dropdownRole').innerText = target.role;
-
-            window.logUserActivity("IMPERSONATION_START", `Admin switched session and logged in as '${target.name}'`);
-
-            if (typeof showToast === 'function') {
-                showToast(`Switched portal to ${target.nameEn || target.name}!`, "warning");
-            }
-
-            // ড্যাশবোর্ডে নিয়ে যাওয়া
-            if (typeof switchMainTab === 'function') {
-                switchMainTab('dashboard');
-            }
-        }
-    };
-
-    window.exitImpersonation = function () {
-        if (!isImpersonating) return;
-
-        isImpersonating = false;
-        document.getElementById('um-impersonation-bar').style.display = 'none';
-
-        // অ্যাডমিন তথ্য রিস্টোর
-        if (originalAdminSession) {
-            if (document.getElementById('dropdownName')) document.getElementById('dropdownName').innerText = originalAdminSession.name;
-            if (document.getElementById('dropdownRole')) document.getElementById('dropdownRole').innerText = originalAdminSession.role;
-        }
-
-        window.logUserActivity("IMPERSONATION_EXIT", "Admin exited user impersonation mode.");
-        if (typeof showToast === 'function') showToast("Returned to full Admin session!", "success");
-
-        switchUserManagementView();
-    };
-
-    /* ==========================================================
-       ৭. ফর্ম হ্যান্ডলার ও পারমিশন কন্ট্রোল
-       ========================================================== */
     window.openCreateUserForm = function () {
         editingUserId = null;
-        document.getElementById('um-form-page-title').innerText = "Create New User & Assign Permissions";
+        document.getElementById('um-form-page-title').innerText = "নতুন ইউজার যোগ ও পারমিশন সেটআপ";
         document.getElementById('um-inp-name').value = '';
         document.getElementById('um-inp-name-en').value = '';
         document.getElementById('um-inp-name-bn').value = '';
@@ -932,7 +951,7 @@
         document.getElementById('um-inp-pass').value = '';
         document.getElementById('um-inp-role').value = 'Custom';
         window.toggleAllGlobalPerms(false);
-        switchUMSubSection('um-form-section');
+        switchUserManagementSubSection('um-form-section');
     };
 
     window.editUserById = function (userId) {
@@ -940,7 +959,7 @@
         if (!u) return;
 
         editingUserId = u.id;
-        document.getElementById('um-form-page-title').innerText = `Edit: ${u.nameEn || u.name}`;
+        document.getElementById('um-form-page-title').innerText = `সংশোধন: ${u.nameEn || u.name}`;
         document.getElementById('um-inp-name').value = u.name || '';
         document.getElementById('um-inp-name-en').value = u.nameEn || u.name || '';
         document.getElementById('um-inp-name-bn').value = u.nameBn || '';
@@ -956,7 +975,7 @@
             cb.checked = !!p[cb.dataset.key];
         });
 
-        switchUMSubSection('um-form-section');
+        switchUserManagementSubSection('um-form-section');
     };
 
     window.toggleGroupPerms = function (gIdx) {
@@ -1019,8 +1038,8 @@
         renderUsersTable();
         renderSummaryStats();
 
-        switchUMSubSection('um-list-section');
-        if (typeof showToast === 'function') showToast("ইউজার সফলভাবে সংরক্ষণ করা হয়েছে!", "success");
+        switchUserManagementSubSection('um-list-section');
+        if (typeof showToast === 'function') showToast("ইউজার সফলভাবে সংরক্ষিত হয়েছে!", "success");
     };
 
     window.toggleUserStatusById = async function (userId) {
@@ -1038,13 +1057,13 @@
         const u = usersDatabase.find(item => item.id === userId);
         if (!u) return;
 
-        if (confirm(`Are you sure you want to permanently delete '${u.nameEn || u.name}'?`)) {
+        if (confirm(`আপনি কি নিশ্চিতভাবে '${u.nameEn || u.name}' এর অ্যাকাউন্ট মুছে ফেলতে চান?`)) {
             usersDatabase = usersDatabase.filter(item => item.id !== userId);
             await syncUsersToFirebase(usersDatabase);
             renderUsersTable();
             renderSummaryStats();
             window.logUserActivity("USER_DELETE", `Permanently deleted user: ${u.name}`);
-            switchUMSubSection('um-list-section');
+            switchUserManagementSubSection('um-list-section');
         }
     };
 
