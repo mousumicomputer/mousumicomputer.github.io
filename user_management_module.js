@@ -1,6 +1,7 @@
 /**
  * User Management & Granular RBAC Engine
- * Architecture: Separated Profile Setup & Dedicated Permissions Manager
+ * Features: Separated Profile Setup, Dedicated Permissions Manager, 
+ * Dropdown Submenus & Real User Portal Isolation (Auto-Navigation Fix)
  * Mousumi Computer ERP Core Engine
  */
 
@@ -195,7 +196,7 @@
             return;
         }
 
-        // Sidebar Dropdown Menu (Matching Customer Management format)
+        // Sidebar Dropdown Menu
         if (!document.getElementById('menu-user-parent')) {
             const umMenuItem = document.createElement('li');
             umMenuItem.className = 'menu-item';
@@ -238,7 +239,6 @@
             mainWrapper.appendChild(viewPanel);
         }
 
-        // Generate Permissions Checkbox Groups (For Dedicated Section Only)
         let permissionGroupsHTML = '';
         SYSTEM_MODULES.forEach((mod, gIdx) => {
             let permItems = '';
@@ -308,9 +308,7 @@
                 .um-details-table td { width: 28%; font-weight: 600; }
             </style>
 
-            <!-- ========================================================== -->
-            <!-- SUB-SECTION 1: USER DIRECTORY LIST                         -->
-            <!-- ========================================================== -->
+            <!-- SUB-SECTION 1: USER DIRECTORY LIST -->
             <div id="um-list-section" class="um-sub-section" style="display: block;">
                 
                 <div class="um-stats-grid">
@@ -327,7 +325,7 @@
                         <h3 id="statBlockedUsers" style="color: #dc2626;">0</h3>
                     </div>
                     <div class="um-stat-box">
-                        <p>Modules</p>
+                        <p>Departments</p>
                         <h3>6 Modules</h3>
                     </div>
                 </div>
@@ -366,9 +364,7 @@
                 </div>
             </div>
 
-            <!-- ========================================================== -->
-            <!-- SUB-SECTION 2: USER PROFILE VIEW                           -->
-            <!-- ========================================================== -->
+            <!-- SUB-SECTION 2: USER PROFILE VIEW -->
             <div id="um-profile-section" class="um-sub-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <button class="um-btn-clean" onclick="switchUserManagementSubSection('um-list-section')">
@@ -422,9 +418,7 @@
                 </div>
             </div>
 
-            <!-- ========================================================== -->
-            <!-- SUB-SECTION 3: ADD / EDIT PROFILE ONLY (NO CHECKBOXES!)   -->
-            <!-- ========================================================== -->
+            <!-- SUB-SECTION 3: ADD / EDIT PROFILE ONLY (NO CHECKBOXES) -->
             <div id="um-form-section" class="um-sub-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <div>
@@ -500,9 +494,7 @@
                 </div>
             </div>
 
-            <!-- ========================================================== -->
-            <!-- SUB-SECTION 4: DEDICATED MODULE PERMISSIONS MANAGER        -->
-            <!-- ========================================================== -->
+            <!-- SUB-SECTION 4: DEDICATED MODULE PERMISSIONS MANAGER -->
             <div id="um-permissions-section" class="um-sub-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <div>
@@ -539,9 +531,7 @@
                 </form>
             </div>
 
-            <!-- ========================================================== -->
-            <!-- SUB-SECTION 5: AUDIT TRAIL                                 -->
-            <!-- ========================================================== -->
+            <!-- SUB-SECTION 5: AUDIT LOGS -->
             <div id="um-audit-section" class="um-sub-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <button class="um-btn-clean" onclick="switchUserManagementSubSection('um-list-section')">
@@ -629,6 +619,13 @@
             isImpersonating = true;
             impersonatedUser = target;
 
+            // 1. Immediately deactivate and hide all view panels
+            document.querySelectorAll('.view-panel').forEach(p => {
+                p.classList.remove('active');
+                p.style.display = 'none';
+            });
+
+            // 2. Create Top Red Bar
             let stickyBar = document.getElementById('global-impersonation-sticky-bar');
             if (!stickyBar) {
                 stickyBar = document.createElement('div');
@@ -655,7 +652,7 @@
             stickyBar.style.display = 'flex';
             document.body.style.paddingTop = "42px";
 
-            // Universal Whitelist Scanner
+            // 3. Universal Whitelist Scanner (Hides Download Reports, Finance, Settings, etc.)
             applyPortalPermissionsSmart(target.permissions || {});
 
             if (document.getElementById('dropdownName')) document.getElementById('dropdownName').innerText = target.nameEn || target.name;
@@ -663,7 +660,10 @@
 
             window.logUserActivity("IMPERSONATION_START", `Admin switched to user portal: ${target.name}`);
 
-            navigateToFirstAllowedSmart(target.permissions || {});
+            // 4. Navigate directly to user's permitted sub-item (e.g. CPSCL Student List)
+            setTimeout(() => {
+                navigateToFirstAllowedSmart(target.permissions || {});
+            }, 60);
         }
     };
 
@@ -700,42 +700,48 @@
     function navigateToFirstAllowedSmart(perms) {
         const has = (prefix) => Object.keys(perms).some(k => k.startsWith(prefix) && perms[k]);
 
+        // 1. CPSCL (e.g. MD Rabbi Hosen) -> Clicks directly on Student List submenu
         if (has('cpscl_')) {
-            const cpsclLink = document.querySelector('#menu-cpscl-parent a') || 
-                              Array.from(document.querySelectorAll('.sidebar a')).find(a => a.innerText.toUpperCase().includes('CPSCL'));
-            if (cpsclLink) {
-                const dashView = document.getElementById('dashboard-view');
-                if (dashView) dashView.classList.remove('active');
-                cpsclLink.click();
-                return;
+            const parent = document.getElementById('menu-cpscl-parent') || 
+                           Array.from(document.querySelectorAll('.sidebar li')).find(li => li.innerText.includes('CPSCL'));
+            if (parent) {
+                parent.classList.add('active', 'open');
+                const subMenu = parent.querySelector('.submenu-list');
+                if (subMenu) subMenu.classList.add('show');
+                const firstSubLink = parent.querySelector('.submenu-list a') || parent.querySelector('a');
+                if (firstSubLink) {
+                    firstSubLink.click();
+                    return;
+                }
             }
         }
 
+        // 2. Education
         if (has('edu_')) {
-            const eduLink = Array.from(document.querySelectorAll('.sidebar a')).find(a => a.innerText.includes('Education'));
-            if (eduLink) {
-                const dashView = document.getElementById('dashboard-view');
-                if (dashView) dashView.classList.remove('active');
-                eduLink.click();
-                return;
+            const eduParent = document.getElementById('menu-edu-parent') || 
+                              Array.from(document.querySelectorAll('.sidebar li')).find(li => li.innerText.includes('Education'));
+            if (eduParent) {
+                eduParent.classList.add('active', 'open');
+                const subMenu = eduParent.querySelector('.submenu-list');
+                if (subMenu) subMenu.classList.add('show');
+                const firstLink = eduParent.querySelector('.submenu-list a') || eduParent.querySelector('a');
+                if (firstLink) {
+                    firstLink.click();
+                    return;
+                }
             }
         }
 
+        // 3. Customer
         if (has('cust_') && typeof switchCustomerSubSection === 'function') {
-            const dashView = document.getElementById('dashboard-view');
-            if (dashView) dashView.classList.remove('active');
             switchCustomerSubSection('cust-list-section');
             return;
         }
 
+        // 4. Financial Dashboard
         if (perms['fin_dashboard_view'] && typeof switchMainTab === 'function') {
             switchMainTab('dashboard');
             return;
-        }
-
-        const dashView = document.getElementById('dashboard-view');
-        if (dashView && !perms['fin_dashboard_view']) {
-            dashView.classList.remove('active');
         }
     }
 
@@ -749,6 +755,7 @@
         if (stickyBar) stickyBar.style.display = 'none';
         document.body.style.paddingTop = "0px";
 
+        // Restore all navigation
         document.querySelectorAll('.sidebar .menu-list > li').forEach(m => m.style.display = '');
 
         if (document.getElementById('dropdownName')) document.getElementById('dropdownName').innerText = "Admin";
@@ -780,7 +787,7 @@
                 <i class="fa-solid fa-key"></i> Login Portal
             </button>
             <button onclick="editUserById('${u.id}')" class="um-btn-clean">
-                <i class="fa-solid fa-user-pen"></i> Edit Profile
+                <i class="fa-solid fa-pen"></i> Edit Profile
             </button>
             <button onclick="openPermissionsManager('${u.id}')" class="um-btn-clean um-btn-perm">
                 <i class="fa-solid fa-shield-halved"></i> Permissions
@@ -955,7 +962,6 @@
         let existingUser = editingUserId ? usersDatabase.find(u => u.id === editingUserId) : null;
         let userPermissions = existingUser?.permissions || {};
 
-        // If brand new user with preset role, initialize sensible defaults
         if (!editingUserId) {
             if (roleVal === 'Super Admin') {
                 SYSTEM_MODULES.forEach(m => m.permissions.forEach(p => userPermissions[p.key] = true));
