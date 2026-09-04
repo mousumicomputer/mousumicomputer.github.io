@@ -1,57 +1,68 @@
 /* ==========================================================================
-   MOUSUMI MODERN FINTECH - BALANCED ELEGANT THEME
-   (Clean, Colorful yet Minimalist & Non-Cluttered)
+   MOUSUMI COMPUTER ERP - REFINED FINTECH UI WITH REAL ICONS & SOFT SIDEBAR
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 :root {
-    --primary: #0ea5e9;
-    --primary-deep: #0284c7;
-    --bg-page: #f1f5f9;            /* চোখ জুড়ানো সফট ব্যাকগ্রাউন্ড */
+    --primary: #0284c7;
+    --primary-soft: #e0f2fe;
+    --sidebar-bg: #f8fafc;          /* সাইডবারে হালকা প্রফেশনাল সফট গ্রে-ব্লু কালার */
+    --main-bg: #edf2f7;             /* ড্যাশবোর্ডের রিচ সফট ব্যাকগ্রাউন্ড */
     --card-bg: #ffffff;
-    --text-heading: #0f172a;
-    --text-sub: #64748b;
-    --border-soft: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border-card: #e2e8f0;
     --radius-card: 16px;
-    --shadow-soft: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
-    --shadow-hover: 0 12px 28px -4px rgba(15, 23, 42, 0.09);
 }
 
-* {
+/* ১. আইকন ফিক্স: ফন্ট ওভাররাইড যাতে FontAwesome আইকন নষ্ট না করে */
+body, h1, h2, h3, h4, span, div, table, input, button, a {
     font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 
-body {
-    background-color: var(--bg-page) !important;
-    color: var(--text-heading) !important;
+/* ফন্টঅসাম আইকন যাতে সবসময় নিজের ফন্ট পায় */
+.fa, .fas, .fa-solid, .far, .fa-regular, .fab, .fa-brands, [class^="fa-"], [class*=" fa-"] {
+    font-family: "Font Awesome 6 Free", "FontAwesome" !important;
+    font-style: normal !important;
+    font-variant: normal !important;
+    text-rendering: auto !important;
+    -webkit-font-smoothing: antialiased !important;
 }
 
-/* ---------------- 1. স্টাইলিশ সাইডবার ---------------- */
+body {
+    background-color: var(--main-bg) !important;
+    color: var(--text-main) !important;
+}
+
+/* ---------------- ২. সাইডবার (হালকা সফট কালার ও মডার্ন লুক) ---------------- */
 .sidebar {
-    background: #ffffff !important;
-    border-right: 1px solid #e2e8f0 !important;
-    box-shadow: 2px 0 15px rgba(0,0,0,0.015) !important;
+    background: var(--sidebar-bg) !important;
+    border-right: 1.5px solid #e2e8f0 !important;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02) !important;
+    width: 255px !important;
 }
 
 .brand-logo {
-    background: transparent !important;
-    border: none !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-    padding-bottom: 18px !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    padding: 10px 12px !important;
+    margin: 5px 8px 20px 8px !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02) !important;
 }
 
 .brand-text h3 {
     color: #0f172a !important;
-    font-size: 1.15rem !important;
     font-weight: 800 !important;
+    font-size: 1.1rem !important;
 }
 
 .brand-text span {
-    background: linear-gradient(135deg, #0284c7, #0ea5e9);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 800 !important;
+    color: var(--primary) !important;
+    font-weight: 700 !important;
+    font-size: 0.7rem !important;
+    letter-spacing: 0.5px !important;
 }
 
 .menu-list::before {
@@ -61,7 +72,7 @@ body {
     font-weight: 800;
     color: #94a3b8;
     letter-spacing: 0.8px;
-    padding: 10px 14px 8px 14px;
+    padding: 8px 14px 8px 14px;
 }
 
 .menu-item a {
@@ -70,33 +81,53 @@ body {
     font-size: 0.88rem !important;
     padding: 11px 15px !important;
     border-radius: 12px !important;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: all 0.2s ease !important;
 }
 
 .menu-item a:hover {
-    background-color: #f8fafc !important;
-    color: #0284c7 !important;
-    transform: translateX(3px);
+    background-color: #ffffff !important;
+    color: var(--primary) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03) !important;
 }
 
-/* এক্টিভ মেনু: সফট গ্রিন পিলের বদলে একটি ভাইব্রেন্ট মডার্ন অ্যাকসেন্ট */
+/* অ্যাক্টিভ মেনু (ড্যাশবোর্ড) */
 .menu-item.active > a {
-    background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%) !important;
-    color: #0284c7 !important;
-    font-weight: 700 !important;
+    background: #ffffff !important;
+    color: var(--primary) !important;
+    font-weight: 800 !important;
     border-radius: 12px !important;
-    border-left: 4px solid #0284c7 !important;
-    box-shadow: none !important;
+    border-left: 4px solid var(--primary) !important;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.08) !important;
 }
 
 .menu-item.active > a i {
-    color: #0284c7 !important;
+    color: var(--primary) !important;
 }
 
-/* ---------------- 2. টপ ন্যাভবার ---------------- */
+/* সাবমেনু ডিজাইন */
+.submenu-list {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border-radius: 10px !important;
+    margin: 4px 6px !important;
+    padding: 6px 12px !important;
+}
+
+.submenu-item a {
+    font-size: 0.82rem !important;
+    color: #64748b !important;
+    padding: 8px 10px !important;
+}
+
+.submenu-item.active a, .submenu-item a:hover {
+    color: var(--primary) !important;
+    font-weight: 700 !important;
+}
+
+/* ---------------- ৩. টপ ন্যাভবার ---------------- */
 .top-navbar {
     background: #ffffff !important;
-    border-bottom: 1px solid #e2e8f0 !important;
+    border-bottom: 1.5px solid #e2e8f0 !important;
+    padding: 12px 28px !important;
 }
 
 #top-title {
@@ -105,19 +136,24 @@ body {
     border: 1px solid #bbf7d0 !important;
     padding: 6px 16px !important;
     border-radius: 20px !important;
-    font-size: 0.8rem !important;
+    font-size: 0.82rem !important;
     font-weight: 700 !important;
-    letter-spacing: 0.4px !important;
 }
 
-/* ---------------- 3. প্রিমিয়াম হিরো কার্ড ---------------- */
-.fintech-hero-card {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+.menu-toggle-btn {
+    background: var(--sidebar-bg) !important;
     border: 1px solid #e2e8f0 !important;
-    border-left: 5px solid #0ea5e9 !important; /* নজরকাড়া অ্যাকসেন্ট */
-    border-radius: 18px !important;
-    padding: 22px 28px !important;
-    box-shadow: var(--shadow-soft) !important;
+    border-radius: 10px !important;
+}
+
+/* ---------------- ৪. হিরো ব্যানার (Total Net Balance) ---------------- */
+.fintech-hero-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-left: 5px solid var(--primary) !important;
+    border-radius: var(--radius-card) !important;
+    padding: 24px 30px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
@@ -129,7 +165,7 @@ body {
     font-size: 1.15rem !important;
     font-weight: 800 !important;
     color: #0f172a !important;
-    margin-bottom: 4px !important;
+    margin-bottom: 3px !important;
 }
 
 .fintech-hero-card h3::after {
@@ -137,23 +173,21 @@ body {
     display: block;
     font-size: 0.8rem;
     font-weight: 500;
-    color: #64748b;
+    color: var(--text-muted);
     margin-top: 2px;
 }
 
 .fintech-hero-card .hero-amount {
     font-size: 2.1rem !important;
     font-weight: 800 !important;
-    background: linear-gradient(135deg, #0f172a 30%, #0284c7 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #0369a1 !important;
     letter-spacing: -0.6px !important;
 }
 
-/* ---------------- 4. স্টাইলিশ ড্যাশবোর্ড কার্ডস ---------------- */
+/* ---------------- ৫. ড্যাশবোর্ড কার্ডস ও ক্যাটাগরি ভিত্তিক আইকন ---------------- */
 .summary-grid {
     display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(225px, 1fr)) !important;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)) !important;
     gap: 16px !important;
 }
 
@@ -162,45 +196,42 @@ body {
     border: 1px solid #e2e8f0 !important;
     border-radius: var(--radius-card) !important;
     padding: 20px 22px !important;
-    box-shadow: var(--shadow-soft) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.025) !important;
     position: relative !important;
     overflow: hidden !important;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    min-height: 115px !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
-    min-height: 120px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-/* প্রতিটি কার্ডের শীর্ষে সূক্ষ্ম স্টাইলিশ লাইন */
+.fintech-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* কার্ডের ওপরে সফট বর্ডার অ্যাকসেন্ট */
 .fintech-card::after {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #38bdf8, #818cf8);
-    opacity: 0.8;
+    height: 3.5px;
+    background: #0284c7;
 }
 
-.fintech-card:hover {
-    transform: translateY(-4px) !important;
-    box-shadow: var(--shadow-hover) !important;
-    border-color: #cbd5e1 !important;
-}
-
-/* টাইটেল ডিজাইন */
 .fintech-card h4 {
-    font-size: 0.82rem !important;
+    font-size: 0.8rem !important;
     font-weight: 700 !important;
     color: #64748b !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
+    letter-spacing: 0.4px !important;
     margin: 0 !important;
 }
 
-/* কার্ডের টাকার অ্যামাউন্ট */
 .fintech-card .amount {
     font-size: 1.55rem !important;
     font-weight: 800 !important;
@@ -209,8 +240,7 @@ body {
     margin-top: 14px !important;
 }
 
-/* ---------------- 5. সফট ডুয়াল-টোন আইকন ব্যাজ ---------------- */
-/* কার্ডের আইকনগুলোকে ফ্যাকাশে না রেখে সুন্দর পিল ব্যাজের মতো সাজানো */
+/* আইকন বক্স (ডান পাশের সুন্দর ব্যাজ) */
 .card-icon {
     position: absolute !important;
     top: 16px !important;
@@ -221,33 +251,34 @@ body {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    font-size: 1rem !important;
+    font-size: 1.05rem !important;
     background: #f1f5f9 !important;
-    color: #475569 !important;
+    color: #0284c7 !important;
     border: 1px solid #e2e8f0 !important;
 }
 
-/* স্পেসিফিক কার্ডগুলোর জন্য সুন্দর সফট হাইলাইট */
-/* Customer Due (লালচে অ্যাকসেন্ট) */
+/* ---------------- ৬. নির্দিষ্ট কার্ডের জন্য সঠিক আইকন ও কালার ---------------- */
+
+/* কাস্টমার পাওনা (Customer Due) */
 .fintech-card:has(.amount[style*="color: rgb(225, 29, 72)"]),
 .fintech-card:has(.amount[style*="color: #e11d48"]) {
-    border-left: 3px solid #f43f5e !important;
+    border-left: 4px solid #ef4444 !important;
 }
 .fintech-card:has(.amount[style*="color: rgb(225, 29, 72)"])::after,
 .fintech-card:has(.amount[style*="color: #e11d48"])::after {
-    background: #f43f5e !important;
+    background: #ef4444 !important;
 }
 .fintech-card:has(.amount[style*="color: rgb(225, 29, 72)"]) .card-icon,
 .fintech-card:has(.amount[style*="color: #e11d48"]) .card-icon {
-    background: #ffe4e6 !important;
-    color: #e11d48 !important;
-    border-color: #fecdd3 !important;
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+    border-color: #fca5a5 !important;
 }
 
-/* Cash Inventory (সবুজ অ্যাকসেন্ট) */
+/* ক্যাশ ইনভেন্টরি (Cash Inventory - টাকা/ক্যাশ আইকন) */
 .fintech-card:has(.amount[style*="color: rgb(21, 128, 61)"]),
 .fintech-card:has(.amount[style*="color: #15803d"]) {
-    border-left: 3px solid #10b981 !important;
+    border-left: 4px solid #10b981 !important;
 }
 .fintech-card:has(.amount[style*="color: rgb(21, 128, 61)"])::after,
 .fintech-card:has(.amount[style*="color: #15803d"])::after {
@@ -257,13 +288,13 @@ body {
 .fintech-card:has(.amount[style*="color: #15803d"]) .card-icon {
     background: #dcfce7 !important;
     color: #15803d !important;
-    border-color: #bbf7d0 !important;
+    border-color: #86efac !important;
 }
 
-/* Card Inventory Stock (অরেঞ্জ/অ্যাম্বার অ্যাকসেন্ট) */
+/* কার্ড ইনভেন্টরি স্টক (Card Stock - সিম/কার্ড আইকন) */
 .fintech-card:has(.amount[style*="color: rgb(180, 83, 9)"]),
 .fintech-card:has(.amount[style*="color: #b45309"]) {
-    border-left: 3px solid #f59e0b !important;
+    border-left: 4px solid #f59e0b !important;
 }
 .fintech-card:has(.amount[style*="color: rgb(180, 83, 9)"])::after,
 .fintech-card:has(.amount[style*="color: #b45309"])::after {
