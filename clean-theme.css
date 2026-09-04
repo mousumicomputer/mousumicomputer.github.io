@@ -1,211 +1,198 @@
 /* =========================================================
-   CLEAN & MINIMAL THEME OVERLAY (Inspired by Screenshot 2)
-   Author: Mousumi Computer Modern Theme
+   CPSCL INSPIRED PREMIUM SOFT UI THEME
    ========================================================= */
 
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
 :root {
-    --primary-color: #0d9488 !important;   /* ক্লিন মডার্ন টিল/সায়ান */
-    --primary-light: #f0fdfa !important;   /* খুব হালকা ব্যাকগ্রাউন্ড হাইলাইট */
-    --primary-dark: #0f172a !important;    /* সফট ডার্ক স্লেট টেক্সট */
-    --sidebar-width: 250px !important;
-    --bg-color: #f8fafc !important;        /* পরিষ্কার ফ্রেশ ব্যাকগ্রাউন্ড */
+    --primary: #0d9488 !important;         /* সফট টিল কালার */
+    --primary-soft: #f0fdfa !important;    /* হালকা টিল ব্যাকগ্রাউন্ড */
+    --primary-border: #ccfbf1 !important;  /* পিল বর্ডার */
+    --sidebar-bg: #ffffff !important;
+    --main-bg: #f8fafc !important;         /* সফট ব্যাকগ্রাউন্ড */
     --card-bg: #ffffff !important;
-    --text-color: #1e293b !important;
-    --text-muted: #64748b !important;
-    --border-color: #e2e8f0 !important;    /* সফট ক্লিন বর্ডার */
-    --border-radius: 12px !important;
+    --text-main: #0f172a !important;       /* গাড় স্লেট টেক্সট */
+    --text-muted: #64748b !important;      /* সফট অ্যাশ টেক্সট */
+    --border-ui: #f1f5f9 !important;       /* প্রিমিয়াম হালকা বর্ডার */
+    --card-radius: 18px !important;        /* ছবির মতো রাউন্ড শেপ */
 }
 
-/* ১. পুরো ফন্টকে প্রফেশনাল ও পরিষ্কার লুক দেয়া */
+/* ফন্ট ফিক্স */
 * {
     font-family: 'Plus Jakarta Sans', sans-serif !important;
+    letter-spacing: -0.2px;
 }
 
 body {
-    background-color: var(--bg-color) !important;
-    color: var(--text-color) !important;
+    background-color: var(--main-bg) !important;
+    color: var(--text-main) !important;
 }
 
-/* ২. সাইডবার: গাঢ় কালার বাদ দিয়ে সফট লাইট লুক (ছবি ২ এর মতো) */
+/* ১. বাম পাশের প্রিমিয়াম সাইডবার */
 .sidebar {
-    background-color: #ffffff !important;
-    border-right: 1px solid var(--border-color) !important;
-    color: var(--text-color) !important;
-    padding: 16px 12px !important;
+    background: var(--sidebar-bg) !important;
+    border-right: 1.5px solid var(--border-ui) !important;
+    padding: 20px 14px !important;
     box-shadow: none !important;
 }
 
 .brand-logo {
     background: transparent !important;
     border: none !important;
-    padding: 6px 10px !important;
-    margin-bottom: 20px !important;
-}
-
-.brand-logo-img-wrapper {
-    background: #ffffff !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 8px !important;
+    margin-bottom: 30px !important;
+    padding-left: 6px !important;
 }
 
 .brand-text h3 {
-    color: var(--primary-dark) !important;
-    font-size: 0.95rem !important;
-    font-weight: 700 !important;
+    color: #0f172a !important;
+    font-size: 1.1rem !important;
+    font-weight: 800 !important;
 }
 
 .brand-text span {
-    color: var(--primary-color) !important;
-    font-size: 0.65rem !important;
+    color: var(--primary) !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+}
+
+/* সাইডবার মেনু বাটন (১ম ছবির মতো সফট ক্যাপসুল স্টাইল) */
+.menu-item a {
+    color: var(--text-muted) !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+.menu-item a i {
+    font-size: 1rem !important;
+    color: #94a3b8 !important;
+}
+
+.menu-item a:hover {
+    background-color: #f8fafc !important;
+    color: var(--text-main) !important;
+}
+
+/* এক্টিভ মেনু (হুবহু ১ম ছবির 'Dashboard'-এর মতো) */
+.menu-item.active > a {
+    background-color: #ecfdf5 !important;
+    color: #059669 !important;
+    font-weight: 700 !important;
+    box-shadow: none !important;
+}
+
+.menu-item.active > a i {
+    color: #059669 !important;
+}
+
+/* ২. টপ ন্যাভবার */
+.top-navbar {
+    background: #ffffff !important;
+    border-bottom: 1.5px solid var(--border-ui) !important;
+    padding: 14px 30px !important;
+}
+
+/* ১ম ছবির উপরের স্ট্যাটাস পিল ব্যাজ */
+#top-title {
+    background: #ecfdf5 !important;
+    color: #047857 !important;
+    border: 1px solid #a7f3d0 !important;
+    padding: 7px 18px !important;
+    border-radius: 30px !important;
+    font-size: 0.82rem !important;
     font-weight: 700 !important;
     letter-spacing: 0.5px !important;
 }
 
-/* ৩. সাইডবার মেনু আইটেম */
-.menu-item a {
-    color: var(--text-muted) !important;
-    font-weight: 600 !important;
-    font-size: 0.86rem !important;
-    border-radius: 8px !important;
-    padding: 9px 12px !important;
-    transition: all 0.15s ease !important;
-}
-
-.menu-item a:hover {
-    background-color: #f1f5f9 !important;
-    color: var(--primary-dark) !important;
-}
-
-.menu-item.active > a {
-    background-color: var(--primary-light) !important;
-    color: var(--primary-color) !important;
-    font-weight: 700 !important;
-    box-shadow: none !important;
-}
-
-.submenu-list {
-    padding-left: 14px !important;
-}
-
-.submenu-item a {
-    font-size: 0.8rem !important;
-    color: var(--text-muted) !important;
-    padding: 7px 10px !important;
-}
-
-.submenu-item a:hover, .submenu-item.active a {
-    color: var(--primary-color) !important;
-    background: #f8fafc !important;
-}
-
-/* ৪. টপ ন্যাভবার: একদম হালকা এবং পরিচ্ছন্ন */
-.top-navbar {
-    background-color: #ffffff !important;
-    border-bottom: 1px solid var(--border-color) !important;
-    padding: 12px 24px !important;
-}
-
-#top-title {
-    font-size: 0.85rem !important;
-    font-weight: 700 !important;
-    color: var(--primary-color) !important;
-    background: var(--primary-light) !important;
-    border: 1px solid #ccfbf1 !important;
-    padding: 6px 14px !important;
-    border-radius: 20px !important;
-    display: inline-block !important;
-}
-
 .menu-toggle-btn {
-    background: #ffffff !important;
-    border: 1px solid var(--border-color) !important;
+    background: #f8fafc !important;
+    border: 1px solid var(--border-ui) !important;
+    border-radius: 10px !important;
     color: var(--text-muted) !important;
-    border-radius: 8px !important;
 }
 
-.user-profile-avatar {
-    border: 1.5px solid var(--border-color) !important;
-}
-
-/* ৫. হিরো ব্যানার (Total Net Balance): অতিরিক্ত নীল ও গ্র্যাডিয়েন্ট দূর করে ফ্ল্যাট ক্লিন লুক */
+/* ৩. হিরো ব্যানার (১ম ছবির Cantonment Public School ব্যানারের মতো) */
 .fintech-hero-card {
     background: #ffffff !important;
-    color: var(--primary-dark) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: var(--border-radius) !important;
-    box-shadow: none !important;
-    padding: 20px 24px !important;
-    margin-bottom: 18px !important;
-    text-align: left !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 20px !important;
+    padding: 24px 28px !important;
+    margin-bottom: 25px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.015) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
 }
 
 .fintech-hero-card h3 {
-    color: var(--text-muted) !important;
-    font-size: 0.78rem !important;
-    font-weight: 600 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.6px !important;
+    color: #64748b !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    text-transform: capitalize !important;
 }
 
 .fintech-hero-card .hero-amount {
-    color: var(--primary-color) !important;
-    font-size: 1.85rem !important;
+    color: #0f172a !important;
+    font-size: 2.2rem !important;
     font-weight: 800 !important;
     letter-spacing: -0.5px !important;
-    margin-top: 4px !important;
 }
 
-/* ৬. ড্যাশবোর্ড কার্ডস: হিজিবিজি কালার বর্ডার বন্ধ করে পরিষ্কার কার্ড গ্রিড */
+/* ৪. ড্যাশবোর্ড স্ট্যাট কার্ডস (হুবহু ১ম ছবির গ্রিডের মতো) */
 .summary-grid {
-    gap: 14px !important;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+    gap: 20px !important;
 }
 
 .fintech-card {
     background: #ffffff !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: var(--border-radius) !important;
-    padding: 16px 18px !important;
-    box-shadow: none !important;
-    transition: border-color 0.2s ease !important;
-}
-
-.fintech-card::before {
-    display: none !important; /* বামের মোটা কালার বার বন্ধ */
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: var(--card-radius) !important;
+    padding: 20px 22px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.015) !important;
+    position: relative !important;
+    transition: all 0.2s ease !important;
 }
 
 .fintech-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04) !important;
     border-color: #cbd5e1 !important;
 }
 
-.card-icon {
-    display: none !important; /* হিজিবিজি দূর করতে কার্ডের ভেতরের রঙিন আইকন হাইড */
+/* কার্ডের বামের মোটা দাগ বন্ধ */
+.fintech-card::before {
+    display: none !important;
 }
 
+/* কার্ডের টাইটেল (হালকা ধূসর ও ছোট) */
 .fintech-card h4 {
-    color: var(--text-muted) !important;
-    font-size: 0.78rem !important;
+    color: #64748b !important;
+    font-size: 0.86rem !important;
     font-weight: 600 !important;
-    margin-bottom: 6px !important;
-    text-transform: capitalize !important;
+    margin-bottom: 12px !important;
 }
 
+/* কার্ডের টাকার অ্যামাউন্ট (বোল্ড ও প্রমিনেন্ট) */
 .fintech-card .amount {
-    color: var(--primary-dark) !important;
-    font-size: 1.25rem !important;
+    color: #0f172a !important;
+    font-size: 1.6rem !important;
     font-weight: 800 !important;
-    letter-spacing: -0.3px !important;
+    letter-spacing: -0.5px !important;
 }
 
-/* ৭. টেবিল ও কনটেইনারের ফ্রেশ ফিনিশিং */
-.erp-form-card, .table-container, .mc-form-card {
-    border: 1px solid var(--border-color) !important;
-    box-shadow: none !important;
-    border-radius: var(--border-radius) !important;
-}
-
-th {
-    background: #f8fafc !important;
-    color: var(--text-muted) !important;
-    font-size: 0.8rem !important;
-    font-weight: 700 !important;
+/* কার্ডের ভেতরের হিজিবিজি আইকন ক্লিন করা */
+.card-icon {
+    position: absolute !important;
+    top: 18px !important;
+    right: 18px !important;
+    background: transparent !important;
+    color: #cbd5e1 !important; /* হালকা ওয়াটারমার্ক লুক */
+    font-size: 1.1rem !important;
+    margin-bottom: 0 !important;
 }
