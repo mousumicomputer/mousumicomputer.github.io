@@ -1,27 +1,30 @@
 /* ==========================================================================
-   MOUSUMI COMPUTER ERP - REFINED FINTECH UI WITH REAL ICONS & SOFT SIDEBAR
+   MOUSUMI COMPUTER & PHOTOCOPY - COMPLETE REFINED FINTECH UI THEME
+   (Soft Color Sidebar, Real Icons, Header Branding & Border Accents)
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Tiro+Bangla&display=swap');
 
 :root {
     --primary: #0284c7;
     --primary-soft: #e0f2fe;
-    --sidebar-bg: #f8fafc;          /* সাইডবারে হালকা প্রফেশনাল সফট গ্রে-ব্লু কালার */
-    --main-bg: #edf2f7;             /* ড্যাশবোর্ডের রিচ সফট ব্যাকগ্রাউন্ড */
+    --sidebar-bg: #f8fafc;          /* সাইডবারে প্রফেশনাল হালকা সফট গ্রে-ব্লু */
+    --main-bg: #edf2f7;             /* ড্যাশবোর্ডের রিচ ও চোখ জুড়ানো সফট ব্যাকগ্রাউন্ড */
     --card-bg: #ffffff;
     --text-main: #0f172a;
     --text-muted: #64748b;
     --border-card: #e2e8f0;
     --radius-card: 16px;
+    --shadow-soft: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+    --shadow-hover: 0 12px 28px -4px rgba(15, 23, 42, 0.09);
 }
 
-/* ১. আইকন ফিক্স: ফন্ট ওভাররাইড যাতে FontAwesome আইকন নষ্ট না করে */
+/* ১. গ্লোবাল ফন্ট ও আইকন ফিক্স */
 body, h1, h2, h3, h4, span, div, table, input, button, a {
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-family: 'Plus Jakarta Sans', 'Tiro Bangla', sans-serif !important;
 }
 
-/* ফন্টঅসাম আইকন যাতে সবসময় নিজের ফন্ট পায় */
+/* ফন্টঅসাম আইকন যাতে ভেঙে চারকোনা বক্স না হয় */
 .fa, .fas, .fa-solid, .far, .fa-regular, .fab, .fa-brands, [class^="fa-"], [class*=" fa-"] {
     font-family: "Font Awesome 6 Free", "FontAwesome" !important;
     font-style: normal !important;
@@ -123,11 +126,18 @@ body {
     font-weight: 700 !important;
 }
 
-/* ---------------- ৩. টপ ন্যাভবার ---------------- */
+/* ---------------- ৩. টপ ন্যাভবার ও লাল মার্ক করা ব্র্যান্ডিং টাইটেল ---------------- */
 .top-navbar {
     background: #ffffff !important;
     border-bottom: 1.5px solid #e2e8f0 !important;
     padding: 12px 28px !important;
+}
+
+.top-navbar .navbar-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    flex: 1 !important;
 }
 
 #top-title {
@@ -138,6 +148,19 @@ body {
     border-radius: 20px !important;
     font-size: 0.82rem !important;
     font-weight: 700 !important;
+}
+
+/* লাল মার্ক করা জায়গায় দোকানের নাম */
+.top-navbar .navbar-left::after {
+    content: "মৌসুমি কম্পিউটার এন্ড ফটোকপি";
+    font-size: 1.15rem !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+    letter-spacing: -0.2px !important;
+    padding-left: 14px !important;
+    border-left: 2px solid #cbd5e1 !important;
+    margin-left: 4px !important;
+    display: inline-block !important;
 }
 
 .menu-toggle-btn {
@@ -184,7 +207,7 @@ body {
     letter-spacing: -0.6px !important;
 }
 
-/* ---------------- ৫. ড্যাশবোর্ড কার্ডস ও ক্যাটাগরি ভিত্তিক আইকন ---------------- */
+/* ---------------- ৫. ড্যাশবোর্ড কার্ডস ---------------- */
 .summary-grid {
     display: grid !important;
     grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)) !important;
@@ -196,23 +219,23 @@ body {
     border: 1px solid #e2e8f0 !important;
     border-radius: var(--radius-card) !important;
     padding: 20px 22px !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.025) !important;
+    box-shadow: var(--shadow-soft) !important;
     position: relative !important;
     overflow: hidden !important;
     min-height: 115px !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .fintech-card:hover {
     transform: translateY(-3px) !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
+    box-shadow: var(--shadow-hover) !important;
     border-color: #cbd5e1 !important;
 }
 
-/* কার্ডের ওপরে সফট বর্ডার অ্যাকসেন্ট */
+/* প্রতিটি কার্ডের ওপরে সফট অ্যাকসেন্ট বার */
 .fintech-card::after {
     content: "";
     position: absolute;
@@ -240,7 +263,7 @@ body {
     margin-top: 14px !important;
 }
 
-/* আইকন বক্স (ডান পাশের সুন্দর ব্যাজ) */
+/* কার্ডের আইকন বক্স */
 .card-icon {
     position: absolute !important;
     top: 16px !important;
@@ -257,9 +280,9 @@ body {
     border: 1px solid #e2e8f0 !important;
 }
 
-/* ---------------- ৬. নির্দিষ্ট কার্ডের জন্য সঠিক আইকন ও কালার ---------------- */
+/* ---------------- ৬. স্পেসিফিক কার্ড স্টাইলিং (রঙিন ও মার্জিত) ---------------- */
 
-/* কাস্টমার পাওনা (Customer Due) */
+/* কাস্টমার পাওনা (Customer Due - লালচে অ্যাকসেন্ট) */
 .fintech-card:has(.amount[style*="color: rgb(225, 29, 72)"]),
 .fintech-card:has(.amount[style*="color: #e11d48"]) {
     border-left: 4px solid #ef4444 !important;
@@ -275,7 +298,7 @@ body {
     border-color: #fca5a5 !important;
 }
 
-/* ক্যাশ ইনভেন্টরি (Cash Inventory - টাকা/ক্যাশ আইকন) */
+/* ক্যাশ ইনভেন্টরি (Cash Inventory - সবুজ অ্যাকসেন্ট) */
 .fintech-card:has(.amount[style*="color: rgb(21, 128, 61)"]),
 .fintech-card:has(.amount[style*="color: #15803d"]) {
     border-left: 4px solid #10b981 !important;
@@ -291,7 +314,7 @@ body {
     border-color: #86efac !important;
 }
 
-/* কার্ড ইনভেন্টরি স্টক (Card Stock - সিম/কার্ড আইকন) */
+/* কার্ড ইনভেন্টরি স্টক (Card Stock - অ্যাম্বার/হলুদ অ্যাকসেন্ট) */
 .fintech-card:has(.amount[style*="color: rgb(180, 83, 9)"]),
 .fintech-card:has(.amount[style*="color: #b45309"]) {
     border-left: 4px solid #f59e0b !important;
@@ -305,4 +328,11 @@ body {
     background: #fef3c7 !important;
     color: #b45309 !important;
     border-color: #fde68a !important;
+}
+
+/* রেসপনসিভ হ্যান্ডলিং (মোবাইল স্ক্রিনের জন্য) */
+@media (max-width: 768px) {
+    .top-navbar .navbar-left::after {
+        display: none !important;
+    }
 }
