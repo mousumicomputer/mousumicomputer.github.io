@@ -1,6 +1,6 @@
 /**
- * User Management & Granular RBAC Module
- * Clean, Minimal Enterprise Standard (English Interface)
+ * User Management & Comprehensive Granular RBAC Engine
+ * Enterprise Standard: Dropdown Submenus & Smart Portal Isolation
  * Mousumi Computer ERP Core Engine
  */
 
@@ -18,19 +18,20 @@
     let dbRefFunc = null;
     let dbSetFunc = null;
 
-    // ERP Module Definitions
+    // Standard ERP Module Definitions
     const SYSTEM_MODULES = [
         {
-            groupName: "Education & Digital",
+            groupName: "Education & Digital Services",
             prefix: "edu_",
             menuId: "menu-edu-parent",
             permissions: [
-                { key: "edu_fee_collection", label: "Fee Terminal" },
-                { key: "edu_pending_clearance", label: "Pending Clearance" },
-                { key: "edu_paid_settlement", label: "Settlement" },
-                { key: "edu_due_database", label: "Due Database" },
-                { key: "edu_void_trash", label: "Void Logs" },
-                { key: "edu_reports_export", label: "Reports Export" }
+                { key: "edu_fee_collection", label: "Fee Collection Terminal" },
+                { key: "edu_pending_clearance", label: "Pending Clearance & Tap Pay" },
+                { key: "edu_paid_settlement", label: "Paid Settlement" },
+                { key: "edu_due_database", label: "Due Master Database" },
+                { key: "edu_void_trash", label: "Void & Cancelled Logs" },
+                { key: "edu_reports_export", label: "Reports & Data Export" },
+                { key: "edu_sheet_import", label: "Sheet Pending Import" }
             ]
         },
         {
@@ -38,11 +39,11 @@
             prefix: "cpscl_",
             menuId: "menu-cpscl-parent",
             permissions: [
-                { key: "cpscl_student_list", label: "Student List" },
-                { key: "cpscl_cert_print", label: "Certificate Print" },
-                { key: "cpscl_excel_upload", label: "Excel Upload" },
-                { key: "cpscl_manual_entry", label: "Manual Entry" },
-                { key: "cpscl_delete_data", label: "Delete Data" }
+                { key: "cpscl_student_list", label: "Student List & View" },
+                { key: "cpscl_cert_print", label: "Certificate / Testimonial Print" },
+                { key: "cpscl_excel_upload", label: "Excel Data Import" },
+                { key: "cpscl_manual_entry", label: "Manual Student Entry" },
+                { key: "cpscl_delete_data", label: "Delete / Clear Student Data" }
             ]
         },
         {
@@ -50,47 +51,47 @@
             prefix: "cust_",
             menuId: "menu-cust-parent",
             permissions: [
-                { key: "cust_view_list", label: "Customer List" },
-                { key: "cust_add_new", label: "Add/Edit Customer" },
-                { key: "cust_new_tx", label: "New Transaction" },
-                { key: "cust_ledger", label: "Customer Ledger" },
-                { key: "cust_due_summary", label: "Due Summary" }
+                { key: "cust_view_list", label: "Customer List & Profile" },
+                { key: "cust_add_new", label: "Add / Edit Customer" },
+                { key: "cust_new_tx", label: "New Transaction Entry" },
+                { key: "cust_ledger", label: "Customer Ledger Statement" },
+                { key: "cust_due_summary", label: "Due Summary & Analytics" }
             ]
         },
         {
-            groupName: "Accounts & Inventory",
+            groupName: "Accounts, Balance & Inventory",
             prefix: "fin_",
             menuId: "menu-inv-parent",
             permissions: [
-                { key: "fin_dashboard_view", label: "Dashboard View" },
-                { key: "fin_balance_update", label: "Balance Update" },
-                { key: "fin_cash_inventory", label: "Cash Inventory" },
-                { key: "fin_card_inventory", label: "Card Inventory" }
+                { key: "fin_dashboard_view", label: "Financial Dashboard View" },
+                { key: "fin_balance_update", label: "Update Balances (Bank/Agent/Personal)" },
+                { key: "fin_cash_inventory", label: "Cash Inventory Audit" },
+                { key: "fin_card_inventory", label: "Card Inventory Audit" }
             ]
         },
         {
-            groupName: "Daily Closing",
+            groupName: "Daily Closing & Audit",
             prefix: "closing_",
             menuId: "menu-closing-parent",
             permissions: [
-                { key: "closing_close_day", label: "Execute Closing" },
-                { key: "closing_history", label: "Closing History" },
-                { key: "closing_report_pdf", label: "Download PDF" }
+                { key: "closing_close_day", label: "Execute Daily Closing" },
+                { key: "closing_history", label: "Closing History & Logs" },
+                { key: "closing_report_pdf", label: "Download Financial Statements (PDF)" }
             ]
         },
         {
-            groupName: "Configuration",
+            groupName: "Settings & Configuration",
             prefix: "config_",
             menuId: "menu-settings-parent",
             permissions: [
-                { key: "config_categories", label: "Category & Accounts" },
-                { key: "config_cards", label: "Card Master" }
+                { key: "config_categories", label: "Category & Accounts Setup" },
+                { key: "config_cards", label: "Master Card Configuration" }
             ]
         }
     ];
 
     /* ==========================================================
-       1. Firebase Sync Engine (Strictly Non-Destructive)
+       1. Firebase Sync Engine (Non-Destructive)
        ========================================================== */
     async function initUserManagementFirebase() {
         try {
@@ -119,7 +120,6 @@
             onValue(usersRef, (snapshot) => {
                 const cloudData = snapshot.val();
                 if (cloudData) {
-                    // Read without modifying stored permission objects
                     usersDatabase = Array.isArray(cloudData) ? cloudData : Object.values(cloudData);
                     localStorage.setItem('cpscl_system_users', JSON.stringify(usersDatabase));
                     renderUsersTable();
@@ -139,7 +139,7 @@
             });
 
         } catch (err) {
-            console.warn("User Management Firebase Offline/Fallback:", err);
+            console.warn("User Management Firebase Offline:", err);
         }
     }
 
@@ -182,7 +182,7 @@
     };
 
     /* ==========================================================
-       2. Clean Minimalist UI Engine
+       2. Clean Minimalist UI Engine & Sidebar Injection
        ========================================================== */
     function initUserManagementModule() {
         const menuList = document.querySelector('.sidebar .menu-list') || document.querySelector('.menu-list');
@@ -193,7 +193,7 @@
             return;
         }
 
-        // Sidebar Dropdown
+        // Inject Sidebar Dropdown Menu (Matching Customer Management format)
         if (!document.getElementById('menu-user-parent')) {
             const umMenuItem = document.createElement('li');
             umMenuItem.className = 'menu-item';
@@ -251,7 +251,7 @@
                         <span style="font-weight: 700; font-size: 14px; color: #1e293b;">${mod.groupName}</span>
                         <button type="button" onclick="toggleGroupPerms(${gIdx})" style="background: #fff; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; cursor: pointer;">Toggle</button>
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px;">
                         ${permItems}
                     </div>
                 </div>
@@ -263,7 +263,7 @@
                 .um-sub-section { display: none; }
                 .um-card { background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 20px; }
                 
-                /* Clean Crisp Table */
+                /* Clean Table */
                 .um-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
                 .um-table th { background: #f8fafc; padding: 12px 14px; color: #64748b; font-weight: 700; border-bottom: 1px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
                 .um-table td { padding: 14px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; color: #1e293b; }
@@ -276,7 +276,7 @@
                 .um-stat-box h3 { font-size: 22px; font-weight: 800; color: #0f172a; margin: 0; }
 
                 /* Action Buttons */
-                .um-btn-clean { border: 1px solid #e2e8f0; background: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; color: #334155; }
+                .um-btn-clean { border: 1px solid #e2e8f0; background: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; color: #334155; transition: 0.2s; }
                 .um-btn-clean:hover { background: #f1f5f9; }
                 .um-btn-primary { background: #4f46e5; color: #ffffff; border: 1px solid #4f46e5; }
                 .um-btn-primary:hover { background: #4338ca; }
@@ -285,11 +285,11 @@
                 .um-btn-login { color: #d97706; border-color: #fde68a; background: #fffbeb; }
                 .um-btn-login:hover { background: #fef3c7; }
 
-                /* Status & Scope Badges */
+                /* Badges */
                 .um-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
                 .um-badge-active { background: #dcfce7; color: #15803d; }
                 .um-badge-blocked { background: #fee2e2; color: #dc2626; }
-                .um-scope-pill { background: #eff6ff; color: #2563eb; border: 1px solid #dbeafe; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+                .um-scope-pill { background: #eff6ff; color: #2563eb; border: 1px solid #dbeafe; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-right: 4px; display: inline-block; margin-bottom: 2px; }
 
                 .um-control { height: 38px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 12px; font-size: 13px; outline: none; background: #ffffff; width: 100%; }
                 .um-control:focus { border-color: #4f46e5; }
@@ -317,15 +317,15 @@
                         <h3 id="statBlockedUsers" style="color: #dc2626;">0</h3>
                     </div>
                     <div class="um-stat-box">
-                        <p>Modules</p>
-                        <h3>6</h3>
+                        <p>Departments</p>
+                        <h3>6 Modules</h3>
                     </div>
                 </div>
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; flex-wrap: wrap;">
                     <div style="display: flex; gap: 8px; flex: 1; max-width: 460px;">
-                        <input type="text" id="umSearchInput" class="um-control" placeholder="Search user..." oninput="filterUMUsers()">
-                        <select id="umRoleFilter" class="um-control" style="width: 140px;" onchange="filterUMUsers()">
+                        <input type="text" id="umSearchInput" class="um-control" placeholder="Search user by name or ID..." oninput="filterUMUsers()">
+                        <select id="umRoleFilter" class="um-control" style="width: 150px;" onchange="filterUMUsers()">
                             <option value="">All Roles</option>
                             <option value="Super Admin">Super Admin</option>
                             <option value="Education Staff">Education Staff</option>
@@ -374,7 +374,7 @@
                         <div id="profStatusBadge"></div>
                     </div>
 
-                    <p style="font-weight: 700; font-size: 13px; margin-bottom: 8px; color: #475569;">EMPLOYMENT & ACCOUNT DETAILS</p>
+                    <p style="font-weight: 700; font-size: 12px; margin-bottom: 8px; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Employment & Account Profile</p>
                     <table class="um-details-table" style="margin-bottom: 24px;">
                         <tbody>
                             <tr>
@@ -396,13 +396,13 @@
                         </tbody>
                     </table>
 
-                    <p style="font-weight: 700; font-size: 13px; margin-bottom: 8px; color: #475569;">MODULE ACCESS SCOPE</p>
+                    <p style="font-weight: 700; font-size: 12px; margin-bottom: 8px; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Module Access Permissions Matrix</p>
                     <table class="um-table" style="border: 1px solid #e2e8f0;">
                         <thead>
                             <tr>
                                 <th style="width: 28%;">Department</th>
-                                <th>Assigned Permissions</th>
-                                <th style="text-align: center; width: 100px;">Access</th>
+                                <th>Allowed Features</th>
+                                <th style="text-align: center; width: 100px;">Scope</th>
                             </tr>
                         </thead>
                         <tbody id="profPermissionsMatrixBody"></tbody>
@@ -439,7 +439,7 @@
                             </div>
                             <div>
                                 <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">Name (Bangla)</label>
-                                <input type="text" id="um-inp-name-bn" class="um-control" placeholder="ঐচ্ছিক">
+                                <input type="text" id="um-inp-name-bn" class="um-control" placeholder="Optional">
                             </div>
                         </div>
 
@@ -466,7 +466,7 @@
                             <div>
                                 <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">Preset Role</label>
                                 <select id="um-inp-role" class="um-control" onchange="handlePresetRoleChange(this.value)">
-                                    <option value="Custom">Custom</option>
+                                    <option value="Custom">Custom Selection</option>
                                     <option value="Education Staff">Education Staff</option>
                                     <option value="CPSCL Operator">CPSCL Operator</option>
                                     <option value="Accountant">Accountant</option>
@@ -525,7 +525,7 @@
     }
 
     /* ==========================================================
-       3. Sub-Section Switcher
+       3. Sub-Section Switcher (Matching ERP Architecture)
        ========================================================== */
     window.switchUserManagementSubSection = function (sectionId) {
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
@@ -564,7 +564,7 @@
     };
 
     /* ==========================================================
-       4. Real User Portal Login (Preserving Real Permissions)
+       4. Real User Portal Login (Smart Whitelist Scanner)
        ========================================================== */
     window.impersonateUser = function (userId) {
         const target = usersDatabase.find(u => u.id === userId);
@@ -575,10 +575,11 @@
             return;
         }
 
-        if (confirm(`Login as ${target.nameEn || target.name}?`)) {
+        if (confirm(`Login to portal of: ${target.nameEn || target.name}?`)) {
             isImpersonating = true;
             impersonatedUser = target;
 
+            // 1. Create Top Red Bar
             let stickyBar = document.getElementById('global-impersonation-sticky-bar');
             if (!stickyBar) {
                 stickyBar = document.createElement('div');
@@ -588,6 +589,7 @@
                     background: #dc2626; color: #fff; z-index: 999999; display: flex; 
                     align-items: center; justify-content: space-between; padding: 0 20px; 
                     font-size: 13px; font-weight: 600; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                    font-family: system-ui, -apple-system, sans-serif;
                 `;
                 document.body.appendChild(stickyBar);
             }
@@ -604,55 +606,118 @@
             stickyBar.style.display = 'flex';
             document.body.style.paddingTop = "42px";
 
-            // Enforce real permissions directly from target object
-            applyPortalPermissionsDirect(target.permissions || {});
+            // 2. Universal Whitelist Scanner (Hides Download Reports & Non-Permitted items)
+            applyPortalPermissionsSmart(target.permissions || {});
 
             if (document.getElementById('dropdownName')) document.getElementById('dropdownName').innerText = target.nameEn || target.name;
             if (document.getElementById('dropdownRole')) document.getElementById('dropdownRole').innerText = target.role;
 
-            window.logUserActivity("IMPERSONATION_START", `Admin opened portal for: ${target.name}`);
+            window.logUserActivity("IMPERSONATION_START", `Admin switched to user portal: ${target.name}`);
 
-            navigateToFirstAllowed(target.permissions || {});
+            // 3. Navigate away from financial dashboard to permitted module directly
+            navigateToFirstAllowedSmart(target.permissions || {});
         }
     };
 
-    function applyPortalPermissionsDirect(perms) {
-        // Evaluate each module by its assigned permission keys
-        SYSTEM_MODULES.forEach(mod => {
-            const el = document.getElementById(mod.menuId);
-            if (el) {
-                const hasAccess = Object.keys(perms).some(k => k.startsWith(mod.prefix) && perms[k]);
-                el.style.display = hasAccess ? '' : 'none';
+    function applyPortalPermissionsSmart(perms) {
+        const has = (prefix) => Object.keys(perms).some(k => k.startsWith(prefix) && perms[k]);
+
+        // Universal scan across all sidebar menu items
+        document.querySelectorAll('.sidebar .menu-list > li').forEach(li => {
+            const text = li.innerText.toLowerCase();
+
+            // Dashboard
+            if (text.includes('dashboard')) {
+                li.style.display = perms['fin_dashboard_view'] ? '' : 'none';
+            }
+            // Balance Management
+            else if (text.includes('balance')) {
+                li.style.display = perms['fin_balance_update'] ? '' : 'none';
+            }
+            // Inventory Management
+            else if (text.includes('inventory')) {
+                li.style.display = (perms['fin_cash_inventory'] || perms['fin_card_inventory']) ? '' : 'none';
+            }
+            // Customer Management
+            else if (text.includes('customer')) {
+                li.style.display = has('cust_') ? '' : 'none';
+            }
+            // Daily Closing
+            else if (text.includes('closing')) {
+                li.style.display = has('closing_') ? '' : 'none';
+            }
+            // Download Reports (Strict check)
+            else if (text.includes('download reports') || text.includes('reports')) {
+                li.style.display = perms['edu_reports_export'] ? '' : 'none';
+            }
+            // CPSCL
+            else if (text.includes('cpscl')) {
+                li.style.display = has('cpscl_') ? '' : 'none';
+            }
+            // Education & Digital
+            else if (text.includes('education')) {
+                li.style.display = has('edu_') ? '' : 'none';
+            }
+            // Settings
+            else if (text.includes('settings') || text.includes('configuration')) {
+                li.style.display = has('config_') ? '' : 'none';
+            }
+            // User Management (Always hidden for staff portal mode)
+            else if (text.includes('user management')) {
+                li.style.display = 'none';
             }
         });
-
-        // Hide User Management from normal portal mode
-        const userMenu = document.getElementById('menu-user-parent');
-        if (userMenu) userMenu.style.display = 'none';
-
-        // Balance management link
-        const balMenu = document.getElementById('menu-bal-parent');
-        if (balMenu) balMenu.style.display = perms['fin_balance_update'] ? '' : 'none';
-
-        // Dashboard
-        const dashMenu = document.getElementById('menu-dash');
-        if (dashMenu) dashMenu.style.display = perms['fin_dashboard_view'] ? '' : 'none';
     }
 
-    function navigateToFirstAllowed(perms) {
+    function navigateToFirstAllowedSmart(perms) {
+        const has = (prefix) => Object.keys(perms).some(k => k.startsWith(prefix) && perms[k]);
+
+        // If user has CPSCL permission (e.g. MD Rabbi Hosen)
+        if (has('cpscl_')) {
+            const cpsclLink = document.querySelector('#menu-cpscl-parent a') || 
+                              Array.from(document.querySelectorAll('.sidebar a')).find(a => a.innerText.toUpperCase().includes('CPSCL'));
+            if (cpsclLink) {
+                // Ensure financial dashboard is closed
+                const dashView = document.getElementById('dashboard-view');
+                if (dashView) dashView.classList.remove('active');
+                
+                cpsclLink.click();
+                return;
+            }
+        }
+
+        // If user has Education permission
+        if (has('edu_')) {
+            const eduLink = Array.from(document.querySelectorAll('.sidebar a')).find(a => a.innerText.includes('Education'));
+            if (eduLink) {
+                const dashView = document.getElementById('dashboard-view');
+                if (dashView) dashView.classList.remove('active');
+                
+                eduLink.click();
+                return;
+            }
+        }
+
+        // If user has Customer permission
+        if (has('cust_') && typeof switchCustomerSubSection === 'function') {
+            const dashView = document.getElementById('dashboard-view');
+            if (dashView) dashView.classList.remove('active');
+            
+            switchCustomerSubSection('cust-list-section');
+            return;
+        }
+
+        // If allowed to view financial dashboard
         if (perms['fin_dashboard_view'] && typeof switchMainTab === 'function') {
             switchMainTab('dashboard');
             return;
         }
-        if (Object.keys(perms).some(k => k.startsWith('cust_') && perms[k]) && typeof switchCustomerSubSection === 'function') {
-            switchCustomerSubSection('cust-list-section');
-            return;
+
+        // Hide financial overview dashboard if not allowed
+        const dashView = document.getElementById('dashboard-view');
+        if (dashView && !perms['fin_dashboard_view']) {
+            dashView.classList.remove('active');
         }
-        if (perms['fin_cash_inventory'] && typeof switchMainTab === 'function') {
-            switchMainTab('cash-inventory');
-            return;
-        }
-        if (typeof switchMainTab === 'function') switchMainTab('dashboard');
     }
 
     window.exitImpersonation = function () {
@@ -666,7 +731,7 @@
         document.body.style.paddingTop = "0px";
 
         // Restore all navigation
-        document.querySelectorAll('.menu-item').forEach(m => m.style.display = '');
+        document.querySelectorAll('.sidebar .menu-list > li').forEach(m => m.style.display = '');
 
         if (document.getElementById('dropdownName')) document.getElementById('dropdownName').innerText = "Admin";
         if (document.getElementById('dropdownRole')) document.getElementById('dropdownRole').innerText = "Super Admin";
@@ -859,7 +924,6 @@
         document.getElementById('um-inp-pass').value = u.password || '';
         document.getElementById('um-inp-role').value = u.role || 'Custom';
 
-        // Accurately retain saved checkboxes
         const p = u.permissions || {};
         document.querySelectorAll('.perm-checkbox').forEach(cb => {
             cb.checked = !!p[cb.dataset.key];
