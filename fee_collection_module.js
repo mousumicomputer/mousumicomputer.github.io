@@ -1,6 +1,10 @@
 /**
  * Mousumi Computer ERP - Education & Digital Services Module (Enterprise Edition)
- * Super-Smart Multi-Tag Filtering & Multi-Select Bulk Terminal Edition
+ * Clean Focused Terminal Edition:
+ * - Text Selection & Copy Friendly (No more accidental row selection)
+ * - Multi-Select Bulk Actions intact via dedicated checkboxes
+ * - Combined Live Instant Search Bar in Pending Clearance
+ * - Single-line compact cards with rounded border
  */
 
 (function () {
@@ -11,17 +15,18 @@
     let selectedStudentRawDue = 0;
     let selectedStudentData = null;
 
-    // মাল্টিপল সিলেকশন সেট (একের অধিক আইডি ধরে রাখার জন্য)
+    // মাল্টিপল সিলেকশন সেট
     let selectedPendingTxIds = new Set();
 
-    // ফিল্টার স্টেট
+    // ফিল্টার স্টেট ও লাইভ সার্চ কুয়েরি
+    let pendingSearchQuery = "";
     let pendingFilters = {
         category: null, // 'Army', 'Civil'
         months: null,   // 'urgent', '1', '2', '3+'
         class: null     // 'Nursery', 'KG', etc.
     };
 
-    // পেজিনেশন
+    // পেজিনেশন (ডিউ টেবিল)
     let currentPage = 1;
     let rowsPerPage = 25;
     let currentSearchQuery = "";
@@ -330,7 +335,7 @@
             margin: 0;
         }
 
-        /* CLEAN FOCUSED TABLE WITH ROUNDED ROW CARD BORDERS */
+        /* CLEAN FOCUSED TABLE - USER-SELECT TEXT COPY FRIENDLY */
         .edu-table-responsive { 
             width: 100%; 
             padding: 10px 20px 18px 20px; 
@@ -353,6 +358,7 @@
             border-bottom: 2px solid #e2e8f0;
             background: transparent;
             white-space: nowrap;
+            user-select: none;
         }
 
         .edu-clean-table td {
@@ -365,6 +371,13 @@
             border-top: 1px solid #e2e8f0;
             border-bottom: 1px solid #e2e8f0;
             transition: all 0.15s ease;
+            user-select: text !important; /* টেক্সট কপি করার স্বাধীনতা */
+            cursor: text;
+        }
+
+        .edu-clean-table td.cell-action-select {
+            cursor: pointer;
+            user-select: none !important;
         }
 
         .edu-clean-table td:first-child {
@@ -379,8 +392,7 @@
             border-bottom-right-radius: 6px;
         }
 
-        .edu-clean-table tbody tr.row-selectable { cursor: pointer; }
-        .edu-clean-table tbody tr.row-selectable:hover td { 
+        .edu-clean-table tbody tr:hover td { 
             background: #f8fafc; 
             border-color: #cbd5e1;
         }
@@ -556,7 +568,7 @@
                     </div>
                 </div>
 
-                <!-- PANEL 2: PENDING CLEARANCE (মাল্টি-সিলেক্ট এবং ক্লিন ভিউ) -->
+                <!-- PANEL 2: PENDING CLEARANCE (লাইভ সার্চ বক্স ও মাল্টি-সিলেক্ট সহ) -->
                 <div class="view-panel" id="edu-pending-clearance-view">
                     <div class="edu-view-card">
                         <div class="edu-card-header-clean">
@@ -567,7 +579,7 @@
                             </div>
                         </div>
 
-                        <!-- ফিল্টার বার -->
+                        <!-- ফিল্টার ও ইনস্ট্যান্ট সার্চ বার -->
                         <div class="filter-tag-wrapper">
                             <div class="filter-tag-box">
                                 <span class="filter-label">Tags:</span>
@@ -598,10 +610,15 @@
                                     </div>
                                 </div>
                             </div>
-                            <button type="button" class="btn-filter-clear" onclick="clearAllPendingFilters()">Clear ✕</button>
+                            
+                            <!-- সার্চ বক্স এবং ক্লিয়ার বাটন -->
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <input type="text" id="pendingSearchInput" class="edu-input" placeholder="Search ID, Name, Rec..." style="height:32px; width:200px; font-size:0.8rem; padding:0 10px;">
+                                <button type="button" class="btn-filter-clear" onclick="clearAllPendingFilters()">Clear ✕</button>
+                            </div>
                         </div>
 
-                        <!-- সিলেকশন অ্যাকশন কন্ট্রোল বার -->
+                        <!-- সিলেকশন কন্ট্রোল বার -->
                         <div class="pending-action-bar-strip">
                             <div class="selection-status-badge" id="pendingSelectedLabel">
                                 <span>No student selected</span>
@@ -614,13 +631,13 @@
                                 <button type="button" class="btn-top-icon btn-top-void" id="btnTopVoid" onclick="executeBulkPendingAction('void')" title="Void Selected" disabled>
                                     ${ICONS.trash}
                                 </button>
-                                <button type="button" class="btn-top-icon btn-top-print" id="btnTopPrint" onclick="executeBulkPendingAction('print')" title="Print (Single)" disabled>
+                                <button type="button" class="btn-top-icon btn-top-print" id="btnTopPrint" onclick="executeBulkPendingAction('print')" title="Print" disabled>
                                     ${ICONS.print}
                                 </button>
                             </div>
                         </div>
 
-                        <!-- ক্লিন টেবিল (চেকবক্স সহ) -->
+                        <!-- ক্লিন টেবিল -->
                         <div class="edu-table-responsive">
                             <table class="edu-clean-table">
                                 <thead>
@@ -931,7 +948,7 @@
         return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : dateStr;
     }
 
-    // ৮. বাল্ক Tap Pay (একের অধিক বা একক একসাথে পে করা)
+    // ৮. বাল্ক Tap Pay
     async function markBulkAsTapPaid(txIds) {
         if (!txIds || txIds.length === 0) return;
         const nowFormatted = new Date().toLocaleDateString('en-GB').replace(/\//g, '-') + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
@@ -1027,7 +1044,7 @@
         } catch(e) { console.error(e); }
     };
 
-    // ১০. মাল্টি-সিলেকশন লজিক
+    // ১০. চেকবক্স সিলেকশন লজিক
     window.togglePendingRowSelection = function(txId, event) {
         if (event && event.stopPropagation) event.stopPropagation();
         if (selectedPendingTxIds.has(txId)) {
@@ -1055,7 +1072,6 @@
         } else if (actionType === 'void') {
             openVoidModalForSelection();
         } else if (actionType === 'print') {
-            // প্রিন্ট শুধুমাত্র প্রথম সিলেক্ট করাটির রসিদ বের করবে
             const firstId = Array.from(selectedPendingTxIds)[0];
             printRowReceipt(firstId);
         }
@@ -1079,6 +1095,9 @@
         pendingFilters.category = null;
         pendingFilters.months = null;
         pendingFilters.class = null;
+        pendingSearchQuery = "";
+        const searchBox = document.getElementById('pendingSearchInput');
+        if (searchBox) searchBox.value = "";
         selectedPendingTxIds.clear();
         closeFilterMenu();
         renderPendingTable();
@@ -1096,7 +1115,6 @@
         if (popup) popup.style.display = 'none';
     }
 
-    // মাস্টার ডাটাবেস থেকে তথ্য সমৃদ্ধ করা
     function enrichTransactionData(t) {
         const master = studentDueList.find(s => 
             String(s.stdId).trim() === String(t.customerId).trim() || 
@@ -1114,7 +1132,7 @@
         };
     }
 
-    // ১২. পেন্ডিং টেবিল ও মাল্টি-সিলেক্ট কন্ট্রোল রেন্ডারিং
+    // ১২. টেবিল ও ইনস্ট্যান্ট সার্চ রেন্ডারিং
     function renderPendingTable() {
         const tbody = document.getElementById('pendingClearanceTableBody');
         const badge = document.getElementById('pendingCountBadge');
@@ -1133,7 +1151,6 @@
             .filter(t => t.status !== 'Paid')
             .map(t => enrichTransactionData(t));
 
-        // ক্লাস ড্রপডাউন মেনু তৈরি
         if (classGrid) {
             const existingClasses = [...new Set(rawPending.map(t => (t.class || '').trim()).filter(Boolean))];
             if (existingClasses.length === 0) {
@@ -1148,7 +1165,6 @@
             }
         }
 
-        // ট্যাগ চিপস
         if (tagContainer) {
             let tagsHtml = '';
             let hasActiveFilter = false;
@@ -1173,13 +1189,14 @@
             tagContainer.innerHTML = hasActiveFilter ? tagsHtml : `<span class="no-filter-text">All</span>`;
         }
 
-        // ফিল্টারিং প্রয়োগ
         let filteredPending = rawPending;
 
+        // ক্যাটাগরি ফিল্টার
         if (pendingFilters.category) {
             filteredPending = filteredPending.filter(t => (t.category || '').toLowerCase().trim() === pendingFilters.category.toLowerCase().trim());
         }
 
+        // মাস ফিল্টার
         if (pendingFilters.months) {
             if (pendingFilters.months === "urgent") {
                 filteredPending = filteredPending.filter(t => (parseInt(t.month) || 1) >= 2);
@@ -1192,18 +1209,28 @@
             }
         }
 
+        // ক্লাস ফিল্টার
         if (pendingFilters.class) {
             filteredPending = filteredPending.filter(t => (t.class || '').toLowerCase().trim() === pendingFilters.class.toLowerCase().trim());
         }
 
+        // লাইভ ইনস্ট্যান্ট সার্চ ফিল্টার
+        if (pendingSearchQuery) {
+            const q = pendingSearchQuery.toLowerCase();
+            filteredPending = filteredPending.filter(t => 
+                (t.studentName && t.studentName.toLowerCase().includes(q)) ||
+                (t.customerId && String(t.customerId).toLowerCase().includes(q)) ||
+                (t.receiptNo && String(t.receiptNo).includes(q)) ||
+                (t.class && t.class.toLowerCase().includes(q))
+            );
+        }
+
         const visibleIds = filteredPending.map(t => t.id);
 
-        // সিলেকশন ক্লিনআপ (যদি ফিল্টারে কিছু হাইড হয়ে যায়)
         for (let id of selectedPendingTxIds) {
             if (!visibleIds.includes(id)) selectedPendingTxIds.delete(id);
         }
 
-        // মোট হিসাব ও সিলেক্টেড সামারি
         let totalGrossSum = 0;
         let selectedGrossSum = 0;
 
@@ -1217,7 +1244,6 @@
             }
         });
 
-        // সিলেকশন স্ট্যাটাস বার টেক্সট
         const selCount = selectedPendingTxIds.size;
         if (selCount > 0) {
             if (selectedLabel) {
@@ -1228,20 +1254,19 @@
                 btnPay.innerHTML = `${ICONS.pay} Pay (${selCount})`;
             }
             if (btnVoid) btnVoid.disabled = false;
-            if (btnPrint) btnPrint.disabled = (selCount !== 1); // প্রিন্ট শুধুমাত্র ১ জন সিলেক্ট হলে এনাবল হবে
+            if (btnPrint) btnPrint.disabled = (selCount !== 1);
         } else {
             if (selectedLabel) {
                 selectedLabel.innerHTML = `<span>No student selected</span>`;
             }
             if (btnPay) {
                 btnPay.disabled = true;
-                btnPay.innerHTML = `${ICONS.pay} Pay`;
+                btnPay.innerHTML = `${ICONS.pay} Pay Selected`;
             }
             if (btnVoid) btnVoid.disabled = true;
             if (btnPrint) btnPrint.disabled = true;
         }
 
-        // সিলেক্ট অল চেকবক্স আপডেট
         if (selectAllCheckbox) {
             selectAllCheckbox.checked = (visibleIds.length > 0 && selCount === visibleIds.length);
             selectAllCheckbox.onclick = (e) => toggleSelectAllPending(e.target.checked, visibleIds);
@@ -1266,10 +1291,11 @@
             const formattedDate = formatDateToDDMMYYYY(t.date);
             const formattedTime = t.time ? `<span style="font-size:0.75rem; color:#64748b; margin-left:5px;">${t.time}</span>` : '';
 
+            // শুধুমাত্র চেকবক্স কলামে সিলেকশন ক্লিক কাজ করবে, বাকি সেলগুলোতে সরাসরি টেক্সট কপি করা যাবে
             html += `
-                <tr class="row-selectable ${isSelected ? 'row-selected' : ''}" onclick="togglePendingRowSelection('${t.id}')">
-                    <td style="text-align:center;" onclick="event.stopPropagation();">
-                        <input type="checkbox" class="edu-checkbox" ${isSelected ? 'checked' : ''} onchange="togglePendingRowSelection('${t.id}', event)">
+                <tr class="${isSelected ? 'row-selected' : ''}">
+                    <td style="text-align:center;" class="cell-action-select" onclick="togglePendingRowSelection('${t.id}', event)">
+                        <input type="checkbox" class="edu-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation();" onchange="togglePendingRowSelection('${t.id}', event)">
                     </td>
                     <td style="font-weight:700; color:#2563eb;">${t.receiptNo || '-'}</td>
                     <td>${formattedDate} ${formattedTime}</td>
@@ -1540,6 +1566,18 @@
                 }
             }
         }
+        for (const p of possibleKeys) {
+            const cleanTarget = p.toLowerCase().replace(/[^a-z0-9]/g, '');
+            for (const k of keys) {
+                const cleanKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (cleanKey.startsWith(cleanTarget)) {
+                    const val = row[k];
+                    if (val !== undefined && val !== null && String(val).trim() !== '') {
+                        return String(val).trim();
+                    }
+                }
+            }
+        }
         return '';
     }
 
@@ -1607,6 +1645,15 @@
 
         if (discInp) discInp.addEventListener('input', calculateAutoValues);
         if (txnInp) txnInp.addEventListener('input', calculateAutoValues);
+
+        // লাইভ সার্চ ইভেন্ট লিসেনার
+        const pendingSearchBox = document.getElementById('pendingSearchInput');
+        if (pendingSearchBox) {
+            pendingSearchBox.addEventListener('input', function() {
+                pendingSearchQuery = this.value.trim();
+                renderPendingTable();
+            });
+        }
 
         // ফর্ম সাবমিট
         const origForm = document.getElementById('feeFormOriginal');
@@ -1691,7 +1738,7 @@
             };
         }
 
-        // এক্সেল স্যাম্পল
+        // স্যাম্পল শিট
         const btnDownloadSample = document.getElementById('btnDownloadSample');
         if (btnDownloadSample) {
             btnDownloadSample.addEventListener('click', function () {
@@ -1784,7 +1831,6 @@
             });
         }
 
-        // ফিল্টার ড্রপডাউন ট্রিপল-ক্লিক প্রতিরোধ
         const btnFilterTrigger = document.getElementById('btnFilterAddTrigger');
         if (btnFilterTrigger) {
             btnFilterTrigger.addEventListener('click', function(e) {
