@@ -1,6 +1,6 @@
 /**
- * User Management & Comprehensive Granular RBAC Engine
- * Enterprise Standard: Dropdown Submenus & Smart Portal Isolation
+ * User Management & Granular RBAC Engine
+ * Architecture: Separated Profile Setup & Dedicated Permissions Manager
  * Mousumi Computer ERP Core Engine
  */
 
@@ -9,6 +9,7 @@
     let auditLogsDatabase = JSON.parse(localStorage.getItem('cpscl_audit_logs') || '[]');
     let editingUserId = null;
     let viewingUserId = null;
+    let selectedPermUserId = null;
     let showPasswordMap = {};
 
     let isImpersonating = false;
@@ -18,7 +19,7 @@
     let dbRefFunc = null;
     let dbSetFunc = null;
 
-    // Standard ERP Module Definitions
+    // ERP Module Definitions
     const SYSTEM_MODULES = [
         {
             groupName: "Education & Digital Services",
@@ -124,6 +125,7 @@
                     localStorage.setItem('cpscl_system_users', JSON.stringify(usersDatabase));
                     renderUsersTable();
                     renderSummaryStats();
+                    populatePermissionsUserDropdown();
                     if (viewingUserId) renderUserProfileDetails(viewingUserId);
                 }
             });
@@ -182,7 +184,7 @@
     };
 
     /* ==========================================================
-       2. Clean Minimalist UI Engine & Sidebar Injection
+       2. Clean Minimalist UI Engine & Sidebar Submenus
        ========================================================== */
     function initUserManagementModule() {
         const menuList = document.querySelector('.sidebar .menu-list') || document.querySelector('.menu-list');
@@ -193,7 +195,7 @@
             return;
         }
 
-        // Inject Sidebar Dropdown Menu (Matching Customer Management format)
+        // Sidebar Dropdown Menu (Matching Customer Management format)
         if (!document.getElementById('menu-user-parent')) {
             const umMenuItem = document.createElement('li');
             umMenuItem.className = 'menu-item';
@@ -210,6 +212,9 @@
                     </li>
                     <li class="submenu-item" id="sub-um-add">
                         <a onclick="openCreateUserForm()"><i class="fa-solid fa-angle-right"></i> <span>Add User</span></a>
+                    </li>
+                    <li class="submenu-item" id="sub-um-perm">
+                        <a onclick="openPermissionsManager()"><i class="fa-solid fa-angle-right"></i> <span>Permissions</span></a>
                     </li>
                     <li class="submenu-item" id="sub-um-audit">
                         <a onclick="switchUserManagementSubSection('um-audit-section')"><i class="fa-solid fa-angle-right"></i> <span>Audit Logs</span></a>
@@ -233,6 +238,7 @@
             mainWrapper.appendChild(viewPanel);
         }
 
+        // Generate Permissions Checkbox Groups (For Dedicated Section Only)
         let permissionGroupsHTML = '';
         SYSTEM_MODULES.forEach((mod, gIdx) => {
             let permItems = '';
@@ -284,6 +290,8 @@
                 .um-btn-danger:hover { background: #fee2e2; }
                 .um-btn-login { color: #d97706; border-color: #fde68a; background: #fffbeb; }
                 .um-btn-login:hover { background: #fef3c7; }
+                .um-btn-perm { color: #059669; border-color: #a7f3d0; background: #ecfdf5; }
+                .um-btn-perm:hover { background: #d1fae5; }
 
                 /* Badges */
                 .um-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
@@ -300,7 +308,9 @@
                 .um-details-table td { width: 28%; font-weight: 600; }
             </style>
 
-            <!-- SUB-SECTION 1: USER DIRECTORY -->
+            <!-- ========================================================== -->
+            <!-- SUB-SECTION 1: USER DIRECTORY LIST                         -->
+            <!-- ========================================================== -->
             <div id="um-list-section" class="um-sub-section" style="display: block;">
                 
                 <div class="um-stats-grid">
@@ -317,7 +327,7 @@
                         <h3 id="statBlockedUsers" style="color: #dc2626;">0</h3>
                     </div>
                     <div class="um-stat-box">
-                        <p>Departments</p>
+                        <p>Modules</p>
                         <h3>6 Modules</h3>
                     </div>
                 </div>
@@ -356,7 +366,9 @@
                 </div>
             </div>
 
-            <!-- SUB-SECTION 2: USER PROFILE VIEW -->
+            <!-- ========================================================== -->
+            <!-- SUB-SECTION 2: USER PROFILE VIEW                           -->
+            <!-- ========================================================== -->
             <div id="um-profile-section" class="um-sub-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <button class="um-btn-clean" onclick="switchUserManagementSubSection('um-list-section')">
@@ -410,10 +422,15 @@
                 </div>
             </div>
 
-            <!-- SUB-SECTION 3: ADD / EDIT FORM -->
+            <!-- ========================================================== -->
+            <!-- SUB-SECTION 3: ADD / EDIT PROFILE ONLY (NO CHECKBOXES!)   -->
+            <!-- ========================================================== -->
             <div id="um-form-section" class="um-sub-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h2 style="font-size: 17px; font-weight: 800;" id="um-form-page-title">Add User</h2>
+                    <div>
+                        <h2 style="font-size: 17px; font-weight: 800;" id="um-form-page-title">Add User</h2>
+                        <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0;">Create basic account & login profile</p>
+                    </div>
                     <button class="um-btn-clean" onclick="switchUserManagementSubSection('um-list-section')">
                         <i class="fa-solid fa-arrow-left"></i> Cancel
                     </button>
@@ -464,9 +481,9 @@
                                 <input type="text" id="um-inp-pass" class="um-control" placeholder="Password" required>
                             </div>
                             <div>
-                                <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">Preset Role</label>
-                                <select id="um-inp-role" class="um-control" onchange="handlePresetRoleChange(this.value)">
-                                    <option value="Custom">Custom Selection</option>
+                                <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">Role *</label>
+                                <select id="um-inp-role" class="um-control">
+                                    <option value="Custom">Custom</option>
                                     <option value="Education Staff">Education Staff</option>
                                     <option value="CPSCL Operator">CPSCL Operator</option>
                                     <option value="Accountant">Accountant</option>
@@ -475,26 +492,56 @@
                             </div>
                         </div>
 
-                        <div style="margin-top: 10px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                <span style="font-weight: 700; font-size: 13px;">Permissions Scope</span>
-                                <div style="display: flex; gap: 6px;">
-                                    <button type="button" class="um-btn-clean" style="padding: 2px 8px; font-size: 11px;" onclick="toggleAllGlobalPerms(true)">All</button>
-                                    <button type="button" class="um-btn-clean" style="padding: 2px 8px; font-size: 11px;" onclick="toggleAllGlobalPerms(false)">Clear</button>
-                                </div>
-                            </div>
-                            <div id="dynamic-permission-container">${permissionGroupsHTML}</div>
-                        </div>
-
-                        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
                             <button type="button" class="um-btn-clean" onclick="switchUserManagementSubSection('um-list-section')">Cancel</button>
-                            <button type="submit" class="um-btn-clean um-btn-primary" style="padding: 8px 24px;">Save User</button>
+                            <button type="submit" class="um-btn-clean um-btn-primary" style="padding: 8px 24px;">Save Profile</button>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <!-- SUB-SECTION 4: AUDIT LOGS -->
+            <!-- ========================================================== -->
+            <!-- SUB-SECTION 4: DEDICATED MODULE PERMISSIONS MANAGER        -->
+            <!-- ========================================================== -->
+            <div id="um-permissions-section" class="um-sub-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <h2 style="font-size: 17px; font-weight: 800;">Manage Module Permissions</h2>
+                        <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0;">Assign and update security access scope</p>
+                    </div>
+                    <button class="um-btn-clean" onclick="switchUserManagementSubSection('um-list-section')">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Users
+                    </button>
+                </div>
+
+                <div class="um-card" style="margin-bottom: 14px;">
+                    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                        <label style="font-weight: 700; font-size: 13px; color: #1e293b;">Select User:</label>
+                        <select id="permUserSelect" class="um-control" style="max-width: 320px;" onchange="loadUserPermissionsForConfig(this.value)">
+                            <!-- Dynamic user options -->
+                        </select>
+                        <div style="margin-left: auto; display: flex; gap: 8px;">
+                            <button type="button" class="um-btn-clean" onclick="toggleAllGlobalPerms(true)">Grant All</button>
+                            <button type="button" class="um-btn-clean" onclick="toggleAllGlobalPerms(false)">Revoke All</button>
+                        </div>
+                    </div>
+                </div>
+
+                <form onsubmit="handleSavePermissionsSubmit(event)">
+                    <div id="dynamic-permission-container">${permissionGroupsHTML}</div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+                        <button type="button" class="um-btn-clean" onclick="switchUserManagementSubSection('um-list-section')">Cancel</button>
+                        <button type="submit" class="um-btn-clean um-btn-primary" style="padding: 10px 28px;">
+                            <i class="fa-solid fa-shield-halved"></i> Update Permissions
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- SUB-SECTION 5: AUDIT TRAIL                                 -->
+            <!-- ========================================================== -->
             <div id="um-audit-section" class="um-sub-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <button class="um-btn-clean" onclick="switchUserManagementSubSection('um-list-section')">
@@ -521,11 +568,12 @@
 
         renderUsersTable();
         renderSummaryStats();
+        populatePermissionsUserDropdown();
         renderAuditLogsTable();
     }
 
     /* ==========================================================
-       3. Sub-Section Switcher (Matching ERP Architecture)
+       3. Sub-Section Switcher
        ========================================================== */
     window.switchUserManagementSubSection = function (sectionId) {
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
@@ -543,6 +591,7 @@
         document.querySelectorAll('.submenu-item').forEach(s => s.classList.remove('active'));
         if (sectionId === 'um-list-section' && document.getElementById('sub-um-list')) document.getElementById('sub-um-list').classList.add('active');
         if (sectionId === 'um-form-section' && document.getElementById('sub-um-add')) document.getElementById('sub-um-add').classList.add('active');
+        if (sectionId === 'um-permissions-section' && document.getElementById('sub-um-perm')) document.getElementById('sub-um-perm').classList.add('active');
         if (sectionId === 'um-audit-section' && document.getElementById('sub-um-audit')) document.getElementById('sub-um-audit').classList.add('active');
 
         document.querySelectorAll('.um-sub-section').forEach(sec => sec.style.display = 'none');
@@ -553,7 +602,8 @@
         if (topTitle) {
             if (sectionId === 'um-list-section') topTitle.innerText = "User Directory";
             if (sectionId === 'um-profile-section') topTitle.innerText = "User Profile";
-            if (sectionId === 'um-form-section') topTitle.innerText = editingUserId ? "Edit User" : "Add User";
+            if (sectionId === 'um-form-section') topTitle.innerText = editingUserId ? "Edit Profile" : "Add User";
+            if (sectionId === 'um-permissions-section') topTitle.innerText = "Manage Permissions";
             if (sectionId === 'um-audit-section') topTitle.innerText = "Audit Logs";
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -579,7 +629,6 @@
             isImpersonating = true;
             impersonatedUser = target;
 
-            // 1. Create Top Red Bar
             let stickyBar = document.getElementById('global-impersonation-sticky-bar');
             if (!stickyBar) {
                 stickyBar = document.createElement('div');
@@ -606,7 +655,7 @@
             stickyBar.style.display = 'flex';
             document.body.style.paddingTop = "42px";
 
-            // 2. Universal Whitelist Scanner (Hides Download Reports & Non-Permitted items)
+            // Universal Whitelist Scanner
             applyPortalPermissionsSmart(target.permissions || {});
 
             if (document.getElementById('dropdownName')) document.getElementById('dropdownName').innerText = target.nameEn || target.name;
@@ -614,7 +663,6 @@
 
             window.logUserActivity("IMPERSONATION_START", `Admin switched to user portal: ${target.name}`);
 
-            // 3. Navigate away from financial dashboard to permitted module directly
             navigateToFirstAllowedSmart(target.permissions || {});
         }
     };
@@ -622,48 +670,28 @@
     function applyPortalPermissionsSmart(perms) {
         const has = (prefix) => Object.keys(perms).some(k => k.startsWith(prefix) && perms[k]);
 
-        // Universal scan across all sidebar menu items
         document.querySelectorAll('.sidebar .menu-list > li').forEach(li => {
             const text = li.innerText.toLowerCase();
 
-            // Dashboard
             if (text.includes('dashboard')) {
                 li.style.display = perms['fin_dashboard_view'] ? '' : 'none';
-            }
-            // Balance Management
-            else if (text.includes('balance')) {
+            } else if (text.includes('balance')) {
                 li.style.display = perms['fin_balance_update'] ? '' : 'none';
-            }
-            // Inventory Management
-            else if (text.includes('inventory')) {
+            } else if (text.includes('inventory')) {
                 li.style.display = (perms['fin_cash_inventory'] || perms['fin_card_inventory']) ? '' : 'none';
-            }
-            // Customer Management
-            else if (text.includes('customer')) {
+            } else if (text.includes('customer')) {
                 li.style.display = has('cust_') ? '' : 'none';
-            }
-            // Daily Closing
-            else if (text.includes('closing')) {
+            } else if (text.includes('closing')) {
                 li.style.display = has('closing_') ? '' : 'none';
-            }
-            // Download Reports (Strict check)
-            else if (text.includes('download reports') || text.includes('reports')) {
+            } else if (text.includes('download reports') || text.includes('reports')) {
                 li.style.display = perms['edu_reports_export'] ? '' : 'none';
-            }
-            // CPSCL
-            else if (text.includes('cpscl')) {
+            } else if (text.includes('cpscl')) {
                 li.style.display = has('cpscl_') ? '' : 'none';
-            }
-            // Education & Digital
-            else if (text.includes('education')) {
+            } else if (text.includes('education')) {
                 li.style.display = has('edu_') ? '' : 'none';
-            }
-            // Settings
-            else if (text.includes('settings') || text.includes('configuration')) {
+            } else if (text.includes('settings') || text.includes('configuration')) {
                 li.style.display = has('config_') ? '' : 'none';
-            }
-            // User Management (Always hidden for staff portal mode)
-            else if (text.includes('user management')) {
+            } else if (text.includes('user management')) {
                 li.style.display = 'none';
             }
         });
@@ -672,48 +700,39 @@
     function navigateToFirstAllowedSmart(perms) {
         const has = (prefix) => Object.keys(perms).some(k => k.startsWith(prefix) && perms[k]);
 
-        // If user has CPSCL permission (e.g. MD Rabbi Hosen)
         if (has('cpscl_')) {
             const cpsclLink = document.querySelector('#menu-cpscl-parent a') || 
                               Array.from(document.querySelectorAll('.sidebar a')).find(a => a.innerText.toUpperCase().includes('CPSCL'));
             if (cpsclLink) {
-                // Ensure financial dashboard is closed
                 const dashView = document.getElementById('dashboard-view');
                 if (dashView) dashView.classList.remove('active');
-                
                 cpsclLink.click();
                 return;
             }
         }
 
-        // If user has Education permission
         if (has('edu_')) {
             const eduLink = Array.from(document.querySelectorAll('.sidebar a')).find(a => a.innerText.includes('Education'));
             if (eduLink) {
                 const dashView = document.getElementById('dashboard-view');
                 if (dashView) dashView.classList.remove('active');
-                
                 eduLink.click();
                 return;
             }
         }
 
-        // If user has Customer permission
         if (has('cust_') && typeof switchCustomerSubSection === 'function') {
             const dashView = document.getElementById('dashboard-view');
             if (dashView) dashView.classList.remove('active');
-            
             switchCustomerSubSection('cust-list-section');
             return;
         }
 
-        // If allowed to view financial dashboard
         if (perms['fin_dashboard_view'] && typeof switchMainTab === 'function') {
             switchMainTab('dashboard');
             return;
         }
 
-        // Hide financial overview dashboard if not allowed
         const dashView = document.getElementById('dashboard-view');
         if (dashView && !perms['fin_dashboard_view']) {
             dashView.classList.remove('active');
@@ -730,7 +749,6 @@
         if (stickyBar) stickyBar.style.display = 'none';
         document.body.style.paddingTop = "0px";
 
-        // Restore all navigation
         document.querySelectorAll('.sidebar .menu-list > li').forEach(m => m.style.display = '');
 
         if (document.getElementById('dropdownName')) document.getElementById('dropdownName').innerText = "Admin";
@@ -762,7 +780,10 @@
                 <i class="fa-solid fa-key"></i> Login Portal
             </button>
             <button onclick="editUserById('${u.id}')" class="um-btn-clean">
-                <i class="fa-solid fa-pen-to-square"></i> Edit
+                <i class="fa-solid fa-user-pen"></i> Edit Profile
+            </button>
+            <button onclick="openPermissionsManager('${u.id}')" class="um-btn-clean um-btn-perm">
+                <i class="fa-solid fa-shield-halved"></i> Permissions
             </button>
             <button onclick="toggleUserStatusById('${u.id}')" class="um-btn-clean um-btn-danger">
                 ${u.status === 'Active' ? 'Block' : 'Activate'}
@@ -808,7 +829,7 @@
     }
 
     /* ==========================================================
-       6. Directory List & Form Submissions
+       6. Directory List & Profile Form
        ========================================================== */
     function renderSummaryStats() {
         const total = usersDatabase.length;
@@ -869,8 +890,9 @@
                 <td style="text-align: right;">
                     <div style="display: inline-flex; gap: 4px;">
                         <button onclick="openUserProfile('${u.id}')" class="um-btn-clean" title="View Profile">View</button>
+                        <button onclick="editUserById('${u.id}')" class="um-btn-clean" title="Edit Profile"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="openPermissionsManager('${u.id}')" class="um-btn-clean um-btn-perm" title="Permissions"><i class="fa-solid fa-shield-halved"></i></button>
                         <button onclick="impersonateUser('${u.id}')" class="um-btn-clean um-btn-login" title="Login Portal">Login</button>
-                        <button onclick="editUserById('${u.id}')" class="um-btn-clean" title="Edit"><i class="fa-solid fa-pen"></i></button>
                         <button onclick="deleteUser('${u.id}')" class="um-btn-clean um-btn-danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </td>
@@ -904,7 +926,6 @@
         document.getElementById('um-inp-email').value = '';
         document.getElementById('um-inp-pass').value = '';
         document.getElementById('um-inp-role').value = 'Custom';
-        window.toggleAllGlobalPerms(false);
         switchUserManagementSubSection('um-form-section');
     };
 
@@ -913,7 +934,7 @@
         if (!u) return;
 
         editingUserId = u.id;
-        document.getElementById('um-form-page-title').innerText = `Edit: ${u.nameEn || u.name}`;
+        document.getElementById('um-form-page-title').innerText = `Edit Profile: ${u.nameEn || u.name}`;
         document.getElementById('um-inp-name').value = u.name || '';
         document.getElementById('um-inp-name-en').value = u.nameEn || u.name || '';
         document.getElementById('um-inp-name-bn').value = u.nameBn || '';
@@ -924,12 +945,108 @@
         document.getElementById('um-inp-pass').value = u.password || '';
         document.getElementById('um-inp-role').value = u.role || 'Custom';
 
+        switchUserManagementSubSection('um-form-section');
+    };
+
+    window.handleUserFormSubmit = async function (event) {
+        event.preventDefault();
+
+        const roleVal = document.getElementById('um-inp-role').value;
+        let existingUser = editingUserId ? usersDatabase.find(u => u.id === editingUserId) : null;
+        let userPermissions = existingUser?.permissions || {};
+
+        // If brand new user with preset role, initialize sensible defaults
+        if (!editingUserId) {
+            if (roleVal === 'Super Admin') {
+                SYSTEM_MODULES.forEach(m => m.permissions.forEach(p => userPermissions[p.key] = true));
+            } else if (roleVal === 'Education Staff') {
+                SYSTEM_MODULES[0].permissions.forEach(p => userPermissions[p.key] = true);
+            } else if (roleVal === 'CPSCL Operator') {
+                SYSTEM_MODULES[1].permissions.forEach(p => userPermissions[p.key] = true);
+            } else if (roleVal === 'Accountant') {
+                SYSTEM_MODULES[2].permissions.forEach(p => userPermissions[p.key] = true);
+                SYSTEM_MODULES[3].permissions.forEach(p => userPermissions[p.key] = true);
+            }
+        }
+
+        const userData = {
+            id: editingUserId || ('usr_' + Date.now()),
+            name: document.getElementById('um-inp-name').value.trim(),
+            nameEn: document.getElementById('um-inp-name-en').value.trim(),
+            nameBn: document.getElementById('um-inp-name-bn').value.trim(),
+            empId: document.getElementById('um-inp-emp-id').value.trim(),
+            designation: document.getElementById('um-inp-designation').value.trim(),
+            mobile: document.getElementById('um-inp-mobile').value.trim(),
+            email: document.getElementById('um-inp-email').value.trim(),
+            password: document.getElementById('um-inp-pass').value.trim(),
+            role: roleVal,
+            permissions: userPermissions,
+            status: existingUser?.status || 'Active',
+            createdAt: existingUser?.createdAt || new Date().toLocaleString('en-US')
+        };
+
+        if (editingUserId) {
+            const idx = usersDatabase.findIndex(u => u.id === editingUserId);
+            if (idx !== -1) usersDatabase[idx] = { ...usersDatabase[idx], ...userData };
+            window.logUserActivity("USER_EDIT", `Updated profile for: ${userData.name}`);
+        } else {
+            usersDatabase.push(userData);
+            window.logUserActivity("USER_CREATE", `Created profile: ${userData.name}`);
+        }
+
+        await syncUsersToFirebase(usersDatabase);
+        renderUsersTable();
+        renderSummaryStats();
+        populatePermissionsUserDropdown();
+
+        switchUserManagementSubSection('um-list-section');
+    };
+
+    /* ==========================================================
+       7. Dedicated Permissions Manager Engine
+       ========================================================== */
+    function populatePermissionsUserDropdown() {
+        const select = document.getElementById('permUserSelect');
+        if (!select) return;
+
+        const currentVal = select.value;
+        select.innerHTML = '';
+
+        usersDatabase.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u.id;
+            opt.innerText = `${u.nameEn || u.name} (${u.empId || 'No ID'}) - ${u.role}`;
+            select.appendChild(opt);
+        });
+
+        if (currentVal && usersDatabase.some(u => u.id === currentVal)) {
+            select.value = currentVal;
+        }
+    }
+
+    window.openPermissionsManager = function (userId = null) {
+        populatePermissionsUserDropdown();
+
+        const targetId = userId || usersDatabase[0]?.id;
+        if (!targetId) {
+            alert("Please create a user first.");
+            return;
+        }
+
+        document.getElementById('permUserSelect').value = targetId;
+        loadUserPermissionsForConfig(targetId);
+        switchUserManagementSubSection('um-permissions-section');
+    };
+
+    window.loadUserPermissionsForConfig = function (userId) {
+        selectedPermUserId = userId;
+        const u = usersDatabase.find(item => item.id === userId);
+        if (!u) return;
+
         const p = u.permissions || {};
         document.querySelectorAll('.perm-checkbox').forEach(cb => {
             cb.checked = !!p[cb.dataset.key];
         });
-
-        switchUserManagementSubSection('um-form-section');
     };
 
     window.toggleGroupPerms = function (gIdx) {
@@ -942,55 +1059,29 @@
         document.querySelectorAll('.perm-checkbox').forEach(b => b.checked = status);
     };
 
-    window.handlePresetRoleChange = function (role) {
-        window.toggleAllGlobalPerms(false);
-        if (role === 'Super Admin') {
-            window.toggleAllGlobalPerms(true);
-        } else if (role === 'Education Staff') {
-            document.querySelectorAll('.perm-group-0').forEach(b => b.checked = true);
-        } else if (role === 'CPSCL Operator') {
-            document.querySelectorAll('.perm-group-1').forEach(b => b.checked = true);
-        } else if (role === 'Accountant') {
-            document.querySelectorAll('.perm-group-2, .perm-group-3, .perm-group-4').forEach(b => b.checked = true);
-        }
-    };
-
-    window.handleUserFormSubmit = async function (event) {
+    window.handleSavePermissionsSubmit = async function (event) {
         event.preventDefault();
+
+        const userId = document.getElementById('permUserSelect').value;
+        const user = usersDatabase.find(u => u.id === userId);
+        if (!user) return;
 
         const permissionsObj = {};
         document.querySelectorAll('.perm-checkbox').forEach(cb => {
             if (cb.checked) permissionsObj[cb.dataset.key] = true;
         });
 
-        const userData = {
-            id: editingUserId || ('usr_' + Date.now()),
-            name: document.getElementById('um-inp-name').value.trim(),
-            nameEn: document.getElementById('um-inp-name-en').value.trim(),
-            nameBn: document.getElementById('um-inp-name-bn').value.trim(),
-            empId: document.getElementById('um-inp-emp-id').value.trim(),
-            designation: document.getElementById('um-inp-designation').value.trim(),
-            mobile: document.getElementById('um-inp-mobile').value.trim(),
-            email: document.getElementById('um-inp-email').value.trim(),
-            password: document.getElementById('um-inp-pass').value.trim(),
-            role: document.getElementById('um-inp-role').value,
-            permissions: permissionsObj,
-            status: editingUserId ? (usersDatabase.find(u => u.id === editingUserId)?.status || 'Active') : 'Active',
-            createdAt: new Date().toLocaleString('en-US')
-        };
-
-        if (editingUserId) {
-            const idx = usersDatabase.findIndex(u => u.id === editingUserId);
-            if (idx !== -1) usersDatabase[idx] = { ...usersDatabase[idx], ...userData };
-            window.logUserActivity("USER_EDIT", `Updated user: ${userData.name}`);
-        } else {
-            usersDatabase.push(userData);
-            window.logUserActivity("USER_CREATE", `Created user: ${userData.name}`);
-        }
+        user.permissions = permissionsObj;
 
         await syncUsersToFirebase(usersDatabase);
         renderUsersTable();
-        renderSummaryStats();
+        window.logUserActivity("PERMISSIONS_UPDATE", `Updated permissions for ${user.name}`);
+
+        if (typeof showToast === 'function') {
+            showToast(`Permissions updated for ${user.nameEn || user.name}!`, "success");
+        } else {
+            alert("Permissions updated successfully!");
+        }
 
         switchUserManagementSubSection('um-list-section');
     };
@@ -1015,6 +1106,7 @@
             await syncUsersToFirebase(usersDatabase);
             renderUsersTable();
             renderSummaryStats();
+            populatePermissionsUserDropdown();
             window.logUserActivity("USER_DELETE", `Deleted user: ${u.name}`);
             switchUserManagementSubSection('um-list-section');
         }
