@@ -1,15 +1,14 @@
 /* ==========================================================================
-   MOUSUMI COMPUTER & PHOTOCOPY - COMPLETE REFINED FINTECH UI THEME
-   (Soft Color Sidebar, Real Icons, Header Branding & Border Accents)
+   MOUSUMI COMPUTER - DASHBOARD ONLY WELCOME TITLE (ENGLISH & MINIMAL)
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Tiro+Bangla&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 :root {
     --primary: #0284c7;
     --primary-soft: #e0f2fe;
-    --sidebar-bg: #f8fafc;          /* সাইডবারে প্রফেশনাল হালকা সফট গ্রে-ব্লু */
-    --main-bg: #edf2f7;             /* ড্যাশবোর্ডের রিচ ও চোখ জুড়ানো সফট ব্যাকগ্রাউন্ড */
+    --sidebar-bg: #f8fafc;
+    --main-bg: #edf2f7;
     --card-bg: #ffffff;
     --text-main: #0f172a;
     --text-muted: #64748b;
@@ -19,12 +18,11 @@
     --shadow-hover: 0 12px 28px -4px rgba(15, 23, 42, 0.09);
 }
 
-/* ১. গ্লোবাল ফন্ট ও আইকন ফিক্স */
+/* গ্লোবাল ফন্ট ও আইকন ফিক্স */
 body, h1, h2, h3, h4, span, div, table, input, button, a {
-    font-family: 'Plus Jakarta Sans', 'Tiro Bangla', sans-serif !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 
-/* ফন্টঅসাম আইকন যাতে ভেঙে চারকোনা বক্স না হয় */
 .fa, .fas, .fa-solid, .far, .fa-regular, .fab, .fa-brands, [class^="fa-"], [class*=" fa-"] {
     font-family: "Font Awesome 6 Free", "FontAwesome" !important;
     font-style: normal !important;
@@ -38,7 +36,7 @@ body {
     color: var(--text-main) !important;
 }
 
-/* ---------------- ২. সাইডবার (হালকা সফট কালার ও মডার্ন লুক) ---------------- */
+/* ---------------- ১. সাইডবার ---------------- */
 .sidebar {
     background: var(--sidebar-bg) !important;
     border-right: 1.5px solid #e2e8f0 !important;
@@ -93,7 +91,6 @@ body {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03) !important;
 }
 
-/* অ্যাক্টিভ মেনু (ড্যাশবোর্ড) */
 .menu-item.active > a {
     background: #ffffff !important;
     color: var(--primary) !important;
@@ -107,7 +104,6 @@ body {
     color: var(--primary) !important;
 }
 
-/* সাবমেনু ডিজাইন */
 .submenu-list {
     background: rgba(255, 255, 255, 0.6) !important;
     border-radius: 10px !important;
@@ -126,7 +122,7 @@ body {
     font-weight: 700 !important;
 }
 
-/* ---------------- ৩. টপ ন্যাভবার ও লাল মার্ক করা ব্র্যান্ডিং টাইটেল ---------------- */
+/* ---------------- ২. টপ ন্যাভবার ও ড্যাশবোর্ড স্পেসিফিক টাইটেল ---------------- */
 .top-navbar {
     background: #ffffff !important;
     border-bottom: 1.5px solid #e2e8f0 !important;
@@ -136,7 +132,7 @@ body {
 .top-navbar .navbar-left {
     display: flex !important;
     align-items: center !important;
-    gap: 16px !important;
+    gap: 14px !important;
     flex: 1 !important;
 }
 
@@ -150,23 +146,22 @@ body {
     font-weight: 700 !important;
 }
 
-/* লাল মার্ক করা জায়গায় দোকানের নাম */
+/* আগের স্ট্যাটিক নাম মুছে ফেলা হলো */
 .top-navbar .navbar-left::after {
-    content: "মৌসুমি কম্পিউটার এন্ড ফটোকপি";
-    font-size: 1.15rem !important;
-    font-weight: 800 !important;
-    color: #0f172a !important;
-    letter-spacing: -0.2px !important;
-    padding-left: 14px !important;
-    border-left: 2px solid #cbd5e1 !important;
-    margin-left: 4px !important;
-    display: inline-block !important;
+    display: none !important;
 }
 
-.menu-toggle-btn {
-    background: var(--sidebar-bg) !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 10px !important;
+/* ---------------- ৩. শুধুমাত্র DASHBOARD ভিউতে ওয়েলকাম বার্তা ---------------- */
+/* এটি ড্যাশবোর্ড পেজের শীর্ষে শুধুমাত্র তখনই আসবে যখন ড্যাশবোর্ড ওপেন থাকবে */
+#dashboard-view::before {
+    content: "👋 Welcome, Mousumi Computer & Photocopy";
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.3px;
+    margin-bottom: 18px;
+    padding: 4px 2px;
 }
 
 /* ---------------- ৪. হিরো ব্যানার (Total Net Balance) ---------------- */
@@ -175,7 +170,7 @@ body {
     border: 1px solid #e2e8f0 !important;
     border-left: 5px solid var(--primary) !important;
     border-radius: var(--radius-card) !important;
-    padding: 24px 30px !important;
+    padding: 22px 28px !important;
     box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
     display: flex !important;
     flex-direction: row !important;
@@ -185,7 +180,7 @@ body {
 }
 
 .fintech-hero-card h3 {
-    font-size: 1.15rem !important;
+    font-size: 1.05rem !important;
     font-weight: 800 !important;
     color: #0f172a !important;
     margin-bottom: 3px !important;
@@ -235,7 +230,6 @@ body {
     border-color: #cbd5e1 !important;
 }
 
-/* প্রতিটি কার্ডের ওপরে সফট অ্যাকসেন্ট বার */
 .fintech-card::after {
     content: "";
     position: absolute;
@@ -263,7 +257,6 @@ body {
     margin-top: 14px !important;
 }
 
-/* কার্ডের আইকন বক্স */
 .card-icon {
     position: absolute !important;
     top: 16px !important;
@@ -280,9 +273,7 @@ body {
     border: 1px solid #e2e8f0 !important;
 }
 
-/* ---------------- ৬. স্পেসিফিক কার্ড স্টাইলিং (রঙিন ও মার্জিত) ---------------- */
-
-/* কাস্টমার পাওনা (Customer Due - লালচে অ্যাকসেন্ট) */
+/* কাস্টমার পাওনা (লালচে অ্যাকসেন্ট) */
 .fintech-card:has(.amount[style*="color: rgb(225, 29, 72)"]),
 .fintech-card:has(.amount[style*="color: #e11d48"]) {
     border-left: 4px solid #ef4444 !important;
@@ -298,7 +289,7 @@ body {
     border-color: #fca5a5 !important;
 }
 
-/* ক্যাশ ইনভেন্টরি (Cash Inventory - সবুজ অ্যাকসেন্ট) */
+/* ক্যাশ ইনভেন্টরি (সবুজ অ্যাকসেন্ট) */
 .fintech-card:has(.amount[style*="color: rgb(21, 128, 61)"]),
 .fintech-card:has(.amount[style*="color: #15803d"]) {
     border-left: 4px solid #10b981 !important;
@@ -314,7 +305,7 @@ body {
     border-color: #86efac !important;
 }
 
-/* কার্ড ইনভেন্টরি স্টক (Card Stock - অ্যাম্বার/হলুদ অ্যাকসেন্ট) */
+/* কার্ড ইনভেন্টরি স্টক (হলুদ অ্যাকসেন্ট) */
 .fintech-card:has(.amount[style*="color: rgb(180, 83, 9)"]),
 .fintech-card:has(.amount[style*="color: #b45309"]) {
     border-left: 4px solid #f59e0b !important;
@@ -328,11 +319,4 @@ body {
     background: #fef3c7 !important;
     color: #b45309 !important;
     border-color: #fde68a !important;
-}
-
-/* রেসপনসিভ হ্যান্ডলিং (মোবাইল স্ক্রিনের জন্য) */
-@media (max-width: 768px) {
-    .top-navbar .navbar-left::after {
-        display: none !important;
-    }
 }
