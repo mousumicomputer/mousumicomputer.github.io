@@ -1,6 +1,7 @@
 /* ==========================================================
-   ENTERPRISE CUSTOMER MANAGEMENT & STANDALONE TAB PDF REPORT
-   Features: Opens Dynamic Statement in New Tab, Vector Text Quality
+   ENTERPRISE CUSTOMER MANAGEMENT & DEDICATED NEW ENTRY MODULE
+   Features: Dedicated New Customer & Correction Section, Tabular Layout,
+             Top-Right Photo Frame, Search Bar & Edit, Standalone PDF
    File: customer_management_module.js
    ========================================================== */
 
@@ -22,7 +23,7 @@ const injectCorporateStyles = () => {
             --brand-light: #eef2ff;
             --due-red: #e11d48;
             --paid-green: #10b981;
-            --card-border: #e2e8f0;
+            --card-border: #cbd5e1;
             --text-dark: #1e293b;
             --text-muted: #64748b;
         }
@@ -36,6 +37,7 @@ const injectCorporateStyles = () => {
         .strip-due-val,
         table, th, td, tr, input, button, label, span, h2, h3, h4 {
             font-family: 'Tiro Bangla', serif !important;
+            text-transform: none !important;
         }
 
         #customer-ledger-view .fa-solid, 
@@ -45,6 +47,7 @@ const injectCorporateStyles = () => {
             font-weight: 900 !important;
         }
 
+        /* KPI GRID & TOOLBAR */
         .corp-kpi-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -72,8 +75,6 @@ const injectCorporateStyles = () => {
         .corp-kpi-title {
             font-size: 0.85rem;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
             color: var(--text-muted);
         }
         .corp-kpi-icon {
@@ -243,7 +244,6 @@ const injectCorporateStyles = () => {
         .strip-due-label {
             font-size: 0.75rem;
             font-weight: 700;
-            text-transform: uppercase;
             color: #94a3b8;
             display: block;
             margin-bottom: 2px;
@@ -275,29 +275,240 @@ const injectCorporateStyles = () => {
             box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
         }
 
-        .btn-action-delete {
+        /* ================= NEW CUSTOMER COMPACT DEDICATED STYLES ================= */
+        .new-cust-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .nc-card {
             background: #ffffff;
-            border: 1px solid #fee2e2;
-            color: var(--due-red);
-            width: 32px;
-            height: 32px;
+            border: 1px solid var(--card-border);
             border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            overflow: hidden;
+        }
+        .nc-header {
+            background: #ffffff;
+            padding: 8px 14px;
+            border-bottom: 1.5px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nc-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nc-photo-bar {
+            display: flex;
+            justify-content: flex-end;
+            padding: 10px 14px 4px 14px;
+        }
+        .nc-photo-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8fafc;
+            border: 1px solid var(--card-border);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .nc-photo-img {
+            width: 38px;
+            height: 38px;
+            border-radius: 4px;
+            object-fit: cover;
+            border: 1px solid var(--card-border);
+            background: #fff;
+        }
+        .nc-btn-upload {
+            padding: 4px 10px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            cursor: pointer;
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.2s;
+            gap: 5px;
+            color: #334151;
+            height: 28px;
         }
-        .btn-action-delete:hover {
-            background: var(--due-red);
+        .nc-btn-upload:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+        .nc-table-wrap {
+            padding: 0 14px 12px 14px;
+        }
+        .nc-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid var(--card-border);
+        }
+        .nc-table tr {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .nc-table tr:last-child {
+            border-bottom: none;
+        }
+        .nc-table th {
+            width: 24%;
+            background: #f8fafc;
+            padding: 6px 12px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            color: #334151;
+            border-right: 1px solid var(--card-border);
+            text-align: left;
+            white-space: nowrap;
+        }
+        .nc-table td {
+            padding: 4px 8px;
+            background: #ffffff;
+        }
+        .nc-input {
+            width: 100%;
+            height: 30px;
+            padding: 0 8px;
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #0f172a;
+            outline: none;
+        }
+        .nc-input:focus {
+            border-color: #4f46e5;
+            background: #faf5ff;
+        }
+        .nc-footer {
+            background: #f8fafc;
+            padding: 8px 14px;
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        .nc-btn {
+            height: 30px;
+            padding: 0 16px;
+            border-radius: 4px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid transparent;
+        }
+        .nc-btn-cancel {
+            background: #ffffff;
+            border-color: var(--card-border);
+            color: #475569;
+        }
+        .nc-btn-cancel:hover { background: #f1f5f9; }
+        .nc-btn-save {
+            background: #4f46e5;
+            color: #ffffff;
+        }
+        .nc-btn-save:hover { background: #4338ca; }
+
+        /* LIST & SEARCH TOOLBAR */
+        .nc-list-toolbar {
+            padding: 8px 14px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .nc-search-box {
+            position: relative;
+            flex: 1;
+            max-width: 380px;
+        }
+        .nc-search-box i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+        .nc-search-input {
+            width: 100%;
+            height: 30px;
+            padding: 0 10px 0 32px;
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            font-size: 0.88rem;
+            outline: none;
+            background: #ffffff;
+        }
+        .nc-search-input:focus { border-color: #4f46e5; }
+        .nc-list-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .nc-list-table th {
+            background: #f8fafc;
+            padding: 7px 12px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: #334151;
+            border-bottom: 1.5px solid var(--card-border);
+            text-align: left;
+        }
+        .nc-list-table td {
+            padding: 6px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.88rem;
+            color: #1e293b;
+        }
+        .nc-list-table tr:hover { background: #f8fafc; }
+        .nc-avatar-tiny {
+            width: 26px;
+            height: 26px;
+            border-radius: 4px;
+            object-fit: cover;
+            vertical-align: middle;
+            border: 1px solid var(--card-border);
+            margin-right: 6px;
+        }
+        .nc-btn-edit {
+            background: #eef2ff;
+            color: #4f46e5;
+            border: 1px solid #c7d2fe;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .nc-btn-edit:hover {
+            background: #4f46e5;
             color: #ffffff;
         }
     `;
     document.head.appendChild(style);
 };
 
-const DEFAULT_HUMAN_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'><path d='M250 80c-55 0-95 40-95 95 0 35 15 65 40 80-5 25-10 40-10 65 0 20 20 40 65 40s65-20 65-40c0-25-5-40-10-65 25-15 40-45 40-80 0-55-40-95-95-95z' fill='%23ffffff' stroke='%23334155' stroke-width='16'/><path d='M195 85c-20 0-40 25-35 55 5-25 20-40 40-45 25-5 45-20 85 5 15 10 25 10 35 0 5 25 10 35 15 45 5-30-10-60-40-70-35-10-70-5-100 10z' fill='%23334155'/><path d='M110 420c0-60 60-95 140-95s140 35 140 95' fill='%23475569' stroke='%23334155' stroke-width='16'/><path d='M200 325c15 15 30 20 50 20s35-5 50-20' fill='none' stroke='%23334155' stroke-width='16'/></svg>";
+const DEFAULT_HUMAN_AVATAR = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+let currentUploadedBase64Photo = "";
 
+// CALCULATE DUE
 window.calculateCustomerCurrentDue = function(custId) {
     const customers = window.customers || [];
     const cust = customers.find(c => c.id === custId);
@@ -314,8 +525,28 @@ window.calculateCustomerCurrentDue = function(custId) {
     return due;
 };
 
+// ENSURE SIDEBAR SUBMENU EXISTS DYNAMICALLY WITHOUT TOUCHING HTML
+function ensureSidebarNewCustomerMenu() {
+    const parentSubmenu = document.querySelector('#menu-cust-parent .submenu-list');
+    if (parentSubmenu && !document.getElementById('sub-cust-new')) {
+        const li = document.createElement('li');
+        li.className = 'submenu-item';
+        li.id = 'sub-cust-new';
+        li.innerHTML = `<a onclick="switchCustomerSubSection('cust-new-section')"><i class="fa-solid fa-angle-right"></i> <span>New Customer</span></a>`;
+        
+        const listMenu = document.getElementById('sub-cust-list');
+        if (listMenu && listMenu.nextSibling) {
+            parentSubmenu.insertBefore(li, listMenu.nextSibling);
+        } else {
+            parentSubmenu.appendChild(li);
+        }
+    }
+}
+
+// 1. CUSTOMER LIST VIEW
 window.renderCustomerListTable = function() {
     injectCorporateStyles();
+    ensureSidebarNewCustomerMenu();
 
     const topTitle = document.getElementById('top-title');
     if (topTitle) topTitle.innerText = "Customer Management";
@@ -360,7 +591,7 @@ window.renderCustomerListTable = function() {
         <div class="corp-kpi-grid">
             <div class="corp-kpi-card">
                 <div class="corp-kpi-header">
-                    <span class="corp-kpi-title">TOTAL CUSTOMERS</span>
+                    <span class="corp-kpi-title">Total Customers</span>
                     <i class="fa-solid fa-users corp-kpi-icon"></i>
                 </div>
                 <div class="corp-kpi-value">${customers.length}</div>
@@ -369,7 +600,7 @@ window.renderCustomerListTable = function() {
 
             <div class="corp-kpi-card">
                 <div class="corp-kpi-header">
-                    <span class="corp-kpi-title">TOTAL RECEIVABLES</span>
+                    <span class="corp-kpi-title">Total Receivables</span>
                     <i class="fa-solid fa-hand-holding-dollar corp-kpi-icon" style="color: #e11d48;"></i>
                 </div>
                 <div class="corp-kpi-value" style="color: #e11d48;">${fmt(totalReceivable)}</div>
@@ -378,7 +609,7 @@ window.renderCustomerListTable = function() {
 
             <div class="corp-kpi-card">
                 <div class="corp-kpi-header">
-                    <span class="corp-kpi-title">TODAY'S COLLECTION</span>
+                    <span class="corp-kpi-title">Today's Collection</span>
                     <i class="fa-solid fa-calendar-check corp-kpi-icon" style="color: #10b981;"></i>
                 </div>
                 <div class="corp-kpi-value" style="color: #10b981;">${fmt(todayColl)}</div>
@@ -387,7 +618,7 @@ window.renderCustomerListTable = function() {
 
             <div class="corp-kpi-card">
                 <div class="corp-kpi-header">
-                    <span class="corp-kpi-title">DUE ACCOUNTS</span>
+                    <span class="corp-kpi-title">Due Accounts</span>
                     <i class="fa-solid fa-user-clock corp-kpi-icon"></i>
                 </div>
                 <div class="corp-kpi-value">${dueCount}</div>
@@ -402,7 +633,7 @@ window.renderCustomerListTable = function() {
             </div>
             <div class="corp-btn-group">
                 <button class="corp-btn corp-btn-default" onclick="exportOutstandingDueExcel()"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
-                <button class="corp-btn corp-btn-primary" onclick="openAddCustomerModal()"><i class="fa-solid fa-plus"></i> New Customer</button>
+                <button class="corp-btn corp-btn-primary" onclick="switchCustomerSubSection('cust-new-section')"><i class="fa-solid fa-plus"></i> New Customer</button>
             </div>
         </div>
 
@@ -465,6 +696,322 @@ window.renderCustomerListTable = function() {
     });
 };
 
+// 2. DEDICATED NEW CUSTOMER & CORRECTION SECTION
+window.renderNewCustomerSection = function() {
+    injectCorporateStyles();
+    ensureSidebarNewCustomerMenu();
+
+    const topTitle = document.getElementById('top-title');
+    if (topTitle) topTitle.innerText = "New Customer";
+
+    let container = document.getElementById('cust-new-section');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'cust-new-section';
+        container.className = 'cust-sub-section';
+        const parent = document.getElementById('customer-ledger-view');
+        if (parent) parent.appendChild(container);
+    }
+
+    container.innerHTML = `
+        <div class="new-cust-wrapper">
+            <!-- 1. ENTRY & CORRECTION FORM -->
+            <div class="nc-card">
+                <div class="nc-header">
+                    <div class="nc-title">
+                        <i class="fa-solid fa-user-pen" style="color: #4f46e5;"></i>
+                        <span id="ncFormTitle">New Customer</span>
+                    </div>
+                    <span style="font-size: 0.8rem; color: #64748b;">Customer Information Entry</span>
+                </div>
+
+                <form onsubmit="handleNewCustomerSubmit(event)">
+                    <input type="hidden" id="ncEditId" value="">
+
+                    <!-- PHOTO BOX ON TOP RIGHT -->
+                    <div class="nc-photo-bar">
+                        <div class="nc-photo-box">
+                            <img id="ncPhotoPreview" src="${DEFAULT_HUMAN_AVATAR}" class="nc-photo-img" alt="Photo">
+                            <label class="nc-btn-upload">
+                                <i class="fa-solid fa-camera"></i> Choose Photo
+                                <input type="file" accept="image/*" style="display: none;" onchange="handleCustomerPhotoUpload(event)">
+                            </label>
+                            <span id="ncPhotoStatus" style="font-size: 0.78rem; color: #64748b;">Default</span>
+                        </div>
+                    </div>
+
+                    <!-- COMPACT TABLE INPUTS -->
+                    <div class="nc-table-wrap">
+                        <table class="nc-table">
+                            <tr>
+                                <th>Full Name *</th>
+                                <td>
+                                    <input type="text" id="ncCustName" class="nc-input" placeholder="Customer Name" required>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Phone Number *</th>
+                                <td>
+                                    <input type="tel" id="ncCustPhone" class="nc-input" placeholder="01XXXXXXXXX" required>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Address</th>
+                                <td>
+                                    <input type="text" id="ncCustAddress" class="nc-input" placeholder="Shop / Village / Area">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Opening Due</th>
+                                <td>
+                                    <input type="number" step="any" id="ncCustDue" class="nc-input" placeholder="0.00" value="0">
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- FOOTER BUTTONS -->
+                    <div class="nc-footer">
+                        <button type="button" class="nc-btn nc-btn-cancel" onclick="resetNewCustomerForm()">Clear</button>
+                        <button type="submit" class="nc-btn nc-btn-save" id="ncBtnSave">
+                            <i class="fa-solid fa-check"></i> Save Customer
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 2. EXISTING CUSTOMERS FOR INFORMATION CORRECTION -->
+            <div class="nc-card">
+                <div class="nc-list-toolbar">
+                    <span style="font-size: 0.88rem; font-weight: 600; color: #334151;">Customer Records</span>
+                    <div class="nc-search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="ncSearchInput" class="nc-search-input" placeholder="Search by name or phone..." oninput="filterCorrectionList()">
+                    </div>
+                </div>
+
+                <table class="nc-list-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 32%;">Customer Name</th>
+                            <th style="width: 20%;">Phone Number</th>
+                            <th style="width: 25%;">Address</th>
+                            <th style="width: 13%; text-align: right;">Opening Due</th>
+                            <th style="width: 10%; text-align: center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ncTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    renderCorrectionTable();
+};
+
+window.renderCorrectionTable = function(query = "") {
+    const tbody = document.getElementById('ncTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    const customers = window.customers || [];
+    const q = (query || "").trim().toLowerCase();
+
+    const list = customers.filter(c => 
+        (c.name || '').toLowerCase().includes(q) || 
+        (c.phone || '').includes(q) || 
+        (c.address || '').toLowerCase().includes(q)
+    );
+
+    if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 18px;">No matching customer found.</td></tr>`;
+        return;
+    }
+
+    const fmt = (num) => '৳ ' + (parseFloat(num) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    list.forEach(c => {
+        const avatar = c.avatarUrl ? c.avatarUrl : DEFAULT_HUMAN_AVATAR;
+        const dueVal = parseFloat(c.openingBalance) || 0;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>
+                <img src="${avatar}" class="nc-avatar-tiny" alt="">
+                <strong>${c.name}</strong>
+            </td>
+            <td>${c.phone || '-'}</td>
+            <td>${c.address || '-'}</td>
+            <td style="text-align: right; color: ${dueVal > 0 ? '#e11d48' : '#10b981'}; font-weight: 600;">${fmt(dueVal)}</td>
+            <td style="text-align: center;">
+                <button class="nc-btn-edit" onclick="loadCustomerToEditForm('${c.id}')">
+                    <i class="fa-solid fa-pen-to-square"></i> Edit
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+};
+
+window.filterCorrectionList = function() {
+    const input = document.getElementById('ncSearchInput');
+    renderCorrectionTable(input ? input.value : "");
+};
+
+window.handleCustomerPhotoUpload = function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            currentUploadedBase64Photo = e.target.result;
+            const preview = document.getElementById('ncPhotoPreview');
+            if (preview) preview.src = currentUploadedBase64Photo;
+            const status = document.getElementById('ncPhotoStatus');
+            if (status) status.innerText = "Selected";
+        };
+        reader.readAsDataURL(file);
+    }
+};
+
+window.loadCustomerToEditForm = function(id) {
+    const customers = window.customers || [];
+    const c = customers.find(item => item.id === id);
+    if (!c) return;
+
+    document.getElementById('ncEditId').value = c.id;
+    document.getElementById('ncCustName').value = c.name || '';
+    document.getElementById('ncCustPhone').value = c.phone || '';
+    document.getElementById('ncCustAddress').value = c.address || '';
+    document.getElementById('ncCustDue').value = c.openingBalance || 0;
+    
+    currentUploadedBase64Photo = c.avatarUrl || "";
+    document.getElementById('ncPhotoPreview').src = c.avatarUrl ? c.avatarUrl : DEFAULT_HUMAN_AVATAR;
+    document.getElementById('ncPhotoStatus').innerText = c.avatarUrl ? "Current" : "Default";
+
+    document.getElementById('ncFormTitle').innerText = "Edit Customer Information";
+    document.getElementById('ncBtnSave').innerHTML = '<i class="fa-solid fa-check"></i> Update Customer';
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+window.resetNewCustomerForm = function() {
+    document.getElementById('ncEditId').value = '';
+    document.getElementById('ncCustName').value = '';
+    document.getElementById('ncCustPhone').value = '';
+    document.getElementById('ncCustAddress').value = '';
+    document.getElementById('ncCustDue').value = '0';
+    document.getElementById('ncPhotoPreview').src = DEFAULT_HUMAN_AVATAR;
+    document.getElementById('ncPhotoStatus').innerText = "Default";
+    currentUploadedBase64Photo = "";
+
+    document.getElementById('ncFormTitle').innerText = "New Customer";
+    document.getElementById('ncBtnSave').innerHTML = '<i class="fa-solid fa-check"></i> Save Customer';
+};
+
+window.handleNewCustomerSubmit = async function(e) {
+    e.preventDefault();
+    const editId = document.getElementById('ncEditId').value;
+    const name = document.getElementById('ncCustName').value.trim();
+    const phone = document.getElementById('ncCustPhone').value.trim();
+    const address = document.getElementById('ncCustAddress').value.trim();
+    const openingBalance = parseFloat(document.getElementById('ncCustDue').value) || 0;
+
+    if (!name || !phone) {
+        if (typeof showToast === 'function') showToast("Please enter customer name & phone!", "warning");
+        return;
+    }
+
+    if (typeof showLoader === 'function') showLoader(editId ? "Updating Customer..." : "Saving Customer...");
+
+    let customers = window.customers || [];
+
+    if (editId) {
+        const idx = customers.findIndex(c => c.id === editId);
+        if (idx !== -1) {
+            customers[idx] = {
+                ...customers[idx],
+                name,
+                phone,
+                address,
+                openingBalance,
+                avatarUrl: currentUploadedBase64Photo || customers[idx].avatarUrl || ""
+            };
+        }
+    } else {
+        const newCust = {
+            id: 'cust_' + Date.now(),
+            name,
+            phone,
+            address,
+            openingBalance,
+            avatarUrl: currentUploadedBase64Photo || "",
+            status: "Active"
+        };
+        customers.unshift(newCust);
+    }
+
+    try {
+        const { getDatabase, ref, set } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+        const db = getDatabase();
+        await set(ref(db, 'customers'), customers);
+
+        window.customers = customers;
+
+        if (typeof hideLoader === 'function') hideLoader();
+        if (typeof showToast === 'function') showToast(editId ? "Customer updated successfully!" : "Customer created successfully!", "success");
+
+        resetNewCustomerForm();
+        renderCorrectionTable();
+        if (typeof updateDashboardCards === 'function') updateDashboardCards();
+    } catch (err) {
+        if (typeof hideLoader === 'function') hideLoader();
+        if (typeof showToast === 'function') showToast("Error: " + err.message, "error");
+    }
+};
+
+// 3. OVERRIDE SUB-SECTION SWITCHER TO RECOGNIZE 'cust-new-section'
+const originalSwitchSubSection = window.switchCustomerSubSection;
+window.switchCustomerSubSection = function(sectionId) {
+    ensureSidebarNewCustomerMenu();
+
+    if (sectionId === 'cust-new-section') {
+        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+        const mainLedgerView = document.getElementById('customer-ledger-view');
+        if (mainLedgerView) mainLedgerView.classList.add('active');
+
+        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+        const menuCust = document.getElementById('menu-cust-parent');
+        if (menuCust) menuCust.classList.add('active');
+
+        document.querySelectorAll('.cust-sub-section').forEach(sec => sec.style.display = 'none');
+        
+        let newSec = document.getElementById('cust-new-section');
+        if (!newSec) {
+            newSec = document.createElement('div');
+            newSec.id = 'cust-new-section';
+            newSec.className = 'cust-sub-section';
+            if (mainLedgerView) mainLedgerView.appendChild(newSec);
+        }
+        newSec.style.display = 'block';
+
+        window.renderNewCustomerSection();
+        return;
+    }
+
+    if (typeof originalSwitchSubSection === 'function') {
+        originalSwitchSubSection(sectionId);
+    } else {
+        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+        const mainLedgerView = document.getElementById('customer-ledger-view');
+        if (mainLedgerView) mainLedgerView.classList.add('active');
+
+        document.querySelectorAll('.cust-sub-section').forEach(sec => sec.style.display = 'none');
+        const target = document.getElementById(sectionId);
+        if (target) target.style.display = 'block';
+        if (sectionId === 'cust-list-section') renderCustomerListTable();
+    }
+};
+
+// 4. CUSTOMER LEDGER STATEMENT VIEW (UNTOUCHED)
 window.renderCustomerStatement = function(custId) {
     injectCorporateStyles();
     window.activeViewingCustomerId = custId;
@@ -580,9 +1127,7 @@ window.renderCustomerStatement = function(custId) {
     `;
 };
 
-// ==========================================================
-// OPEN STANDALONE REPORT IN NEW TAB (EXACT HTML REPLICA)
-// ==========================================================
+// STANDALONE TAB REPORT GENERATOR (UNTOUCHED)
 window.openCustomerStatementNewTab = function(custId) {
     const customers = window.customers || [];
     const cust = customers.find(c => c.id === custId);
@@ -856,7 +1401,7 @@ window.openCustomerStatementNewTab = function(custId) {
     }
 };
 
-// ডুয়াল ইনপুট
+// DUAL INPUT
 window.handleDualInput = function(type) {
     const d = document.getElementById('modernTxDebit');
     const c = document.getElementById('modernTxCredit');
@@ -871,7 +1416,7 @@ window.handleDualInput = function(type) {
     }
 };
 
-// ট্রানজ্যাকশন সেভ
+// SUBMIT TRANSACTION
 window.submitModernTransaction = async function() {
     const d = document.getElementById('modernTxDebit');
     const c = document.getElementById('modernTxCredit');
@@ -919,7 +1464,7 @@ window.submitModernTransaction = async function() {
     }
 };
 
-// ডিলিট ট্রানজ্যাকশন
+// DELETE TRANSACTION
 window.deleteCustomerTransaction = function(txId, custId) {
     if (typeof showConfirmModal === 'function') {
         showConfirmModal({
@@ -960,7 +1505,7 @@ async function executeTransactionDeletion(txId, custId) {
     }
 }
 
-// এক্সেল এক্সপোর্ট
+// EXPORT EXCEL
 window.exportCustomerStatementExcel = function() {
     if (!window.activeViewingCustomerId) return;
     const customers = window.customers || [];
@@ -994,3 +1539,8 @@ window.exportCustomerStatementExcel = function() {
     XLSX.utils.book_append_sheet(wb, ws, "Statement");
     XLSX.writeFile(wb, `${cust.name}_Statement.xlsx`);
 };
+
+// AUTO-INIT ON LOAD
+window.addEventListener('DOMContentLoaded', () => {
+    ensureSidebarNewCustomerMenu();
+});
