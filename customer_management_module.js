@@ -525,14 +525,14 @@ window.calculateCustomerCurrentDue = function(custId) {
     return due;
 };
 
-// ENSURE SIDEBAR SUBMENU EXISTS DYNAMICALLY WITHOUT TOUCHING HTML
+// ENSURE SIDEBAR SUBMENU EXISTS DYNAMICALLY
 function ensureSidebarNewCustomerMenu() {
     const parentSubmenu = document.querySelector('#menu-cust-parent .submenu-list');
     if (parentSubmenu && !document.getElementById('sub-cust-new')) {
         const li = document.createElement('li');
         li.className = 'submenu-item';
         li.id = 'sub-cust-new';
-        li.innerHTML = `<a onclick="switchCustomerSubSection('cust-new-section')"><i class="fa-solid fa-angle-right"></i> <span>New Customer</span></a>`;
+        li.innerHTML = `<a href="javascript:void(0)" onclick="openNewCustomerSection()"><i class="fa-solid fa-angle-right"></i> <span>New Customer</span></a>`;
         
         const listMenu = document.getElementById('sub-cust-list');
         if (listMenu && listMenu.nextSibling) {
@@ -542,6 +542,36 @@ function ensureSidebarNewCustomerMenu() {
         }
     }
 }
+
+// DIRECT ACTION TO OPEN NEW CUSTOMER SECTION
+window.openNewCustomerSection = function() {
+    injectCorporateStyles();
+    ensureSidebarNewCustomerMenu();
+
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    const mainLedgerView = document.getElementById('customer-ledger-view');
+    if (mainLedgerView) mainLedgerView.classList.add('active');
+
+    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+    const menuCust = document.getElementById('menu-cust-parent');
+    if (menuCust) menuCust.classList.add('active');
+
+    document.querySelectorAll('.cust-sub-section').forEach(sec => sec.style.display = 'none');
+
+    let newSec = document.getElementById('cust-new-section');
+    if (!newSec) {
+        newSec = document.createElement('div');
+        newSec.id = 'cust-new-section';
+        newSec.className = 'cust-sub-section';
+        if (mainLedgerView) mainLedgerView.appendChild(newSec);
+    }
+    newSec.style.display = 'block';
+
+    const topTitle = document.getElementById('top-title');
+    if (topTitle) topTitle.innerText = "New Customer";
+
+    window.renderNewCustomerSection();
+};
 
 // 1. CUSTOMER LIST VIEW
 window.renderCustomerListTable = function() {
@@ -633,7 +663,7 @@ window.renderCustomerListTable = function() {
             </div>
             <div class="corp-btn-group">
                 <button class="corp-btn corp-btn-default" onclick="exportOutstandingDueExcel()"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
-                <button class="corp-btn corp-btn-primary" onclick="switchCustomerSubSection('cust-new-section')"><i class="fa-solid fa-plus"></i> New Customer</button>
+                <button class="corp-btn corp-btn-primary" onclick="openNewCustomerSection()"><i class="fa-solid fa-plus"></i> New Customer</button>
             </div>
         </div>
 
@@ -699,10 +729,6 @@ window.renderCustomerListTable = function() {
 // 2. DEDICATED NEW CUSTOMER & CORRECTION SECTION
 window.renderNewCustomerSection = function() {
     injectCorporateStyles();
-    ensureSidebarNewCustomerMenu();
-
-    const topTitle = document.getElementById('top-title');
-    if (topTitle) topTitle.innerText = "New Customer";
 
     let container = document.getElementById('cust-new-section');
     if (!container) {
@@ -712,6 +738,8 @@ window.renderNewCustomerSection = function() {
         const parent = document.getElementById('customer-ledger-view');
         if (parent) parent.appendChild(container);
     }
+
+    container.style.display = 'block';
 
     container.innerHTML = `
         <div class="new-cust-wrapper">
@@ -968,48 +996,24 @@ window.handleNewCustomerSubmit = async function(e) {
     }
 };
 
-// 3. OVERRIDE SUB-SECTION SWITCHER TO RECOGNIZE 'cust-new-section'
-const originalSwitchSubSection = window.switchCustomerSubSection;
-window.switchCustomerSubSection = function(sectionId) {
-    ensureSidebarNewCustomerMenu();
-
-    if (sectionId === 'cust-new-section') {
-        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-        const mainLedgerView = document.getElementById('customer-ledger-view');
-        if (mainLedgerView) mainLedgerView.classList.add('active');
-
-        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-        const menuCust = document.getElementById('menu-cust-parent');
-        if (menuCust) menuCust.classList.add('active');
-
-        document.querySelectorAll('.cust-sub-section').forEach(sec => sec.style.display = 'none');
-        
-        let newSec = document.getElementById('cust-new-section');
-        if (!newSec) {
-            newSec = document.createElement('div');
-            newSec.id = 'cust-new-section';
-            newSec.className = 'cust-sub-section';
-            if (mainLedgerView) mainLedgerView.appendChild(newSec);
-        }
-        newSec.style.display = 'block';
-
-        window.renderNewCustomerSection();
-        return;
+// 3. SECURE INTERCEPTOR FOR switchCustomerSubSection
+(function() {
+    function interceptSectionSwitch() {
+        const oldFn = window.switchCustomerSubSection;
+        window.switchCustomerSubSection = function(sectionId) {
+            if (sectionId === 'cust-new-section' || sectionId === 'cust-add-section') {
+                window.openNewCustomerSection();
+                return;
+            }
+            if (typeof oldFn === 'function') {
+                oldFn(sectionId);
+            }
+        };
     }
-
-    if (typeof originalSwitchSubSection === 'function') {
-        originalSwitchSubSection(sectionId);
-    } else {
-        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-        const mainLedgerView = document.getElementById('customer-ledger-view');
-        if (mainLedgerView) mainLedgerView.classList.add('active');
-
-        document.querySelectorAll('.cust-sub-section').forEach(sec => sec.style.display = 'none');
-        const target = document.getElementById(sectionId);
-        if (target) target.style.display = 'block';
-        if (sectionId === 'cust-list-section') renderCustomerListTable();
-    }
-};
+    interceptSectionSwitch();
+    setTimeout(interceptSectionSwitch, 500);
+    setTimeout(interceptSectionSwitch, 1500);
+})();
 
 // 4. CUSTOMER LEDGER STATEMENT VIEW (UNTOUCHED)
 window.renderCustomerStatement = function(custId) {
