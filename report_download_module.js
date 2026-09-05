@@ -1533,4 +1533,268 @@ html, body {
     <!-- RECHARGE BALANCES -->
     <div class="section-block">
         <div class="section-bar">RECHARGE BALANCES</div>
-       
+        <table class="statement-table">
+            <thead>
+                <tr>
+                    <th style="width:70%;">ACCOUNT NAME</th>
+                    <th style="text-align:right; width:30%;">BALANCE (৳)</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${renderAccRows(data.rechargeBalances.list)}
+                <tr class="total-row">
+                    <td>TOTAL RECHARGE BALANCES</td>
+                    <td style="text-align:right;">${toEnMoney(data.rechargeBalances.total)}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- CASH INVENTORY DETAILS -->
+    <div class="section-block">
+        <div class="section-bar">CASH INVENTORY DETAILS</div>
+        <table class="statement-table">
+            <thead>
+                <tr>
+                    <th style="width:50%;">NOTES</th>
+                    <th style="text-align:center; width:20%;">QTY</th>
+                    <th style="text-align:right; width:30%;">AMOUNT (৳)</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${renderCashRows(data.cashInventory.rows)}
+                <tr class="total-row">
+                    <td colspan="2">TOTAL CASH INVENTORY</td>
+                    <td style="text-align:right;">${toEnMoney(data.cashInventory.total)}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- CARD INVENTORY DETAILS -->
+    <div class="section-block">
+        <div class="section-bar">CARD INVENTORY DETAILS</div>
+        <table class="statement-table">
+            <thead>
+                <tr>
+                    <th style="width:50%;">CARD NAME</th>
+                    <th style="text-align:center; width:20%;">QTY</th>
+                    <th style="text-align:right; width:30%;">TOTAL (৳)</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${renderCardRows(data.cardInventory.rows)}
+                <tr class="total-row">
+                    <td colspan="2">TOTAL CARD INVENTORY</td>
+                    <td style="text-align:right;">${toEnMoney(data.cardInventory.total)}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    `}
+
+    <!-- SIGNATURE -->
+    <div class="signature-block">
+        <div class="signature-inner">
+            <div class="signature-line"></div>
+            <div class="signature-text">Authorized Signature</div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() { setTimeout(function(){ window.focus(); window.print(); }, 400); };
+        window.onafterprint = function() { setTimeout(function(){ window.close(); }, 200); };
+    <\/script>
+</body>
+</html>
+            `;
+
+            const printWindow = window.open("", "_blank", "width=920,height=950");
+            if (!printWindow) {
+                alert("Print Window খোলা যায়নি! Browser-এর Popup Allow করুন।");
+                return;
+            }
+            printWindow.document.open();
+            printWindow.document.write(printHTML);
+            printWindow.document.close();
+        }
+    };
+
+    // ১০. Excel এক্সপোর্ট
+    window.hubExportExcel = function () {
+        const rptType = document.getElementById('hubReportType').value;
+        const fromDate = document.getElementById('hubFromDate').value;
+        const toDate = document.getElementById('hubToDate').value || fromDate;
+
+        if (!fromDate) {
+            alert("দয়া করে তারিখ নির্বাচন করুন।");
+            return;
+        }
+
+        if (rptType === 'daily_transactions') {
+            const data = getTransactionReportData(fromDate, toDate);
+            const isRange = fromDate !== toDate;
+
+            if (!data) {
+                alert("নির্বাচিত সময়ে কোনো লেনদেন নেই!");
+                return;
+            }
+
+            const excelRows = [
+                ["MOUSUMI COMPUTER - CUSTOMER TRANSACTION REPORT"],
+                ["Period:", isRange ? `${fromDate} to ${toDate}` : fromDate],
+                [],
+                ["SL", ...(isRange ? ["Date"] : []), "Time", "Customer Name", "Type", "Description", "Amount (BDT)", "Comment"]
+            ];
+
+            let total = 0;
+            data.forEach((d, idx) => {
+                total += Math.abs(d.amount);
+                excelRows.push([
+                    idx + 1,
+                    ...(isRange ? [d.date] : []),
+                    d.time || '--:--',
+                    d.customerName,
+                    d.transactionType,
+                    d.description,
+                    d.amount,
+                    d.comment
+                ]);
+            });
+            excelRows.push(["", ...(isRange ? [""] : []), "", "", "", "Total:", total, ""]);
+
+            if (window.XLSX) {
+                const ws = XLSX.utils.aoa_to_sheet(excelRows);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+                XLSX.writeFile(wb, `Transaction_Report_${fromDate}_${toDate}.xlsx`);
+            }
+            return;
+        }
+
+        if (rptType === 'daily_closing') {
+            const data = getDailyClosingStatementData(fromDate, toDate);
+
+            if (!data.found) {
+                alert("এই তারিখে কোনো ক্লোজিং রেকর্ড পাওয়া যায়নি!");
+                return;
+            }
+
+            const excelRows = [
+                ["MOUSUMI COMPUTER - DAILY CLOSING FINANCIAL STATEMENT"],
+                ["Period:", data.dateRangeText, "Time:", data.reportTime, "Report ID:", data.reportId],
+                [],
+                ["SECTION 1: EXECUTIVE FINANCIAL SUMMARY", "AMOUNT (BDT)"],
+                ["Total Cash Inventory", data.summary.totalCash || 0],
+                ["Total Card Inventory", data.summary.totalCard || 0],
+                ["Total Bank Accounts", data.summary.totalBank || 0],
+                ["Total Personal Accounts", data.summary.totalPersonal || 0],
+                ["Total Agent Accounts", data.summary.totalAgent || 0],
+                ["Total Recharge Balances", data.summary.totalRecharge || 0],
+                ["TOTAL CLOSING FINANCIAL BALANCE (ASSETS)", data.summary.totalNetBalance],
+                [],
+                ["SECTION 2: CUSTOMER TRANSACTIONS & DUE SUMMARY", "AMOUNT (BDT)"],
+                ["Total Dilam (-)", data.dueSummary.todayDilam],
+                ["Total Pelam (+)", data.dueSummary.todayPelam],
+                ["Total Customer Outstanding Due", data.dueSummary.totalCustomerDue]
+            ];
+
+            if (window.XLSX) {
+                const ws = XLSX.utils.aoa_to_sheet(excelRows);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Daily Closing");
+                XLSX.writeFile(wb, `Daily_Closing_${fromDate}_${toDate}.xlsx`);
+            }
+        }
+    };
+
+    // ১১. শর্টকাট ইঞ্জিন
+    window.hubDateShortcut = function (preset) {
+        document.querySelectorAll('.rpt-pill-btn').forEach(b => b.classList.remove('active'));
+        if (window.event && window.event.target) window.event.target.classList.add('active');
+
+        const fromInp = document.getElementById('hubFromDate');
+        const toInp = document.getElementById('hubToDate');
+        if (!fromInp || !toInp) return;
+
+        const now = new Date();
+        const fmt = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+        if (preset === 'today') {
+            const t = fmt(now);
+            fromInp.value = t;
+            toInp.value = t;
+        } else if (preset === 'yesterday') {
+            const y = new Date();
+            y.setDate(y.getDate() - 1);
+            const yStr = fmt(y);
+            fromInp.value = yStr;
+            toInp.value = yStr;
+        } else if (preset === 'last7days') {
+            const past7 = new Date();
+            past7.setDate(past7.getDate() - 6);
+            fromInp.value = fmt(past7);
+            toInp.value = fmt(now);
+        } else if (preset === 'thismonth') {
+            const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            fromInp.value = fmt(startMonth);
+            toInp.value = fmt(now);
+        } else if (preset === 'lastmonth') {
+            const startLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const endLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+            fromInp.value = fmt(startLastMonth);
+            toInp.value = fmt(endLastMonth);
+        }
+    };
+
+    window.hubReset = function () {
+        const sel = document.getElementById('hubReportType');
+        if (sel) sel.selectedIndex = 0;
+        window.hubDateShortcut('today');
+        const area = document.getElementById('hub-report-print-area');
+        if (area) {
+            area.innerHTML = `
+                <div class="rpt-placeholder-state">
+                    <i class="fa-regular fa-file-lines"></i>
+                    <h4>Report Ready for Generation</h4>
+                    <p>Click <strong>Generate Preview</strong> to preview the statement, or click <strong>Download PDF</strong> / <strong>Export Excel</strong> directly.</p>
+                </div>
+            `;
+        }
+    };
+
+    // ১২. সুপার স্ট্যাবল অটো-ইনিশিয়ালাইজার
+    function runAutoInit() {
+        if (!document.getElementById('custom-download-module-styles')) {
+            document.head.insertAdjacentHTML('beforeend', moduleStyles);
+        }
+
+        const mInjected = injectModuleMenu();
+        const vInjected = injectModuleView();
+
+        if (mInjected && vInjected) {
+            const fromInp = document.getElementById('hubFromDate');
+            if (fromInp && !fromInp.value) {
+                window.hubDateShortcut('today');
+            }
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', runAutoInit);
+    } else {
+        runAutoInit();
+    }
+    window.addEventListener('load', runAutoInit);
+
+    let checkCount = 0;
+    const intervalTimer = setInterval(() => {
+        checkCount++;
+        runAutoInit();
+        if (document.getElementById('menu-download-hub') && document.getElementById('report-download-hub-view')) {
+            if (checkCount > 10) clearInterval(intervalTimer);
+        }
+        if (checkCount > 60) clearInterval(intervalTimer);
+    }, 300);
+
+})();
