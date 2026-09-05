@@ -546,31 +546,38 @@ function ensureSidebarNewCustomerMenu() {
 // DIRECT ACTION TO OPEN NEW CUSTOMER SECTION
 window.openNewCustomerSection = function() {
     injectCorporateStyles();
-    ensureSidebarNewCustomerMenu();
 
+    // 1. Activate main ledger view
     document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
     const mainLedgerView = document.getElementById('customer-ledger-view');
     if (mainLedgerView) mainLedgerView.classList.add('active');
 
+    // 2. Highlight sidebar menu
     document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
     const menuCust = document.getElementById('menu-cust-parent');
     if (menuCust) menuCust.classList.add('active');
 
+    // 3. Hide all other sub-sections
     document.querySelectorAll('.cust-sub-section').forEach(sec => sec.style.display = 'none');
 
-    let newSec = document.getElementById('cust-new-section');
-    if (!newSec) {
-        newSec = document.createElement('div');
-        newSec.id = 'cust-new-section';
-        newSec.className = 'cust-sub-section';
-        if (mainLedgerView) mainLedgerView.appendChild(newSec);
+    // 4. Find the target container (either cust-add-section or cust-new-section)
+    let container = document.getElementById('cust-add-section') || document.getElementById('cust-new-section');
+    if (!container && mainLedgerView) {
+        container = document.createElement('div');
+        container.id = 'cust-add-section';
+        container.className = 'cust-sub-section';
+        mainLedgerView.appendChild(container);
     }
-    newSec.style.display = 'block';
+
+    if (container) {
+        container.style.display = 'block';
+    }
 
     const topTitle = document.getElementById('top-title');
     if (topTitle) topTitle.innerText = "New Customer";
 
-    window.renderNewCustomerSection();
+    // 5. Render form inside the container
+    renderNewCustomerHTMLInto(container);
 };
 
 // 1. CUSTOMER LIST VIEW
@@ -726,20 +733,9 @@ window.renderCustomerListTable = function() {
     });
 };
 
-// 2. DEDICATED NEW CUSTOMER & CORRECTION SECTION
-window.renderNewCustomerSection = function() {
-    injectCorporateStyles();
-
-    let container = document.getElementById('cust-new-section');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'cust-new-section';
-        container.className = 'cust-sub-section';
-        const parent = document.getElementById('customer-ledger-view');
-        if (parent) parent.appendChild(container);
-    }
-
-    container.style.display = 'block';
+// RENDER NEW CUSTOMER FORM & CORRECTION TABLE INTO TARGET ELEMENT
+function renderNewCustomerHTMLInto(container) {
+    if (!container) return;
 
     container.innerHTML = `
         <div class="new-cust-wrapper">
@@ -835,7 +831,7 @@ window.renderNewCustomerSection = function() {
     `;
 
     renderCorrectionTable();
-};
+}
 
 window.renderCorrectionTable = function(query = "") {
     const tbody = document.getElementById('ncTableBody');
@@ -996,24 +992,28 @@ window.handleNewCustomerSubmit = async function(e) {
     }
 };
 
-// 3. SECURE INTERCEPTOR FOR switchCustomerSubSection
-(function() {
-    function interceptSectionSwitch() {
-        const oldFn = window.switchCustomerSubSection;
-        window.switchCustomerSubSection = function(sectionId) {
-            if (sectionId === 'cust-new-section' || sectionId === 'cust-add-section') {
-                window.openNewCustomerSection();
-                return;
-            }
-            if (typeof oldFn === 'function') {
-                oldFn(sectionId);
-            }
-        };
+// 3. AUTO-HOOK AND PREPARE
+function autoPrepareCustomerViews() {
+    ensureSidebarNewCustomerMenu();
+
+    // Find the add-section container and preload our form into it
+    const target = document.getElementById('cust-add-section') || document.getElementById('cust-new-section');
+    if (target && !target.querySelector('.new-cust-wrapper')) {
+        renderNewCustomerHTMLInto(target);
     }
-    interceptSectionSwitch();
-    setTimeout(interceptSectionSwitch, 500);
-    setTimeout(interceptSectionSwitch, 1500);
-})();
+
+    // Intercept switchCustomerSubSection to catch either cust-add-section or cust-new-section
+    const original = window.switchCustomerSubSection;
+    window.switchCustomerSubSection = function(secId) {
+        if (secId === 'cust-add-section' || secId === 'cust-new-section') {
+            window.openNewCustomerSection();
+            return;
+        }
+        if (typeof original === 'function') {
+            original(secId);
+        }
+    };
+}
 
 // 4. CUSTOMER LEDGER STATEMENT VIEW (UNTOUCHED)
 window.renderCustomerStatement = function(custId) {
@@ -1544,7 +1544,10 @@ window.exportCustomerStatementExcel = function() {
     XLSX.writeFile(wb, `${cust.name}_Statement.xlsx`);
 };
 
-// AUTO-INIT ON LOAD
-window.addEventListener('DOMContentLoaded', () => {
-    ensureSidebarNewCustomerMenu();
-});
+// AUTO PREPARE ON LOAD
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', autoPrepareCustomerViews);
+} else {
+    autoPrepareCustomerViews();
+}
+setInterval(autoPrepareCustomerViews, 1000);
