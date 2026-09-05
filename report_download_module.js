@@ -137,7 +137,7 @@
                 outline: none;
                 transition: border-color 0.2s;
             }
-            .rpt-inp:focus, .rpt-sel:focus { border-color: #4f46e5; }
+            .rpt-inp:focus, .rpt-sel:focus { border-color: #0f172a; }
             .rpt-quick-dates {
                 display: flex;
                 align-items: center;
@@ -165,9 +165,9 @@
                 transition: all 0.15s;
             }
             .rpt-pill-btn:hover, .rpt-pill-btn.active {
-                background: #1e1b4b;
+                background: #0f172a;
                 color: #ffffff;
-                border-color: #1e1b4b;
+                border-color: #0f172a;
             }
             .rpt-action-bar {
                 display: flex;
@@ -189,8 +189,8 @@
                 transition: all 0.2s;
                 border: 1px solid transparent;
             }
-            .rpt-btn-dark { background: #1e1b4b; color: #ffffff; }
-            .rpt-btn-dark:hover { background: #312e81; }
+            .rpt-btn-dark { background: #0f172a; color: #ffffff; }
+            .rpt-btn-dark:hover { background: #334155; }
             .rpt-btn-light { background: #ffffff; color: #334155; border-color: #cbd5e1; }
             .rpt-btn-light:hover { background: #f8fafc; border-color: #94a3b8; }
             .rpt-btn-clear { background: transparent; color: #64748b; border: none; }
@@ -315,7 +315,7 @@
         </style>
     `;
 
-    // ৩. সাইডবারে বাটন ইনজেকশন (থিমের সাথে ১০০% সামঞ্জস্যপূর্ণ)
+    // ৩. সাইডবারে বাটন ইনজেকশন (শতভাগ নির্ভরযোগ্য - Daily Closing এর নিচে)
     function injectModuleMenu() {
         if (document.getElementById('menu-download-hub')) return true;
 
@@ -327,15 +327,20 @@
         li.id = 'menu-download-hub';
         li.innerHTML = `
             <a onclick="window.openReportDownloadHub()" style="cursor: pointer;">
-                <span class="menu-link-inner"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Download Reports</span></span>
+                <span class="menu-link-inner"><i class="fa-solid fa-cloud-arrow-down"></i> <span>Download Reports</span></span>
             </a>
         `;
 
-        const settingsMenu = document.getElementById('menu-settings-parent');
-        if (settingsMenu && settingsMenu.parentNode === sidebarList) {
-            sidebarList.insertBefore(li, settingsMenu);
+        const closingMenu = document.getElementById('menu-closing-parent');
+        if (closingMenu && closingMenu.parentNode === sidebarList) {
+            closingMenu.after(li);
         } else {
-            sidebarList.appendChild(li);
+            const settingsMenu = document.getElementById('menu-settings-parent');
+            if (settingsMenu && settingsMenu.parentNode === sidebarList) {
+                sidebarList.insertBefore(li, settingsMenu);
+            } else {
+                sidebarList.appendChild(li);
+            }
         }
         return true;
     }
@@ -436,7 +441,7 @@
         if (m) m.classList.add('active');
 
         const title = document.getElementById('top-title');
-        if (title) title.innerText = "Report Download Center";
+        if (title) title.innerText = "REPORT DOWNLOAD CENTER";
 
         const fromInp = document.getElementById('hubFromDate');
         const toInp = document.getElementById('hubToDate');
@@ -494,7 +499,7 @@
         });
     }
 
-    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (সঠিক যোগফলসহ ও ঐতিহাসিক তারিখ ফিক্স)
+    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (তারিখ অনুযায়ী সঠিক ডাটা নির্ধারণ)
     function getDailyClosingStatementData(fromDate, toDate) {
         const store = getLiveStore();
         const reports = Array.isArray(store.dailyClosingReports) ? store.dailyClosingReports : [];
@@ -570,7 +575,7 @@
             };
         }
 
-        // খ. যদি অতীত রিপোর্ট হয় যাতে কেবল ক্লোজিং মূলধন ছিল (ঐতিহাসিক আসল ডাটা প্রদর্শন)
+        // খ. যদি অতীত রিপোর্ট হয় যাতে ক্লোজিং সেভ ছিল কিন্তু ভেতরের লিস্ট ছিল না (আসল ডাটা প্রদর্শন)
         if (!isRange && closedSnap) {
             return {
                 found: true,
@@ -594,7 +599,7 @@
             };
         }
 
-        // গ. যদি আজকের লাইভ ডাটা দেখতে চায় (আজকের তারিখ হলে শুধুমাত্র তখনই বর্তমান ব্যালেন্স আসবে)
+        // গ. যদি আজকের তারিখ হয় (কেবল তখনই বর্তমান লাইভ ডাটা লোড হবে)
         if (toDate === todayStr || isRange) {
             const categories = Array.isArray(store.categories) ? store.categories : [];
             const accounts = Array.isArray(store.accounts) ? store.accounts : [];
@@ -696,7 +701,7 @@
             };
         }
 
-        // ঘ. পেছনের কোনো তারিখ যে তারিখে কোনো ক্লোজিং সম্পন্ন হয়নি
+        // ঘ. পেছনের তারিখে যদি কোনো ক্লোজিং না থাকে
         return {
             found: false,
             reportDate: toDate,
@@ -793,14 +798,13 @@
         if (rptType === 'daily_closing') {
             const data = getDailyClosingStatementData(fromDate, toDate);
 
-            // কোনো ক্লোজিং ডাটা না পাওয়া গেলে
             if (!data.found) {
                 container.innerHTML = `
                     <div class="rpt-placeholder-state">
                         <i class="fa-solid fa-calendar-xmark" style="color:#ef4444;"></i>
                         <h4 style="color:#b91c1c;">${data.reportDate} তারিখে কোনো ডেইলি ক্লোজিং সম্পন্ন করা হয়নি!</h4>
                         <p style="color:#64748b; max-width: 520px; margin: 10px auto;">
-                            ঐ দিনের জন্য Daily Closing সম্পন্ন না করায় কোনো সংরক্ষিত সম্পদ পাওয়া যায়নি। 
+                            ঐ দিনের জন্য Daily Closing সম্পন্ন না করায় কোনো সংরক্ষিত ব্যালেন্স পাওয়া যায়নি। 
                             তবে কাস্টমার লেনদেন ছিল: বাকী দেওয়া ৳ ${toEnMoney(data.totalDilam)}, আদায় ৳ ${toEnMoney(data.totalPelam)}।
                         </p>
                     </div>
@@ -808,7 +812,6 @@
                 return;
             }
 
-            // লেগাসি অতীত ক্লোজিং ডাটা প্রিভিউ
             if (data.isLegacy) {
                 container.innerHTML = `
                     <div class="dcr-preview-doc">
@@ -1563,10 +1566,7 @@ html, body {
             </thead>
             <tbody>
                 ${renderCashRows(data.cashInventory.rows)}
-                <tr class="total-row">
-                    <td colspan="2">TOTAL CASH INVENTORY</td>
-                    <td style="text-align:right;">${toEnMoney(data.cashInventory.total)}</td>
-                </tr>
+                <tr class="total-row"><td colspan="2">TOTAL CASH INVENTORY</td><td style="text-align:right;">${toEnMoney(data.cashInventory.total)}</td></tr>
             </tbody>
         </table>
     </div>
@@ -1763,7 +1763,7 @@ html, body {
         }
     };
 
-    // ১২. সুপার স্ট্যাবল অটো-ইনিশিয়ালাইজার
+    // ১২. সুপার স্ট্যাবল অটো-ইনিশিয়ালাইজার (টাইম-আউট ছাড়া আজীবন মনিটর করবে)
     function runAutoInit() {
         if (!document.getElementById('custom-download-module-styles')) {
             document.head.insertAdjacentHTML('beforeend', moduleStyles);
@@ -1780,6 +1780,7 @@ html, body {
         }
     }
 
+    runAutoInit();
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', runAutoInit);
     } else {
@@ -1787,14 +1788,11 @@ html, body {
     }
     window.addEventListener('load', runAutoInit);
 
-    let checkCount = 0;
-    const intervalTimer = setInterval(() => {
-        checkCount++;
-        runAutoInit();
-        if (document.getElementById('menu-download-hub') && document.getElementById('report-download-hub-view')) {
-            if (checkCount > 10) clearInterval(intervalTimer);
+    // টাইমার কখনোই বন্ধ হবে না; মেনু বা ভিউ কোনো কারণে না থাকলে তৎক্ষণাৎ যুক্ত করবে
+    setInterval(() => {
+        if (!document.getElementById('menu-download-hub') || !document.getElementById('report-download-hub-view')) {
+            runAutoInit();
         }
-        if (checkCount > 60) clearInterval(intervalTimer);
-    }, 300);
+    }, 400);
 
 })();
