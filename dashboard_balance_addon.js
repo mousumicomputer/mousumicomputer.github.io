@@ -1,24 +1,68 @@
 /**
  * File: dashboard_balance_addon.js
- * Description: Adds ONLY ONE single matching card for "IN-HAND CASH & STOCK"
+ * Description: Places "IN-HAND CASH & STOCK" separately at the top row alongside "Total Net Balance"
  * Font: 'Tiro Bangla', serif | Language: 100% English
  */
 
 (function () {
     'use strict';
 
+    // টপ হিরো সেকশনের জন্য ২-কলাম রেসপনসিভ সিএসএস
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .mc-top-kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
+            margin-bottom: 25px;
+            font-family: 'Tiro Bangla', serif !important;
+        }
+        .mc-inhand-hero-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            border-left: 5px solid #4f46e5;
+            font-family: 'Tiro Bangla', serif !important;
+        }
+        .mc-inhand-hero-card * {
+            font-family: 'Tiro Bangla', serif !important;
+        }
+        .mc-inhand-info h3 {
+            font-size: 1.05rem;
+            color: #1e293b;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .mc-inhand-info p {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 0;
+            font-weight: 500;
+        }
+        .mc-inhand-amount {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: #4f46e5;
+            text-align: right;
+            white-space: nowrap;
+        }
+    `;
+    document.head.appendChild(style);
+
     function updateInHandCard() {
-        // ১. আগের তৈরি হওয়া সব বাড়তি বড় বক্স ও স্টাইল মুছে ফেলা
-        const oldTri = document.getElementById('mcDynamicHeroTriGrid');
-        if (oldTri) oldTri.remove();
+        // ১. নিচের সাধারণ গ্রিড থেকে পুরনো কোনো কার্ড থাকলে মুছে ফেলা
+        const oldGridCard = document.getElementById('inHandSummaryCard');
+        if (oldGridCard) oldGridCard.remove();
 
-        const oldHero = document.querySelector('.fintech-hero-card');
-        if (oldHero) oldHero.style.display = ''; // মূল টপ ব্যানার আগের মতো স্বাভাবিক রাখা হলো
-
-        const grid = document.getElementById('dashboardSummaryGrid');
-        if (!grid) return;
-
-        // ২. মোট হাতে থাকা ব্যালেন্স হিসাব (Accounts + Cash + Card Stock)
+        // ২. ডাটা ক্যালকুলেশন (Accounts + Cash + Card Stock)
         const store = typeof window.getERPStore === 'function' ? window.getERPStore() : {};
         const categories = store.categories || window.categories || [];
         const accounts = store.accounts || window.accounts || [];
@@ -26,7 +70,7 @@
 
         let totalInHand = 0;
 
-        // ব্যাংক, এজেন্ট, পার্সোনাল ও রিচার্জ একাউন্টের যোগফল
+        // ব্যাংক, এজেন্ট, পার্সোনাল ও রিচার্জ একাউন্ট
         categories.forEach(cat => {
             if (cat.enabled !== false) {
                 const catAccs = accounts.filter(a => a.catId === cat.id && a.enabled !== false);
@@ -49,36 +93,71 @@
         }
 
         // কার্ড ইনভেন্টরি স্টক
-        if (typeof window.calculateGrandCardInventoryValue === 'function') {
-            totalInHand += window.calculateGrandCardInventoryValue();
+        let cardStockVal = 0;
+        const cardConfig = store.cardConfig || window.cardConfig || {};
+        const cardQuantities = store.cardQuantities || window.cardQuantities || {};
+        const ops = ['GP', 'Banglalink', 'Robi', 'Airtel'];
+
+        ops.forEach(op => {
+            const cList = Array.isArray(cardConfig[op]) ? cardConfig[op] : Object.values(cardConfig[op] || {});
+            const qList = cardQuantities[op] || {};
+            cList.forEach(card => {
+                const q = parseInt(qList[card.id]) || 0;
+                cardStockVal += (q * (parseFloat(card.price) || 0));
+            });
+        });
+
+        if (cardStockVal === 0) {
+            document.querySelectorAll('#dashboardSummaryGrid .fintech-card').forEach(c => {
+                const h4 = c.querySelector('h4');
+                if (h4 && h4.innerText.includes('CARD INVENTORY')) {
+                    const amtText = c.querySelector('.amount')?.innerText || '0';
+                    cardStockVal = parseFloat(amtText.replace(/[^\d.]/g, '')) || 0;
+                }
+            });
         }
+
+        totalInHand += cardStockVal;
 
         const formattedAmount = '৳ ' + totalInHand.toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
 
-        // ৩. অন্যান্য কার্ডের সাথে হুবহু মিল রেখে মাত্র ১টি কার্ড তৈরি বা আপডেট করা
-        let card = document.getElementById('inHandSummaryCard');
-        if (!card) {
-            card = document.createElement('div');
-            card.id = 'inHandSummaryCard';
-            card.className = 'fintech-card';
-            card.style.fontFamily = "'Tiro Bangla', serif";
-            // গ্রিডের সবার প্রথমে কার্ডটি বসানো হলো
-            grid.insertBefore(card, grid.firstChild);
+        // ৩. টপ ব্যানারকে ২ কলাম কন্টেইনারে রূপান্তর করা
+        const originalHero = document.querySelector('.fintech-hero-card');
+        if (!originalHero) return;
+
+        let topContainer = document.getElementById('mcTopKpiContainer');
+        if (!topContainer) {
+            topContainer = document.createElement('div');
+            topContainer.id = 'mcTopKpiContainer';
+            topContainer.className = 'mc-top-kpi-container';
+            
+            // অরিজিনাল কার্ডের পূর্বে কন্টেইনার ঢুকানো
+            originalHero.parentNode.insertBefore(topContainer, originalHero);
+            
+            // নতুন ইন-হ্যান্ড কার্ড
+            const inHandHero = document.createElement('div');
+            inHandHero.id = 'inHandTopCard';
+            inHandHero.className = 'mc-inhand-hero-card';
+            inHandHero.innerHTML = `
+                <div class="mc-inhand-info">
+                    <h3>In-Hand Cash & Stock</h3>
+                    <p>Cash Drawer + Banks + Wallets + SIMs + Cards</p>
+                </div>
+                <div class="mc-inhand-amount" id="inHandTopAmount">৳ 0.00</div>
+            `;
+
+            topContainer.appendChild(inHandHero);
+            topContainer.appendChild(originalHero); // অরিজিনাল Hero কার্ডটি এর পাশে নেওয়া হলো
         }
 
-        card.innerHTML = `
-            <div class="card-icon" style="background: #e0e7ff; color: #4338ca;">
-                <i class="fa-solid fa-vault"></i>
-            </div>
-            <h4 style="font-family: 'Tiro Bangla', serif; text-transform: uppercase;">IN-HAND CASH & STOCK</h4>
-            <div class="amount" style="font-family: 'Tiro Bangla', serif; color: #4338ca;">${formattedAmount}</div>
-        `;
+        // লাইভ ব্যালেন্স আপডেট
+        const amtEl = document.getElementById('inHandTopAmount');
+        if (amtEl) amtEl.innerText = formattedAmount;
     }
 
-    // পেজ লোড ও রিয়েলটাইম আপডেট
     window.addEventListener('DOMContentLoaded', () => {
         setTimeout(updateInHandCard, 500);
         setInterval(updateInHandCard, 2000);
