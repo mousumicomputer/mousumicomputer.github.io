@@ -1,18 +1,18 @@
 /**
  * Mousumi ERP - Master Configuration Addon Module
- * (Accounts, Card Inventory & Others Setup)
- * Language: English | Font: Tiro Bangla | Zero Core Modification
+ * (Sidebar Dropdown with 2 Submenu Sections: Account Setup & Card Setup)
+ * Language: English | Font: Tiro Bangla | Pure Text, Tables & Clean Shapes
  */
 
 (function () {
-    // ১. ফায়ারবেস মডিউলার ডাটাবেজ সংযোগ ইঞ্জিন
+    // ১. ফায়ারবেস ডেটাবেজ সংযোগ
     let dbInstance = null;
     let dbRef = null;
     let dbSet = null;
 
     async function initFirebaseBridge() {
         try {
-            const { getApp, getApps, initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+            const { getApps, initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
             const { getDatabase, ref, set } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
 
             let app;
@@ -31,7 +31,7 @@
             dbRef = ref;
             dbSet = set;
         } catch (err) {
-            console.warn("Firebase Bridge fallback active:", err);
+            console.warn("Firebase Bridge fallback:", err);
         }
     }
 
@@ -47,53 +47,33 @@
         return false;
     }
 
-    // ২. লোকাল মেমোরি স্টোর
     let activeCardFilter = 'ALL';
 
-    // ৩. সিএসএস স্টাইল ইনজেকশন
+    // ২. সিএসএস স্টাইল
     function injectStyles() {
-        if (document.getElementById('master-config-styles')) return;
+        if (document.getElementById('mc-dropdown-styles')) return;
         const style = document.createElement('style');
-        style.id = 'master-config-styles';
+        style.id = 'mc-dropdown-styles';
         style.innerHTML = `
             #master-config-view, #master-config-view * {
                 font-family: 'Tiro Bangla', 'Plus Jakarta Sans', serif !important;
                 box-sizing: border-box;
             }
-            .mc-page-header {
-                background: #ffffff;
-                padding: 14px 20px;
-                border: 1px solid #cbd5e1;
-                border-radius: 6px;
-                margin-bottom: 15px;
-                font-size: 1.25rem;
-                font-weight: bold;
-                color: #0f172a;
-            }
-            .mc-accordion-box {
+            .mc-box-card {
                 background: #ffffff;
                 border: 1px solid #cbd5e1;
                 border-radius: 6px;
-                margin-bottom: 15px;
-                overflow: hidden;
+                padding: 18px;
+                margin-bottom: 20px;
             }
-            .mc-accordion-header {
-                background: #f8fafc;
-                padding: 13px 18px;
-                font-size: 1.05rem;
+            .mc-box-title {
+                font-size: 1.15rem;
                 font-weight: bold;
                 color: #0f172a;
-                cursor: pointer;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                user-select: none;
-                border-bottom: 1px solid #e2e8f0;
+                border-bottom: 2px solid #e2e8f0;
+                padding-bottom: 10px;
+                margin-bottom: 16px;
             }
-            .mc-accordion-header:hover { background: #f1f5f9; }
-            .mc-accordion-header.active { border-bottom: 2px solid #0284c7; color: #0284c7; }
-            .mc-accordion-content { padding: 16px; display: block; }
-            
             .mc-form-row {
                 display: flex;
                 flex-wrap: wrap;
@@ -165,7 +145,7 @@
             .mc-text-right { text-align: right; }
             .mc-text-center { text-align: center; }
             
-            .mc-filter-links { display: flex; gap: 8px; margin-bottom: 10px; }
+            .mc-filter-links { display: flex; gap: 8px; margin-bottom: 12px; }
             .mc-filter-btn {
                 background: #ffffff;
                 border: 1px solid #cbd5e1;
@@ -180,34 +160,47 @@
         document.head.appendChild(style);
     }
 
-    // ৪. সাইডবারে বাটন ইনজেকশন
-    function injectSidebarMenu() {
-        if (document.getElementById('menu-master-config')) return;
+    // ৩. সাইডবারে ড্রপডাউন মেনু ইনজেকশন (২টি সাবমেনু সহ)
+    function injectSidebarDropdownMenu() {
+        if (document.getElementById('menu-master-config-parent')) return;
         const menuList = document.querySelector('#sidebar .menu-list');
         if (!menuList) return;
 
         const li = document.createElement('li');
         li.className = 'menu-item';
-        li.id = 'menu-master-config';
+        li.id = 'menu-master-config-parent';
         li.innerHTML = `
-            <a onclick="window.openMasterConfigPanel()">
+            <a onclick="window.toggleMasterConfigParent()">
                 <span class="menu-link-inner">
                     <i class="fa-solid fa-sliders"></i>
                     <span>Master Config</span>
                 </span>
+                <i class="fa-solid fa-chevron-down chevron-icon"></i>
             </a>
+            <ul class="submenu-list">
+                <li class="submenu-item" id="sub-mc-accounts">
+                    <a onclick="window.switchMCSubSection('accounts')">
+                        <i class="fa-solid fa-angle-right"></i> <span>Account Setup</span>
+                    </a>
+                </li>
+                <li class="submenu-item" id="sub-mc-cards">
+                    <a onclick="window.switchMCSubSection('cards')">
+                        <i class="fa-solid fa-angle-right"></i> <span>Card Setup</span>
+                    </a>
+                </li>
+            </ul>
         `;
 
-        // Daily Closing বা Settings এর নিচে বসানো
-        const closingMenu = document.getElementById('menu-closing-parent');
-        if (closingMenu && closingMenu.nextSibling) {
-            menuList.insertBefore(li, closingMenu.nextSibling);
+        // Daily Closing এর নিচে বসানো
+        const closingParent = document.getElementById('menu-closing-parent');
+        if (closingParent && closingParent.nextSibling) {
+            menuList.insertBefore(li, closingParent.nextSibling);
         } else {
             menuList.appendChild(li);
         }
     }
 
-    // ৫. ভিউ প্যানেল ইনজেকশন
+    // ৪. ভিউ প্যানেল ইনজেকশন
     function injectViewPanel() {
         if (document.getElementById('master-config-view')) return;
         const mainWrapper = document.querySelector('.main-wrapper');
@@ -217,17 +210,10 @@
         panel.className = 'view-panel';
         panel.id = 'master-config-view';
         panel.innerHTML = `
-            <div class="mc-page-header">
-                Master Configuration (Account, Card & Others Management)
-            </div>
-
-            <!-- SECTION 1: ACCOUNT MANAGEMENT -->
-            <div class="mc-accordion-box">
-                <div class="mc-accordion-header active" id="mc-header-1" onclick="window.toggleMCAcordion(1)">
-                    <span>1. Account Management & Setup</span>
-                    <span id="mc-icon-1">▼</span>
-                </div>
-                <div class="mc-accordion-content" id="mc-content-1">
+            <!-- ১. অ্যাকাউন্ট সেটআপ সেকশন -->
+            <div id="mc-panel-accounts" style="display: none;">
+                <div class="mc-box-card">
+                    <div class="mc-box-title">Account Management & Setup</div>
                     <form class="mc-form-row" id="mcAccountForm" onsubmit="window.saveMCAccount(event)">
                         <input type="hidden" id="mcAccEditId" value="">
                         <div class="mc-input-group" style="max-width: 90px;">
@@ -268,13 +254,10 @@
                 </div>
             </div>
 
-            <!-- SECTION 2: CARD INVENTORY CONFIGURATION -->
-            <div class="mc-accordion-box">
-                <div class="mc-accordion-header active" id="mc-header-2" onclick="window.toggleMCAcordion(2)">
-                    <span>2. Card Inventory Configuration</span>
-                    <span id="mc-icon-2">▼</span>
-                </div>
-                <div class="mc-accordion-content" id="mc-content-2">
+            <!-- ২. কার্ড সেটআপ সেকশন -->
+            <div id="mc-panel-cards" style="display: none;">
+                <div class="mc-box-card">
+                    <div class="mc-box-title">Card Inventory Configuration</div>
                     <form class="mc-form-row" id="mcCardForm" onsubmit="window.saveMCCard(event)">
                         <input type="hidden" id="mcCardEditId" value="">
                         <input type="hidden" id="mcCardOldOp" value="">
@@ -334,65 +317,59 @@
                     </div>
                 </div>
             </div>
-
-            <!-- SECTION 3: OTHERS CONFIGURATION (অন্যান্য) -->
-            <div class="mc-accordion-box">
-                <div class="mc-accordion-header active" id="mc-header-3" onclick="window.toggleMCAcordion(3)">
-                    <span>3. Others Configuration (অন্যান্য সেটিংস)</span>
-                    <span id="mc-icon-3">▼</span>
-                </div>
-                <div class="mc-accordion-content" id="mc-content-3">
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 4px; margin-bottom: 12px;">
-                        <p style="font-size: 0.95rem; color: #334155; font-weight: bold; margin-bottom: 6px;">
-                            ভবিষ্যত ব্যবহারের জন্য এই সেকশনটি প্রস্তুত রাখা হয়েছে।
-                        </p>
-                        <p style="font-size: 0.88rem; color: #64748b;">
-                            এখানে পরবর্তীতে দোকানের ফটোকপি/প্রিন্ট চার্জ রেট, ক্যাশ ডিনোমিনেশন বা যেকোনো কাস্টম সেটিংস খুব সহজে যোগ করে নেওয়া যাবে।
-                        </p>
-                    </div>
-                    <div class="mc-form-row" style="margin-bottom: 0;">
-                        <div class="mc-input-group">
-                            <label>Custom Note / Configuration Remark</label>
-                            <input type="text" id="mcOthersNote" class="mc-input-control" placeholder="যেমন: সাধারণ নোট বা প্যারামিটার...">
-                        </div>
-                        <button type="button" class="mc-btn mc-btn-primary" onclick="window.saveMCOthersNote()">Save Remark</button>
-                    </div>
-                </div>
-            </div>
         `;
         mainWrapper.appendChild(panel);
     }
 
-    // ৬. নেভিগেশন ও প্যানেল ওপেনার
-    window.openMasterConfigPanel = function () {
-        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-
-        const panel = document.getElementById('master-config-view');
-        if (panel) panel.classList.add('active');
-
-        const menu = document.getElementById('menu-master-config');
-        if (menu) menu.classList.add('active');
-
-        const titleEl = document.getElementById('top-title');
-        if (titleEl) titleEl.innerText = "MASTER CONFIGURATION";
-
-        populateCategoryDropdown();
-        renderMCAccountsTable();
-        renderMCCardsTable();
+    // ৫. সাইডবার পেরেন্ট মেনু টগল (ড্রপডাউন খোলা ও বন্ধ করা)
+    window.toggleMasterConfigParent = function () {
+        const parent = document.getElementById('menu-master-config-parent');
+        if (parent) {
+            const sub = parent.querySelector('.submenu-list');
+            if (sub) sub.classList.toggle('show');
+            parent.classList.toggle('open');
+        }
     };
 
-    // ৭. স্বাধীন অ্যাকর্ডিয়ন টগল
-    window.toggleMCAcordion = function (id) {
-        const content = document.getElementById('mc-content-' + id);
-        const icon = document.getElementById('mc-icon-' + id);
-        const header = document.getElementById('mc-header-' + id);
-        if (!content) return;
+    // ৬. ড্রপডাউনের সাব-মেনুতে ক্লিক করলে পেজ সুইচিং
+    window.switchMCSubSection = function (sectionKey) {
+        // মূল ভিউ প্যানেল সক্রিয় করা
+        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+        const masterPanel = document.getElementById('master-config-view');
+        if (masterPanel) masterPanel.classList.add('active');
 
-        const isHidden = content.style.display === 'none';
-        content.style.display = isHidden ? 'block' : 'none';
-        header.classList.toggle('active', isHidden);
-        if (icon) icon.innerText = isHidden ? '▼' : '►';
+        // সব মেনু আইটেম ডি-অ্যাক্টিভ করা
+        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+        document.querySelectorAll('.submenu-item').forEach(si => si.classList.remove('active'));
+
+        // এই পেরেন্ট মেনু সক্রিয় রাখা
+        const parentMenu = document.getElementById('menu-master-config-parent');
+        if (parentMenu) parentMenu.classList.add('active');
+
+        const secAccounts = document.getElementById('mc-panel-accounts');
+        const secCards = document.getElementById('mc-panel-cards');
+        const titleEl = document.getElementById('top-title');
+
+        if (sectionKey === 'accounts') {
+            const subItem = document.getElementById('sub-mc-accounts');
+            if (subItem) subItem.classList.add('active');
+
+            if (secAccounts) secAccounts.style.display = 'block';
+            if (secCards) secCards.style.display = 'none';
+            if (titleEl) titleEl.innerText = "ACCOUNT MANAGEMENT & SETUP";
+
+            populateCategoryDropdown();
+            renderMCAccountsTable();
+        } else if (sectionKey === 'cards') {
+            const subItem = document.getElementById('sub-mc-cards');
+            if (subItem) subItem.classList.add('active');
+
+            if (secAccounts) secAccounts.style.display = 'none';
+            if (secCards) secCards.style.display = 'block';
+            if (titleEl) titleEl.innerText = "CARD INVENTORY CONFIGURATION";
+
+            renderMCCardsTable();
+        }
     };
 
     function populateCategoryDropdown() {
@@ -412,7 +389,7 @@
         if (current) sel.value = current;
     }
 
-    /* ==================== ACCOUNT CONTROLLERS ==================== */
+    /* ==================== ACCOUNT OPERATIONS ==================== */
     function renderMCAccountsTable() {
         const tbody = document.getElementById('mcAccTableBody');
         if (!tbody) return;
@@ -537,7 +514,7 @@
         }
     };
 
-    /* ==================== CARD CONTROLLERS ==================== */
+    /* ==================== CARD OPERATIONS ==================== */
     function getAllCardsFlatList() {
         const config = window.cardConfig || {};
         const list = [];
@@ -600,7 +577,6 @@
         if (!Array.isArray(window.cardConfig[op])) window.cardConfig[op] = Object.values(window.cardConfig[op] || {});
 
         if (editId) {
-            // পুরাতন অপারেটর থেকে মুছে নতুনটিতে যুক্ত করা যদি অপারেটর বদলানো হয়
             if (oldOp && oldOp !== op && Array.isArray(window.cardConfig[oldOp])) {
                 window.cardConfig[oldOp] = window.cardConfig[oldOp].filter(c => c.id !== editId);
             }
@@ -698,18 +674,11 @@
         renderMCCardsTable();
     };
 
-    /* ==================== OTHERS CONTROLLER ==================== */
-    window.saveMCOthersNote = async function () {
-        const note = document.getElementById('mcOthersNote').value.trim();
-        await saveToFirebase('erp/othersConfig', { note: note, lastUpdated: new Date().toLocaleString() });
-        if (typeof window.showToast === 'function') window.showToast("Remarks saved successfully!", "success");
-    };
-
-    // শুরুতেই লোড ও ইন্সটল
+    // স্টার্টআপ ইনিশিয়ালাইজার
     function initMasterConfigModule() {
         initFirebaseBridge();
         injectStyles();
-        injectSidebarMenu();
+        injectSidebarDropdownMenu();
         injectViewPanel();
     }
 
