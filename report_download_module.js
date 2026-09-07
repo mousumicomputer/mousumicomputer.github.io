@@ -1,13 +1,15 @@
 /**
  * ============================================================================
  * MOUSUMI COMPUTER ERP - DEDICATED REPORT DOWNLOAD CENTER
- * File: report_download_module.js (NEW COMPACT THREE-COLUMN REPORT VERSION)
+ * File: report_download_module.js (FULL UNABRIDGED & COMPACT VERSION)
  * 
  * Features:
  * 1. Single Day Mode (Today/Yesterday) & Multi-Day Date Range (Weekly/Monthly).
- * 2. Dedicated Columns: পেলাম, দিলাম, খরচ (No Taka symbol, Clean compact font).
- * 3. 100% Zero-Flicker Native Integration for Preview, PDF & Excel.
- * 4. Executive Daily Closing Financial Statement.
+ * 2. Accurate historical snapshots for any selected past date.
+ * 3. Full Executive Financial Summary (All Asset Categories with Correct Sum).
+ * 4. NEW: Customer Transactions Report (Dedicated 3-Columns: পেলাম, দিলাম, খরচ).
+ * 5. Full Excel & PDF Generation for Both Reports.
+ * 6. 100% Safe & Zero-Flicker Native Integration.
  * ============================================================================
  */
 
@@ -265,23 +267,91 @@
                 padding-top: 4px;
                 width: 150px;
             }
-            
-            /* DCR প্রিভিউ সিএসএস */
-            .dcr-preview-doc { font-family: 'Tiro Bangla', serif; color: #000; background: #fff; width: 100%; max-width: 820px; margin: 0 auto; }
-            .dcr-preview-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1.5px solid #000; }
-            .dcr-preview-header-center { text-align: center; flex: 1; }
-            .dcr-preview-header-center h2 { font-size: 19px; font-weight: bold; margin: 0; text-transform: uppercase; }
-            .dcr-preview-header-center h4 { font-size: 13px; font-weight: bold; margin: 2px 0 0 0; text-transform: uppercase; }
-            .dcr-sec-box { margin-bottom: 12px; }
-            .dcr-sec-bar { background-color: #f3f4f6; font-size: 11.5px; font-weight: bold; text-transform: uppercase; padding: 5px 8px; border: 1px solid #000; }
-            .dcr-sec-table { width: 100%; border-collapse: collapse; }
-            .dcr-sec-table th, .dcr-sec-table td { border: 1px solid #000; padding: 5px 8px; font-size: 11.5px; color: #000; }
-            .dcr-sec-table th { background-color: #ffffff; font-weight: bold; text-transform: uppercase; text-align: left; }
-            .dcr-sec-table tr.total-row td { font-weight: bold; background-color: #ffffff; }
-            .dcr-sig-box { margin-top: 40px; display: flex; justify-content: flex-end; }
-            .dcr-sig-inner { width: 200px; text-align: center; }
-            .dcr-sig-line { border-top: 1px solid #000; margin-bottom: 4px; }
-            .dcr-sig-text { font-size: 11.5px; font-weight: bold; }
+
+            /* DCR STATEMENT PREVIEW */
+            .dcr-preview-doc {
+                font-family: 'Tiro Bangla', serif;
+                color: #000;
+                background: #fff;
+                width: 100%;
+                max-width: 820px;
+                margin: 0 auto;
+            }
+            .dcr-preview-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 10px;
+                padding-bottom: 6px;
+                border-bottom: 1.5px solid #000;
+            }
+            .dcr-preview-header-center {
+                text-align: center;
+                flex: 1;
+            }
+            .dcr-preview-header-center h2 {
+                font-size: 19px;
+                font-weight: bold;
+                letter-spacing: 0.5px;
+                margin: 0;
+                text-transform: uppercase;
+            }
+            .dcr-preview-header-center h4 {
+                font-size: 13px;
+                font-weight: bold;
+                margin: 2px 0 0 0;
+                text-transform: uppercase;
+            }
+            .dcr-sec-box {
+                margin-bottom: 12px;
+            }
+            .dcr-sec-bar {
+                background-color: #f3f4f6;
+                font-size: 11.5px;
+                font-weight: bold;
+                text-transform: uppercase;
+                padding: 5px 8px;
+                border: 1px solid #000;
+                margin-bottom: 0;
+            }
+            .dcr-sec-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 0;
+            }
+            .dcr-sec-table th, .dcr-sec-table td {
+                border: 1px solid #000;
+                padding: 5px 8px;
+                font-size: 11.5px;
+                color: #000;
+            }
+            .dcr-sec-table th {
+                background-color: #ffffff;
+                font-weight: bold;
+                text-transform: uppercase;
+                text-align: left;
+            }
+            .dcr-sec-table tr.total-row td {
+                font-weight: bold;
+                background-color: #ffffff;
+            }
+            .dcr-sig-box {
+                margin-top: 40px;
+                display: flex;
+                justify-content: flex-end;
+            }
+            .dcr-sig-inner {
+                width: 200px;
+                text-align: center;
+            }
+            .dcr-sig-line {
+                border-top: 1px solid #000;
+                margin-bottom: 4px;
+            }
+            .dcr-sig-text {
+                font-size: 11.5px;
+                font-weight: bold;
+            }
         </style>
     `;
 
@@ -335,8 +405,8 @@
                         <div class="rpt-control-group" style="grid-column: span 2;">
                             <label>Select Report Type</label>
                             <select id="hubReportType" class="rpt-sel">
-                                <option value="daily_closing" selected>Daily Closing Financial Statement (পূর্ণাঙ্গ আর্থিক বিবরণী)</option>
-                                <option value="daily_transactions">Customer Transactions Report (লেনদেনের রিপোর্ট)</option>
+                                <option value="daily_transactions" selected>Customer Transactions Report (লেনদেনের রিপোর্ট)</option>
+                                <option value="daily_closing">Daily Closing Financial Statement (পূর্ণাঙ্গ আর্থিক বিবরণী)</option>
                             </select>
                         </div>
                         <div class="rpt-control-group">
@@ -394,7 +464,9 @@
         if (typeof window.switchMainTab === 'function') {
             window.switchMainTab('report-download-hub');
         } else {
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.view-panel').forEach(p => {
+                p.classList.remove('active');
+            });
             const panel = document.getElementById('report-download-hub-view');
             if (panel) panel.classList.add('active');
         }
@@ -407,6 +479,7 @@
         if (title) title.innerText = "REPORT DOWNLOAD CENTER";
 
         const fromInp = document.getElementById('hubFromDate');
+        const toInp = document.getElementById('hubToDate');
         if (fromInp && !fromInp.value) {
             window.hubDateShortcut('today');
         }
@@ -431,25 +504,25 @@
         };
     }
 
-    // ৬. ডাটা সংগ্রাহক - কাস্টমার লেনদেন (পেলাম, দিলাম, খরচ সহ)
+    // ৬. ডাটা সংগ্রাহক - কাস্টমার লেনদেন (৩টি আলাদা কলামের ডাটা সহ)
     function getTransactionReportData(fromDate, toDate) {
         const store = getLiveStore();
         const txs = Array.isArray(store.customerTransactions) ? store.customerTransactions : [];
         const custs = Array.isArray(store.customers) ? store.customers : [];
 
         const rangeTxs = txs.filter(t => {
-            const d = String(t.date);
+            const d = String(t.date || "");
             return d >= fromDate && d <= toDate;
         });
 
         if (rangeTxs.length === 0) return null;
 
-        rangeTxs.sort((a, b) => (a.date + ' ' + (a.time || '')).localeCompare(b.date + ' ' + (b.time || '')));
+        rangeTxs.sort((a, b) => (String(a.date) + ' ' + String(a.time || '')).localeCompare(String(b.date) + ' ' + String(b.time || '')));
 
         return rangeTxs.map(t => {
             const cust = custs.find(c => String(c.id) === String(t.customerId));
-            const custName = cust ? cust.name : (t.customerName || "সাধারণ কাস্টমার");
-            const desc = t.description || "লেনদেন";
+            const custName = String(cust ? cust.name : (t.customerName || "সাধারণ কাস্টমার"));
+            const desc = String(t.description || "লেনদেন");
 
             const debit = Number(t.debit) || 0;
             const credit = Number(t.credit) || 0;
@@ -481,11 +554,12 @@
         });
     }
 
-    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT
+    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (অক্ষুণ্ণ ও সম্পূর্ণ)
     function getDailyClosingStatementData(fromDate, toDate) {
         const store = getLiveStore();
         const reports = Array.isArray(store.dailyClosingReports) ? store.dailyClosingReports : [];
         const isRange = fromDate !== toDate;
+
         const closedSnap = reports.find(r => String(r.report_date) === String(toDate));
 
         const categories = Array.isArray(store.categories) ? store.categories : [];
@@ -498,9 +572,10 @@
         const customers = Array.isArray(store.customers) ? store.customers : [];
         const customerTransactions = Array.isArray(store.customerTransactions) ? store.customerTransactions : [];
 
-        let totalDilam = 0, totalPelam = 0;
+        let totalDilam = 0;
+        let totalPelam = 0;
         customerTransactions.filter(t => {
-            const d = String(t.date);
+            const d = String(t.date || "");
             return d >= fromDate && d <= toDate;
         }).forEach(t => {
             totalDilam += (parseFloat(t.debit) || 0);
@@ -512,7 +587,7 @@
             let due = parseFloat(c.openingBalance) || 0;
             const custTxs = customerTransactions.filter(t => {
                 const matchCust = String(t.customerId) === String(c.id);
-                const beforeDate = String(t.date) <= toDate;
+                const beforeDate = String(t.date || "") <= toDate;
                 return matchCust && beforeDate;
             });
             custTxs.forEach(t => {
@@ -584,6 +659,57 @@
                 rechargeBalances: { list: rechargeList, total: snapRecharge },
                 cashInventory: { rows: cashRows, total: snapCash },
                 cardInventory: { rows: cardRows, total: snapCard }
+            };
+        }
+
+        const pastSnapshots = reports
+            .filter(r => String(r.report_date) <= toDate)
+            .sort((a, b) => String(b.report_date).localeCompare(String(a.report_date)));
+
+        const fallbackSnap = pastSnapshots.length > 0 ? pastSnapshots[0] : null;
+        const todayStr = new Date().toISOString().split('T')[0];
+        const isHistoricalDate = toDate < todayStr;
+
+        if (isHistoricalDate && fallbackSnap && fallbackSnap.details) {
+            const det = fallbackSnap.details;
+            const snapCash = det.cashInventory ? det.cashInventory.total : 0;
+            const snapCard = det.cardInventory ? det.cardInventory.total : 0;
+            const snapBank = det.bankAccounts ? det.bankAccounts.total : 0;
+            const snapPersonal = det.personalAccounts ? det.personalAccounts.total : 0;
+            const snapAgent = det.agentAccounts ? det.agentAccounts.total : 0;
+            const snapRecharge = det.rechargeBalances ? det.rechargeBalances.total : 0;
+            const correctTotalAssets = snapCash + snapCard + snapBank + snapPersonal + snapAgent + snapRecharge;
+
+            return {
+                isRange: isRange,
+                fromDate: fromDate,
+                toDate: toDate,
+                dateRangeText: isRange ? `Range: ${fromDate} to ${toDate}` : `Date: ${toDate} (As of ${fallbackSnap.report_date})`,
+                reportDate: toDate,
+                reportTime: fallbackSnap.closing_time || "--:--",
+                reportId: fallbackSnap.report_id || `DCR-${Date.now()}`,
+                refId: `REF-${String(Math.abs((fallbackSnap.report_id || '').split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0))).padStart(6, '0').slice(-6)}`,
+                summary: {
+                    totalCash: snapCash,
+                    totalCard: snapCard,
+                    totalBank: snapBank,
+                    totalPersonal: snapPersonal,
+                    totalAgent: snapAgent,
+                    totalRecharge: snapRecharge,
+                    totalCustomerDue,
+                    totalNetBalance: correctTotalAssets
+                },
+                dueSummary: {
+                    todayDilam: totalDilam,
+                    todayPelam: totalPelam,
+                    totalCustomerDue
+                },
+                bankAccounts: det.bankAccounts || { list: [], total: 0 },
+                personalAccounts: det.personalAccounts || { list: [], total: 0 },
+                agentAccounts: det.agentAccounts || { list: [], total: 0 },
+                rechargeBalances: det.rechargeBalances || { list: [], total: 0 },
+                cashInventory: det.cashInventory || { rows: [], total: 0 },
+                cardInventory: det.cardInventory || { rows: [], total: 0 }
             };
         }
 
@@ -675,286 +801,287 @@
         };
     }
 
-    // ৮. প্রিভিউ জেনারেটর (নতুন কম্প্যাক্ট তিন কলাম ডিজাইন)
+    // ৮. প্রিভিউ জেনারেটর (দুই রিপোর্টের পূর্ণাঙ্গ প্রিভিউ)
     window.hubGeneratePreview = function () {
-        const rptType = document.getElementById('hubReportType').value;
-        const fromDate = document.getElementById('hubFromDate').value;
-        const toDate = document.getElementById('hubToDate').value || fromDate;
-        const container = document.getElementById('hub-report-print-area');
+        try {
+            const rptType = document.getElementById('hubReportType').value;
+            const fromDate = document.getElementById('hubFromDate').value;
+            const toDate = document.getElementById('hubToDate').value || fromDate;
+            const container = document.getElementById('hub-report-print-area');
 
-        if (!fromDate) {
-            alert("দয়া করে তারিখ নির্বাচন করুন।");
-            return;
-        }
+            if (!fromDate) {
+                alert("দয়া করে তারিখ নির্বাচন করুন।");
+                return;
+            }
 
-        // ক. নতুন পরিচ্ছন্ন কাস্টমার লেনদেনের প্রিভিউ
-        if (rptType === 'daily_transactions') {
-            const data = getTransactionReportData(fromDate, toDate);
-            const isRange = fromDate !== toDate;
+            // ক. নতুন ৩-কলামের কাস্টমার লেনদেন প্রিভিউ
+            if (rptType === 'daily_transactions') {
+                const data = getTransactionReportData(fromDate, toDate);
+                const isRange = fromDate !== toDate;
 
-            if (!data) {
+                if (!data || data.length === 0) {
+                    container.innerHTML = `
+                        <div class="rpt-placeholder-state">
+                            <i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b; font-size:2.5rem; margin-bottom:10px;"></i>
+                            <h4 style="color:#1e293b;">নির্বাচিত সময়ে (${isRange ? `${fromDate} থেকে ${toDate}` : fromDate}) কোনো লেনদেনের রেকর্ড পাওয়া যায়নি</h4>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const fromInfo = getBanglaDate(fromDate);
+                const toInfo = getBanglaDate(toDate);
+                const dateHeading = isRange ? `${fromInfo.full} হতে ${toInfo.full}` : `${fromInfo.full} (${fromInfo.day})`;
+
+                let totalPelam = 0, totalDilam = 0, totalKhoroch = 0;
+                let rowsHtml = '';
+
+                data.forEach((item, index) => {
+                    totalPelam += item.pelam;
+                    totalDilam += item.dilam;
+                    totalKhoroch += item.khoroch;
+
+                    rowsHtml += `
+                        <tr>
+                            <td style="text-align:center;">${toBn(index + 1)}।</td>
+                            ${isRange ? `<td style="text-align:center;">${toBn(item.date)}</td>` : ''}
+                            <td style="text-align:center;">${formatTime(item.time)}</td>
+                            <td style="text-align:left;">${escapeHTML(item.customerName)}</td>
+                            <td style="text-align:left;">${escapeHTML(item.description)}</td>
+                            <td style="text-align:right;">${item.pelam > 0 ? toBnMoney(item.pelam) : '-'}</td>
+                            <td style="text-align:right;">${item.dilam > 0 ? toBnMoney(item.dilam) : '-'}</td>
+                            <td style="text-align:right;">${item.khoroch > 0 ? toBnMoney(item.khoroch) : '-'}</td>
+                        </tr>
+                    `;
+                });
+
                 container.innerHTML = `
-                    <div class="rpt-placeholder-state">
-                        <i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i>
-                        <h4>নির্বাচিত সময়ে (${isRange ? `${fromDate} থেকে ${toDate}` : fromDate}) কোনো লেনদেন নেই</h4>
+                    <div class="clean-report-box">
+                        <div class="clean-report-header">
+                            <h2>MOUSUMI COMPUTER</h2>
+                            <h4>দৈনিক পূর্ণাঙ্গ লেনদেন রিপোর্ট ${isRange ? `(তারিখ পরিসীমা)` : ''}</h4>
+                        </div>
+                        <div class="clean-meta-bar">
+                            <span>তারিখ: ${dateHeading}</span>
+                            <span>মোট লেনদেন: ${toBn(data.length)} টি</span>
+                        </div>
+                        <table class="clean-summary-box">
+                            <thead>
+                                <tr>
+                                    <th style="width:33.33%;">মোট আদায় (পেলাম)</th>
+                                    <th style="width:33.33%;">মোট বাকী বিক্রয় (দিলাম)</th>
+                                    <th style="width:33.33%;">মোট দোকানের খরচ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>${toBnMoney(totalPelam)}</td>
+                                    <td>${toBnMoney(totalDilam)}</td>
+                                    <td>${toBnMoney(totalKhoroch)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="clean-tx-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:6%;">ক্রমিক</th>
+                                    ${isRange ? `<th style="width:12%;">তারিখ</th>` : ''}
+                                    <th style="width:${isRange ? '10%' : '12%'};">সময়</th>
+                                    <th style="width:26%; text-align:left;">কাস্টমার / খাত</th>
+                                    <th style="width:26%; text-align:left;">বিবরণ ও মাধ্যম</th>
+                                    <th style="width:10%; text-align:right;">পেলাম</th>
+                                    <th style="width:10%; text-align:right;">দিলাম</th>
+                                    <th style="width:10%; text-align:right;">খরচ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rowsHtml}
+                                <tr class="clean-total-row">
+                                    <td colspan="${isRange ? 5 : 4}" style="text-align:right;">উপ-মোট (Sub Total):</td>
+                                    <td style="text-align:right;">${toBnMoney(totalPelam)}</td>
+                                    <td style="text-align:right;">${toBnMoney(totalDilam)}</td>
+                                    <td style="text-align:right;">${toBnMoney(totalKhoroch)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="clean-sig-area">
+                            <div class="clean-sig-block">প্রস্তুতকারীর স্বাক্ষর</div>
+                            <div class="clean-sig-block">কর্তৃপক্ষের স্বাক্ষর</div>
+                        </div>
                     </div>
                 `;
                 return;
             }
 
-            const fromInfo = getBanglaDate(fromDate);
-            const toInfo = getBanglaDate(toDate);
-            const dateHeading = isRange ? `${fromInfo.full} হতে ${toInfo.full}` : `${fromInfo.full} (${fromInfo.day})`;
+            // খ. DAILY CLOSING FINANCIAL STATEMENT প্রিভিউ (সম্পূর্ণ অংশ)
+            if (rptType === 'daily_closing') {
+                const data = getDailyClosingStatementData(fromDate, toDate);
+                
+                const renderAccRows = (accList) => {
+                    if (!accList || accList.length === 0) return `<tr><td colspan="2" style="text-align:center; color:#64748b;">No active balance</td></tr>`;
+                    return accList.map(a => `
+                        <tr>
+                            <td>${escapeHTML(a.name)}</td>
+                            <td style="text-align:right;">${toEnMoney(a.balance)}</td>
+                        </tr>
+                    `).join('');
+                };
 
-            let totalPelam = 0, totalDilam = 0, totalKhoroch = 0;
-            let rowsHtml = '';
+                const renderCashRows = (rows) => {
+                    if (!rows || rows.length === 0) return `<tr><td colspan="3" style="text-align:center; color:#64748b;">No cash in hand</td></tr>`;
+                    return rows.map(r => `
+                        <tr>
+                            <td>${escapeHTML(r.note)}</td>
+                            <td style="text-align:center;">${r.qty}</td>
+                            <td style="text-align:right;">${toEnMoney(r.amount)}</td>
+                        </tr>
+                    `).join('');
+                };
 
-            data.forEach((item, index) => {
-                totalPelam += item.pelam;
-                totalDilam += item.dilam;
-                totalKhoroch += item.khoroch;
+                const renderCardRows = (rows) => {
+                    if (!rows || rows.length === 0) return `<tr><td colspan="3" style="text-align:center; color:#64748b;">No cards in stock</td></tr>`;
+                    return rows.map(r => `
+                        <tr>
+                            <td>${escapeHTML(r.name)}</td>
+                            <td style="text-align:center;">${r.qty}</td>
+                            <td style="text-align:right;">${toEnMoney(r.total)}</td>
+                        </tr>
+                    `).join('');
+                };
 
-                rowsHtml += `
-                    <tr>
-                        <td style="text-align:center;">${toBn(index + 1)}।</td>
-                        ${isRange ? `<td style="text-align:center;">${toBn(item.date)}</td>` : ''}
-                        <td style="text-align:center;">${formatTime(item.time)}</td>
-                        <td style="text-align:left;">${escapeHTML(item.customerName)}</td>
-                        <td style="text-align:left;">${escapeHTML(item.description)}</td>
-                        <td style="text-align:right;">${item.pelam > 0 ? toBnMoney(item.pelam) : '-'}</td>
-                        <td style="text-align:right;">${item.dilam > 0 ? toBnMoney(item.dilam) : '-'}</td>
-                        <td style="text-align:right;">${item.khoroch > 0 ? toBnMoney(item.khoroch) : '-'}</td>
-                    </tr>
+                container.innerHTML = `
+                    <div class="dcr-preview-doc">
+                        <div class="dcr-preview-header">
+                            <div style="font-size:11px; line-height:1.4;">
+                                <div>${data.dateRangeText}</div>
+                                <div>Time: ${data.reportTime}</div>
+                            </div>
+                            <div class="dcr-preview-header-center">
+                                <h2>MOUSUMI COMPUTER</h2>
+                                <h4>DAILY CLOSING FINANCIAL STATEMENT</h4>
+                            </div>
+                            <div style="font-size:11px; line-height:1.4; text-align:right;">
+                                <div>Report ID: ${data.reportId}</div>
+                                <div>Ref: ${data.refId}</div>
+                            </div>
+                        </div>
+
+                        <div class="dcr-sec-box">
+                            <div class="dcr-sec-bar">SECTION 1: EXECUTIVE FINANCIAL SUMMARY ${data.isRange ? `(AS OF ${data.toDate})` : ''}</div>
+                            <table class="dcr-sec-table">
+                                <tr>
+                                    <td style="width:70%;">Total Cash Inventory (ক্যাশ ব্যালেন্স)</td>
+                                    <td style="text-align:right; width:30%;">৳ ${toEnMoney(data.summary.totalCash)}</td>
+                                </tr>
+                                <tr>
+                                    <td>Total Card Inventory Stock (কার্ড স্টক)</td>
+                                    <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalCard)}</td>
+                                </tr>
+                                <tr>
+                                    <td>Total Bank Accounts (ব্যাংক ব্যালেন্স)</td>
+                                    <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalBank)}</td>
+                                </tr>
+                                <tr>
+                                    <td>Total Personal Accounts (পার্সোনাল ওয়ালেট)</td>
+                                    <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalPersonal)}</td>
+                                </tr>
+                                <tr>
+                                    <td>Total Agent Accounts (এজেন্ট ওয়ালেট)</td>
+                                    <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalAgent)}</td>
+                                </tr>
+                                <tr>
+                                    <td>Total Recharge Balances (রিচার্জ ব্যালেন্স)</td>
+                                    <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalRecharge)}</td>
+                                </tr>
+                                <tr class="total-row" style="background:#f9fafb;">
+                                    <td>TOTAL CLOSING FINANCIAL BALANCE (ASSETS)</td>
+                                    <td style="text-align:right; font-size:12px; font-weight:bold;">৳ ${toEnMoney(data.summary.totalNetBalance)}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="dcr-sec-box">
+                            <div class="dcr-sec-bar">SECTION 2: CUSTOMER TRANSACTIONS & DUE SUMMARY (${data.isRange ? 'সময়কালের মোট দিল / পেল' : 'দিলাম / পেলাম'})</div>
+                            <table class="dcr-sec-table">
+                                <tr>
+                                    <td style="width:70%; color:#dc2626; font-weight:bold;">${data.isRange ? 'Period Total Dilam (-) [মোট বাকী/ধার দেওয়া]' : "Today's Total Dilam (-) [বাকী/ধার দেওয়া]"}</td>
+                                    <td style="text-align:right; width:30%; color:#dc2626; font-weight:bold;">৳ ${toEnMoney(data.dueSummary.todayDilam)}</td>
+                                </tr>
+                                <tr>
+                                    <td style="color:#16a34a; font-weight:bold;">${data.isRange ? 'Period Total Pelam (+) [মোট আদায়/জমা নেওয়া]' : "Today's Total Pelam (+) [আদায়/জমা নেওয়া]"}</td>
+                                    <td style="text-align:right; color:#16a34a; font-weight:bold;">৳ ${toEnMoney(data.dueSummary.todayPelam)}</td>
+                                </tr>
+                                <tr class="total-row" style="background:#fef2f2;">
+                                    <td style="color:#b91c1c;">TOTAL CUSTOMER OUTSTANDING DUE (সর্বমোট পাওনা)</td>
+                                    <td style="text-align:right; color:#b91c1c; font-size:12px;">৳ ${toEnMoney(data.dueSummary.totalCustomerDue)}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="dcr-sec-box">
+                            <div class="dcr-sec-bar">BANK ACCOUNTS</div>
+                            <table class="dcr-sec-table">
+                                <thead><tr><th style="width:70%;">ACCOUNT NAME</th><th style="text-align:right; width:30%;">BALANCE (৳)</th></tr></thead>
+                                <tbody>${renderAccRows(data.bankAccounts.list)}<tr class="total-row"><td>TOTAL BANK ACCOUNTS</td><td style="text-align:right;">${toEnMoney(data.bankAccounts.total)}</td></tr></tbody>
+                            </table>
+                        </div>
+
+                        <div class="dcr-sec-box">
+                            <div class="dcr-sec-bar">PERSONAL ACCOUNTS</div>
+                            <table class="dcr-sec-table">
+                                <thead><tr><th style="width:70%;">ACCOUNT NAME</th><th style="text-align:right; width:30%;">BALANCE (৳)</th></tr></thead>
+                                <tbody>${renderAccRows(data.personalAccounts.list)}<tr class="total-row"><td>TOTAL PERSONAL ACCOUNTS</td><td style="text-align:right;">${toEnMoney(data.personalAccounts.total)}</td></tr></tbody>
+                            </table>
+                        </div>
+
+                        <div class="dcr-sec-box">
+                            <div class="dcr-sec-bar">AGENT ACCOUNTS</div>
+                            <table class="dcr-sec-table">
+                                <thead><tr><th style="width:70%;">ACCOUNT NAME</th><th style="text-align:right; width:30%;">BALANCE (৳)</th></tr></thead>
+                                <tbody>${renderAccRows(data.agentAccounts.list)}<tr class="total-row"><td>TOTAL AGENT ACCOUNTS</td><td style="text-align:right;">${toEnMoney(data.agentAccounts.total)}</td></tr></tbody>
+                            </table>
+                        </div>
+
+                        <div class="dcr-sec-box">
+                            <div class="dcr-sec-bar">RECHARGE BALANCES</div>
+                            <table class="dcr-sec-table">
+                                <thead><tr><th style="width:70%;">ACCOUNT NAME</th><th style="text-align:right; width:30%;">BALANCE (৳)</th></tr></thead>
+                                <tbody>${renderAccRows(data.rechargeBalances.list)}<tr class="total-row"><td>TOTAL RECHARGE BALANCES</td><td style="text-align:right;">${toEnMoney(data.rechargeBalances.total)}</td></tr></tbody>
+                            </table>
+                        </div>
+
+                        <div class="dcr-sec-box">
+                            <div class="dcr-sec-bar">CASH INVENTORY DETAILS</div>
+                            <table class="dcr-sec-table">
+                                <thead><tr><th style="width:50%;">NOTES</th><th style="text-align:center; width:20%;">QTY</th><th style="text-align:right; width:30%;">AMOUNT (৳)</th></tr></thead>
+                                <tbody>${renderCashRows(data.cashInventory.rows)}<tr class="total-row"><td colspan="2">TOTAL CASH INVENTORY</td><td style="text-align:right;">${toEnMoney(data.cashInventory.total)}</td></tr></tbody>
+                            </table>
+                        </div>
+
+                        <div class="dcr-sec-box">
+                            <div class="dcr-sec-bar">CARD INVENTORY DETAILS</div>
+                            <table class="dcr-sec-table">
+                                <thead><tr><th style="width:50%;">CARD NAME</th><th style="text-align:center; width:20%;">QTY</th><th style="text-align:right; width:30%;">TOTAL (৳)</th></tr></thead>
+                                <tbody>${renderCardRows(data.cardInventory.rows)}<tr class="total-row"><td colspan="2">TOTAL CARD INVENTORY</td><td style="text-align:right;">${toEnMoney(data.cardInventory.total)}</td></tr></tbody>
+                            </table>
+                        </div>
+
+                        <div class="dcr-sig-box">
+                            <div class="dcr-sig-inner">
+                                <div class="dcr-sig-line"></div>
+                                <div class="dcr-sig-text">Authorized Signature</div>
+                            </div>
+                        </div>
+                    </div>
                 `;
-            });
-
-            container.innerHTML = `
-                <div class="clean-report-box">
-                    <div class="clean-report-header">
-                        <h2>MOUSUMI COMPUTER</h2>
-                        <h4>দৈনিক পূর্ণাঙ্গ লেনদেন রিপোর্ট ${isRange ? `(তারিখ পরিসীমা)` : ''}</h4>
-                    </div>
-
-                    <div class="clean-meta-bar">
-                        <span>তারিখ: ${dateHeading}</span>
-                        <span>মোট লেনদেন: ${toBn(data.length)} টি</span>
-                    </div>
-
-                    <table class="clean-summary-box">
-                        <thead>
-                            <tr>
-                                <th style="width:33.33%;">মোট আদায় (পেলাম)</th>
-                                <th style="width:33.33%;">মোট বাকী বিক্রয় (দিলাম)</th>
-                                <th style="width:33.33%;">মোট দোকানের খরচ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>${toBnMoney(totalPelam)}</td>
-                                <td>${toBnMoney(totalDilam)}</td>
-                                <td>${toBnMoney(totalKhoroch)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <table class="clean-tx-table">
-                        <thead>
-                            <tr>
-                                <th style="width:6%;">ক্রমিক</th>
-                                ${isRange ? `<th style="width:12%;">তারিখ</th>` : ''}
-                                <th style="width:${isRange ? '10%' : '12%'};">সময়</th>
-                                <th style="width:26%; text-align:left;">কাস্টমার / খাত</th>
-                                <th style="width:26%; text-align:left;">বিবরণ ও মাধ্যম</th>
-                                <th style="width:10%; text-align:right;">পেলাম</th>
-                                <th style="width:10%; text-align:right;">দিলাম</th>
-                                <th style="width:10%; text-align:right;">খরচ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rowsHtml}
-                            <tr class="clean-total-row">
-                                <td colspan="${isRange ? 5 : 4}" style="text-align:right;">উপ-মোট (Sub Total):</td>
-                                <td style="text-align:right;">${toBnMoney(totalPelam)}</td>
-                                <td style="text-align:right;">${toBnMoney(totalDilam)}</td>
-                                <td style="text-align:right;">${toBnMoney(totalKhoroch)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <div class="clean-sig-area">
-                        <div class="clean-sig-block">প্রস্তুতকারীর স্বাক্ষর</div>
-                        <div class="clean-sig-block">কর্তৃপক্ষের স্বাক্ষর</div>
-                    </div>
-                </div>
-            `;
-            return;
-        }
-
-        // খ. DAILY CLOSING FINANCIAL STATEMENT প্রিভিউ
-        if (rptType === 'daily_closing') {
-            const data = getDailyClosingStatementData(fromDate, toDate);
-            
-            const renderAccRows = (accList) => {
-                if (!accList || accList.length === 0) return `<tr><td colspan="2" style="text-align:center; color:#64748b;">No active balance</td></tr>`;
-                return accList.map(a => `
-                    <tr>
-                        <td>${escapeHTML(a.name)}</td>
-                        <td style="text-align:right;">${toEnMoney(a.balance)}</td>
-                    </tr>
-                `).join('');
-            };
-
-            const renderCashRows = (rows) => {
-                if (!rows || rows.length === 0) return `<tr><td colspan="3" style="text-align:center; color:#64748b;">No cash in hand</td></tr>`;
-                return rows.map(r => `
-                    <tr>
-                        <td>${escapeHTML(r.note)}</td>
-                        <td style="text-align:center;">${r.qty}</td>
-                        <td style="text-align:right;">${toEnMoney(r.amount)}</td>
-                    </tr>
-                `).join('');
-            };
-
-            const renderCardRows = (rows) => {
-                if (!rows || rows.length === 0) return `<tr><td colspan="3" style="text-align:center; color:#64748b;">No cards in stock</td></tr>`;
-                return rows.map(r => `
-                    <tr>
-                        <td>${escapeHTML(r.name)}</td>
-                        <td style="text-align:center;">${r.qty}</td>
-                        <td style="text-align:right;">${toEnMoney(r.total)}</td>
-                    </tr>
-                `).join('');
-            };
-
-            container.innerHTML = `
-                <div class="dcr-preview-doc">
-                    <div class="dcr-preview-header">
-                        <div style="font-size:11px; line-height:1.4;">
-                            <div>${data.dateRangeText}</div>
-                            <div>Time: ${data.reportTime}</div>
-                        </div>
-                        <div class="dcr-preview-header-center">
-                            <h2>MOUSUMI COMPUTER</h2>
-                            <h4>DAILY CLOSING FINANCIAL STATEMENT</h4>
-                        </div>
-                        <div style="font-size:11px; line-height:1.4; text-align:right;">
-                            <div>Report ID: ${data.reportId}</div>
-                            <div>Ref: ${data.refId}</div>
-                        </div>
-                    </div>
-
-                    <div class="dcr-sec-box">
-                        <div class="dcr-sec-bar">SECTION 1: EXECUTIVE FINANCIAL SUMMARY ${data.isRange ? `(AS OF ${data.toDate})` : ''}</div>
-                        <table class="dcr-sec-table">
-                            <tr>
-                                <td style="width:70%;">Total Cash Inventory (ক্যাশ ব্যালেন্স)</td>
-                                <td style="text-align:right; width:30%;">৳ ${toEnMoney(data.summary.totalCash)}</td>
-                            </tr>
-                            <tr>
-                                <td>Total Card Inventory Stock (কার্ড স্টক)</td>
-                                <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalCard)}</td>
-                            </tr>
-                            <tr>
-                                <td>Total Bank Accounts (ব্যাংক ব্যালেন্স)</td>
-                                <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalBank)}</td>
-                            </tr>
-                            <tr>
-                                <td>Total Personal Accounts (পার্সোনাল ওয়ালেট)</td>
-                                <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalPersonal)}</td>
-                            </tr>
-                            <tr>
-                                <td>Total Agent Accounts (এজেন্ট ওয়ালেট)</td>
-                                <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalAgent)}</td>
-                            </tr>
-                            <tr>
-                                <td>Total Recharge Balances (রিচার্জ ব্যালেন্স)</td>
-                                <td style="text-align:right;">৳ ${toEnMoney(data.summary.totalRecharge)}</td>
-                            </tr>
-                            <tr class="total-row" style="background:#f9fafb;">
-                                <td>TOTAL CLOSING FINANCIAL BALANCE (ASSETS)</td>
-                                <td style="text-align:right; font-size:12px; font-weight:bold;">৳ ${toEnMoney(data.summary.totalNetBalance)}</td>
-                            </tr>
-                        </table>
-                    </div>
-
-                    <div class="dcr-sec-box">
-                        <div class="dcr-sec-bar">SECTION 2: CUSTOMER TRANSACTIONS & DUE SUMMARY (${data.isRange ? 'সময়কালের মোট দিল / পেল' : 'দিলাম / পেলাম'})</div>
-                        <table class="dcr-sec-table">
-                            <tr>
-                                <td style="width:70%; color:#dc2626; font-weight:bold;">${data.isRange ? 'Period Total Dilam (-) [মোট বাকী/ধার দেওয়া]' : "Today's Total Dilam (-) [বাকী/ধার দেওয়া]"}</td>
-                                <td style="text-align:right; width:30%; color:#dc2626; font-weight:bold;">৳ ${toEnMoney(data.dueSummary.todayDilam)}</td>
-                            </tr>
-                            <tr>
-                                <td style="color:#16a34a; font-weight:bold;">${data.isRange ? 'Period Total Pelam (+) [মোট আদায়/জমা নেওয়া]' : "Today's Total Pelam (+) [আদায়/জমা নেওয়া]"}</td>
-                                <td style="text-align:right; color:#16a34a; font-weight:bold;">৳ ${toEnMoney(data.dueSummary.todayPelam)}</td>
-                            </tr>
-                            <tr class="total-row" style="background:#fef2f2;">
-                                <td style="color:#b91c1c;">TOTAL CUSTOMER OUTSTANDING DUE (সর্বমোট পাওনা)</td>
-                                <td style="text-align:right; color:#b91c1c; font-size:12px;">৳ ${toEnMoney(data.dueSummary.totalCustomerDue)}</td>
-                            </tr>
-                        </table>
-                    </div>
-
-                    <div class="dcr-sec-box">
-                        <div class="dcr-sec-bar">BANK ACCOUNTS</div>
-                        <table class="dcr-sec-table">
-                            <thead><tr><th style="width:70%;">ACCOUNT NAME</th><th style="text-align:right; width:30%;">BALANCE (৳)</th></tr></thead>
-                            <tbody>${renderAccRows(data.bankAccounts.list)}<tr class="total-row"><td>TOTAL BANK ACCOUNTS</td><td style="text-align:right;">${toEnMoney(data.bankAccounts.total)}</td></tr></tbody>
-                        </table>
-                    </div>
-
-                    <div class="dcr-sec-box">
-                        <div class="dcr-sec-bar">PERSONAL ACCOUNTS</div>
-                        <table class="dcr-sec-table">
-                            <thead><tr><th style="width:70%;">ACCOUNT NAME</th><th style="text-align:right; width:30%;">BALANCE (৳)</th></tr></thead>
-                            <tbody>${renderAccRows(data.personalAccounts.list)}<tr class="total-row"><td>TOTAL PERSONAL ACCOUNTS</td><td style="text-align:right;">${toEnMoney(data.personalAccounts.total)}</td></tr></tbody>
-                        </table>
-                    </div>
-
-                    <div class="dcr-sec-box">
-                        <div class="dcr-sec-bar">AGENT ACCOUNTS</div>
-                        <table class="dcr-sec-table">
-                            <thead><tr><th style="width:70%;">ACCOUNT NAME</th><th style="text-align:right; width:30%;">BALANCE (৳)</th></tr></thead>
-                            <tbody>${renderAccRows(data.agentAccounts.list)}<tr class="total-row"><td>TOTAL AGENT ACCOUNTS</td><td style="text-align:right;">${toEnMoney(data.agentAccounts.total)}</td></tr></tbody>
-                        </table>
-                    </div>
-
-                    <div class="dcr-sec-box">
-                        <div class="dcr-sec-bar">RECHARGE BALANCES</div>
-                        <table class="dcr-sec-table">
-                            <thead><tr><th style="width:70%;">ACCOUNT NAME</th><th style="text-align:right; width:30%;">BALANCE (৳)</th></tr></thead>
-                            <tbody>${renderAccRows(data.rechargeBalances.list)}<tr class="total-row"><td>TOTAL RECHARGE BALANCES</td><td style="text-align:right;">${toEnMoney(data.rechargeBalances.total)}</td></tr></tbody>
-                        </table>
-                    </div>
-
-                    <div class="dcr-sec-box">
-                        <div class="dcr-sec-bar">CASH INVENTORY DETAILS</div>
-                        <table class="dcr-sec-table">
-                            <thead><tr><th style="width:50%;">NOTES</th><th style="text-align:center; width:20%;">QTY</th><th style="text-align:right; width:30%;">AMOUNT (৳)</th></tr></thead>
-                            <tbody>${renderCashRows(data.cashInventory.rows)}<tr class="total-row"><td colspan="2">TOTAL CASH INVENTORY</td><td style="text-align:right;">${toEnMoney(data.cashInventory.total)}</td></tr></tbody>
-                        </table>
-                    </div>
-
-                    <div class="dcr-sec-box">
-                        <div class="dcr-sec-bar">CARD INVENTORY DETAILS</div>
-                        <table class="dcr-sec-table">
-                            <thead><tr><th style="width:50%;">CARD NAME</th><th style="text-align:center; width:20%;">QTY</th><th style="text-align:right; width:30%;">TOTAL (৳)</th></tr></thead>
-                            <tbody>${renderCardRows(data.cardInventory.rows)}<tr class="total-row"><td colspan="2">TOTAL CARD INVENTORY</td><td style="text-align:right;">${toEnMoney(data.cardInventory.total)}</td></tr></tbody>
-                        </table>
-                    </div>
-
-                    <div class="dcr-sig-box">
-                        <div class="dcr-sig-inner">
-                            <div class="dcr-sig-line"></div>
-                            <div class="dcr-sig-text">Authorized Signature</div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            }
+        } catch (err) {
+            console.error("Preview Error:", err);
+            alert("প্রিভিউ তৈরিতে সমস্যা: " + err.message);
         }
     };
 
-    // ৯. PDF প্রিন্ট / ডাউনলোড (নতুন কম্প্যাক্ট তিন কলাম ডিজাইন)
+    // ৯. PDF প্রিন্ট / ডাউনলোড (দুই রিপোর্টের পূর্ণাঙ্গ প্রিন্ট)
     window.hubDownloadPDF = function () {
         const rptType = document.getElementById('hubReportType').value;
         const fromDate = document.getElementById('hubFromDate').value;
@@ -965,11 +1092,12 @@
             return;
         }
 
+        // ক. লেনদেন রিপোর্টের ৩-কলামের পিডিএফ
         if (rptType === 'daily_transactions') {
             const reportData = getTransactionReportData(fromDate, toDate);
             const isRange = fromDate !== toDate;
 
-            if (!reportData) {
+            if (!reportData || reportData.length === 0) {
                 alert("এই তারিখে কোনো লেনদেন নেই!");
                 return;
             }
@@ -1098,6 +1226,7 @@ html, body { width: 100%; background: #fff; color: #0f172a; font-size: 13.5px; }
             return;
         }
 
+        // খ. DAILY CLOSING FINANCIAL STATEMENT এর প্রিন্ট
         if (rptType === 'daily_closing') {
             const data = getDailyClosingStatementData(fromDate, toDate);
 
@@ -1253,7 +1382,7 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
         }
     };
 
-    // ১০. Excel এক্সপোর্ট (নতুন কলাম অনুযায়ী)
+    // ১০. Excel এক্সপোর্ট (দুই রিপোর্টের পূর্ণাঙ্গ এক্সপোর্ট)
     window.hubExportExcel = function () {
         const rptType = document.getElementById('hubReportType').value;
         const fromDate = document.getElementById('hubFromDate').value;
@@ -1264,6 +1393,7 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
             return;
         }
 
+        // ক. কাস্টমার লেনদেনের এক্সেল
         if (rptType === 'daily_transactions') {
             const data = getTransactionReportData(fromDate, toDate);
             const isRange = fromDate !== toDate;
@@ -1308,6 +1438,7 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
             return;
         }
 
+        // খ. DAILY CLOSING FINANCIAL STATEMENT এর এক্সেল
         if (rptType === 'daily_closing') {
             const data = getDailyClosingStatementData(fromDate, toDate);
             const excelRows = [
