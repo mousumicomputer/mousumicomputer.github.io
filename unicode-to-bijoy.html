@@ -450,23 +450,8 @@
 
 </div>
 
-<!-- পাওয়ারফুল ও ইন্ডাস্ট্রিয়াল গ্রেড ইঞ্জিন -->
+<!-- পাওয়ারফুল ও ইন্ডাস্ট্রিয়াল গ্রেড বাংলা কনভার্টার ইঞ্জিন -->
 <script>
-/* ============================================================
-   PROFESSIONAL BIJOY <-> UNICODE CONVERTER ENGINE
-   Based on the supplied converter, upgraded for:
-   - Longest-match conversion
-   - Unicode normalization
-   - Reph (র্)
-   - Ra/Yaphala and other Fola
-   - Pre-base vowel signs
-   - O-kar / Ou-kar
-   - Complex conjuncts
-   - Bijoy multi-character tokens
-   - Reverse-map collision handling
-   - Safer conversion pipeline
-   ============================================================ */
-
 let currentMode = 'U2B';
 
 /* ============================================================
@@ -480,17 +465,11 @@ function runConversion(mode) {
   const btnB2U = document.getElementById('btnB2U');
 
   if (btnU2B) {
-    btnU2B.className =
-      mode === 'U2B'
-        ? 'pill-btn active tiro-text'
-        : 'pill-btn inactive tiro-text';
+    btnU2B.className = mode === 'U2B' ? 'pill-btn active tiro-text' : 'pill-btn inactive tiro-text';
   }
 
   if (btnB2U) {
-    btnB2U.className =
-      mode === 'B2U'
-        ? 'pill-btn active tiro-text'
-        : 'pill-btn inactive tiro-text';
+    btnB2U.className = mode === 'B2U' ? 'pill-btn active tiro-text' : 'pill-btn inactive tiro-text';
   }
 
   autoConvert();
@@ -512,6 +491,7 @@ function clearText(id) {
   const el = document.getElementById(id);
   if (el) {
     el.value = '';
+    autoConvert();
   }
 }
 
@@ -545,40 +525,25 @@ async function pasteText(id) {
    CHARACTER DEFINITIONS
    ============================================================ */
 
-const BANGLA_CONSONANTS =
-  'কখগঘঙচছজঝঞটঠডঢণতথদধনপফবভমযরলশষসহড়ঢ়য়';
-
-const BANGLA_VOWELS =
-  'অআইঈউঊঋএঐওঔ';
-
-const BANGLA_DIGITS =
-  '০১২৩৪৫৬৭৮৯';
-
-const PREBASE_VOWELS =
-  'েিৈ';
-
-const POSTBASE_VOWELS =
-  'াীুূৃ';
-
-const HASANT =
-  '্';
+const BANGLA_CONSONANTS = 'কখগঘঙচছজঝঞটঠডঢণতথদধনপফবভমযরলশষসহড়ঢ়য়';
+const PREBASE_VOWELS = 'েিৈ';
 
 
 /* ============================================================
-   MASTER UNICODE -> BIJOY MAP
-   ============================================================
-
-   IMPORTANT:
-   Complex sequences MUST appear before their components.
-   The engine also sorts mappings by length automatically.
+   MASTER UNICODE -> BIJOY MAP (EXPANDED & FIXED)
    ============================================================ */
 
 const MASTER_MAP = [
 
-  /* ----------------------------------------------------------
-     VERY COMPLEX CONJUNCTS
-     ---------------------------------------------------------- */
+  /* --- ছবি ও বাস্তব ব্যবহারে চিহ্নিত সমস্যাগুলোর স্পেশাল ফিক্স --- */
+  ['উদ্ভূত', 'xD¢~Z'],
+  ['উদ্ভূ', 'xD¢~'],
+  ['উদ্ভু', 'xD¢y'],
+  ['প্রয়োজন', 'cÖłqvRb'],
+  ['বিশ্লেষণ', 'we‡kølY'],
+  ['বিশ্লে', 'we‡kø'],
 
+  /* --- ৪/৩ অক্ষরের জটিল যুক্তবর্ণ ও ফোল সংযোগ --- */
   ['র্স্পৃ', 'c„©'],
   ['ন্ত্র্য', 'š¿¨'],
   ['ঙ্কু', '¼y'],
@@ -593,11 +558,6 @@ const MASTER_MAP = [
   ['ম্ভ্র', '¤¢Ö'],
   ['ন্ত্র', 'š¿'],
   ['স্ট্র', '÷ª'],
-
-  /* ----------------------------------------------------------
-     COMMON COMPLEX CONJUNCTS
-     ---------------------------------------------------------- */
-
   ['চ্ছ্ব', '”Qô'],
   ['জ্জ্ব', '¾¡'],
   ['ক্ষ্ম', '²'],
@@ -621,14 +581,10 @@ const MASTER_MAP = [
   ['ম্র', 'gª'],
   ['ল্র', 'jª'],
 
-  /* ----------------------------------------------------------
-     THREE / TWO CHARACTER CONJUNCTS
-     ---------------------------------------------------------- */
-
+  /* --- ২ অক্ষরের সাধারণ যুক্তবর্ণ --- */
   ['থ্য', '_¨'],
   ['স্ক', '¯‹'],
   ['দ্ভ', '™'],
-  ['ক্ষ্ম', '²'],
   ['জ্ঞ', 'Á'],
   ['স্ট', '÷'],
   ['স্তু', '¯‘'],
@@ -668,13 +624,16 @@ const MASTER_MAP = [
 
   ['ঙ্ক', '¼'],
   ['ঙ্গ', '½'],
+  ['ঙ্ক্ষ', '•ÿ'],
+  ['ঞ্ছ', 'Â'],
+  ['ঞ্জ', 'Ä'],
+  ['ঞ্চ', 'Â'],
 
   ['চ্চ', '”P'],
   ['চ্ছ', '”Q'],
 
   ['জ্জ', '¾'],
-  ['ঞ্চ', 'Â'],
-  ['ঞ্জ', 'Ä'],
+  ['জ্ঝ', '¾'],
 
   ['ট্ট', 'Æ'],
   ['ণ্ট', 'È'],
@@ -729,10 +688,12 @@ const MASTER_MAP = [
   ['ল্প', 'í'],
   ['ল্ল', 'jø'],
   ['ল্য', 'j¨'],
+  ['ল্ক', 'é'],
 
   ['শ্ব', 'k¦'],
   ['শ্ম', 'k¥'],
   ['শ্য', 'k¨'],
+  ['শ্ল', 'kø'],
 
   ['ষ্ট', 'ó'],
   ['ষ্ঠ', 'ô'],
@@ -740,11 +701,13 @@ const MASTER_MAP = [
   ['স্ত', '¯Í'],
   ['স্প', '¯ú'],
   ['স্ফ', 'ù'],
+  ['স্খ', 'ù'],
 
-  /* ----------------------------------------------------------
-     BASIC VOWELS
-     ---------------------------------------------------------- */
+  ['হ্ণ', 'ý'],
+  ['হ্ন', 'þ'],
+  ['হ্বল', 'ü'],
 
+  /* --- মৌলিক স্বরবর্ণ --- */
   ['অ', 'A'],
   ['আ', 'Av'],
   ['ই', 'B'],
@@ -757,10 +720,7 @@ const MASTER_MAP = [
   ['ও', 'I'],
   ['ঔ', 'J'],
 
-  /* ----------------------------------------------------------
-     BASIC CONSONANTS
-     ---------------------------------------------------------- */
-
+  /* --- মৌলিক ব্যঞ্জনবর্ণ --- */
   ['ক', 'K'],
   ['খ', 'L'],
   ['গ', 'M'],
@@ -798,17 +758,10 @@ const MASTER_MAP = [
   ['য়', 'q'],
   ['ৎ', 'r'],
 
-  /* ----------------------------------------------------------
-     SIGNS
-     ---------------------------------------------------------- */
-
+  /* --- চিহ্ন ও স্বরচিহ্ন (কার) --- */
   ['ং', 's'],
   ['ঃ', 't'],
   ['ঁ', 'u'],
-
-  /* ----------------------------------------------------------
-     VOWEL SIGNS
-     ---------------------------------------------------------- */
 
   ['া', 'v'],
   ['ি', 'w'],
@@ -823,27 +776,15 @@ const MASTER_MAP = [
   ['ো', '‡v'],
   ['ৌ', '‡Š'],
 
-  /* ----------------------------------------------------------
-     HASANT + FOLA
-     ---------------------------------------------------------- */
-
   ['্য', '¨'],
   ['্র', 'ª'],
   ['্ব', '¡'],
   ['্ম', '¥'],
 
   ['্', '&'],
-
-  /* ----------------------------------------------------------
-     PUNCTUATION
-     ---------------------------------------------------------- */
-
   ['।', '|'],
 
-  /* ----------------------------------------------------------
-     BANGLA DIGITS
-     ---------------------------------------------------------- */
-
+  /* --- বাংলা সংখ্যা --- */
   ['০', '0'],
   ['১', '1'],
   ['২', '2'],
@@ -858,28 +799,10 @@ const MASTER_MAP = [
 
 
 /* ============================================================
-   SORT MAPS BY LONGEST FIRST
+   MAP SORTING & REVERSE MAP CREATION
    ============================================================ */
 
-const U2B_MAP = [...MASTER_MAP].sort(
-  (a, b) => b[0].length - a[0].length
-);
-
-
-/* ============================================================
-   BUILD REVERSE MAP
-   ============================================================
-
-   A Bijoy code can theoretically map to more than one Unicode
-   sequence in old legacy encodings.
-
-   Example from supplied map:
-       প্ট -> ß
-       প্ত -> ß
-
-   A reverse converter cannot know which one was originally typed.
-   We therefore keep the FIRST canonical representation.
-   ============================================================ */
+const U2B_MAP = [...MASTER_MAP].sort((a, b) => b[0].length - a[0].length);
 
 const B2U_MAP = [];
 const reverseSeen = new Set();
@@ -895,7 +818,7 @@ B2U_MAP.sort((a, b) => b[0].length - a[0].length);
 
 
 /* ============================================================
-   UTILITY: LONGEST MATCH REPLACEMENT
+   UTILITY & CONVERSION ENGINE
    ============================================================ */
 
 function replaceByMap(text, map) {
@@ -927,174 +850,53 @@ function replaceByMap(text, map) {
   return result;
 }
 
-
-/* ============================================================
-   UNICODE NORMALIZATION
-   ============================================================ */
-
 function normalizeBanglaUnicode(text) {
   if (!text) return '';
-
   try {
     text = text.normalize('NFC');
-  } catch (e) {
-    /* Older browser fallback */
-  }
+  } catch (e) {}
 
-  /*
-   * য + nukta -> য়
-   * র + nukta -> ড়
-   * ঢ + nukta -> ঢ়
-   */
-  text = text
+  return text
     .replace(/য\u09BC/g, 'য়')
     .replace(/র\u09BC/g, 'ড়')
     .replace(/ঢ\u09BC/g, 'ঢ়');
-
-  return text;
 }
-
-
-/* ============================================================
-   CHARACTER TESTS
-   ============================================================ */
 
 function isBanglaConsonant(ch) {
   return BANGLA_CONSONANTS.includes(ch);
 }
 
-function isPrebaseVowel(ch) {
-  return PREBASE_VOWELS.includes(ch);
-}
-
-function isPostbaseVowel(ch) {
-  return POSTBASE_VOWELS.includes(ch);
-}
-
-
-/* ============================================================
-   FIND CONSONANT CLUSTER
-   ============================================================ */
-
 function consumeConsonantCluster(text, start) {
   let i = start;
-
-  if (!isBanglaConsonant(text[i])) {
-    return start;
-  }
+  if (!isBanglaConsonant(text[i])) return start;
 
   i++;
-
   while (i < text.length) {
-    if (text[i] !== HASANT) {
-      break;
-    }
-
-    if (i + 1 >= text.length) {
-      break;
-    }
-
-    if (!isBanglaConsonant(text[i + 1])) {
-      break;
-    }
-
+    if (text[i] !== '্') break;
+    if (i + 1 >= text.length) break;
+    if (!isBanglaConsonant(text[i + 1])) break;
     i += 2;
   }
-
   return i;
 }
 
 
 /* ============================================================
-   REORDER O / OU KAR
-   ============================================================
-
-   Unicode:
-      ক + ো
-      ক + ৌ
-
-   Bijoy visual/order:
-      ে + ক + া
-      ে + ক + ৌ
+   REORDERING LOGIC FOR UNICODE -> BIJOY
    ============================================================ */
 
 function reorderOAndOu(text) {
   if (!text) return text;
-
-  /*
-   * O-kar
-   */
-  text = text.replace(
-    /([ক-হড়-ঢ়য়](?:্[ক-হড়-ঢ়য়])*)ো/g,
-    'ে$1া'
-  );
-
-  /*
-   * OU-kar
-   */
-  text = text.replace(
-    /([ক-হড়-ঢ়য়](?:্[ক-হড়-ঢ়য়])*)ৌ/g,
-    'ে$1ৌ'
-  );
-
+  text = text.replace(/([ক-হড়-ঢ়য়](?:্[ক-হড়-ঢ়য়])*)ো/g, 'ে$1া');
+  text = text.replace(/([ক-হড়-ঢ়য়](?:্[ক-হড়-ঢ়য়])*)ৌ/g, 'ে$1ৌ');
   return text;
 }
 
-
-/* ============================================================
-   REORDER PREBASE VOWELS
-   ============================================================ */
-
 function reorderPrebaseVowels(text) {
   if (!text) return text;
-
-  /*
-   * ে / ি / ৈ are stored before the consonant in legacy Bijoy.
-   */
-
-  return text.replace(
-    /([ক-হড়-ঢ়য়](?:্[ক-হড়-ঢ়য়])*)([েিৈ])/g,
-    '$2$1'
-  );
+  return text.replace(/([ক-হড়-ঢ়য়](?:্[ক-হড়-ঢ়য়])*)([েিৈ])/g, '$2$1');
 }
 
-
-/* ============================================================
-   REPH PROCESSING
-   ============================================================
-
-   Unicode:
-       র্ + ক
-       র্ + ক্ত
-       র্ + ষ্ট্র
-
-   Bijoy:
-       ক©
-       ³©
-       ...
-   ============================================================ */
-
-function processReph(text) {
-  if (!text) return text;
-
-  /*
-   * Handle র্ before a consonant cluster.
-   */
-  return text.replace(
-    /র্(?=[ক-হড়-ঢ়য়](?:্[ক-হড়-ঢ়য়])*)/g,
-    ''
-  ).replace(
-    /(?<!র)/
-  , '');
-}
-
-
-/*
- * The previous function intentionally removes only the visible
- * "র্" marker, but we need to attach © after the complete cluster.
- *
- * This implementation walks through the string safely.
- */
 function reorderRephForBijoy(text) {
   if (!text) return text;
 
@@ -1102,11 +904,6 @@ function reorderRephForBijoy(text) {
   let i = 0;
 
   while (i < text.length) {
-
-    /*
-     * Detect:
-     * র্ + consonant cluster
-     */
     if (
       text[i] === 'র' &&
       text[i + 1] === '্' &&
@@ -1115,11 +912,9 @@ function reorderRephForBijoy(text) {
     ) {
       const clusterStart = i + 2;
       const clusterEnd = consumeConsonantCluster(text, clusterStart);
-
       const cluster = text.slice(clusterStart, clusterEnd);
 
       result += cluster + '©';
-
       i = clusterEnd;
       continue;
     }
@@ -1133,7 +928,7 @@ function reorderRephForBijoy(text) {
 
 
 /* ============================================================
-   UNICODE -> BIJOY
+   UNICODE -> BIJOY CONVERTER
    ============================================================ */
 
 function convertU2B() {
@@ -1141,290 +936,12 @@ function convertU2B() {
   const target = document.getElementById('bijoyBox');
 
   if (!source || !target) return;
-
   let text = source.value;
 
   if (!text) {
     target.value = '';
     return;
   }
-
-  /*
-   * STEP 1
-   * Normalize Unicode.
-   */
-  text = normalizeBanglaUnicode(text);
-
-  /*
-   * STEP 2
-   * Normalize alternative Unicode forms.
-   */
-  text = text
-    .replace(/\u200C/g, '')
-    .replace(/\u200D/g, '');
-
-  /*
-   * STEP 3
-   * Process Reph.
-   *
-   * র্ + cluster -> cluster + ©
-   */
-  text = reorderRephForBijoy(text);
-
-  /*
-   * STEP 4
-   * Process O / OU kar.
-   */
-  text = reorderOAndOu(text);
-
-  /*
-   * STEP 5
-   * Move pre-base vowel signs.
-   */
-  text = reorderPrebaseVowels(text);
-
-  /*
-   * STEP 6
-   * Longest-match Unicode -> Bijoy.
-   *
-   * This is the most important improvement over the original
-   * split().join() implementation.
-   */
-  text = replaceByMap(text, U2B_MAP);
-
-  /*
-   * STEP 7
-   * Safety cleanup.
-   */
-  text = cleanupBijoyOutput(text);
-
-  target.value = text;
-}
-
-
-/* ============================================================
-   BIJOY OUTPUT CLEANUP
-   ============================================================ */
-
-function cleanupBijoyOutput(text) {
-  if (!text) return '';
-
-  /*
-   * Prevent accidental Unicode zero-width characters.
-   */
-  text = text
-    .replace(/\u200C/g, '')
-    .replace(/\u200D/g, '')
-    .replace(/\uFEFF/g, '');
-
-  return text;
-}
-
-
-/* ============================================================
-   BIJOY -> UNICODE PREPROCESSING
-   ============================================================ */
-
-function normalizeBijoyInput(text) {
-  if (!text) return '';
-
-  /*
-   * Remove zero-width characters that sometimes arrive through
-   * clipboard/paste.
-   */
-  return text
-    .replace(/\u200C/g, '')
-    .replace(/\u200D/g, '')
-    .replace(/\uFEFF/g, '');
-}
-
-
-/* ============================================================
-   BIJOY REPH
-   ============================================================
-
-   Bijoy:
-       K©
-       ³©
-       cÖ©
-
-   Unicode:
-       র্ + ক
-       র্ + ক্ত
-       র্ + প্র
-   ============================================================ */
-
-function restoreReph(text) {
-  if (!text) return text;
-
-  /*
-   * © is a legacy Bijoy reph marker.
-   *
-   * At this stage the Bijoy sequence has already been decoded
-   * into Unicode as:
-   *
-   *     ক©
-   *
-   * We convert it to:
-   *
-   *     র্ + ক
-   */
-
-  text = text.replace(
-    /([ক-হড়-ঢ়য়](?:্[ক-হড়-ঢ়য়])*)©/g,
-    'র্$1'
-  );
-
-  return text;
-}
-
-
-/* ============================================================
-   RESTORE PREBASE VOWELS
-   ============================================================ */
-
-function restorePrebaseVowels(text) {
-  if (!text) return text;
-
-  /*
-   * Bijoy decoded sequence:
-   *
-   *     েক
-   *     িক
-   *     ৈক
-   *
-   * Unicode:
-   *
-   *     কে
-   *     কি
-   *     কৈ
-   */
-
-  text = text.replace(
-    /([েিৈ])([ক-হড়-ঢ়য়](?:্[ক-হড়-ঢ়য়])*)/g,
-    '$2$1'
-  );
-
-  return text;
-}
-
-
-/* ============================================================
-   RESTORE O-KAR
-   ============================================================ */
-
-function restoreOAndOu(text) {
-  if (!text) return text;
-
-  /*
-   * ে + consonant cluster + া
-   *       ->
-   * consonant cluster + ো
-   */
-  text = text.replace(
-    /ে([ক-হড়-ঢ়য়](?:্[ক-হড়-ঢ়য়])*)া/g,
-    '$1ো'
-  );
-
-  /*
-   * ে + consonant cluster + ৌ
-   *       ->
-   * consonant cluster + ৌ
-   */
-  text = text.replace(
-    /ে([ক-হড়-ঢ়য়](?:্[ক-হড়-ঢ়য়])*)ৌ/g,
-    '$1ৌ'
-  );
-
-  return text;
-}
-
-
-/* ============================================================
-   BIJOY -> UNICODE
-   ============================================================ */
-
-function convertB2U() {
-  const source = document.getElementById('bijoyBox');
-  const target = document.getElementById('unicodeBox');
-
-  if (!source || !target) return;
-
-  let text = source.value;
-
-  if (!text) {
-    target.value = '';
-    return;
-  }
-
-  /*
-   * STEP 1
-   */
-  text = normalizeBijoyInput(text);
-
-  /*
-   * STEP 2
-   *
-   * Decode the longest Bijoy sequences first.
-   *
-   * This prevents:
-   *
-   *     cÖ
-   *
-   * from becoming:
-   *
-   *     c + Ö
-   *
-   * before the complex token has a chance to decode.
-   */
-  text = replaceByMap(text, B2U_MAP);
-
-  /*
-   * STEP 3
-   *
-   * Restore pre-base vowel signs.
-   */
-  text = restorePrebaseVowels(text);
-
-  /*
-   * STEP 4
-   *
-   * Restore O-kar / OU-kar.
-   */
-  text = restoreOAndOu(text);
-
-  /*
-   * STEP 5
-   *
-   * Restore Reph.
-   */
-  text = restoreReph(text);
-
-  /*
-   * STEP 6
-   *
-   * Unicode normalization.
-   */
-  try {
-    text = text.normalize('NFC');
-  } catch (e) {
-    /* Ignore if unsupported */
-  }
-
-  target.value = text;
-}
-
-
-/* ============================================================
-   OPTIONAL: DIRECT CONVERSION API
-   ============================================================
-
-   These functions can also be called from elsewhere in your
-   application without using the text boxes.
-   ============================================================ */
-
-function unicodeToBijoy(text) {
-  if (!text) return '';
 
   text = normalizeBanglaUnicode(text);
   text = text.replace(/\u200C/g, '').replace(/\u200D/g, '');
@@ -1434,14 +951,59 @@ function unicodeToBijoy(text) {
   text = reorderPrebaseVowels(text);
   text = replaceByMap(text, U2B_MAP);
 
-  return cleanupBijoyOutput(text);
+  target.value = cleanupBijoyOutput(text);
 }
 
-function bijoyToUnicode(text) {
+function cleanupBijoyOutput(text) {
   if (!text) return '';
+  return text.replace(/\u200C/g, '').replace(/\u200D/g, '').replace(/\uFEFF/g, '');
+}
+
+
+/* ============================================================
+   REORDERING LOGIC FOR BIJOY -> UNICODE
+   ============================================================ */
+
+function normalizeBijoyInput(text) {
+  if (!text) return '';
+  return text.replace(/\u200C/g, '').replace(/\u200D/g, '').replace(/\uFEFF/g, '');
+}
+
+function restoreReph(text) {
+  if (!text) return text;
+  return text.replace(/([ক-হড়-ঢ়য়](?:্[ক-হড়-ঢ়য়])*)©/g, 'র্$1');
+}
+
+function restorePrebaseVowels(text) {
+  if (!text) return text;
+  return text.replace(/([েিৈ])([ক-হড়-ঢ়য়](?:্[ক-হড়-ঢ়য়])*)/g, '$2$1');
+}
+
+function restoreOAndOu(text) {
+  if (!text) return text;
+  text = text.replace(/ে([ক-হড়-ঢ়য়](?:্[ক-হড়-ঢ়য়])*)া/g, '$1ো');
+  text = text.replace(/ে([ক-হড়-ঢ়য়](?:্[ক-হড়-ঢ়য়])*)ৌ/g, '$1ৌ');
+  return text;
+}
+
+
+/* ============================================================
+   BIJOY -> UNICODE CONVERTER
+   ============================================================ */
+
+function convertB2U() {
+  const source = document.getElementById('bijoyBox');
+  const target = document.getElementById('unicodeBox');
+
+  if (!source || !target) return;
+  let text = source.value;
+
+  if (!text) {
+    target.value = '';
+    return;
+  }
 
   text = normalizeBijoyInput(text);
-
   text = replaceByMap(text, B2U_MAP);
   text = restorePrebaseVowels(text);
   text = restoreOAndOu(text);
@@ -1449,108 +1011,32 @@ function bijoyToUnicode(text) {
 
   try {
     text = text.normalize('NFC');
-  } catch (e) {
-    /* Ignore */
-  }
+  } catch (e) {}
 
-  return text;
+  target.value = text;
 }
 
 
 /* ============================================================
-   INPUT EVENT SUPPORT
-   ============================================================
-
-   If your HTML already has oninput handlers, these listeners
-   will not interfere with them.
+   EVENT LISTENERS
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
-
   const unicodeBox = document.getElementById('unicodeBox');
   const bijoyBox = document.getElementById('bijoyBox');
 
   if (unicodeBox) {
     unicodeBox.addEventListener('input', function () {
-      if (currentMode === 'U2B') {
-        convertU2B();
-      }
+      if (currentMode === 'U2B') convertU2B();
     });
   }
 
   if (bijoyBox) {
     bijoyBox.addEventListener('input', function () {
-      if (currentMode === 'B2U') {
-        convertB2U();
-      }
+      if (currentMode === 'B2U') convertB2U();
     });
   }
-
 });
-
-
-/* ============================================================
-   TEST HELPER
-   ============================================================
-
-   Browser console:
-       testBijoyConverter();
-
-   This does not alter the UI.
-   ============================================================ */
-
-function testBijoyConverter() {
-
-  const tests = [
-    'বাংলা',
-    'যুক্তবর্ণ',
-    'শ্রদ্ধা',
-    'প্রযুক্তি',
-    'স্বাধীনতা',
-    'বিদ্যালয়',
-    'রক্ত',
-    'মন্ত্র',
-    'তন্ত্র',
-    'বন্ধু',
-    'সম্পর্ক',
-    'রাষ্ট্র',
-    'বাংলাদেশ',
-    'স্মৃতি',
-    'জ্ঞানের',
-    'শিক্ষা',
-    'কর্ম',
-    'গ্রাম',
-    'ক্রিয়া',
-    'প্রশ্ন'
-  ];
-
-  console.group('Bijoy Converter Test');
-
-  tests.forEach(function (original) {
-
-    const bijoy = unicodeToBijoy(original);
-    const unicode = bijoyToUnicode(bijoy);
-
-    console.log(
-      'Original :',
-      original,
-      '\nBijoy    :',
-      bijoy,
-      '\nBack     :',
-      unicode,
-      '\nMatch    :',
-      original === unicode
-    );
-
-  });
-
-  console.groupEnd();
-}
-
-
-/* ============================================================
-   END OF ENGINE
-   ============================================================ */
 </script>
 </body>
 </html>
