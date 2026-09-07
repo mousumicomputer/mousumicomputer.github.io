@@ -1,6 +1,6 @@
 /**
  * Mousumi ERP - Master Configuration Addon Module
- * (Sidebar Dropdown with 2 Submenu Sections: Account Setup & Card Setup)
+ * (Category Filter for Accounts + Operator Filter for Cards + Sidebar Dropdown)
  * Language: English | Font: Tiro Bangla | Pure Text, Tables & Clean Shapes
  */
 
@@ -47,6 +47,8 @@
         return false;
     }
 
+    // ফিল্টার স্টেট
+    let activeAccCatFilter = 'ALL';
     let activeCardFilter = 'ALL';
 
     // ২. সিএসএস স্টাইল
@@ -145,22 +147,23 @@
             .mc-text-right { text-align: right; }
             .mc-text-center { text-align: center; }
             
-            .mc-filter-links { display: flex; gap: 8px; margin-bottom: 12px; }
+            .mc-filter-links { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
             .mc-filter-btn {
                 background: #ffffff;
                 border: 1px solid #cbd5e1;
-                padding: 4px 10px;
+                padding: 5px 12px;
                 border-radius: 4px;
                 font-size: 0.85rem;
                 cursor: pointer;
                 font-weight: bold;
+                transition: all 0.2s;
             }
             .mc-filter-btn.active { background: #0f172a; color: #ffffff; border-color: #0f172a; }
         `;
         document.head.appendChild(style);
     }
 
-    // ৩. সাইডবারে ড্রপডাউন মেনু ইনজেকশন (২টি সাবমেনু সহ)
+    // ৩. সাইডবারে ড্রপডাউন মেনু ইনজেকশন
     function injectSidebarDropdownMenu() {
         if (document.getElementById('menu-master-config-parent')) return;
         const menuList = document.querySelector('#sidebar .menu-list');
@@ -191,7 +194,6 @@
             </ul>
         `;
 
-        // Daily Closing এর নিচে বসানো
         const closingParent = document.getElementById('menu-closing-parent');
         if (closingParent && closingParent.nextSibling) {
             menuList.insertBefore(li, closingParent.nextSibling);
@@ -200,7 +202,7 @@
         }
     }
 
-    // ৪. ভিউ প্যানেল ইনজেকশন
+    // ৪. ভিউ প্যানেল ইনজেকশন (অ্যাকাউন্ট ফিল্টার বাটন সহ)
     function injectViewPanel() {
         if (document.getElementById('master-config-view')) return;
         const mainWrapper = document.querySelector('.main-wrapper');
@@ -235,6 +237,9 @@
                         <button type="submit" class="mc-btn mc-btn-primary" id="mcBtnAccSubmit">Save Account</button>
                         <button type="button" class="mc-btn mc-btn-cancel" id="mcBtnAccCancel" style="display:none;" onclick="window.cancelMCAccEdit()">Cancel</button>
                     </form>
+
+                    <!-- ক্যাটাগরি ফিল্টার বার (স্ক্রল কমানোর জন্য) -->
+                    <div class="mc-filter-links" id="mcAccFilterContainer"></div>
 
                     <div class="mc-table-responsive">
                         <table class="mc-simple-table">
@@ -292,6 +297,7 @@
                         <button type="button" class="mc-btn mc-btn-cancel" id="mcBtnCardCancel" style="display:none;" onclick="window.cancelMCCardEdit()">Cancel</button>
                     </form>
 
+                    <!-- অপারেটর ফিল্টার বার -->
                     <div class="mc-filter-links">
                         <button class="mc-filter-btn active" onclick="window.filterMCCards('ALL')">All Operators</button>
                         <button class="mc-filter-btn" onclick="window.filterMCCards('GP')">GP</button>
@@ -321,7 +327,7 @@
         mainWrapper.appendChild(panel);
     }
 
-    // ৫. সাইডবার পেরেন্ট মেনু টগল (ড্রপডাউন খোলা ও বন্ধ করা)
+    // ৫. সাইডবার টগল
     window.toggleMasterConfigParent = function () {
         const parent = document.getElementById('menu-master-config-parent');
         if (parent) {
@@ -331,18 +337,15 @@
         }
     };
 
-    // ৬. ড্রপডাউনের সাব-মেনুতে ক্লিক করলে পেজ সুইচিং
+    // ৬. সাব-সেকশন সুইচিং
     window.switchMCSubSection = function (sectionKey) {
-        // মূল ভিউ প্যানেল সক্রিয় করা
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
         const masterPanel = document.getElementById('master-config-view');
         if (masterPanel) masterPanel.classList.add('active');
 
-        // সব মেনু আইটেম ডি-অ্যাক্টিভ করা
         document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
         document.querySelectorAll('.submenu-item').forEach(si => si.classList.remove('active'));
 
-        // এই পেরেন্ট মেনু সক্রিয় রাখা
         const parentMenu = document.getElementById('menu-master-config-parent');
         if (parentMenu) parentMenu.classList.add('active');
 
@@ -359,6 +362,7 @@
             if (titleEl) titleEl.innerText = "ACCOUNT MANAGEMENT & SETUP";
 
             populateCategoryDropdown();
+            renderAccCategoryFilterButtons();
             renderMCAccountsTable();
         } else if (sectionKey === 'cards') {
             const subItem = document.getElementById('sub-mc-cards');
@@ -389,6 +393,37 @@
         if (current) sel.value = current;
     }
 
+    // অ্যাকাউন্ট ক্যাটাগরি ফিল্টার বাটন জেনারেটর (All, Bank, Agent, Personal, Recharge)
+    function renderAccCategoryFilterButtons() {
+        const container = document.getElementById('mcAccFilterContainer');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const cats = Array.isArray(window.categories) ? window.categories : [];
+
+        // All Accounts Button
+        const allBtn = document.createElement('button');
+        allBtn.className = `mc-filter-btn ${activeAccCatFilter === 'ALL' ? 'active' : ''}`;
+        allBtn.innerText = 'All Accounts';
+        allBtn.onclick = () => window.filterMCAccounts('ALL');
+        container.appendChild(allBtn);
+
+        // Individual Category Buttons
+        cats.filter(c => c.enabled !== false).sort((a, b) => (a.order || 0) - (b.order || 0)).forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = `mc-filter-btn ${activeAccCatFilter === cat.id ? 'active' : ''}`;
+            btn.innerText = cat.name;
+            btn.onclick = () => window.filterMCAccounts(cat.id);
+            container.appendChild(btn);
+        });
+    }
+
+    window.filterMCAccounts = function (catId) {
+        activeAccCatFilter = catId;
+        renderAccCategoryFilterButtons();
+        renderMCAccountsTable();
+    };
+
     /* ==================== ACCOUNT OPERATIONS ==================== */
     function renderMCAccountsTable() {
         const tbody = document.getElementById('mcAccTableBody');
@@ -399,7 +434,12 @@
         const cats = Array.isArray(window.categories) ? window.categories : [];
         const balances = window.balanceStore || {};
 
-        const list = [...accs].sort((a, b) => (a.order || 0) - (b.order || 0));
+        let list = [...accs].sort((a, b) => (a.order || 0) - (b.order || 0));
+
+        // ফিল্টারিং লজিক (স্ক্রল কমানোর জন্য)
+        if (activeAccCatFilter !== 'ALL') {
+            list = list.filter(acc => acc.catId === activeAccCatFilter);
+        }
 
         list.forEach((acc, idx) => {
             const cat = cats.find(c => c.id === acc.catId) || { name: 'General' };
@@ -425,7 +465,7 @@
             tbody.appendChild(tr);
         });
 
-        document.getElementById('mcAccSerial').value = list.length + 1;
+        document.getElementById('mcAccSerial').value = (window.accounts || []).length + 1;
     }
 
     window.saveMCAccount = async function (e) {
@@ -481,6 +521,7 @@
 
         document.getElementById('mcBtnAccSubmit').innerText = 'Update Account';
         document.getElementById('mcBtnAccCancel').style.display = 'inline-block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     window.cancelMCAccEdit = function () {
@@ -630,6 +671,7 @@
 
         document.getElementById('mcBtnCardSubmit').innerText = 'Update Card';
         document.getElementById('mcBtnCardCancel').style.display = 'inline-block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     window.cancelMCCardEdit = function () {
@@ -665,7 +707,7 @@
 
     window.filterMCCards = function (op) {
         activeCardFilter = op;
-        document.querySelectorAll('.mc-filter-btn').forEach(btn => {
+        document.querySelectorAll('#mc-panel-cards .mc-filter-btn').forEach(btn => {
             btn.classList.remove('active');
             if (btn.innerText.includes(op) || (op === 'ALL' && btn.innerText.includes('All'))) {
                 btn.classList.add('active');
