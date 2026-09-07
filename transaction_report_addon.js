@@ -1,8 +1,12 @@
 /**
- * Mousumi Computer - Zero Flicker Transaction Report Addon
+ * Mousumi Computer - Bulletproof Transaction Report Addon
+ * সব তারিখের (আগের/বর্তমান) রিপোর্ট অটোমেটিক নতুন ফরম্যাটে কনভার্ট করবে
  */
+
 (function() {
-    // ১. বাংলা সংখ্যা ও টাকার ফরম্যাটার
+    console.log("✅ New Transaction Report Addon Active!");
+
+    // ১. বাংলা সংখ্যা ও টাকার ফরম্যাট
     function toBnNum(num) {
         if (num === null || num === undefined) return '';
         const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
@@ -24,12 +28,15 @@
         return `${toBnNum(d.getDate())} ${months[d.getMonth()]} ${toBnNum(d.getFullYear())} (${days[d.getDay()]})`;
     }
 
-    // ২. তাৎক্ষণিক রিপোর্ট রেন্ডারার (কোনো বিলম্ব ছাড়া)
-    window.renderInstantModernTransactionReport = function(fromDate, toDate) {
+    // ২. নতুন কম্প্যাক্ট রিপোর্ট তৈরি
+    window.buildCompactTransactionReport = function(fromDate, toDate) {
+        if (!fromDate) fromDate = toDate;
+        if (!toDate) toDate = fromDate;
+
         const allTxs = window.customerTransactions || [];
         const allCusts = window.customers || [];
 
-        // ফিল্টারিং
+        // তারিখ অনুযায়ী ফিল্টার (আগের বা যেকোনো তারিখ)
         const txList = allTxs.filter(t => {
             if (!t.date) return false;
             return t.date >= fromDate && t.date <= toDate;
@@ -43,14 +50,14 @@
         let rowsHtml = '';
 
         if (txList.length === 0) {
-            rowsHtml = `<tr><td colspan="7" style="border:1px solid #334155; text-align:center; padding: 12px; color: #64748b;">এই তারিখে কোনো লেনদেনের রেকর্ড পাওয়া যায়নি।</td></tr>`;
+            rowsHtml = `<tr><td colspan="7" style="border: 1px solid #334155; text-align: center; padding: 15px; color: #64748b;">এই তারিখে কোনো লেনদেনের রেকর্ড পাওয়া যায়নি।</td></tr>`;
         } else {
             txList.forEach((t, index) => {
                 const cust = allCusts.find(c => c.id === t.customerId);
                 const custName = cust ? cust.name : (t.customerName || 'সাধারণ কাস্টমার');
                 const desc = t.description || 'লেনদেন';
 
-                // ব্যয় বা খরচ যাচাই
+                // ব্যয়/খরচ যাচাই
                 const isExpense = custName.includes('দোকানের ব্যয়') || 
                                   custName.includes('খরচ') || 
                                   desc.includes('দোকানের ব্যয়') || 
@@ -86,8 +93,8 @@
             });
         }
 
-        const reportHtml = `
-        <div id="printable-modern-report" style="max-width: 850px; margin: 0 auto; background: #ffffff; padding: 25px 30px; border: 1px solid #cbd5e1; font-family: 'Tiro Bangla', Arial, sans-serif; color: #0f172a;">
+        return `
+        <div id="printable-report-clean" style="max-width: 850px; margin: 0 auto; background: #ffffff; padding: 25px 30px; border: 1px solid #cbd5e1; font-family: 'Tiro Bangla', Arial, sans-serif; color: #0f172a;">
             <div style="text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 8px; margin-bottom: 10px;">
                 <h1 style="font-size: 22px; font-weight: 700; text-transform: uppercase; margin: 0;">MOUSUMI COMPUTER</h1>
                 <div style="font-size: 15px; font-weight: 600; margin-top: 2px; color: #334155;">দৈনিক পূর্ণাঙ্গ লেনদেন রিপোর্ট</div>
@@ -144,35 +151,54 @@
             </div>
         </div>
         `;
-
-        // নির্দিষ্ট প্রিভিউ কনটেইনারে তাত্ক্ষণিক সেট করা
-        const target = document.querySelector('#printable-closing-report') || 
-                       document.querySelector('.report-preview-area') || 
-                       document.querySelector('#reportPreview');
-
-        if (target) {
-            target.innerHTML = reportHtml;
-        }
     };
 
-    // ৩. ক্লিকে সরাসরি ইন্টারসেপ্ট (Capture Phase-এ কাজ করবে, তাই কোনো ঝিলিক থাকবে না)
+    // ৩. বাটন ক্লিক ইন্টারসেপ্টর (সঠিক ড্রপডাউন ও কন্টেইনার অটো ডিটেক্ট করবে)
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('button');
         if (!btn) return;
 
-        const text = btn.innerText || '';
-        if (text.includes('Generate Preview') || text.includes('প্রিভিউ')) {
-            const selectEl = document.querySelector('select');
-            const selectedVal = selectEl ? selectEl.value : '';
+        const btnText = (btn.innerText || '').trim();
+        if (btnText.includes('Generate Preview') || btnText.includes('প্রিভিউ')) {
+            // পেজের সব ড্রপডাউন চেক করে সঠিক রিপোর্ট ড্রপডাউনটি বের করা
+            const allSelects = Array.from(document.querySelectorAll('select'));
+            const reportSelect = allSelects.find(s => 
+                (s.value && (s.value.includes('Customer Transactions') || s.value.includes('লেনদেনের রিপোর্ট'))) ||
+                (s.selectedOptions && s.selectedOptions[0] && s.selectedOptions[0].text.includes('লেনদেনের রিপোর্ট'))
+            );
 
-            if (selectedVal.includes('Customer Transactions') || selectedVal.includes('লেনদেনের রিপোর্ট')) {
-                const dateInputs = document.querySelectorAll('input[type="date"]');
-                let fDate = dateInputs[0] ? dateInputs[0].value : '';
-                let tDate = dateInputs[1] ? dateInputs[1].value : fDate;
+            if (reportSelect) {
+                // পুরনো কোড যাতে রান না হতে পারে তাই ইভেন্ট থামিয়ে দেওয়া
+                e.stopImmediatePropagation();
+                e.preventDefault();
 
-                // সরাসরি ও তাৎক্ষণিক রান হবে
-                window.renderInstantModernTransactionReport(fDate, tDate);
+                // ভিজিবল ডেট ইনপুট দুটি ধরা
+                const visibleDates = Array.from(document.querySelectorAll('input[type="date"]'))
+                    .filter(inp => inp.offsetParent !== null);
+
+                let fromDate = visibleDates[0] ? visibleDates[0].value : '';
+                let toDate = visibleDates[1] ? visibleDates[1].value : fromDate;
+
+                // নতুন HTML তৈরি
+                const cleanHtml = window.buildCompactTransactionReport(fromDate, toDate);
+
+                // যে কনটেইনারে রিপোর্ট শো করে সেখানে বসানো
+                const previewContainer = document.querySelector('#printable-closing-report') || 
+                                         document.querySelector('#reportPreviewArea') || 
+                                         document.querySelector('.report-preview-area') || 
+                                         document.querySelector('#reportPreview') ||
+                                         document.querySelector('.report-main-container table')?.closest('div');
+
+                if (previewContainer) {
+                    previewContainer.innerHTML = cleanHtml;
+                } else {
+                    // যদি কোনো আইডি না মেলে, তবে স্ক্রিনের টেবিল এলাকা রিপ্লেস করবে
+                    const oldHeader = Array.from(document.querySelectorAll('h2, h3, div')).find(el => el.innerText && el.innerText.includes('MOUSUMI COMPUTER'));
+                    if (oldHeader && oldHeader.parentElement) {
+                        oldHeader.parentElement.innerHTML = cleanHtml;
+                    }
+                }
             }
         }
-    }, true); // 'true' থাকায় এটি সবার আগে এক্সিকিউট হবে
+    }, true); // 'true' থাকার কারণে এটি সবার আগে বাধা দেবে পুরনো কোডকে
 })();
