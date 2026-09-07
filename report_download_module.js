@@ -1,14 +1,15 @@
 /**
  * ============================================================================
  * MOUSUMI COMPUTER ERP - DEDICATED REPORT DOWNLOAD CENTER
- * File: report_download_module.js
+ * File: report_download_module.js (FIXED & DATE-ACCURATE VERSION)
  * 
  * Features:
  * 1. Single Day Mode (Today/Yesterday) & Multi-Day Date Range (Weekly/Monthly).
- * 2. Full Executive Financial Summary (All Asset Categories with Correct Sum).
- * 3. Section 2: Customer Transactions & Due Summary (Dilam / Pelam / Due).
- * 4. 100% Safe (No modifications required in admin.html).
- * 5. Official Tiro Bangla Typography + Smart Page Breaks + Signatures.
+ * 2. Accurate historical snapshots for any selected past date.
+ * 3. Full Executive Financial Summary (All Asset Categories with Correct Sum).
+ * 4. Section 2: Customer Transactions & Due Summary (Dilam / Pelam / Due).
+ * 5. 100% Safe (No modifications required in admin.html).
+ * 6. Official Tiro Bangla Typography + Smart Page Breaks + Signatures.
  * ============================================================================
  */
 
@@ -489,12 +490,13 @@
         });
     }
 
-    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (সঠিক যোগফলসহ)
+    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (নিখুঁত তারিখভিত্তিক লজিক)
     function getDailyClosingStatementData(fromDate, toDate) {
         const store = getLiveStore();
         const reports = Array.isArray(store.dailyClosingReports) ? store.dailyClosingReports : [];
         const isRange = fromDate !== toDate;
 
+        // নির্বাচিত তারিখের স্ন্যাপশট খোঁজা
         const closedSnap = reports.find(r => String(r.report_date) === String(toDate));
 
         const categories = Array.isArray(store.categories) ? store.categories : [];
@@ -507,6 +509,7 @@
         const customers = Array.isArray(store.customers) ? store.customers : [];
         const customerTransactions = Array.isArray(store.customerTransactions) ? store.customerTransactions : [];
 
+        // ১. ওই নির্দিষ্ট তারিখের দিল / পেল হিসাব
         let totalDilam = 0;
         let totalPelam = 0;
         customerTransactions.filter(t => {
@@ -517,28 +520,58 @@
             totalPelam += (parseFloat(t.credit) || 0);
         });
 
+        // ২. কাস্টমার পাওনা (ওই নির্দিষ্ট তারিখ পর্যন্ত বা কারেন্ট)
         let totalCustomerDue = 0;
         customers.forEach(c => {
             let due = parseFloat(c.openingBalance) || 0;
-            const custTxs = customerTransactions.filter(t => t.customerId === c.id);
+            const custTxs = customerTransactions.filter(t => {
+                const matchCust = String(t.customerId) === String(c.id);
+                const beforeDate = String(t.date) <= toDate;
+                return matchCust && beforeDate;
+            });
             custTxs.forEach(t => {
                 due += (parseFloat(t.debit) || 0) - (parseFloat(t.credit) || 0);
             });
             if (due > 0) totalCustomerDue += due;
         });
 
-        // ক. যদি হিস্ট্রিতে ডিটেইলস স্ন্যাপশট থাকে (সিঙ্গেল ডে মোড)
-        if (!isRange && closedSnap && closedSnap.details) {
-            const det = closedSnap.details;
-            const snapCash = det.cashInventory ? det.cashInventory.total : (det.summary ? det.summary.totalCash : 0);
-            const snapCard = det.cardInventory ? det.cardInventory.total : (det.summary ? det.summary.totalCard : 0);
-            const snapBank = det.bankAccounts ? det.bankAccounts.total : (det.summary ? det.summary.totalBank : 0);
-            const snapPersonal = det.personalAccounts ? det.personalAccounts.total : (det.summary ? det.summary.totalPersonal : 0);
-            const snapAgent = det.agentAccounts ? det.agentAccounts.total : (det.summary ? det.summary.totalAgent : 0);
-            const snapRecharge = det.rechargeBalances ? det.rechargeBalances.total : (det.summary ? det.summary.totalRecharge : 0);
+        // ৩. স্ন্যাপশট ডিকোড লজিক (যদি নির্বাচিত তারিখের ক্লোজিং ডাটা পাওয়া যায়)
+        if (!isRange && closedSnap) {
+            let snapCash = 0, snapCard = 0, snapBank = 0, snapPersonal = 0, snapAgent = 0, snapRecharge = 0;
+            let bankList = [], personalList = [], agentList = [], rechargeList = [];
+            let cashRows = [], cardRows = [];
 
-            // সেকশন ১ এর দৃশ্যমান আইটেমগুলোর হুবহু যোগফল
-            const correctTotalAssets = snapCash + snapCard + snapBank + snapPersonal + snapAgent + snapRecharge;
+            if (closedSnap.details) {
+                const det = closedSnap.details;
+                snapCash = det.cashInventory ? det.cashInventory.total : (det.summary ? det.summary.totalCash : 0);
+                snapCard = det.cardInventory ? det.cardInventory.total : (det.summary ? det.summary.totalCard : 0);
+                snapBank = det.bankAccounts ? det.bankAccounts.total : (det.summary ? det.summary.totalBank : 0);
+                snapPersonal = det.personalAccounts ? det.personalAccounts.total : (det.summary ? det.summary.totalPersonal : 0);
+                snapAgent = det.agentAccounts ? det.agentAccounts.total : (det.summary ? det.summary.totalAgent : 0);
+                snapRecharge = det.rechargeBalances ? det.rechargeBalances.total : (det.summary ? det.summary.totalRecharge : 0);
+
+                bankList = det.bankAccounts ? det.bankAccounts.list : [];
+                personalList = det.personalAccounts ? det.personalAccounts.list : [];
+                agentList = det.agentAccounts ? det.agentAccounts.list : [];
+                rechargeList = det.rechargeBalances ? det.rechargeBalances.list : [];
+                cashRows = det.cashInventory ? det.cashInventory.rows : [];
+                cardRows = det.cardInventory ? det.cardInventory.rows : [];
+            } else {
+                // ফ্ল্যাট অবজেক্ট স্ন্যাপশটের ক্ষেত্রে
+                snapBank = parseFloat(closedSnap.total_bank) || 0;
+                snapPersonal = parseFloat(closedSnap.total_personal) || 0;
+                snapAgent = parseFloat(closedSnap.total_agent) || 0;
+                snapRecharge = parseFloat(closedSnap.total_recharge) || 0;
+                snapCash = parseFloat(closedSnap.total_cash) || 0;
+                snapCard = parseFloat(closedSnap.total_card) || 0;
+
+                // যদি সেভ করা স্ন্যাপশটে শুধু actual_closing থাকে তবে তা মোট অ্যাসেট
+                if (!snapCash && !snapCard && closedSnap.actual_closing) {
+                    snapCash = parseFloat(closedSnap.actual_closing);
+                }
+            }
+
+            const correctTotalAssets = (snapCash + snapCard + snapBank + snapPersonal + snapAgent + snapRecharge) || parseFloat(closedSnap.actual_closing) || 0;
 
             return {
                 isRange: false,
@@ -554,13 +587,67 @@
                     totalPersonal: snapPersonal,
                     totalAgent: snapAgent,
                     totalRecharge: snapRecharge,
-                    totalCustomerDue: (det.summary && det.summary.totalCustomerDue) ? det.summary.totalCustomerDue : totalCustomerDue,
+                    totalCustomerDue: closedSnap.total_due || totalCustomerDue,
                     totalNetBalance: correctTotalAssets
                 },
                 dueSummary: {
-                    todayDilam: closedSnap.total_dilam || totalDilam,
-                    todayPelam: closedSnap.total_pelam || totalPelam,
-                    totalCustomerDue: (det.summary && det.summary.totalCustomerDue) ? det.summary.totalCustomerDue : totalCustomerDue
+                    todayDilam: (closedSnap.total_dilam !== undefined) ? closedSnap.total_dilam : totalDilam,
+                    todayPelam: (closedSnap.total_pelam !== undefined) ? closedSnap.total_pelam : totalPelam,
+                    totalCustomerDue: closedSnap.total_due || totalCustomerDue
+                },
+                bankAccounts: { list: bankList, total: snapBank },
+                personalAccounts: { list: personalList, total: snapPersonal },
+                agentAccounts: { list: agentList, total: snapAgent },
+                rechargeBalances: { list: rechargeList, total: snapRecharge },
+                cashInventory: { rows: cashRows, total: snapCash },
+                cardInventory: { rows: cardRows, total: snapCard }
+            };
+        }
+
+        // ৪. যদি অতীত তারিখ হয় এবং কোনো স্ন্যাপশট না থাকে, তবে পূর্বের তারিখের ক্লোজিং ব্যালেন্স খুঁজবে
+        const pastSnapshots = reports
+            .filter(r => String(r.report_date) <= toDate)
+            .sort((a, b) => String(b.report_date).localeCompare(String(a.report_date)));
+
+        const fallbackSnap = pastSnapshots.length > 0 ? pastSnapshots[0] : null;
+
+        // যদি আজকের তারিখ হয় তবে বর্তমান লাইভ ব্যালেন্স নেবে, অন্যথায় পূর্বের শেষ ক্লোজিং স্ন্যাপশট দেখাবে
+        const todayStr = new Date().toISOString().split('T')[0];
+        const isHistoricalDate = toDate < todayStr;
+
+        if (isHistoricalDate && fallbackSnap && fallbackSnap.details) {
+            const det = fallbackSnap.details;
+            const snapCash = det.cashInventory ? det.cashInventory.total : 0;
+            const snapCard = det.cardInventory ? det.cardInventory.total : 0;
+            const snapBank = det.bankAccounts ? det.bankAccounts.total : 0;
+            const snapPersonal = det.personalAccounts ? det.personalAccounts.total : 0;
+            const snapAgent = det.agentAccounts ? det.agentAccounts.total : 0;
+            const snapRecharge = det.rechargeBalances ? det.rechargeBalances.total : 0;
+            const correctTotalAssets = snapCash + snapCard + snapBank + snapPersonal + snapAgent + snapRecharge;
+
+            return {
+                isRange: isRange,
+                fromDate: fromDate,
+                toDate: toDate,
+                dateRangeText: isRange ? `Range: ${fromDate} to ${toDate}` : `Date: ${toDate} (As of ${fallbackSnap.report_date})`,
+                reportDate: toDate,
+                reportTime: fallbackSnap.closing_time || "--:--",
+                reportId: fallbackSnap.report_id || `DCR-${Date.now()}`,
+                refId: `REF-${String(Math.abs((fallbackSnap.report_id || '').split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0))).padStart(6, '0').slice(-6)}`,
+                summary: {
+                    totalCash: snapCash,
+                    totalCard: snapCard,
+                    totalBank: snapBank,
+                    totalPersonal: snapPersonal,
+                    totalAgent: snapAgent,
+                    totalRecharge: snapRecharge,
+                    totalCustomerDue,
+                    totalNetBalance: correctTotalAssets
+                },
+                dueSummary: {
+                    todayDilam: totalDilam,
+                    todayPelam: totalPelam,
+                    totalCustomerDue
                 },
                 bankAccounts: det.bankAccounts || { list: [], total: 0 },
                 personalAccounts: det.personalAccounts || { list: [], total: 0 },
@@ -571,7 +658,7 @@
             };
         }
 
-        // খ. লাইভ বা রেঞ্জ লোডার
+        // ৫. লাইভ ব্যালেন্স ক্যালকুলেটর (শুধুমাত্র বর্তমান দিনের জন্য)
         const getCatAccounts = (matchNames) => {
             const list = [];
             let total = 0;
@@ -622,12 +709,11 @@
         });
 
         const totalBankAndMFS = bankAccs.total + personalAccs.total + agentAccs.total + rechargeAccs.total;
-        // সেকশন ১ এর প্রকৃত সম্পদ যোগফল
         const totalAssetsSum = totalCash + totalCardsValue + totalBankAndMFS;
 
         const now = new Date();
-        const timeStr = closedSnap ? closedSnap.closing_time : now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-        const reportId = closedSnap ? closedSnap.report_id : `DCR-${Date.now()}`;
+        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+        const reportId = `DCR-${Date.now()}`;
         const refId = `REF-${String(Math.abs(reportId.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0))).padStart(6, '0').slice(-6)}`;
 
         return {
@@ -647,7 +733,7 @@
                 totalAgent: agentAccs.total,
                 totalRecharge: rechargeAccs.total,
                 totalCustomerDue,
-                totalNetBalance: totalAssetsSum // সংশোধিত নির্ভুল যোগফল
+                totalNetBalance: totalAssetsSum
             },
             dueSummary: {
                 todayDilam: totalDilam,
