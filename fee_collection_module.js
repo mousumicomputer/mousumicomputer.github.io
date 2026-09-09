@@ -964,7 +964,12 @@
 
         try {
             const fb = await getFirebase();
-            if (fb) await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), feeTransactionsList);
+            if (fb) {
+                for (const id of txIds) {
+                    const item = feeTransactionsList.find(t => t.id === id);
+                    if (item) await fb.set(fb.ref(fb.db, 'erp/feeTransactions/' + item.id), item);
+                }
+            }
             selectedPendingTxIds.clear();
             if (typeof showToast === 'function') showToast(`${count} records paid successfully`, "success");
             renderPendingTable();
@@ -980,11 +985,11 @@
 
         try {
             const fb = await getFirebase();
-            if (fb) await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), feeTransactionsList);
+            if (fb) await fb.set(fb.ref(fb.db, 'erp/feeTransactions/' + tx.id), tx);
             if (typeof showToast === 'function') showToast("Restored to Pending", "info");
         } catch(e) { console.error(e); }
     };
-
+    
     // ৯. Void
     window.openVoidModalForSelection = function() {
         if (selectedPendingTxIds.size === 0) return;
@@ -999,22 +1004,23 @@
         const idsToVoid = Array.from(selectedPendingTxIds);
         let voidCount = 0;
 
-        for (let i = feeTransactionsList.length - 1; i >= 0; i--) {
-            if (idsToVoid.includes(feeTransactionsList[i].id)) {
-                const [removedTx] = feeTransactionsList.splice(i, 1);
-                removedTx.voidReason = reason;
-                removedTx.voidDate = nowFormatted;
-                removedTx.voidedBy = user;
-                voidLogsList.unshift(removedTx);
-                voidCount++;
-            }
-        }
-
         try {
             const fb = await getFirebase();
-            if (fb) {
-                await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), feeTransactionsList);
-                await fb.set(fb.ref(fb.db, 'erp/feeVoidLogs'), voidLogsList);
+            for (let i = feeTransactionsList.length - 1; i >= 0; i--) {
+                if (idsToVoid.includes(feeTransactionsList[i].id)) {
+                    const [removedTx] = feeTransactionsList.splice(i, 1);
+                    removedTx.voidReason = reason;
+                    removedTx.voidDate = nowFormatted;
+                    removedTx.voidedBy = user;
+                    voidLogsList.unshift(removedTx);
+                    voidCount++;
+
+                    if (fb) {
+                        // নির্দিষ্ট রেকর্ডটি ডিলিট এবং লগ ফাইলে সেভ
+                        await fb.set(fb.ref(fb.db, 'erp/feeTransactions/' + removedTx.id), null);
+                        await fb.set(fb.ref(fb.db, 'erp/feeVoidLogs/' + removedTx.id), removedTx);
+                    }
+                }
             }
             document.getElementById('voidReasonModal').style.display = 'none';
             selectedPendingTxIds.clear();
@@ -1037,13 +1043,14 @@
         try {
             const fb = await getFirebase();
             if (fb) {
-                await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), feeTransactionsList);
-                await fb.set(fb.ref(fb.db, 'erp/feeVoidLogs'), voidLogsList);
+                // নির্দিষ্ট রেকর্ডটি লগ থেকে ডিলিট এবং আবার লাইভ ফি লিস্টে রিস্টোর
+                await fb.set(fb.ref(fb.db, 'erp/feeVoidLogs/' + restored.id), null);
+                await fb.set(fb.ref(fb.db, 'erp/feeTransactions/' + restored.id), restored);
             }
             if (typeof showToast === 'function') showToast("Record restored", "success");
         } catch(e) { console.error(e); }
     };
-
+    
     // ১০. চেকবক্স সিলেকশন লজিক
     window.togglePendingRowSelection = function(txId, event) {
         if (event && event.stopPropagation) event.stopPropagation();
@@ -1703,12 +1710,13 @@
                     receivedBy: (window.profileSettings && window.profileSettings.fullName) || 'Riyal Robiul'
                 };
 
-                try {
-                    const fb = await getFirebase();
-                    if (fb) {
-                        feeTransactionsList.unshift(txData);
-                        await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), feeTransactionsList);
-                    }
+                // ✅ সংশোধিত নিরাপদ কোড (শুধু এই ছাত্রের ফি ইউনিক আইডিতে সেভ হবে):
+try {
+    const fb = await getFirebase();
+    if (fb) {
+        feeTransactionsList.unshift(txData);
+        await fb.set(fb.ref(fb.db, 'erp/feeTransactions/' + txData.id), txData);
+    }
 
                     if (typeof showToast === 'function') showToast("Fee collected successfully!", "success");
 
