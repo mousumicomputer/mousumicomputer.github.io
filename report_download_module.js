@@ -1491,10 +1491,20 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
         }
     };
 
-    // ১১. শর্টকাট ইঞ্জিন
+    // ১১. শর্টকাট ইঞ্জিন (Safe & Fixed)
     window.hubDateShortcut = function (preset) {
         document.querySelectorAll('.rpt-pill-btn').forEach(b => b.classList.remove('active'));
-        if (window.event && window.event.target) window.event.target.classList.add('active');
+        
+        // বাটন নিরাপদভাবে একটিভ করা (এরর-মুক্ত)
+        if (window.event && window.event.target && window.event.target.classList) {
+            window.event.target.classList.add('active');
+        } else {
+            // প্রোগ্রামাটিক কলের জন্য সংশ্লিষ্ট বাটনে active ক্লাস দেওয়া
+            const btn = Array.from(document.querySelectorAll('.rpt-pill-btn')).find(el => 
+                el.innerText.toLowerCase().replace(/\s/g, '') === preset.toLowerCase().replace(/\s/g, '')
+            );
+            if (btn) btn.classList.add('active');
+        }
 
         const fromInp = document.getElementById('hubFromDate');
         const toInp = document.getElementById('hubToDate');
