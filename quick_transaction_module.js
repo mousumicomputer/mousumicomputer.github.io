@@ -1,9 +1,9 @@
 /**
- * Mousumi Computer - Quick Transaction Module (Direct Transaction Table Popup)
+ * Mousumi Computer - Quick Transaction Module (Bulletproof Firebase Integration)
  */
 
 (function () {
-    // 1. Kalpurush WebFont সরাসরি Head-এ ইনজেক্ট
+    // 1. Kalpurush WebFont ইনজেকশন
     if (!document.getElementById('kalpurush-font-link')) {
         const fontLink = document.createElement('link');
         fontLink.id = 'kalpurush-font-link';
@@ -12,24 +12,40 @@
         document.head.appendChild(fontLink);
     }
 
-    // 2. Firebase Bridge Integration
+    // 2. নির্ভরযোগ্য ফায়ারবেস কানেকশন ইঞ্জিন (Zero Failure Bridge)
     let fbDb = null, fbRef = null, fbSet = null;
 
-    async function initFirebaseBridge() {
+    async function ensureFirebaseBridge() {
+        if (fbDb && fbRef && fbSet) return true;
         try {
-            const { getApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-            const { getDatabase, ref, set } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
-            const app = getApp();
-            fbDb = getDatabase(app);
-            fbRef = ref;
-            fbSet = set;
+            const fbAppModule = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+            const fbDbModule = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+            
+            let app;
+            const apps = fbAppModule.getApps ? fbAppModule.getApps() : [];
+            if (apps.length > 0) {
+                app = apps[0];
+            } else {
+                app = fbAppModule.getApp();
+            }
+            
+            fbDb = fbDbModule.getDatabase(app);
+            fbRef = fbDbModule.ref;
+            fbSet = fbDbModule.set;
+            console.log("✅ Quick Transaction Firebase Bridge Connected Successfully!");
+            return true;
         } catch (e) {
-            console.warn("Firebase Bridge Note:", e);
+            console.warn("⚠️ Firebase Bridge retry scheduled:", e.message);
+            return false;
         }
     }
-    initFirebaseBridge();
+    
+    // পেজ লোড ও টাইমার দিয়ে নিশ্চিত কানেকশন
+    ensureFirebaseBridge();
+    setTimeout(ensureFirebaseBridge, 1000);
+    setTimeout(ensureFirebaseBridge, 3000);
 
-    // 3. ফন্ট ও পপ-আপ সিএসএস (Kalpurush & Times New Roman)
+    // 3. CSS Styles
     const cleanStyles = `
     #cust-quick-tx-section,
     #cust-quick-tx-section *:not(i),
@@ -104,7 +120,6 @@
         box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
     }
     
-    /* কাস্টমার লাইভ ইনফো স্ট্রিপ */
     .qt-cust-live-info {
         display: none;
         align-items: center;
@@ -135,7 +150,6 @@
         color: #ffffff;
     }
 
-    /* সার্চ রেজাল্ট ড্রপডাউন */
     .qt-search-results {
         position: absolute;
         top: 100%;
@@ -209,7 +223,6 @@
         background: #059669;
     }
 
-    /* পপ-আপ মোডাল (POPUP MODAL STYLES) */
     .qt-popup-overlay {
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
@@ -281,7 +294,7 @@
     styleEl.innerHTML = cleanStyles;
     document.head.appendChild(styleEl);
 
-    // 4. এইচটিএমএল স্ট্রাকচার ও পপ-আপ মোডাল
+    // 4. HTML Structure
     function getCleanQuickTxHTML() {
         const todayStr = new Date().toISOString().split('T')[0];
         return `
@@ -294,14 +307,12 @@
 
                 <form id="qtCleanForm" onsubmit="window.saveCleanQuickTransaction(event)">
                     <div class="qt-balanced-grid">
-                        <!-- সারি ১: গ্রাহক সিলেকশন (২ কলাম জুড়ে) -->
                         <div class="qt-group-item qt-col-span-2" style="grid-column: span 2;">
                             <label>Customer Selection (নাম বা মোবাইল লিখুন)</label>
                             <input type="text" id="qtCustSearchInput" class="qt-control-input" placeholder="কাস্টমারের নাম বা মোবাইল নাম্বার দিয়ে খুঁজুন..." autocomplete="off" oninput="window.filterQuickCustomers(this.value)" onfocus="window.filterQuickCustomers(this.value)">
                             <input type="hidden" id="qtSelectedCustId" value="" required>
                             <div id="qtCustSearchResults" class="qt-search-results"></div>
 
-                            <!-- লাইভ কাস্টমার ইনফো বার -->
                             <div class="qt-cust-live-info" id="qtCustLiveInfo">
                                 <div>
                                     <span style="color:#64748b;">বর্তমান বকেয়া:</span> 
@@ -313,7 +324,6 @@
                             </div>
                         </div>
 
-                        <!-- সারি ১: লেনদেনের ধরন (১ কলাম) -->
                         <div class="qt-group-item">
                             <label>Transaction Type</label>
                             <select id="qtCleanType" class="qt-control-input">
@@ -322,19 +332,16 @@
                             </select>
                         </div>
 
-                        <!-- সারি ১: পরিমাণ (১ কলাম) -->
                         <div class="qt-group-item">
                             <label>Amount (৳)</label>
                             <input type="number" step="any" min="1" id="qtCleanAmount" class="qt-control-input" placeholder="0.00" required style="font-weight: 700;">
                         </div>
 
-                        <!-- সারি ২: তারিখ (১ কলাম) -->
                         <div class="qt-group-item">
                             <label>Date</label>
                             <input type="date" id="qtCleanDate" class="qt-control-input" value="${todayStr}" required style="cursor: pointer;">
                         </div>
 
-                        <!-- সারি ২: পেমেন্ট মাধ্যম (১ কলাম) -->
                         <div class="qt-group-item">
                             <label>Payment Method</label>
                             <select id="qtCleanPaymentMethod" class="qt-control-input">
@@ -347,14 +354,12 @@
                             </select>
                         </div>
 
-                        <!-- সারি ২: বিবরণ (২ কলাম জুড়ে) -->
                         <div class="qt-group-item qt-col-span-2" style="grid-column: span 2;">
                             <label>Description / Particulars (ঐচ্ছিক)</label>
                             <input type="text" id="qtCleanDesc" class="qt-control-input" placeholder="Notes, Item Details or Receipt info...">
                         </div>
                     </div>
 
-                    <!-- সারি ৩: চেকবক্স এবং সেভ বাটন -->
                     <div class="qt-bottom-action-bar">
                         <label class="qt-clean-backdated" for="qtCleanIsBackdated">
                             <input type="checkbox" id="qtCleanIsBackdated">
@@ -368,22 +373,19 @@
             </div>
         </div>
 
-        <!-- কাস্টমার লেনদেন হিস্ট্রি পপ-আপ মোডাল (শুধুমাত্র টেবিল) -->
         <div class="qt-popup-overlay" id="qtSummaryPopupOverlay">
             <div class="qt-popup-modal">
                 <div class="qt-popup-header">
                     <h3 id="qtPopCustName">গ্রাহকের লেনদেন হিস্ট্রি</h3>
                     <button class="qt-popup-close" onclick="window.closeCustomerSummaryPopup()">✕</button>
                 </div>
-                <div class="qt-popup-body" id="qtPopBody">
-                    <!-- Dynamic Table Content -->
-                </div>
+                <div class="qt-popup-body" id="qtPopBody"></div>
             </div>
         </div>
         `;
     }
 
-    // 5. দ্রুত কাস্টমার সার্চ ও ড্রপডাউন রেন্ডার
+    // 5. Customer Filter & Selection
     window.filterQuickCustomers = function (keyword) {
         const resultsBox = document.getElementById('qtCustSearchResults');
         if (!resultsBox) return;
@@ -414,7 +416,6 @@
         resultsBox.style.display = 'block';
     };
 
-    // কাস্টমার সিলেক্ট করলে লাইভ ব্যালেন্স দেখানো
     window.selectQuickCustomer = function (id, name, phone) {
         document.getElementById('qtSelectedCustId').value = id;
         document.getElementById('qtCustSearchInput').value = `${name} ${phone ? '(' + phone + ')' : ''}`;
@@ -448,7 +449,7 @@
         }
     });
 
-    // 6. পপ-আপ মোডাল (শুধুমাত্র লেনদেনের টেবিল)
+    // 6. Popup Summary Modal
     window.openCustomerSummaryPopup = function () {
         const custId = document.getElementById('qtSelectedCustId').value;
         if (!custId) return;
@@ -496,7 +497,7 @@
         document.getElementById('qtSummaryPopupOverlay').classList.remove('active');
     };
 
-    // 7. ট্রানজ্যাকশন সেভ ইঞ্জিন
+    // 7. বুলেটপ্রুফ ট্রানজ্যাকশন সেভ ইঞ্জিন (Direct Node Persistence)
     window.saveCleanQuickTransaction = async function (e) {
         e.preventDefault();
 
@@ -528,8 +529,9 @@
         if (isBackdated) finalDesc += ' [পুরানা হিসাব]';
 
         const now = new Date();
+        const txId = 'tx_' + Date.now();
         const txObj = {
-            id: 'tx_' + Date.now(),
+            id: txId,
             customerId: custId,
             type: txType === 'Received' ? 'Credit' : 'Debit',
             debit: txType === 'Given' ? amount : 0,
@@ -543,37 +545,45 @@
         };
 
         try {
+            await ensureFirebaseBridge();
+
+            // লোকাল মেমোরি আপডেট
             if (!window.customerTransactions) window.customerTransactions = [];
             window.customerTransactions.push(txObj);
 
+            // ১. ফায়ারবেস ব্যাকএন্ডে ইউনিক চাইল্ড সেভ (কখনো ওভাররাইট হবে না)
             if (fbDb && fbSet && fbRef) {
-                await fbSet(fbRef(fbDb, 'transactions'), window.customerTransactions);
+                await fbSet(fbRef(fbDb, 'transactions/' + txId), txObj);
             } else if (typeof window.writeToFirebase === 'function') {
-                await window.writeToFirebase('transactions', window.customerTransactions);
+                await window.writeToFirebase('transactions/' + txId, txObj);
+            } else {
+                throw new Error("Firebase Bridge পাওয়া যায়নি! ইন্টারনেট চেক করুন।");
             }
 
+            // ২. ইউআই এবং ড্যাশবোর্ড আপডেট
             if (typeof window.renderCustomerListTable === 'function') window.renderCustomerListTable();
             if (typeof window.updateDashboardCards === 'function') window.updateDashboardCards();
 
-            // ক্লিয়ার ফিল্ডস
+            // ফিল্ড রিসেট
             document.getElementById('qtCleanAmount').value = '';
             document.getElementById('qtCleanDesc').value = '';
             document.getElementById('qtCleanIsBackdated').checked = false;
 
-            // লাইভ বকেয়া আপডেট
             const cust = (window.customers || []).find(c => c.id === custId);
             window.selectQuickCustomer(custId, cust ? cust.name : '', cust ? cust.phone : '');
 
             if (typeof window.hideLoader === 'function') window.hideLoader();
-            if (typeof window.showToast === 'function') window.showToast("লেনদেন সফলভাবে সম্পন্ন হয়েছে!", "success");
+            if (typeof window.showToast === 'function') window.showToast("লেনদেন সফলভাবে ডাটাবেসে সেভ হয়েছে!", "success");
 
         } catch (err) {
             if (typeof window.hideLoader === 'function') window.hideLoader();
+            console.error("Save Error:", err);
             if (typeof window.showToast === 'function') window.showToast("Error: " + err.message, "error");
+            alert("সংরক্ষণ ব্যর্থ হয়েছে: " + err.message);
         }
     };
 
-    // 8. সাইডবার সাব-মেনু ও সেকশন সুইচ
+    // 8. Navigation & Injection
     window.openCleanQuickTxSection = function () {
         if (typeof window.switchCustomerSubSection === 'function') {
             window.switchCustomerSubSection('cust-quick-tx-section');
