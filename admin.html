@@ -3551,7 +3551,7 @@ safeCards.forEach(card => {
             document.getElementById('customerFormTitle').innerHTML = '<i class="fa-solid fa-user-plus" style="color: #00a8ef;"></i> Add New Customer';
         };
 
-        const custForm = document.getElementById('customerMgmtForm');
+const custForm = document.getElementById('customerMgmtForm');
         if (custForm) {
             custForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -3564,10 +3564,12 @@ safeCards.forEach(card => {
                 const status = document.getElementById('custStatus').value;
 
                 try {
+                    let targetCust = null;
                     if (editId) {
                         const idx = customers.findIndex(c => c.id === editId);
                         if (idx !== -1) {
                             customers[idx] = { ...customers[idx], name, phone, address, openingBalance, status };
+                            targetCust = customers[idx];
                         }
                     } else {
                         const newCust = {
@@ -3579,9 +3581,12 @@ safeCards.forEach(card => {
                             status
                         };
                         customers.push(newCust);
+                        targetCust = newCust;
                     }
                     
-                    await writeToFirebase('customers', customers);
+                    if (targetCust) {
+                        await writeToFirebase('customers/' + targetCust.id, targetCust);
+                    }
                     resetCustomerForm();
                     renderCustomerListTable();
                     hideLoader();
@@ -3592,6 +3597,7 @@ safeCards.forEach(card => {
                 }
             });
         }
+        
         window.editCustomer = function(id) {
             const c = customers.find(item => item.id === id);
             if (!c) return;
@@ -3615,7 +3621,7 @@ safeCards.forEach(card => {
                     showLoader("Deleting Customer...");
                     try {
                         customers = customers.filter(c => c.id !== id);
-                        await writeToFirebase('customers', customers);
+                        await writeToFirebase('customers/' + id, null);
                         renderCustomerListTable();
                         hideLoader();
                         showToast("Customer deleted.", "success");
@@ -3626,7 +3632,6 @@ safeCards.forEach(card => {
                 }
             });
         };
-
         window.handleTxTypeChange = function() {
             const type = document.getElementById('txType').value;
             const debitInp = document.getElementById('txDebit');
@@ -3677,7 +3682,7 @@ safeCards.forEach(card => {
 
             try {
                 customerTransactions.push(txObj);
-                await writeToFirebase('transactions', customerTransactions);
+                await writeToFirebase('transactions/' + txObj.id, txObj);
 
                 document.getElementById('transactionEntryForm').reset();
                 document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
