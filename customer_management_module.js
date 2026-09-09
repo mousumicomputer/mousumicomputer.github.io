@@ -974,9 +974,11 @@ window.handleNewCustomerSubmit = async function(e) {
     }
 
     try {
-        const { getDatabase, ref, set } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
-        const db = getDatabase();
-        await set(ref(db, 'customers'), customers);
+        // ✅ সংশোধিত নিরাপদ কোড:
+const targetCust = editId ? customers.find(c => c.id === editId) : newCust;
+const { getDatabase, ref, set } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+const db = getDatabase();
+await set(ref(db, 'customers/' + targetCust.id), targetCust);
 
         window.customers = customers;
 
@@ -1452,9 +1454,10 @@ window.submitModernTransaction = async function() {
         let allTxs = window.customerTransactions || [];
         allTxs.push(txObj);
 
-        const { getDatabase, ref, set } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
-        const db = getDatabase();
-        await set(ref(db, 'transactions'), allTxs);
+        // ✅ সংশোধিত নিরাপদ কোড (শুধু এই নতুন লেনদেনটি সেভ করবে, আগের কোনো ডাটা মুছবে না):
+const { getDatabase, ref, set } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+const db = getDatabase();
+await set(ref(db, 'transactions/' + txObj.id), txObj);
 
         window.customerTransactions = allTxs;
 
@@ -1492,9 +1495,10 @@ async function executeTransactionDeletion(txId, custId) {
         let allTxs = window.customerTransactions || [];
         const updatedTxs = allTxs.filter(t => t.id !== txId);
 
-        const { getDatabase, ref, set } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
-        const db = getDatabase();
-        await set(ref(db, 'transactions'), updatedTxs);
+        // ✅ সংশোধিত নিরাপদ কোড (অন্যদের না ছুঁয়ে শুধু এই নির্দিষ্ট রেকর্ডটি মুছবে):
+const { getDatabase, ref, remove } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+const db = getDatabase();
+await remove(ref(db, 'transactions/' + txId));
 
         window.customerTransactions = updatedTxs;
 
