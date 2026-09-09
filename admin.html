@@ -3731,10 +3731,14 @@ safeCards.forEach(card => {
 
         window.renderDueSummarySection = function() {
             const totals = calculateCustomerTotals();
-            if(document.getElementById('dueCardTotalCust')) document.getElementById('dueCardTotalCust').innerText = totals.totalCustomers;
-            if(document.getElementById('dueCardCustWithDue')) document.getElementById('dueCardCustWithDue').innerText = totals.custWithDue;
+            const totalCust = totals.totalCustomers || 0;
+            const dueCust = totals.dueCount || totals.custWithDue || 0;
+            const totalDue = totals.totalReceivable !== undefined ? totals.totalReceivable : (totals.totalOutstanding || 0);
+
+            if(document.getElementById('dueCardTotalCust')) document.getElementById('dueCardTotalCust').innerText = totalCust;
+            if(document.getElementById('dueCardCustWithDue')) document.getElementById('dueCardCustWithDue').innerText = dueCust;
             if(document.getElementById('dueCardTotalOutstanding')) {
-                document.getElementById('dueCardTotalOutstanding').innerText = `৳ ${totals.totalOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                document.getElementById('dueCardTotalOutstanding').innerText = `৳ ${Number(totalDue).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
             }
         const tbody = document.getElementById('highestDueTableBody');
             if (!tbody) return;
