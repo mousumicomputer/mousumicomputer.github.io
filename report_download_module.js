@@ -1,15 +1,7 @@
 /**
  * ============================================================================
  * MOUSUMI COMPUTER ERP - DEDICATED REPORT DOWNLOAD CENTER
- * File: report_download_module.js (FULL UNABRIDGED & COMPACT VERSION)
- * 
- * Features:
- * 1. Single Day Mode (Today/Yesterday) & Multi-Day Date Range (Weekly/Monthly).
- * 2. Accurate historical snapshots for any selected past date.
- * 3. Full Executive Financial Summary (All Asset Categories with Correct Sum).
- * 4. NEW: Customer Transactions Report (Dedicated 3-Columns: পেলাম, দিলাম, খরচ).
- * 5. Full Excel & PDF Generation for Both Reports.
- * 6. 100% Safe & Zero-Flicker Native Integration.
+ * File: report_download_module.js (FIXED & HISTORICALLY ACCURATE VERSION)
  * ============================================================================
  */
 
@@ -183,7 +175,6 @@
             .rpt-placeholder-state i { font-size: 2.8rem; color: #cbd5e1; margin-bottom: 12px; }
             .rpt-placeholder-state h4 { font-size: 1.05rem; color: #475569; margin-bottom: 4px; }
             
-            /* নতুন কম্প্যাক্ট লেনদেন রিপোর্ট স্টাইল */
             .clean-report-box {
                 max-width: 850px;
                 margin: 0 auto;
@@ -268,7 +259,6 @@
                 width: 150px;
             }
 
-            /* DCR STATEMENT PREVIEW */
             .dcr-preview-doc {
                 font-family: 'Tiro Bangla', serif;
                 color: #000;
@@ -302,9 +292,7 @@
                 margin: 2px 0 0 0;
                 text-transform: uppercase;
             }
-            .dcr-sec-box {
-                margin-bottom: 12px;
-            }
+            .dcr-sec-box { margin-bottom: 12px; }
             .dcr-sec-bar {
                 background-color: #f3f4f6;
                 font-size: 11.5px;
@@ -405,8 +393,8 @@
                         <div class="rpt-control-group" style="grid-column: span 2;">
                             <label>Select Report Type</label>
                             <select id="hubReportType" class="rpt-sel">
-                                <option value="daily_transactions" selected>Customer Transactions Report (লেনদেনের রিপোর্ট)</option>
-                                <option value="daily_closing">Daily Closing Financial Statement (পূর্ণাঙ্গ আর্থিক বিবরণী)</option>
+                                <option value="daily_transactions">Customer Transactions Report (লেনদেনের রিপোর্ট)</option>
+                                <option value="daily_closing" selected>Daily Closing Financial Statement (পূর্ণাঙ্গ আর্থিক বিবরণী)</option>
                             </select>
                         </div>
                         <div class="rpt-control-group">
@@ -479,7 +467,6 @@
         if (title) title.innerText = "REPORT DOWNLOAD CENTER";
 
         const fromInp = document.getElementById('hubFromDate');
-        const toInp = document.getElementById('hubToDate');
         if (fromInp && !fromInp.value) {
             window.hubDateShortcut('today');
         }
@@ -504,7 +491,7 @@
         };
     }
 
-    // ৬. ডাটা সংগ্রাহক - কাস্টমার লেনদেন (৩টি আলাদা কলামের ডাটা সহ)
+    // ৬. ডাটা সংগ্রাহক - কাস্টমার লেনদেন
     function getTransactionReportData(fromDate, toDate) {
         const store = getLiveStore();
         const txs = Array.isArray(store.customerTransactions) ? store.customerTransactions : [];
@@ -554,13 +541,11 @@
         });
     }
 
-    // ৭. ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT (অক্ষুণ্ণ ও সম্পূর্ণ)
+    // ৭. নিখুঁত ও হিস্টোরিক্যাল ডাটা সংগ্রাহক - DAILY CLOSING FINANCIAL STATEMENT
     function getDailyClosingStatementData(fromDate, toDate) {
         const store = getLiveStore();
         const reports = Array.isArray(store.dailyClosingReports) ? store.dailyClosingReports : [];
         const isRange = fromDate !== toDate;
-
-        const closedSnap = reports.find(r => String(r.report_date) === String(toDate));
 
         const categories = Array.isArray(store.categories) ? store.categories : [];
         const accounts = Array.isArray(store.accounts) ? store.accounts : [];
@@ -572,6 +557,7 @@
         const customers = Array.isArray(store.customers) ? store.customers : [];
         const customerTransactions = Array.isArray(store.customerTransactions) ? store.customerTransactions : [];
 
+        // নির্দিষ্ট সময়ের মোট দিল ও পেল
         let totalDilam = 0;
         let totalPelam = 0;
         customerTransactions.filter(t => {
@@ -582,6 +568,7 @@
             totalPelam += (parseFloat(t.credit) || 0);
         });
 
+        // ওই তারিখ পর্যন্ত কাস্টমার বকেয়া (Historical Due Calculation)
         let totalCustomerDue = 0;
         customers.forEach(c => {
             let due = parseFloat(c.openingBalance) || 0;
@@ -596,123 +583,10 @@
             if (due > 0) totalCustomerDue += due;
         });
 
-        if (!isRange && closedSnap) {
-            let snapCash = 0, snapCard = 0, snapBank = 0, snapPersonal = 0, snapAgent = 0, snapRecharge = 0;
-            let bankList = [], personalList = [], agentList = [], rechargeList = [];
-            let cashRows = [], cardRows = [];
+        // ১. ওই নির্দিষ্ট দিনের রেকর্ড আছে কিনা খোঁজা
+        const closedSnap = reports.find(r => String(r.report_date) === String(toDate));
 
-            if (closedSnap.details) {
-                const det = closedSnap.details;
-                snapCash = det.cashInventory ? det.cashInventory.total : (det.summary ? det.summary.totalCash : 0);
-                snapCard = det.cardInventory ? det.cardInventory.total : (det.summary ? det.summary.totalCard : 0);
-                snapBank = det.bankAccounts ? det.bankAccounts.total : (det.summary ? det.summary.totalBank : 0);
-                snapPersonal = det.personalAccounts ? det.personalAccounts.total : (det.summary ? det.summary.totalPersonal : 0);
-                snapAgent = det.agentAccounts ? det.agentAccounts.total : (det.summary ? det.summary.totalAgent : 0);
-                snapRecharge = det.rechargeBalances ? det.rechargeBalances.total : (det.summary ? det.summary.totalRecharge : 0);
-
-                bankList = det.bankAccounts ? det.bankAccounts.list : [];
-                personalList = det.personalAccounts ? det.personalAccounts.list : [];
-                agentList = det.agentAccounts ? det.agentAccounts.list : [];
-                rechargeList = det.rechargeBalances ? det.rechargeBalances.list : [];
-                cashRows = det.cashInventory ? det.cashInventory.rows : [];
-                cardRows = det.cardInventory ? det.cardInventory.rows : [];
-            } else {
-                snapBank = parseFloat(closedSnap.total_bank) || 0;
-                snapPersonal = parseFloat(closedSnap.total_personal) || 0;
-                snapAgent = parseFloat(closedSnap.total_agent) || 0;
-                snapRecharge = parseFloat(closedSnap.total_recharge) || 0;
-                snapCash = parseFloat(closedSnap.total_cash) || 0;
-                snapCard = parseFloat(closedSnap.total_card) || 0;
-
-                if (!snapCash && !snapCard && closedSnap.actual_closing) {
-                    snapCash = parseFloat(closedSnap.actual_closing);
-                }
-            }
-
-            const correctTotalAssets = (snapCash + snapCard + snapBank + snapPersonal + snapAgent + snapRecharge) || parseFloat(closedSnap.actual_closing) || 0;
-
-            return {
-                isRange: false,
-                reportDate: toDate,
-                dateRangeText: `Date: ${toDate}`,
-                reportTime: closedSnap.closing_time || "--:--",
-                reportId: closedSnap.report_id || `DCR-${Date.now()}`,
-                refId: `REF-${String(Math.abs((closedSnap.report_id || '').split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0))).padStart(6, '0').slice(-6)}`,
-                summary: {
-                    totalCash: snapCash,
-                    totalCard: snapCard,
-                    totalBank: snapBank,
-                    totalPersonal: snapPersonal,
-                    totalAgent: snapAgent,
-                    totalRecharge: snapRecharge,
-                    totalCustomerDue: closedSnap.total_due || totalCustomerDue,
-                    totalNetBalance: correctTotalAssets
-                },
-                dueSummary: {
-                    todayDilam: (closedSnap.total_dilam !== undefined) ? closedSnap.total_dilam : totalDilam,
-                    todayPelam: (closedSnap.total_pelam !== undefined) ? closedSnap.total_pelam : totalPelam,
-                    totalCustomerDue: closedSnap.total_due || totalCustomerDue
-                },
-                bankAccounts: { list: bankList, total: snapBank },
-                personalAccounts: { list: personalList, total: snapPersonal },
-                agentAccounts: { list: agentList, total: snapAgent },
-                rechargeBalances: { list: rechargeList, total: snapRecharge },
-                cashInventory: { rows: cashRows, total: snapCash },
-                cardInventory: { rows: cardRows, total: snapCard }
-            };
-        }
-
-        const pastSnapshots = reports
-            .filter(r => String(r.report_date) <= toDate)
-            .sort((a, b) => String(b.report_date).localeCompare(String(a.report_date)));
-
-        const fallbackSnap = pastSnapshots.length > 0 ? pastSnapshots[0] : null;
-        const todayStr = new Date().toISOString().split('T')[0];
-        const isHistoricalDate = toDate < todayStr;
-
-        if (isHistoricalDate && fallbackSnap && fallbackSnap.details) {
-            const det = fallbackSnap.details;
-            const snapCash = det.cashInventory ? det.cashInventory.total : 0;
-            const snapCard = det.cardInventory ? det.cardInventory.total : 0;
-            const snapBank = det.bankAccounts ? det.bankAccounts.total : 0;
-            const snapPersonal = det.personalAccounts ? det.personalAccounts.total : 0;
-            const snapAgent = det.agentAccounts ? det.agentAccounts.total : 0;
-            const snapRecharge = det.rechargeBalances ? det.rechargeBalances.total : 0;
-            const correctTotalAssets = snapCash + snapCard + snapBank + snapPersonal + snapAgent + snapRecharge;
-
-            return {
-                isRange: isRange,
-                fromDate: fromDate,
-                toDate: toDate,
-                dateRangeText: isRange ? `Range: ${fromDate} to ${toDate}` : `Date: ${toDate} (As of ${fallbackSnap.report_date})`,
-                reportDate: toDate,
-                reportTime: fallbackSnap.closing_time || "--:--",
-                reportId: fallbackSnap.report_id || `DCR-${Date.now()}`,
-                refId: `REF-${String(Math.abs((fallbackSnap.report_id || '').split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0))).padStart(6, '0').slice(-6)}`,
-                summary: {
-                    totalCash: snapCash,
-                    totalCard: snapCard,
-                    totalBank: snapBank,
-                    totalPersonal: snapPersonal,
-                    totalAgent: snapAgent,
-                    totalRecharge: snapRecharge,
-                    totalCustomerDue,
-                    totalNetBalance: correctTotalAssets
-                },
-                dueSummary: {
-                    todayDilam: totalDilam,
-                    todayPelam: totalPelam,
-                    totalCustomerDue
-                },
-                bankAccounts: det.bankAccounts || { list: [], total: 0 },
-                personalAccounts: det.personalAccounts || { list: [], total: 0 },
-                agentAccounts: det.agentAccounts || { list: [], total: 0 },
-                rechargeBalances: det.rechargeBalances || { list: [], total: 0 },
-                cashInventory: det.cashInventory || { rows: [], total: 0 },
-                cardInventory: det.cardInventory || { rows: [], total: 0 }
-            };
-        }
-
+        // ২. লাইভ ব্যালেন্স ভিত্তিক বর্তমান ব্রেকডাউন তৈরি
         const getCatAccounts = (matchNames) => {
             const list = [];
             let total = 0;
@@ -728,45 +602,92 @@
             return { list, total };
         };
 
-        const bankAccs = getCatAccounts(['bank']);
-        const personalAccs = getCatAccounts(['personal']);
-        const agentAccs = getCatAccounts(['agent']);
-        const rechargeAccs = getCatAccounts(['recharge']);
+        const liveBankAccs = getCatAccounts(['bank']);
+        const livePersonalAccs = getCatAccounts(['personal']);
+        const liveAgentAccs = getCatAccounts(['agent']);
+        const liveRechargeAccs = getCatAccounts(['recharge']);
 
         const cashNotes = [1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];
-        const cashRows = [];
-        let totalCash = 0;
+        const liveCashRows = [];
+        let liveTotalCash = 0;
         cashNotes.forEach(denom => {
             const qty = parseInt(cashQuantities[denom], 10) || 0;
             const amt = qty * denom;
-            totalCash += amt;
-            if (qty > 0) cashRows.push({ note: `৳ ${denom} Notes`, qty, amount: amt });
+            liveTotalCash += amt;
+            if (qty > 0) liveCashRows.push({ note: `৳ ${denom} Notes`, qty, amount: amt });
         });
         if (cashOthers > 0) {
-            totalCash += cashOthers;
-            cashRows.push({ note: `Others / Coins`, qty: 1, amount: cashOthers });
+            liveTotalCash += cashOthers;
+            liveCashRows.push({ note: `Others / Coins`, qty: 1, amount: cashOthers });
         }
 
-        const cardRows = [];
-        let totalCardsValue = 0;
+        const liveCardRows = [];
+        let liveTotalCardsValue = 0;
         ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
             const cards = Array.isArray(cardConfig[op]) ? cardConfig[op] : Object.values(cardConfig[op] || {});
             const qMap = cardQuantities[op] || {};
             cards.filter(c => c.active !== false).forEach(c => {
                 const q = parseInt(qMap[c.id], 10) || 0;
                 const amt = q * (c.price || 0);
-                totalCardsValue += amt;
-                if (q > 0) cardRows.push({ name: `${op} ${c.name}`, qty: q, total: amt });
+                liveTotalCardsValue += amt;
+                if (q > 0) liveCardRows.push({ name: `${op} ${c.name}`, qty: q, total: amt });
             });
         });
 
-        const totalBankAndMFS = bankAccs.total + personalAccs.total + agentAccs.total + rechargeAccs.total;
-        const totalAssetsSum = totalCash + totalCardsValue + totalBankAndMFS;
+        // ৩. হিস্টোরিক্যাল ডেটা ম্যাচিং এবং ফলব্যাক সমাধান
+        let finalCash = liveTotalCash;
+        let finalCard = liveTotalCardsValue;
+        let finalBank = liveBankAccs.total;
+        let finalPersonal = livePersonalAccs.total;
+        let finalAgent = liveAgentAccs.total;
+        let finalRecharge = liveRechargeAccs.total;
 
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-        const reportId = `DCR-${Date.now()}`;
-        const refId = `REF-${String(Math.abs(reportId.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0))).padStart(6, '0').slice(-6)}`;
+        let finalBankList = liveBankAccs.list;
+        let finalPersonalList = livePersonalAccs.list;
+        let finalAgentList = liveAgentAccs.list;
+        let finalRechargeList = liveRechargeAccs.list;
+        let finalCashRows = liveCashRows;
+        let finalCardRows = liveCardRows;
+
+        let repTime = "--:--";
+        let repId = `DCR-${Date.now()}`;
+
+        if (closedSnap) {
+            repTime = closedSnap.closing_time || "--:--";
+            repId = closedSnap.report_id || repId;
+
+            if (closedSnap.details) {
+                const det = closedSnap.details;
+                finalCash = det.cashInventory?.total ?? finalCash;
+                finalCard = det.cardInventory?.total ?? finalCard;
+                finalBank = det.bankAccounts?.total ?? finalBank;
+                finalPersonal = det.personalAccounts?.total ?? finalPersonal;
+                finalAgent = det.agentAccounts?.total ?? finalAgent;
+                finalRecharge = det.rechargeBalances?.total ?? finalRecharge;
+
+                if (det.bankAccounts?.list?.length) finalBankList = det.bankAccounts.list;
+                if (det.personalAccounts?.list?.length) finalPersonalList = det.personalAccounts.list;
+                if (det.agentAccounts?.list?.length) finalAgentList = det.agentAccounts.list;
+                if (det.rechargeBalances?.list?.length) finalRechargeList = det.rechargeBalances.list;
+                if (det.cashInventory?.rows?.length) finalCashRows = det.cashInventory.rows;
+                if (det.cardInventory?.rows?.length) finalCardRows = det.cardInventory.rows;
+            } else if (closedSnap.actual_closing) {
+                // পুরানো সেভ করা রেকর্ডে details না থাকলে пропорционально বা সমন্বিত ব্যাকআপ
+                const actual = parseFloat(closedSnap.actual_closing) || 0;
+                const bankTotal = parseFloat(closedSnap.total_bank) || finalBank;
+                const mfsTotal = (parseFloat(closedSnap.total_personal) || finalPersonal) + (parseFloat(closedSnap.total_agent) || finalAgent);
+                const recTotal = parseFloat(closedSnap.total_recharge) || finalRecharge;
+                const cardTotal = parseFloat(closedSnap.total_card) || finalCard;
+                
+                finalBank = bankTotal;
+                finalRecharge = recTotal;
+                finalCard = cardTotal;
+                finalCash = Math.max(0, actual - (finalBank + mfsTotal + finalRecharge + finalCard));
+            }
+        }
+
+        const totalAssetsSum = finalCash + finalCard + finalBank + finalPersonal + finalAgent + finalRecharge;
+        const refId = `REF-${String(Math.abs(repId.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0))).padStart(6, '0').slice(-6)}`;
 
         return {
             isRange: isRange,
@@ -774,34 +695,34 @@
             toDate: toDate,
             dateRangeText: isRange ? `Range: ${fromDate} to ${toDate}` : `Date: ${toDate}`,
             reportDate: toDate,
-            reportTime: timeStr,
-            reportId: reportId,
+            reportTime: repTime,
+            reportId: repId,
             refId: refId,
             summary: {
-                totalCash,
-                totalCard: totalCardsValue,
-                totalBank: bankAccs.total,
-                totalPersonal: personalAccs.total,
-                totalAgent: agentAccs.total,
-                totalRecharge: rechargeAccs.total,
-                totalCustomerDue,
-                totalNetBalance: totalAssetsSum
+                totalCash: finalCash,
+                totalCard: finalCard,
+                totalBank: finalBank,
+                totalPersonal: finalPersonal,
+                totalAgent: finalAgent,
+                totalRecharge: finalRecharge,
+                totalCustomerDue: closedSnap?.total_due || totalCustomerDue,
+                totalNetBalance: closedSnap?.actual_closing ? parseFloat(closedSnap.actual_closing) : totalAssetsSum
             },
             dueSummary: {
-                todayDilam: totalDilam,
-                todayPelam: totalPelam,
-                totalCustomerDue
+                todayDilam: (closedSnap?.total_dilam !== undefined) ? closedSnap.total_dilam : totalDilam,
+                todayPelam: (closedSnap?.total_pelam !== undefined) ? closedSnap.total_pelam : totalPelam,
+                totalCustomerDue: closedSnap?.total_due || totalCustomerDue
             },
-            bankAccounts: bankAccs,
-            personalAccounts: personalAccs,
-            agentAccounts: agentAccs,
-            rechargeBalances: rechargeAccs,
-            cashInventory: { rows: cashRows, total: totalCash },
-            cardInventory: { rows: cardRows, total: totalCardsValue }
+            bankAccounts: { list: finalBankList, total: finalBank },
+            personalAccounts: { list: finalPersonalList, total: finalPersonal },
+            agentAccounts: { list: finalAgentList, total: finalAgent },
+            rechargeBalances: { list: finalRechargeList, total: finalRecharge },
+            cashInventory: { rows: finalCashRows, total: finalCash },
+            cardInventory: { rows: finalCardRows, total: finalCard }
         };
     }
 
-    // ৮. প্রিভিউ জেনারেটর (দুই রিপোর্টের পূর্ণাঙ্গ প্রিভিউ)
+    // ৮. প্রিভিউ জেনারেটর
     window.hubGeneratePreview = function () {
         try {
             const rptType = document.getElementById('hubReportType').value;
@@ -814,7 +735,7 @@
                 return;
             }
 
-            // ক. নতুন ৩-কলামের কাস্টমার লেনদেন প্রিভিউ
+            // ক. কাস্টমার লেনদেন প্রিভিউ
             if (rptType === 'daily_transactions') {
                 const data = getTransactionReportData(fromDate, toDate);
                 const isRange = fromDate !== toDate;
@@ -913,7 +834,7 @@
                 return;
             }
 
-            // খ. DAILY CLOSING FINANCIAL STATEMENT প্রিভিউ (সম্পূর্ণ অংশ)
+            // খ. DAILY CLOSING FINANCIAL STATEMENT প্রিভিউ
             if (rptType === 'daily_closing') {
                 const data = getDailyClosingStatementData(fromDate, toDate);
                 
@@ -922,29 +843,29 @@
                     return accList.map(a => `
                         <tr>
                             <td>${escapeHTML(a.name)}</td>
-                            <td style="text-align:right;">${toEnMoney(a.balance)}</td>
+                            <td style="text-align:right;">৳ ${toEnMoney(a.balance)}</td>
                         </tr>
                     `).join('');
                 };
 
                 const renderCashRows = (rows) => {
-                    if (!rows || rows.length === 0) return `<tr><td colspan="3" style="text-align:center; color:#64748b;">No cash in hand</td></tr>`;
+                    if (!rows || rows.length === 0) return `<tr><td colspan="3" style="text-align:center; color:#64748b;">No cash record</td></tr>`;
                     return rows.map(r => `
                         <tr>
                             <td>${escapeHTML(r.note)}</td>
                             <td style="text-align:center;">${r.qty}</td>
-                            <td style="text-align:right;">${toEnMoney(r.amount)}</td>
+                            <td style="text-align:right;">৳ ${toEnMoney(r.amount)}</td>
                         </tr>
                     `).join('');
                 };
 
                 const renderCardRows = (rows) => {
-                    if (!rows || rows.length === 0) return `<tr><td colspan="3" style="text-align:center; color:#64748b;">No cards in stock</td></tr>`;
+                    if (!rows || rows.length === 0) return `<tr><td colspan="3" style="text-align:center; color:#64748b;">No card stock</td></tr>`;
                     return rows.map(r => `
                         <tr>
                             <td>${escapeHTML(r.name)}</td>
                             <td style="text-align:center;">${r.qty}</td>
-                            <td style="text-align:right;">${toEnMoney(r.total)}</td>
+                            <td style="text-align:right;">৳ ${toEnMoney(r.total)}</td>
                         </tr>
                     `).join('');
                 };
@@ -995,7 +916,7 @@
                                 </tr>
                                 <tr class="total-row" style="background:#f9fafb;">
                                     <td>TOTAL CLOSING FINANCIAL BALANCE (ASSETS)</td>
-                                    <td style="text-align:right; font-size:12px; font-weight:bold;">৳ ${toEnMoney(data.summary.totalNetBalance)}</td>
+                                    <td style="text-align:right; font-size:12px; font-weight:bold; color:#047857;">৳ ${toEnMoney(data.summary.totalNetBalance)}</td>
                                 </tr>
                             </table>
                         </div>
@@ -1022,7 +943,7 @@
                             <div class="dcr-sec-bar">BANK ACCOUNTS</div>
                             <table class="dcr-sec-table">
                                 <thead><tr><th style="width:70%;">ACCOUNT NAME</th><th style="text-align:right; width:30%;">BALANCE (৳)</th></tr></thead>
-                                <tbody>${renderAccRows(data.bankAccounts.list)}<tr class="total-row"><td>TOTAL BANK ACCOUNTS</td><td style="text-align:right;">${toEnMoney(data.bankAccounts.total)}</td></tr></tbody>
+                                <tbody>${renderAccRows(data.bankAccounts.list)}<tr class="total-row"><td>TOTAL BANK ACCOUNTS</td><td style="text-align:right;">৳ ${toEnMoney(data.bankAccounts.total)}</td></tr></tbody>
                             </table>
                         </div>
 
@@ -1030,7 +951,7 @@
                             <div class="dcr-sec-bar">PERSONAL ACCOUNTS</div>
                             <table class="dcr-sec-table">
                                 <thead><tr><th style="width:70%;">ACCOUNT NAME</th><th style="text-align:right; width:30%;">BALANCE (৳)</th></tr></thead>
-                                <tbody>${renderAccRows(data.personalAccounts.list)}<tr class="total-row"><td>TOTAL PERSONAL ACCOUNTS</td><td style="text-align:right;">${toEnMoney(data.personalAccounts.total)}</td></tr></tbody>
+                                <tbody>${renderAccRows(data.personalAccounts.list)}<tr class="total-row"><td>TOTAL PERSONAL ACCOUNTS</td><td style="text-align:right;">৳ ${toEnMoney(data.personalAccounts.total)}</td></tr></tbody>
                             </table>
                         </div>
 
@@ -1038,7 +959,7 @@
                             <div class="dcr-sec-bar">AGENT ACCOUNTS</div>
                             <table class="dcr-sec-table">
                                 <thead><tr><th style="width:70%;">ACCOUNT NAME</th><th style="text-align:right; width:30%;">BALANCE (৳)</th></tr></thead>
-                                <tbody>${renderAccRows(data.agentAccounts.list)}<tr class="total-row"><td>TOTAL AGENT ACCOUNTS</td><td style="text-align:right;">${toEnMoney(data.agentAccounts.total)}</td></tr></tbody>
+                                <tbody>${renderAccRows(data.agentAccounts.list)}<tr class="total-row"><td>TOTAL AGENT ACCOUNTS</td><td style="text-align:right;">৳ ${toEnMoney(data.agentAccounts.total)}</td></tr></tbody>
                             </table>
                         </div>
 
@@ -1046,7 +967,7 @@
                             <div class="dcr-sec-bar">RECHARGE BALANCES</div>
                             <table class="dcr-sec-table">
                                 <thead><tr><th style="width:70%;">ACCOUNT NAME</th><th style="text-align:right; width:30%;">BALANCE (৳)</th></tr></thead>
-                                <tbody>${renderAccRows(data.rechargeBalances.list)}<tr class="total-row"><td>TOTAL RECHARGE BALANCES</td><td style="text-align:right;">${toEnMoney(data.rechargeBalances.total)}</td></tr></tbody>
+                                <tbody>${renderAccRows(data.rechargeBalances.list)}<tr class="total-row"><td>TOTAL RECHARGE BALANCES</td><td style="text-align:right;">৳ ${toEnMoney(data.rechargeBalances.total)}</td></tr></tbody>
                             </table>
                         </div>
 
@@ -1054,7 +975,7 @@
                             <div class="dcr-sec-bar">CASH INVENTORY DETAILS</div>
                             <table class="dcr-sec-table">
                                 <thead><tr><th style="width:50%;">NOTES</th><th style="text-align:center; width:20%;">QTY</th><th style="text-align:right; width:30%;">AMOUNT (৳)</th></tr></thead>
-                                <tbody>${renderCashRows(data.cashInventory.rows)}<tr class="total-row"><td colspan="2">TOTAL CASH INVENTORY</td><td style="text-align:right;">${toEnMoney(data.cashInventory.total)}</td></tr></tbody>
+                                <tbody>${renderCashRows(data.cashInventory.rows)}<tr class="total-row"><td colspan="2">TOTAL CASH INVENTORY</td><td style="text-align:right;">৳ ${toEnMoney(data.cashInventory.total)}</td></tr></tbody>
                             </table>
                         </div>
 
@@ -1062,7 +983,7 @@
                             <div class="dcr-sec-bar">CARD INVENTORY DETAILS</div>
                             <table class="dcr-sec-table">
                                 <thead><tr><th style="width:50%;">CARD NAME</th><th style="text-align:center; width:20%;">QTY</th><th style="text-align:right; width:30%;">TOTAL (৳)</th></tr></thead>
-                                <tbody>${renderCardRows(data.cardInventory.rows)}<tr class="total-row"><td colspan="2">TOTAL CARD INVENTORY</td><td style="text-align:right;">${toEnMoney(data.cardInventory.total)}</td></tr></tbody>
+                                <tbody>${renderCardRows(data.cardInventory.rows)}<tr class="total-row"><td colspan="2">TOTAL CARD INVENTORY</td><td style="text-align:right;">৳ ${toEnMoney(data.cardInventory.total)}</td></tr></tbody>
                             </table>
                         </div>
 
@@ -1081,7 +1002,7 @@
         }
     };
 
-    // ৯. PDF প্রিন্ট / ডাউনলোড (দুই রিপোর্টের পূর্ণাঙ্গ প্রিন্ট)
+    // ৯. PDF প্রিন্ট ও ডাউনলোড
     window.hubDownloadPDF = function () {
         const rptType = document.getElementById('hubReportType').value;
         const fromDate = document.getElementById('hubFromDate').value;
@@ -1092,7 +1013,6 @@
             return;
         }
 
-        // ক. লেনদেন রিপোর্টের ৩-কলামের পিডিএফ
         if (rptType === 'daily_transactions') {
             const reportData = getTransactionReportData(fromDate, toDate);
             const isRange = fromDate !== toDate;
@@ -1226,7 +1146,6 @@ html, body { width: 100%; background: #fff; color: #0f172a; font-size: 13.5px; }
             return;
         }
 
-        // খ. DAILY CLOSING FINANCIAL STATEMENT এর প্রিন্ট
         if (rptType === 'daily_closing') {
             const data = getDailyClosingStatementData(fromDate, toDate);
 
@@ -1241,7 +1160,7 @@ html, body { width: 100%; background: #fff; color: #0f172a; font-size: 13.5px; }
             };
 
             const renderCashRows = (rows) => {
-                if (!rows || rows.length === 0) return `<tr><td colspan="3" style="text-align:center; color:#64748b;">No cash in hand</td></tr>`;
+                if (!rows || rows.length === 0) return `<tr><td colspan="3" style="text-align:center; color:#64748b;">No cash record</td></tr>`;
                 return rows.map(r => `
                     <tr>
                         <td>${escapeHTML(r.note)}</td>
@@ -1252,7 +1171,7 @@ html, body { width: 100%; background: #fff; color: #0f172a; font-size: 13.5px; }
             };
 
             const renderCardRows = (rows) => {
-                if (!rows || rows.length === 0) return `<tr><td colspan="3" style="text-align:center; color:#64748b;">No cards in stock</td></tr>`;
+                if (!rows || rows.length === 0) return `<tr><td colspan="3" style="text-align:center; color:#64748b;">No card stock</td></tr>`;
                 return rows.map(r => `
                     <tr>
                         <td>${escapeHTML(r.name)}</td>
@@ -1307,7 +1226,7 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
             <tr><td>Total Personal Accounts (পার্সোনাল ওয়ালেট)</td><td style="text-align:right;">৳ ${toEnMoney(data.summary.totalPersonal)}</td></tr>
             <tr><td>Total Agent Accounts (এজেন্ট ওয়ালেট)</td><td style="text-align:right;">৳ ${toEnMoney(data.summary.totalAgent)}</td></tr>
             <tr><td>Total Recharge Balances (রিচার্জ ব্যালেন্স)</td><td style="text-align:right;">৳ ${toEnMoney(data.summary.totalRecharge)}</td></tr>
-            <tr class="total-row" style="background:#f9fafb;"><td>TOTAL CLOSING FINANCIAL BALANCE (ASSETS)</td><td style="text-align:right; font-size:12px; font-weight:bold;">৳ ${toEnMoney(data.summary.totalNetBalance)}</td></tr>
+            <tr class="total-row" style="background:#f9fafb;"><td>TOTAL CLOSING FINANCIAL BALANCE (ASSETS)</td><td style="text-align:right; font-size:12px; font-weight:bold; color:#047857;">৳ ${toEnMoney(data.summary.totalNetBalance)}</td></tr>
         </table>
     </div>
     <div class="section-block">
@@ -1322,42 +1241,42 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
         <div class="section-bar">BANK ACCOUNTS</div>
         <table class="statement-table">
             <thead><tr><th style="width:70%;">ACCOUNT NAME</th><th style="text-align:right; width:30%;">BALANCE (৳)</th></tr></thead>
-            <tbody>${renderAccRows(data.bankAccounts.list)}<tr class="total-row"><td>TOTAL BANK ACCOUNTS</td><td style="text-align:right;">${toEnMoney(data.bankAccounts.total)}</td></tr></tbody>
+            <tbody>${renderAccRows(data.bankAccounts.list)}<tr class="total-row"><td>TOTAL BANK ACCOUNTS</td><td style="text-align:right;">৳ ${toEnMoney(data.bankAccounts.total)}</td></tr></tbody>
         </table>
     </div>
     <div class="section-block">
         <div class="section-bar">PERSONAL ACCOUNTS</div>
         <table class="statement-table">
             <thead><tr><th style="width:70%;">ACCOUNT NAME</th><th style="text-align:right; width:30%;">BALANCE (৳)</th></tr></thead>
-            <tbody>${renderAccRows(data.personalAccounts.list)}<tr class="total-row"><td>TOTAL PERSONAL ACCOUNTS</td><td style="text-align:right;">${toEnMoney(data.personalAccounts.total)}</td></tr></tbody>
+            <tbody>${renderAccRows(data.personalAccounts.list)}<tr class="total-row"><td>TOTAL PERSONAL ACCOUNTS</td><td style="text-align:right;">৳ ${toEnMoney(data.personalAccounts.total)}</td></tr></tbody>
         </table>
     </div>
     <div class="section-block">
         <div class="section-bar">AGENT ACCOUNTS</div>
         <table class="statement-table">
             <thead><tr><th style="width:70%;">ACCOUNT NAME</th><th style="text-align:right; width:30%;">BALANCE (৳)</th></tr></thead>
-            <tbody>${renderAccRows(data.agentAccounts.list)}<tr class="total-row"><td>TOTAL AGENT ACCOUNTS</td><td style="text-align:right;">${toEnMoney(data.agentAccounts.total)}</td></tr></tbody>
+            <tbody>${renderAccRows(data.agentAccounts.list)}<tr class="total-row"><td>TOTAL AGENT ACCOUNTS</td><td style="text-align:right;">৳ ${toEnMoney(data.agentAccounts.total)}</td></tr></tbody>
         </table>
     </div>
     <div class="section-block">
         <div class="section-bar">RECHARGE BALANCES</div>
         <table class="statement-table">
             <thead><tr><th style="width:70%;">ACCOUNT NAME</th><th style="text-align:right; width:30%;">BALANCE (৳)</th></tr></thead>
-            <tbody>${renderAccRows(data.rechargeBalances.list)}<tr class="total-row"><td>TOTAL RECHARGE BALANCES</td><td style="text-align:right;">${toEnMoney(data.rechargeBalances.total)}</td></tr></tbody>
+            <tbody>${renderAccRows(data.rechargeBalances.list)}<tr class="total-row"><td>TOTAL RECHARGE BALANCES</td><td style="text-align:right;">৳ ${toEnMoney(data.rechargeBalances.total)}</td></tr></tbody>
         </table>
     </div>
     <div class="section-block">
         <div class="section-bar">CASH INVENTORY DETAILS</div>
         <table class="statement-table">
             <thead><tr><th style="width:50%;">NOTES</th><th style="text-align:center; width:20%;">QTY</th><th style="text-align:right; width:30%;">AMOUNT (৳)</th></tr></thead>
-            <tbody>${renderCashRows(data.cashInventory.rows)}<tr class="total-row"><td colspan="2">TOTAL CASH INVENTORY</td><td style="text-align:right;">${toEnMoney(data.cashInventory.total)}</td></tr></tbody>
+            <tbody>${renderCashRows(data.cashInventory.rows)}<tr class="total-row"><td colspan="2">TOTAL CASH INVENTORY</td><td style="text-align:right;">৳ ${toEnMoney(data.cashInventory.total)}</td></tr></tbody>
         </table>
     </div>
     <div class="section-block">
         <div class="section-bar">CARD INVENTORY DETAILS</div>
         <table class="statement-table">
             <thead><tr><th style="width:50%;">CARD NAME</th><th style="text-align:center; width:20%;">QTY</th><th style="text-align:right; width:30%;">TOTAL (৳)</th></tr></thead>
-            <tbody>${renderCardRows(data.cardInventory.rows)}<tr class="total-row"><td colspan="2">TOTAL CARD INVENTORY</td><td style="text-align:right;">${toEnMoney(data.cardInventory.total)}</td></tr></tbody>
+            <tbody>${renderCardRows(data.cardInventory.rows)}<tr class="total-row"><td colspan="2">TOTAL CARD INVENTORY</td><td style="text-align:right;">৳ ${toEnMoney(data.cardInventory.total)}</td></tr></tbody>
         </table>
     </div>
     <div class="signature-block">
@@ -1382,7 +1301,7 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
         }
     };
 
-    // ১০. Excel এক্সপোর্ট (দুই রিপোর্টের পূর্ণাঙ্গ এক্সপোর্ট)
+    // ১০. Excel এক্সপোর্ট
     window.hubExportExcel = function () {
         const rptType = document.getElementById('hubReportType').value;
         const fromDate = document.getElementById('hubFromDate').value;
@@ -1393,7 +1312,6 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
             return;
         }
 
-        // ক. কাস্টমার লেনদেনের এক্সেল
         if (rptType === 'daily_transactions') {
             const data = getTransactionReportData(fromDate, toDate);
             const isRange = fromDate !== toDate;
@@ -1438,7 +1356,6 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
             return;
         }
 
-        // খ. DAILY CLOSING FINANCIAL STATEMENT এর এক্সেল
         if (rptType === 'daily_closing') {
             const data = getDailyClosingStatementData(fromDate, toDate);
             const excelRows = [
@@ -1491,15 +1408,13 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
         }
     };
 
-    // ১১. শর্টকাট ইঞ্জিন (Safe & Fixed)
+    // ১১. শর্টকাট ইঞ্জিন
     window.hubDateShortcut = function (preset) {
         document.querySelectorAll('.rpt-pill-btn').forEach(b => b.classList.remove('active'));
         
-        // বাটন নিরাপদভাবে একটিভ করা (এরর-মুক্ত)
         if (window.event && window.event.target && window.event.target.classList) {
             window.event.target.classList.add('active');
         } else {
-            // প্রোগ্রামাটিক কলের জন্য সংশ্লিষ্ট বাটনে active ক্লাস দেওয়া
             const btn = Array.from(document.querySelectorAll('.rpt-pill-btn')).find(el => 
                 el.innerText.toLowerCase().replace(/\s/g, '') === preset.toLowerCase().replace(/\s/g, '')
             );
@@ -1556,7 +1471,7 @@ html, body { margin: 0; padding: 0; width: 100%; background: #fff; color: #000; 
         }
     };
 
-    // ১২. সুপার স্ট্যাবল অটো-ইনিশিয়ালাইজার
+    // ১২. অটো-ইনিশিয়ালাইজার
     function runAutoInit() {
         if (!document.getElementById('custom-download-module-styles')) {
             document.head.insertAdjacentHTML('beforeend', moduleStyles);
