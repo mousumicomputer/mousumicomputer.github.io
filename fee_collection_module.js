@@ -1526,13 +1526,28 @@
             renderDueDataTable();
         });
 
-        fb.onValue(fb.ref(fb.db, 'erp/feeTransactions'), (snapshot) => {
-            const data = snapshot.val();
-            feeTransactionsList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-            renderPendingTable();
-            renderPaidTable();
-        });
+fb.onValue(fb.ref(fb.db, 'erp/feeTransactions'), (snapshot) => {
+    const data = snapshot.val();
+    feeTransactionsList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+    
+    // ✅ নতুন তারিখ ও নতুন রসিদ সবার উপরে রাখার জন্য সর্টিং:
+    feeTransactionsList.sort((a, b) => {
+        // ১. আগে তারিখ মিলিয়ে দেখবে (নতুন তারিখ আগে)
+        const dateA = a.date || '';
+        const dateB = b.date || '';
+        if (dateA !== dateB) {
+            return dateB.localeCompare(dateA);
+        }
+        // ২. তারিখ একই হলে রসিদ নম্বর অনুযায়ী বড়টি আগে (যেমন: ৩৬৩৩ আগে, ৩৬০১ পরে)
+        const recA = parseInt(a.receiptNo) || 0;
+        const recB = parseInt(b.receiptNo) || 0;
+        return recB - recA;
+    });
 
+    renderPendingTable();
+    renderPaidTable();
+});
+        
         fb.onValue(fb.ref(fb.db, 'erp/feeVoidLogs'), (snapshot) => {
             const data = snapshot.val();
             voidLogsList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
