@@ -1,11 +1,11 @@
 /**
  * Mousumi Computer ERP - Daily Liquid Balance & Physical Audit Module
  * File: daily_liquid_report_module.js
- * Feature: Standalone Realtime Sync, Permanent Snapshot, & Native Vector PDF Engine
+ * Feature: Standalone Realtime Sync, Permanent Snapshot, & Multi-Page Vector Print
  */
 
 (function () {
-    // ১. প্রয়োজনীয় সিএসএস ও প্রিন্ট ইঞ্জিন (প্রিন্ট সাদা হওয়া ফিক্সড)
+    // ১. প্রয়োজনীয় সিএসএস
     const moduleStyles = `
         <style id="liquid-report-styles">
             #liquid-audit-view { font-family: 'Tiro Bangla', serif !important; text-transform: none !important; }
@@ -56,47 +56,13 @@
             .text-center { text-align: center !important; }
             .bold { font-weight: 700; }
 
-            .liquid-footer { display: flex; justify-content: space-between; margin-top: 35px; padding-top: 5px; }
+            .liquid-footer { display: flex; justify-content: space-between; margin-top: 35px; padding-top: 5px; page-break-inside: avoid; }
             .liquid-sign-box { width: 130px; border-top: 1px solid #000; text-align: center; font-size: 9.5px; font-weight: 700; padding-top: 3px; }
-
-            /* =========================================================
-               গুরুত্বপূর্ণ ফিক্স: মূল ফাইলের হাইড রুলকে ওভাররাইড করা
-               ========================================================= */
-            @media print {
-                @page { size: A4 portrait; margin: 10mm; }
-                
-                /* মূল admin.html এর হাইড রুল ওভাররাইড */
-                body * {
-                    visibility: hidden !important;
-                }
-
-                /* শুধুমাত্র আমাদের এই রিপোর্ট এলাকাটিকে দৃশ্যমান করা */
-                #printable-liquid-doc, #printable-liquid-doc * {
-                    visibility: visible !important;
-                }
-
-                #printable-liquid-doc {
-                    position: absolute !important;
-                    left: 0 !important;
-                    top: 0 !important;
-                    width: 100% !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                    background: #ffffff !important;
-                    display: block !important;
-                }
-
-                /* পেজ ব্রেক সুরক্ষা */
-                tr { page-break-inside: avoid !important; break-inside: avoid !important; }
-                thead { display: table-header-group !important; }
-                .liquid-section-bar { page-break-after: avoid !important; break-after: avoid !important; }
-                .liquid-footer { page-break-inside: avoid !important; break-inside: avoid !important; }
-            }
         </style>
     `;
     document.head.insertAdjacentHTML('beforeend', moduleStyles);
 
-    // ২. সাইডবারে নতুন ড্রপডাউন মেনু যুক্ত করা
+    // ২. সাইডবার মেনু ইনজেকশন
     function injectSidebarMenu() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList || document.getElementById('menu-report-hub-parent')) return;
@@ -117,7 +83,7 @@
         menuList.insertAdjacentHTML('beforeend', menuItemHTML);
     }
 
-    // ৩. মূল ভিউ প্যানেল ইনজেক্ট করা
+    // ৩. ভিউ প্যানেল ইনজেকশন
     function injectViewPanel() {
         const mainWrapper = document.querySelector('.main-wrapper');
         if (!mainWrapper || document.getElementById('liquid-audit-view')) return;
@@ -137,9 +103,7 @@
                     </div>
                 </div>
                 <div class="liquid-preview-container">
-                    <div id="printable-liquid-doc">
-                        <!-- Dynamic Report Populated Here -->
-                    </div>
+                    <div id="printable-liquid-doc"></div>
                 </div>
             </div>
         `;
@@ -148,7 +112,7 @@
 
     const fmt = (n) => (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
 
-    // ৪. লাইভ ব্যালেন্স ও স্থায়ী স্ন্যাপশট রেন্ডারার
+    // ৪. লাইভ ব্যালেন্স রেন্ডারার
     window.renderLiquidStatementReport = async function () {
         const target = document.getElementById('printable-liquid-doc');
         const dateInput = document.getElementById('liquidStatementDate');
@@ -156,7 +120,6 @@
 
         const selectedDate = dateInput.value || new Date().toISOString().split('T')[0];
 
-        // লাইভ ডাটা রিড করা
         const cats = window.categories || [];
         const accs = window.accounts || [];
         const balances = window.balanceStore || {};
@@ -203,7 +166,7 @@
             `;
         });
 
-        // ক্যাশ নোটস বিবরণ
+        // ক্যাশ নোটস
         let totalCash = 0;
         let cashRows = '';
         [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(note => {
@@ -227,7 +190,7 @@
             </tr>
         `;
 
-        // কার্ডস বিবরণ
+        // কার্ডস
         let totalCardsValue = 0;
         let totalCardsQty = 0;
         let cardRows = '';
@@ -262,7 +225,7 @@
                 <p>Statement Date: ${selectedDate} | Prepared Time: ${new Date().toLocaleTimeString()}</p>
             </div>
 
-            <!-- 1. EXECUTIVE SUMMARY TABLE -->
+            <!-- 1. EXECUTIVE SUMMARY -->
             <table class="liquid-summary-table">
                 <thead>
                     <tr>
@@ -347,7 +310,7 @@
         `;
     };
 
-    // ৫. আজকের স্ন্যাপশট স্থায়ীভাবে ফায়ারবেসে সেভ করা
+    // ৫. আজকের স্ন্যাপশট ফায়ারবেসে সেভ
     window.archiveCurrentLiquidSnapshot = async function () {
         const d = document.getElementById('liquidStatementDate').value || new Date().toISOString().split('T')[0];
         if (typeof window.showLoader === 'function') window.showLoader("Archiving daily snapshot...");
@@ -376,11 +339,71 @@
         }
     };
 
-    // ৬. প্রিন্ট ও এক্সেল
+    // ৬. পারফেক্ট মাল্টি-পেজ ভেক্টর প্রিন্ট ইঞ্জিন (কোনো তথ্য কাটবে না)
     window.printLiquidVectorPDF = function () {
-        window.print();
+        const contentHTML = document.getElementById('printable-liquid-doc').innerHTML;
+        
+        let printFrame = document.getElementById('isolated-print-frame');
+        if (!printFrame) {
+            printFrame = document.createElement('iframe');
+            printFrame.id = 'isolated-print-frame';
+            printFrame.style.position = 'fixed';
+            printFrame.style.right = '0';
+            printFrame.style.bottom = '0';
+            printFrame.style.width = '0';
+            printFrame.style.height = '0';
+            printFrame.style.border = 'none';
+            document.body.appendChild(printFrame);
+        }
+
+        const frameDoc = printFrame.contentWindow.document;
+        frameDoc.open();
+        frameDoc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Daily Liquid Balance Statement</title>
+                <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
+                <style>
+                    @page { size: A4 portrait; margin: 10mm; }
+                    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tiro Bangla', serif !important; text-transform: none !important; }
+                    body { color: #000; background: #fff; width: 100%; padding: 0; margin: 0; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+                    th, td { border: 1px solid #000; padding: 3.5px 6px !important; font-size: 11px; line-height: 1.2; }
+                    th { background-color: #f8fafc; font-weight: 700; text-align: left; }
+                    .liquid-doc-header { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 5px; margin-bottom: 12px; }
+                    .liquid-doc-header h2 { font-size: 18px; font-weight: 800; line-height: 1.2; margin-bottom: 3px; }
+                    .liquid-doc-header h4 { font-size: 12px; font-weight: 700; margin-bottom: 3px; color: #1e293b; }
+                    .liquid-doc-header p { font-size: 10.5px; color: #475569; }
+                    .liquid-section-bar { font-size: 11px; font-weight: 800; background: #f1f5f9; border: 1px solid #000; padding: 4px 8px; margin-top: 12px; margin-bottom: 3px; }
+                    .text-right { text-align: right !important; }
+                    .text-center { text-align: center !important; }
+                    .bold { font-weight: 700; }
+                    .liquid-summary-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 1.5px solid #000; }
+                    .liquid-summary-table th { background-color: #f1f5f9; border-bottom: 1.5px solid #000; padding: 5px 8px; font-size: 11.5px; font-weight: 800; text-align: left; }
+                    .liquid-summary-table td { padding: 4px 8px; font-size: 11px; border-bottom: 1px solid #e2e8f0; }
+                    .liquid-summary-total { background-color: #f8fafc; border-top: 1.5px solid #000; font-weight: 800; font-size: 12.5px; }
+                    tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+                    thead { display: table-header-group !important; }
+                    .liquid-section-bar { page-break-after: avoid !important; break-after: avoid !important; }
+                    .liquid-footer { display: flex; justify-content: space-between; margin-top: 35px; padding-top: 5px; page-break-inside: avoid !important; }
+                    .liquid-sign-box { width: 130px; border-top: 1px solid #000; text-align: center; font-size: 9.5px; font-weight: 700; padding-top: 3px; }
+                </style>
+            </head>
+            <body>
+                ${contentHTML}
+            </body>
+            </html>
+        `);
+        frameDoc.close();
+
+        setTimeout(() => {
+            printFrame.contentWindow.focus();
+            printFrame.contentWindow.print();
+        }, 400);
     };
 
+    // ৭. এক্সেল এক্সপোর্ট
     window.exportLiquidExcel = function () {
         const d = document.getElementById('liquidStatementDate').value || new Date().toISOString().split('T')[0];
         const wb = XLSX.utils.book_new();
@@ -393,19 +416,18 @@
         XLSX.writeFile(wb, `Liquid_Statement_${d}.xlsx`);
     };
 
-    // ৭. ইনিশিয়ালাইজেশন
+    // ৮. ইনিশিয়ালাইজেশন
     function init() {
         injectSidebarMenu();
         injectViewPanel();
         const dInput = document.getElementById('liquidStatementDate');
         if (dInput) dInput.value = new Date().toISOString().split('T')[0];
         
-        // অটো রেন্ডার লোড
         setTimeout(() => {
             if (typeof window.renderLiquidStatementReport === 'function') {
                 window.renderLiquidStatementReport();
             }
-        }, 1000);
+        }, 1200);
     }
 
     if (document.readyState === 'loading') {
