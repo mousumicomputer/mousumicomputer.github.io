@@ -1,11 +1,11 @@
 /**
  * Mousumi Computer ERP - Daily Liquid Balance & Physical Audit Module
  * File: daily_liquid_report_module.js
- * Feature: Standalone Realtime Sync, Permanent Snapshot, & Multi-Page Vector Print
+ * Feature: Standalone Realtime Sync, Permanent Snapshot, Multi-Page Print & Smart Versioning (_v1, _v2)
  */
 
 (function () {
-    // ১. প্রয়োজনীয় সিএসএস
+    // ১. স্টাইলিং ও সিএসএস
     const moduleStyles = `
         <style id="liquid-report-styles">
             #liquid-audit-view { font-family: 'Tiro Bangla', serif !important; text-transform: none !important; }
@@ -62,7 +62,19 @@
     `;
     document.head.insertAdjacentHTML('beforeend', moduleStyles);
 
-    // ২. সাইডবার মেনু ইনজেকশন
+    // ২. ভার্সন ট্র্যাকিং হেল্পার ফাংশন
+    function getReportVersion(dateStr) {
+        const key = `liquid_report_ver_${dateStr}`;
+        return parseInt(localStorage.getItem(key)) || 1;
+    }
+
+    function incrementReportVersion(dateStr) {
+        const key = `liquid_report_ver_${dateStr}`;
+        const current = getReportVersion(dateStr);
+        localStorage.setItem(key, current + 1);
+    }
+
+    // ৩. সাইডবার মেনু ইনজেকশন
     function injectSidebarMenu() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList || document.getElementById('menu-report-hub-parent')) return;
@@ -83,7 +95,7 @@
         menuList.insertAdjacentHTML('beforeend', menuItemHTML);
     }
 
-    // ৩. ভিউ প্যানেল ইনজেকশন
+    // ৪. ভিউ প্যানেল ইনজেকশন
     function injectViewPanel() {
         const mainWrapper = document.querySelector('.main-wrapper');
         if (!mainWrapper || document.getElementById('liquid-audit-view')) return;
@@ -112,13 +124,14 @@
 
     const fmt = (n) => (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
 
-    // ৪. লাইভ ব্যালেন্স রেন্ডারার
+    // ৫. লাইভ ব্যালেন্স ও ভার্সনসহ রেন্ডারার
     window.renderLiquidStatementReport = async function () {
         const target = document.getElementById('printable-liquid-doc');
         const dateInput = document.getElementById('liquidStatementDate');
         if (!target || !dateInput) return;
 
         const selectedDate = dateInput.value || new Date().toISOString().split('T')[0];
+        const currentVersion = getReportVersion(selectedDate);
 
         const cats = window.categories || [];
         const accs = window.accounts || [];
@@ -222,10 +235,10 @@
             <div class="liquid-doc-header">
                 <h2>Mousumi Computer</h2>
                 <h4>Daily Liquid Balance & Physical Assets Statement</h4>
-                <p>Statement Date: ${selectedDate} | Prepared Time: ${new Date().toLocaleTimeString()}</p>
+                <p>Statement Date: ${selectedDate} &nbsp;|&nbsp; <strong>Version: v${currentVersion}</strong> &nbsp;|&nbsp; Prepared: ${new Date().toLocaleTimeString()}</p>
             </div>
 
-            <!-- 1. EXECUTIVE SUMMARY -->
+            <!-- 1. EXECUTIVE SUMMARY TABLE -->
             <table class="liquid-summary-table">
                 <thead>
                     <tr>
@@ -310,7 +323,7 @@
         `;
     };
 
-    // ৫. আজকের স্ন্যাপশট ফায়ারবেসে সেভ
+    // ৬. আজকের স্ন্যাপশট ফায়ারবেসে সেভ
     window.archiveCurrentLiquidSnapshot = async function () {
         const d = document.getElementById('liquidStatementDate').value || new Date().toISOString().split('T')[0];
         if (typeof window.showLoader === 'function') window.showLoader("Archiving daily snapshot...");
@@ -339,10 +352,16 @@
         }
     };
 
-    // ৬. পারফেক্ট মাল্টি-পেজ ভেক্টর প্রিন্ট ইঞ্জিন (কোনো তথ্য কাটবে না)
+    // ৭. মাল্টি-পেজ ভেক্টর প্রিন্ট ইঞ্জিন (স্মার্ট ভার্সন ফাইলনেমসহ)
     window.printLiquidVectorPDF = function () {
         const contentHTML = document.getElementById('printable-liquid-doc').innerHTML;
+        const d = document.getElementById('liquidStatementDate').value || new Date().toISOString().split('T')[0];
         
+        // কারেন্ট ভার্সন নাম্বার নেওয়া
+        const ver = getReportVersion(d);
+        const dynamicFileName = `Liquid_Statement_${d}_v${ver}`;
+        const originalPageTitle = document.title;
+
         let printFrame = document.getElementById('isolated-print-frame');
         if (!printFrame) {
             printFrame = document.createElement('iframe');
@@ -362,7 +381,7 @@
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Daily Liquid Balance Statement</title>
+                <title>${dynamicFileName}</title>
                 <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
                 <style>
                     @page { size: A4 portrait; margin: 10mm; }
@@ -397,15 +416,26 @@
         `);
         frameDoc.close();
 
+        // ব্রাউজার যাতে ফাইলের নামটি নিয়ে নেয়
+        document.title = dynamicFileName;
+
         setTimeout(() => {
             printFrame.contentWindow.focus();
             printFrame.contentWindow.print();
+
+            // প্রিন্ট ডায়ালগ শেষ হলে পরবর্তী ভার্সন সেট করা
+            window.addEventListener('afterprint', () => {
+                document.title = originalPageTitle;
+                incrementReportVersion(d); // ভার্সন ১ বাড়ানো হলো
+                window.renderLiquidStatementReport(); // নতুন ভার্সন স্ক্রিনে আপডেট
+            }, { once: true });
         }, 400);
     };
 
-    // ৭. এক্সেল এক্সপোর্ট
+    // ৮. এক্সেল এক্সপোর্ট (স্মার্ট ভার্সনসহ)
     window.exportLiquidExcel = function () {
         const d = document.getElementById('liquidStatementDate').value || new Date().toISOString().split('T')[0];
+        const ver = getReportVersion(d);
         const wb = XLSX.utils.book_new();
         const tables = document.querySelectorAll("#printable-liquid-doc table");
         const names = ["Summary", "Accounts", "Cash_Drawer", "Card_Stock"];
@@ -413,10 +443,10 @@
             const ws = XLSX.utils.table_to_sheet(t);
             XLSX.utils.book_append_sheet(wb, ws, names[i] || `Sheet_${i+1}`);
         });
-        XLSX.writeFile(wb, `Liquid_Statement_${d}.xlsx`);
+        XLSX.writeFile(wb, `Liquid_Statement_${d}_v${ver}.xlsx`);
     };
 
-    // ৮. ইনিশিয়ালাইজেশন
+    // ৯. ইনিশিয়ালাইজেশন
     function init() {
         injectSidebarMenu();
         injectViewPanel();
