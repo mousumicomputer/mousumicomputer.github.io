@@ -25,29 +25,29 @@
     .top-social-icons a { color: #ffffff; font-size: 13px; }
 
     /* ৩. মিডল হেডার */
-    .middle-header { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; background: #ffffff; border-bottom: 1px solid #eaeaea; }
-    .logo-area { display: flex; align-items: center; gap: 15px; }
-    .logo-icon { color: #0f52ba; font-size: 40px; }
-    .logo-text h1 { margin: 0; font-size: 28px; color: #003366; font-weight: bold; }
-    .logo-text p { margin: 0; font-size: 26px; color: #2e8b57; font-weight: bold; line-height: 1; }
-    .contact-details { font-size: 14px; color: #444; font-weight: 500; }
-    .cart-box { background-color: #2176ff; color: #ffffff; padding: 10px 20px; border-radius: 30px; display: flex; align-items: center; gap: 10px; font-weight: bold; }
+    .middle-header { padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; background: #ffffff; border-bottom: 1px solid #eaeaea; }
+    .logo-area { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { color: #0f52ba; font-size: 36px; }
+    .logo-text h1 { margin: 0; font-size: 24px; color: #003366; font-weight: bold; }
+    .logo-text p { margin: 0; font-size: 22px; color: #2e8b57; font-weight: bold; line-height: 1; }
+    .contact-details { font-size: 13px; color: #444; font-weight: 500; }
+    .cart-box { background-color: #2176ff; color: #ffffff; padding: 8px 16px; border-radius: 30px; display: flex; align-items: center; gap: 8px; font-weight: bold; }
 
     /* ৪. নেভিগেশন বার ও ড্রপডাউন */
-    .nav-container { background-color: #2176ff; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; position: relative; }
+    .nav-container { background-color: #2176ff; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: relative; }
     .main-menu { display: flex; list-style: none; margin: 0; padding: 0; align-items: center; }
     .main-menu > li { position: relative; }
-    .main-menu > li > a { color: #ffffff; display: block; padding: 15px 18px; font-size: 15px; font-weight: 500; transition: background 0.2s; }
+    .main-menu > li > a { color: #ffffff; display: block; padding: 12px 14px; font-size: 14px; font-weight: 500; }
     .main-menu > li > a:hover { background-color: rgba(0,0,0,0.1); }
 
-    /* ড্রপডাউন সাব-মেনু স্টাইল */
+    /* ড্রপডাউন */
     .dropdown-menu {
       display: none;
       position: absolute;
       top: 100%;
       left: 0;
       background: #ffffff;
-      min-width: 200px;
+      min-width: 180px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.15);
       border-radius: 0 0 8px 8px;
       list-style: none;
@@ -57,93 +57,94 @@
     }
     .dropdown-menu li a {
       color: #333333;
-      padding: 10px 18px;
+      padding: 10px 15px;
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
-      transition: all 0.2s;
     }
-    .dropdown-menu li a:hover {
-      background-color: #f0f5ff;
-      color: #2176ff;
-      padding-left: 22px;
-    }
-    .dropdown-menu li a i { color: #2176ff; font-size: 14px; }
     .dropdown:hover .dropdown-menu { display: block; }
 
-    /* আধুনিক অ্যাডমিন বাটন */
+    /* অ্যাডমিন বাটন */
     .nav-admin-btn {
-      background: linear-gradient(135deg, #0d233a 0%, #1a3a5c 100%);
+      background: #0d233a;
       color: #ffffff !important;
-      padding: 8px 18px !important;
-      border-radius: 50px;
-      font-weight: 700;
+      padding: 6px 14px !important;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 13px;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      transition: all 0.3s;
+      gap: 6px;
     }
-    .nav-admin-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.3); }
 
-    /* ৫. ইমেজ স্লাইডার */
-    .slider-container { width: 100%; position: relative; overflow: hidden; aspect-ratio: 16 / 5.2; background-color: #f0f0f0; }
+    /* ৫. ইমেজ স্লাইডার (অ্যারো বাটন সহ) */
+    .slider-container { width: 100%; position: relative; overflow: hidden; aspect-ratio: 16 / 5.5; background-color: #f0f0f0; }
     .mySlides { display: none; width: 100%; height: 100%; }
     .mySlides img { width: 100%; height: 100%; object-fit: cover; }
+    .slider-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.4);
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 4px;
+    }
+    .slider-btn.prev { left: 10px; }
+    .slider-btn.next { right: 10px; }
 
-    /* ৬. সার্ভিস সেকশন */
-    .services-section { padding: 50px 40px; text-align: center; }
-    .services-title { font-size: 28px; color: #003366; margin-bottom: 40px; font-weight: bold; }
-    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; max-width: 1120px; margin: 0 auto; }
-    .service-card { background: #ffffff; border: 1px solid #eaeaea; border-radius: 12px; padding: 30px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: left; }
-    .service-icon-wrapper { text-align: center; margin-bottom: 15px; color: #2176ff; font-size: 45px; }
-    .service-card h3 { font-size: 20px; color: #111; margin: 10px 0; text-align: center; border-bottom: 2px solid #2176ff; padding-bottom: 8px; font-weight: bold; }
-    .service-card ul { list-style: none; padding: 0; }
-    .service-card ul li { font-size: 14.5px; color: #444; padding: 6px 0; display: flex; align-items: center; gap: 8px; }
-    .service-card ul li i { color: #2176ff; font-size: 13px; }
+    /* ৬. সার্ভিস সেকশন (স্ক্রিনশট ২ এর মতো পাশাপাশি ৩ কলাম) */
+    .services-section { padding: 30px 15px; text-align: center; }
+    .services-title { font-size: 24px; color: #003366; margin-bottom: 25px; font-weight: bold; }
+    .services-grid { 
+      display: grid; 
+      grid-template-columns: repeat(3, 1fr); 
+      gap: 15px; 
+      max-width: 1120px; 
+      margin: 0 auto; 
+    }
+    .service-card { 
+      background: #ffffff; 
+      border: 1px solid #e2e8f0; 
+      border-radius: 10px; 
+      padding: 15px 12px; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+      text-align: left; 
+    }
+    .service-icon-wrapper { text-align: center; margin-bottom: 10px; color: #2176ff; font-size: 32px; }
+    .service-card h3 { font-size: 15px; color: #111; margin: 6px 0 12px; text-align: center; border-bottom: 2px solid #2176ff; padding-bottom: 6px; font-weight: bold; }
+    .service-card ul { list-style: none; padding: 0; margin: 0; }
+    .service-card ul li { font-size: 12.5px; color: #444; padding: 5px 0; display: flex; align-items: center; gap: 6px; }
+    .service-card ul li i { color: #2176ff; font-size: 11px; flex-shrink: 0; }
 
     /* ৭. লেটেস্ট প্রোডাক্ট টাইটেল */
-    .section-title { font-size: 24px; color: #003366; display: flex; align-items: center; gap: 12px; margin: 40px 0 20px 40px; font-weight: bold; }
-    .section-title::before { content: ''; width: 12px; height: 12px; background: #2176ff; border-radius: 50%; display: inline-block; }
+    .section-title { font-size: 20px; color: #003366; display: flex; align-items: center; gap: 10px; margin: 30px 0 15px 20px; font-weight: bold; }
+    .section-title::before { content: ''; width: 10px; height: 10px; background: #2176ff; border-radius: 50%; display: inline-block; }
 
     /* ৮. ফুটার */
-    .site-footer { background-color: #2176ff; color: #ffffff; padding: 40px 30px 20px 30px; border-top: 4px solid #0d233a; }
+    .site-footer { background-color: #0b63e5; color: #ffffff; padding: 35px 20px 20px 20px; }
     .footer-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-    .footer-title { font-size: 16px; color: #ffcc00; font-weight: bold; margin-bottom: 15px; display: inline-block; border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 5px; }
+    .footer-title { font-size: 15px; color: #ffcc00; font-weight: bold; margin-bottom: 12px; display: inline-block; border-bottom: 1.5px solid rgba(255,255,255,0.3); padding-bottom: 4px; }
     .footer-links { list-style: none; padding: 0; }
-    .footer-links li { margin-bottom: 10px; font-size: 13px; display: flex; align-items: center; gap: 8px; color: #f0f5ff; line-height: 1.4; }
-    .footer-links i { color: #ffcc00; width: 15px; text-align: center; }
+    .footer-links li { margin-bottom: 8px; font-size: 12.5px; display: flex; align-items: center; gap: 8px; color: #f0f5ff; }
+    .footer-links i { color: #ffffff; width: 14px; }
 
-    /* ৯. হোয়াটসঅ্যাপ ও ফ্লোটিং অ্যাডমিন বাটন */
-    .ws-toggle-btn { position: fixed; bottom: 25px; right: 25px; background: #25d366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 10000; }
-    .modern-admin-fab { position: fixed; bottom: 100px; right: 30px; background: #0d233a; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 10000; transition: 0.3s; }
-    .modern-admin-fab:hover { background: #2176ff; transform: scale(1.1); }
-    .tooltip-text { visibility: hidden; width: 100px; background-color: #333; color: #fff; text-align: center; border-radius: 6px; padding: 5px; position: absolute; right: 60px; font-size: 12px; font-weight: bold; }
-    .modern-admin-fab:hover .tooltip-text { visibility: visible; }
+    /* ৯. ফ্লোটিং বাটন */
+    .ws-toggle-btn { position: fixed; bottom: 20px; right: 20px; background: #25d366; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 10000; }
+    .modern-admin-fab { position: fixed; bottom: 80px; right: 22px; background: #0d233a; color: white; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; z-index: 10000; }
 
-    /* ১০. হোয়াটসঅ্যাপ চ্যাট পপআপ */
-    .ws-chat-popup { display: none; width: 300px; background: white; border-radius: 15px; position: fixed; bottom: 95px; right: 25px; z-index: 10001; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden; }
-    .ws-chat-header { background: #075e54; color: white; padding: 15px; display: flex; align-items: center; gap: 12px; }
-    .ws-admin-img { width: 35px; height: 35px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffcc00; }
-    .ws-chat-body { padding: 20px; background: #e5ddd5; font-size: 14px; color: #333; line-height: 1.5; }
-    .ws-chat-footer { padding: 10px; background: #f0f0f0; display: flex; gap: 8px; }
-    .ws-chat-footer input { flex: 1; border-radius: 20px; border: 1px solid #ccc; padding: 10px 15px; outline: none; }
-    .ws-chat-footer button { background: #075e54; color: white; border: none; border-radius: 50%; width: 38px; height: 38px; cursor: pointer; }
-
-    /* ১১. রেসপন্সিভ */
-    @media (max-width: 991px) {
-      .footer-container { grid-template-columns: repeat(2, 1fr); }
-      .services-grid { grid-template-columns: 1fr; }
-      .middle-header { flex-direction: column; text-align: center; gap: 15px; }
-      .nav-container { flex-direction: column; padding: 10px; }
-      .main-menu { flex-wrap: wrap; justify-content: center; }
-      .dropdown-menu { position: static; box-shadow: none; background: #1a5ecc; border-radius: 0; width: 100%; }
-      .dropdown-menu li a { color: #ffffff; }
-    }
-    @media (max-width: 575px) {
-      .footer-container { grid-template-columns: 1fr; }
+    /* রেসপন্সিভ ব্যালেন্স */
+    @media (max-width: 768px) {
+      .services-grid { gap: 8px; }
+      .service-card { padding: 10px 6px; }
+      .service-card h3 { font-size: 12px; }
+      .service-card ul li { font-size: 10.5px; }
+      .footer-container { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -178,48 +179,33 @@
     </div>
     <div class="cart-box">
       <i class="fa-solid fa-basket-shopping"></i>
-      <span style="background: rgba(255,255,255,0.2); padding: 0 10px; border-radius: 10px;">0</span>
+      <span>0</span>
     </div>
   </div>
 
-  <!-- মেনু বার (Converter Dropdown Added) -->
+  <!-- মেনু বার -->
   <div class="nav-container">
     <ul class="main-menu">
       <li><a href="index.html">Home</a></li>
       <li><a href="#">Offer Zone</a></li>
       <li><a href="#">Today's Deals</a></li>
-      <li class="dropdown">
-      <a href="javascript:void(0);">Converter <i class="fa-solid fa-chevron-down" style="font-size: 11px; margin-left: 4px;"></i></a>
-      <ul class="dropdown-menu">
-        <li><a href="unicode-to-bijoy.html"><i class="fa-solid fa-arrows-rotate"></i> Unicode to Bijoy</a></li>
-        <li><a href="case-converter.html"><i class="fa-solid fa-font"></i> Case Converter</a></li>
-      </ul>
-    </li>
       <li><a href="#">Blog</a></li>
       <li><a href="#">Contact Us</a></li>
     </ul>
     <a href="admin.html" class="nav-admin-btn">
-      <i class="fa-solid fa-user-shield"></i> Admin Login
+      <i class="fa-solid fa-lock"></i> Admin Login
     </a>
   </div>
 
-  <!-- স্লাইডার -->
+  <!-- স্লাইডার (অ্যারো সহ) -->
   <div class="slider-container">
-    <div class="mySlides fade"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhyuEHGvl0OWkhwhEQazgWS2iI0Tnqu-rxsBnd5VD13ZsOfCiIImD34UCa7UW6gco_7lSqElNNow_Rij5JnmqPov3qjypkMR9bjLF_Wnk3MKYmELNgjDuTcCEBCo_alw096bcs-KJ9iBsoVI7g8ewYsww0SG7R47U9DJKLCsJcaYICsISoyvNTb-TTS_ZKg/s1600/thumbnail.jfif"></div>
-    <div class="mySlides fade"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiOBjonLmNzoJ-79JR7zuG34oybjvqZwEH8qLwM0HSKKPIEevysVa4U8YqpjsA_9lv4SZYMu8xF0lPBM3pud4K5YJ1n7XOcp1-7K0PrOri1k65GQmhEV0urrANFZP_bc9MssMCu3KuhONyDTQImK7ahg5ezvfdNNreG4-GI0QlT85VxvKP08hfyQnPd2Rxc/s1600/unnamed%20%282%29.jpg"></div>
-    <script>
-      let sIdx = 0; showS();
-      function showS() {
-        let slides = document.getElementsByClassName("mySlides");
-        for (let i = 0; i < slides.length; i++) slides[i].style.display = "none";
-        sIdx++; if (sIdx > slides.length) sIdx = 1;
-        slides[sIdx-1].style.display = "block";
-        setTimeout(showS, 5000);
-      }
-    </script>
+    <div class="mySlides"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhyuEHGvl0OWkhwhEQazgWS2iI0Tnqu-rxsBnd5VD13ZsOfCiIImD34UCa7UW6gco_7lSqElNNow_Rij5JnmqPov3qjypkMR9bjLF_Wnk3MKYmELNgjDuTcCEBCo_alw096bcs-KJ9iBsoVI7g8ewYsww0SG7R47U9DJKLCsJcaYICsISoyvNTb-TTS_ZKg/s1600/thumbnail.jfif"></div>
+    <div class="mySlides"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiOBjonLmNzoJ-79JR7zuG34oybjvqZwEH8qLwM0HSKKPIEevysVa4U8YqpjsA_9lv4SZYMu8xF0lPBM3pud4K5YJ1n7XOcp1-7K0PrOri1k65GQmhEV0urrANFZP_bc9MssMCu3KuhONyDTQImK7ahg5ezvfdNNreG4-GI0QlT85VxvKP08hfyQnPd2Rxc/s1600/unnamed%20%282%29.jpg"></div>
+    <button class="slider-btn prev" onclick="plusSlides(-1)">&#10094;</button>
+    <button class="slider-btn next" onclick="plusSlides(1)">&#10095;</button>
   </div>
 
-  <!-- সার্ভিস সেকশন -->
+  <!-- সার্ভিস সেকশন (স্ক্রিনশট ২-এর মতো গ্রিড) -->
   <div class="services-section">
     <h2 class="services-title tiro-text">আমাদের সেবাসমূহ (Our Services)</h2>
     <div class="services-grid">
@@ -255,14 +241,14 @@
 
   <!-- লেটেস্ট প্রোডাক্ট -->
   <h2 class="section-title tiro-text">Latest Products</h2>
-  <p style="padding-left: 55px; color: #777; font-size: 14px;">No results found</p>
+  <p style="padding-left: 20px; color: #777; font-size: 13px;">No results found</p>
 
   <!-- ফুটার -->
   <footer class="site-footer">
     <div class="footer-container">
       <div class="footer-column">
         <h3 class="footer-title tiro-text">আমাদের সম্পর্কে (About Us)</h3>
-        <p class="tiro-text" style="font-size: 13px; line-height: 1.6;">মৌসুমি কম্পিউটার (Mousumi Computer) একটি বিশ্বস্ত আইটি ও সেবা কেন্দ্র। আমরা দক্ষতার সাথে যাবতীয় ডিজিটাল সেবা দিয়ে থাকি।</p>
+        <p class="tiro-text" style="font-size: 12px; line-height: 1.6;">মৌসুমি কম্পিউটার (Mousumi Computer) একটি বিশ্বস্ত আইটি ও সেবা কেন্দ্র। আমরা দক্ষতার সাথে অনলাইন আবেদন, প্রিন্টিং ও আইটি এক্সেসরিজ বিক্রয়সহ যাবতীয় ডিজিটাল সেবা দিয়ে থাকি।</p>
       </div>
       <div class="footer-column">
         <h3 class="footer-title tiro-text">যোগাযোগ (Contact Us)</h3>
@@ -277,57 +263,51 @@
         <ul class="footer-links tiro-text">
           <li><i class="fa-solid fa-clock"></i> সকাল ০৯:০০ টা - রাত ১০:০০ টা</li>
           <li><i class="fa-solid fa-calendar-days"></i> শনি - বৃহস্পতিবার (খোলা)</li>
-          <li><i class="fa-solid fa-calendar-xmark" style="color: #ffcccc;"></i> শুক্রবার (সাপ্তাহিক বন্ধ)</li>
+          <li><i class="fa-solid fa-calendar-xmark"></i> শুক্রবার (সাপ্তাহিক বন্ধ)</li>
         </ul>
       </div>
       <div class="footer-column">
         <h3 class="footer-title tiro-text">সোশ্যাল লিংক (Social Link)</h3>
-        <div style="display: flex; gap: 10px;">
-          <a href="#" style="background: rgba(255,255,255,0.15); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fa-brands fa-facebook-f"></i></a>
-          <a href="#" style="background: rgba(255,255,255,0.15); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fa-brands fa-youtube"></i></a>
+        <div style="display: flex; gap: 8px;">
+          <a href="#" style="background: rgba(255,255,255,0.2); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" style="background: rgba(255,255,255,0.2); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fa-brands fa-twitter"></i></a>
+          <a href="#" style="background: rgba(255,255,255,0.2); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" style="background: rgba(255,255,255,0.2); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fa-brands fa-youtube"></i></a>
         </div>
       </div>
     </div>
-    <div style="text-align: center; margin-top: 35px; font-size: 12px; opacity: 0.8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-      &copy; 2026 Mousumi Computer. All Rights Reserved.
+    <div style="text-align: center; margin-top: 25px; font-size: 11px; opacity: 0.8; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 12px;">
+      &copy; 2026 Mousumi Computer. All Rights Reserved. Designed by You.
     </div>
   </footer>
 </div>
 
-<!-- আধুনিক ফ্লোটিং অ্যাডমিন বাটন -->
-<a href="admin.html" class="modern-admin-fab">
-    <i class="fa-solid fa-lock"></i>
-    <span class="tooltip-text">Admin Login</span>
-</a>
-
-<!-- হোয়াটসঅ্যাপ চ্যাট -->
-<div id="wsChatPopup" class="ws-chat-popup">
-  <div class="ws-chat-header">
-    <div class="ws-admin-img"><i class="fa-solid fa-user-gear"></i></div>
-    <div style="flex: 1;">
-      <h4 style="margin: 0; font-size: 15px;">Mousumi Computer</h4>
-      <p style="margin: 0; font-size: 11px;">● Online</p>
-    </div>
-    <button onclick="toggleWs()" style="background:none; border:none; color:white; font-size: 22px; cursor:pointer;">&times;</button>
-  </div>
-  <div class="ws-chat-body tiro-text">আসসালামু আলাইকুম! মৌসুমি কম্পিউটারে আপনাকে স্বাগতম। আমরা কীভাবে আপনাকে সাহায্য করতে পারি? নিচে মেসেজ লিখুন।</div>
-  <div class="ws-chat-footer">
-    <input type="text" id="wsInput" placeholder="এখানে মেসেজ লিখুন...">
-    <button onclick="sendW()"><i class="fa-solid fa-paper-plane"></i></button>
-  </div>
-</div>
-<div class="ws-toggle-btn" onclick="toggleWs()"><i class="fa-brands fa-whatsapp"></i></div>
+<!-- ফ্লোটিং বাটন -->
+<a href="admin.html" class="modern-admin-fab"><i class="fa-solid fa-lock"></i></a>
+<div class="ws-toggle-btn" onclick="window.open('https://wa.me/8801608314552')"><i class="fa-brands fa-whatsapp"></i></div>
 
 <script>
-  function toggleWs() { 
-    let p = document.getElementById('wsChatPopup'); 
-    p.style.display = (p.style.display === 'block') ? 'none' : 'block'; 
+  let slideIndex = 1;
+  showSlides(slideIndex);
+
+  function plusSlides(n) {
+    showSlides(slideIndex += n);
   }
-  function sendW() { 
-    let m = document.getElementById('wsInput').value; 
-    if(m) window.open("https://wa.me/8801608314552?text=" + encodeURIComponent(m)); 
+
+  function showSlides(n) {
+    let slides = document.getElementsByClassName("mySlides");
+    if (n > slides.length) {slideIndex = 1}
+    if (n < 1) {slideIndex = slides.length}
+    for (let i = 0; i < slides.length; i++) {
+      slides[i].style.display = "none";
+    }
+    slides[slideIndex-1].style.display = "block";
   }
+
+  // অটো স্লাইড
+  setInterval(function() {
+    plusSlides(1);
+  }, 5000);
 </script>
-<script src="datetime.js"></script>
 </body>
 </html>
