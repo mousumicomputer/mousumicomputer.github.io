@@ -396,32 +396,39 @@
             };
 
         } else if (reportType === 'settled') {
-            title = "PAID SETTLEMENT AUDIT REPORT";
-            tableHeaders = ["SL", "Receipt No", "Date", "Student ID", "Student Name", "Gross Paid", "Settled Timestamp"];
-            columnAlignments = ["center", "center", "center", "center", "left", "right", "center"];
-            colWidths = ["4%", "10%", "11%", "10%", "35%", "12%", "18%"];
+title = "PAID SETTLEMENT AUDIT REPORT";
+            tableHeaders = ["SL", "Receipt No", "Date", "Student ID", "Student Name", "Tuition Fee", "Tap Charge", "Total Paid", "Settled Timestamp"];
+            columnAlignments = ["center", "center", "center", "center", "left", "right", "right", "right", "center"];
+            colWidths = ["4%", "8%", "10%", "9%", "27%", "11%", "8%", "11%", "12%"];
 
-let list = feeTransactions.filter(t => {
-            const isPaid = String(t.status || '').trim().toLowerCase() === 'paid';
-            if (!isPaid) return false;
+            let list = feeTransactions.filter(t => {
+                const isPaid = String(t.status || '').trim().toLowerCase() === 'paid';
+                if (!isPaid) return false;
 
-            // paidTimestamp থেকে পরিশোধের আসল তারিখ বের করা
-            let settledDate = null;
-            if (t.paidTimestamp) {
-                const rawDate = t.paidTimestamp.split(' ')[0]; // "10-09-2026"
-                const parts = rawDate.split('-');
-                if (parts.length === 3) {
-                    settledDate = parts[2].length === 4 ? `${parts[2]}-${parts[1]}-${parts[0]}` : rawDate;
+                let settledDate = null;
+                if (t.paidTimestamp) {
+                    const rawDate = t.paidTimestamp.split(' ')[0];
+                    const parts = rawDate.split('-');
+                    if (parts.length === 3) {
+                        settledDate = parts[2].length === 4 ? `${parts[2]}-${parts[1]}-${parts[0]}` : rawDate;
+                    }
                 }
-            }
 
-            const checkDate = settledDate || t.date;
-            return checkDate >= fromDate && checkDate <= toDate;
-        });
+                const checkDate = settledDate || t.date;
+                return checkDate >= fromDate && checkDate <= toDate;
+            });
+
+            let sumDue = 0;
+            let sumTapCharge = 0;
             let sumGross = 0;
 
             list.forEach((t, i) => {
-                const gross = parseFloat(t.grossPayment || t.netReceived || 0);
+                const due = parseFloat(t.netDue || 0);
+                const gross = parseFloat(t.grossPayment || (due + Math.min(due * 0.01, 60)) || t.netReceived || 0);
+                const tapCharge = Math.max(0, gross - due);
+
+                sumDue += due;
+                sumTapCharge += tapCharge;
                 sumGross += gross;
 
                 rows.push([
@@ -430,6 +437,8 @@ let list = feeTransactions.filter(t => {
                     cleanValue(t.date),
                     cleanValue(t.customerId || t.studentId || t.stdId),
                     toTitleCase(t.studentName || t.student_name || t.name),
+                    due.toFixed(2),
+                    tapCharge.toFixed(2),
                     gross.toFixed(2),
                     cleanValue(t.paidTimestamp || t.settledTime)
                 ]);
@@ -437,9 +446,8 @@ let list = feeTransactions.filter(t => {
 
             grandTotalConfig = {
                 spanCols: 5,
-                values: [sumGross.toFixed(2), ""]
+                values: [sumDue.toFixed(2), sumTapCharge.toFixed(2), sumGross.toFixed(2), ""]
             };
-
         } else if (reportType === 'due') {
             title = "MASTER STUDENT DUE DATABASE";
             isLandscape = true;
