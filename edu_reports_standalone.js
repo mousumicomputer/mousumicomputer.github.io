@@ -401,7 +401,23 @@
             columnAlignments = ["center", "center", "center", "center", "left", "right", "center"];
             colWidths = ["4%", "10%", "11%", "10%", "35%", "12%", "18%"];
 
-            let list = feeTransactions.filter(t => t.status === 'Paid' && (t.date >= fromDate && t.date <= toDate));
+let list = feeTransactions.filter(t => {
+            const isPaid = String(t.status || '').trim().toLowerCase() === 'paid';
+            if (!isPaid) return false;
+
+            // paidTimestamp থেকে পরিশোধের আসল তারিখ বের করা
+            let settledDate = null;
+            if (t.paidTimestamp) {
+                const rawDate = t.paidTimestamp.split(' ')[0]; // "10-09-2026"
+                const parts = rawDate.split('-');
+                if (parts.length === 3) {
+                    settledDate = parts[2].length === 4 ? `${parts[2]}-${parts[1]}-${parts[0]}` : rawDate;
+                }
+            }
+
+            const checkDate = settledDate || t.date;
+            return checkDate >= fromDate && checkDate <= toDate;
+        });
             let sumGross = 0;
 
             list.forEach((t, i) => {
