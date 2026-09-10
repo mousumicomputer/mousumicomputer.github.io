@@ -5,7 +5,7 @@
  */
 
 (function () {
-    // ১. প্রয়োজনীয় সিএসএস ও প্রিন্ট ইঞ্জিন ইনজেকশন
+    // ১. প্রয়োজনীয় সিএসএস ও প্রিন্ট ইঞ্জিন (প্রিন্ট সাদা হওয়া ফিক্সড)
     const moduleStyles = `
         <style id="liquid-report-styles">
             #liquid-audit-view { font-family: 'Tiro Bangla', serif !important; text-transform: none !important; }
@@ -59,16 +59,34 @@
             .liquid-footer { display: flex; justify-content: space-between; margin-top: 35px; padding-top: 5px; }
             .liquid-sign-box { width: 130px; border-top: 1px solid #000; text-align: center; font-size: 9.5px; font-weight: 700; padding-top: 3px; }
 
-            /* NATIVE VECTOR PRINT ENGINE */
+            /* =========================================================
+               গুরুত্বপূর্ণ ফিক্স: মূল ফাইলের হাইড রুলকে ওভাররাইড করা
+               ========================================================= */
             @media print {
                 @page { size: A4 portrait; margin: 10mm; }
-                body { background: #fff !important; padding: 0 !important; margin: 0 !important; }
-                .sidebar, .top-navbar, .liquid-toolbar, #toast-container { display: none !important; }
-                .main-wrapper { margin: 0 !important; padding: 0 !important; }
-                .view-panel { display: none !important; padding: 0 !important; }
-                #liquid-audit-view { display: block !important; padding: 0 !important; }
-                .liquid-preview-container { border: none !important; padding: 0 !important; }
-                #printable-liquid-doc { width: 100% !important; max-width: 100% !important; }
+                
+                /* মূল admin.html এর হাইড রুল ওভাররাইড */
+                body * {
+                    visibility: hidden !important;
+                }
+
+                /* শুধুমাত্র আমাদের এই রিপোর্ট এলাকাটিকে দৃশ্যমান করা */
+                #printable-liquid-doc, #printable-liquid-doc * {
+                    visibility: visible !important;
+                }
+
+                #printable-liquid-doc {
+                    position: absolute !important;
+                    left: 0 !important;
+                    top: 0 !important;
+                    width: 100% !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    background: #ffffff !important;
+                    display: block !important;
+                }
+
+                /* পেজ ব্রেক সুরক্ষা */
                 tr { page-break-inside: avoid !important; break-inside: avoid !important; }
                 thead { display: table-header-group !important; }
                 .liquid-section-bar { page-break-after: avoid !important; break-after: avoid !important; }
@@ -137,12 +155,6 @@
         if (!target || !dateInput) return;
 
         const selectedDate = dateInput.value || new Date().toISOString().split('T')[0];
-
-        // ফায়ারবেস থেকে সংরক্ষিত স্ন্যাপশট চেক করা
-        let snapshotData = null;
-        if (window.dailyClosingReports && Array.isArray(window.dailyClosingReports)) {
-            snapshotData = window.dailyClosingReports.find(r => r.report_date === selectedDate);
-        }
 
         // লাইভ ডাটা রিড করা
         const cats = window.categories || [];
@@ -335,7 +347,7 @@
         `;
     };
 
-    // ৫. আজকের স্ন্যাপশট স্থায়ীভাবে ফায়ারবেসে সেভ করার ফাংশন
+    // ৫. আজকের স্ন্যাপশট স্থায়ীভাবে ফায়ারবেসে সেভ করা
     window.archiveCurrentLiquidSnapshot = async function () {
         const d = document.getElementById('liquidStatementDate').value || new Date().toISOString().split('T')[0];
         if (typeof window.showLoader === 'function') window.showLoader("Archiving daily snapshot...");
@@ -349,7 +361,6 @@
                 cards: { ...(window.cardQuantities || {}) }
             };
 
-            // ফায়ারবেসে স্থায়ী নোডে সেভ করা (কোনো ডাটা মুছবে না)
             if (typeof window.writeToFirebase === 'function') {
                 await window.writeToFirebase(`erp/daily_balance_snapshots/${d}`, snapshotObj);
             }
@@ -365,7 +376,7 @@
         }
     };
 
-    // ৬. নেটিভ ভেক্টর প্রিন্ট ও এক্সেল
+    // ৬. প্রিন্ট ও এক্সেল
     window.printLiquidVectorPDF = function () {
         window.print();
     };
@@ -388,6 +399,13 @@
         injectViewPanel();
         const dInput = document.getElementById('liquidStatementDate');
         if (dInput) dInput.value = new Date().toISOString().split('T')[0];
+        
+        // অটো রেন্ডার লোড
+        setTimeout(() => {
+            if (typeof window.renderLiquidStatementReport === 'function') {
+                window.renderLiquidStatementReport();
+            }
+        }, 1000);
     }
 
     if (document.readyState === 'loading') {
