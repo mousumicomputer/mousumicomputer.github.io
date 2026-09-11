@@ -3,7 +3,8 @@
  * File: daily_asset_input_module.js
  * Feature: Operator Filter Pills (All / GP / Banglalink / Robi / Airtel),
  *          Precise Sidebar Menu Placement,
- *          Native FontAwesome Icons & Master Config Bridge.
+ *          Pure SVG/CSS Crisp Chevron Arrows,
+ *          Pill Rounded Next Step Button & Master Config Bridge.
  */
 
 (function () {
@@ -11,22 +12,20 @@
     const moduleStyles = `
         <style id="asset-hub-styles">
             #asset-hub-view { 
-                font-family: 'Tiro Bangla', serif !important; 
+                font-family: 'Tiro Bangla', sans-serif !important; 
                 text-transform: none !important; 
                 color: #0f172a; 
                 padding: 15px 25px 95px 25px; 
                 position: relative; 
             }
             #asset-hub-view * { 
-                font-family: 'Tiro Bangla', serif !important; 
-                text-transform: none !important; 
                 box-sizing: border-box; 
             }
 
             .hub-top-ctrl {
                 background: #fff;
                 border: 1px solid #cbd5e1;
-                border-radius: 6px;
+                border-radius: 8px;
                 padding: 10px 16px;
                 margin-bottom: 20px;
                 display: flex;
@@ -36,25 +35,34 @@
                 gap: 12px;
             }
             .hub-date-wrap { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; }
-            .hub-date-wrap input { height: 32px; padding: 0 10px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 13px; font-weight: 700; outline: none; background: #fff; }
+            .hub-date-wrap input { 
+                height: 32px; 
+                padding: 0 10px; 
+                border: 1px solid #94a3b8; 
+                border-radius: 6px; 
+                font-size: 13px; 
+                font-weight: 700; 
+                outline: none; 
+                background: #fff; 
+            }
 
             /* উইজার্ড সেকশন বক্স */
             .hub-wizard-sec {
                 background: #ffffff;
                 border: 1px solid #cbd5e1;
                 border-radius: 8px;
-                margin-bottom: 18px;
+                margin-bottom: 16px;
                 overflow: hidden;
                 transition: border-color 0.2s;
             }
             .hub-wizard-sec.active { 
-                border-color: #0f172a; 
+                border-color: #0284c7; 
                 border-width: 1.5px; 
             }
 
             .hub-wizard-head {
                 background: #f8fafc;
-                padding: 10px 16px;
+                padding: 12px 18px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -65,19 +73,23 @@
             .hub-wizard-sec:not(.active) .hub-wizard-head { border-bottom: none; }
             .hub-wizard-head:hover { background: #f1f5f9; }
 
-            .hub-wizard-title { font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
-            .hub-wizard-meta { display: flex; align-items: center; gap: 16px; font-size: 12px; font-weight: 700; color: #334155; }
+            .hub-wizard-title { font-size: 13.5px; font-weight: 800; display: flex; align-items: center; gap: 8px; color: #0f172a; }
+            .hub-wizard-meta { display: flex; align-items: center; gap: 14px; font-size: 12.5px; font-weight: 700; color: #334155; }
             
-            .hub-native-arrow {
-                font-size: 11px;
-                display: inline-block;
-                transition: transform 0.2s ease;
+            /* বিশুদ্ধ SVG অ্যারো (কখনো ভাঙবে না) */
+            .hub-arrow-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                transition: transform 0.25s ease;
                 color: #64748b;
             }
-            .hub-wizard-sec:not(.active) .hub-native-arrow { transform: rotate(-90deg); }
+            .hub-wizard-sec:not(.active) .hub-arrow-icon { 
+                transform: rotate(-90deg); 
+            }
             .hub-wizard-sec:not(.active) .hub-wizard-body { display: none; }
 
-            .hub-wizard-body { padding: 16px 20px; }
+            .hub-wizard-body { padding: 18px 20px; }
 
             /* স্লিম স্ট্রিপ গ্রিড */
             .hub-strip-grid {
@@ -111,7 +123,7 @@
                 outline: none;
                 background: #fff;
             }
-            .hub-inp-text:focus { border-color: #0f172a; }
+            .hub-inp-text:focus { border-color: #0284c7; }
 
             .hub-qty-inp {
                 width: 65px;
@@ -124,7 +136,7 @@
                 outline: none;
                 background: #fff;
             }
-            .hub-qty-inp:focus { border-color: #0f172a; }
+            .hub-qty-inp:focus { border-color: #0284c7; }
             .hub-sub-val { font-size: 12px; font-weight: 800; min-width: 75px; text-align: right; color: #0f172a; }
 
             /* অপারেটর ফিল্টার পিলস */
@@ -172,22 +184,34 @@
                 align-items: center;
             }
 
-            .hub-step-footer { display: flex; justify-content: flex-end; padding-top: 10px; border-top: 1px solid #f1f5f9; }
+            .hub-step-footer { 
+                display: flex; 
+                justify-content: flex-end; 
+                padding-top: 14px; 
+                border-top: 1px solid #f1f5f9; 
+            }
+
+            /* গোলাকার প্রিমিয়াম পিল নেক্সট বাটন */
             .hub-btn-next {
-                background: #fff;
+                background: #f8fafc;
                 border: 1.5px solid #0f172a;
                 color: #0f172a;
-                padding: 6px 16px;
-                border-radius: 4px;
+                padding: 7px 22px;
+                border-radius: 30px;
                 font-size: 12px;
                 font-weight: 800;
                 cursor: pointer;
                 display: inline-flex;
                 align-items: center;
-                gap: 6px;
-                transition: 0.2s;
+                gap: 8px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+                transition: all 0.2s ease;
             }
-            .hub-btn-next:hover { background: #0f172a; color: #fff; }
+            .hub-btn-next:hover { 
+                background: #0f172a; 
+                color: #fff; 
+                transform: translateX(2px);
+            }
 
             /* ভাসমান সেভ বাটন */
             .hub-floating-btn {
@@ -244,7 +268,10 @@
     `;
     document.head.insertAdjacentHTML('beforeend', moduleStyles);
 
-    // ২. সাইডবারে সঠিক পজিশনে মেনু ইনজেকশন (FontAwesome Chevron আইকন সহ)
+    // এসভিজি শেভরন ডাউন আইকন
+    const svgChevron = `<svg class="hub-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`;
+
+    // ২. সাইডবারে সঠিক পজিশনে মেনু ইনজেকশন
     function injectSidebarMenu() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList || document.getElementById('menu-asset-hub-parent')) return;
@@ -252,21 +279,24 @@
         const menuItemHTML = `
             <li class="menu-item" id="menu-asset-hub-parent">
                 <a onclick="window.toggleParentMenu('menu-asset-hub-parent')">
-                    <span class="menu-link-inner"><i class="fa-solid fa-coins"></i> <span>Daily Asset Hub</span></span>
-                    <span class="chevron-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                    <span class="menu-link-inner"><i class="fa fa-coins"></i> <span>Daily Asset Hub</span></span>
+                    <span class="chevron-icon"><i class="fa fa-chevron-down"></i></span>
                 </a>
                 <ul class="submenu-list">
                     <li class="submenu-item active" id="sub-asset-entry">
-                        <a onclick="window.switchAssetHubSubTab('entry')"><span><i class="fa-solid fa-chevron-right" style="font-size: 10px; margin-right: 4px;"></i> Balance Entry</span></a>
+                        <a onclick="window.switchAssetHubSubTab('entry')">
+                            <span><i class="fa fa-chevron-right" style="font-size: 9px; margin-right: 6px; opacity: 0.7;"></i>Balance Entry</span>
+                        </a>
                     </li>
                     <li class="submenu-item" id="sub-asset-history">
-                        <a onclick="window.switchAssetHubSubTab('history')"><span><i class="fa-solid fa-chevron-right" style="font-size: 10px; margin-right: 4px;"></i> Entry History</span></a>
+                        <a onclick="window.switchAssetHubSubTab('history')">
+                            <span><i class="fa fa-chevron-right" style="font-size: 9px; margin-right: 6px; opacity: 0.7;"></i>Entry History</span>
+                        </a>
                     </li>
                 </ul>
             </li>
         `;
 
-        // Daily Closing মেনুর ঠিক ওপরে ইনসার্ট করা
         const dailyClosingMenu = document.getElementById('menu-closing-parent');
         if (dailyClosingMenu) {
             dailyClosingMenu.insertAdjacentHTML('beforebegin', menuItemHTML);
@@ -413,7 +443,7 @@
         });
     };
 
-    // ৮. উইজার্ড ইন্টারফেস রেন্ডারার (FontAwesome Chevron আইকন সহ)
+    // ৮. উইজার্ড ইন্টারফেস রেন্ডারার
     window.renderWizardUI = function () {
         const container = document.getElementById('hubWizardContainer');
         if (!container) return;
@@ -464,14 +494,14 @@
                         <span class="hub-wizard-title">${stepIndex}. ${cat.name}</span>
                         <div class="hub-wizard-meta">
                             <span id="cat-sub-${cat.id}">Subtotal: ৳ ${fmt(catSubtotal)}</span>
-                            <i class="fa-solid fa-chevron-down hub-native-arrow"></i>
+                            ${svgChevron}
                         </div>
                     </div>
                     <div class="hub-wizard-body">
                         <div class="hub-strip-grid">${stripsHTML}</div>
                         <div class="hub-step-footer">
                             <button class="hub-btn-next" onclick="window.wizardGoToNext('${nextStepId}')">
-                                Next Step &rarr;
+                                <span>Next Step</span> &rarr;
                             </button>
                         </div>
                     </div>
@@ -521,14 +551,14 @@
                     <span class="hub-wizard-title">${stepIndex}. Cash Drawer</span>
                     <div class="hub-wizard-meta">
                         <span id="cash-subtotal-disp">Total Cash: ৳ ${fmt(cashSubtotal)}</span>
-                        <i class="fa-solid fa-chevron-down hub-native-arrow"></i>
+                        ${svgChevron}
                     </div>
                 </div>
                 <div class="hub-wizard-body">
                     <div class="hub-strip-grid">${cashStripsHTML}</div>
                     <div class="hub-step-footer">
                         <button class="hub-btn-next" onclick="window.wizardGoToNext('${cardsSecId}')">
-                            Next: Cards Stock &rarr;
+                            <span>Next: Cards Stock</span> &rarr;
                         </button>
                     </div>
                 </div>
@@ -593,7 +623,7 @@
                     <span class="hub-wizard-title">${stepIndex}. Cards Stock</span>
                     <div class="hub-wizard-meta">
                         <span id="cards-subtotal-disp">Total Cards: ৳ ${fmt(grandCardSubtotal)}</span>
-                        <i class="fa-solid fa-chevron-down hub-native-arrow"></i>
+                        ${svgChevron}
                     </div>
                 </div>
                 <div class="hub-wizard-body">
