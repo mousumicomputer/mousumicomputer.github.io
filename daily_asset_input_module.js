@@ -1196,12 +1196,38 @@
             console.warn("Opening fetch error:", e);
         }
 
-        const todayStr = new Date().toISOString().split('T')[0];
+        // ৩. একচুয়াল সম্পদ (সরাসরি ফায়ারবেস হিস্ট্রি থেকে ডাটা নেওয়া)
         let actualAssets = 0;
+        let targetSnap = allHistoryRecords.find(r => r.date === toDate);
 
-        if (toDate === todayStr) {
+        if (!targetSnap && window.getDatabase && window.ref && window.get) {
+            try {
+                const snap = await window.get(window.ref(window.getDatabase(), `erp/daily_balance_snapshots/${toDate}`));
+                if (snap.exists()) targetSnap = snap.val();
+            } catch(e) {}
+        }
+
+        if (targetSnap) {
+            if (targetSnap.grandTotal !== undefined) {
+                actualAssets = targetSnap.grandTotal;
+            } else {
+                let aTot = 0, cTot = 0, cardTot = 0;
+                const cardCfg = getMasterCardConfig();
+                Object.entries(targetSnap.balances || {}).forEach(([k, v]) => {
+                    if (k !== 'acc_9') aTot += (parseFloat(v) || 0);
+                });
+                [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => cTot += ((parseInt(targetSnap.cash?.[n]) || 0) * n));
+                cTot += (parseFloat(targetSnap.cash?.others) || 0);
+                ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
+                    const rawCards = cardCfg[op] || [];
+                    const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
+                    const opQtys = targetSnap.cards?.[op] || {};
+                    opCards.forEach(c => cardTot += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
+                });
+                actualAssets = aTot + cTot + cardTot;
+            }
+        } else {
             let aTot = 0, cTot = 0, cardTot = 0;
-            const cardCfg = getMasterCardConfig();
             const liveBals = (window.balanceStore && Object.keys(window.balanceStore).length > 0) ? window.balanceStore : currentBalances;
             const { accs } = getMasterAccountsAndCategories();
             accs.forEach(a => {
@@ -1214,38 +1240,11 @@
             [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => cTot += ((parseInt(liveCash[n]) || 0) * n));
             cTot += (parseFloat(window.cashOthersAmount || currentCash.others) || 0);
 
-            const liveCards = (window.cardQuantities && Object.keys(window.cardQuantities).length > 0) ? window.cardQuantities : currentCards;
-            ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
-                const rawCards = cardCfg[op] || [];
-                const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
-                const opQtys = liveCards[op] || {};
-                opCards.forEach(c => cardTot += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
-            });
-            actualAssets = aTot + cTot + cardTot;
-        } else {
-            const targetSnap = allHistoryRecords.find(r => r.date === toDate);
-            if (targetSnap) {
-                if (targetSnap.grandTotal !== undefined) {
-                    actualAssets = targetSnap.grandTotal;
-                } else {
-                    let aTot = 0, cTot = 0, cardTot = 0;
-                    const cardCfg = getMasterCardConfig();
-                    Object.entries(targetSnap.balances || {}).forEach(([k, v]) => {
-                        if (k !== 'acc_9') aTot += (parseFloat(v) || 0);
-                    });
-                    [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => cTot += ((parseInt(targetSnap.cash?.[n]) || 0) * n));
-                    cTot += (parseFloat(targetSnap.cash?.others) || 0);
-                    ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
-                        const rawCards = cardCfg[op] || [];
-                        const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
-                        const opQtys = targetSnap.cards?.[op] || {};
-                        opCards.forEach(c => cardTot += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
-                    });
-                    actualAssets = aTot + cTot + cardTot;
-                }
+            if (liveBals['acc_9']) {
+                cardTot = parseFloat(liveBals['acc_9']) || 0;
             }
+            actualAssets = aTot + cTot + cardTot;
         }
-
         const expectedCapital = openingCapital + totalPelam - totalDilam;
         const netIncome = actualAssets - expectedCapital;
 
