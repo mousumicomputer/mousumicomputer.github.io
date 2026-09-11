@@ -252,9 +252,9 @@
         const menuItemHTML = `
             <li class="menu-item" id="menu-asset-hub-parent">
                 <a onclick="window.toggleParentMenu('menu-asset-hub-parent')">
-                    <span class="menu-link-inner"><i class="fa-solid fa-coins"></i> <span>Daily Asset Hub</span></span>
-                    <span class="chevron-icon">&#9662;</span>
-                </a>
+    <span class="menu-link-inner"><i class="fa-solid fa-coins"></i> <span>Daily Asset Hub</span></span>
+    <span class="chevron-icon"><i class="fa-solid fa-chevron-down"></i></span>
+</a>
                 <ul class="submenu-list">
                     <li class="submenu-item active" id="sub-asset-entry">
                         <a onclick="window.switchAssetHubSubTab('entry')"><span>&rsaquo; Balance Entry</span></a>
