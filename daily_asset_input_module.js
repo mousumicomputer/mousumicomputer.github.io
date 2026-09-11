@@ -4,7 +4,8 @@
  * Feature: Operator Filter Pills (All / GP / Banglalink / Robi / Airtel),
  *          Precise Sidebar Menu Placement,
  *          Pure SVG/CSS Crisp Chevron Arrows,
- *          Pill Rounded Next Step Button & Master Config Bridge.
+ *          Pill Rounded Next Step Button & Master Config Bridge,
+ *          Full Responsive Fixed Daily Income Engine.
  */
 
 (function () {
@@ -76,7 +77,7 @@
             .hub-wizard-title { font-size: 13.5px; font-weight: 800; display: flex; align-items: center; gap: 8px; color: #0f172a; }
             .hub-wizard-meta { display: flex; align-items: center; gap: 14px; font-size: 12.5px; font-weight: 700; color: #334155; }
             
-            /* বিশুদ্ধ SVG অ্যারো (কখনো ভাঙবে না) */
+            /* বিশুদ্ধ SVG অ্যারো */
             .hub-arrow-icon {
                 display: inline-flex;
                 align-items: center;
@@ -191,7 +192,6 @@
                 border-top: 1px solid #f1f5f9; 
             }
 
-            /* গোলাকার প্রিমিয়াম পিল নেক্সট বাটন */
             .hub-btn-next {
                 background: #f8fafc;
                 border: 1.5px solid #0f172a;
@@ -213,7 +213,6 @@
                 transform: translateX(2px);
             }
 
-            /* ভাসমান সেভ বাটন */
             .hub-floating-btn {
                 position: fixed;
                 bottom: 25px;
@@ -235,7 +234,6 @@
             }
             .hub-floating-btn:hover { background: #1e293b; transform: scale(1.04); }
 
-            /* হিস্ট্রি কার্ড */
             .hub-history-card {
                 background: #fff;
                 border: 1px solid #cbd5e1;
@@ -264,6 +262,165 @@
             .hub-icon-btn:hover { border-color: #000; background: #f1f5f9; }
             .hub-icon-delete { color: #dc2626; border-color: #fecaca; }
             .hub-icon-delete:hover { background: #fee2e2; border-color: #dc2626; }
+
+            /* DEDICATED DAILY INCOME ENGINE STYLES (ফিক্সড ও ফুল ভিউ) */
+            .hub-income-container {
+                display: flex;
+                justify-content: flex-start;
+                padding: 10px 0 30px 0;
+                font-family: 'Tiro Bangla', serif !important;
+                width: 100%;
+            }
+            .hub-inc-card {
+                background: #ffffff;
+                border: 1px solid #cbd5e1;
+                border-radius: 12px;
+                width: 100%;
+                max-width: 640px; /* উইথ বাড়িয়ে দেওয়া হলো যাতে নম্বর না কাটে */
+                box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+                overflow: hidden;
+                font-family: 'Tiro Bangla', serif !important;
+            }
+            .hub-inc-header {
+                padding: 12px 18px;
+                background: #f8fafc;
+                border-bottom: 1px solid #e2e8f0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .hub-inc-title {
+                font-size: 0.95rem;
+                font-weight: 800;
+                color: #0f172a;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-family: 'Tiro Bangla', serif !important;
+            }
+            .hub-inc-badge {
+                font-size: 0.8rem;
+                font-weight: 700;
+                color: #0284c7;
+                background: #f0f9ff;
+                border: 1px solid #bae6fd;
+                padding: 3px 12px;
+                border-radius: 6px;
+                font-family: 'Tiro Bangla', serif !important;
+            }
+            .hub-inc-shortcuts {
+                padding: 10px 14px;
+                background: #ffffff;
+                border-bottom: 1px solid #f1f5f9;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            .hub-btn-quick {
+                background: #f1f5f9;
+                border: 1px solid #cbd5e1;
+                color: #475569;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 0.8rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.15s ease;
+                flex: 1 1 auto;
+                text-align: center;
+                font-family: 'Tiro Bangla', serif !important;
+            }
+            .hub-btn-quick:hover { background: #e2e8f0; }
+            .hub-btn-quick.active {
+                background: #0f172a;
+                color: #ffffff;
+                border-color: #0f172a;
+            }
+            .hub-inc-dates {
+                padding: 10px 14px;
+                background: #fbfcfe;
+                border-bottom: 1px solid #e2e8f0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .hub-inc-date-field {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 0.82rem;
+                font-weight: 700;
+                color: #475569;
+                flex: 1;
+                min-width: 140px;
+                font-family: 'Tiro Bangla', serif !important;
+            }
+            .hub-inc-date-field input {
+                width: 100%;
+                height: 32px;
+                padding: 0 8px;
+                border: 1px solid #cbd5e1;
+                border-radius: 6px;
+                font-size: 0.82rem;
+                font-weight: 700;
+                outline: none;
+                background: #fff;
+                color: #0f172a;
+                font-family: 'Tiro Bangla', serif !important;
+            }
+            .hub-inc-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-family: 'Tiro Bangla', serif !important;
+            }
+            .hub-inc-table tr td {
+                padding: 12px 20px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 0.95rem;
+                font-family: 'Tiro Bangla', serif !important;
+            }
+            .hub-inc-table .hub-lbl {
+                color: #475569;
+                font-weight: 600;
+                white-space: nowrap;
+            }
+            .hub-inc-table .hub-val {
+                text-align: right;
+                font-weight: 700;
+                color: #0f172a;
+                font-size: 1.05rem;
+                white-space: nowrap; /* সংখ্যা ভাঙবে না */
+            }
+            .hub-inc-table tr.hub-row-exp {
+                background: #f8fafc;
+            }
+            .hub-inc-table tr.hub-row-inc {
+                background: #f0fdf4;
+                border-top: 2px solid #86efac;
+            }
+            .hub-inc-table tr.hub-row-inc .hub-lbl-inc {
+                font-size: 1.05rem;
+                font-weight: 800;
+                color: #15803d;
+                white-space: nowrap;
+            }
+            .hub-inc-table tr.hub-row-inc .hub-val-inc {
+                text-align: right;
+                font-size: 1.25rem;
+                font-weight: 900;
+                color: #15803d;
+                white-space: nowrap; /* সংখ্যা কাটবে না */
+            }
+            @media (max-width: 600px) {
+                .hub-income-container { padding: 5px 0 25px 0; }
+                .hub-inc-card { max-width: 100%; border-radius: 8px; }
+                .hub-inc-table tr td { padding: 10px 14px; font-size: 0.88rem; }
+                .hub-inc-table tr.hub-row-inc .hub-val-inc { font-size: 1.15rem; }
+            }
         </style>
     `;
     document.head.insertAdjacentHTML('beforeend', moduleStyles);
@@ -286,6 +443,11 @@
                     <li class="submenu-item active" id="sub-asset-entry">
                         <a onclick="window.switchAssetHubSubTab('entry')">
                             <span><i class="fa fa-chevron-right" style="font-size: 9px; margin-right: 6px; opacity: 0.7;"></i>Balance Entry</span>
+                        </a>
+                    </li>
+                    <li class="submenu-item" id="sub-asset-income">
+                        <a onclick="window.switchAssetHubSubTab('income')">
+                            <span><i class="fa fa-chevron-right" style="font-size: 9px; margin-right: 6px; opacity: 0.7;"></i>Daily Income</span>
                         </a>
                     </li>
                     <li class="submenu-item" id="sub-asset-history">
@@ -324,9 +486,7 @@
                         </div>
                     </div>
 
-                    <div id="hubWizardContainer">
-                        <!-- Dynamic Categories, Cash, and Segmented Cards loaded here -->
-                    </div>
+                    <div id="hubWizardContainer"></div>
 
                     <!-- ভাসমান সেভ বাটন -->
                     <button class="hub-floating-btn" onclick="window.saveAssetHubToFirebase()">
@@ -334,7 +494,76 @@
                     </button>
                 </div>
 
-                <!-- SUB-TAB 2: ENTRY HISTORY -->
+                <!-- SUB-TAB 2: DAILY INCOME -->
+                <div id="hub-tab-income" style="display: none;">
+                    <div class="hub-income-container">
+                        <div class="hub-inc-card">
+                            <div class="hub-inc-header">
+                                <div class="hub-inc-title">
+                                    <i class="fa-solid fa-file-invoice-dollar" style="color: #0284c7;"></i>
+                                    <span>Daily Income Statement</span>
+                                </div>
+                                <span class="hub-inc-badge" id="hubIncomePeriodBadge">Today</span>
+                            </div>
+
+                            <!-- Shortcuts Bar -->
+                            <div class="hub-inc-shortcuts">
+                                <button type="button" class="hub-btn-quick active" id="btnHubIncToday" onclick="window.setHubIncomeShortcut('today')">Today</button>
+                                <button type="button" class="hub-btn-quick" id="btnHubIncYesterday" onclick="window.setHubIncomeShortcut('yesterday')">Yesterday</button>
+                                <button type="button" class="hub-btn-quick" id="btnHubInc7Days" onclick="window.setHubIncomeShortcut('7days')">Last 7 Days</button>
+                                <button type="button" class="hub-btn-quick" id="btnHubIncThisMonth" onclick="window.setHubIncomeShortcut('this_month')">This Month</button>
+                                <button type="button" class="hub-btn-quick" id="btnHubIncLastMonth" onclick="window.setHubIncomeShortcut('last_month')">Last Month</button>
+                            </div>
+
+                            <!-- Date Range Bar -->
+                            <div class="hub-inc-dates">
+                                <div class="hub-inc-date-field">
+                                    <label>From:</label>
+                                    <input type="date" id="hubIncDateFrom" onchange="window.calcHubIncomeDynamically()">
+                                </div>
+                                <div class="hub-inc-date-field">
+                                    <label>To:</label>
+                                    <input type="date" id="hubIncDateTo" onchange="window.calcHubIncomeDynamically()">
+                                </div>
+                                <button type="button" class="hub-btn-quick" onclick="window.calcHubIncomeDynamically()" style="flex: 0 0 auto; height: 32px; padding: 0 12px;" title="Refresh calculation">
+                                    <i class="fa-solid fa-rotate-right"></i>
+                                </button>
+                            </div>
+
+                            <!-- Income Statement Table -->
+                            <table class="hub-inc-table">
+                                <tbody>
+                                    <tr>
+                                        <td class="hub-lbl">Opening Capital</td>
+                                        <td class="hub-val" id="hubIncOpening">৳ 0.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="hub-lbl">Total Pelam (+)</td>
+                                        <td class="hub-val" style="color: #16a34a;" id="hubIncPelam">+ ৳ 0.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="hub-lbl">Total Dilam (-)</td>
+                                        <td class="hub-val" style="color: #dc2626;" id="hubIncDilam">- ৳ 0.00</td>
+                                    </tr>
+                                    <tr class="hub-row-exp">
+                                        <td class="hub-lbl" style="font-weight: 700;">Expected Capital</td>
+                                        <td class="hub-val" id="hubIncExpected">৳ 0.00</td>
+                                    </tr>
+                                    <tr class="hub-row-act">
+                                        <td class="hub-lbl" style="font-weight: 700; color: #0284c7;">Actual Assets</td>
+                                        <td class="hub-val" style="color: #0284c7; font-weight: 800;" id="hubIncActual">৳ 0.00</td>
+                                    </tr>
+                                    <tr class="hub-row-inc">
+                                        <td class="hub-lbl-inc">Net Income</td>
+                                        <td class="hub-val-inc" id="hubIncNetIncome">৳ 0.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 3: ENTRY HISTORY -->
                 <div id="hub-tab-history" style="display: none;">
                     <div class="hub-top-ctrl">
                         <div style="font-size: 13px; font-weight: 800;">Archived Daily Asset Snapshots</div>
@@ -376,19 +605,28 @@
 
     // ৫. সাব-ট্যাব সুইচিং
     window.switchAssetHubSubTab = function (tabType) {
-        window.switchMainTab('asset-hub');
+        if (typeof window.switchMainTab === 'function') {
+            window.switchMainTab('asset-hub');
+        }
         document.querySelectorAll('#menu-asset-hub-parent .submenu-item').forEach(i => i.classList.remove('active'));
 
         const entrySec = document.getElementById('hub-tab-entry');
+        const incSec = document.getElementById('hub-tab-income');
         const histSec = document.getElementById('hub-tab-history');
+
+        if (entrySec) entrySec.style.display = 'none';
+        if (incSec) incSec.style.display = 'none';
+        if (histSec) histSec.style.display = 'none';
 
         if (tabType === 'entry') {
             if (entrySec) entrySec.style.display = 'block';
-            if (histSec) histSec.style.display = 'none';
             document.getElementById('sub-asset-entry')?.classList.add('active');
             window.loadAssetHubInputs();
+        } else if (tabType === 'income') {
+            if (incSec) entrySec ? (incSec.style.display = 'block') : null;
+            document.getElementById('sub-asset-income')?.classList.add('active');
+            window.loadAssetHubIncome();
         } else {
-            if (entrySec) entrySec.style.display = 'none';
             if (histSec) histSec.style.display = 'block';
             document.getElementById('sub-asset-history')?.classList.add('active');
             window.renderAssetHistoryList();
@@ -656,11 +894,33 @@
         }
     };
 
-    // ১০. লাইভ ক্যালকুলেশন
-    window.updateHubBalance = function (accId, val) {
+    // ১০. লাইভ ক্যালকুলেশন হ্যান্ডলার (FIXED)
+    window.updateHubBalance = function (accId, val, catSubId) {
         currentBalances[accId] = parseFloat(val) || 0;
+
+        if (catSubId) {
+            const subEl = document.getElementById(catSubId);
+            if (subEl) {
+                const catId = catSubId.replace('cat-sub-', '');
+                const { accs } = getMasterAccountsAndCategories();
+                const catAccs = accs.filter(a => a.catId === catId);
+                let total = 0;
+                catAccs.forEach(a => total += (parseFloat(currentBalances[a.id]) || 0));
+                subEl.innerText = `Subtotal: ৳ ${fmt(total)}`;
+            }
+        }
         window.recalculateGrandLiveTotal();
     };
+
+    function updateCashHeaderDisplay() {
+        let cashSubtotal = 0;
+        [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(note => {
+            cashSubtotal += ((parseInt(currentCash[note]) || 0) * note);
+        });
+        cashSubtotal += (parseFloat(currentCash.others) || 0);
+        const disp = document.getElementById('cash-subtotal-disp');
+        if (disp) disp.innerText = `Total Cash: ৳ ${fmt(cashSubtotal)}`;
+    }
 
     window.updateHubCash = function (note, val, lineId) {
         const q = parseInt(val) || 0;
@@ -668,11 +928,13 @@
         const line = q * note;
         const lineEl = document.getElementById(lineId);
         if (lineEl) lineEl.innerText = fmt(line);
+        updateCashHeaderDisplay();
         window.recalculateGrandLiveTotal();
     };
 
     window.updateHubCashOthers = function (val) {
         currentCash.others = parseFloat(val) || 0;
+        updateCashHeaderDisplay();
         window.recalculateGrandLiveTotal();
     };
 
@@ -697,12 +959,10 @@
 
     window.recalculateGrandLiveTotal = function () {
         let total = 0;
-        // Accounts
         Object.values(currentBalances).forEach(v => total += (parseFloat(v) || 0));
-        // Cash
         [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => total += ((parseInt(currentCash[n]) || 0) * n));
         total += (parseFloat(currentCash.others) || 0);
-        // Cards
+
         let cardsTotal = 0;
         const cardConfig = getMasterCardConfig();
         ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
@@ -743,6 +1003,58 @@
                 await window.writeToFirebase(`erp/balances`, currentBalances);
                 await window.writeToFirebase(`erp/cashInventory`, { quantities: currentCash, others: currentCash.others || 0 });
                 await window.writeToFirebase(`erp/cardInventory`, currentCards);
+            }
+
+            // Auto-sync with erp/dailyClosingReports
+            try {
+                let actualClosingTotal = 0;
+                const cardCfg = getMasterCardConfig();
+                Object.values(currentBalances || {}).forEach(v => actualClosingTotal += (parseFloat(v) || 0));
+                [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => actualClosingTotal += ((parseInt(currentCash?.[n]) || 0) * n));
+                actualClosingTotal += (parseFloat(currentCash?.others) || 0);
+                ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
+                    const rawCards = cardCfg[op] || [];
+                    const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
+                    const opQtys = currentCards?.[op] || {};
+                    opCards.forEach(c => actualClosingTotal += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
+                });
+
+                let sortedReports = (window.dailyClosingReports || [])
+                    .filter(r => r.report_date < d)
+                    .sort((a, b) => b.report_date.localeCompare(a.report_date));
+                const openingCap = sortedReports.length > 0 ? parseFloat(sortedReports[0].actual_closing) : 50000;
+
+                let totalPelam = 0, totalDilam = 0;
+                (window.customerTransactions || []).filter(t => String(t.date) === String(d)).forEach(t => {
+                    totalPelam += parseFloat(t.credit) || 0;
+                    totalDilam += parseFloat(t.debit) || 0;
+                });
+
+                const expectedCap = openingCap + totalPelam - totalDilam;
+                const netIncome = actualClosingTotal - expectedCap;
+
+                const closingSnapshot = {
+                    report_id: 'DCR-' + Date.now(),
+                    report_date: d,
+                    opening_capital: openingCap,
+                    total_pelam: totalPelam,
+                    total_dilam: totalDilam,
+                    expected_closing: expectedCap,
+                    actual_closing: actualClosingTotal,
+                    income: netIncome,
+                    status: 'Closed',
+                    closing_time: new Date().toLocaleTimeString()
+                };
+
+                if (window.dailyClosingReports) {
+                    window.dailyClosingReports = window.dailyClosingReports.filter(r => r.report_date !== d);
+                    window.dailyClosingReports.unshift(closingSnapshot);
+                    if (typeof window.writeToFirebase === 'function') {
+                        await window.writeToFirebase('erp/dailyClosingReports', window.dailyClosingReports);
+                    }
+                }
+            } catch (syncErr) {
+                console.warn("Auto closing sync note:", syncErr);
             }
 
             if (typeof window.showToast === 'function') window.showToast(`Balance recorded for ${d}!`, "success");
@@ -847,6 +1159,204 @@
                     window.renderAssetHistoryList();
                 });
             }
+        }
+    };
+
+    // ১৩. ডেইলি ইনকাম ক্যালকুলেশন ইঞ্জিন
+    window.loadAssetHubIncome = function () {
+        const fromInp = document.getElementById('hubIncDateFrom');
+        const toInp = document.getElementById('hubIncDateTo');
+        if (fromInp && !fromInp.value) {
+            window.setHubIncomeShortcut('today');
+        } else {
+            window.calcHubIncomeDynamically();
+        }
+    };
+
+    window.setHubIncomeShortcut = function (type) {
+        document.querySelectorAll('.hub-btn-quick').forEach(b => b.classList.remove('active'));
+
+        const now = new Date();
+        const toYMD = (d) => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        let fromStr = toYMD(now);
+        let toStr = toYMD(now);
+
+        if (type === 'today') {
+            document.getElementById('btnHubIncToday')?.classList.add('active');
+        } else if (type === 'yesterday') {
+            document.getElementById('btnHubIncYesterday')?.classList.add('active');
+            const y = new Date(now);
+            y.setDate(y.getDate() - 1);
+            fromStr = toYMD(y);
+            toStr = toYMD(y);
+        } else if (type === '7days') {
+            document.getElementById('btnHubInc7Days')?.classList.add('active');
+            const d7 = new Date(now);
+            d7.setDate(d7.getDate() - 6);
+            fromStr = toYMD(d7);
+        } else if (type === 'this_month') {
+            document.getElementById('btnHubIncThisMonth')?.classList.add('active');
+            const mStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            fromStr = toYMD(mStart);
+        } else if (type === 'last_month') {
+            document.getElementById('btnHubIncLastMonth')?.classList.add('active');
+            const lmStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const lmEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+            fromStr = toYMD(lmStart);
+            toStr = toYMD(lmEnd);
+        }
+
+        const fromInp = document.getElementById('hubIncDateFrom');
+        const toInp = document.getElementById('hubIncDateTo');
+        if (fromInp) fromInp.value = fromStr;
+        if (toInp) toInp.value = toStr;
+
+        window.calcHubIncomeDynamically();
+    };
+
+    window.calcHubIncomeDynamically = async function () {
+        const fromInp = document.getElementById('hubIncDateFrom');
+        const toInp = document.getElementById('hubIncDateTo');
+        if (!fromInp || !toInp) return;
+
+        const fromDate = fromInp.value || new Date().toISOString().split('T')[0];
+        const toDate = toInp.value || fromDate;
+
+        // আপডেট পিরিয়ড ব্যাজ
+        const badge = document.getElementById('hubIncomePeriodBadge');
+        if (badge) {
+            badge.innerText = (fromDate === toDate) ? fromDate : `${fromDate} to ${toDate}`;
+        }
+
+        // ১. কাস্টমার লেনদেন (পেলেন ও দিলেন)
+        const txs = Array.isArray(window.customerTransactions) ? window.customerTransactions : [];
+        let totalPelam = 0;
+        let totalDilam = 0;
+        txs.forEach(t => {
+            const tDate = String(t.date || '');
+            if (tDate >= fromDate && tDate <= toDate) {
+                totalPelam += parseFloat(t.credit) || 0;
+                totalDilam += parseFloat(t.debit) || 0;
+            }
+        });
+
+        // ২. ওপেনিং ক্যাপিটাল
+        let openingCapital = 50000;
+        try {
+            if (allHistoryRecords.length === 0 && window.getDatabase && window.ref && window.get) {
+                const snap = await window.get(window.ref(window.getDatabase(), `erp/daily_balance_snapshots`));
+                if (snap.exists()) {
+                    allHistoryRecords = Object.values(snap.val()).sort((a,b) => b.date.localeCompare(a.date));
+                }
+            }
+
+            const priorSnap = allHistoryRecords
+                .filter(r => r.date < fromDate)
+                .sort((a, b) => b.date.localeCompare(a.date))[0];
+
+            if (priorSnap) {
+                let aTot = 0, cTot = 0, cardTot = 0;
+                const cardCfg = getMasterCardConfig();
+                Object.values(priorSnap.balances || {}).forEach(v => aTot += (parseFloat(v) || 0));
+                [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => cTot += ((parseInt(priorSnap.cash?.[n]) || 0) * n));
+                cTot += (parseFloat(priorSnap.cash?.others) || 0);
+                ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
+                    const rawCards = cardCfg[op] || [];
+                    const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
+                    const opQtys = priorSnap.cards?.[op] || {};
+                    opCards.forEach(c => cardTot += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
+                });
+                openingCapital = aTot + cTot + cardTot;
+            } else {
+                const closings = window.dailyClosingReports || [];
+                const priorClosing = closings
+                    .filter(r => r.report_date < fromDate)
+                    .sort((a, b) => b.report_date.localeCompare(a.report_date))[0];
+                if (priorClosing && priorClosing.actual_closing) {
+                    openingCapital = parseFloat(priorClosing.actual_closing) || 50000;
+                }
+            }
+        } catch (e) {
+            console.warn("Opening fetch error:", e);
+        }
+
+        // ৩. একচুয়াল ক্লোজিং সম্পদ
+        const todayStr = new Date().toISOString().split('T')[0];
+        let actualAssets = 0;
+
+        if (toDate === todayStr) {
+            let aTot = 0, cTot = 0, cardTot = 0;
+            const cardCfg = getMasterCardConfig();
+            const liveBals = (window.balanceStore && Object.keys(window.balanceStore).length > 0) ? window.balanceStore : currentBalances;
+            Object.values(liveBals).forEach(v => aTot += (parseFloat(v) || 0));
+
+            const liveCash = (window.cashQuantities && Object.keys(window.cashQuantities).length > 0) ? window.cashQuantities : currentCash;
+            [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => cTot += ((parseInt(liveCash[n]) || 0) * n));
+            cTot += (parseFloat(window.cashOthersAmount || currentCash.others) || 0);
+
+            const liveCards = (window.cardQuantities && Object.keys(window.cardQuantities).length > 0) ? window.cardQuantities : currentCards;
+            ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
+                const rawCards = cardCfg[op] || [];
+                const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
+                const opQtys = liveCards[op] || {};
+                opCards.forEach(c => cardTot += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
+            });
+            actualAssets = aTot + cTot + cardTot;
+        } else {
+            const targetSnap = allHistoryRecords.find(r => r.date === toDate);
+            if (targetSnap) {
+                let aTot = 0, cTot = 0, cardTot = 0;
+                const cardCfg = getMasterCardConfig();
+                Object.values(targetSnap.balances || {}).forEach(v => aTot += (parseFloat(v) || 0));
+                [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => cTot += ((parseInt(targetSnap.cash?.[n]) || 0) * n));
+                cTot += (parseFloat(targetSnap.cash?.others) || 0);
+                ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
+                    const rawCards = cardCfg[op] || [];
+                    const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
+                    const opQtys = targetSnap.cards?.[op] || {};
+                    opCards.forEach(c => cardTot += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
+                });
+                actualAssets = aTot + cTot + cardTot;
+            } else {
+                const closings = window.dailyClosingReports || [];
+                const exactClosing = closings.find(r => r.report_date === toDate);
+                if (exactClosing) actualAssets = parseFloat(exactClosing.actual_closing) || 0;
+            }
+        }
+
+        // ৪. প্রত্যাশিত মূলধন ও নিট আয়
+        const expectedCapital = openingCapital + totalPelam - totalDilam;
+        const netIncome = actualAssets - expectedCapital;
+
+        // ৫. ইউআই আপডেট
+        const elOpening = document.getElementById('hubIncOpening');
+        const elPelam = document.getElementById('hubIncPelam');
+        const elDilam = document.getElementById('hubIncDilam');
+        const elExpected = document.getElementById('hubIncExpected');
+        const elActual = document.getElementById('hubIncActual');
+        const elNetIncome = document.getElementById('hubIncNetIncome');
+
+        if (elOpening) elOpening.innerText = `৳ ${fmt(openingCapital)}`;
+        if (elPelam) elPelam.innerText = `+ ৳ ${fmt(totalPelam)}`;
+        if (elDilam) elDilam.innerText = `- ৳ ${fmt(totalDilam)}`;
+        if (elExpected) elExpected.innerText = `৳ ${fmt(expectedCapital)}`;
+        if (elActual) elActual.innerText = `৳ ${fmt(actualAssets)}`;
+
+        if (elNetIncome) {
+            elNetIncome.innerText = `${netIncome >= 0 ? '' : '- '}৳ ${fmt(Math.abs(netIncome))}`;
+            elNetIncome.style.color = netIncome >= 0 ? '#15803d' : '#dc2626';
+        }
+    };
+
+    window.generateDailyClosingSnapshot = async function() {
+        if (typeof window.calcHubIncomeDynamically === 'function') {
+            await window.calcHubIncomeDynamically();
         }
     };
 
