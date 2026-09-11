@@ -1,23 +1,23 @@
 /**
- * Mousumi Computer ERP - Daily Liquid Asset & Balance Input Hub
+ * Mousumi Computer ERP - Daily Liquid Asset, Balance & Income Hub
  * File: daily_asset_input_module.js
  * Feature: Multi-Device Permanent Cloud Sync, Clean 0.00 on New Day,
- *          Historical Edit via Pencil Icon, Operator Filter Pills,
- *          Pure SVG Chevrons, Fixed Daily Income Engine.
+ *          Dedicated Income History Table, Pill-Shaped Minimal Save Button,
+ *          Real System Toast Notification, Tiro Bangla Font, Single-Source of Truth.
  */
 
 (function () {
-    // ১. স্টাইলিং ও সিএসএস
+    // ১. স্টাইলিং ও সিএসএস (মিনিমাল, টিরো বাংলা, কোনো অতিরিক্ত ডিজাইন ছাড়া)
     const moduleStyles = `
         <style id="asset-hub-styles">
             #asset-hub-view { 
-                font-family: 'Tiro Bangla', sans-serif !important; 
+                font-family: 'Tiro Bangla', serif !important; 
                 text-transform: none !important; 
                 color: #0f172a; 
                 padding: 15px 25px 95px 25px; 
                 position: relative; 
             }
-            #asset-hub-view * { box-sizing: border-box; }
+            #asset-hub-view * { box-sizing: border-box; font-family: 'Tiro Bangla', serif !important; }
 
             .hub-top-ctrl {
                 background: #fff;
@@ -137,7 +137,6 @@
                 font-size: 12px;
                 font-weight: 700;
                 cursor: pointer;
-                transition: 0.2s;
                 color: #334155;
             }
             .op-pill-btn:hover { background: #f1f5f9; }
@@ -172,35 +171,28 @@
                 font-size: 12px;
                 font-weight: 800;
                 cursor: pointer;
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-                transition: all 0.2s ease;
             }
-            .hub-btn-next:hover { background: #0f172a; color: #fff; transform: translateX(2px); }
 
+            /* শুধু গোল শেপ ও শুধুই SAVE বাটন */
             .hub-floating-btn {
                 position: fixed;
-                bottom: 25px;
-                right: 35px;
+                bottom: 30px;
+                right: 40px;
                 background: #0f172a;
                 color: #fff;
                 border: none;
-                padding: 12px 28px;
-                border-radius: 50px;
-                font-size: 13.5px;
+                padding: 11px 32px;
+                border-radius: 30px;
+                font-size: 13px;
                 font-weight: 800;
                 cursor: pointer;
-                box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-                display: flex;
-                align-items: center;
-                gap: 8px;
+                box-shadow: 0 4px 14px rgba(0,0,0,0.18);
                 z-index: 9999;
                 transition: transform 0.2s, background 0.2s;
             }
-            .hub-floating-btn:hover { background: #1e293b; transform: scale(1.04); }
+            .hub-floating-btn:hover { background: #1e293b; transform: scale(1.03); }
 
+            /* BALANCE ENTRY HISTORY */
             .hub-history-card {
                 background: #fff;
                 border: 1px solid #cbd5e1;
@@ -212,7 +204,6 @@
                 align-items: center;
                 flex-wrap: wrap;
                 gap: 12px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.02);
             }
             .hub-hist-date { font-size: 13.5px; font-weight: 800; color: #0f172a; }
             .hub-hist-date span { font-size: 11px; font-weight: normal; color: #64748b; margin-left: 5px; }
@@ -223,73 +214,126 @@
                 background: #fff;
                 border: 1px solid #cbd5e1;
                 border-radius: 6px;
-                padding: 6px 12px;
+                padding: 5px 12px;
                 cursor: pointer;
-                font-size: 12px;
-                font-weight: 700;
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
+                font-size: 11.5px;
+                font-weight: 800;
                 color: #334155;
             }
             .hub-icon-btn:hover { border-color: #0f172a; background: #f8fafc; color: #0f172a; }
             .hub-btn-edit { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
             .hub-btn-edit:hover { background: #dbeafe; border-color: #1d4ed8; }
 
-            /* DAILY INCOME STYLES */
+            /* DAILY INCOME STYLES (MINIMAL TABLE) */
             .hub-income-container { display: flex; justify-content: flex-start; padding: 10px 0 30px 0; width: 100%; }
             .hub-inc-card {
                 background: #ffffff;
                 border: 1px solid #cbd5e1;
-                border-radius: 12px;
+                border-radius: 8px;
                 width: 100%;
-                max-width: 640px;
-                box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+                max-width: 600px;
                 overflow: hidden;
             }
             .hub-inc-header {
-                padding: 12px 18px;
+                padding: 12px 16px;
                 background: #f8fafc;
                 border-bottom: 1px solid #e2e8f0;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
             }
-            .hub-inc-title { font-size: 0.95rem; font-weight: 800; color: #0f172a; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
-            .hub-inc-badge { font-size: 0.8rem; font-weight: 700; color: #0284c7; background: #f0f9ff; border: 1px solid #bae6fd; padding: 3px 12px; border-radius: 6px; }
+            .hub-inc-title { font-size: 13.5px; font-weight: 800; text-transform: uppercase; color: #0f172a; }
+            .hub-inc-badge { font-size: 11px; font-weight: 700; color: #0f172a; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 4px; }
             .hub-inc-shortcuts { padding: 10px 14px; background: #ffffff; border-bottom: 1px solid #f1f5f9; display: flex; flex-wrap: wrap; gap: 6px; }
             .hub-btn-quick {
-                background: #f1f5f9;
+                background: #fff;
                 border: 1px solid #cbd5e1;
                 color: #475569;
-                padding: 6px 12px;
-                border-radius: 6px;
-                font-size: 0.8rem;
+                padding: 4px 10px;
+                border-radius: 4px;
+                font-size: 11.5px;
                 font-weight: 700;
                 cursor: pointer;
-                flex: 1 1 auto;
-                text-align: center;
             }
-            .hub-btn-quick:hover { background: #e2e8f0; }
+            .hub-btn-quick:hover { background: #f1f5f9; }
             .hub-btn-quick.active { background: #0f172a; color: #ffffff; border-color: #0f172a; }
-            .hub-inc-dates { padding: 10px 14px; background: #fbfcfe; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-            .hub-inc-date-field { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; color: #475569; flex: 1; min-width: 140px; }
-            .hub-inc-date-field input { width: 100%; height: 32px; padding: 0 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.82rem; font-weight: 700; outline: none; background: #fff; color: #0f172a; }
+            
+            .hub-inc-dates { padding: 10px 14px; background: #fff; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; }
+            .hub-inc-dates input { height: 28px; padding: 0 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; font-weight: 700; outline: none; }
+
             .hub-inc-table { width: 100%; border-collapse: collapse; }
-            .hub-inc-table tr td { padding: 12px 20px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; }
-            .hub-inc-table .hub-lbl { color: #475569; font-weight: 600; white-space: nowrap; }
-            .hub-inc-table .hub-val { text-align: right; font-weight: 700; color: #0f172a; font-size: 1.05rem; white-space: nowrap; }
+            .hub-inc-table tr td { padding: 11px 16px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+            .hub-inc-table .hub-lbl { color: #475569; font-weight: 700; }
+            .hub-inc-table .hub-val { text-align: right; font-weight: 800; color: #0f172a; font-size: 13.5px; }
             .hub-inc-table tr.hub-row-exp { background: #f8fafc; }
-            .hub-inc-table tr.hub-row-inc { background: #f0fdf4; border-top: 2px solid #86efac; }
-            .hub-inc-table tr.hub-row-inc .hub-lbl-inc { font-size: 1.05rem; font-weight: 800; color: #15803d; white-space: nowrap; }
-            .hub-inc-table tr.hub-row-inc .hub-val-inc { text-align: right; font-size: 1.25rem; font-weight: 900; color: #15803d; white-space: nowrap; }
+            .hub-inc-table tr.hub-row-inc { background: #f0fdf4; border-top: 1.5px solid #86efac; }
+            .hub-inc-table tr.hub-row-inc .hub-lbl-inc { font-size: 14px; font-weight: 800; color: #15803d; }
+            .hub-inc-table tr.hub-row-inc .hub-val-inc { text-align: right; font-size: 15px; font-weight: 900; color: #15803d; }
+
+            .hub-inc-status {
+                padding: 10px 16px;
+                background: #f8fafc;
+                border-top: 1px solid #e2e8f0;
+                font-size: 11px;
+                color: #64748b;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            /* SECTION 4: INCOME HISTORY ARCHIVE TABLE */
+            .hub-hist-table-wrap {
+                background: #fff;
+                border: 1px solid #cbd5e1;
+                border-radius: 8px;
+                overflow-x: auto;
+                max-width: 950px;
+            }
+            .hub-hist-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 12px;
+                text-align: left;
+            }
+            .hub-hist-table th {
+                background: #f8fafc;
+                padding: 10px 12px;
+                border-bottom: 1px solid #cbd5e1;
+                color: #475569;
+                font-weight: 800;
+                white-space: nowrap;
+            }
+            .hub-hist-table td {
+                padding: 10px 12px;
+                border-bottom: 1px solid #f1f5f9;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+            .hub-hist-table tr:hover td { background: #fbfcfe; }
+            .t-right { text-align: right; }
+            .t-green { color: #16a34a; }
+            .t-red { color: #dc2626; }
+            .t-net-green { color: #15803d; font-weight: 900; }
+            .t-subtext { font-size: 10.5px; color: #64748b; display: block; font-weight: normal; }
+
+            .btn-table-report {
+                background: #fff;
+                border: 1px solid #cbd5e1;
+                padding: 4px 12px;
+                border-radius: 4px;
+                font-size: 11.5px;
+                font-weight: 800;
+                cursor: pointer;
+                color: #0f172a;
+            }
+            .btn-table-report:hover { background: #0f172a; color: #fff; }
         </style>
     `;
     document.head.insertAdjacentHTML('beforeend', moduleStyles);
 
     const svgChevron = `<svg class="hub-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`;
 
-    // ২. সাইডবার মেনু ইনজেকশন
+    // ২. সাইডবার মেনুতে ৪টি পরিষ্কার সাব-মেনু ইনজেকশন
     function injectSidebarMenu() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList || document.getElementById('menu-asset-hub-parent')) return;
@@ -316,6 +360,11 @@
                             <span><i class="fa fa-chevron-right" style="font-size: 9px; margin-right: 6px; opacity: 0.7;"></i>Entry History</span>
                         </a>
                     </li>
+                    <li class="submenu-item" id="sub-asset-inc-history">
+                        <a onclick="window.switchAssetHubSubTab('inc-history')">
+                            <span><i class="fa fa-chevron-right" style="font-size: 9px; margin-right: 6px; opacity: 0.7;"></i>Income History</span>
+                        </a>
+                    </li>
                 </ul>
             </li>
         `;
@@ -335,6 +384,7 @@
 
         const viewPanelHTML = `
             <div class="view-panel" id="asset-hub-view">
+                
                 <!-- SUB-TAB 1: BALANCE ENTRY -->
                 <div id="hub-tab-entry">
                     <div class="hub-top-ctrl">
@@ -349,9 +399,7 @@
 
                     <div id="hubWizardContainer"></div>
 
-                    <button class="hub-floating-btn" onclick="window.saveAssetHubToFirebase()">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Save Balance
-                    </button>
+                    <button class="hub-floating-btn" onclick="window.saveAssetHubToFirebase()">Save</button>
                 </div>
 
                 <!-- SUB-TAB 2: DAILY INCOME -->
@@ -359,56 +407,47 @@
                     <div class="hub-income-container">
                         <div class="hub-inc-card">
                             <div class="hub-inc-header">
-                                <div class="hub-inc-title">
-                                    <i class="fa-solid fa-file-invoice-dollar" style="color: #0284c7;"></i>
-                                    <span>Daily Income Statement</span>
-                                </div>
+                                <span class="hub-inc-title">Daily Income</span>
                                 <span class="hub-inc-badge" id="hubIncomePeriodBadge">Today</span>
                             </div>
 
                             <div class="hub-inc-shortcuts">
                                 <button type="button" class="hub-btn-quick active" id="btnHubIncToday" onclick="window.setHubIncomeShortcut('today')">Today</button>
                                 <button type="button" class="hub-btn-quick" id="btnHubIncYesterday" onclick="window.setHubIncomeShortcut('yesterday')">Yesterday</button>
-                                <button type="button" class="hub-btn-quick" id="btnHubInc7Days" onclick="window.setHubIncomeShortcut('7days')">Last 7 Days</button>
+                                <button type="button" class="hub-btn-quick" id="btnHubInc7Days" onclick="window.setHubIncomeShortcut('7days')">7 Days</button>
                                 <button type="button" class="hub-btn-quick" id="btnHubIncThisMonth" onclick="window.setHubIncomeShortcut('this_month')">This Month</button>
                                 <button type="button" class="hub-btn-quick" id="btnHubIncLastMonth" onclick="window.setHubIncomeShortcut('last_month')">Last Month</button>
                             </div>
 
                             <div class="hub-inc-dates">
-                                <div class="hub-inc-date-field">
-                                    <label>From:</label>
-                                    <input type="date" id="hubIncDateFrom" onchange="window.calcHubIncomeDynamically()">
-                                </div>
-                                <div class="hub-inc-date-field">
-                                    <label>To:</label>
-                                    <input type="date" id="hubIncDateTo" onchange="window.calcHubIncomeDynamically()">
-                                </div>
-                                <button type="button" class="hub-btn-quick" onclick="window.calcHubIncomeDynamically()" style="flex: 0 0 auto; height: 32px; padding: 0 12px;">
-                                    <i class="fa-solid fa-rotate-right"></i>
+                                <div>From: <input type="date" id="hubIncDateFrom" onchange="window.calcHubIncomeDynamically()"></div>
+                                <div>To: <input type="date" id="hubIncDateTo" onchange="window.calcHubIncomeDynamically()"></div>
+                                <button type="button" class="hub-btn-quick" onclick="window.calcHubIncomeDynamically()" style="height: 28px; padding: 0 10px;">
+                                    <i class="fa-solid fa-rotate"></i>
                                 </button>
                             </div>
 
                             <table class="hub-inc-table">
                                 <tbody>
                                     <tr>
-                                        <td class="hub-lbl">Opening Capital</td>
+                                        <td class="hub-lbl">Opening</td>
                                         <td class="hub-val" id="hubIncOpening">৳ 0.00</td>
                                     </tr>
                                     <tr>
-                                        <td class="hub-lbl">Total Pelam (+)</td>
+                                        <td class="hub-lbl">Pelam (+)</td>
                                         <td class="hub-val" style="color: #16a34a;" id="hubIncPelam">+ ৳ 0.00</td>
                                     </tr>
                                     <tr>
-                                        <td class="hub-lbl">Total Dilam (-)</td>
+                                        <td class="hub-lbl">Dilam (-)</td>
                                         <td class="hub-val" style="color: #dc2626;" id="hubIncDilam">- ৳ 0.00</td>
                                     </tr>
                                     <tr class="hub-row-exp">
-                                        <td class="hub-lbl" style="font-weight: 700;">Expected Capital</td>
+                                        <td class="hub-lbl">Expected</td>
                                         <td class="hub-val" id="hubIncExpected">৳ 0.00</td>
                                     </tr>
-                                    <tr class="hub-row-act">
-                                        <td class="hub-lbl" style="font-weight: 700; color: #0284c7;">Actual Assets</td>
-                                        <td class="hub-val" style="color: #0284c7; font-weight: 800;" id="hubIncActual">৳ 0.00</td>
+                                    <tr>
+                                        <td class="hub-lbl">Actual</td>
+                                        <td class="hub-val" id="hubIncActual">৳ 0.00</td>
                                     </tr>
                                     <tr class="hub-row-inc">
                                         <td class="hub-lbl-inc">Net Income</td>
@@ -416,18 +455,54 @@
                                     </tr>
                                 </tbody>
                             </table>
+
+                            <div class="hub-inc-status">
+                                <span>Auto-Sync: Active</span>
+                                <span id="hubIncomeLastUpdated">Last Updated: ---</span>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- শুধুই SAVE বাটন -->
+                    <button class="hub-floating-btn" onclick="window.saveDailyIncomeToFirebase()">Save</button>
                 </div>
 
-                <!-- SUB-TAB 3: ENTRY HISTORY -->
+                <!-- SUB-TAB 3: ENTRY HISTORY (BALANCE ONLY) -->
                 <div id="hub-tab-history" style="display: none;">
                     <div class="hub-top-ctrl">
-                        <div style="font-size: 13.5px; font-weight: 800;">Saved Daily Asset Records (Firebase Cloud)</div>
-                        <button class="hub-icon-btn" onclick="window.renderAssetHistoryList()"><i class="fa-solid fa-rotate"></i> Reload History</button>
+                        <div style="font-size: 13.5px; font-weight: 800; text-transform: uppercase;">Saved Daily Balances</div>
+                        <button class="hub-icon-btn" onclick="window.renderAssetHistoryList()"><i class="fa-solid fa-rotate"></i> Reload</button>
                     </div>
                     <div id="hubHistoryListContainer"></div>
                 </div>
+
+                <!-- SUB-TAB 4: INCOME HISTORY (DEDICATED MINIMAL TABLE) -->
+                <div id="hub-tab-inc-history" style="display: none;">
+                    <div class="hub-top-ctrl">
+                        <div style="font-size: 13.5px; font-weight: 800; text-transform: uppercase;">Income History Archive</div>
+                        <button class="hub-icon-btn" onclick="window.renderIncomeHistoryList()"><i class="fa-solid fa-rotate"></i> Reload</button>
+                    </div>
+                    <div class="hub-hist-table-wrap">
+                        <table class="hub-hist-table">
+                            <thead>
+                                <tr>
+                                    <th>Period</th>
+                                    <th class="t-right">Opening</th>
+                                    <th class="t-right">Pelam (+)</th>
+                                    <th class="t-right">Dilam (-)</th>
+                                    <th class="t-right">Actual</th>
+                                    <th class="t-right">Net Income</th>
+                                    <th>Updated</th>
+                                    <th style="text-align: center;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hubIncomeHistoryTableBody">
+                                <tr><td colspan="8" style="text-align:center; padding: 15px;">Loading income records...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
         `;
         mainWrapper.insertAdjacentHTML('beforeend', viewPanelHTML);
@@ -440,6 +515,18 @@
     let currentCards = {};
     let allHistoryRecords = [];
     let activeCardFilter = 'ALL';
+
+    // বর্তমান হিসাবের গ্লোবাল ক্যাশ
+    let latestCalculatedIncome = {
+        opening: 0,
+        pelam: 0,
+        dilam: 0,
+        expected: 0,
+        actual: 0,
+        netIncome: 0,
+        fromDate: '',
+        toDate: ''
+    };
 
     function getMasterAccountsAndCategories() {
         const rawCats = window.accountManagerData?.categories || window.categories || [];
@@ -459,7 +546,7 @@
         return window.cardManagerData?.cards || window.cardConfig || {};
     }
 
-    // ৫. সাব-ট্যাব সুইচিং
+    // ৪. সাব-ট্যাব সুইচিং
     window.switchAssetHubSubTab = function (tabType) {
         if (typeof window.switchMainTab === 'function') {
             window.switchMainTab('asset-hub');
@@ -469,10 +556,12 @@
         const entrySec = document.getElementById('hub-tab-entry');
         const incSec = document.getElementById('hub-tab-income');
         const histSec = document.getElementById('hub-tab-history');
+        const incHistSec = document.getElementById('hub-tab-inc-history');
 
         if (entrySec) entrySec.style.display = 'none';
         if (incSec) incSec.style.display = 'none';
         if (histSec) histSec.style.display = 'none';
+        if (incHistSec) incHistSec.style.display = 'none';
 
         if (tabType === 'entry') {
             if (entrySec) entrySec.style.display = 'block';
@@ -482,14 +571,18 @@
             if (incSec) incSec.style.display = 'block';
             document.getElementById('sub-asset-income')?.classList.add('active');
             window.loadAssetHubIncome();
-        } else {
+        } else if (tabType === 'history') {
             if (histSec) histSec.style.display = 'block';
             document.getElementById('sub-asset-history')?.classList.add('active');
             window.renderAssetHistoryList();
+        } else if (tabType === 'inc-history') {
+            if (incHistSec) incHistSec.style.display = 'block';
+            document.getElementById('sub-asset-inc-history')?.classList.add('active');
+            window.renderIncomeHistoryList();
         }
     };
 
-    // ৬. তারিখ পরিবর্তনে ডাটা লোড (নতুন দিন হলে একদম ০.০০, পুরনো দিন হলে ফায়ারবেস থেকে লোড)
+    // ৫. তারিখ পরিবর্তনে ব্যালেন্স লোড (নতুন দিন = ফ্রেশ ০.০০)
     window.onAssetHubDateChange = async function () {
         const d = document.getElementById('hubSelectedDate').value;
         if (!d) return;
@@ -498,31 +591,20 @@
 
         try {
             let existingRecord = null;
-            
-            // ফায়ারবেস থেকে সরাসরি ডাটা ফেচ
             if (window.getDatabase && window.ref && window.get) {
                 const snap = await window.get(window.ref(window.getDatabase(), `erp/daily_balance_snapshots/${d}`));
-                if (snap.exists()) {
-                    existingRecord = snap.val();
-                }
+                if (snap.exists()) existingRecord = snap.val();
             }
 
             if (existingRecord) {
-                // পূর্বে সেভ করা থাকলে সেই নির্দিষ্ট দিনের ডাটা লোড হবে
                 currentBalances = { ...(existingRecord.balances || {}) };
                 currentCash = { ...(existingRecord.cash || {}) };
                 currentCards = { ...(existingRecord.cards || {}) };
-                if (typeof window.showToast === 'function') {
-                    window.showToast(`${d} তারিখের পূর্বের সেভ করা ডাটা লোড হয়েছে।`, "info");
-                }
+                if (typeof window.showToast === 'function') window.showToast(`Loaded saved records for ${d}`, "info");
             } else {
-                // নতুন দিন বা আনসেভড তারিখ হলে সম্পূর্ণ ০.০০ দিয়ে রিসেট হবে (ফ্রেশ ইনপুট)
                 currentBalances = {};
                 currentCash = { others: 0 };
                 currentCards = {};
-                if (typeof window.showToast === 'function') {
-                    window.showToast(`${d} নতুন দিন: ব্যালেন্স ইনপুট করার জন্য তৈরি।`, "info");
-                }
             }
 
             window.renderWizardUI();
@@ -547,7 +629,6 @@
         });
     };
 
-    // ৮. উইজার্ড ইন্টারফেস রেন্ডারার
     window.renderWizardUI = function () {
         const container = document.getElementById('hubWizardContainer');
         if (!container) return;
@@ -558,7 +639,7 @@
 
         let stepIndex = 1;
 
-        // ১. অ্যাকাউন্টস সেকশন
+        // অ্যাকাউন্টস
         cats.forEach(cat => {
             const catAccs = accs.filter(a => a.catId === cat.id);
             if (catAccs.length === 0) return;
@@ -592,7 +673,7 @@
             const nextStepId = `hub-sec-${stepIndex + 1}`;
             const isFirst = (stepIndex === 1);
 
-            const sectionHTML = `
+            container.insertAdjacentHTML('beforeend', `
                 <div class="hub-wizard-sec ${isFirst ? 'active' : ''}" id="${currentStepId}">
                     <div class="hub-wizard-head" onclick="window.toggleSingleWizardSec('${currentStepId}')">
                         <span class="hub-wizard-title">${stepIndex}. ${cat.name}</span>
@@ -604,18 +685,15 @@
                     <div class="hub-wizard-body">
                         <div class="hub-strip-grid">${stripsHTML}</div>
                         <div class="hub-step-footer">
-                            <button class="hub-btn-next" onclick="window.wizardGoToNext('${nextStepId}')">
-                                <span>Next Step</span> &rarr;
-                            </button>
+                            <button class="hub-btn-next" onclick="window.wizardGoToNext('${nextStepId}')">Next Step &rarr;</button>
                         </div>
                     </div>
                 </div>
-            `;
-            container.insertAdjacentHTML('beforeend', sectionHTML);
+            `);
             stepIndex++;
         });
 
-        // ২. ক্যাশ ড্রয়ার সেকশন
+        // ক্যাশ
         let cashSubtotal = 0;
         let cashStripsHTML = '';
         [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(note => {
@@ -661,16 +739,14 @@
                 <div class="hub-wizard-body">
                     <div class="hub-strip-grid">${cashStripsHTML}</div>
                     <div class="hub-step-footer">
-                        <button class="hub-btn-next" onclick="window.wizardGoToNext('${cardsSecId}')">
-                            <span>Next: Cards Stock</span> &rarr;
-                        </button>
+                        <button class="hub-btn-next" onclick="window.wizardGoToNext('${cardsSecId}')">Next: Cards Stock &rarr;</button>
                     </div>
                 </div>
             </div>
         `);
         stepIndex++;
 
-        // ৩. কার্ডস স্টক সেকশন
+        // কার্ডস
         let grandCardSubtotal = 0;
         let operatorBlocksHTML = '';
         const operatorList = ['GP', 'Banglalink', 'Robi', 'Airtel'];
@@ -733,9 +809,6 @@
                 <div class="hub-wizard-body">
                     ${filterPillsHTML}
                     ${operatorBlocksHTML || '<p style="font-size:12px;color:#64748b;">No active cards in Card Setup.</p>'}
-                    <div class="hub-step-footer">
-                        <span style="font-size: 12px; font-weight: 700; color: #16a34a;">&#10003; All sections reviewed. Click Save Balance below.</span>
-                    </div>
                 </div>
             </div>
         `);
@@ -820,10 +893,9 @@
         window.recalculateGrandLiveTotal();
     };
 
+    // ৬. লাইভ টোটাল হিসাব (কার্ড ডাবল কাউন্টিং ছাড়া)
     window.recalculateGrandLiveTotal = function () {
         let total = 0;
-        
-        // কার্ড একাউন্ট (acc_9) বাদ দিয়ে বাকি সব একাউন্টের ব্যালেন্স যোগ করা (যাতে কার্ড ডাবল যোগ না হয়)
         const { accs } = getMasterAccountsAndCategories();
         accs.forEach(a => {
             if (a.id !== 'acc_9' && a.catId !== 'cat_4') {
@@ -831,11 +903,9 @@
             }
         });
 
-        // ক্যাশ ড্রয়ারের যোগফল
         [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => total += ((parseInt(currentCash[n]) || 0) * n));
         total += (parseFloat(currentCash.others) || 0);
 
-        // কার্ডের স্টকের যোগফল (শুধুমাত্র একবার যোগ হবে)
         let cardsTotal = 0;
         const cardConfig = getMasterCardConfig();
         ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
@@ -853,13 +923,12 @@
         if (liveEl) liveEl.innerText = `৳ ${fmt(total)}`;
     };
 
-    // ১১. ফায়ারবেসে ফাইনাল সেভ (ক্লাউড ও হিস্ট্রি আপডেট)
+    // ৭. ব্যালেন্স ফায়ারবেসে সেভ (Single Source of Truth)
     window.saveAssetHubToFirebase = async function () {
         const d = document.getElementById('hubSelectedDate').value || new Date().toISOString().split('T')[0];
         if (typeof window.showLoader === 'function') window.showLoader("Saving Daily Asset to Firebase...");
 
         try {
-            // কার্ডের মোট ভ্যালু হিসাব
             let cardsTotal = 0;
             const cardCfg = getMasterCardConfig();
             ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
@@ -869,7 +938,6 @@
                 opCards.forEach(c => cardsTotal += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
             });
 
-// ১. আসল একাউন্টগুলোর মোট হিসাব (কার্ড ছাড়া)
             let accountsTotal = 0;
             const { accs } = getMasterAccountsAndCategories();
             accs.forEach(a => {
@@ -878,18 +946,13 @@
                 }
             });
 
-            // ২. ক্যাশ ড্রয়ারের মোট হিসাব
             let cashTotal = 0;
             [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => cashTotal += ((parseInt(currentCash[n]) || 0) * n));
             cashTotal += (parseFloat(currentCash.others) || 0);
 
-            // ৩. চূড়ান্ত মোট হিসাব (ইনপুট পেজের আসল টোটাল)
             const grandTotal = accountsTotal + cashTotal + cardsTotal;
-
-            // কার্ড একাউন্টে ভ্যালু সেট (ড্যাশবোর্ডের জন্য)
             currentBalances['acc_9'] = cardsTotal;
 
-            // সরাসরি চূড়ান্ত যোগফলগুলো ফায়ারবেসে সেভ করা
             const snapshotObj = {
                 date: d,
                 timestamp: Date.now(),
@@ -902,12 +965,10 @@
                 cards: { ...currentCards }
             };
 
-            // ১. নির্দিষ্ট দিনের স্ন্যাপশট পাথে সেভ (যাতে যে কোনো তারিখের ডাটা আজীবন থাকে)
             if (typeof window.writeToFirebase === 'function') {
                 await window.writeToFirebase(`erp/daily_balance_snapshots/${d}`, snapshotObj);
             }
 
-            // ২. যদি নির্বাচিত তারিখ আজকের বর্তমান তারিখ হয়, তাহলে মূল ড্যাশবোর্ডের লাইভ ব্যালেন্সও আপডেট হবে
             const todayStr = new Date().toISOString().split('T')[0];
             if (d === todayStr && typeof window.writeToFirebase === 'function') {
                 await window.writeToFirebase(`erp/balances`, currentBalances);
@@ -915,97 +976,47 @@
                 await window.writeToFirebase(`erp/cardInventory`, currentCards);
             }
 
-            // ৩. অটোমেটিক ডেইলি ক্লোজিং সিঙ্ক
-            try {
-                let actualClosingTotal = 0;
-                Object.values(currentBalances || {}).forEach(v => actualClosingTotal += (parseFloat(v) || 0));
-                [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => actualClosingTotal += ((parseInt(currentCash?.[n]) || 0) * n));
-                actualClosingTotal += (parseFloat(currentCash?.others) || 0);
-
-                let sortedReports = (window.dailyClosingReports || [])
-                    .filter(r => r.report_date < d)
-                    .sort((a, b) => b.report_date.localeCompare(a.report_date));
-                const openingCap = sortedReports.length > 0 ? parseFloat(sortedReports[0].actual_closing) : 50000;
-
-                let totalPelam = 0, totalDilam = 0;
-                (window.customerTransactions || []).filter(t => String(t.date) === String(d)).forEach(t => {
-                    totalPelam += parseFloat(t.credit) || 0;
-                    totalDilam += parseFloat(t.debit) || 0;
-                });
-
-                const expectedCap = openingCap + totalPelam - totalDilam;
-                const netIncome = actualClosingTotal - expectedCap;
-
-                const closingSnapshot = {
-                    report_id: 'DCR-' + Date.now(),
-                    report_date: d,
-                    opening_capital: openingCap,
-                    total_pelam: totalPelam,
-                    total_dilam: totalDilam,
-                    expected_closing: expectedCap,
-                    actual_closing: actualClosingTotal,
-                    income: netIncome,
-                    status: 'Closed',
-                    closing_time: new Date().toLocaleTimeString()
-                };
-
-                if (window.dailyClosingReports) {
-                    window.dailyClosingReports = window.dailyClosingReports.filter(r => r.report_date !== d);
-                    window.dailyClosingReports.unshift(closingSnapshot);
-                    if (typeof window.writeToFirebase === 'function') {
-                        await window.writeToFirebase('erp/dailyClosingReports', window.dailyClosingReports);
-                    }
-                }
-            } catch (syncErr) {
-                console.warn("Auto closing sync note:", syncErr);
-            }
-
             if (typeof window.showToast === 'function') {
-                window.showToast(`${d} তারিখের ব্যালেন্স ফায়ারবেসে স্থায়ীভাবে সংরক্ষিত হয়েছে!`, "success");
-            } else {
-                alert(`${d} তারিখের ব্যালেন্স ফায়ারবেসে সংরক্ষিত হয়েছে!`);
+                window.showToast("Saved", "success");
             }
         } catch (e) {
             console.error("Save Error:", e);
-            if (typeof window.showToast === 'function') window.showToast("Error saving data: " + e.message, "error");
+            if (typeof window.showToast === 'function') window.showToast("Error saving data", "error");
         } finally {
             if (typeof window.hideLoader === 'function') window.hideLoader();
         }
     };
 
-    // ১২. হিস্ট্রি রেন্ডারার (এডিট পেন্সিল আইকনসহ)
+    // ৮. ব্যালেন্স হিস্ট্রি রেন্ডারার (আসল টোটালসহ)
     window.renderAssetHistoryList = async function () {
         const container = document.getElementById('hubHistoryListContainer');
         if (!container) return;
-        container.innerHTML = '<p style="font-size:13px; padding:15px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin"></i> ফায়ারবেস থেকে হিস্ট্রি লোড হচ্ছে...</p>';
+        container.innerHTML = '<p style="font-size:12px; padding:15px; color:#64748b;">Loading history records...</p>';
 
         try {
             if (window.getDatabase && window.ref && window.get) {
                 const snap = await window.get(window.ref(window.getDatabase(), `erp/daily_balance_snapshots`));
                 if (snap.exists()) {
-                    const data = snap.val();
-                    allHistoryRecords = Object.values(data).sort((a,b) => b.date.localeCompare(a.date));
+                    allHistoryRecords = Object.values(snap.val()).sort((a,b) => b.date.localeCompare(a.date));
                 } else {
                     allHistoryRecords = [];
                 }
             }
 
             if (allHistoryRecords.length === 0) {
-                container.innerHTML = '<p style="font-size:13px; padding:20px; color:#64748b;">ফায়ারবেসে কোনো সেভ করা রেকর্ড পাওয়া যায়নি।</p>';
+                container.innerHTML = '<p style="font-size:12px; padding:15px; color:#64748b;">No saved records found.</p>';
                 return;
             }
 
             container.innerHTML = '';
             const cardConfig = getMasterCardConfig();
 
-allHistoryRecords.forEach(rec => {
-                // ইনপুটে সেভ করা চূড়ান্ত হিসাব সরাসরি নিয়ে আসা (কোনো আলাদা ক্যালকুলেটর ছাড়াই)
+            allHistoryRecords.forEach(rec => {
                 let aTotal = rec.accountsTotal;
                 let cTotal = rec.cashTotal;
                 let cardTotal = rec.cardsTotal;
                 let grand = rec.grandTotal;
 
-                // যদি পুরনো কোনো এন্ট্রিতে সরাসরি টোটাল না থাকে, তবে তার ব্যাকআপ হিসাব
                 if (grand === undefined) {
                     aTotal = 0; cTotal = 0; cardTotal = 0;
                     Object.entries(rec.balances || {}).forEach(([k, v]) => {
@@ -1023,13 +1034,11 @@ allHistoryRecords.forEach(rec => {
                 }
 
                 const timeStr = rec.timestamp ? new Date(rec.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-                const cardHTML = `
+
+                container.insertAdjacentHTML('beforeend', `
                     <div class="hub-history-card">
                         <div>
-                            <div class="hub-hist-date">
-                                <i class="fa-regular fa-calendar-check" style="color: #0284c7; margin-right: 5px;"></i>
-                                ${rec.date} <span>(${timeStr})</span>
-                            </div>
+                            <div class="hub-hist-date">${rec.date} <span>(${timeStr})</span></div>
                             <div class="hub-hist-stats" style="margin-top: 5px;">
                                 <div>Accounts: ৳ ${fmt(aTotal)}</div>
                                 <div>Cash: ৳ ${fmt(cTotal)}</div>
@@ -1039,24 +1048,18 @@ allHistoryRecords.forEach(rec => {
                         <div style="text-align: right;">
                             <div class="hub-hist-total">Total: ৳ ${fmt(grand)}</div>
                             <div style="margin-top: 6px;">
-                                <button class="hub-icon-btn hub-btn-edit" title="Edit This Day" onclick="window.loadHistoricalRecordToForm('${rec.date}')">
-                                    <i class="fa-solid fa-pen-to-square"></i> Edit
-                                </button>
-                                <button class="hub-icon-btn" title="View Audit Report" onclick="window.viewAuditFromHistory('${rec.date}')">
-                                    <i class="fa-solid fa-file-lines"></i> Report
-                                </button>
+                                <button class="hub-icon-btn hub-btn-edit" onclick="window.loadHistoricalRecordToForm('${rec.date}')">Edit</button>
+                                <button class="hub-icon-btn" onclick="window.viewAuditFromHistory('${rec.date}')">Report</button>
                             </div>
                         </div>
                     </div>
-                `;
-                container.insertAdjacentHTML('beforeend', cardHTML);
+                `);
             });
         } catch (e) {
-            container.innerHTML = '<p style="color:red; font-size:13px;">হিস্ট্রি লোড করতে সমস্যা হয়েছে: ' + e.message + '</p>';
+            container.innerHTML = '<p style="color:red; font-size:12px;">Failed to load history.</p>';
         }
     };
 
-    // এডিট পেন্সিল বাটনে ক্লিক করলে ফর্মে ডাটা লোড হবে
     window.loadHistoricalRecordToForm = function (dateStr) {
         document.getElementById('hubSelectedDate').value = dateStr;
         window.switchAssetHubSubTab('entry');
@@ -1077,7 +1080,7 @@ allHistoryRecords.forEach(rec => {
         }
     };
 
-    // ১৩. ডেইলি ইনকাম ইঞ্জিন
+    // ৯. ডেইলি ইনকাম ইঞ্জিন (অটো-সিঙ্ক ও লাইভ ক্যালকুলেটর)
     window.loadAssetHubIncome = function () {
         const fromInp = document.getElementById('hubIncDateFrom');
         const toInp = document.getElementById('hubIncDateTo');
@@ -1170,7 +1173,7 @@ allHistoryRecords.forEach(rec => {
                 .sort((a, b) => b.date.localeCompare(a.date))[0];
 
             if (priorSnap) {
-if (priorSnap.grandTotal !== undefined) {
+                if (priorSnap.grandTotal !== undefined) {
                     openingCapital = priorSnap.grandTotal;
                 } else {
                     let aTot = 0, cTot = 0, cardTot = 0;
@@ -1188,14 +1191,6 @@ if (priorSnap.grandTotal !== undefined) {
                     });
                     openingCapital = aTot + cTot + cardTot;
                 }
-            } else {
-                const closings = window.dailyClosingReports || [];
-                const priorClosing = closings
-                    .filter(r => r.report_date < fromDate)
-                    .sort((a, b) => b.report_date.localeCompare(a.report_date))[0];
-                if (priorClosing && priorClosing.actual_closing) {
-                    openingCapital = parseFloat(priorClosing.actual_closing) || 50000;
-                }
             }
         } catch (e) {
             console.warn("Opening fetch error:", e);
@@ -1208,7 +1203,12 @@ if (priorSnap.grandTotal !== undefined) {
             let aTot = 0, cTot = 0, cardTot = 0;
             const cardCfg = getMasterCardConfig();
             const liveBals = (window.balanceStore && Object.keys(window.balanceStore).length > 0) ? window.balanceStore : currentBalances;
-            Object.values(liveBals).forEach(v => aTot += (parseFloat(v) || 0));
+            const { accs } = getMasterAccountsAndCategories();
+            accs.forEach(a => {
+                if (a.id !== 'acc_9' && a.catId !== 'cat_4') {
+                    aTot += (parseFloat(liveBals[a.id]) || 0);
+                }
+            });
 
             const liveCash = (window.cashQuantities && Object.keys(window.cashQuantities).length > 0) ? window.cashQuantities : currentCash;
             [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => cTot += ((parseInt(liveCash[n]) || 0) * n));
@@ -1225,23 +1225,41 @@ if (priorSnap.grandTotal !== undefined) {
         } else {
             const targetSnap = allHistoryRecords.find(r => r.date === toDate);
             if (targetSnap) {
-                let aTot = 0, cTot = 0, cardTot = 0;
-                const cardCfg = getMasterCardConfig();
-                Object.values(targetSnap.balances || {}).forEach(v => aTot += (parseFloat(v) || 0));
-                [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => cTot += ((parseInt(targetSnap.cash?.[n]) || 0) * n));
-                cTot += (parseFloat(targetSnap.cash?.others) || 0);
-                ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
-                    const rawCards = cardCfg[op] || [];
-                    const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
-                    const opQtys = targetSnap.cards?.[op] || {};
-                    opCards.forEach(c => cardTot += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
-                });
-                actualAssets = aTot + cTot + cardTot;
+                if (targetSnap.grandTotal !== undefined) {
+                    actualAssets = targetSnap.grandTotal;
+                } else {
+                    let aTot = 0, cTot = 0, cardTot = 0;
+                    const cardCfg = getMasterCardConfig();
+                    Object.entries(targetSnap.balances || {}).forEach(([k, v]) => {
+                        if (k !== 'acc_9') aTot += (parseFloat(v) || 0);
+                    });
+                    [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => cTot += ((parseInt(targetSnap.cash?.[n]) || 0) * n));
+                    cTot += (parseFloat(targetSnap.cash?.others) || 0);
+                    ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
+                        const rawCards = cardCfg[op] || [];
+                        const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
+                        const opQtys = targetSnap.cards?.[op] || {};
+                        opCards.forEach(c => cardTot += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
+                    });
+                    actualAssets = aTot + cTot + cardTot;
+                }
             }
         }
 
         const expectedCapital = openingCapital + totalPelam - totalDilam;
         const netIncome = actualAssets - expectedCapital;
+
+        // গ্লোবাল ক্যাশ সংরক্ষণ
+        latestCalculatedIncome = {
+            fromDate,
+            toDate,
+            opening: openingCapital,
+            pelam: totalPelam,
+            dilam: totalDilam,
+            expected: expectedCapital,
+            actual: actualAssets,
+            netIncome: netIncome
+        };
 
         document.getElementById('hubIncOpening').innerText = `৳ ${fmt(openingCapital)}`;
         document.getElementById('hubIncPelam').innerText = `+ ৳ ${fmt(totalPelam)}`;
@@ -1253,6 +1271,151 @@ if (priorSnap.grandTotal !== undefined) {
         if (elNetIncome) {
             elNetIncome.innerText = `${netIncome >= 0 ? '' : '- '}৳ ${fmt(Math.abs(netIncome))}`;
             elNetIncome.style.color = netIncome >= 0 ? '#15803d' : '#dc2626';
+        }
+    };
+
+    // ১০. ফায়ারবেস ক্লাউডে ইনকাম সেভ (ডুপ্লিকেট ছাড়া এক তারিখের একটাই পার্মানেন্ট রেকর্ড)
+    window.saveDailyIncomeToFirebase = async function () {
+        const fromDate = latestCalculatedIncome.fromDate;
+        const toDate = latestCalculatedIncome.toDate;
+        if (!fromDate || !toDate) return;
+
+        const periodKey = (fromDate === toDate) ? fromDate : `${fromDate}_to_${toDate}`;
+        const periodLabel = (fromDate === toDate) ? fromDate : `${fromDate} to ${toDate}`;
+        const now = new Date();
+        const updatedTimeStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        if (typeof window.showLoader === 'function') window.showLoader("Saving Income to Cloud...");
+
+        try {
+            const incomeRecord = {
+                periodKey: periodKey,
+                periodLabel: periodLabel,
+                fromDate: fromDate,
+                toDate: toDate,
+                opening: latestCalculatedIncome.opening,
+                pelam: latestCalculatedIncome.pelam,
+                dilam: latestCalculatedIncome.dilam,
+                expected: latestCalculatedIncome.expected,
+                actual: latestCalculatedIncome.actual,
+                netIncome: latestCalculatedIncome.netIncome,
+                updatedAt: updatedTimeStr,
+                timestamp: Date.now()
+            };
+
+            if (typeof window.writeToFirebase === 'function') {
+                await window.writeToFirebase(`erp/daily_income_snapshots/${periodKey}`, incomeRecord);
+            }
+
+            const statusEl = document.getElementById('hubIncomeLastUpdated');
+            if (statusEl) statusEl.innerText = `Last Updated: ${updatedTimeStr}`;
+
+            if (typeof window.showToast === 'function') {
+                window.showToast("Saved", "success");
+            }
+        } catch (e) {
+            console.error("Save Income Error:", e);
+            if (typeof window.showToast === 'function') window.showToast("Error saving income", "error");
+        } finally {
+            if (typeof window.hideLoader === 'function') window.hideLoader();
+        }
+    };
+
+    // ১১. ইনকাম হিস্ট্রি টেবিল রেন্ডারার (ক্লাউড থেকে ফেচ)
+    window.renderIncomeHistoryList = async function () {
+        const tbody = document.getElementById('hubIncomeHistoryTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:15px; color:#64748b;">Loading cloud records...</td></tr>';
+
+        try {
+            let records = [];
+            if (window.getDatabase && window.ref && window.get) {
+                const snap = await window.get(window.ref(window.getDatabase(), `erp/daily_income_snapshots`));
+                if (snap.exists()) {
+                    records = Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp);
+                }
+            }
+
+            if (records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:#64748b;">No saved income records found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            records.forEach(r => {
+                const isNetPositive = (r.netIncome >= 0);
+                const trHTML = `
+                    <tr>
+                        <td>
+                            ${r.periodLabel}
+                            <span class="t-subtext">Auto-Synced</span>
+                        </td>
+                        <td class="t-right">৳ ${fmt(r.opening)}</td>
+                        <td class="t-right t-green">+ ৳ ${fmt(r.pelam)}</td>
+                        <td class="t-right t-red">- ৳ ${fmt(r.dilam)}</td>
+                        <td class="t-right">৳ ${fmt(r.actual)}</td>
+                        <td class="t-right ${isNetPositive ? 't-net-green' : 't-red'}">
+                            ${isNetPositive ? '' : '- '}৳ ${fmt(Math.abs(r.netIncome))}
+                        </td>
+                        <td>${r.updatedAt || '---'}</td>
+                        <td style="text-align: center;">
+                            <button class="btn-table-report" onclick="window.viewIncomeReportModal('${r.periodKey}')">Report</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', trHTML);
+            });
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:15px; color:red;">Error: ${e.message}</td></tr>`;
+        }
+    };
+
+    // ১২. রিপোর্ট সেন্টারের জন্য রেডি স্টেটমেন্ট প্রিভিউ
+    window.viewIncomeReportModal = async function (periodKey) {
+        try {
+            const snap = await window.get(window.ref(window.getDatabase(), `erp/daily_income_snapshots/${periodKey}`));
+            if (!snap.exists()) return;
+            const r = snap.val();
+
+            const win = window.open('', '_blank');
+            win.document.write(`
+                <html>
+                <head>
+                    <title>Income Statement - ${r.periodLabel}</title>
+                    <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla&display=swap" rel="stylesheet">
+                    <style>
+                        body { font-family: 'Tiro Bangla', serif; padding: 40px; color: #000; }
+                        .box { max-width: 650px; margin: 0 auto; border: 1.5px solid #000; padding: 25px; }
+                        h2 { text-align: center; margin-bottom: 5px; text-transform: uppercase; }
+                        p { text-align: center; font-size: 13px; margin-bottom: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                        td { padding: 10px 14px; border-bottom: 1px solid #ddd; font-size: 14px; }
+                        .lbl { font-weight: bold; }
+                        .val { text-align: right; font-weight: bold; }
+                        .total-row { background: #f0fdf4; border-top: 2px solid #000; font-size: 16px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="box">
+                        <h2>Mousumi Computer</h2>
+                        <p>Daily Income Statement | Period: ${r.periodLabel} | Last Synced: ${r.updatedAt}</p>
+                        <table>
+                            <tr><td class="lbl">Opening Capital</td><td class="val">৳ ${fmt(r.opening)}</td></tr>
+                            <tr><td class="lbl">(+) Total Pelam (Collection)</td><td class="val" style="color: green;">+ ৳ ${fmt(r.pelam)}</td></tr>
+                            <tr><td class="lbl">(-) Total Dilam (Outflow)</td><td class="val" style="color: red;">- ৳ ${fmt(r.dilam)}</td></tr>
+                            <tr style="background: #f8fafc;"><td class="lbl">Expected Capital</td><td class="val">৳ ${fmt(r.expected)}</td></tr>
+                            <tr><td class="lbl">Actual Assets</td><td class="val">৳ ${fmt(r.actual)}</td></tr>
+                            <tr class="total-row"><td class="lbl">Net Income / Profit</td><td class="val">৳ ${fmt(r.netIncome)}</td></tr>
+                        </table>
+                        <div style="margin-top: 30px; text-align: right; font-size: 12px;">Computer Generated Statement</div>
+                    </div>
+                    <script>window.print();<\/script>
+                </body>
+                </html>
+            `);
+            win.document.close();
+        } catch (e) {
+            alert("Error loading report: " + e.message);
         }
     };
 
