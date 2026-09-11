@@ -1,13 +1,12 @@
 /**
  * Mousumi Computer ERP - Daily Liquid Asset & Balance Input Hub
  * File: daily_asset_input_module.js
- * Feature: Deep Integration with Master Config (Account Setup & Card Setup),
- *          Table-free Clean Strips, Single-Accordion Wizard Flow,
- *          Floating Save Button, Date-wise Firebase Persistence & History Trail.
+ * Feature: Native Browser Symbols (No Broken Icons), Operator-Wise Card Segmenting,
+ *          Master Config Deep Link, Clean Single Accordion Flow.
  */
 
 (function () {
-    // ১. স্টাইলিং ও সিএসএস (Tiro Bangla Font, Clean Strips, No Tables)
+    // ১. স্টাইলিং ও সিএসএস
     const moduleStyles = `
         <style id="asset-hub-styles">
             #asset-hub-view { 
@@ -23,20 +22,19 @@
                 box-sizing: border-box; 
             }
 
-            /* শীর্ষ কন্ট্রোল বার */
             .hub-top-ctrl {
                 background: #fff;
                 border: 1px solid #cbd5e1;
                 border-radius: 6px;
                 padding: 10px 16px;
-                margin-bottom: 22px;
+                margin-bottom: 20px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
                 flex-wrap: wrap;
                 gap: 12px;
             }
-            .hub-date-wrap { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; }
+            .hub-date-wrap { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; }
             .hub-date-wrap input { height: 32px; padding: 0 10px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 13px; font-weight: 700; outline: none; background: #fff; }
 
             /* উইজার্ড সেকশন বক্স */
@@ -44,7 +42,7 @@
                 background: #ffffff;
                 border: 1px solid #cbd5e1;
                 border-radius: 8px;
-                margin-bottom: 20px;
+                margin-bottom: 18px;
                 overflow: hidden;
                 transition: border-color 0.2s;
             }
@@ -68,16 +66,23 @@
 
             .hub-wizard-title { font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
             .hub-wizard-meta { display: flex; align-items: center; gap: 16px; font-size: 12px; font-weight: 700; color: #334155; }
-            .hub-arrow-icon { font-size: 11px; transition: transform 0.2s ease; }
-            .hub-wizard-sec:not(.active) .hub-arrow-icon { transform: rotate(-90deg); }
+            
+            /* নেটিভ ড্রপডাউন তীরচিহ্ন (কখনো ভাঙবে না) */
+            .hub-native-arrow {
+                font-size: 12px;
+                display: inline-block;
+                transition: transform 0.2s ease;
+                color: #000;
+            }
+            .hub-wizard-sec:not(.active) .hub-native-arrow { transform: rotate(-90deg); }
             .hub-wizard-sec:not(.active) .hub-wizard-body { display: none; }
 
             .hub-wizard-body { padding: 16px 20px; }
 
-            /* স্লিম স্ট্রিপ গ্রিড (No Tables) */
+            /* স্লিম স্ট্রিপ গ্রিড */
             .hub-strip-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
                 gap: 10px 16px;
                 margin-bottom: 15px;
             }
@@ -93,6 +98,7 @@
             .hub-strip-item:hover { border-color: #94a3b8; }
             .hub-strip-label { font-size: 12.5px; font-weight: 800; color: #0f172a; }
             .hub-input-wrap { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #64748b; }
+            
             .hub-inp-text {
                 width: 115px;
                 height: 28px;
@@ -121,7 +127,27 @@
             .hub-qty-inp:focus { border-color: #0f172a; }
             .hub-sub-val { font-size: 12px; font-weight: 800; min-width: 75px; text-align: right; color: #0f172a; }
 
-            /* উইজার্ড নেক্সট বাটন */
+            /* অপারেটর সেগমেন্টেশন স্টাইল (কার্ডের জন্য) */
+            .op-segment-box {
+                margin-bottom: 16px;
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                padding: 10px 14px;
+                background: #ffffff;
+            }
+            .op-segment-header {
+                font-size: 12.5px;
+                font-weight: 800;
+                color: #0f172a;
+                margin-bottom: 10px;
+                padding-bottom: 5px;
+                border-bottom: 1px solid #f1f5f9;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            /* নেক্সট বাটন */
             .hub-step-footer { display: flex; justify-content: flex-end; padding-top: 10px; border-top: 1px solid #f1f5f9; }
             .hub-btn-next {
                 background: #fff;
@@ -161,7 +187,7 @@
             }
             .hub-floating-btn:hover { background: #1e293b; transform: scale(1.04); }
 
-            /* হিস্ট্রি কার্ডস */
+            /* হিস্ট্রি কার্ড */
             .hub-history-card {
                 background: #fff;
                 border: 1px solid #cbd5e1;
@@ -202,15 +228,15 @@
         const menuItemHTML = `
             <li class="menu-item" id="menu-asset-hub-parent">
                 <a onclick="window.toggleParentMenu('menu-asset-hub-parent')">
-                    <span class="menu-link-inner"><i class="fa-solid fa-coins"></i> <span>Daily Asset Hub</span></span>
-                    <i class="fa-solid fa-chevron-down chevron-icon"></i>
+                    <span class="menu-link-inner">&#9679; <span>Daily Asset Hub</span></span>
+                    <span class="chevron-icon">&#9662;</span>
                 </a>
                 <ul class="submenu-list">
                     <li class="submenu-item active" id="sub-asset-entry">
-                        <a onclick="window.switchAssetHubSubTab('entry')"><i class="fa-solid fa-angle-right"></i> <span>Balance Entry</span></a>
+                        <a onclick="window.switchAssetHubSubTab('entry')"><span>&rsaquo; Balance Entry</span></a>
                     </li>
                     <li class="submenu-item" id="sub-asset-history">
-                        <a onclick="window.switchAssetHubSubTab('history')"><i class="fa-solid fa-angle-right"></i> <span>Entry History</span></a>
+                        <a onclick="window.switchAssetHubSubTab('history')"><span>&rsaquo; Entry History</span></a>
                     </li>
                 </ul>
             </li>
@@ -229,7 +255,7 @@
                 <div id="hub-tab-entry">
                     <div class="hub-top-ctrl">
                         <div class="hub-date-wrap">
-                            <label><i class="fa-regular fa-calendar"></i> Statement Date:</label>
+                            <label>Statement Date:</label>
                             <input type="date" id="hubSelectedDate" onchange="window.onAssetHubDateChange()">
                         </div>
                         <div style="font-size: 13px; font-weight: 800;">
@@ -238,12 +264,12 @@
                     </div>
 
                     <div id="hubWizardContainer">
-                        <!-- Dynamic Categories, Cash, and Cards will be loaded here -->
+                        <!-- Dynamic Categories, Cash, and Segmented Cards loaded here -->
                     </div>
 
-                    <!-- স্বাধীন ভাসমান সেভ বাটন -->
+                    <!-- ভাসমান সেভ বাটন -->
                     <button class="hub-floating-btn" onclick="window.saveAssetHubToFirebase()">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Save Balance
+                        &#10003; Save Balance
                     </button>
                 </div>
 
@@ -251,11 +277,9 @@
                 <div id="hub-tab-history" style="display: none;">
                     <div class="hub-top-ctrl">
                         <div style="font-size: 13px; font-weight: 800;">Archived Daily Asset Snapshots</div>
-                        <button class="hub-icon-btn" onclick="window.renderAssetHistoryList()"><i class="fa-solid fa-rotate-right"></i> Reload</button>
+                        <button class="hub-icon-btn" onclick="window.renderAssetHistoryList()">&#8635; Reload</button>
                     </div>
-                    <div id="hubHistoryListContainer">
-                        <!-- History Records Loaded here -->
-                    </div>
+                    <div id="hubHistoryListContainer"></div>
                 </div>
             </div>
         `;
@@ -264,15 +288,13 @@
 
     const fmt = (n) => (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
 
-    // স্টেট স্টোর
     let currentBalances = {};
     let currentCash = {};
     let currentCards = {};
     let allHistoryRecords = [];
 
-    // ৪. মাস্টার কনফিগ (Master Config) থেকে সক্রিয় অ্যাকাউন্ট ও কার্ড খোঁজার স্মার্ট ইঞ্জিন
+    // ৪. মাস্টার কনফিগ ডেটা ফেচিং ইঞ্জিন
     function getMasterAccountsAndCategories() {
-        // Master Config মডিউল (account_inventory_manager.js) অথবা মাদার অবজেক্ট চেক করা
         const rawCats = window.accountManagerData?.categories || window.categories || [];
         const rawAccs = window.accountManagerData?.accounts || window.accounts || [];
 
@@ -311,7 +333,7 @@
         }
     };
 
-    // ৬. তারিখ পরিবর্তনে ডাটা লোডার
+    // ৬. তারিখ পরিবর্তনে ডেটা লোড
     window.onAssetHubDateChange = async function () {
         const d = document.getElementById('hubSelectedDate').value;
         if (typeof window.showLoader === 'function') window.showLoader("Loading records for " + d);
@@ -329,7 +351,6 @@
                 currentCards = { ...(existingRecord.cards || {}) };
                 if (typeof window.showToast === 'function') window.showToast(`Loaded snapshot for ${d}`, "info");
             } else {
-                // ডিফল্ট লাইভ ব্যালেন্স রিড
                 currentBalances = { ...(window.balanceStore || {}) };
                 currentCash = { ...(window.cashQuantities || {}), others: window.cashOthersAmount || 0 };
                 currentCards = { ...(window.cardQuantities || {}) };
@@ -342,7 +363,7 @@
         }
     };
 
-    // ৭. উইজার্ড ইন্টারফেস রেন্ডারার (মাস্টার কনফিগের সাপেক্ষে)
+    // ৭. উইজার্ড ইন্টারফেস রেন্ডারার
     window.renderWizardUI = function () {
         const container = document.getElementById('hubWizardContainer');
         if (!container) return;
@@ -353,7 +374,7 @@
 
         let stepIndex = 1;
 
-        // ১. অ্যাকাউন্টস সেকশন রেন্ডার
+        // ১. অ্যাকাউন্টস সেকশন
         cats.forEach(cat => {
             const catAccs = accs.filter(a => a.catId === cat.id);
             if (catAccs.length === 0) return;
@@ -365,7 +386,6 @@
                 const bal = parseFloat(currentBalances[acc.id]) || 0;
                 catSubtotal += bal;
 
-                // অপ্রয়োজনীয় শব্দ ছেঁটে ফেলা (বিকাশ এজেন্ট -> বিকাশ)
                 let cleanName = acc.name
                     .replace(/personal\s*accounts?|agent\s*accounts?|bank\s*accounts?|recharge/gi, '')
                     .replace(/personal|agent|account|bank/gi, '')
@@ -394,16 +414,14 @@
                         <span class="hub-wizard-title">${stepIndex}. ${cat.name}</span>
                         <div class="hub-wizard-meta">
                             <span id="cat-sub-${cat.id}">Subtotal: ৳ ${fmt(catSubtotal)}</span>
-                            <i class="fa-solid fa-chevron-down hub-arrow-icon"></i>
+                            <span class="hub-native-arrow">&#9662;</span>
                         </div>
                     </div>
                     <div class="hub-wizard-body">
-                        <div class="hub-strip-grid">
-                            ${stripsHTML}
-                        </div>
+                        <div class="hub-strip-grid">${stripsHTML}</div>
                         <div class="hub-step-footer">
                             <button class="hub-btn-next" onclick="window.wizardGoToNext('${nextStepId}')">
-                                Next Step <i class="fa-solid fa-arrow-right"></i>
+                                Next Step &rarr;
                             </button>
                         </div>
                     </div>
@@ -413,7 +431,7 @@
             stepIndex++;
         });
 
-        // ২. ক্যাশ ড্রয়ার সেকশন রেন্ডার
+        // ২. ক্যাশ ড্রয়ার সেকশন
         let cashSubtotal = 0;
         let cashStripsHTML = '';
         [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(note => {
@@ -453,14 +471,14 @@
                     <span class="hub-wizard-title">${stepIndex}. Cash Drawer</span>
                     <div class="hub-wizard-meta">
                         <span id="cash-subtotal-disp">Total Cash: ৳ ${fmt(cashSubtotal)}</span>
-                        <i class="fa-solid fa-chevron-down hub-arrow-icon"></i>
+                        <span class="hub-native-arrow">&#9662;</span>
                     </div>
                 </div>
                 <div class="hub-wizard-body">
                     <div class="hub-strip-grid">${cashStripsHTML}</div>
                     <div class="hub-step-footer">
                         <button class="hub-btn-next" onclick="window.wizardGoToNext('${cardsSecId}')">
-                            Next: Cards Stock <i class="fa-solid fa-arrow-right"></i>
+                            Next: Cards Stock &rarr;
                         </button>
                     </div>
                 </div>
@@ -468,44 +486,62 @@
         `);
         stepIndex++;
 
-        // ৩. কার্ডস স্টক সেকশন রেন্ডার
-        let cardSubtotal = 0;
-        let cardStripsHTML = '';
+        // ৩. কার্ডস স্টক সেকশন (অপারেটর অনুযায়ী সুনির্দিষ্ট সেগমেন্টেশন)
+        let grandCardSubtotal = 0;
+        let operatorBlocksHTML = '';
+
         ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
             const rawCards = cardConfig[op] || [];
             const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
             const opQtys = currentCards[op] || {};
 
+            let opSubtotal = 0;
+            let opStripsHTML = '';
+
             opCards.filter(c => c.active !== false).forEach(c => {
                 const q = parseInt(opQtys[c.id]) || 0;
                 const line = q * (parseFloat(c.price) || 0);
-                cardSubtotal += line;
-                cardStripsHTML += `
+                opSubtotal += line;
+                grandCardSubtotal += line;
+
+                opStripsHTML += `
                     <div class="hub-strip-item">
-                        <span class="hub-strip-label">${op} ${c.name} (${c.price}৳)</span>
+                        <span class="hub-strip-label">${c.name} (${c.price}৳)</span>
                         <div class="hub-input-wrap">
                             <input type="number" class="hub-qty-inp" placeholder="0" value="${q}" 
-                                oninput="window.updateHubCard('${op}', '${c.id}', ${c.price}, this.value, 'card-line-${c.id}')">
+                                oninput="window.updateHubCard('${op}', '${c.id}', ${c.price}, this.value, 'card-line-${c.id}', 'op-sub-${op}')">
                             <span class="hub-sub-val" id="card-line-${c.id}">${fmt(line)}</span>
                         </div>
                     </div>
                 `;
             });
+
+            if (opStripsHTML) {
+                operatorBlocksHTML += `
+                    <div class="op-segment-box">
+                        <div class="op-segment-header">
+                            <span>${op} Operator Cards</span>
+                            <span id="op-sub-${op}">Subtotal: ৳ ${fmt(opSubtotal)}</span>
+                        </div>
+                        <div class="hub-strip-grid">${opStripsHTML}</div>
+                    </div>
+                `;
+            }
         });
 
         container.insertAdjacentHTML('beforeend', `
             <div class="hub-wizard-sec" id="${cardsSecId}">
                 <div class="hub-wizard-head" onclick="window.toggleSingleWizardSec('${cardsSecId}')">
-                    <span class="hub-wizard-title">${stepIndex}. Cards Stock</span>
+                    <span class="hub-wizard-title">${stepIndex}. Cards Stock (Segmented)</span>
                     <div class="hub-wizard-meta">
-                        <span id="cards-subtotal-disp">Total Cards: ৳ ${fmt(cardSubtotal)}</span>
-                        <i class="fa-solid fa-chevron-down hub-arrow-icon"></i>
+                        <span id="cards-subtotal-disp">Total Cards: ৳ ${fmt(grandCardSubtotal)}</span>
+                        <span class="hub-native-arrow">&#9662;</span>
                     </div>
                 </div>
                 <div class="hub-wizard-body">
-                    <div class="hub-strip-grid">${cardStripsHTML || '<p style="font-size:12px;color:#64748b;">No active cards in Card Setup.</p>'}</div>
+                    ${operatorBlocksHTML || '<p style="font-size:12px;color:#64748b;">No active cards in Card Setup.</p>'}
                     <div class="hub-step-footer">
-                        <span style="font-size: 12px; font-weight: 700; color: #16a34a;"><i class="fa-solid fa-check"></i> All steps reviewed. Click floating Save button to finish.</span>
+                        <span style="font-size: 12px; font-weight: 700; color: #16a34a;">&#10003; All sections reviewed. Click Save Balance below.</span>
                     </div>
                 </div>
             </div>
@@ -514,7 +550,7 @@
         window.recalculateGrandLiveTotal();
     };
 
-    // ৮. সিঙ্গেল অ্যাকর্ডিয়ন ও উইজার্ড নেক্সট লজিক
+    // ৮. উইজার্ড নেভিগেশন
     window.toggleSingleWizardSec = function (secId) {
         document.querySelectorAll('.hub-wizard-sec').forEach(sec => {
             if (sec.id === secId) sec.classList.toggle('active');
@@ -531,7 +567,7 @@
         }
     };
 
-    // ৯. লাইভ ক্যালকুলেশন হ্যান্ডলার্স
+    // ৯. লাইভ ক্যালকুলেশন
     window.updateHubBalance = function (accId, val) {
         currentBalances[accId] = parseFloat(val) || 0;
         window.recalculateGrandLiveTotal();
@@ -551,13 +587,23 @@
         window.recalculateGrandLiveTotal();
     };
 
-    window.updateHubCard = function (op, cardId, price, val, lineId) {
+    window.updateHubCard = function (op, cardId, price, val, lineId, opSubId) {
         if (!currentCards[op]) currentCards[op] = {};
         const q = parseInt(val) || 0;
         currentCards[op][cardId] = q;
         const line = q * price;
         const lineEl = document.getElementById(lineId);
         if (lineEl) lineEl.innerText = fmt(line);
+
+        // অপারেটর সাবটোটাল আপডেট
+        const cardConfig = getMasterCardConfig();
+        const rawCards = cardConfig[op] || [];
+        const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
+        let opTotal = 0;
+        opCards.forEach(c => opTotal += ((parseInt(currentCards[op]?.[c.id]) || 0) * (parseFloat(c.price) || 0)));
+        const opSubEl = document.getElementById(opSubId);
+        if (opSubEl) opSubEl.innerText = `Subtotal: ৳ ${fmt(opTotal)}`;
+
         window.recalculateGrandLiveTotal();
     };
 
@@ -569,13 +615,18 @@
         [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => total += ((parseInt(currentCash[n]) || 0) * n));
         total += (parseFloat(currentCash.others) || 0);
         // Cards
+        let cardsTotal = 0;
         const cardConfig = getMasterCardConfig();
         ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
             const rawCards = cardConfig[op] || [];
             const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
             const opQtys = currentCards[op] || {};
-            opCards.forEach(c => total += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
+            opCards.forEach(c => cardsTotal += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
         });
+        total += cardsTotal;
+
+        const cardsSubEl = document.getElementById('cards-subtotal-disp');
+        if (cardsSubEl) cardsSubEl.innerText = `Total Cards: ৳ ${fmt(cardsTotal)}`;
 
         const liveEl = document.getElementById('hubLiveGrandTotal');
         if (liveEl) liveEl.innerText = `৳ ${fmt(total)}`;
@@ -599,7 +650,6 @@
                 await window.writeToFirebase(`erp/daily_balance_snapshots/${d}`, snapshotObj);
             }
 
-            // আজকের তারিখ হলে রিয়েলটাইম ড্যাশবোর্ডেও ব্যাকআপ আপডেট
             const todayStr = new Date().toISOString().split('T')[0];
             if (d === todayStr && typeof window.writeToFirebase === 'function') {
                 await window.writeToFirebase(`erp/balances`, currentBalances);
@@ -607,11 +657,8 @@
                 await window.writeToFirebase(`erp/cardInventory`, currentCards);
             }
 
-            if (typeof window.showToast === 'function') {
-                window.showToast(`Balance permanently recorded for ${d}!`, "success");
-            } else {
-                alert(`Balance permanently recorded for ${d}!`);
-            }
+            if (typeof window.showToast === 'function') window.showToast(`Balance recorded for ${d}!`, "success");
+            else alert(`Balance recorded for ${d}!`);
         } catch (e) {
             console.error("Save Error:", e);
             if (typeof window.showToast === 'function') window.showToast("Error saving data!", "error");
@@ -620,7 +667,7 @@
         }
     };
 
-    // ১১. হিস্ট্রি লিস্ট রেন্ডারার
+    // ১১. হিস্ট্রি রেন্ডারার
     window.renderAssetHistoryList = async function () {
         const container = document.getElementById('hubHistoryListContainer');
         if (!container) return;
@@ -673,9 +720,9 @@
                         </div>
                         <div class="hub-hist-total">Total: ৳ ${fmt(grand)}</div>
                         <div>
-                            <button class="hub-icon-btn" title="Edit / Load" onclick="window.loadHistoricalRecordToForm('${rec.date}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button class="hub-icon-btn" title="View Audit Report" onclick="window.viewAuditFromHistory('${rec.date}')"><i class="fa-solid fa-file-invoice"></i></button>
-                            <button class="hub-icon-btn hub-icon-delete" title="Delete" onclick="window.deleteHistoricalRecord('${rec.date}')"><i class="fa-solid fa-trash"></i></button>
+                            <button class="hub-icon-btn" title="Edit / Load" onclick="window.loadHistoricalRecordToForm('${rec.date}')">Edit</button>
+                            <button class="hub-icon-btn" title="View Audit Report" onclick="window.viewAuditFromHistory('${rec.date}')">Report</button>
+                            <button class="hub-icon-btn hub-icon-delete" title="Delete" onclick="window.deleteHistoricalRecord('${rec.date}')">Delete</button>
                         </div>
                     </div>
                 `;
@@ -715,7 +762,6 @@
         }
     };
 
-    // ১২. ইনিশিয়ালাইজার
     window.loadAssetHubInputs = function () {
         const dInput = document.getElementById('hubSelectedDate');
         if (dInput && !dInput.value) {
