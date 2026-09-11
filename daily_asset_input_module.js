@@ -1,22 +1,35 @@
 /**
- * Mousumi Computer ERP - Daily Liquid Asset & Balance Input Hub (Standalone Module)
+ * Mousumi Computer ERP - Daily Liquid Asset & Balance Input Hub
  * File: daily_asset_input_module.js
- * Feature: Clean Strips, Single Accordion Wizard Flow, Date-wise Firebase Sync, Floating Action Button, History Manager
+ * Feature: Deep Integration with Master Config (Account Setup & Card Setup),
+ *          Table-free Clean Strips, Single-Accordion Wizard Flow,
+ *          Floating Save Button, Date-wise Firebase Persistence & History Trail.
  */
 
 (function () {
-    // ১. প্রয়োজনীয় সিএসএস ইনজেকশন (Clean, No Tables, Tiro Bangla Font)
+    // ১. স্টাইলিং ও সিএসএস (Tiro Bangla Font, Clean Strips, No Tables)
     const moduleStyles = `
         <style id="asset-hub-styles">
-            #asset-hub-view { font-family: 'Tiro Bangla', serif !important; text-transform: none !important; color: #0f172a; padding: 15px 25px 95px 25px; position: relative; }
-            #asset-hub-view * { font-family: 'Tiro Bangla', serif !important; text-transform: none !important; box-sizing: border-box; }
+            #asset-hub-view { 
+                font-family: 'Tiro Bangla', serif !important; 
+                text-transform: none !important; 
+                color: #0f172a; 
+                padding: 15px 25px 95px 25px; 
+                position: relative; 
+            }
+            #asset-hub-view * { 
+                font-family: 'Tiro Bangla', serif !important; 
+                text-transform: none !important; 
+                box-sizing: border-box; 
+            }
 
+            /* শীর্ষ কন্ট্রোল বার */
             .hub-top-ctrl {
                 background: #fff;
                 border: 1px solid #cbd5e1;
                 border-radius: 6px;
                 padding: 10px 16px;
-                margin-bottom: 20px;
+                margin-bottom: 22px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -26,16 +39,19 @@
             .hub-date-wrap { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; }
             .hub-date-wrap input { height: 32px; padding: 0 10px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 13px; font-weight: 700; outline: none; background: #fff; }
 
-            /* উইজার্ড সেকশন কার্ড */
+            /* উইজার্ড সেকশন বক্স */
             .hub-wizard-sec {
                 background: #ffffff;
                 border: 1px solid #cbd5e1;
                 border-radius: 8px;
-                margin-bottom: 18px;
+                margin-bottom: 20px;
                 overflow: hidden;
                 transition: border-color 0.2s;
             }
-            .hub-wizard-sec.active { border-color: #0f172a; border-width: 1.5px; }
+            .hub-wizard-sec.active { 
+                border-color: #0f172a; 
+                border-width: 1.5px; 
+            }
 
             .hub-wizard-head {
                 background: #f8fafc;
@@ -58,10 +74,10 @@
 
             .hub-wizard-body { padding: 16px 20px; }
 
-            /* স্ট্রিপ গ্রিড (No Tables) */
+            /* স্লিম স্ট্রিপ গ্রিড (No Tables) */
             .hub-strip-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
                 gap: 10px 16px;
                 margin-bottom: 15px;
             }
@@ -178,7 +194,7 @@
     `;
     document.head.insertAdjacentHTML('beforeend', moduleStyles);
 
-    // ২. সাইডবার মেনু ইনজেকশন (২টি সাব-মেনু সহ)
+    // ২. সাইডবার মেনু ইনজেকশন
     function injectSidebarMenu() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList || document.getElementById('menu-asset-hub-parent')) return;
@@ -209,7 +225,6 @@
 
         const viewPanelHTML = `
             <div class="view-panel" id="asset-hub-view">
-                
                 <!-- SUB-TAB 1: BALANCE ENTRY -->
                 <div id="hub-tab-entry">
                     <div class="hub-top-ctrl">
@@ -226,7 +241,7 @@
                         <!-- Dynamic Categories, Cash, and Cards will be loaded here -->
                     </div>
 
-                    <!-- ভাসমান সেভ বাটন -->
+                    <!-- স্বাধীন ভাসমান সেভ বাটন -->
                     <button class="hub-floating-btn" onclick="window.saveAssetHubToFirebase()">
                         <i class="fa-solid fa-cloud-arrow-up"></i> Save Balance
                     </button>
@@ -242,13 +257,11 @@
                         <!-- History Records Loaded here -->
                     </div>
                 </div>
-
             </div>
         `;
         mainWrapper.insertAdjacentHTML('beforeend', viewPanelHTML);
     }
 
-    // ফরম্যাটার
     const fmt = (n) => (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
 
     // স্টেট স্টোর
@@ -257,7 +270,27 @@
     let currentCards = {};
     let allHistoryRecords = [];
 
-    // ৪. সাব-ট্যাব সুইচিং
+    // ৪. মাস্টার কনফিগ (Master Config) থেকে সক্রিয় অ্যাকাউন্ট ও কার্ড খোঁজার স্মার্ট ইঞ্জিন
+    function getMasterAccountsAndCategories() {
+        // Master Config মডিউল (account_inventory_manager.js) অথবা মাদার অবজেক্ট চেক করা
+        const rawCats = window.accountManagerData?.categories || window.categories || [];
+        const rawAccs = window.accountManagerData?.accounts || window.accounts || [];
+
+        const cats = (Array.isArray(rawCats) ? rawCats : Object.values(rawCats))
+            .filter(c => c.enabled !== false)
+            .sort((a, b) => (parseInt(a.order) || 0) - (parseInt(b.order) || 0));
+
+        const accs = (Array.isArray(rawAccs) ? rawAccs : Object.values(rawAccs))
+            .filter(a => a.enabled !== false);
+
+        return { cats, accs };
+    }
+
+    function getMasterCardConfig() {
+        return window.cardManagerData?.cards || window.cardConfig || {};
+    }
+
+    // ৫. সাব-ট্যাব সুইচিং
     window.switchAssetHubSubTab = function (tabType) {
         window.switchMainTab('asset-hub');
         document.querySelectorAll('#menu-asset-hub-parent .submenu-item').forEach(i => i.classList.remove('active'));
@@ -278,7 +311,7 @@
         }
     };
 
-    // ৫. তারিখ পরিবর্তনে ডাটা হ্যান্ডলার
+    // ৬. তারিখ পরিবর্তনে ডাটা লোডার
     window.onAssetHubDateChange = async function () {
         const d = document.getElementById('hubSelectedDate').value;
         if (typeof window.showLoader === 'function') window.showLoader("Loading records for " + d);
@@ -294,36 +327,35 @@
                 currentBalances = { ...(existingRecord.balances || {}) };
                 currentCash = { ...(existingRecord.cash || {}) };
                 currentCards = { ...(existingRecord.cards || {}) };
-                if (typeof window.showToast === 'function') window.showToast(`Found saved snapshot for ${d}`, "info");
+                if (typeof window.showToast === 'function') window.showToast(`Loaded snapshot for ${d}`, "info");
             } else {
-                // ডিফল্ট বর্তমান রিয়েলটাইম স্টেট
+                // ডিফল্ট লাইভ ব্যালেন্স রিড
                 currentBalances = { ...(window.balanceStore || {}) };
                 currentCash = { ...(window.cashQuantities || {}), others: window.cashOthersAmount || 0 };
                 currentCards = { ...(window.cardQuantities || {}) };
             }
             window.renderWizardUI();
         } catch (e) {
-            console.error(e);
+            console.error("Fetch Error:", e);
         } finally {
             if (typeof window.hideLoader === 'function') window.hideLoader();
         }
     };
 
-    // ৬. উইজার্ড ইন্টারফেস রেন্ডারার
+    // ৭. উইজার্ড ইন্টারফেস রেন্ডারার (মাস্টার কনফিগের সাপেক্ষে)
     window.renderWizardUI = function () {
         const container = document.getElementById('hubWizardContainer');
         if (!container) return;
         container.innerHTML = '';
 
-        const cats = (window.categories || []).filter(c => c.enabled !== false).sort((a,b) => a.order - b.order);
-        const accs = window.accounts || [];
+        const { cats, accs } = getMasterAccountsAndCategories();
+        const cardConfig = getMasterCardConfig();
 
         let stepIndex = 1;
-        const totalSteps = cats.length + 2; // Categories + Cash + Cards
 
-        // ১. অ্যাকাউন্টস ক্যাটাগরি তৈরি
-        cats.forEach((cat, idx) => {
-            const catAccs = accs.filter(a => a.catId === cat.id && a.enabled !== false);
+        // ১. অ্যাকাউন্টস সেকশন রেন্ডার
+        cats.forEach(cat => {
+            const catAccs = accs.filter(a => a.catId === cat.id);
             if (catAccs.length === 0) return;
 
             let catSubtotal = 0;
@@ -332,9 +364,12 @@
             catAccs.forEach(acc => {
                 const bal = parseFloat(currentBalances[acc.id]) || 0;
                 catSubtotal += bal;
-                
-                // পরিচ্ছন্ন ছোট নাম তৈরি (অপ্রয়োজনীয় রিপিটেশন দূর করা)
-                let cleanName = acc.name.replace(/personal|agent|account|bank/gi, '').trim();
+
+                // অপ্রয়োজনীয় শব্দ ছেঁটে ফেলা (বিকাশ এজেন্ট -> বিকাশ)
+                let cleanName = acc.name
+                    .replace(/personal\s*accounts?|agent\s*accounts?|bank\s*accounts?|recharge/gi, '')
+                    .replace(/personal|agent|account|bank/gi, '')
+                    .trim();
                 if (!cleanName) cleanName = acc.name;
 
                 stripsHTML += `
@@ -378,7 +413,7 @@
             stepIndex++;
         });
 
-        // ২. ক্যাশ ড্রয়ার সেকশন
+        // ২. ক্যাশ ড্রয়ার সেকশন রেন্ডার
         let cashSubtotal = 0;
         let cashStripsHTML = '';
         [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(note => {
@@ -433,18 +468,17 @@
         `);
         stepIndex++;
 
-        // ৩. কার্ডস স্টক সেকশন
+        // ৩. কার্ডস স্টক সেকশন রেন্ডার
         let cardSubtotal = 0;
         let cardStripsHTML = '';
-        const cardConfig = window.cardConfig || {};
-
         ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
-            const opCards = cardConfig[op] || [];
+            const rawCards = cardConfig[op] || [];
+            const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
             const opQtys = currentCards[op] || {};
 
             opCards.filter(c => c.active !== false).forEach(c => {
                 const q = parseInt(opQtys[c.id]) || 0;
-                const line = q * (c.price || 0);
+                const line = q * (parseFloat(c.price) || 0);
                 cardSubtotal += line;
                 cardStripsHTML += `
                     <div class="hub-strip-item">
@@ -469,7 +503,7 @@
                     </div>
                 </div>
                 <div class="hub-wizard-body">
-                    <div class="hub-strip-grid">${cardStripsHTML || '<p style="font-size:12px;color:#64748b;">No active cards configured.</p>'}</div>
+                    <div class="hub-strip-grid">${cardStripsHTML || '<p style="font-size:12px;color:#64748b;">No active cards in Card Setup.</p>'}</div>
                     <div class="hub-step-footer">
                         <span style="font-size: 12px; font-weight: 700; color: #16a34a;"><i class="fa-solid fa-check"></i> All steps reviewed. Click floating Save button to finish.</span>
                     </div>
@@ -480,7 +514,7 @@
         window.recalculateGrandLiveTotal();
     };
 
-    // ৭. সিঙ্গেল অ্যাকর্ডিয়ন ও নেক্সট লজিক
+    // ৮. সিঙ্গেল অ্যাকর্ডিয়ন ও উইজার্ড নেক্সট লজিক
     window.toggleSingleWizardSec = function (secId) {
         document.querySelectorAll('.hub-wizard-sec').forEach(sec => {
             if (sec.id === secId) sec.classList.toggle('active');
@@ -497,8 +531,8 @@
         }
     };
 
-    // ৮. লাইভ ক্যালকুলেশন হ্যান্ডলার্স
-    window.updateHubBalance = function (accId, val, subId) {
+    // ৯. লাইভ ক্যালকুলেশন হ্যান্ডলার্স
+    window.updateHubBalance = function (accId, val) {
         currentBalances[accId] = parseFloat(val) || 0;
         window.recalculateGrandLiveTotal();
     };
@@ -529,27 +563,28 @@
 
     window.recalculateGrandLiveTotal = function () {
         let total = 0;
-        // Accs
+        // Accounts
         Object.values(currentBalances).forEach(v => total += (parseFloat(v) || 0));
         // Cash
         [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => total += ((parseInt(currentCash[n]) || 0) * n));
         total += (parseFloat(currentCash.others) || 0);
         // Cards
-        const cardConfig = window.cardConfig || {};
+        const cardConfig = getMasterCardConfig();
         ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
-            const opCards = cardConfig[op] || [];
+            const rawCards = cardConfig[op] || [];
+            const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
             const opQtys = currentCards[op] || {};
-            opCards.forEach(c => total += ((parseInt(opQtys[c.id]) || 0) * (c.price || 0)));
+            opCards.forEach(c => total += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
         });
 
         const liveEl = document.getElementById('hubLiveGrandTotal');
         if (liveEl) liveEl.innerText = `৳ ${fmt(total)}`;
     };
 
-    // ৯. ফায়ারবেসে ফাইনাল সেভ
+    // ১০. ফায়ারবেসে ফাইনাল সেভ
     window.saveAssetHubToFirebase = async function () {
         const d = document.getElementById('hubSelectedDate').value || new Date().toISOString().split('T')[0];
-        if (typeof window.showLoader === 'function') window.showLoader("Saving Asset Hub Data...");
+        if (typeof window.showLoader === 'function') window.showLoader("Saving Daily Asset Data...");
 
         try {
             const snapshotObj = {
@@ -564,18 +599,19 @@
                 await window.writeToFirebase(`erp/daily_balance_snapshots/${d}`, snapshotObj);
             }
 
-            // যদি আজকের তারিখ সেভ করা হয়, তবে লাইভ স্টেটও আপডেট হয়ে যাবে
+            // আজকের তারিখ হলে রিয়েলটাইম ড্যাশবোর্ডেও ব্যাকআপ আপডেট
             const todayStr = new Date().toISOString().split('T')[0];
-            if (d === todayStr) {
-                if (typeof window.writeToFirebase === 'function') {
-                    await window.writeToFirebase(`erp/balances`, currentBalances);
-                    await window.writeToFirebase(`erp/cashInventory`, { quantities: currentCash, others: currentCash.others || 0 });
-                    await window.writeToFirebase(`erp/cardInventory`, currentCards);
-                }
+            if (d === todayStr && typeof window.writeToFirebase === 'function') {
+                await window.writeToFirebase(`erp/balances`, currentBalances);
+                await window.writeToFirebase(`erp/cashInventory`, { quantities: currentCash, others: currentCash.others || 0 });
+                await window.writeToFirebase(`erp/cardInventory`, currentCards);
             }
 
-            if (typeof window.showToast === 'function') window.showToast(`Balances successfully recorded for ${d}!`, "success");
-            else alert(`Balances successfully recorded for ${d}!`);
+            if (typeof window.showToast === 'function') {
+                window.showToast(`Balance permanently recorded for ${d}!`, "success");
+            } else {
+                alert(`Balance permanently recorded for ${d}!`);
+            }
         } catch (e) {
             console.error("Save Error:", e);
             if (typeof window.showToast === 'function') window.showToast("Error saving data!", "error");
@@ -584,7 +620,7 @@
         }
     };
 
-    // ১০. হিস্ট্রি রেন্ডারার (Date & Time সহ)
+    // ১১. হিস্ট্রি লিস্ট রেন্ডারার
     window.renderAssetHistoryList = async function () {
         const container = document.getElementById('hubHistoryListContainer');
         if (!container) return;
@@ -607,17 +643,19 @@
             }
 
             container.innerHTML = '';
+            const cardConfig = getMasterCardConfig();
+
             allHistoryRecords.forEach(rec => {
                 let aTotal = 0, cTotal = 0, cardTotal = 0;
                 Object.values(rec.balances || {}).forEach(v => aTotal += (parseFloat(v) || 0));
                 [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => cTotal += ((parseInt(rec.cash?.[n]) || 0) * n));
                 cTotal += (parseFloat(rec.cash?.others) || 0);
 
-                const cardConfig = window.cardConfig || {};
                 ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
-                    const opCards = cardConfig[op] || [];
+                    const rawCards = cardConfig[op] || [];
+                    const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
                     const opQtys = rec.cards?.[op] || {};
-                    opCards.forEach(c => cardTotal += ((parseInt(opQtys[c.id]) || 0) * (c.price || 0)));
+                    opCards.forEach(c => cardTotal += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
                 });
 
                 const grand = aTotal + cTotal + cardTotal;
@@ -677,7 +715,7 @@
         }
     };
 
-    // ১১. ইনিশিয়ালাইজেশন
+    // ১২. ইনিশিয়ালাইজার
     window.loadAssetHubInputs = function () {
         const dInput = document.getElementById('hubSelectedDate');
         if (dInput && !dInput.value) {
