@@ -869,12 +869,34 @@
                 opCards.forEach(c => cardsTotal += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
             });
 
-            // কার্ডের মূল অ্যাকাউন্টে ভ্যালু সেট
+// ১. আসল একাউন্টগুলোর মোট হিসাব (কার্ড ছাড়া)
+            let accountsTotal = 0;
+            const { accs } = getMasterAccountsAndCategories();
+            accs.forEach(a => {
+                if (a.id !== 'acc_9' && a.catId !== 'cat_4') {
+                    accountsTotal += (parseFloat(currentBalances[a.id]) || 0);
+                }
+            });
+
+            // ২. ক্যাশ ড্রয়ারের মোট হিসাব
+            let cashTotal = 0;
+            [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => cashTotal += ((parseInt(currentCash[n]) || 0) * n));
+            cashTotal += (parseFloat(currentCash.others) || 0);
+
+            // ৩. চূড়ান্ত মোট হিসাব (ইনপুট পেজের আসল টোটাল)
+            const grandTotal = accountsTotal + cashTotal + cardsTotal;
+
+            // কার্ড একাউন্টে ভ্যালু সেট (ড্যাশবোর্ডের জন্য)
             currentBalances['acc_9'] = cardsTotal;
 
+            // সরাসরি চূড়ান্ত যোগফলগুলো ফায়ারবেসে সেভ করা
             const snapshotObj = {
                 date: d,
                 timestamp: Date.now(),
+                accountsTotal: accountsTotal,
+                cashTotal: cashTotal,
+                cardsTotal: cardsTotal,
+                grandTotal: grandTotal,
                 balances: { ...currentBalances },
                 cash: { ...currentCash },
                 cards: { ...currentCards }
@@ -976,22 +998,31 @@
             container.innerHTML = '';
             const cardConfig = getMasterCardConfig();
 
-            allHistoryRecords.forEach(rec => {
-                let aTotal = 0, cTotal = 0, cardTotal = 0;
-                Object.values(rec.balances || {}).forEach(v => aTotal += (parseFloat(v) || 0));
-                [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => cTotal += ((parseInt(rec.cash?.[n]) || 0) * n));
-                cTotal += (parseFloat(rec.cash?.others) || 0);
+allHistoryRecords.forEach(rec => {
+                // ইনপুটে সেভ করা চূড়ান্ত হিসাব সরাসরি নিয়ে আসা (কোনো আলাদা ক্যালকুলেটর ছাড়াই)
+                let aTotal = rec.accountsTotal;
+                let cTotal = rec.cashTotal;
+                let cardTotal = rec.cardsTotal;
+                let grand = rec.grandTotal;
 
-                ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
-                    const rawCards = cardConfig[op] || [];
-                    const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
-                    const opQtys = rec.cards?.[op] || {};
-                    opCards.forEach(c => cardTotal += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
-                });
+                // যদি পুরনো কোনো এন্ট্রিতে সরাসরি টোটাল না থাকে, তবে তার ব্যাকআপ হিসাব
+                if (grand === undefined) {
+                    aTotal = 0; cTotal = 0; cardTotal = 0;
+                    Object.entries(rec.balances || {}).forEach(([k, v]) => {
+                        if (k !== 'acc_9') aTotal += (parseFloat(v) || 0);
+                    });
+                    [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => cTotal += ((parseInt(rec.cash?.[n]) || 0) * n));
+                    cTotal += (parseFloat(rec.cash?.others) || 0);
+                    ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
+                        const rawCards = cardConfig[op] || [];
+                        const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
+                        const opQtys = rec.cards?.[op] || {};
+                        opCards.forEach(c => cardTotal += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
+                    });
+                    grand = aTotal + cTotal + cardTotal;
+                }
 
-                const grand = aTotal + cTotal + cardTotal;
                 const timeStr = rec.timestamp ? new Date(rec.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-
                 const cardHTML = `
                     <div class="hub-history-card">
                         <div>
