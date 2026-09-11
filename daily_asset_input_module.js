@@ -822,10 +822,20 @@
 
     window.recalculateGrandLiveTotal = function () {
         let total = 0;
-        Object.values(currentBalances).forEach(v => total += (parseFloat(v) || 0));
+        
+        // কার্ড একাউন্ট (acc_9) বাদ দিয়ে বাকি সব একাউন্টের ব্যালেন্স যোগ করা (যাতে কার্ড ডাবল যোগ না হয়)
+        const { accs } = getMasterAccountsAndCategories();
+        accs.forEach(a => {
+            if (a.id !== 'acc_9' && a.catId !== 'cat_4') {
+                total += (parseFloat(currentBalances[a.id]) || 0);
+            }
+        });
+
+        // ক্যাশ ড্রয়ারের যোগফল
         [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => total += ((parseInt(currentCash[n]) || 0) * n));
         total += (parseFloat(currentCash.others) || 0);
 
+        // কার্ডের স্টকের যোগফল (শুধুমাত্র একবার যোগ হবে)
         let cardsTotal = 0;
         const cardConfig = getMasterCardConfig();
         ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
