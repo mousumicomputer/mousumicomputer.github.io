@@ -3,7 +3,7 @@
  * File: daily_asset_input_module.js
  * Feature: Operator Filter Pills (All / GP / Banglalink / Robi / Airtel),
  *          Precise Sidebar Menu Placement,
- *          Native Browser Symbols & Master Config Bridge.
+ *          Native FontAwesome Icons & Master Config Bridge.
  */
 
 (function () {
@@ -69,10 +69,10 @@
             .hub-wizard-meta { display: flex; align-items: center; gap: 16px; font-size: 12px; font-weight: 700; color: #334155; }
             
             .hub-native-arrow {
-                font-size: 12px;
+                font-size: 11px;
                 display: inline-block;
                 transition: transform 0.2s ease;
-                color: #000;
+                color: #64748b;
             }
             .hub-wizard-sec:not(.active) .hub-native-arrow { transform: rotate(-90deg); }
             .hub-wizard-sec:not(.active) .hub-wizard-body { display: none; }
@@ -127,7 +127,7 @@
             .hub-qty-inp:focus { border-color: #0f172a; }
             .hub-sub-val { font-size: 12px; font-weight: 800; min-width: 75px; text-align: right; color: #0f172a; }
 
-            /* অপারেটর ফিল্টার পিলস (নতুন সংযোজন) */
+            /* অপারেটর ফিল্টার পিলস */
             .card-op-filter-bar {
                 display: flex;
                 align-items: center;
@@ -244,7 +244,7 @@
     `;
     document.head.insertAdjacentHTML('beforeend', moduleStyles);
 
-    // ২. সাইডবারে সঠিক পজিশনে মেনু ইনজেকশন (Daily Closing এর ঠিক ওপরে)
+    // ২. সাইডবারে সঠিক পজিশনে মেনু ইনজেকশন (FontAwesome Chevron আইকন সহ)
     function injectSidebarMenu() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList || document.getElementById('menu-asset-hub-parent')) return;
@@ -252,21 +252,21 @@
         const menuItemHTML = `
             <li class="menu-item" id="menu-asset-hub-parent">
                 <a onclick="window.toggleParentMenu('menu-asset-hub-parent')">
-    <span class="menu-link-inner"><i class="fa-solid fa-coins"></i> <span>Daily Asset Hub</span></span>
-    <span class="chevron-icon"><i class="fa-solid fa-chevron-down"></i></span>
-</a>
+                    <span class="menu-link-inner"><i class="fa-solid fa-coins"></i> <span>Daily Asset Hub</span></span>
+                    <span class="chevron-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </a>
                 <ul class="submenu-list">
                     <li class="submenu-item active" id="sub-asset-entry">
-                        <a onclick="window.switchAssetHubSubTab('entry')"><span>&rsaquo; Balance Entry</span></a>
+                        <a onclick="window.switchAssetHubSubTab('entry')"><span><i class="fa-solid fa-chevron-right" style="font-size: 10px; margin-right: 4px;"></i> Balance Entry</span></a>
                     </li>
                     <li class="submenu-item" id="sub-asset-history">
-                        <a onclick="window.switchAssetHubSubTab('history')"><span>&rsaquo; Entry History</span></a>
+                        <a onclick="window.switchAssetHubSubTab('history')"><span><i class="fa-solid fa-chevron-right" style="font-size: 10px; margin-right: 4px;"></i> Entry History</span></a>
                     </li>
                 </ul>
             </li>
         `;
 
-        // Daily Closing মেনুর ঠিক ওপরে ইনসার্ট করার চেষ্টা করা হচ্ছে
+        // Daily Closing মেনুর ঠিক ওপরে ইনসার্ট করা
         const dailyClosingMenu = document.getElementById('menu-closing-parent');
         if (dailyClosingMenu) {
             dailyClosingMenu.insertAdjacentHTML('beforebegin', menuItemHTML);
@@ -323,7 +323,7 @@
     let currentCash = {};
     let currentCards = {};
     let allHistoryRecords = [];
-    let activeCardFilter = 'ALL'; // ডিফল্ট ফিল্টার
+    let activeCardFilter = 'ALL';
 
     // ৪. মাস্টার কনফিগ ডেটা ফেচিং
     function getMasterAccountsAndCategories() {
@@ -395,7 +395,7 @@
         }
     };
 
-    // ৭. ফিল্টার বাটন হ্যান্ডলার (All / GP / Banglalink / Robi / Airtel)
+    // ৭. ফিল্টার বাটন হ্যান্ডলার
     window.filterCardOperatorView = function (opName) {
         activeCardFilter = opName;
         document.querySelectorAll('.op-pill-btn').forEach(btn => {
@@ -413,7 +413,7 @@
         });
     };
 
-    // ৮. উইজার্ড ইন্টারফেস রেন্ডারার
+    // ৮. উইজার্ড ইন্টারফেস রেন্ডারার (FontAwesome Chevron আইকন সহ)
     window.renderWizardUI = function () {
         const container = document.getElementById('hubWizardContainer');
         if (!container) return;
@@ -464,7 +464,7 @@
                         <span class="hub-wizard-title">${stepIndex}. ${cat.name}</span>
                         <div class="hub-wizard-meta">
                             <span id="cat-sub-${cat.id}">Subtotal: ৳ ${fmt(catSubtotal)}</span>
-                            <span class="hub-native-arrow">&#9662;</span>
+                            <i class="fa-solid fa-chevron-down hub-native-arrow"></i>
                         </div>
                     </div>
                     <div class="hub-wizard-body">
@@ -521,7 +521,7 @@
                     <span class="hub-wizard-title">${stepIndex}. Cash Drawer</span>
                     <div class="hub-wizard-meta">
                         <span id="cash-subtotal-disp">Total Cash: ৳ ${fmt(cashSubtotal)}</span>
-                        <span class="hub-native-arrow">&#9662;</span>
+                        <i class="fa-solid fa-chevron-down hub-native-arrow"></i>
                     </div>
                 </div>
                 <div class="hub-wizard-body">
@@ -536,7 +536,7 @@
         `);
         stepIndex++;
 
-        // ৩. কার্ডস স্টক সেকশন (ফিল্টার পিলস সহ)
+        // ৩. কার্ডস স্টক সেকশন
         let grandCardSubtotal = 0;
         let operatorBlocksHTML = '';
         const operatorList = ['GP', 'Banglalink', 'Robi', 'Airtel'];
@@ -580,7 +580,6 @@
             }
         });
 
-        // ফিল্টার পিলস বার তৈরি
         const filterPillsHTML = `
             <div class="card-op-filter-bar">
                 <button class="op-pill-btn active" data-op="ALL" onclick="window.filterCardOperatorView('ALL')">All Operators</button>
@@ -594,7 +593,7 @@
                     <span class="hub-wizard-title">${stepIndex}. Cards Stock</span>
                     <div class="hub-wizard-meta">
                         <span id="cards-subtotal-disp">Total Cards: ৳ ${fmt(grandCardSubtotal)}</span>
-                        <span class="hub-native-arrow">&#9662;</span>
+                        <i class="fa-solid fa-chevron-down hub-native-arrow"></i>
                     </div>
                 </div>
                 <div class="hub-wizard-body">
