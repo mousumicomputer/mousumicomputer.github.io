@@ -3064,6 +3064,11 @@ onValue(txRef, (snapshot) => {
     window.categories = categories;
     window.accounts = accounts;
     window.balanceStore = balanceStore;
+    // --- Daily Asset Hub ক্লাউড সিঙ্ক ব্রিজ ---
+window.writeToFirebase = writeToFirebase;
+window.getDatabase = () => db;
+window.ref = ref;
+window.get = get;
     window.cardConfig = cardConfig;
     window.cardQuantities = cardQuantities;
     window.cashQuantities = cashQuantities;
