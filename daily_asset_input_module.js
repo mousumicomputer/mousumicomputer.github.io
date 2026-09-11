@@ -1,8 +1,9 @@
 /**
  * Mousumi Computer ERP - Daily Liquid Asset & Balance Input Hub
  * File: daily_asset_input_module.js
- * Feature: Native Browser Symbols (No Broken Icons), Operator-Wise Card Segmenting,
- *          Master Config Deep Link, Clean Single Accordion Flow.
+ * Feature: Operator Filter Pills (All / GP / Banglalink / Robi / Airtel),
+ *          Precise Sidebar Menu Placement,
+ *          Native Browser Symbols & Master Config Bridge.
  */
 
 (function () {
@@ -67,7 +68,6 @@
             .hub-wizard-title { font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
             .hub-wizard-meta { display: flex; align-items: center; gap: 16px; font-size: 12px; font-weight: 700; color: #334155; }
             
-            /* নেটিভ ড্রপডাউন তীরচিহ্ন (কখনো ভাঙবে না) */
             .hub-native-arrow {
                 font-size: 12px;
                 display: inline-block;
@@ -127,7 +127,32 @@
             .hub-qty-inp:focus { border-color: #0f172a; }
             .hub-sub-val { font-size: 12px; font-weight: 800; min-width: 75px; text-align: right; color: #0f172a; }
 
-            /* অপারেটর সেগমেন্টেশন স্টাইল (কার্ডের জন্য) */
+            /* অপারেটর ফিল্টার পিলস (নতুন সংযোজন) */
+            .card-op-filter-bar {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 15px;
+                flex-wrap: wrap;
+            }
+            .op-pill-btn {
+                padding: 5px 14px;
+                border: 1px solid #cbd5e1;
+                border-radius: 20px;
+                background: #fff;
+                font-size: 12px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: 0.2s;
+                color: #334155;
+            }
+            .op-pill-btn:hover { background: #f1f5f9; }
+            .op-pill-btn.active {
+                background: #0f172a;
+                color: #fff;
+                border-color: #0f172a;
+            }
+
             .op-segment-box {
                 margin-bottom: 16px;
                 border: 1px solid #e2e8f0;
@@ -147,7 +172,6 @@
                 align-items: center;
             }
 
-            /* নেক্সট বাটন */
             .hub-step-footer { display: flex; justify-content: flex-end; padding-top: 10px; border-top: 1px solid #f1f5f9; }
             .hub-btn-next {
                 background: #fff;
@@ -220,7 +244,7 @@
     `;
     document.head.insertAdjacentHTML('beforeend', moduleStyles);
 
-    // ২. সাইডবার মেনু ইনজেকশন
+    // ২. সাইডবারে সঠিক পজিশনে মেনু ইনজেকশন (Daily Closing এর ঠিক ওপরে)
     function injectSidebarMenu() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList || document.getElementById('menu-asset-hub-parent')) return;
@@ -228,7 +252,7 @@
         const menuItemHTML = `
             <li class="menu-item" id="menu-asset-hub-parent">
                 <a onclick="window.toggleParentMenu('menu-asset-hub-parent')">
-                    <span class="menu-link-inner">&#9679; <span>Daily Asset Hub</span></span>
+                    <span class="menu-link-inner"><i class="fa-solid fa-coins"></i> <span>Daily Asset Hub</span></span>
                     <span class="chevron-icon">&#9662;</span>
                 </a>
                 <ul class="submenu-list">
@@ -241,7 +265,14 @@
                 </ul>
             </li>
         `;
-        menuList.insertAdjacentHTML('beforeend', menuItemHTML);
+
+        // Daily Closing মেনুর ঠিক ওপরে ইনসার্ট করার চেষ্টা করা হচ্ছে
+        const dailyClosingMenu = document.getElementById('menu-closing-parent');
+        if (dailyClosingMenu) {
+            dailyClosingMenu.insertAdjacentHTML('beforebegin', menuItemHTML);
+        } else {
+            menuList.insertAdjacentHTML('beforeend', menuItemHTML);
+        }
     }
 
     // ৩. ভিউ প্যানেল ইনজেকশন
@@ -292,8 +323,9 @@
     let currentCash = {};
     let currentCards = {};
     let allHistoryRecords = [];
+    let activeCardFilter = 'ALL'; // ডিফল্ট ফিল্টার
 
-    // ৪. মাস্টার কনফিগ ডেটা ফেচিং ইঞ্জিন
+    // ৪. মাস্টার কনফিগ ডেটা ফেচিং
     function getMasterAccountsAndCategories() {
         const rawCats = window.accountManagerData?.categories || window.categories || [];
         const rawAccs = window.accountManagerData?.accounts || window.accounts || [];
@@ -363,7 +395,25 @@
         }
     };
 
-    // ৭. উইজার্ড ইন্টারফেস রেন্ডারার
+    // ৭. ফিল্টার বাটন হ্যান্ডলার (All / GP / Banglalink / Robi / Airtel)
+    window.filterCardOperatorView = function (opName) {
+        activeCardFilter = opName;
+        document.querySelectorAll('.op-pill-btn').forEach(btn => {
+            if (btn.getAttribute('data-op') === opName) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+
+        document.querySelectorAll('.op-segment-box').forEach(box => {
+            const boxOp = box.getAttribute('data-op');
+            if (opName === 'ALL' || boxOp === opName) {
+                box.style.display = 'block';
+            } else {
+                box.style.display = 'none';
+            }
+        });
+    };
+
+    // ৮. উইজার্ড ইন্টারফেস রেন্ডারার
     window.renderWizardUI = function () {
         const container = document.getElementById('hubWizardContainer');
         if (!container) return;
@@ -486,11 +536,12 @@
         `);
         stepIndex++;
 
-        // ৩. কার্ডস স্টক সেকশন (অপারেটর অনুযায়ী সুনির্দিষ্ট সেগমেন্টেশন)
+        // ৩. কার্ডস স্টক সেকশন (ফিল্টার পিলস সহ)
         let grandCardSubtotal = 0;
         let operatorBlocksHTML = '';
+        const operatorList = ['GP', 'Banglalink', 'Robi', 'Airtel'];
 
-        ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
+        operatorList.forEach(op => {
             const rawCards = cardConfig[op] || [];
             const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
             const opQtys = currentCards[op] || {};
@@ -518,7 +569,7 @@
 
             if (opStripsHTML) {
                 operatorBlocksHTML += `
-                    <div class="op-segment-box">
+                    <div class="op-segment-box" data-op="${op}">
                         <div class="op-segment-header">
                             <span>${op} Operator Cards</span>
                             <span id="op-sub-${op}">Subtotal: ৳ ${fmt(opSubtotal)}</span>
@@ -529,16 +580,25 @@
             }
         });
 
+        // ফিল্টার পিলস বার তৈরি
+        const filterPillsHTML = `
+            <div class="card-op-filter-bar">
+                <button class="op-pill-btn active" data-op="ALL" onclick="window.filterCardOperatorView('ALL')">All Operators</button>
+                ${operatorList.map(op => `<button class="op-pill-btn" data-op="${op}" onclick="window.filterCardOperatorView('${op}')">${op}</button>`).join('')}
+            </div>
+        `;
+
         container.insertAdjacentHTML('beforeend', `
             <div class="hub-wizard-sec" id="${cardsSecId}">
                 <div class="hub-wizard-head" onclick="window.toggleSingleWizardSec('${cardsSecId}')">
-                    <span class="hub-wizard-title">${stepIndex}. Cards Stock (Segmented)</span>
+                    <span class="hub-wizard-title">${stepIndex}. Cards Stock</span>
                     <div class="hub-wizard-meta">
                         <span id="cards-subtotal-disp">Total Cards: ৳ ${fmt(grandCardSubtotal)}</span>
                         <span class="hub-native-arrow">&#9662;</span>
                     </div>
                 </div>
                 <div class="hub-wizard-body">
+                    ${filterPillsHTML}
                     ${operatorBlocksHTML || '<p style="font-size:12px;color:#64748b;">No active cards in Card Setup.</p>'}
                     <div class="hub-step-footer">
                         <span style="font-size: 12px; font-weight: 700; color: #16a34a;">&#10003; All sections reviewed. Click Save Balance below.</span>
@@ -550,7 +610,7 @@
         window.recalculateGrandLiveTotal();
     };
 
-    // ৮. উইজার্ড নেভিগেশন
+    // ৯. উইজার্ড নেভিগেশন
     window.toggleSingleWizardSec = function (secId) {
         document.querySelectorAll('.hub-wizard-sec').forEach(sec => {
             if (sec.id === secId) sec.classList.toggle('active');
@@ -567,7 +627,7 @@
         }
     };
 
-    // ৯. লাইভ ক্যালকুলেশন
+    // ১০. লাইভ ক্যালকুলেশন
     window.updateHubBalance = function (accId, val) {
         currentBalances[accId] = parseFloat(val) || 0;
         window.recalculateGrandLiveTotal();
@@ -595,7 +655,6 @@
         const lineEl = document.getElementById(lineId);
         if (lineEl) lineEl.innerText = fmt(line);
 
-        // অপারেটর সাবটোটাল আপডেট
         const cardConfig = getMasterCardConfig();
         const rawCards = cardConfig[op] || [];
         const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
@@ -632,7 +691,7 @@
         if (liveEl) liveEl.innerText = `৳ ${fmt(total)}`;
     };
 
-    // ১০. ফায়ারবেসে ফাইনাল সেভ
+    // ১১. ফায়ারবেসে ফাইনাল সেভ
     window.saveAssetHubToFirebase = async function () {
         const d = document.getElementById('hubSelectedDate').value || new Date().toISOString().split('T')[0];
         if (typeof window.showLoader === 'function') window.showLoader("Saving Daily Asset Data...");
@@ -667,7 +726,7 @@
         }
     };
 
-    // ১১. হিস্ট্রি রেন্ডারার
+    // ১২. হিস্ট্রি রেন্ডারার
     window.renderAssetHistoryList = async function () {
         const container = document.getElementById('hubHistoryListContainer');
         if (!container) return;
