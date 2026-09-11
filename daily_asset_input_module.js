@@ -1170,18 +1170,24 @@ allHistoryRecords.forEach(rec => {
                 .sort((a, b) => b.date.localeCompare(a.date))[0];
 
             if (priorSnap) {
-                let aTot = 0, cTot = 0, cardTot = 0;
-                const cardCfg = getMasterCardConfig();
-                Object.values(priorSnap.balances || {}).forEach(v => aTot += (parseFloat(v) || 0));
-                [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => cTot += ((parseInt(priorSnap.cash?.[n]) || 0) * n));
-                cTot += (parseFloat(priorSnap.cash?.others) || 0);
-                ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
-                    const rawCards = cardCfg[op] || [];
-                    const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
-                    const opQtys = priorSnap.cards?.[op] || {};
-                    opCards.forEach(c => cardTot += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
-                });
-                openingCapital = aTot + cTot + cardTot;
+if (priorSnap.grandTotal !== undefined) {
+                    openingCapital = priorSnap.grandTotal;
+                } else {
+                    let aTot = 0, cTot = 0, cardTot = 0;
+                    const cardCfg = getMasterCardConfig();
+                    Object.entries(priorSnap.balances || {}).forEach(([k, v]) => {
+                        if (k !== 'acc_9') aTot += (parseFloat(v) || 0);
+                    });
+                    [1000, 500, 200, 100, 50, 20, 10, 5, 2].forEach(n => cTot += ((parseInt(priorSnap.cash?.[n]) || 0) * n));
+                    cTot += (parseFloat(priorSnap.cash?.others) || 0);
+                    ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
+                        const rawCards = cardCfg[op] || [];
+                        const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
+                        const opQtys = priorSnap.cards?.[op] || {};
+                        opCards.forEach(c => cardTot += ((parseInt(opQtys[c.id]) || 0) * (parseFloat(c.price) || 0)));
+                    });
+                    openingCapital = aTot + cTot + cardTot;
+                }
             } else {
                 const closings = window.dailyClosingReports || [];
                 const priorClosing = closings
