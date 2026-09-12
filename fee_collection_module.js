@@ -1553,12 +1553,11 @@ fb.onValue(fb.ref(fb.db, 'erp/feeTransactions'), (snapshot) => {
             const data = snapshot.val();
             voidLogsList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
             
-            // নতুন তারিখ ও বড় রসিদ নম্বর সবার উপরে রাখার জন্য
+            // রসিদ নম্বর বড় থেকে ছোট অনুযায়ী একদম নিখুঁত সর্টিং (নতুন রসিদ সবসময় উপরে থাকবে)
             voidLogsList.sort((a, b) => {
-                const dateA = a.voidDate || a.date || '';
-                const dateB = b.voidDate || b.date || '';
-                if (dateA !== dateB) return dateB.localeCompare(dateA);
-                return (parseInt(b.receiptNo) || 0) - (parseInt(a.receiptNo) || 0);
+                const recA = parseInt(String(a.receiptNo || '').replace(/\D/g, '')) || 0;
+                const recB = parseInt(String(b.receiptNo || '').replace(/\D/g, '')) || 0;
+                return recB - recA;
             });
 
             renderVoidTable();
