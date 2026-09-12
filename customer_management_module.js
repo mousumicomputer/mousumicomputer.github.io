@@ -946,7 +946,9 @@ window.handleNewCustomerSubmit = async function(e) {
 
     if (typeof showLoader === 'function') showLoader(editId ? "Updating Customer..." : "Saving Customer...");
 
+//  সংশোধিত কোড (এইটুকু প্রতিস্থাপন করুন):
     let customers = window.customers || [];
+    let targetCust = null; // ১. targetCust আগে তৈরি করে নিলাম
 
     if (editId) {
         const idx = customers.findIndex(c => c.id === editId);
@@ -959,6 +961,7 @@ window.handleNewCustomerSubmit = async function(e) {
                 openingBalance,
                 avatarUrl: currentUploadedBase64Photo || customers[idx].avatarUrl || ""
             };
+            targetCust = customers[idx]; // ২. এডিট হলে আপডেটেড অবজেক্ট
         }
     } else {
         const newCust = {
@@ -971,15 +974,14 @@ window.handleNewCustomerSubmit = async function(e) {
             status: "Active"
         };
         customers.unshift(newCust);
+        targetCust = newCust; // ৩. নতুন হলে newCust অবজেক্ট targetCust এ সেট হলো
     }
 
     try {
-        // ✅ সংশোধিত নিরাপদ কোড:
-const targetCust = editId ? customers.find(c => c.id === editId) : newCust;
-const { getDatabase, ref, set } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
-const db = getDatabase();
-await set(ref(db, 'customers/' + targetCust.id), targetCust);
-
+        // ৪. সরাসরি targetCust ফায়ারবেসে সেভ হবে, কোনো এরর ছাড়াই
+        const { getDatabase, ref, set } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+        const db = getDatabase();
+        await set(ref(db, 'customers/' + targetCust.id), targetCust);
         window.customers = customers;
 
         if (typeof hideLoader === 'function') hideLoader();
