@@ -1026,6 +1026,7 @@
             selectedPendingTxIds.clear();
             if (typeof showToast === 'function') showToast(`${voidCount} record(s) voided`, "warning");
             renderPendingTable();
+            renderVoidTable();
         } catch(e) { console.error(e); }
     };
 
@@ -1551,6 +1552,15 @@ fb.onValue(fb.ref(fb.db, 'erp/feeTransactions'), (snapshot) => {
         fb.onValue(fb.ref(fb.db, 'erp/feeVoidLogs'), (snapshot) => {
             const data = snapshot.val();
             voidLogsList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+            
+            // নতুন তারিখ ও বড় রসিদ নম্বর সবার উপরে রাখার জন্য
+            voidLogsList.sort((a, b) => {
+                const dateA = a.voidDate || a.date || '';
+                const dateB = b.voidDate || b.date || '';
+                if (dateA !== dateB) return dateB.localeCompare(dateA);
+                return (parseInt(b.receiptNo) || 0) - (parseInt(a.receiptNo) || 0);
+            });
+
             renderVoidTable();
         });
     }
