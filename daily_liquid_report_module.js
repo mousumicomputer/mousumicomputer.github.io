@@ -1,7 +1,8 @@
 /**
  * Mousumi Computer ERP - Daily Liquid Balance & Physical Audit Module
  * File: daily_liquid_report_module.js
- * Feature: Standalone Realtime Sync, Permanent Snapshot, Multi-Page Print & Smart Versioning (_v1, _v2)
+ * Fixed: Historical Snapshot Data Fetching based on Selected Date,
+ *        Accurate Multi-Device Balance & Physical Audit Rendering.
  */
 
 (function () {
@@ -25,7 +26,7 @@
                 box-shadow: 0 1px 3px rgba(0,0,0,0.04);
             }
             .liquid-date-box { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.85rem; }
-            .liquid-date-box input { height: 36px; border: 1px solid #94a3b8; border-radius: 6px; padding: 0 10px; font-size: 0.9rem; font-weight: 600; outline: none; background: #f8fafc; }
+            .liquid-date-box input { height: 36px; border: 1px solid #94a3b8; border-radius: 6px; padding: 0 10px; font-size: 0.9rem; font-weight: 600; outline: none; background: #f8fafc; cursor: pointer; }
             .liquid-btn-group { display: flex; gap: 8px; }
             .liquid-btn { height: 36px; padding: 0 14px; border: 1px solid #000; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; background: #fff; color: #000; transition: 0.2s; }
             .liquid-btn:hover { background: #f1f5f9; }
@@ -62,7 +63,6 @@
     `;
     document.head.insertAdjacentHTML('beforeend', moduleStyles);
 
-    // ২. ভার্সন ট্র্যাকিং হেল্পার ফাংশন
     function getReportVersion(dateStr) {
         const key = `liquid_report_ver_${dateStr}`;
         return parseInt(localStorage.getItem(key)) || 1;
@@ -74,7 +74,6 @@
         localStorage.setItem(key, current + 1);
     }
 
-    // ৩. সাইডবার মেনু ইনজেকশন
     function injectSidebarMenu() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList || document.getElementById('menu-report-hub-parent')) return;
@@ -95,7 +94,6 @@
         menuList.insertAdjacentHTML('beforeend', menuItemHTML);
     }
 
-    // ৪. ভিউ প্যানেল ইনজেকশন
     function injectViewPanel() {
         const mainWrapper = document.querySelector('.main-wrapper');
         if (!mainWrapper || document.getElementById('liquid-audit-view')) return;
@@ -124,7 +122,7 @@
 
     const fmt = (n) => (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
 
-    // ৫. লাইভ ব্যালেন্স ও ভার্সনসহ রেন্ডারার
+    // ৫. তারিখ অনুযায়ী স্ন্যাপশট ফেচ ও রেন্ডার ইঞ্জিন (সংশোধিত)
     window.renderLiquidStatementReport = async function () {
         const target = document.getElementById('printable-liquid-doc');
         const dateInput = document.getElementById('liquidStatementDate');
@@ -133,30 +131,77 @@
         const selectedDate = dateInput.value || new Date().toISOString().split('T')[0];
         const currentVersion = getReportVersion(selectedDate);
 
+        target.innerHTML = `<div style="text-align:center; padding: 40px; font-size:14px; color:#64748b;">
+            <i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i> ${selectedDate} তারিখের ডাটা লোড হচ্ছে...
+        </div>`;
+
+        // ফায়ারবেস থেকে এই নির্দিষ্ট তারিখের স্ন্যাপশট ডাটা ফেচ করা
+        let snapshotData = null;
+        try {
+            if (window.getDatabase && window.ref && window.get) {
+                const db = window.getDatabase();
+                const snapRef = window.ref(db, `erp/daily_balance_snapshots/${selectedDate}`);
+                const snap = await window.get(snapRef);
+                if (snap.exists()) {
+                    snapshotData = snap.val();
+                }
+            }
+        } catch (e) {
+            console.error("Firebase Snapshot Fetch Error:", e);
+        }
+
         const cats = window.categories || [];
         const accs = window.accounts || [];
-        const balances = window.balanceStore || {};
-        const cashQtys = window.cashQuantities || { 1000: 0, 500: 0, 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 2: 0 };
-        const cashOthers = window.cashOthersAmount || 0;
         const cardConfig = window.cardConfig || {};
-        const cardQtys = window.cardQuantities || {};
+
+        let balances = {};
+        let cashQtys = {};
+        let cashOthers = 0;
+        let cardQtys = {};
+        let preparedTime = new Date().toLocaleTimeString();
+
+        if (snapshotData) {
+            // ১. যদি সেভ করা স্ন্যাপশট থাকে, তবে সেই দিনের আসল ডাটা বসবে
+            balances = snapshotData.balances || {};
+            cashQtys = snapshotData.cash || {};
+            cashOthers = parseFloat(snapshotData.cash?.others) || 0;
+            cardQtys = snapshotData.cards || {};
+            if (snapshotData.timestamp) {
+                preparedTime = new Date(snapshotData.timestamp).toLocaleTimeString();
+            }
+        } else {
+            // ২. যদি সেভ করা রেকর্ড না থাকে এবং আজকের তারিখ হয়, তবে লাইভ মেমোরি ডাটা বসবে
+            const todayStr = new Date().toISOString().split('T')[0];
+            if (selectedDate === todayStr) {
+                balances = window.balanceStore || {};
+                cashQtys = window.cashQuantities || {};
+                cashOthers = window.cashOthersAmount || 0;
+                cardQtys = window.cardQuantities || {};
+            } else {
+                // অতীত বা ভবিষ্যতের অনির্ধারিত দিনে সব 0.00 থাকবে
+                balances = {};
+                cashQtys = {};
+                cashOthers = 0;
+                cardQtys = {};
+            }
+        }
 
         let bankTotal = 0, personalTotal = 0, agentTotal = 0, rechargeTotal = 0;
         let detailedAccountsRows = '';
         let sl = 1;
 
         // অ্যাকাউন্টস গ্রুপিং
-        cats.filter(c => c.enabled !== false).sort((a,b) => a.order - b.order).forEach(cat => {
+        cats.filter(c => c.enabled !== false).sort((a,b) => (parseInt(a.order) || 0) - (parseInt(b.order) || 0)).forEach(cat => {
             const catAccs = accs.filter(a => a.catId === cat.id && a.enabled !== false);
             if (catAccs.length === 0) return;
 
             let catSum = 0;
-            detailedAccountsRows += `<tr style="background:#fafafa; font-weight:700;"><td colspan="3">${cat.name}</td></tr>`;
+            let catRows = '';
 
             catAccs.forEach(acc => {
                 const bal = parseFloat(balances[acc.id]) || 0;
                 catSum += bal;
-                detailedAccountsRows += `
+                catRows += `
                     <tr>
                         <td class="text-center" style="width: 8%;">${sl++}</td>
                         <td>${acc.name}</td>
@@ -172,6 +217,8 @@
             else if (catNameLower.includes('recharge')) rechargeTotal += catSum;
 
             detailedAccountsRows += `
+                <tr style="background:#fafafa; font-weight:700;"><td colspan="3">${cat.name}</td></tr>
+                ${catRows}
                 <tr style="background:#fcfcfc; font-weight:700;">
                     <td colspan="2" class="text-right">Subtotal (${cat.name}):</td>
                     <td class="text-right bold">${fmt(catSum)}</td>
@@ -210,11 +257,13 @@
         let cardSl = 1;
 
         ['GP', 'Banglalink', 'Robi', 'Airtel'].forEach(op => {
-            const opCards = cardConfig[op] || [];
+            const rawCards = cardConfig[op] || [];
+            const opCards = Array.isArray(rawCards) ? rawCards : Object.values(rawCards);
             const opQtys = cardQtys[op] || {};
+
             opCards.filter(c => c.active !== false).forEach(c => {
                 const q = parseInt(opQtys[c.id]) || 0;
-                const line = q * (c.price || 0);
+                const line = q * (parseFloat(c.price) || 0);
                 totalCardsQty += q;
                 totalCardsValue += line;
                 cardRows += `
@@ -235,7 +284,7 @@
             <div class="liquid-doc-header">
                 <h2>Mousumi Computer</h2>
                 <h4>Daily Liquid Balance & Physical Assets Statement</h4>
-                <p>Statement Date: ${selectedDate} &nbsp;|&nbsp; <strong>Version: v${currentVersion}</strong> &nbsp;|&nbsp; Prepared: ${new Date().toLocaleTimeString()}</p>
+                <p>Statement Date: ${selectedDate} &nbsp;|&nbsp; <strong>Version: v${currentVersion}</strong> &nbsp;|&nbsp; Prepared: ${preparedTime} ${!snapshotData ? '<span style="color:#d97706; font-weight:bold;">(Unsaved/Live)</span>' : ''}</p>
             </div>
 
             <!-- 1. EXECUTIVE SUMMARY TABLE -->
@@ -345,6 +394,7 @@
             } else {
                 alert(`Snapshot permanently archived for ${d}!`);
             }
+            window.renderLiquidStatementReport();
         } catch (e) {
             console.error("Archive Error:", e);
         } finally {
@@ -357,7 +407,6 @@
         const contentHTML = document.getElementById('printable-liquid-doc').innerHTML;
         const d = document.getElementById('liquidStatementDate').value || new Date().toISOString().split('T')[0];
         
-        // কারেন্ট ভার্সন নাম্বার নেওয়া
         const ver = getReportVersion(d);
         const dynamicFileName = `Liquid_Statement_${d}_v${ver}`;
         const originalPageTitle = document.title;
@@ -416,23 +465,21 @@
         `);
         frameDoc.close();
 
-        // ব্রাউজার যাতে ফাইলের নামটি নিয়ে নেয়
         document.title = dynamicFileName;
 
         setTimeout(() => {
             printFrame.contentWindow.focus();
             printFrame.contentWindow.print();
 
-            // প্রিন্ট ডায়ালগ শেষ হলে পরবর্তী ভার্সন সেট করা
             window.addEventListener('afterprint', () => {
                 document.title = originalPageTitle;
-                incrementReportVersion(d); // ভার্সন ১ বাড়ানো হলো
-                window.renderLiquidStatementReport(); // নতুন ভার্সন স্ক্রিনে আপডেট
+                incrementReportVersion(d);
+                window.renderLiquidStatementReport();
             }, { once: true });
         }, 400);
     };
 
-    // ৮. এক্সেল এক্সপোর্ট (স্মার্ট ভার্সনসহ)
+    // ৮. এক্সেল এক্সপোর্ট
     window.exportLiquidExcel = function () {
         const d = document.getElementById('liquidStatementDate').value || new Date().toISOString().split('T')[0];
         const ver = getReportVersion(d);
