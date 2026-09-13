@@ -152,7 +152,6 @@ body {
 }
 
 /* ---------------- ৩. শুধুমাত্র DASHBOARD ভিউতে ওয়েলকাম বার্তা ---------------- */
-/* এটি ড্যাশবোর্ড পেজের শীর্ষে শুধুমাত্র তখনই আসবে যখন ড্যাশবোর্ড ওপেন থাকবে */
 #dashboard-view::before {
     content: "👋 Welcome, Mousumi Computer & Photocopy";
     display: block;
@@ -319,4 +318,98 @@ body {
     background: #fef3c7 !important;
     color: #b45309 !important;
     border-color: #fde68a !important;
+}
+
+
+/* ==========================================================================
+   ৬. ইনডিপেন্ডেন্ট ডুয়াল স্ক্রল আর্কিটেকচার (INDEPENDENT DUAL-SCROLL)
+   ========================================================================== */
+
+/* উইন্ডোর গ্লোবাল স্ক্রল লক (ল্যাপটপ ও ডেস্কটপ ভিউতে) */
+@media screen and (min-width: 901px) {
+    html, body {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow: hidden !important;
+    }
+
+    #dashboard-section {
+        height: 100vh !important;
+        overflow: hidden !important;
+    }
+
+    .dashboard-layout {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow: hidden !important;
+    }
+
+    /* সাইডবার: স্বাধীন স্ক্রলিং */
+    .sidebar {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* মূল ড্যাশবোর্ড বডি: স্বাধীন স্ক্রলিং */
+    .main-wrapper {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* টপ ন্যাভবার উপরে ফিক্সড আটকে থাকবে */
+    .top-navbar {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 99 !important;
+    }
+}
+
+/* আধুনিক স্লিম ও দৃষ্টিনন্দন স্ক্রলবার (Chrome, Edge, Safari) */
+.sidebar::-webkit-scrollbar,
+.main-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track,
+.main-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.main-wrapper::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.main-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Firefox স্ক্রলবার সাপোর্ট */
+.sidebar, .main-wrapper {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+/* প্রিন্ট করার সময় কোনো স্ক্রলবার বা হাইট সমস্যা যেন না হয় */
+@media print {
+    html, body, #dashboard-section, .dashboard-layout, .main-wrapper {
+        height: auto !important;
+        overflow: visible !important;
+    }
 }
