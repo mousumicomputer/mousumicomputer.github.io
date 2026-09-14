@@ -1,11 +1,9 @@
 /**
- * CPSCL All-in-One Autonomous Plug-and-Play Module
- * File: cpscl_module.js
- * Works automatically without touching any HTML file!
+ * Standalone Academic Evaluation Module
+ * File: cpscl_evaluation.js
  */
 
 (function () {
-    // সাবজেক্ট ডেফিনিশন
     const SUBJECTS = {
         Science: [
             { key: 'B2', name: 'Bangla 2nd' }, { key: 'E2', name: 'English 2nd' },
@@ -35,45 +33,47 @@
     let currentExam = { id: "exam_fn02_2026", title: "Fortnightly Test-02", date: "12 Sep 2026", max: 15 };
 
     // ==========================================================
-    // ১. সাইডবার ও স্ক্রিন স্বয়ংক্রিয়ভাবে ইনজেক্ট করা (Auto-Inject)
+    // ১. সাইডবারে ইউনিক ড্রপডাউন ইনজেক্ট (২নং ছবির হুবহু স্টাইল)
     // ==========================================================
-    function injectCPSCLModule() {
-        // সাইডবার ড্রপডাউন ইনজেকশন (২নং ছবির মতো)
+    function injectExamModule() {
         const menuList = document.querySelector('.menu-list');
-        if (menuList && !document.getElementById('menu-cpscl-parent')) {
-            const cpsclLi = document.createElement('li');
-            cpsclLi.className = 'menu-item';
-            cpsclLi.id = 'menu-cpscl-parent';
-            cpsclLi.innerHTML = `
-                <a onclick="window.toggleParentMenu('menu-cpscl-parent')">
-                    <span class="menu-link-inner"><i class="fa-solid fa-graduation-cap"></i> <span>CPSCL</span></span>
-                    <i class="fa-solid fa-chevron-down chevron-icon"></i>
-                </a>
-                <ul class="submenu-list" style="display: none;">
-                    <li class="submenu-item"><a onclick="window.switchCPSCLSubSection('cpscl-student-sec')"><i class="fa-solid fa-angle-right"></i> <span>Student Database</span></a></li>
-                    <li class="submenu-item"><a onclick="window.switchCPSCLSubSection('cpscl-exam-sec')"><i class="fa-solid fa-angle-right"></i> <span>Exam & PIN Setup</span></a></li>
-                    <li class="submenu-item"><a onclick="window.switchCPSCLSubSection('cpscl-tab-sec')"><i class="fa-solid fa-angle-right"></i> <span>Tabulation & Merit</span></a></li>
-                </ul>
-            `;
-            // User Management এর ঠিক উপরে স্থাপন
-            const userMgmt = document.getElementById('menu-user-parent') || menuList.children[menuList.children.length - 2];
-            if (userMgmt) menuList.insertBefore(cpsclLi, userMgmt);
-            else menuList.appendChild(cpsclLi);
-        }
+        if (!menuList) return;
 
-        // মূল স্ক্রিন ইনজেকশন (Main Wrapper এর ভেতর)
+        // আগের কোনো ডুপ্লিকেট থাকলে রিমুভ করা
+        const oldMenu = document.getElementById('menu-exam-eval-parent');
+        if (oldMenu) oldMenu.remove();
+
+        const evalLi = document.createElement('li');
+        evalLi.className = 'menu-item';
+        evalLi.id = 'menu-exam-eval-parent';
+        evalLi.innerHTML = `
+            <a onclick="window.toggleExamMenu(event)">
+                <span class="menu-link-inner"><i class="fa-solid fa-file-signature"></i> <span>Exam Evaluation</span></span>
+                <i class="fa-solid fa-chevron-down chevron-icon" id="exam-chevron-icon"></i>
+            </a>
+            <ul class="submenu-list" id="exam-submenu-list">
+                <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-student-sec')"><i class="fa-solid fa-angle-right"></i> <span>Student Database</span></a></li>
+                <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-config-sec')"><i class="fa-solid fa-angle-right"></i> <span>Exam & PIN Setup</span></a></li>
+                <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-tab-sec')"><i class="fa-solid fa-angle-right"></i> <span>Tabulation & Merit</span></a></li>
+            </ul>
+        `;
+
+        // সাইডবারের শেষের দিকে নিরাপদে ইনসার্ট করা
+        menuList.appendChild(evalLi);
+
+        // মূল স্ক্রিন ইনজেক্ট (Main Wrapper এর ভেতর)
         const mainWrapper = document.querySelector('.main-wrapper');
-        if (mainWrapper && !document.getElementById('cpscl-view')) {
+        if (mainWrapper && !document.getElementById('exam-eval-view')) {
             const viewDiv = document.createElement('div');
             viewDiv.className = 'view-panel';
-            viewDiv.id = 'cpscl-view';
+            viewDiv.id = 'exam-eval-view';
             viewDiv.innerHTML = `
                 <!-- SUB-SECTION 1: STUDENT DATABASE -->
-                <div id="cpscl-student-sec" class="cpscl-sub-sec">
+                <div id="eval-student-sec" class="eval-sub-sec">
                     <div class="erp-form-card" style="max-width: 100%; padding: 16px; margin-bottom: 15px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                             <div style="display: flex; gap: 8px;">
-                                <select id="cpsclFilterGroup" class="dcr-filter-input" onchange="window.renderCpsclStudents()">
+                                <select id="evalFilterGroup" class="dcr-filter-input" onchange="window.renderEvalStudents()">
                                     <option value="All">All Groups (All Students)</option>
                                     <option value="Science">Science (Combined)</option>
                                     <option value="SA">Science (Sec: SA)</option>
@@ -82,14 +82,14 @@
                                     <option value="Humanities">Humanities</option>
                                     <option value="B.Studies">Business Studies</option>
                                 </select>
-                                <input type="text" id="cpsclSearchInp" class="dcr-filter-input" placeholder="Search ID or Name..." oninput="window.renderCpsclStudents()" style="width: 200px;">
+                                <input type="text" id="evalSearchInp" class="dcr-filter-input" placeholder="Search ID or Name..." oninput="window.renderEvalStudents()" style="width: 200px;">
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                <button class="dcr-btn-filter" style="background: #10b981;" onclick="document.getElementById('cpsclExcelFile').click()">
+                                <button class="dcr-btn-filter" style="background: #10b981;" onclick="document.getElementById('evalExcelFile').click()">
                                     <i class="fa-solid fa-file-excel"></i> Import Excel / CSV
                                 </button>
-                                <input type="file" id="cpsclExcelFile" accept=".xlsx, .xls, .csv" style="display: none;" onchange="window.importExcelData(this)">
-                                <button class="dcr-btn-filter" onclick="window.addNewStudentPrompt()">
+                                <input type="file" id="evalExcelFile" accept=".xlsx, .xls, .csv" style="display: none;" onchange="window.importEvalExcel(this)">
+                                <button class="dcr-btn-filter" onclick="window.addNewEvalStudent()">
                                     <i class="fa-solid fa-plus"></i> Add Student
                                 </button>
                             </div>
@@ -107,29 +107,29 @@
                                     <th style="text-align: center; width: 100px;">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="cpsclStudentTbody"></tbody>
+                            <tbody id="evalStudentTbody"></tbody>
                         </table>
                     </div>
                 </div>
 
                 <!-- SUB-SECTION 2: EXAM & PIN SETUP -->
-                <div id="cpscl-exam-sec" class="cpscl-sub-sec" style="display: none;">
+                <div id="eval-config-sec" class="eval-sub-sec" style="display: none;">
                     <div class="erp-form-card" style="max-width: 100%; padding: 16px; margin-bottom: 16px;">
                         <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
                             <div style="flex: 1; min-width: 180px;">
                                 <label style="font-size: 0.75rem; font-weight: 700; color: #64748b;">Exam Name</label>
-                                <input type="text" id="cpsclExTitle" value="${currentExam.title}" class="dcr-filter-input" style="width: 100%;">
+                                <input type="text" id="evalExTitle" value="${currentExam.title}" class="dcr-filter-input" style="width: 100%;">
                             </div>
                             <div style="width: 140px;">
                                 <label style="font-size: 0.75rem; font-weight: 700; color: #64748b;">Exam Date</label>
-                                <input type="text" id="cpsclExDate" value="${currentExam.date}" class="dcr-filter-input" style="width: 100%;">
+                                <input type="text" id="evalExDate" value="${currentExam.date}" class="dcr-filter-input" style="width: 100%;">
                             </div>
                             <div style="width: 100px;">
                                 <label style="font-size: 0.75rem; font-weight: 700; color: #64748b;">Full Marks</label>
-                                <input type="number" id="cpsclExMax" value="${currentExam.max}" class="dcr-filter-input" style="width: 100%;">
+                                <input type="number" id="evalExMax" value="${currentExam.max}" class="dcr-filter-input" style="width: 100%;">
                             </div>
-                            <button class="dcr-btn-filter" onclick="window.saveExamSettings()"><i class="fa-solid fa-save"></i> Save Exam</button>
-                            <button class="dcr-btn-filter" style="background: #0ea5e9;" onclick="window.copyEntryLink()"><i class="fa-solid fa-link"></i> Copy Teacher Link</button>
+                            <button class="dcr-btn-filter" onclick="window.saveEvalExamSettings()"><i class="fa-solid fa-save"></i> Save Exam</button>
+                            <button class="dcr-btn-filter" style="background: #0ea5e9;" onclick="window.copyEvalTeacherLink()"><i class="fa-solid fa-link"></i> Copy Teacher Link</button>
                         </div>
                     </div>
                     <div class="table-container" style="background:#fff;">
@@ -143,25 +143,25 @@
                                     <th style="text-align: center; width: 100px;">Control</th>
                                 </tr>
                             </thead>
-                            <tbody id="cpsclPinTbody"></tbody>
+                            <tbody id="evalPinTbody"></tbody>
                         </table>
                     </div>
                 </div>
 
                 <!-- SUB-SECTION 3: TABULATION & MERIT -->
-                <div id="cpscl-tab-sec" class="cpscl-sub-sec" style="display: none;">
+                <div id="eval-tab-sec" class="eval-sub-sec" style="display: none;">
                     <div class="erp-form-card no-print" style="max-width: 100%; padding: 14px; margin-bottom: 15px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <label style="font-size: 0.75rem; font-weight: 700; color: #64748b;">Select Group:</label>
-                                <select id="cpsclTabGroup" class="dcr-filter-input" onchange="window.renderTabulationSheet()">
+                                <select id="evalTabGroup" class="dcr-filter-input" onchange="window.renderEvalTabulation()">
                                     <option value="Science_Merit">Science (Combined Merit - SA, DH, SHO)</option>
                                     <option value="Humanities">Humanities</option>
                                     <option value="B.Studies">Business Studies</option>
                                 </select>
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                <button class="dcr-btn-filter" onclick="window.renderTabulationSheet()"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+                                <button class="dcr-btn-filter" onclick="window.renderEvalTabulation()"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
                                 <button class="dcr-btn-filter" style="background: #10b981;" onclick="window.print()"><i class="fa-solid fa-print"></i> Print PDF</button>
                             </div>
                         </div>
@@ -172,12 +172,12 @@
                         <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 15px;">
                             <h2 style="font-size: 1.3rem; font-weight: 800; text-transform: uppercase; margin: 0;">Cantonment Public School and College Lalmonirhat</h2>
                             <h4 style="font-size: 0.95rem; font-weight: 700; margin: 3px 0;">Performance Evaluation</h4>
-                            <p id="cpsclPrintMeta" style="font-size: 0.85rem; font-weight: 600; color: #475569; margin: 0;">Class: Ten (Science) • Date: 12 Sep 2026 • Combined Sections (SA, DH, SHO)</p>
+                            <p id="evalPrintMeta" style="font-size: 0.85rem; font-weight: 600; color: #475569; margin: 0;">Class: Ten (Science) • Date: 12 Sep 2026 • Combined Sections (SA, DH, SHO)</p>
                         </div>
                         <div class="table-container" style="border: 1px solid #000;">
-                            <table id="cpsclTabTable">
-                                <thead id="cpsclTabThead"></thead>
-                                <tbody id="cpsclTabTbody"></tbody>
+                            <table id="evalTabTable">
+                                <thead id="evalTabThead"></thead>
+                                <tbody id="evalTabTbody"></tbody>
                             </table>
                         </div>
                         <div style="display: flex; justify-content: space-between; margin-top: 50px; padding: 0 40px;">
@@ -192,67 +192,81 @@
         }
     }
 
-    // ==========================================================
-    // ২. সাব-সেকশন ন্যাভিগেশন কন্ট্রোল
-    // ==========================================================
-    window.switchCPSCLSubSection = function (secId) {
-        // মেনু হাইলাইট
+    // ড্রপডাউন খোলা ও বন্ধ করার টগল
+    window.toggleExamMenu = function (e) {
+        if (e) e.preventDefault();
+        const sub = document.getElementById('exam-submenu-list');
+        const chevron = document.getElementById('exam-chevron-icon');
+        const parent = document.getElementById('menu-exam-eval-parent');
+        if (!sub) return;
+
+        if (sub.style.display === 'flex') {
+            sub.style.display = 'none';
+            if (chevron) chevron.style.transform = 'rotate(0deg)';
+            if (parent) parent.classList.remove('open');
+        } else {
+            sub.style.display = 'flex';
+            sub.style.flexDirection = 'column';
+            if (chevron) chevron.style.transform = 'rotate(180deg)';
+            if (parent) parent.classList.add('open');
+        }
+    };
+
+    // সাব-সেকশন স্যুইচিং
+    window.switchExamSubSection = function (secId) {
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-        const pnl = document.getElementById('cpscl-view');
+        const pnl = document.getElementById('exam-eval-view');
         if (pnl) pnl.classList.add('active');
 
         const topTitle = document.getElementById('top-title');
-        if (topTitle) topTitle.innerText = "CPSCL Academic Evaluation";
+        if (topTitle) topTitle.innerText = "Exam Evaluation & Tabulation";
 
-        document.querySelectorAll('.cpscl-sub-sec').forEach(s => s.style.display = 'none');
+        document.querySelectorAll('.eval-sub-sec').forEach(s => s.style.display = 'none');
         const target = document.getElementById(secId);
         if (target) target.style.display = 'block';
 
-        if (secId === 'cpscl-student-sec') window.renderCpsclStudents();
-        if (secId === 'cpscl-exam-sec') window.renderCpsclPins();
-        if (secId === 'cpscl-tab-sec') window.renderTabulationSheet();
+        if (secId === 'eval-student-sec') window.renderEvalStudents();
+        if (secId === 'eval-config-sec') window.renderEvalPins();
+        if (secId === 'eval-tab-sec') window.renderEvalTabulation();
     };
 
     // ==========================================================
-    // ৩. ফায়ারবেস ডেটাবেজ সিঙ্ক (জিরো ওভাররাইট ও আজীবন সংরক্ষণ)
+    // ২. ফায়ারবেস ডেটা সিঙ্ক (আজীবন সংরক্ষিত ও নিরাপদ)
     // ==========================================================
-    function initFirebaseListeners() {
+    function initFirebaseSync() {
         if (!window.getDatabase || !window.ref) return;
         const db = window.getDatabase();
 
         import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(({ onValue }) => {
-            // ১. শিক্ষার্থী তালিকা
-            onValue(window.ref(db, 'cpscl/students'), (snap) => {
+            onValue(window.ref(db, 'evaluation_system/students'), (snap) => {
                 const val = snap.val();
                 studentsList = val ? Object.values(val) : [];
                 if (studentsList.length === 0) seedSampleData();
-                else window.renderCpsclStudents();
+                else window.renderEvalStudents();
             });
 
-            // ২. শিক্ষকদের পিন
-            onValue(window.ref(db, 'cpscl/pins'), (snap) => {
+            onValue(window.ref(db, 'evaluation_system/pins'), (snap) => {
                 subjectPins = snap.val() || {};
-                window.renderCpsclPins();
+                window.renderEvalPins();
             });
 
-            // ৩. পরীক্ষার নম্বরসমূহ (আলাদা আলাদা পাথে সংরক্ষিত)
-            onValue(window.ref(db, `cpscl/marks/${currentExam.id}`), (snap) => {
+            onValue(window.ref(db, `evaluation_system/marks/${currentExam.id}`), (snap) => {
                 examMarks = snap.val() || {};
-                window.renderTabulationSheet();
+                window.renderEvalTabulation();
             });
         });
     }
 
     // ==========================================================
-    // ৪. স্টুডেন্ট রেন্ডার ও এক্সেল ইমপোর্ট
+    // ৩. রেন্ডারিং ও ফাংশনালিটি
     // ==========================================================
-    window.renderCpsclStudents = function () {
-        const tbody = document.getElementById('cpsclStudentTbody');
+    window.renderEvalStudents = function () {
+        const tbody = document.getElementById('evalStudentTbody');
         if (!tbody) return;
         tbody.innerHTML = '';
 
-        const grp = document.getElementById('cpsclFilterGroup').value;
-        const q = (document.getElementById('cpsclSearchInp').value || '').toLowerCase().trim();
+        const grp = document.getElementById('evalFilterGroup').value;
+        const q = (document.getElementById('evalSearchInp').value || '').toLowerCase().trim();
 
         let list = studentsList.filter(s => {
             let mGrp = true;
@@ -276,15 +290,14 @@
                 <td>${s.group}</td>
                 <td><span class="badge badge-success">${s.section || 'A'}</span></td>
                 <td style="text-align:center;">
-                    <button class="btn-action btn-delete" onclick="window.deleteStudent('${s.id}')"><i class="fa-solid fa-trash"></i></button>
+                    <button class="btn-action btn-delete" onclick="window.deleteEvalStudent('${s.id}')"><i class="fa-solid fa-trash"></i></button>
                 </td>
             `;
             tbody.appendChild(tr);
         });
     };
 
-    // এক্সেল শিট আপলোড
-    window.importExcelData = function (input) {
+    window.importEvalExcel = function (input) {
         if (!input.files || !input.files[0]) return;
         const reader = new FileReader();
         reader.onload = async function (e) {
@@ -293,7 +306,7 @@
                 const wb = XLSX.read(data, { type: 'array' });
                 const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
 
-                if (window.showLoader) window.showLoader("Saving students to Firebase...");
+                if (window.showLoader) window.showLoader("Saving students...");
 
                 for (let r of rows) {
                     const stdId = String(r['Std ID'] || r['ID'] || r['Student ID'] || Date.now() + Math.floor(Math.random()*1000));
@@ -305,45 +318,41 @@
                         section: r['Sec'] || r['Section'] || 'SA',
                         created: new Date().toISOString()
                     };
-                    // সারাজীবনের জন্য সুরক্ষিত ইউনিক পাথ
-                    await window.writeToFirebase(`cpscl/students/${stdId}`, obj);
+                    await window.writeToFirebase(`evaluation_system/students/${stdId}`, obj);
                 }
 
                 if (window.hideLoader) window.hideLoader();
-                if (window.showToast) window.showToast("Students imported successfully!", "success");
+                if (window.showToast) window.showToast("Students imported!", "success");
                 input.value = '';
             } catch (err) {
                 if (window.hideLoader) window.hideLoader();
-                alert("Error importing Excel: " + err.message);
+                alert("Error: " + err.message);
             }
         };
         reader.readAsArrayBuffer(input.files[0]);
     };
 
-    window.deleteStudent = function (id) {
+    window.deleteEvalStudent = function (id) {
         if (confirm("Delete student ID " + id + "?")) {
-            window.writeToFirebase(`cpscl/students/${id}`, null);
+            window.writeToFirebase(`evaluation_system/students/${id}`, null);
         }
     };
 
-    window.addNewStudentPrompt = async function () {
-        const id = prompt("Enter Student ID (e.g. 702723):");
+    window.addNewEvalStudent = async function () {
+        const id = prompt("Student ID:");
         if (!id) return;
-        const name = prompt("Enter Student Name:");
-        const roll = prompt("Enter Roll:");
-        const grp = prompt("Enter Group (Science / Humanities / B.Studies):", "Science");
-        const sec = prompt("Enter Section (SA / DH / SHO):", "SA");
+        const name = prompt("Student Name:");
+        const roll = prompt("Roll:");
+        const grp = prompt("Group (Science / Humanities / B.Studies):", "Science");
+        const sec = prompt("Section (SA / DH / SHO):", "SA");
 
         const obj = { id, name, roll: parseInt(roll)||1, group: grp, section: sec };
-        await window.writeToFirebase(`cpscl/students/${id}`, obj);
-        if (window.showToast) window.showToast("Student Added!", "success");
+        await window.writeToFirebase(`evaluation_system/students/${id}`, obj);
+        if (window.showToast) window.showToast("Added!", "success");
     };
 
-    // ==========================================================
-    // ৫. পরীক্ষা ও শিক্ষক পিন কন্ট্রোল
-    // ==========================================================
-    window.renderCpsclPins = function () {
-        const tbody = document.getElementById('cpsclPinTbody');
+    window.renderEvalPins = function () {
+        const tbody = document.getElementById('evalPinTbody');
         if (!tbody) return;
         tbody.innerHTML = '';
 
@@ -367,7 +376,7 @@
                 <td><span class="badge ${p ? 'badge-success' : 'badge-danger'}">${p ? 'Active' : 'Pending'}</span></td>
                 <td><strong style="letter-spacing: 2px;">${p || '----'}</strong></td>
                 <td style="text-align:center;">
-                    <button class="btn-action btn-delete" onclick="window.resetPin('${s.key}')" ${!p ? 'disabled style="opacity:0.3;"' : ''}>
+                    <button class="btn-action btn-delete" onclick="window.resetEvalPin('${s.key}')" ${!p ? 'disabled style="opacity:0.3;"' : ''}>
                         <i class="fa-solid fa-rotate-left"></i> Reset
                     </button>
                 </td>
@@ -376,53 +385,49 @@
         });
     };
 
-    window.resetPin = async function (k) {
-        if (confirm("Reset PIN for " + k + "? Teacher can set a new PIN.")) {
-            await window.writeToFirebase(`cpscl/pins/${k}`, null);
+    window.resetEvalPin = async function (k) {
+        if (confirm("Reset PIN for " + k + "?")) {
+            await window.writeToFirebase(`evaluation_system/pins/${k}`, null);
             if (window.showToast) window.showToast("PIN Reset for " + k, "info");
         }
     };
 
-    window.saveExamSettings = async function () {
-        currentExam.title = document.getElementById('cpsclExTitle').value;
-        currentExam.date = document.getElementById('cpsclExDate').value;
-        currentExam.max = parseFloat(document.getElementById('cpsclExMax').value) || 15;
-        await window.writeToFirebase(`cpscl/exams/${currentExam.id}`, currentExam);
-        if (window.showToast) window.showToast("Exam settings saved!", "success");
+    window.saveEvalExamSettings = async function () {
+        currentExam.title = document.getElementById('evalExTitle').value;
+        currentExam.date = document.getElementById('evalExDate').value;
+        currentExam.max = parseFloat(document.getElementById('evalExMax').value) || 15;
+        await window.writeToFirebase(`evaluation_system/exams/${currentExam.id}`, currentExam);
+        if (window.showToast) window.showToast("Exam saved!", "success");
     };
 
-    window.copyEntryLink = function () {
+    window.copyEvalTeacherLink = function () {
         const url = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + "teacher_mobile_entry.html";
         navigator.clipboard.writeText(url).then(() => {
-            if (window.showToast) window.showToast("Teacher mobile entry link copied!", "success");
+            if (window.showToast) window.showToast("Copied Link!", "success");
             else alert("Copied: " + url);
         });
     };
 
-    // ==========================================================
-    // ৬. টেবুলেশন ও বিজ্ঞান মেধা তালিকা (Auto Merit Sorting)
-    // ==========================================================
-    window.renderTabulationSheet = function () {
-        const grp = document.getElementById('cpsclTabGroup').value;
-        const thead = document.getElementById('cpsclTabThead');
-        const tbody = document.getElementById('cpsclTabTbody');
-        const meta = document.getElementById('cpsclPrintMeta');
+    window.renderEvalTabulation = function () {
+        const grp = document.getElementById('evalTabGroup').value;
+        const thead = document.getElementById('evalTabThead');
+        const tbody = document.getElementById('evalTabTbody');
+        const meta = document.getElementById('evalPrintMeta');
         if (!thead || !tbody) return;
 
         if (grp === 'Humanities') {
             meta.innerText = "Class: Ten (Humanities) • Date: " + currentExam.date + " • 22 Students";
-            buildGroupReport('Humanities', 135, SUBJECTS.Humanities, thead, tbody);
+            buildGroupTable('Humanities', 135, SUBJECTS.Humanities, thead, tbody);
         } else if (grp === 'B.Studies') {
             meta.innerText = "Class: Ten (B.Studies) • Date: " + currentExam.date + " • 5 Students";
-            buildGroupReport('B.Studies', 120, SUBJECTS.BStudies, thead, tbody);
+            buildGroupTable('B.Studies', 120, SUBJECTS.BStudies, thead, tbody);
         } else {
-            // Science: SA, DH, SHO কম্বাইন্ড মেধা তালিকা
             meta.innerText = "Class: Ten (Science) • Date: " + currentExam.date + " • Combined Sections (SA, DH, SHO)";
-            buildScienceReport(thead, tbody);
+            buildScienceTable(thead, tbody);
         }
     };
 
-    function buildScienceReport(thead, tbody) {
+    function buildScienceTable(thead, tbody) {
         const subs = SUBJECTS.Science;
         thead.innerHTML = `
             <tr style="background:#f1f5f9;">
@@ -438,16 +443,15 @@
 
         let list = studentsList.filter(s => s.group === 'Science' || ['SA', 'DH', 'SHO'].includes(s.section));
         let computed = list.map(s => {
-            const marksObj = examMarks[s.id] || {};
+            const m = examMarks[s.id] || {};
             let total = 0;
             subs.forEach(sb => {
-                const val = parseFloat(marksObj[sb.key]);
-                if (!isNaN(val)) total += val;
+                const v = parseFloat(m[sb.key]);
+                if (!isNaN(v)) total += v;
             });
-            return { ...s, total, marks: marksObj };
+            return { ...s, total, marks: m };
         });
 
-        // মোট নম্বরের ভিত্তিতে ১ থেকে ১৪৬তম মেধা তালিকায় সর্টিং
         computed.sort((a, b) => b.total - a.total);
 
         tbody.innerHTML = '';
@@ -466,7 +470,7 @@
         });
     }
 
-    function buildGroupReport(grpName, maxTot, subs, thead, tbody) {
+    function buildGroupTable(grpName, maxTot, subs, thead, tbody) {
         thead.innerHTML = `
             <tr style="background:#f1f5f9;">
                 <th style="border:1px solid #000; padding:6px; width:45px;">SL</th>
@@ -480,13 +484,13 @@
 
         let list = studentsList.filter(s => s.group === grpName);
         let computed = list.map(s => {
-            const marksObj = examMarks[s.id] || {};
+            const m = examMarks[s.id] || {};
             let total = 0;
             subs.forEach(sb => {
-                const val = parseFloat(marksObj[sb.key]);
-                if (!isNaN(val)) total += val;
+                const v = parseFloat(m[sb.key]);
+                if (!isNaN(v)) total += v;
             });
-            return { ...s, total, marks: marksObj };
+            return { ...s, total, marks: m };
         });
 
         computed.sort((a, b) => b.total - a.total);
@@ -506,7 +510,6 @@
         });
     }
 
-    // প্রাথমিক স্যাম্পল ডাটা (আপনার পিডিএফের আসল ছাত্ররা)
     async function seedSampleData() {
         const demos = [
             { id: "702723", roll: 1, name: "Md. Nahiduzzaman Arik", group: "Science", section: "SA" },
@@ -519,14 +522,19 @@
             { id: "602322", roll: 1, name: "Md. Israfil Hossain Nehal", group: "B.Studies", section: "A" }
         ];
         for (let d of demos) {
-            await window.writeToFirebase(`cpscl/students/${d.id}`, d);
+            await window.writeToFirebase(`evaluation_system/students/${d.id}`, d);
         }
     }
 
-    // পেজ লোড হলে স্বয়ংক্রিয় স্টার্ট
-    window.addEventListener('DOMContentLoaded', () => {
-        injectCPSCLModule();
-        setTimeout(initFirebaseListeners, 800);
-    });
+    // স্বয়ংক্রিয় লোডার (Page ready)
+    function runModule() {
+        injectExamModule();
+        setTimeout(initFirebaseSync, 1000);
+    }
 
+    if (document.readyState === 'loading') {
+        window.addEventListener('DOMContentLoaded', runModule);
+    } else {
+        runModule();
+    }
 })();
