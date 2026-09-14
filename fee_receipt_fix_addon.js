@@ -160,11 +160,8 @@
                     receivedBy: collectorName
                 };
 
-                // ৪. ডাটাবেজে রেকর্ড সেভ করা
-                const txSnap = await fb.get(fb.ref(fb.db, 'erp/feeTransactions'));
-                let currentTxList = txSnap.val() ? (Array.isArray(txSnap.val()) ? txSnap.val() : Object.values(txSnap.val())) : [];
-                currentTxList.unshift(newTransaction);
-                await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), currentTxList);
+               // ৪. ডাটাবেজে রেকর্ড সেভ করা
+                await fb.set(fb.ref(fb.db, 'erp/feeTransactions/' + newTransaction.id), newTransaction);
 
                 if (typeof showToast === 'function') {
                     showToast(`Fee recorded successfully! (Receipt #${verifiedReceiptNo})`, "success");
@@ -206,7 +203,41 @@
     }
 
     // মূল মডিউল লোড হওয়া শেষ হলে স্বয়ংক্রিয়ভাবে প্যাচ সংযুক্ত হবে
+    // স্বয়ংক্রিয় ডাটাবেস ঠিক করার ফাংশন (কোনো ডাটা হারাবে না)
+    async function repairFirebaseDataStructure() {
+        try {
+            const fb = await getFirebaseInstance();
+            if (!fb) return;
+
+            const snap = await fb.get(fb.ref(fb.db, 'erp/feeTransactions'));
+            if (!snap.exists()) return;
+
+            const rawData = snap.val();
+            const keys = Object.keys(rawData);
+            const hasNumericKeys = keys.some(k => !isNaN(parseInt(k)) && String(parseInt(k)) === k);
+
+            if (!hasNumericKeys) return; // ইতিমধ্যে ঠিক থাকলে কিছু করবে না
+
+            const items = Array.isArray(rawData) ? rawData : Object.values(rawData);
+            const cleanedMap = {};
+
+            items.forEach((item, index) => {
+                if (item) {
+                    const safeId = item.id || ('EDU-' + (Date.now() + index));
+                    item.id = safeId;
+                    cleanedMap[safeId] = item;
+                }
+            });
+
+            await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), cleanedMap);
+            console.log("Database perfectly organized!");
+        } catch (e) {
+            console.error("Auto repair error:", e);
+        }
+    }
+
     window.addEventListener('load', () => {
         setTimeout(attachReceiptFixPatch, 300);
+        setTimeout(repairFirebaseDataStructure, 2000);
     });
 })();
