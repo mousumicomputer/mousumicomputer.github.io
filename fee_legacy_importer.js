@@ -146,20 +146,8 @@
 
             const nextReceiptNo = String(maxReceipt + 1);
 
-            // নতুন তৈরি হওয়া রেকর্ডের রসিদ নম্বর ৩৬০১+ নিশ্চিত করা
-            setTimeout(async () => {
-                const latestSnap = await fb.get(fb.ref(fb.db, 'erp/feeTransactions'));
-                if (latestSnap.exists()) {
-                    let currentList = Array.isArray(latestSnap.val()) ? latestSnap.val() : Object.values(latestSnap.val());
-                    if (currentList.length > 0) {
-                        const firstTx = currentList[0];
-                        if (parseInt(firstTx.receiptNo) < 3601) {
-                            firstTx.receiptNo = nextReceiptNo;
-                            await fb.set(fb.ref(fb.db, 'erp/feeTransactions'), currentList);
-                        }
-                    }
-                }
-            }, 100);
+            // রসিদ নম্বর অলরেডি fee_receipt_fix_addon দ্বারা নির্ভুলভাবে সেট হচ্ছে
+
         }, true);
     }
 
