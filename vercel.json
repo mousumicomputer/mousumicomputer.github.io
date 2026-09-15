@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/teacher_mobile_entry.html" }
+  ]
+}
