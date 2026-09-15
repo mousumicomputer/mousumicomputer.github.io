@@ -2,9 +2,117 @@
  * CPSCL Academic Evaluation Module - Bulletproof Multi-Department Manager
  * File: cpscl_evaluation.js
  * Explicit Department Routing & Zero Data Contamination
+ * UI: Professional Academic Theme with Tiro Bangla Google Font
  */
 
 (function () {
+    // ==========================================================
+    // ১. গুগল ফন্ট ও আধুনিক মার্জিত স্টাইল ইনজেকশন
+    // ==========================================================
+    const evalStyle = document.createElement('style');
+    evalStyle.innerHTML = `
+        @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap');
+
+        #exam-eval-view, #exam-eval-view *, #evalUploadModal, #evalUploadModal * {
+            font-family: 'Tiro Bangla', serif !important;
+            box-sizing: border-box;
+        }
+
+        /* ১. স্লিম ও কমপ্যাক্ট পরিসংখ্যান রিবন */
+        .eval-stats-ribbon {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .eval-stat-item {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #94a3b8;
+            border-radius: 8px;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            transition: 0.15s ease;
+        }
+        .eval-stat-item:hover { background: #fbfcfe; border-color: #cbd5e1; }
+        .eval-stat-item.active { border-left-color: #1e40af; background: #eff6ff; border-color: #bfdbfe; }
+        .eval-stat-title { font-size: 0.72rem; text-transform: uppercase; color: #64748b; font-weight: 600; letter-spacing: 0.5px; }
+        .eval-stat-meta { font-size: 0.68rem; color: #94a3b8; }
+        .eval-stat-num { font-size: 1.35rem; font-weight: 700; color: #0f172a; }
+
+        /* ২. মূল কার্ড ও কন্ট্রোল বার */
+        .eval-main-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.03); }
+        .eval-ctrl-bar {
+            padding: 8px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: #ffffff;
+        }
+        .eval-tab-group { display: flex; background: #f1f5f9; padding: 3px; border-radius: 6px; gap: 2px; }
+        .eval-tab-btn {
+            border: none; background: transparent; padding: 5px 12px; border-radius: 5px;
+            font-size: 0.78rem; font-weight: 600; color: #64748b; cursor: pointer; transition: 0.15s; white-space: nowrap;
+        }
+        .eval-tab-btn:hover { color: #0f172a; }
+        .eval-tab-btn.active { background: #ffffff; color: #1e40af; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+        
+        .eval-search-wrap { position: relative; width: 220px; }
+        .eval-search-wrap i { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; }
+        .eval-search-inp { width: 100%; padding: 5px 10px 5px 28px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.78rem; outline: none; }
+        .eval-search-inp:focus { border-color: #1e40af; }
+
+        .btn-eval-upload-open {
+            background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 5px 12px;
+            border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.15s;
+        }
+        .btn-eval-upload-open:hover { background: #dbeafe; }
+
+        /* ৩. মার্জিত টেবিল ও ব্যাজ */
+        .eval-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        .eval-table thead tr { background: #f8fafc; border-bottom: 1.5px solid #cbd5e1; }
+        .eval-table th { padding: 8px 12px; text-align: left; font-size: 0.70rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.6px; white-space: nowrap; }
+        .eval-table td { padding: 7px 12px; border-bottom: 1px solid #f1f5f9; color: #0f172a; vertical-align: middle; white-space: nowrap; }
+        .eval-table tbody tr:hover { background-color: #f8faff; }
+
+        .sec-sa  { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+        .sec-dh  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .sec-sho { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+        .sec-hum { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+        .sec-bs  { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        /* ৪. আপলোড ইঞ্জিন মডাল (Upload Engine Modal) */
+        .eval-modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; z-index: 999999;
+        }
+        .eval-modal-card {
+            background: #ffffff; border-radius: 14px; width: 100%; max-width: 440px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); padding: 22px; animation: evalPop 0.2s ease-out;
+        }
+        @keyframes evalPop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .eval-dropzone {
+            border: 2px dashed #93c5fd; border-radius: 10px; background: #f8fafc; padding: 24px 16px;
+            text-align: center; cursor: pointer; transition: 0.15s ease; margin-top: 10px;
+        }
+        .eval-dropzone:hover, .eval-dropzone.dragover { border-color: #1e40af; background: #eff6ff; }
+        .btn-eval-upload-now {
+            width: 100%; margin-top: 16px; padding: 10px; background: #e2e8f0; color: #94a3b8;
+            border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: not-allowed; transition: 0.15s;
+        }
+        .btn-eval-upload-now.active { background: #1e40af; color: white; cursor: pointer; box-shadow: 0 3px 8px rgba(30,64,175,0.25); }
+        .btn-eval-upload-now.active:hover { background: #1e3a8a; }
+    `;
+    document.head.appendChild(evalStyle);
+
     const SUBJECTS_CONFIG = {
         Science: [
             { key: 'B1', name: 'B1' }, { key: 'B2', name: 'B2' },
@@ -35,7 +143,12 @@
     let examMarks = {};
     let subjectPins = {};
     let currentExam = { id: "exam_fn02_2026", title: "Fortnightly Test-02", date: "15 Sep 2026", max: 15 };
+    let currentEvalFilter = 'All';
+    let evalChosenFile = null;
 
+    // ==========================================================
+    // ২. মডিউল ইনজেকশন ও মূল লেআউট নির্মাণ
+    // ==========================================================
     function injectExamModule() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList) return;
@@ -65,61 +178,95 @@
             viewDiv.className = 'view-panel';
             viewDiv.id = 'exam-eval-view';
             viewDiv.innerHTML = `
-                <!-- SUB-SECTION 1: STUDENT DATABASE -->
+                <!-- SUB-SECTION 1: STUDENT DATABASE (REDESIGNED) -->
                 <div id="eval-student-sec" class="eval-sub-sec">
-                    <div class="erp-form-card" style="max-width: 100%; padding: 14px; margin-bottom: 15px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                            <div style="display: flex; gap: 8px; align-items: center;">
-                                <label style="font-size:0.75rem; font-weight:700; color:#64748b;">View:</label>
-                                <select id="evalFilterGroup" class="dcr-filter-input" onchange="window.renderEvalStudents()">
-                                    <option value="All">All Students (Total Database)</option>
-                                    <option value="Science">Science (All Combined: 146)</option>
-                                    <option value="Group-A">Science (Group-A: 56)</option>
-                                    <option value="Group-B">Science (Group-B: 50)</option>
-                                    <option value="Group-C">Science (Group-C: 40)</option>
-                                    <option value="Humanities">Humanities (22)</option>
-                                    <option value="B.Studies">Business Studies (5)</option>
-                                </select>
-                                <input type="text" id="evalSearchInp" class="dcr-filter-input" placeholder="Search ID, Name, Roll..." oninput="window.renderEvalStudents()" style="width: 200px;">
+                    
+                    <!-- স্লিম পরিসংখ্যান রিবন -->
+                    <div class="eval-stats-ribbon">
+                        <div class="eval-stat-item active" id="statCardAll" style="border-left-color: #2563eb;" onclick="window.filterEvalByTab('All')">
+                            <div>
+                                <div class="eval-stat-title">Total Database</div>
+                                <div class="eval-stat-meta">Active Records</div>
                             </div>
-                            
-                            <!-- নিখুঁত ও নিরাপদ আপলোড বার -->
-                            <div style="display: flex; gap: 8px; align-items: center; background: #f8fafc; padding: 6px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                                <label style="font-size:0.75rem; font-weight:800; color:#0f172a;">Upload For:</label>
-                                <select id="evalUploadTargetGroup" class="dcr-filter-input" style="font-weight:700; border-color:#4f46e5;">
-                                    <option value="Science">Science (3 Sheets: A, B, C)</option>
-                                    <option value="Humanities">Humanities (মানবিক)</option>
-                                    <option value="B.Studies">Business Studies (ব্যবসায় শিক্ষা)</option>
-                                </select>
-                                <button class="dcr-btn-filter" style="background: #10b981;" onclick="document.getElementById('evalExcelFile').click()">
-                                    <i class="fa-solid fa-file-excel"></i> Select & Upload
-                                </button>
-                                <input type="file" id="evalExcelFile" accept=".xlsx, .xls, .csv" style="display: none;" onchange="window.importUniversalExcel(this)">
+                            <div class="eval-stat-num" id="statValTotal">0</div>
+                        </div>
+
+                        <div class="eval-stat-item" id="statCardSci" style="border-left-color: #4f46e5;" onclick="window.filterEvalByTab('Science')">
+                            <div>
+                                <div class="eval-stat-title">Science Stream</div>
+                                <div class="eval-stat-meta" id="statSciBreakdown">A: 0 | B: 0 | C: 0</div>
                             </div>
+                            <div class="eval-stat-num" id="statValSci">0</div>
+                        </div>
+
+                        <div class="eval-stat-item" id="statCardHum" style="border-left-color: #d97706;" onclick="window.filterEvalByTab('Humanities')">
+                            <div>
+                                <div class="eval-stat-title">Humanities</div>
+                                <div class="eval-stat-meta">General Arts</div>
+                            </div>
+                            <div class="eval-stat-num" id="statValHum">0</div>
+                        </div>
+
+                        <div class="eval-stat-item" id="statCardBs" style="border-left-color: #059669;" onclick="window.filterEvalByTab('B.Studies')">
+                            <div>
+                                <div class="eval-stat-title">Business Studies</div>
+                                <div class="eval-stat-meta">Commerce Group</div>
+                            </div>
+                            <div class="eval-stat-num" id="statValBs">0</div>
                         </div>
                     </div>
 
-                    <div class="table-container" style="background:#fff;">
-                        <table>
-                            <thead>
-                                <tr style="background: #f8fafc;">
-                                    <th style="width: 70px; text-align:center;">SL (ক্রমিক)</th>
-                                    <th style="width: 100px; text-align:center;">Student ID</th>
-                                    <th style="text-align: left; padding-left: 15px;">Student Name</th>
-                                    <th style="width: 70px; text-align:center;">Roll</th>
-                                    <th style="width: 70px; text-align:center;">Sec</th>
-                                    <th style="text-align:center;">Group</th>
-                                    <th style="text-align:center;">Position</th>
-                                </tr>
-                            </thead>
-                            <tbody id="evalStudentTbody"></tbody>
-                        </table>
+                    <!-- মূল বক্স ও টেবিল -->
+                    <div class="eval-main-box">
+                        <div class="eval-ctrl-bar">
+                            <div class="eval-tab-group">
+                                <button class="eval-tab-btn active" onclick="window.filterEvalByTab('All', this)">All Students</button>
+                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('Science', this)">Science (146)</button>
+                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('Group-A', this)">Group-A (56)</button>
+                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('Group-B', this)">Group-B (50)</button>
+                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('Group-C', this)">Group-C (40)</button>
+                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('Humanities', this)">Humanities (22)</button>
+                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('B.Studies', this)">B.Studies (5)</button>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="eval-search-wrap">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <input type="text" id="evalSearchInp" class="eval-search-inp" placeholder="Search ID, Name, Roll..." oninput="window.renderEvalStudents()">
+                                </div>
+                                <button class="btn-eval-upload-open" onclick="window.openEvalUploadModal()">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> <span>Import Excel</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="padding: 6px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; font-size: 0.75rem; color: #64748b;">
+                            <div>Showing: <strong id="evalShowingCount" style="color: #1e40af;">0</strong> Students in current view</div>
+                            <div style="font-size: 0.72rem; color: #94a3b8;">CPSCL Evaluation Module • Live Firebase Sync</div>
+                        </div>
+
+                        <div style="overflow-x: auto;">
+                            <table class="eval-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px; text-align:center;">SL</th>
+                                        <th style="width: 110px;">Student ID</th>
+                                        <th>Student Full Name</th>
+                                        <th style="width: 60px; text-align:center;">Roll</th>
+                                        <th style="width: 70px; text-align:center;">Sec</th>
+                                        <th style="width: 120px;">Group</th>
+                                        <th style="width: 100px; text-align:center;">Position</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="evalStudentTbody"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
                 <!-- SUB-SECTION 2: EXAM & PIN SETUP -->
                 <div id="eval-config-sec" class="eval-sub-sec" style="display: none;">
-                    <div class="erp-form-card" style="max-width: 100%; padding: 16px; margin-bottom: 16px;">
+                    <div class="erp-form-card" style="max-width: 100%; padding: 16px; margin-bottom: 16px; background:#fff; border-radius:10px; border:1px solid #e2e8f0;">
                         <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
                             <div style="flex: 1; min-width: 180px;">
                                 <label style="font-size: 0.75rem; font-weight: 700; color: #64748b;">Exam Name</label>
@@ -133,10 +280,10 @@
                             <button class="dcr-btn-filter" style="background: #0ea5e9;" onclick="window.copyEvalTeacherLink()"><i class="fa-solid fa-link"></i> Copy Teacher Link</button>
                         </div>
                     </div>
-                    <div class="table-container" style="background:#fff;">
-                        <table>
+                    <div class="table-container" style="background:#fff; border-radius:10px; border:1px solid #e2e8f0; overflow:hidden;">
+                        <table class="eval-table">
                             <thead>
-                                <tr style="background: #f8fafc;">
+                                <tr>
                                     <th style="text-align: left; padding-left: 15px;">Subject Name</th>
                                     <th>Status</th>
                                     <th>Teacher Secret PIN</th>
@@ -150,7 +297,7 @@
 
                 <!-- SUB-SECTION 3: TABULATION & MERIT -->
                 <div id="eval-tab-sec" class="eval-sub-sec" style="display: none;">
-                    <div class="erp-form-card no-print" style="max-width: 100%; padding: 14px; margin-bottom: 15px;">
+                    <div class="erp-form-card no-print" style="max-width: 100%; padding: 14px; margin-bottom: 15px; background:#fff; border-radius:10px; border:1px solid #e2e8f0;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <label style="font-size: 0.75rem; font-weight: 700; color: #64748b;">View Group Sheet:</label>
@@ -159,8 +306,8 @@
                                     <option value="Group-A">Science (Group-A: 56)</option>
                                     <option value="Group-B">Science (Group-B: 50)</option>
                                     <option value="Group-C">Science (Group-C: 40)</option>
-                                    <option value="Humanities">Humanities (মানবিক - ২২ জন)</option>
-                                    <option value="B.Studies">Business Studies (ব্যবসায় শিক্ষা - ৫ জন)</option>
+                                    <option value="Humanities">Humanities (22 Students)</option>
+                                    <option value="B.Studies">Business Studies (5 Students)</option>
                                 </select>
                             </div>
                             <div style="display: flex; gap: 8px;">
@@ -189,11 +336,117 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- ৪. আপলোড ইঞ্জিন মডাল পপ-আপ -->
+                <div class="eval-modal-overlay" id="evalUploadModal" onclick="if(event.target === this) window.closeEvalUploadModal()">
+                    <div class="eval-modal-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                            <div style="font-size: 1.05rem; font-weight: 700; color: #0f172a;"><i class="fa-solid fa-file-excel text-success"></i> Upload File</div>
+                            <button style="background:transparent; border:none; font-size:1.1rem; color:#94a3b8; cursor:pointer;" onclick="window.closeEvalUploadModal()"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+
+                        <div style="margin-bottom: 14px;">
+                            <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 5px; display: block;">Target Stream / Department:</label>
+                            <select id="evalUploadTargetGroup" style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.82rem; font-weight: 600; outline:none; background:#fff;">
+                                <option value="Science">Science (3 Sheets: Group-A, B, C)</option>
+                                <option value="Humanities">Humanities (22 Students)</option>
+                                <option value="B.Studies">Business Studies (5 Students)</option>
+                            </select>
+                        </div>
+
+                        <div class="eval-dropzone" id="evalDropzone" onclick="document.getElementById('evalExcelFile').click()">
+                            <div style="font-size: 2.2rem; color: #f59e0b; margin-bottom: 6px;"><i class="fa-solid fa-folder-open"></i></div>
+                            <div style="font-size: 0.82rem; color: #475569; margin-bottom: 8px; font-weight: 600;">Drag & drop files here or</div>
+                            <button type="button" style="background:#2563eb; color:white; border:none; padding:6px 18px; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;" onclick="event.stopPropagation(); document.getElementById('evalExcelFile').click()">Browse</button>
+                            <input type="file" id="evalExcelFile" accept=".xlsx, .xls, .csv" style="display: none;" onchange="window.handleEvalFileSelected(this.files[0])">
+                        </div>
+
+                        <div id="evalFileStatusBox" style="display:none; align-items:center; justify-content:space-between; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:8px 12px; margin-top:12px; font-size:0.78rem;">
+                            <span id="evalSelectedFileName" style="font-weight:700; color:#0f172a; max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+                            <i class="fa-solid fa-circle-check text-success"></i>
+                        </div>
+
+                        <button type="button" class="btn-eval-upload-now" id="evalUploadNowBtn" onclick="window.triggerEvalUpload()">Upload Now</button>
+                    </div>
+                </div>
             `;
             mainWrapper.appendChild(viewDiv);
+            setupDropzoneListeners();
         }
     }
 
+    // ==========================================================
+    // ৩. ড্রপজোন এবং মডাল হ্যান্ডলার
+    // ==========================================================
+    window.openEvalUploadModal = function () {
+        const modal = document.getElementById('evalUploadModal');
+        if (modal) modal.style.display = 'flex';
+    };
+
+    window.closeEvalUploadModal = function () {
+        const modal = document.getElementById('evalUploadModal');
+        if (modal) modal.style.display = 'none';
+        evalChosenFile = null;
+        const statusBox = document.getElementById('evalFileStatusBox');
+        if (statusBox) statusBox.style.display = 'none';
+        const btn = document.getElementById('evalUploadNowBtn');
+        if (btn) {
+            btn.classList.remove('active');
+            btn.innerText = 'Upload Now';
+        }
+    };
+
+    window.handleEvalFileSelected = function (file) {
+        if (!file) return;
+        evalChosenFile = file;
+        const nameEl = document.getElementById('evalSelectedFileName');
+        const box = document.getElementById('evalFileStatusBox');
+        const btn = document.getElementById('evalUploadNowBtn');
+
+        if (nameEl) nameEl.innerText = file.name;
+        if (box) box.style.display = 'flex';
+        if (btn) {
+            btn.classList.add('active');
+            btn.innerText = `Upload Now (${file.name})`;
+        }
+    };
+
+    window.triggerEvalUpload = function () {
+        if (!evalChosenFile) return;
+        window.importUniversalExcel({ files: [evalChosenFile], value: '' });
+        window.closeEvalUploadModal();
+    };
+
+    function setupDropzoneListeners() {
+        setTimeout(() => {
+            const dz = document.getElementById('evalDropzone');
+            if (!dz) return;
+
+            ['dragenter', 'dragover'].forEach(name => {
+                dz.addEventListener(name, (e) => {
+                    e.preventDefault();
+                    dz.classList.add('dragover');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(name => {
+                dz.addEventListener(name, (e) => {
+                    e.preventDefault();
+                    dz.classList.remove('dragover');
+                });
+            });
+
+            dz.addEventListener('drop', (e) => {
+                if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    window.handleEvalFileSelected(e.dataTransfer.files[0]);
+                }
+            });
+        }, 600);
+    }
+
+    // ==========================================================
+    // ৪. সাব-সেকশন স্যুইচিং ও মেনু টগল
+    // ==========================================================
     window.toggleExamMenu = function (e) {
         if (e) e.preventDefault();
         const sub = document.getElementById('exam-submenu-list');
@@ -227,14 +480,15 @@
     };
 
     // ==========================================================
-    // ২. ১০০% নিরাপদ বিভাগভিত্তিক আপলোডার (কখনোই ডেটা ওভাররাইট হবে না)
+    // ৫. ১০০% নিরাপদ বিভাগভিত্তিক আপলোডার (জিরো ডেটা লস)
     // ==========================================================
     window.importUniversalExcel = function (input) {
         if (!input.files || !input.files[0]) return;
         const file = input.files[0];
         const reader = new FileReader();
 
-        const targetGroup = document.getElementById('evalUploadTargetGroup').value;
+        const targetGroupEl = document.getElementById('evalUploadTargetGroup');
+        const targetGroup = targetGroupEl ? targetGroupEl.value : 'Science';
 
         reader.onload = async function (e) {
             try {
@@ -371,22 +625,22 @@
                 }
 
                 if (count > 0) {
-                    // ★★★ পারফেক্ট মার্জ সিস্টেম: অন্য গ্রুপের কাউকে স্পর্শ করবে না ★★★
+                    // ★★★ কোনো অবস্থাতেই অন্য বিভাগের কোনো ছাত্রের ক্ষতি হবে না ★★★
                     const finalMerged = {};
                     
-                    // ১. বর্তমান ডেটাবেজের অন্যান্য গ্রুপের ছাত্রদের অক্ষত রাখা
+                    // ১. ডেটাবেজে থাকা অন্যান্য সব বিভাগের ডেটা অপরিবর্তিত রাখা
                     studentsList.forEach(s => {
                         if (s.group !== targetGroup) {
                             finalMerged[s.id] = s;
                         }
                     });
 
-                    // ২. নতুন আপলোড করা গ্রুপের ছাত্রদের যোগ করা
+                    // ২. নতুন ইমপোর্ট করা ডেটা মার্জ করা
                     Object.keys(newBatch).forEach(id => {
                         finalMerged[id] = newBatch[id];
                     });
 
-                    // ৩. ফায়ারবেসে পার্মানেন্ট সেভ
+                    // ৩. ফায়ারবেসে পার্মানেন্ট স্টোর
                     if (window.writeToFirebase) {
                         await window.writeToFirebase('evaluation_system/students', finalMerged);
                     }
@@ -395,48 +649,81 @@
                     window.renderEvalStudents();
 
                     if (window.hideLoader) window.hideLoader();
-                    alert(`🎉 সফল! ${targetGroup} বিভাগের ${count} জন শিক্ষার্থীর তালিকা ও আসল ক্রমিক ফায়ারবেসে সুরক্ষিতভাবে সেভ হয়েছে!`);
+                    alert(`🎉 Success! ${count} records for stream "${targetGroup}" saved permanently to Firebase!`);
                 } else {
                     if (window.hideLoader) window.hideLoader();
-                    alert("ফাইলে ৬ সংখ্যার কোনো স্টুডেন্ট আইডি পাওয়া যায়নি!");
+                    alert("No 6-digit student IDs found in this file!");
                 }
 
-                input.value = '';
+                if (input) input.value = '';
 
             } catch (err) {
                 if (window.hideLoader) window.hideLoader();
-                alert("Error: " + err.message);
+                alert("Error importing file: " + err.message);
             }
         };
         reader.readAsArrayBuffer(file);
     };
 
     // ==========================================================
-    // ৩. এক্সেলের আসল ক্রমিক (SL) অনুযায়ী টেবিল দেখানো
+    // ৬. লাইভ পরিসংখ্যান ও টেবিল রেন্ডারিং
     // ==========================================================
+    window.filterEvalByTab = function (filter, btn) {
+        currentEvalFilter = filter;
+        document.querySelectorAll('.eval-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.eval-stat-item').forEach(b => b.classList.remove('active'));
+
+        if (btn) btn.classList.add('active');
+        if (filter === 'All') document.getElementById('statCardAll')?.classList.add('active');
+        if (filter === 'Science') document.getElementById('statCardSci')?.classList.add('active');
+        if (filter === 'Humanities') document.getElementById('statCardHum')?.classList.add('active');
+        if (filter === 'B.Studies') document.getElementById('statCardBs')?.classList.add('active');
+
+        window.renderEvalStudents();
+    };
+
     window.renderEvalStudents = function () {
         const tbody = document.getElementById('evalStudentTbody');
         if (!tbody) return;
         tbody.innerHTML = '';
 
-        const grpEl = document.getElementById('evalFilterGroup');
-        const grp = grpEl ? grpEl.value : 'All';
+        // লাইভ পরিসংখ্যান ক্যালকুলেশন
+        const total = studentsList.length;
+        const sciList = studentsList.filter(s => s.group === 'Science');
+        const humList = studentsList.filter(s => s.group === 'Humanities');
+        const bsList = studentsList.filter(s => s.group === 'B.Studies');
+
+        const grpA = sciList.filter(s => s.subGroup === 'Group-A').length;
+        const grpB = sciList.filter(s => s.subGroup === 'Group-B').length;
+        const grpC = sciList.filter(s => s.subGroup === 'Group-C').length;
+
+        if (document.getElementById('statValTotal')) document.getElementById('statValTotal').innerText = total;
+        if (document.getElementById('statValSci')) document.getElementById('statValSci').innerText = sciList.length;
+        if (document.getElementById('statSciBreakdown')) document.getElementById('statSciBreakdown').innerText = `A: ${grpA} | B: ${grpB} | C: ${grpC}`;
+        if (document.getElementById('statValHum')) document.getElementById('statValHum').innerText = humList.length;
+        if (document.getElementById('statValBs')) document.getElementById('statValBs').innerText = bsList.length;
+
+        // ফিল্টারিং ও লাইভ সার্চ
         const qEl = document.getElementById('evalSearchInp');
         const q = (qEl ? qEl.value : '').toLowerCase().trim();
 
         let list = studentsList.filter(s => {
             let mGrp = true;
-            if (grp === 'Humanities') mGrp = s.group === 'Humanities';
-            else if (grp === 'B.Studies') mGrp = s.group === 'B.Studies';
-            else if (grp === 'Science') mGrp = s.group === 'Science';
-            else if (['Group-A', 'Group-B', 'Group-C'].includes(grp)) mGrp = s.subGroup === grp;
+            if (currentEvalFilter === 'Humanities') mGrp = s.group === 'Humanities';
+            else if (currentEvalFilter === 'B.Studies') mGrp = s.group === 'B.Studies';
+            else if (currentEvalFilter === 'Science') mGrp = s.group === 'Science';
+            else if (['Group-A', 'Group-B', 'Group-C'].includes(currentEvalFilter)) mGrp = s.subGroup === currentEvalFilter;
 
             let mQ = !q || String(s.id).includes(q) || (s.name || '').toLowerCase().includes(q) || String(s.roll).includes(q);
             return mGrp && mQ;
         });
 
+        if (document.getElementById('evalShowingCount')) {
+            document.getElementById('evalShowingCount').innerText = list.length;
+        }
+
         if (list.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 30px; color: #94a3b8;">কোনো শিক্ষার্থীর তথ্য পাওয়া যায়নি। ফাইল আপলোড করুন।</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 24px; color: #94a3b8;">No student records found in current view.</td></tr>';
             return;
         }
 
@@ -445,23 +732,30 @@
             return (a.overallRank || a.sl) - (b.overallRank || b.sl);
         });
 
+        // মার্জিত টেবিল রো
         list.forEach(s => {
+            let secClass = 'sec-sa';
+            if (s.section === 'DH') secClass = 'sec-dh';
+            else if (s.section === 'SHO') secClass = 'sec-sho';
+            else if (s.group === 'Humanities') secClass = 'sec-hum';
+            else if (s.group === 'B.Studies') secClass = 'sec-bs';
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="text-align:center; font-weight:800; font-size:0.95rem; color:#4f46e5;">${s.sl}</td>
-                <td style="text-align:center;"><span style="font-family:monospace; font-weight:700;">${s.id}</span></td>
-                <td style="text-align:left; padding-left:15px; font-weight:700;">${s.name}</td>
-                <td style="text-align:center; color:#64748b;">${s.roll}</td>
-                <td style="text-align:center;"><span class="badge ${s.group === 'Humanities' ? 'badge-primary' : (s.group === 'B.Studies' ? 'badge-warning' : 'badge-success')}">${s.section}</span></td>
-                <td style="text-align:center;"><strong>${s.subGroup || s.group}</strong></td>
-                <td style="text-align:center;"><span class="badge" style="background:#eef2ff; color:#4f46e5; font-weight:700;">Position #${s.overallRank || s.sl}</span></td>
+                <td style="text-align:center; font-weight:700; color:#1e40af;"><span style="display:inline-block; width:26px;">${s.sl}</span></td>
+                <td><span style="background:#f1f5f9; border:1px solid #e2e8f0; padding:2px 6px; border-radius:4px; font-weight:700; font-size:0.78rem;">${s.id}</span></td>
+                <td style="font-weight:600; color:#0f172a;">${s.name}</td>
+                <td style="text-align:center; color:#64748b; font-weight:600;">${s.roll}</td>
+                <td style="text-align:center;"><span class="${secClass}" style="display:inline-block; font-size:0.68rem; font-weight:700; padding:2px 6px; border-radius:4px; min-width:30px;">${s.section}</span></td>
+                <td><span style="background:#f8fafc; border:1px solid #e2e8f0; padding:2px 7px; border-radius:4px; font-size:0.70rem; font-weight:600; color:#334155;">${s.subGroup || s.group}</span></td>
+                <td style="text-align:center;"><span style="background:#eff6ff; color:#1d4ed8; border:1px solid #dbeafe; padding:1px 8px; border-radius:10px; font-size:0.70rem; font-weight:700;">Position #${s.overallRank || s.sl}</span></td>
             `;
             tbody.appendChild(tr);
         });
     };
 
     // ==========================================================
-    // ৪. পিন ও শিক্ষক কন্ট্রোল
+    // ৭. পিন ও শিক্ষক কন্ট্রোল
     // ==========================================================
     window.renderEvalPins = function () {
         const tbody = document.getElementById('evalPinTbody');
@@ -518,13 +812,14 @@
     };
 
     window.copyEvalTeacherLink = function () {
-    const liveTeacherUrl = "https://cpscl.vercel.app";
-    navigator.clipboard.writeText(liveTeacherUrl).then(() => {
-        alert("Teacher link copied successfully!\n" + liveTeacherUrl);
-    });
-};
+        const liveTeacherUrl = "https://cpscl.vercel.app";
+        navigator.clipboard.writeText(liveTeacherUrl).then(() => {
+            alert("Teacher link copied successfully!\n" + liveTeacherUrl);
+        });
+    };
+
     // ==========================================================
-    // ৫. টেবুলেশন শিট ও লাইভ মেধা তালিকা
+    // ৮. টেবুলেশন শিট ও লাইভ মেরিট লিস্ট
     // ==========================================================
     window.renderEvalTabulation = function () {
         const grp = document.getElementById('evalTabGroup').value;
@@ -534,14 +829,14 @@
         if (!thead || !tbody) return;
 
         let activeSubs = SUBJECTS_CONFIG.Science;
-        let groupTitle = "Science (বিজ্ঞান)";
+        let groupTitle = "Science";
 
         if (grp === 'Humanities') {
             activeSubs = SUBJECTS_CONFIG.Humanities;
-            groupTitle = "Humanities (মানবিক)";
+            groupTitle = "Humanities";
         } else if (grp === 'B.Studies') {
             activeSubs = SUBJECTS_CONFIG.BStudies;
-            groupTitle = "Business Studies (ব্যবসায় শিক্ষা)";
+            groupTitle = "Business Studies";
         }
 
         meta.innerText = `Class: Ten (${groupTitle}) • Exam: ${currentExam.title} • Date: ${currentExam.date} • Total: 180 Marks`;
@@ -597,7 +892,7 @@
     };
 
     // ==========================================================
-    // ৬. সরাসরি ফায়ারবেস ক্লাউড লোডার
+    // ৯. ফায়ারবেস ক্লাউড ডেটাবেজ রিয়েল-টাইম লোডার
     // ==========================================================
     async function loadDirectlyFromFirebase(retries = 25) {
         if (!window.getDatabase || !window.ref || !window.get) {
@@ -626,11 +921,12 @@
                 window.renderEvalTabulation();
             }
 
+            // রিয়েল-টাইম সিঙ্ক লিসেনার
             import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(({ onValue }) => {
                 onValue(window.ref(db, `evaluation_system/marks/${currentExam.id}`), (s) => {
                     examMarks = s.val() || {};
                     window.renderEvalPins();
-                    if (document.getElementById('eval-tab-sec').style.display !== 'none') {
+                    if (document.getElementById('eval-tab-sec') && document.getElementById('eval-tab-sec').style.display !== 'none') {
                         window.renderEvalTabulation();
                     }
                 });
@@ -641,7 +937,7 @@
                         window.renderEvalStudents();
                     }
                 });
-            }).catch(e => {});
+            }).catch(() => {});
 
         } catch (err) {
             console.error("Firebase sync error:", err);
