@@ -1,7 +1,7 @@
 /**
- * CPSCL Academic Evaluation Module - Pure Firebase Permanent Storage
+ * CPSCL Academic Evaluation Module - Guaranteed SL & Firebase Sync
  * File: cpscl_evaluation.js
- * 100% Direct Firebase Cloud Database Sync (Zero Browser Cache Hacks)
+ * Strictly Prevents 'undefined' and Preserves Sheet's Original Serial
  */
 
 (function () {
@@ -197,7 +197,7 @@
     };
 
     // ==========================================================
-    // ২. এক্সেল ফাইল এক ক্লিকে ফায়ারবেসে পার্মানেন্ট সেভ করা (Atomic Save)
+    // ২. এক্সেল ফাইল থেকে আসল SL সহ ফায়ারবেসে পার্মানেন্ট সেভ
     // ==========================================================
     window.importMultiSheetExcel = function (input) {
         if (!input.files || !input.files[0]) return;
@@ -207,17 +207,17 @@
         reader.onload = async function (e) {
             try {
                 if (typeof XLSX === 'undefined') {
-                    alert("SheetJS library not found!");
+                    alert("SheetJS library not loaded!");
                     return;
                 }
 
-                if (window.showLoader) window.showLoader("Saving 146 students permanently to Firebase Cloud...");
+                if (window.showLoader) window.showLoader("Saving 146 students with exact SL to Firebase...");
 
                 const data = new Uint8Array(e.target.result);
                 const wb = XLSX.read(data, { type: 'array' });
                 
                 let allImported = [];
-                const firebaseBatchObject = {}; // সম্পূর্ণ ফায়ারবেস ব্যাচ অবজেক্ট
+                const firebaseBatchObject = {};
 
                 for (let sheetName of wb.SheetNames) {
                     const sheet = wb.Sheets[sheetName];
@@ -235,8 +235,10 @@
                         groupTag = "Group-C"; baseRank = 106;
                     }
 
+                    let currentGroupSerial = 1;
+
                     for (let r of rows) {
-                        if (!r || r.length < 5) continue;
+                        if (!r || r.length < 4) continue;
 
                         let rText = r.join(' ').toUpperCase();
                         if (rText.includes('GROUP-A')) { groupTag = "Group-A"; baseRank = 0; }
@@ -256,13 +258,16 @@
                         }
 
                         if (stdId && idIndex !== -1) {
-                            let sl = parseInt(r[idIndex - 1]) || 1;
+                            // কলাম A থেকে SL পড়া (অথবা স্বয়ংক্রিয় গ্রুপ সিরিয়াল)
+                            let parsedSl = parseInt(r[idIndex - 1]);
+                            let sl = (!isNaN(parsedSl) && parsedSl > 0) ? parsedSl : currentGroupSerial;
+
                             let name = String(r[idIndex + 1] || 'Student').trim();
                             let roll = parseInt(r[idIndex + 2]) || 1;
                             let sec = String(r[idIndex + 3] || 'SA').trim().toUpperCase();
 
                             const studentRecord = {
-                                sl: sl, // এক্সেলের আসল ক্রমিক
+                                sl: sl, // নিশ্চিত ১, ২, ৩ ক্রমিক
                                 id: stdId,
                                 name: name,
                                 roll: roll,
@@ -273,7 +278,8 @@
                             };
 
                             allImported.push(studentRecord);
-                            firebaseBatchObject[stdId] = studentRecord; // ফায়ারবেসে জমা
+                            firebaseBatchObject[stdId] = studentRecord;
+                            currentGroupSerial++;
                         }
                     }
                 }
@@ -281,7 +287,7 @@
                 if (allImported.length > 0) {
                     allImported.sort((a, b) => a.overallRank - b.overallRank);
 
-                    // ১. এক ক্লিকে সম্পূর্ণ ১৪৬ জনের তালিকা সরাসরি ফায়ারবেস ক্লাউডে আজীবনের জন্য সেভ
+                    // ১. এক ক্লিকে সম্পূর্ণ ১৪৬ জনের ক্রমিক সরাসরি ফায়ারবেস ক্লাউডে আজীবনের জন্য সেভ
                     if (window.writeToFirebase) {
                         await window.writeToFirebase('evaluation_system/students', firebaseBatchObject);
                     }
@@ -291,7 +297,7 @@
                     window.renderEvalStudents();
 
                     if (window.hideLoader) window.hideLoader();
-                    alert(`🎉 সফল! ${allImported.length} জন শিক্ষার্থীর তথ্য ও ক্রমিক সরাসরি ফায়ারবেস ক্লাউডে স্থায়ীভাবে সেভ হয়েছে!`);
+                    alert(`🎉 সফল! ${allImported.length} জন শিক্ষার্থীর তথ্য ও আসল ক্রমিক (SL) সরাসরি ফায়ারবেস ক্লাউডে সেভ হয়েছে!`);
                 } else {
                     if (window.hideLoader) window.hideLoader();
                     alert("ফাইলে ৬ সংখ্যার কোনো স্টুডেন্ট আইডি পাওয়া যায়নি!");
@@ -308,7 +314,7 @@
     };
 
     // ==========================================================
-    // ৩. এক্সেলের হুবহু ক্রমিক (SL) অনুযায়ী টেবিল দেখানো
+    // ৩. এক্সেলের আসল ক্রমিক (SL) অনুযায়ী টেবিল রেন্ডারিং
     // ==========================================================
     window.renderEvalStudents = function () {
         const tbody = document.getElementById('evalStudentTbody');
@@ -331,19 +337,27 @@
             return;
         }
 
-        // কঠোরভাবে ক্রমিক এবং মেধা অনুযায়ী সাজানো (রোল দিয়ে কখনো নয়!)
-        list.sort((a, b) => (a.overallRank || a.sl) - (b.overallRank || b.sl));
+        // ক্রমিক এবং মেধা অনুযায়ী সাজানো (কখনো রোল দিয়ে নয়!)
+        list.sort((a, b) => {
+            let rankA = (a.overallRank !== undefined) ? a.overallRank : (a.sl || 0);
+            let rankB = (b.overallRank !== undefined) ? b.overallRank : (b.sl || 0);
+            return rankA - rankB;
+        });
 
-        list.forEach(s => {
+        list.forEach((s, idx) => {
+            // যদি পুরোনো কোনো রেকর্ডে sl না থাকে, তাহলেও যেন কখনো undefined না দেখায়:
+            let displaySl = (s.sl !== undefined) ? s.sl : (idx + 1);
+            let displayRank = (s.overallRank !== undefined) ? s.overallRank : (idx + 1);
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="text-align:center; font-weight:800; font-size:0.95rem; color:#4f46e5;">${s.sl}</td>
+                <td style="text-align:center; font-weight:800; font-size:0.95rem; color:#4f46e5;">${displaySl}</td>
                 <td style="text-align:center;"><span style="font-family:monospace; font-weight:700;">${s.id}</span></td>
                 <td style="text-align:left; padding-left:15px; font-weight:700;">${s.name}</td>
                 <td style="text-align:center; color:#64748b;">${s.roll}</td>
                 <td style="text-align:center;"><span class="badge badge-success">${s.section}</span></td>
                 <td style="text-align:center;"><strong>${s.subGroup}</strong></td>
-                <td style="text-align:center;"><span class="badge" style="background:#eef2ff; color:#4f46e5; font-weight:700;">Rank #${s.overallRank}</span></td>
+                <td style="text-align:center;"><span class="badge" style="background:#eef2ff; color:#4f46e5; font-weight:700;">Rank #${displayRank}</span></td>
             `;
             tbody.appendChild(tr);
         });
@@ -445,7 +459,7 @@
     };
 
     // ==========================================================
-    // ৬. সরাসরি ফায়ারবেস ক্লাউড থেকে ডেটা রিলোড করা (On Refresh)
+    // ৬. সরাসরি ফায়ারবেস ক্লাউড থেকে ডেটা রিলোড (On Refresh)
     // ==========================================================
     async function loadDirectlyFromFirebase(retries = 25) {
         if (!window.getDatabase || !window.ref || !window.get) {
@@ -456,7 +470,6 @@
         try {
             const db = window.getDatabase();
             
-            // ক) ফায়ারবেস থেকে সরাসরি শিক্ষার্থীদের ডেটা তুলে আনা
             const snap = await window.get(window.ref(db, 'evaluation_system/students'));
             if (snap && snap.exists()) {
                 const val = snap.val();
@@ -465,14 +478,12 @@
                 window.renderEvalStudents();
             }
 
-            // খ) পিন লোড করা
             const pinSnap = await window.get(window.ref(db, 'evaluation_system/pins'));
             if (pinSnap && pinSnap.exists()) {
                 subjectPins = pinSnap.val() || {};
                 window.renderEvalPins();
             }
 
-            // গ) রিয়েল-টাইম লিসেনার
             import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(({ onValue }) => {
                 onValue(window.ref(db, 'evaluation_system/students'), (s) => {
                     const d = s.val();
@@ -491,7 +502,7 @@
 
     function runModule() {
         injectExamModule();
-        loadDirectlyFromFirebase(); // পেজ রিফ্রেশ দিলেই সোজা ফায়ারবেস থেকে সব ডেটা টেনে আনবে
+        loadDirectlyFromFirebase();
     }
 
     if (document.readyState === 'loading') {
