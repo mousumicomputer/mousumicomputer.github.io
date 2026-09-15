@@ -23,10 +23,9 @@
 
         body {
             background-color: var(--bg-color);
-            padding-bottom: 90px;
+            padding-bottom: 95px;
         }
 
-        /* Top Header */
         .header-box {
             background: linear-gradient(135deg, #0b3954, var(--primary));
             color: white;
@@ -35,7 +34,6 @@
             box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
 
-        /* Card System */
         .card-custom {
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -45,7 +43,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
 
-        /* Student Row Card */
         .student-row-card {
             background: #ffffff;
             border: 1.5px solid #e2e8f0;
@@ -92,7 +89,6 @@
             color: #64748b;
         }
 
-        /* Clean Input Box */
         .mark-input {
             width: 72px;
             height: 42px;
@@ -112,7 +108,6 @@
             box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
         }
 
-        /* PIN Input */
         .pin-box {
             max-width: 170px;
             letter-spacing: 6px;
@@ -123,7 +118,6 @@
             border: 2px solid var(--primary);
         }
 
-        /* Sticky Bottom Save Button */
         .fixed-bottom-bar {
             position: fixed;
             bottom: 0;
@@ -237,10 +231,9 @@
     <!-- Firebase SDK v10 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // Firebase Config (হুবহু আপনার ইআরপির কনফিগারেশন)
         const firebaseConfig = {
             apiKey: "AIzaSyA1PhRiTkICNCd8sA4he3ZxKjHtIzM0d5E",
             authDomain: "mousumi-computer.firebaseapp.com",
@@ -256,7 +249,6 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        // বিষয় তালিকা
         const SUBJECTS_LIST = {
             Science: [
                 { key: 'B1', name: 'Bangla 1st' }, { key: 'B2', name: 'Bangla 2nd' },
@@ -283,37 +275,14 @@
             ]
         };
 
-        let allStudents = [];
-        let subjectPins = {};
         let currentSubject = "";
         let currentGroup = "";
         const EXAM_ID = "exam_fn02_2026";
         let maxMarkAllowed = 15;
+        let activePIN = null;
 
-        // Firebase Auth
-        signInAnonymously(auth).catch(e => console.log("Anonymous login"));
+        signInAnonymously(auth).catch(() => {});
 
-        // ফায়ারবেস থেকে সব শিক্ষার্থী এবং পিন পড়া
-        async function initData() {
-            try {
-                // ১. স্টুডেন্ট লোড
-                const stdSnap = await get(ref(db, 'evaluation_system/students'));
-                if (stdSnap.exists()) {
-                    allStudents = Object.values(stdSnap.val());
-                }
-
-                // ২. পিন লোড
-                const pinSnap = await get(ref(db, 'evaluation_system/pins'));
-                if (pinSnap.exists()) {
-                    subjectPins = pinSnap.val() || {};
-                }
-            } catch (err) {
-                console.error("Firebase load error:", err);
-            }
-        }
-        initData();
-
-        // গ্রুপ সিলেক্ট করলে বিষয়ের ড্রপডাউন প্রস্তুত করা
         window.onGroupChanged = function () {
             currentGroup = document.getElementById('groupSelect').value;
             const subSelect = document.getElementById('subjectSelect');
@@ -337,7 +306,6 @@
             });
         };
 
-        // বিষয় সিলেক্ট করলে পিন চেক করা
         window.onSubjectSelected = async function () {
             currentSubject = document.getElementById('subjectSelect').value;
             const pinCard = document.getElementById('pinCard');
@@ -358,112 +326,132 @@
 
             pinCard.style.display = 'block';
 
-            // ফায়ারবেস থেকে ফ্রেশ পিন চেক
+            // ফায়ারবেস থেকে পিন যাচাই
             try {
                 const pSnap = await get(ref(db, `evaluation_system/pins/${currentSubject}`));
-                const pinVal = pSnap.exists() ? pSnap.val() : null;
-
-                if (!pinVal) {
-                    setPinView.style.display = 'block';
-                    enterPinView.style.display = 'none';
-                } else {
-                    subjectPins[currentSubject] = pinVal;
+                if (pSnap.exists() && pSnap.val()) {
+                    activePIN = String(pSnap.val()).trim();
                     setPinView.style.display = 'none';
-                    enterPinView.style.display = 'block';
+                    enterPinView.style.display = 'block'; // পিন থাকলে ইনপুট বক্স দেখাবে
+                } else {
+                    activePIN = null;
+                    setPinView.style.display = 'block'; // পিন না থাকলে সেট করার বক্স দেখাবে
+                    enterPinView.style.display = 'none';
                 }
             } catch(e) {
                 setPinView.style.display = 'block';
+                enterPinView.style.display = 'none';
             }
         };
 
-        // নতুন পিন ফায়ারবেসে সংরক্ষণ
+        // পিন সেভ করার সাথে সাথে সরাসরি পরবর্তী পেজে যাওয়া
         window.saveNewPin = async function () {
-            const pin = document.getElementById('newPin').value;
+            const pin = document.getElementById('newPin').value.trim();
             if (pin.length !== 4 || isNaN(pin)) {
                 alert("Please enter a 4-digit numeric PIN!");
                 return;
             }
 
             await set(ref(db, `evaluation_system/pins/${currentSubject}`), pin);
-            subjectPins[currentSubject] = pin;
-            alert("Success! Secret PIN set for " + currentSubject);
-            unlockAndRenderStudents();
+            activePIN = pin;
+            
+            // তাৎক্ষণিক পরবর্তী পেজে সুইচ
+            document.getElementById('pinCard').style.display = 'none';
+            document.getElementById('entrySection').style.display = 'block';
+            renderStudentsLive();
         };
 
-        // পিন ভেরিফাই করা
+        // পিন ভেরিফাই করে সরাসরি পরবর্তী পেজে যাওয়া
         window.verifyPin = function () {
-            const inputVal = document.getElementById('inputPin').value;
+            const inputVal = document.getElementById('inputPin').value.trim();
             const pinError = document.getElementById('pinError');
 
-            if (inputVal === subjectPins[currentSubject]) {
+            if (inputVal === activePIN) {
                 pinError.style.display = 'none';
-                unlockAndRenderStudents();
+                document.getElementById('pinCard').style.display = 'none';
+                document.getElementById('entrySection').style.display = 'block';
+                renderStudentsLive();
             } else {
                 pinError.style.display = 'block';
                 document.getElementById('inputPin').value = '';
             }
         };
 
-        // আনলক হওয়ার পর এক্সেলে থাকা আসল ক্রমিকে ছাত্রদের তালিকা আনা
-        async function unlockAndRenderStudents() {
-            document.getElementById('pinCard').style.display = 'none';
-            document.getElementById('entrySection').style.display = 'block';
-            document.getElementById('statusBadge').innerText = `✓ ${currentSubject} (${currentGroup}) Unlocked`;
-
+        // ফায়ারবেস থেকে সরাসরি শিক্ষার্থীদের তালিকা লোড করা
+        async function renderStudentsLive() {
+            document.getElementById('statusBadge').innerText = `✓ ${currentSubject} (${currentGroup}) Active`;
             const container = document.getElementById('studentsContainer');
-            container.innerHTML = '<div class="text-center p-3 text-muted">Loading students...</div>';
+            container.innerHTML = '<div class="text-center p-4 text-primary"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p class="mt-2 fw-bold">Loading students from Firebase...</p></div>';
 
-            // গ্রুপ অনুযায়ী ফিল্টার
-            let filtered = [];
-            if (currentGroup === 'Humanities') {
-                filtered = allStudents.filter(s => s.group === 'Humanities');
-            } else if (['Group-A', 'Group-B', 'Group-C'].includes(currentGroup)) {
-                filtered = allStudents.filter(s => s.subGroup === currentGroup);
-            } else {
-                filtered = allStudents.filter(s => s.group === currentGroup);
-            }
-
-            // এক্সেলে থাকা আসল ক্রমিক (SL) অনুযায়ী নিখুঁত সাজানো
-            filtered.sort((a, b) => (a.overallRank || a.sl) - (b.overallRank || b.sl));
-
-            // আগের কোনো নম্বর এন্ট্রি করা থাকলে ফায়ারবেস থেকে পড়া
-            let existingMarks = {};
             try {
-                const mSnap = await get(ref(db, `evaluation_system/marks/${EXAM_ID}`));
-                if (mSnap.exists()) {
-                    existingMarks = mSnap.val() || {};
+                // ১. সরাসরি ফায়ারবেস থেকে ফ্রেশ স্টুডেন্ট ডাটা আনা
+                const stdSnap = await get(ref(db, 'evaluation_system/students'));
+                let students = [];
+                if (stdSnap.exists()) {
+                    students = Object.values(stdSnap.val());
                 }
-            } catch(e) {}
 
-            container.innerHTML = '';
+                // ২. গ্রুপ অনুযায়ী ফিল্টারিং
+                let filtered = students.filter(s => {
+                    if (currentGroup === 'Humanities') {
+                        return s.group === 'Humanities' || s.subGroup === 'Humanities';
+                    }
+                    if (currentGroup === 'B.Studies') {
+                        return s.group === 'B.Studies' || s.subGroup === 'B.Studies';
+                    }
+                    // Science Group-A, Group-B, Group-C
+                    return s.subGroup === currentGroup;
+                });
 
-            if (filtered.length === 0) {
-                container.innerHTML = '<div class="text-center p-4 text-danger">No students found in this group! Upload Excel from Admin first.</div>';
-                return;
-            }
+                // ৩. এক্সেলে থাকা আসল ক্রমিক (SL ১, ২, ৩...) অনুযায়ী সাজানো
+                filtered.sort((a, b) => {
+                    let rA = (a.overallRank !== undefined) ? a.overallRank : (a.sl || 0);
+                    let rB = (b.overallRank !== undefined) ? b.overallRank : (b.sl || 0);
+                    return rA - rB;
+                });
 
-            filtered.forEach(s => {
-                const prevVal = (existingMarks[s.id] && existingMarks[s.id][currentSubject] !== undefined) ? existingMarks[s.id][currentSubject] : '';
+                // ৪. পূর্বের কোনো নম্বর দেওয়া থাকলে তা আনা
+                let existingMarks = {};
+                try {
+                    const mSnap = await get(ref(db, `evaluation_system/marks/${EXAM_ID}`));
+                    if (mSnap.exists()) {
+                        existingMarks = mSnap.val() || {};
+                    }
+                } catch(e) {}
 
-                const row = document.createElement('div');
-                row.className = 'student-row-card';
-                row.innerHTML = `
-                    <div class="d-flex align-items-center gap-2" style="min-width: 0; flex: 1;">
-                        <span class="sl-badge">#${s.sl}</span>
-                        <div style="min-width: 0;">
-                            <div class="student-title">${s.name}</div>
-                            <div class="student-sub">ID: ${s.id} • Roll: ${s.roll} ${s.section !== 'N/A' && s.section !== 'HUM' ? '• Sec: ' + s.section : ''}</div>
+                container.innerHTML = '';
+
+                if (filtered.length === 0) {
+                    container.innerHTML = '<div class="text-center p-4 text-danger fw-bold">No students found in this group! Please upload Excel from Admin panel first.</div>';
+                    return;
+                }
+
+                // ৫. ছাত্রদের তালিকা স্ক্রিনে প্রদর্শন
+                filtered.forEach(s => {
+                    const prevVal = (existingMarks[s.id] && existingMarks[s.id][currentSubject] !== undefined) ? existingMarks[s.id][currentSubject] : '';
+
+                    const row = document.createElement('div');
+                    row.className = 'student-row-card';
+                    row.innerHTML = `
+                        <div class="d-flex align-items-center gap-2" style="min-width: 0; flex: 1;">
+                            <span class="sl-badge">#${s.sl}</span>
+                            <div style="min-width: 0;">
+                                <div class="student-title">${s.name}</div>
+                                <div class="student-sub">ID: ${s.id} • Roll: ${s.roll} ${s.section !== 'N/A' && s.section !== 'HUM' ? '• Sec: ' + s.section : ''}</div>
+                            </div>
                         </div>
-                    </div>
-                    <input type="text" class="mark-input" data-id="${s.id}" value="${prevVal}" maxlength="4">
-                `;
-                container.appendChild(row);
-            });
+                        <input type="text" class="mark-input" data-id="${s.id}" value="${prevVal}" maxlength="4">
+                    `;
+                    container.appendChild(row);
+                });
 
-            setupAutoJump();
+                setupAutoJump();
+
+            } catch (err) {
+                container.innerHTML = '<div class="text-center p-4 text-danger">Error loading students: ' + err.message + '</div>';
+            }
         }
 
-        // দ্রুত এন্ট্রির জন্য Enter চাপলে পরের ঘরে যাওয়া এবং সর্বোচ্চ নম্বর যাচাই
         function setupAutoJump() {
             const inputs = Array.from(document.querySelectorAll('.mark-input'));
             inputs.forEach((inp, idx) => {
@@ -487,7 +475,6 @@
             });
         }
 
-        // নম্বর ফায়ারবেসে সেভ করা (অন্য বিষয়ের নম্বরে বিন্দুমাত্র হাত দেবে না)
         window.saveAllMarks = async function () {
             const inputs = document.querySelectorAll('.mark-input');
             if (inputs.length === 0) return;
@@ -501,11 +488,9 @@
                     const stdId = inp.getAttribute('data-id');
                     const val = inp.value.trim().toUpperCase();
                     if (val !== '') {
-                        // শুধুমাত্র এই নির্দিষ্ট বিষয়ের ঘরে সেভ হবে
                         await set(ref(db, `evaluation_system/marks/${EXAM_ID}/${stdId}/${currentSubject}`), val);
                     }
                 }
-
                 alert(`🎉 Success! Marks for ${currentSubject} (${currentGroup}) have been saved permanently to Firebase!`);
             } catch (err) {
                 alert("Error saving marks: " + err.message);
