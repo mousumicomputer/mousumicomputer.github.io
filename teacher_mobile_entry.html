@@ -12,7 +12,6 @@
     <style>
         :root {
             --primary: #0d6efd;
-            --primary-dark: #0b5ed7;
             --bg-color: #f1f5f9;
         }
 
@@ -146,7 +145,6 @@
 </head>
 <body>
 
-    <!-- Header -->
     <div class="header-box text-center mb-3">
         <h6 class="mb-0 fw-bold">Cantonment Public School & College Lalmonirhat</h6>
         <small class="text-light opacity-75">Teacher Subject-wise Marks Entry</small>
@@ -180,7 +178,6 @@
         <!-- 2. PIN Lock Card -->
         <div id="pinCard" class="card-custom text-center p-4" style="display: none;">
             
-            <!-- State 1: Set New PIN -->
             <div id="setPinView" style="display: none;">
                 <div class="mb-2"><i class="fa-solid fa-lock" style="font-size: 2rem; color: var(--primary);"></i></div>
                 <h6 class="fw-bold text-primary">Set Your 4-Digit Secret PIN</h6>
@@ -189,7 +186,6 @@
                 <button type="button" class="btn btn-primary w-100 rounded-pill fw-bold" onclick="saveNewPin()">Save PIN & Unlock</button>
             </div>
 
-            <!-- State 2: Enter Existing PIN -->
             <div id="enterPinView" style="display: none;">
                 <div class="mb-2"><i class="fa-solid fa-shield-halved" style="font-size: 2rem; color: #1e293b;"></i></div>
                 <h6 class="fw-bold text-dark">Subject PIN Protected</h6>
@@ -212,11 +208,8 @@
             </div>
 
             <form id="marksForm" onsubmit="event.preventDefault(); saveAllMarks();">
-                <div id="studentsContainer">
-                    <!-- Students loaded dynamically in exact Excel SL order -->
-                </div>
+                <div id="studentsContainer"></div>
 
-                <!-- Fixed Save Button -->
                 <div class="fixed-bottom-bar text-center">
                     <button type="submit" class="save-btn">
                         <i class="fa-solid fa-cloud-arrow-up"></i> Save Marks to Firebase
@@ -326,16 +319,15 @@
 
             pinCard.style.display = 'block';
 
-            // ফায়ারবেস থেকে ফ্রেশ পিন চেক
             try {
                 const pSnap = await get(ref(db, `evaluation_system/pins/${currentSubject}`));
                 if (pSnap.exists() && pSnap.val()) {
                     activePIN = String(pSnap.val()).trim();
                     setPinView.style.display = 'none';
-                    enterPinView.style.display = 'block'; // পিন থাকলে সরাসরি ইনপুট বক্স দেখাবে
+                    enterPinView.style.display = 'block';
                 } else {
                     activePIN = null;
-                    setPinView.style.display = 'block'; // পিন না থাকলে সেট করার অপশন দেখাবে
+                    setPinView.style.display = 'block';
                     enterPinView.style.display = 'none';
                 }
             } catch(e) {
@@ -344,8 +336,7 @@
             }
         };
 
-        // জিরো-হ্যাং পিন সেভ (তাৎক্ষণিক পরবর্তী পেজে সুইচ)
-        window.saveNewPin = async function () {
+        window.saveNewPin = function () {
             const pin = document.getElementById('newPin').value.trim();
             if (pin.length !== 4 || isNaN(pin)) {
                 alert("Please enter a 4-digit numeric PIN!");
@@ -353,19 +344,15 @@
             }
 
             activePIN = pin;
-
-            // ১. কোনো বিলম্ব ছাড়াই সাথে সাথে পিন কার্ড লুকানো ও এন্ট্রি পেজ ওপেন করা
             document.getElementById('pinCard').style.display = 'none';
             document.getElementById('entrySection').style.display = 'block';
 
-            // ২. ফায়ারবেসে ব্যাকগ্রাউন্ডে পিন সেভ
+            // ফায়ারবেসে সেভ
             set(ref(db, `evaluation_system/pins/${currentSubject}`), pin).catch(e => console.error(e));
 
-            // ৩. সাথে সাথে ছাত্রদের লোড করা
             renderStudentsLive();
         };
 
-        // পিন ভেরিফাই করা
         window.verifyPin = function () {
             const inputVal = document.getElementById('inputPin').value.trim();
             const pinError = document.getElementById('pinError');
@@ -381,35 +368,36 @@
             }
         };
 
-        // ফায়ারবেস থেকে সরাসরি শিক্ষার্থীদের তালিকা লোড করা
         async function renderStudentsLive() {
             document.getElementById('statusBadge').innerText = `✓ ${currentSubject} (${currentGroup}) Active`;
             const container = document.getElementById('studentsContainer');
             container.innerHTML = '<div class="text-center p-4 text-primary"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p class="mt-2 fw-bold">Loading students...</p></div>';
 
             try {
-                // সরাসরি ফায়ারবেস থেকে শিক্ষার্থীদের তথ্য আনা
                 const stdSnap = await get(ref(db, 'evaluation_system/students'));
                 let students = [];
                 if (stdSnap.exists()) {
                     students = Object.values(stdSnap.val());
                 }
 
-                // গ্রুপ অনুযায়ী ফিল্টার
+                // ফিল্টারিং: একদম নিশ্চিত বিভাগ নির্বাচন
                 let filtered = students.filter(s => {
-                    if (currentGroup === 'Humanities') return s.group === 'Humanities' || s.subGroup === 'Humanities';
-                    if (currentGroup === 'B.Studies') return s.group === 'B.Studies' || s.subGroup === 'B.Studies';
-                    return s.subGroup === currentGroup;
+                    if (currentGroup === 'Humanities') {
+                        return s.group === 'Humanities';
+                    }
+                    if (currentGroup === 'B.Studies') {
+                        return s.group === 'B.Studies';
+                    }
+                    // Science Group-A, Group-B, Group-C
+                    return s.group === 'Science' && s.subGroup === currentGroup;
                 });
 
-                // এক্সেলে থাকা আসল ক্রমিক (SL ১, ২, ৩...) অনুযায়ী সাজানো
                 filtered.sort((a, b) => {
                     let rA = (a.overallRank !== undefined) ? a.overallRank : (a.sl || 0);
                     let rB = (b.overallRank !== undefined) ? b.overallRank : (b.sl || 0);
                     return rA - rB;
                 });
 
-                // আগের নম্বর চেক
                 let existingMarks = {};
                 try {
                     const mSnap = await get(ref(db, `evaluation_system/marks/${EXAM_ID}`));
@@ -419,11 +407,10 @@
                 container.innerHTML = '';
 
                 if (filtered.length === 0) {
-                    container.innerHTML = '<div class="text-center p-4 text-danger fw-bold">No students found in this group! Please upload Excel from Admin panel first.</div>';
+                    container.innerHTML = `<div class="text-center p-4 text-danger fw-bold">No students found for ${currentGroup} in Firebase!<br><small class="text-muted">Please upload the ${currentGroup} file from Admin panel.</small></div>`;
                     return;
                 }
 
-                // ছাত্রদের রো প্রদর্শন
                 filtered.forEach(s => {
                     const prevVal = (existingMarks[s.id] && existingMarks[s.id][currentSubject] !== undefined) ? existingMarks[s.id][currentSubject] : '';
 
@@ -434,7 +421,7 @@
                             <span class="sl-badge">#${s.sl || s.overallRank}</span>
                             <div style="min-width: 0;">
                                 <div class="student-title">${s.name}</div>
-                                <div class="student-sub">ID: ${s.id} • Roll: ${s.roll} ${s.section && s.section !== 'N/A' && s.section !== 'HUM' ? '• Sec: ' + s.section : ''}</div>
+                                <div class="student-sub">ID: ${s.id} • Roll: ${s.roll} ${s.section && s.section !== 'N/A' && s.section !== 'HUM' && s.section !== 'BS' ? '• Sec: ' + s.section : ''}</div>
                             </div>
                         </div>
                         <input type="text" class="mark-input" data-id="${s.id}" value="${prevVal}" maxlength="4">
