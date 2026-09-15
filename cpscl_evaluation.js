@@ -1,7 +1,6 @@
 /**
- * CPSCL Complete Autonomous Academic Evaluation Module
+ * CPSCL Robust Evaluation Module (Instant CSV/Excel Parser)
  * File: cpscl_evaluation.js
- * Includes: Smart Excel Parser (Group-A, B, C Auto Detection) & Zero-Overwrite Firebase Sync
  */
 
 (function () {
@@ -35,7 +34,7 @@
     let currentExam = { id: "exam_fn02_2026", title: "Fortnightly Test-02", date: "15 Sep 2026", max: 15 };
 
     // ==========================================================
-    // ১. সাইডবারে ড্রপডাউন ও স্ক্রিন স্বয়ংক্রিয়ভাবে ইনজেক্ট করা
+    // ১. সাইডবার ও স্ক্রিন ইনজেকশন
     // ==========================================================
     function injectExamModule() {
         const menuList = document.querySelector('.menu-list');
@@ -73,10 +72,10 @@
                             <div style="display: flex; gap: 8px;">
                                 <select id="evalFilterGroup" class="dcr-filter-input" onchange="window.renderEvalStudents()">
                                     <option value="All">All Groups (All Students)</option>
-                                    <option value="Group-A">Science (Group-A: 56)</option>
-                                    <option value="Group-B">Science (Group-B: 50)</option>
-                                    <option value="Group-C">Science (Group-C: 40)</option>
-                                    <option value="Science">Science (All Combined: 146)</option>
+                                    <option value="Group-A">Science (Group-A)</option>
+                                    <option value="Group-B">Science (Group-B)</option>
+                                    <option value="Group-C">Science (Group-C)</option>
+                                    <option value="Science">Science (Combined)</option>
                                     <option value="Humanities">Humanities</option>
                                     <option value="B.Studies">Business Studies</option>
                                 </select>
@@ -93,7 +92,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="table-container" style="background:#fff;">
+                    <div class="table-container" style="background:#fff; min-height: 200px;">
                         <table>
                             <thead>
                                 <tr style="background: #f8fafc;">
@@ -105,7 +104,9 @@
                                     <th style="text-align: center; width: 100px;">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="evalStudentTbody"></tbody>
+                            <tbody id="evalStudentTbody">
+                                <tr><td colspan="6" style="text-align:center; padding: 40px; color: #94a3b8;">কোনো শিক্ষার্থী লোড করা হয়নি। উপরে সবুজ বাটনে ক্লিক করে ফাইল আপলোড করুন।</td></tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -153,12 +154,12 @@
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <label style="font-size: 0.75rem; font-weight: 700; color: #64748b;">Select Group:</label>
                                 <select id="evalTabGroup" class="dcr-filter-input" onchange="window.renderEvalTabulation()">
-                                    <option value="Science_Merit">Science (Combined Merit: Group A, B, C - 146)</option>
-                                    <option value="Group-A">Science (Group-A: 56 Students)</option>
-                                    <option value="Group-B">Science (Group-B: 50 Students)</option>
-                                    <option value="Group-C">Science (Group-C: 40 Students)</option>
-                                    <option value="Humanities">Humanities (22 Students)</option>
-                                    <option value="B.Studies">Business Studies (5 Students)</option>
+                                    <option value="Science_Merit">Science (Combined Merit - 146 Students)</option>
+                                    <option value="Group-A">Science (Group-A)</option>
+                                    <option value="Group-B">Science (Group-B)</option>
+                                    <option value="Group-C">Science (Group-C)</option>
+                                    <option value="Humanities">Humanities</option>
+                                    <option value="B.Studies">Business Studies</option>
                                 </select>
                             </div>
                             <div style="display: flex; gap: 8px;">
@@ -168,7 +169,6 @@
                         </div>
                     </div>
 
-                    <!-- প্রিন্ট পেপার -->
                     <div class="erp-form-card" style="max-width: 100%; padding: 25px; background: #fff; border: 1px solid #000;">
                         <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 15px;">
                             <h2 style="font-size: 1.3rem; font-weight: 800; text-transform: uppercase; margin: 0;">Cantonment Public School and College Lalmonirhat</h2>
@@ -232,33 +232,7 @@
     };
 
     // ==========================================================
-    // ২. ফায়ারবেস ডেটা সিঙ্ক
-    // ==========================================================
-    function initFirebaseSync() {
-        if (!window.getDatabase || !window.ref) return;
-        const db = window.getDatabase();
-
-        import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(({ onValue }) => {
-            onValue(window.ref(db, 'evaluation_system/students'), (snap) => {
-                const val = snap.val();
-                studentsList = val ? Object.values(val) : [];
-                window.renderEvalStudents();
-            });
-
-            onValue(window.ref(db, 'evaluation_system/pins'), (snap) => {
-                subjectPins = snap.val() || {};
-                window.renderEvalPins();
-            });
-
-            onValue(window.ref(db, `evaluation_system/marks/${currentExam.id}`), (snap) => {
-                examMarks = snap.val() || {};
-                window.renderEvalTabulation();
-            });
-        });
-    }
-
-    // ==========================================================
-    // ৩. এক্সেল পার্সার (Group-A, B, C অটো সনাক্তকরণ)
+    // ২. সুপার-ফাস্ট ইনস্ট্যান্ট সিএসভি ও এক্সেল পার্সার (Instant Load)
     // ==========================================================
     window.importEvalExcel = function (input) {
         if (!input.files || !input.files[0]) return;
@@ -267,84 +241,114 @@
 
         reader.onload = async function (e) {
             try {
-                if (typeof XLSX === 'undefined') {
-                    alert("SheetJS library is missing!");
-                    return;
-                }
+                let rows = [];
 
-                const data = new Uint8Array(e.target.result);
-                const wb = XLSX.read(data, { type: 'array' });
-                
-                if (window.showLoader) window.showLoader("Parsing Group-A, B, C & Saving to Firebase...");
-
-                let currentDetectedGroup = "Group-A";
-                let totalImported = 0;
-
-                for (let sheetName of wb.SheetNames) {
-                    const sheet = wb.Sheets[sheetName];
-                    const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-                    for (let row of rawRows) {
-                        if (!row || row.length === 0) continue;
-                        const rowStr = row.join(' ').toUpperCase();
-
-                        if (rowStr.includes('GROUP-A')) currentDetectedGroup = "Group-A";
-                        else if (rowStr.includes('GROUP-B')) currentDetectedGroup = "Group-B";
-                        else if (rowStr.includes('GROUP-C')) currentDetectedGroup = "Group-C";
-
-                        let stdId = null;
-                        for (let cell of row) {
-                            let cStr = String(cell).trim();
-                            if (/^\d{6}$/.test(cStr)) {
-                                stdId = cStr;
-                                break;
-                            }
+                // SheetJS দিয়ে পড়ার চেষ্টা করা
+                if (typeof XLSX !== 'undefined') {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const wb = XLSX.read(data, { type: 'array' });
+                        for (let sheetName of wb.SheetNames) {
+                            const sRows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1 });
+                            rows = rows.concat(sRows);
                         }
-
-                        if (stdId) {
-                            let idIdx = row.findIndex(c => String(c).trim() === stdId);
-                            let name = row[idIdx + 1] ? String(row[idIdx + 1]).trim() : "Student";
-                            let roll = row[idIdx + 2] ? parseInt(row[idIdx + 2]) || 1 : 1;
-                            let sec = row[idIdx + 3] ? String(row[idIdx + 3]).trim().toUpperCase() : "SA";
-
-                            const studentObj = {
-                                id: stdId,
-                                name: name,
-                                roll: roll,
-                                group: "Science",
-                                subGroup: currentDetectedGroup,
-                                section: sec,
-                                importedAt: new Date().toISOString()
-                            };
-
-                            await window.writeToFirebase(`evaluation_system/students/${stdId}`, studentObj);
-                            totalImported++;
-                        }
+                    } catch (ex) {
+                        rows = [];
                     }
                 }
 
-                if (window.hideLoader) window.hideLoader();
-                if (window.showToast) window.showToast(`Imported ${totalImported} students!`, "success");
-                else alert(`সফলভাবে ${totalImported} জন শিক্ষার্থী সেভ হয়েছে!`);
+                // যদি SheetJS ব্যর্থ হয় বা সাধারণ CSV হয়, তবে প্লেইন টেক্সট হিসেবে পড়া
+                if (!rows || rows.length === 0) {
+                    const text = new TextDecoder("utf-8").decode(e.target.result);
+                    rows = text.split(/\r?\n/).map(line => line.split(/[,;\t]/));
+                }
+
+                let currentGroup = "Group-A";
+                let parsedStudents = [];
+
+                for (let row of rows) {
+                    if (!row || row.length === 0) continue;
+                    const rowStr = (Array.isArray(row) ? row.join(' ') : String(row)).toUpperCase();
+
+                    // গ্রুপ চিহ্নিত করা
+                    if (rowStr.includes('GROUP-A')) currentGroup = "Group-A";
+                    else if (rowStr.includes('GROUP-B')) currentGroup = "Group-B";
+                    else if (rowStr.includes('GROUP-C')) currentGroup = "Group-C";
+
+                    // ছাত্রের ৬ সংখ্যার আইডি খোঁজা (যেমন: 702723, 100917)
+                    let stdId = null;
+                    let idIdx = -1;
+
+                    for (let i = 0; i < row.length; i++) {
+                        let c = String(row[i] || '').trim().replace(/['"]/g, '');
+                        if (/^\d{6}$/.test(c)) {
+                            stdId = c;
+                            idIdx = i;
+                            break;
+                        }
+                    }
+
+                    // ছাত্র পাওয়া গেলে তথ্য সংরক্ষণ
+                    if (stdId && idIdx !== -1) {
+                        let name = row[idIdx + 1] ? String(row[idIdx + 1]).trim().replace(/['"]/g, '') : "Student";
+                        let roll = row[idIdx + 2] ? parseInt(row[idIdx + 2]) || 1 : 1;
+                        let sec = row[idIdx + 3] ? String(row[idIdx + 3]).trim().replace(/['"]/g, '').toUpperCase() : "SA";
+
+                        // কলাম এদিক ওদিক হলে নাম ঠিক করা
+                        if (!name || /^\d+$/.test(name)) {
+                            if (row[idIdx - 1] && isNaN(row[idIdx - 1])) name = String(row[idIdx - 1]).trim();
+                        }
+
+                        parsedStudents.push({
+                            id: stdId,
+                            name: name,
+                            roll: roll,
+                            group: "Science",
+                            subGroup: currentGroup,
+                            section: sec,
+                            created: new Date().toISOString()
+                        });
+                    }
+                }
+
+                if (parsedStudents.length > 0) {
+                    // ১. সাথে সাথে ব্রাউজারের টেবিলে সব ছাত্র তুলে দেওয়া (Instant Render)
+                    studentsList = parsedStudents;
+                    window.renderEvalStudents();
+
+                    // ২. ব্যাকগ্রাউন্ডে ফায়ারবেসে সুরক্ষিতভাবে সেভ করা
+                    for (let s of parsedStudents) {
+                        if (window.writeToFirebase) {
+                            window.writeToFirebase(`evaluation_system/students/${s.id}`, s);
+                        }
+                    }
+
+                    alert(`🎉 অভিনন্দন! সফলভাবে ${parsedStudents.length} জন শিক্ষার্থীর তালিকা লোড হয়েছে!`);
+                } else {
+                    alert("সতর্কতা: ফাইল থেকে কোনো ছাত্রের আইডি (৬ সংখ্যার নম্বর) পাওয়া যায়নি। দয়া করে আপনার মূল এক্সেল বা সিএসভি ফাইলটি চেক করুন।");
+                }
 
                 input.value = '';
-                window.renderEvalStudents();
 
             } catch (err) {
-                if (window.hideLoader) window.hideLoader();
-                alert("Error reading file: " + err.message);
+                alert("ফাইল প্রসেস করতে সমস্যা: " + err.message);
             }
         };
         reader.readAsArrayBuffer(file);
     };
 
+    // ==========================================================
+    // ৩. শিক্ষার্থী টেবিল দেখানো (Table Rendering)
+    // ==========================================================
     window.renderEvalStudents = function () {
         const tbody = document.getElementById('evalStudentTbody');
         if (!tbody) return;
         tbody.innerHTML = '';
 
-        const grp = document.getElementById('evalFilterGroup').value;
-        const q = (document.getElementById('evalSearchInp').value || '').toLowerCase().trim();
+        const grpEl = document.getElementById('evalFilterGroup');
+        const grp = grpEl ? grpEl.value : 'All';
+        const qEl = document.getElementById('evalSearchInp');
+        const q = (qEl ? qEl.value : '').toLowerCase().trim();
 
         let list = studentsList.filter(s => {
             let mGrp = true;
@@ -357,6 +361,11 @@
             let mQ = !q || String(s.id).includes(q) || (s.name || '').toLowerCase().includes(q) || String(s.roll).includes(q);
             return mGrp && mQ;
         });
+
+        if (list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 40px; color: #94a3b8;">কোনো শিক্ষার্থীর তথ্য পাওয়া যায়নি। ফাইল আপলোড করুন।</td></tr>';
+            return;
+        }
 
         list.sort((a, b) => (parseInt(a.roll) || 0) - (parseInt(b.roll) || 0));
 
@@ -378,11 +387,13 @@
 
     window.deleteEvalStudent = function (id) {
         if (confirm("Delete student ID " + id + "?")) {
-            window.writeToFirebase(`evaluation_system/students/${id}`, null);
+            studentsList = studentsList.filter(s => s.id !== id);
+            window.renderEvalStudents();
+            if (window.writeToFirebase) window.writeToFirebase(`evaluation_system/students/${id}`, null);
         }
     };
 
-    window.addNewEvalStudent = async function () {
+    window.addNewEvalStudent = function () {
         const id = prompt("Student ID (e.g. 702723):");
         if (!id) return;
         const name = prompt("Student Name:");
@@ -391,8 +402,9 @@
         const sec = prompt("Section (SA / DH / SHO):", "SA");
 
         const obj = { id, name, roll: parseInt(roll)||1, group: "Science", subGroup: grp, section: sec };
-        await window.writeToFirebase(`evaluation_system/students/${id}`, obj);
-        if (window.showToast) window.showToast("Added!", "success");
+        studentsList.push(obj);
+        window.renderEvalStudents();
+        if (window.writeToFirebase) window.writeToFirebase(`evaluation_system/students/${id}`, obj);
     };
 
     // ==========================================================
@@ -436,31 +448,29 @@
         });
     };
 
-    window.resetEvalPin = async function (k) {
+    window.resetEvalPin = function (k) {
         if (confirm("Reset PIN for " + k + "?")) {
-            await window.writeToFirebase(`evaluation_system/pins/${k}`, null);
-            if (window.showToast) window.showToast("PIN Reset for " + k, "info");
+            delete subjectPins[k];
+            window.renderEvalPins();
+            if (window.writeToFirebase) window.writeToFirebase(`evaluation_system/pins/${k}`, null);
         }
     };
 
-    window.saveEvalExamSettings = async function () {
+    window.saveEvalExamSettings = function () {
         currentExam.title = document.getElementById('evalExTitle').value;
         currentExam.date = document.getElementById('evalExDate').value;
         currentExam.max = parseFloat(document.getElementById('evalExMax').value) || 15;
-        await window.writeToFirebase(`evaluation_system/exams/${currentExam.id}`, currentExam);
-        if (window.showToast) window.showToast("Exam saved!", "success");
+        if (window.writeToFirebase) window.writeToFirebase(`evaluation_system/exams/${currentExam.id}`, currentExam);
+        alert("Exam settings saved!");
     };
 
     window.copyEvalTeacherLink = function () {
         const url = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + "teacher_mobile_entry.html";
-        navigator.clipboard.writeText(url).then(() => {
-            if (window.showToast) window.showToast("Copied Link!", "success");
-            else alert("Copied: " + url);
-        });
+        navigator.clipboard.writeText(url).then(() => alert("Copied Link: " + url));
     };
 
     // ==========================================================
-    // ৫. টেবুলেশন শিট (Total 180 ও ১ থেকে ১৪৬ মেধা তালিকা)
+    // ৫. টেবুলেশন ও মেধা তালিকা (Total 180)
     // ==========================================================
     window.renderEvalTabulation = function () {
         const grp = document.getElementById('evalTabGroup').value;
@@ -469,17 +479,8 @@
         const meta = document.getElementById('evalPrintMeta');
         if (!thead || !tbody) return;
 
-        if (grp === 'Humanities') {
-            meta.innerText = "Class: Ten (Humanities) • Date: " + currentExam.date + " • 22 Students";
-            buildGenericTab('Humanities', 135, SUBJECTS.Humanities, thead, tbody);
-        } else if (grp === 'B.Studies') {
-            meta.innerText = "Class: Ten (B.Studies) • Date: " + currentExam.date + " • 5 Students";
-            buildGenericTab('B.Studies', 120, SUBJECTS.BStudies, thead, tbody);
-        } else {
-            // Science: Group-A, B, C কম্বাইন্ড
-            meta.innerText = "Class: Ten (Science) • Date: " + currentExam.date + " • Total: 180 • Combined Sections (SA, DH, SHO)";
-            buildScienceTab(thead, tbody, grp);
-        }
+        meta.innerText = "Class: Ten (Science) • Date: " + currentExam.date + " • Total: 180 • Combined Sections (SA, DH, SHO)";
+        buildScienceTab(thead, tbody, grp);
     };
 
     function buildScienceTab(thead, tbody, filterSubGrp) {
@@ -529,47 +530,22 @@
         });
     }
 
-    function buildGenericTab(grpName, maxTot, subs, thead, tbody) {
-        thead.innerHTML = `
-            <tr style="background:#f1f5f9;">
-                <th style="border:1px solid #000; padding:6px; width:45px;">SL</th>
-                <th style="border:1px solid #000; padding:6px; width:80px;">Std ID</th>
-                <th style="border:1px solid #000; padding:6px; text-align:left; padding-left:10px;">Student Name</th>
-                <th style="border:1px solid #000; padding:6px; width:50px;">Roll</th>
-                ${subs.map(s => `<th style="border:1px solid #000; padding:6px;">${s.key}</th>`).join('')}
-                <th style="border:1px solid #000; padding:6px; width:80px; background:#e2e8f0;">Total (${maxTot})</th>
-            </tr>
-        `;
+    // ফায়ারবেস ব্যাকআপ সিঙ্ক
+    function initFirebaseSync() {
+        if (!window.getDatabase || !window.ref) return;
+        const db = window.getDatabase();
 
-        let list = studentsList.filter(s => s.group === grpName);
-        let computed = list.map(s => {
-            const m = examMarks[s.id] || {};
-            let total = 0;
-            subs.forEach(sb => {
-                const v = parseFloat(m[sb.key]);
-                if (!isNaN(v)) total += v;
+        import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(({ onValue }) => {
+            onValue(window.ref(db, 'evaluation_system/students'), (snap) => {
+                const val = snap.val();
+                if (val) {
+                    studentsList = Object.values(val);
+                    window.renderEvalStudents();
+                }
             });
-            return { ...s, total, marks: m };
-        });
-
-        computed.sort((a, b) => b.total - a.total);
-
-        tbody.innerHTML = '';
-        computed.forEach((s, idx) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="border:1px solid #000; text-align:center; font-weight:700;">${idx + 1}</td>
-                <td style="border:1px solid #000; text-align:center; font-family:monospace; font-weight:700;">${s.id}</td>
-                <td style="border:1px solid #000; text-align:left; padding-left:10px; font-weight:700;">${s.name}</td>
-                <td style="border:1px solid #000; text-align:center;">${s.roll || '-'}</td>
-                ${subs.map(sb => `<td style="border:1px solid #000; text-align:center;">${s.marks[sb.key] !== undefined ? s.marks[sb.key] : '-'}</td>`).join('')}
-                <td style="border:1px solid #000; text-align:center; font-weight:800; background:#f8fafc;">${s.total}</td>
-            `;
-            tbody.appendChild(tr);
-        });
+        }).catch(err => console.log("Firebase sync waiting..."));
     }
 
-    // লোড হওয়া
     function runModule() {
         injectExamModule();
         setTimeout(initFirebaseSync, 1000);
