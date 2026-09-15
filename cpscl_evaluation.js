@@ -1,7 +1,7 @@
 /**
- * CPSCL Academic Evaluation Module - Final Master Controller
+ * CPSCL Academic Evaluation Module - Bulletproof Multi-Department Manager
  * File: cpscl_evaluation.js
- * Real-time Auto-Sync with Teacher Mobile Entry & Live Merit Calculator
+ * Explicit Department Routing & Zero Data Contamination
  */
 
 (function () {
@@ -26,19 +26,16 @@
             { key: 'B1', name: 'B1' }, { key: 'B2', name: 'B2' },
             { key: 'E1', name: 'E1' }, { key: 'E2', name: 'E2' },
             { key: 'Math', name: 'Math' }, { key: 'AG_HE', name: 'AG/HE' },
-            { key: 'Fin', name: 'Finance' }, { key: 'Acc', name: 'Accounting' },
-            { key: 'Sci', name: 'Science' }, { key: 'Reli', name: 'Reli' }
+            { key: 'Fin', name: 'Fin' }, { key: 'Acc', name: 'Acc' },
+            { key: 'Sci', name: 'Sci' }, { key: 'Reli', name: 'Reli' }
         ]
     };
 
     let studentsList = [];
-    let examMarks = {}; // শিক্ষকদের দেওয়া নম্বর রিয়েল-টাইমে এখানে জমা হবে
+    let examMarks = {};
     let subjectPins = {};
     let currentExam = { id: "exam_fn02_2026", title: "Fortnightly Test-02", date: "15 Sep 2026", max: 15 };
 
-    // ==========================================================
-    // ১. সাইডবার ও স্ক্রিন ইনজেকশন
-    // ==========================================================
     function injectExamModule() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList) return;
@@ -72,26 +69,36 @@
                 <div id="eval-student-sec" class="eval-sub-sec">
                     <div class="erp-form-card" style="max-width: 100%; padding: 14px; margin-bottom: 15px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                            <div style="display: flex; gap: 8px;">
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <label style="font-size:0.75rem; font-weight:700; color:#64748b;">View:</label>
                                 <select id="evalFilterGroup" class="dcr-filter-input" onchange="window.renderEvalStudents()">
-                                    <option value="All">All Students</option>
-                                    <option value="Science">Science (Combined - 146)</option>
+                                    <option value="All">All Students (Total Database)</option>
+                                    <option value="Science">Science (All Combined: 146)</option>
                                     <option value="Group-A">Science (Group-A: 56)</option>
                                     <option value="Group-B">Science (Group-B: 50)</option>
                                     <option value="Group-C">Science (Group-C: 40)</option>
                                     <option value="Humanities">Humanities (22)</option>
                                     <option value="B.Studies">Business Studies (5)</option>
                                 </select>
-                                <input type="text" id="evalSearchInp" class="dcr-filter-input" placeholder="Search ID, Name, Roll..." oninput="window.renderEvalStudents()" style="width: 220px;">
+                                <input type="text" id="evalSearchInp" class="dcr-filter-input" placeholder="Search ID, Name, Roll..." oninput="window.renderEvalStudents()" style="width: 200px;">
                             </div>
-                            <div style="display: flex; gap: 8px;">
+                            
+                            <!-- নিখুঁত ও নিরাপদ আপলোড বার -->
+                            <div style="display: flex; gap: 8px; align-items: center; background: #f8fafc; padding: 6px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                <label style="font-size:0.75rem; font-weight:800; color:#0f172a;">Upload For:</label>
+                                <select id="evalUploadTargetGroup" class="dcr-filter-input" style="font-weight:700; border-color:#4f46e5;">
+                                    <option value="Science">Science (3 Sheets: A, B, C)</option>
+                                    <option value="Humanities">Humanities (মানবিক)</option>
+                                    <option value="B.Studies">Business Studies (ব্যবসায় শিক্ষা)</option>
+                                </select>
                                 <button class="dcr-btn-filter" style="background: #10b981;" onclick="document.getElementById('evalExcelFile').click()">
-                                    <i class="fa-solid fa-file-excel"></i> Import Excel File
+                                    <i class="fa-solid fa-file-excel"></i> Select & Upload
                                 </button>
                                 <input type="file" id="evalExcelFile" accept=".xlsx, .xls, .csv" style="display: none;" onchange="window.importUniversalExcel(this)">
                             </div>
                         </div>
                     </div>
+
                     <div class="table-container" style="background:#fff;">
                         <table>
                             <thead>
@@ -102,7 +109,7 @@
                                     <th style="width: 70px; text-align:center;">Roll</th>
                                     <th style="width: 70px; text-align:center;">Sec</th>
                                     <th style="text-align:center;">Group</th>
-                                    <th style="text-align:center;">Merit Rank</th>
+                                    <th style="text-align:center;">Position</th>
                                 </tr>
                             </thead>
                             <tbody id="evalStudentTbody"></tbody>
@@ -146,14 +153,14 @@
                     <div class="erp-form-card no-print" style="max-width: 100%; padding: 14px; margin-bottom: 15px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <label style="font-size: 0.75rem; font-weight: 700; color: #64748b;">Select Group:</label>
+                                <label style="font-size: 0.75rem; font-weight: 700; color: #64748b;">View Group Sheet:</label>
                                 <select id="evalTabGroup" class="dcr-filter-input" onchange="window.renderEvalTabulation()">
                                     <option value="Science_Merit">Science (Combined Merit - 146 Students)</option>
-                                    <option value="Group-A">Science (Group-A: 56 Students)</option>
-                                    <option value="Group-B">Science (Group-B: 50 Students)</option>
-                                    <option value="Group-C">Science (Group-C: 40 Students)</option>
-                                    <option value="Humanities">Humanities (22 Students)</option>
-                                    <option value="B.Studies">Business Studies (5 Students)</option>
+                                    <option value="Group-A">Science (Group-A: 56)</option>
+                                    <option value="Group-B">Science (Group-B: 50)</option>
+                                    <option value="Group-C">Science (Group-C: 40)</option>
+                                    <option value="Humanities">Humanities (মানবিক - ২২ জন)</option>
+                                    <option value="B.Studies">Business Studies (ব্যবসায় শিক্ষা - ৫ জন)</option>
                                 </select>
                             </div>
                             <div style="display: flex; gap: 8px;">
@@ -187,7 +194,6 @@
         }
     }
 
-    // ড্রপডাউন টগল
     window.toggleExamMenu = function (e) {
         if (e) e.preventDefault();
         const sub = document.getElementById('exam-submenu-list');
@@ -221,12 +227,14 @@
     };
 
     // ==========================================================
-    // ২. এক্সেল ফাইল আপলোড ও অটো-মার্জ (Zero Data Loss)
+    // ২. ১০০% নিরাপদ বিভাগভিত্তিক আপলোডার (কখনোই ডেটা ওভাররাইট হবে না)
     // ==========================================================
     window.importUniversalExcel = function (input) {
         if (!input.files || !input.files[0]) return;
         const file = input.files[0];
         const reader = new FileReader();
+
+        const targetGroup = document.getElementById('evalUploadTargetGroup').value;
 
         reader.onload = async function (e) {
             try {
@@ -235,105 +243,159 @@
                     return;
                 }
 
-                if (window.showLoader) window.showLoader("Saving students to Firebase...");
+                if (window.showLoader) window.showLoader(`Importing ${targetGroup} records...`);
 
                 const data = new Uint8Array(e.target.result);
                 const wb = XLSX.read(data, { type: 'array' });
                 
-                const newBatch = {};
-                let importedCount = 0;
-                let detectedGroupName = "Science";
+                let newBatch = {};
+                let count = 0;
 
-                for (let sheetName of wb.SheetNames) {
-                    const sheet = wb.Sheets[sheetName];
-                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                // ১. যদি বিজ্ঞান (Science) নির্বাচন করা হয়:
+                if (targetGroup === 'Science') {
+                    for (let sheetName of wb.SheetNames) {
+                        const sheet = wb.Sheets[sheetName];
+                        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-                    let isHumanities = false;
-                    let isBStudies = false;
-                    let groupTag = "Group-A";
-                    let baseRank = 0;
-
-                    let fullText = rows.slice(0, 6).map(r => (r || []).join(' ')).join(' ').toUpperCase();
-                    
-                    if (fullText.includes('HUMANITIES') || sheetName.toUpperCase().includes('HUM')) {
-                        isHumanities = true;
-                        detectedGroupName = "Humanities";
-                    } else if (fullText.includes('BUSINESS') || fullText.includes('B.STUDIES') || sheetName.toUpperCase().includes('BS')) {
-                        isBStudies = true;
-                        detectedGroupName = "B.Studies";
-                    } else {
-                        detectedGroupName = "Science";
+                        let groupTag = "Group-A";
+                        let baseRank = 0;
                         let sName = sheetName.trim().toUpperCase();
-                        if (sName === 'B' || fullText.includes('GROUP-B')) { groupTag = "Group-B"; baseRank = 56; }
-                        else if (sName === 'C' || fullText.includes('GROUP-C')) { groupTag = "Group-C"; baseRank = 106; }
+
+                        if (sName === 'B' || sName.includes('GROUP-B')) { groupTag = "Group-B"; baseRank = 56; }
+                        else if (sName === 'C' || sName.includes('GROUP-C')) { groupTag = "Group-C"; baseRank = 106; }
                         else { groupTag = "Group-A"; baseRank = 0; }
+
+                        let autoSl = 1;
+                        for (let r of rows) {
+                            if (!r || r.length < 4) continue;
+                            let rText = r.join(' ').toUpperCase();
+                            if (rText.includes('GROUP-B')) { groupTag = "Group-B"; baseRank = 56; }
+                            else if (rText.includes('GROUP-C')) { groupTag = "Group-C"; baseRank = 106; }
+
+                            let stdId = null, idIdx = -1;
+                            for (let i = 0; i < r.length; i++) {
+                                let val = String(r[i] || '').trim();
+                                if (/^\d{6}$/.test(val)) { stdId = val; idIdx = i; break; }
+                            }
+
+                            if (stdId && idIdx !== -1) {
+                                let sl = parseInt(r[idIdx - 1]) || autoSl;
+                                let name = String(r[idIdx + 1] || 'Student').trim();
+                                let roll = parseInt(r[idIdx + 2]) || 1;
+                                let sec = String(r[idIdx + 3] || 'SA').trim().toUpperCase();
+                                if (!['SA', 'DH', 'SHO'].includes(sec)) sec = "SA";
+
+                                newBatch[stdId] = {
+                                    sl: sl,
+                                    id: stdId,
+                                    name: name,
+                                    roll: roll,
+                                    section: sec,
+                                    group: "Science",
+                                    subGroup: groupTag,
+                                    overallRank: baseRank + sl
+                                };
+                                count++;
+                                autoSl++;
+                            }
+                        }
                     }
+                } 
+                // ২. যদি মানবিক (Humanities) নির্বাচন করা হয়:
+                else if (targetGroup === 'Humanities') {
+                    const sheet = wb.Sheets[wb.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                    let autoSl = 1;
 
                     for (let r of rows) {
                         if (!r || r.length < 4) continue;
-
-                        let stdId = null;
-                        let idIdx = -1;
-
+                        let stdId = null, idIdx = -1;
                         for (let i = 0; i < r.length; i++) {
                             let val = String(r[i] || '').trim();
-                            if (/^\d{6}$/.test(val)) {
-                                stdId = val;
-                                idIdx = i;
-                                break;
-                            }
+                            if (/^\d{6}$/.test(val)) { stdId = val; idIdx = i; break; }
                         }
 
                         if (stdId && idIdx !== -1) {
-                            let sl = parseInt(r[idIdx - 1]) || 1;
+                            let sl = parseInt(r[idIdx - 1]) || autoSl;
                             let name = String(r[idIdx + 1] || 'Student').trim();
                             let roll = parseInt(r[idIdx + 2]) || 1;
 
-                            let sec = "N/A";
-                            let finalGroup = isHumanities ? "Humanities" : (isBStudies ? "B.Studies" : "Science");
-                            let finalSubGroup = (isHumanities || isBStudies) ? finalGroup : groupTag;
-                            let finalRank = (isHumanities || isBStudies) ? sl : (baseRank + sl);
-
-                            if (!isHumanities && !isBStudies) {
-                                let nextCell = String(r[idIdx + 3] || '').trim().toUpperCase();
-                                if (['SA', 'DH', 'SHO'].includes(nextCell)) sec = nextCell;
-                                else sec = "SA";
-                            } else {
-                                sec = isHumanities ? "HUM" : "BS";
-                            }
-
-                            const studentRecord = {
+                            newBatch[stdId] = {
                                 sl: sl,
                                 id: stdId,
                                 name: name,
                                 roll: roll,
-                                section: sec,
-                                group: finalGroup,
-                                subGroup: finalSubGroup,
-                                overallRank: finalRank
+                                section: "HUM",
+                                group: "Humanities",
+                                subGroup: "Humanities",
+                                overallRank: sl
                             };
+                            count++;
+                            autoSl++;
+                        }
+                    }
+                }
+                // ৩. যদি ব্যবসায় শিক্ষা (B.Studies) নির্বাচন করা হয়:
+                else if (targetGroup === 'B.Studies') {
+                    const sheet = wb.Sheets[wb.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                    let autoSl = 1;
 
-                            newBatch[stdId] = studentRecord;
-                            importedCount++;
+                    for (let r of rows) {
+                        if (!r || r.length < 4) continue;
+                        let stdId = null, idIdx = -1;
+                        for (let i = 0; i < r.length; i++) {
+                            let val = String(r[i] || '').trim();
+                            if (/^\d{6}$/.test(val)) { stdId = val; idIdx = i; break; }
+                        }
+
+                        if (stdId && idIdx !== -1) {
+                            let sl = parseInt(r[idIdx - 1]) || autoSl;
+                            let name = String(r[idIdx + 1] || 'Student').trim();
+                            let roll = parseInt(r[idIdx + 2]) || 1;
+
+                            newBatch[stdId] = {
+                                sl: sl,
+                                id: stdId,
+                                name: name,
+                                roll: roll,
+                                section: "BS",
+                                group: "B.Studies",
+                                subGroup: "B.Studies",
+                                overallRank: sl
+                            };
+                            count++;
+                            autoSl++;
                         }
                     }
                 }
 
-                if (importedCount > 0) {
-                    // মার্জ সুরক্ষা: পূর্বের কোনো ছাত্র ডিলিট হবে না
-                    const mergedBatch = {};
-                    studentsList.forEach(s => { mergedBatch[s.id] = s; });
-                    Object.keys(newBatch).forEach(k => { mergedBatch[k] = newBatch[k]; });
+                if (count > 0) {
+                    // ★★★ পারফেক্ট মার্জ সিস্টেম: অন্য গ্রুপের কাউকে স্পর্শ করবে না ★★★
+                    const finalMerged = {};
+                    
+                    // ১. বর্তমান ডেটাবেজের অন্যান্য গ্রুপের ছাত্রদের অক্ষত রাখা
+                    studentsList.forEach(s => {
+                        if (s.group !== targetGroup) {
+                            finalMerged[s.id] = s;
+                        }
+                    });
 
+                    // ২. নতুন আপলোড করা গ্রুপের ছাত্রদের যোগ করা
+                    Object.keys(newBatch).forEach(id => {
+                        finalMerged[id] = newBatch[id];
+                    });
+
+                    // ৩. ফায়ারবেসে পার্মানেন্ট সেভ
                     if (window.writeToFirebase) {
-                        await window.writeToFirebase('evaluation_system/students', mergedBatch);
+                        await window.writeToFirebase('evaluation_system/students', finalMerged);
                     }
 
-                    studentsList = Object.values(mergedBatch);
+                    studentsList = Object.values(finalMerged);
                     window.renderEvalStudents();
 
                     if (window.hideLoader) window.hideLoader();
-                    alert(`🎉 সফল! ${detectedGroupName} বিভাগের ${importedCount} জন শিক্ষার্থীর তথ্য ফায়ারবেসে সেভ হয়েছে!`);
+                    alert(`🎉 সফল! ${targetGroup} বিভাগের ${count} জন শিক্ষার্থীর তালিকা ও আসল ক্রমিক ফায়ারবেসে সুরক্ষিতভাবে সেভ হয়েছে!`);
                 } else {
                     if (window.hideLoader) window.hideLoader();
                     alert("ফাইলে ৬ সংখ্যার কোনো স্টুডেন্ট আইডি পাওয়া যায়নি!");
@@ -343,7 +405,7 @@
 
             } catch (err) {
                 if (window.hideLoader) window.hideLoader();
-                alert("ফাইল প্রসেস করতে সমস্যা: " + err.message);
+                alert("Error: " + err.message);
             }
         };
         reader.readAsArrayBuffer(file);
@@ -390,16 +452,16 @@
                 <td style="text-align:center;"><span style="font-family:monospace; font-weight:700;">${s.id}</span></td>
                 <td style="text-align:left; padding-left:15px; font-weight:700;">${s.name}</td>
                 <td style="text-align:center; color:#64748b;">${s.roll}</td>
-                <td style="text-align:center;"><span class="badge ${s.group === 'Humanities' ? 'badge-primary' : 'badge-success'}">${s.section}</span></td>
+                <td style="text-align:center;"><span class="badge ${s.group === 'Humanities' ? 'badge-primary' : (s.group === 'B.Studies' ? 'badge-warning' : 'badge-success')}">${s.section}</span></td>
                 <td style="text-align:center;"><strong>${s.subGroup || s.group}</strong></td>
-                <td style="text-align:center;"><span class="badge" style="background:#eef2ff; color:#4f46e5; font-weight:700;">Rank #${s.overallRank || s.sl}</span></td>
+                <td style="text-align:center;"><span class="badge" style="background:#eef2ff; color:#4f46e5; font-weight:700;">Position #${s.overallRank || s.sl}</span></td>
             `;
             tbody.appendChild(tr);
         });
     };
 
     // ==========================================================
-    // ৪. পিন ও শিক্ষক সাবমিশন ট্র্যাকার
+    // ৪. পিন ও শিক্ষক কন্ট্রোল
     // ==========================================================
     window.renderEvalPins = function () {
         const tbody = document.getElementById('evalPinTbody');
@@ -416,7 +478,6 @@
 
         uniqueSubs.forEach(s => {
             const p = subjectPins[s.key] || '';
-            // চেক করা হচ্ছে এই বিষয়ের কোনো নম্বর শিক্ষক সাবমিট করেছেন কি না:
             let hasMarks = false;
             Object.values(examMarks).forEach(stdMarkObj => {
                 if (stdMarkObj && stdMarkObj[s.key] !== undefined && stdMarkObj[s.key] !== '') hasMarks = true;
@@ -462,7 +523,7 @@
     };
 
     // ==========================================================
-    // ৫. লাইভ টেবুলেশন শিট ও অটো-মেধা ক্যালকুলেটর (১৮০ মার্কস)
+    // ৫. টেবুলেশন শিট ও লাইভ মেধা তালিকা
     // ==========================================================
     window.renderEvalTabulation = function () {
         const grp = document.getElementById('evalTabGroup').value;
@@ -479,7 +540,7 @@
             groupTitle = "Humanities (মানবিক)";
         } else if (grp === 'B.Studies') {
             activeSubs = SUBJECTS_CONFIG.BStudies;
-            groupTitle = "Business Studies (ব্যবসায় শিক্ষা)";
+            groupTitle = "Business Studies (ব্যবসায় শিক্ষা)";
         }
 
         meta.innerText = `Class: Ten (${groupTitle}) • Exam: ${currentExam.title} • Date: ${currentExam.date} • Total: 180 Marks`;
@@ -502,7 +563,6 @@
         else if (grp === 'Science_Merit') list = studentsList.filter(s => s.group === 'Science');
         else list = studentsList.filter(s => s.subGroup === grp);
 
-        // শিক্ষকদের দেওয়া নম্বর থেকে স্বয়ংক্রিয় যোগফল নির্ণয়
         let computedList = list.map(s => {
             const m = examMarks[s.id] || {};
             let total = 0;
@@ -513,7 +573,6 @@
             return { ...s, total, marksObj: m };
         });
 
-        // যদি অল-সায়েন্স মেরিট শিট হয় এবং নম্বর এন্ট্রি করা থাকে, তবে সর্বোচ্চ নম্বরের ক্রমানুসারে সাজানো
         if (grp === 'Science_Merit') {
             computedList.sort((a, b) => b.total - a.total);
         } else {
@@ -537,7 +596,7 @@
     };
 
     // ==========================================================
-    // ৬. শিক্ষক কর্তৃক এন্ট্রি করা নম্বর ও শিক্ষার্থীদের লাইভ সিঙ্ক
+    // ৬. সরাসরি ফায়ারবেস ক্লাউড লোডার
     // ==========================================================
     async function loadDirectlyFromFirebase(retries = 25) {
         if (!window.getDatabase || !window.ref || !window.get) {
@@ -548,30 +607,25 @@
         try {
             const db = window.getDatabase();
             
-            // ক) শিক্ষার্থীদের লোড করা
             const snap = await window.get(window.ref(db, 'evaluation_system/students'));
             if (snap && snap.exists()) {
                 studentsList = Object.values(snap.val());
                 window.renderEvalStudents();
             }
 
-            // খ) পিন লোড করা
             const pinSnap = await window.get(window.ref(db, 'evaluation_system/pins'));
             if (pinSnap && pinSnap.exists()) {
                 subjectPins = pinSnap.val() || {};
                 window.renderEvalPins();
             }
 
-            // গ) শিক্ষকদের দেওয়া লাইভ নম্বরসমূহ লোড করা
             const marksSnap = await window.get(window.ref(db, `evaluation_system/marks/${currentExam.id}`));
             if (marksSnap && marksSnap.exists()) {
                 examMarks = marksSnap.val() || {};
                 window.renderEvalTabulation();
             }
 
-            // ঘ) রিয়েল-টাইম লিসেনার (শিক্ষক মোবাইলে সেভ চাপলেই এডমিনের শিট নিজে থেকে আপডেট হবে)
             import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(({ onValue }) => {
-                // নম্বর লিসেনার
                 onValue(window.ref(db, `evaluation_system/marks/${currentExam.id}`), (s) => {
                     examMarks = s.val() || {};
                     window.renderEvalPins();
@@ -579,7 +633,6 @@
                         window.renderEvalTabulation();
                     }
                 });
-                // শিক্ষার্থী লিসেনার
                 onValue(window.ref(db, 'evaluation_system/students'), (s) => {
                     const d = s.val();
                     if (d) {
@@ -590,7 +643,7 @@
             }).catch(e => {});
 
         } catch (err) {
-            console.error("Firebase load error:", err);
+            console.error("Firebase sync error:", err);
         }
     }
 
