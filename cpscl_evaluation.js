@@ -518,10 +518,11 @@
     };
 
     window.copyEvalTeacherLink = function () {
-        const url = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + "teacher_mobile_entry.html";
-        navigator.clipboard.writeText(url).then(() => alert("Teacher link copied:\n" + url));
-    };
-
+    const liveTeacherUrl = "https://cpscl.vercel.app";
+    navigator.clipboard.writeText(liveTeacherUrl).then(() => {
+        alert("Teacher link copied successfully!\n" + liveTeacherUrl);
+    });
+};
     // ==========================================================
     // ৫. টেবুলেশন শিট ও লাইভ মেধা তালিকা
     // ==========================================================
