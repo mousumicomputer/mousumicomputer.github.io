@@ -1,12 +1,14 @@
 /**
- * Standalone Academic Evaluation Module
+ * CPSCL Complete Autonomous Academic Evaluation Module
  * File: cpscl_evaluation.js
+ * Includes: Smart Excel Parser (Group-A, B, C Auto Detection) & Zero-Overwrite Firebase Sync
  */
 
 (function () {
     const SUBJECTS = {
         Science: [
-            { key: 'B2', name: 'Bangla 2nd' }, { key: 'E2', name: 'English 2nd' },
+            { key: 'B1', name: 'Bangla 1st' }, { key: 'B2', name: 'Bangla 2nd' },
+            { key: 'E1', name: 'English 1st' }, { key: 'E2', name: 'English 2nd' },
             { key: 'Math', name: 'General Math' }, { key: 'HM', name: 'Higher Math / AG' },
             { key: 'Phy', name: 'Physics' }, { key: 'Che', name: 'Chemistry' },
             { key: 'Bio', name: 'Biology' }, { key: 'BGS', name: 'BGS' },
@@ -30,16 +32,15 @@
     let studentsList = [];
     let examMarks = {};
     let subjectPins = {};
-    let currentExam = { id: "exam_fn02_2026", title: "Fortnightly Test-02", date: "12 Sep 2026", max: 15 };
+    let currentExam = { id: "exam_fn02_2026", title: "Fortnightly Test-02", date: "15 Sep 2026", max: 15 };
 
     // ==========================================================
-    // ১. সাইডবারে ইউনিক ড্রপডাউন ইনজেক্ট (২নং ছবির হুবহু স্টাইল)
+    // ১. সাইডবারে ড্রপডাউন ও স্ক্রিন স্বয়ংক্রিয়ভাবে ইনজেক্ট করা
     // ==========================================================
     function injectExamModule() {
         const menuList = document.querySelector('.menu-list');
         if (!menuList) return;
 
-        // আগের কোনো ডুপ্লিকেট থাকলে রিমুভ করা
         const oldMenu = document.getElementById('menu-exam-eval-parent');
         if (oldMenu) oldMenu.remove();
 
@@ -51,17 +52,14 @@
                 <span class="menu-link-inner"><i class="fa-solid fa-file-signature"></i> <span>Exam Evaluation</span></span>
                 <i class="fa-solid fa-chevron-down chevron-icon" id="exam-chevron-icon"></i>
             </a>
-            <ul class="submenu-list" id="exam-submenu-list">
+            <ul class="submenu-list" id="exam-submenu-list" style="display: none;">
                 <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-student-sec')"><i class="fa-solid fa-angle-right"></i> <span>Student Database</span></a></li>
                 <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-config-sec')"><i class="fa-solid fa-angle-right"></i> <span>Exam & PIN Setup</span></a></li>
                 <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-tab-sec')"><i class="fa-solid fa-angle-right"></i> <span>Tabulation & Merit</span></a></li>
             </ul>
         `;
-
-        // সাইডবারের শেষের দিকে নিরাপদে ইনসার্ট করা
         menuList.appendChild(evalLi);
 
-        // মূল স্ক্রিন ইনজেক্ট (Main Wrapper এর ভেতর)
         const mainWrapper = document.querySelector('.main-wrapper');
         if (mainWrapper && !document.getElementById('exam-eval-view')) {
             const viewDiv = document.createElement('div');
@@ -75,14 +73,14 @@
                             <div style="display: flex; gap: 8px;">
                                 <select id="evalFilterGroup" class="dcr-filter-input" onchange="window.renderEvalStudents()">
                                     <option value="All">All Groups (All Students)</option>
-                                    <option value="Science">Science (Combined)</option>
-                                    <option value="SA">Science (Sec: SA)</option>
-                                    <option value="DH">Science (Sec: DH)</option>
-                                    <option value="SHO">Science (Sec: SHO)</option>
+                                    <option value="Group-A">Science (Group-A: 56)</option>
+                                    <option value="Group-B">Science (Group-B: 50)</option>
+                                    <option value="Group-C">Science (Group-C: 40)</option>
+                                    <option value="Science">Science (All Combined: 146)</option>
                                     <option value="Humanities">Humanities</option>
                                     <option value="B.Studies">Business Studies</option>
                                 </select>
-                                <input type="text" id="evalSearchInp" class="dcr-filter-input" placeholder="Search ID or Name..." oninput="window.renderEvalStudents()" style="width: 200px;">
+                                <input type="text" id="evalSearchInp" class="dcr-filter-input" placeholder="Search ID, Name, Roll..." oninput="window.renderEvalStudents()" style="width: 220px;">
                             </div>
                             <div style="display: flex; gap: 8px;">
                                 <button class="dcr-btn-filter" style="background: #10b981;" onclick="document.getElementById('evalExcelFile').click()">
@@ -102,7 +100,7 @@
                                     <th style="width: 60px;">Roll</th>
                                     <th style="width: 100px;">Student ID</th>
                                     <th style="text-align: left; padding-left: 15px;">Student Name</th>
-                                    <th>Group</th>
+                                    <th>Group / SubGroup</th>
                                     <th>Section</th>
                                     <th style="text-align: center; width: 100px;">Action</th>
                                 </tr>
@@ -155,9 +153,12 @@
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <label style="font-size: 0.75rem; font-weight: 700; color: #64748b;">Select Group:</label>
                                 <select id="evalTabGroup" class="dcr-filter-input" onchange="window.renderEvalTabulation()">
-                                    <option value="Science_Merit">Science (Combined Merit - SA, DH, SHO)</option>
-                                    <option value="Humanities">Humanities</option>
-                                    <option value="B.Studies">Business Studies</option>
+                                    <option value="Science_Merit">Science (Combined Merit: Group A, B, C - 146)</option>
+                                    <option value="Group-A">Science (Group-A: 56 Students)</option>
+                                    <option value="Group-B">Science (Group-B: 50 Students)</option>
+                                    <option value="Group-C">Science (Group-C: 40 Students)</option>
+                                    <option value="Humanities">Humanities (22 Students)</option>
+                                    <option value="B.Studies">Business Studies (5 Students)</option>
                                 </select>
                             </div>
                             <div style="display: flex; gap: 8px;">
@@ -172,9 +173,9 @@
                         <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 15px;">
                             <h2 style="font-size: 1.3rem; font-weight: 800; text-transform: uppercase; margin: 0;">Cantonment Public School and College Lalmonirhat</h2>
                             <h4 style="font-size: 0.95rem; font-weight: 700; margin: 3px 0;">Performance Evaluation</h4>
-                            <p id="evalPrintMeta" style="font-size: 0.85rem; font-weight: 600; color: #475569; margin: 0;">Class: Ten (Science) • Date: 12 Sep 2026 • Combined Sections (SA, DH, SHO)</p>
+                            <p id="evalPrintMeta" style="font-size: 0.85rem; font-weight: 600; color: #475569; margin: 0;">Class: Ten (Science) • Date: 15 Sep 2026 • Combined Sections (SA, DH, SHO)</p>
                         </div>
-                        <div class="table-container" style="border: 1px solid #000;">
+                        <div class="table-container" style="border: 1px solid #000; overflow-x: auto;">
                             <table id="evalTabTable">
                                 <thead id="evalTabThead"></thead>
                                 <tbody id="evalTabTbody"></tbody>
@@ -192,7 +193,7 @@
         }
     }
 
-    // ড্রপডাউন খোলা ও বন্ধ করার টগল
+    // ড্রপডাউন টগল
     window.toggleExamMenu = function (e) {
         if (e) e.preventDefault();
         const sub = document.getElementById('exam-submenu-list');
@@ -231,7 +232,7 @@
     };
 
     // ==========================================================
-    // ২. ফায়ারবেস ডেটা সিঙ্ক (আজীবন সংরক্ষিত ও নিরাপদ)
+    // ২. ফায়ারবেস ডেটা সিঙ্ক
     // ==========================================================
     function initFirebaseSync() {
         if (!window.getDatabase || !window.ref) return;
@@ -241,8 +242,7 @@
             onValue(window.ref(db, 'evaluation_system/students'), (snap) => {
                 const val = snap.val();
                 studentsList = val ? Object.values(val) : [];
-                if (studentsList.length === 0) seedSampleData();
-                else window.renderEvalStudents();
+                window.renderEvalStudents();
             });
 
             onValue(window.ref(db, 'evaluation_system/pins'), (snap) => {
@@ -258,8 +258,86 @@
     }
 
     // ==========================================================
-    // ৩. রেন্ডারিং ও ফাংশনালিটি
+    // ৩. এক্সেল পার্সার (Group-A, B, C অটো সনাক্তকরণ)
     // ==========================================================
+    window.importEvalExcel = function (input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+        const reader = new FileReader();
+
+        reader.onload = async function (e) {
+            try {
+                if (typeof XLSX === 'undefined') {
+                    alert("SheetJS library is missing!");
+                    return;
+                }
+
+                const data = new Uint8Array(e.target.result);
+                const wb = XLSX.read(data, { type: 'array' });
+                
+                if (window.showLoader) window.showLoader("Parsing Group-A, B, C & Saving to Firebase...");
+
+                let currentDetectedGroup = "Group-A";
+                let totalImported = 0;
+
+                for (let sheetName of wb.SheetNames) {
+                    const sheet = wb.Sheets[sheetName];
+                    const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+                    for (let row of rawRows) {
+                        if (!row || row.length === 0) continue;
+                        const rowStr = row.join(' ').toUpperCase();
+
+                        if (rowStr.includes('GROUP-A')) currentDetectedGroup = "Group-A";
+                        else if (rowStr.includes('GROUP-B')) currentDetectedGroup = "Group-B";
+                        else if (rowStr.includes('GROUP-C')) currentDetectedGroup = "Group-C";
+
+                        let stdId = null;
+                        for (let cell of row) {
+                            let cStr = String(cell).trim();
+                            if (/^\d{6}$/.test(cStr)) {
+                                stdId = cStr;
+                                break;
+                            }
+                        }
+
+                        if (stdId) {
+                            let idIdx = row.findIndex(c => String(c).trim() === stdId);
+                            let name = row[idIdx + 1] ? String(row[idIdx + 1]).trim() : "Student";
+                            let roll = row[idIdx + 2] ? parseInt(row[idIdx + 2]) || 1 : 1;
+                            let sec = row[idIdx + 3] ? String(row[idIdx + 3]).trim().toUpperCase() : "SA";
+
+                            const studentObj = {
+                                id: stdId,
+                                name: name,
+                                roll: roll,
+                                group: "Science",
+                                subGroup: currentDetectedGroup,
+                                section: sec,
+                                importedAt: new Date().toISOString()
+                            };
+
+                            await window.writeToFirebase(`evaluation_system/students/${stdId}`, studentObj);
+                            totalImported++;
+                        }
+                    }
+                }
+
+                if (window.hideLoader) window.hideLoader();
+                if (window.showToast) window.showToast(`Imported ${totalImported} students!`, "success");
+                else alert(`সফলভাবে ${totalImported} জন শিক্ষার্থী সেভ হয়েছে!`);
+
+                input.value = '';
+                window.renderEvalStudents();
+
+            } catch (err) {
+                if (window.hideLoader) window.hideLoader();
+                alert("Error reading file: " + err.message);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    };
+
     window.renderEvalStudents = function () {
         const tbody = document.getElementById('evalStudentTbody');
         if (!tbody) return;
@@ -271,6 +349,7 @@
         let list = studentsList.filter(s => {
             let mGrp = true;
             if (grp === 'Science') mGrp = s.group === 'Science';
+            else if (['Group-A', 'Group-B', 'Group-C'].includes(grp)) mGrp = s.subGroup === grp;
             else if (['SA', 'DH', 'SHO'].includes(grp)) mGrp = s.section === grp;
             else if (grp === 'Humanities') mGrp = s.group === 'Humanities';
             else if (grp === 'B.Studies') mGrp = s.group === 'B.Studies';
@@ -287,49 +366,14 @@
                 <td><strong>${s.roll || '-'}</strong></td>
                 <td><span style="font-family:monospace; font-weight:700;">${s.id}</span></td>
                 <td style="text-align:left; padding-left:15px; font-weight:700;">${s.name}</td>
-                <td>${s.group}</td>
-                <td><span class="badge badge-success">${s.section || 'A'}</span></td>
+                <td>${s.group} <small style="color:#64748b;">(${s.subGroup || 'General'})</small></td>
+                <td><span class="badge badge-success">${s.section || 'SA'}</span></td>
                 <td style="text-align:center;">
                     <button class="btn-action btn-delete" onclick="window.deleteEvalStudent('${s.id}')"><i class="fa-solid fa-trash"></i></button>
                 </td>
             `;
             tbody.appendChild(tr);
         });
-    };
-
-    window.importEvalExcel = function (input) {
-        if (!input.files || !input.files[0]) return;
-        const reader = new FileReader();
-        reader.onload = async function (e) {
-            try {
-                const data = new Uint8Array(e.target.result);
-                const wb = XLSX.read(data, { type: 'array' });
-                const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-
-                if (window.showLoader) window.showLoader("Saving students...");
-
-                for (let r of rows) {
-                    const stdId = String(r['Std ID'] || r['ID'] || r['Student ID'] || Date.now() + Math.floor(Math.random()*1000));
-                    const obj = {
-                        id: stdId,
-                        roll: parseInt(r['Roll'] || r['roll']) || 1,
-                        name: r['Student Name'] || r['Name'] || 'Student',
-                        group: r['Group'] || 'Science',
-                        section: r['Sec'] || r['Section'] || 'SA',
-                        created: new Date().toISOString()
-                    };
-                    await window.writeToFirebase(`evaluation_system/students/${stdId}`, obj);
-                }
-
-                if (window.hideLoader) window.hideLoader();
-                if (window.showToast) window.showToast("Students imported!", "success");
-                input.value = '';
-            } catch (err) {
-                if (window.hideLoader) window.hideLoader();
-                alert("Error: " + err.message);
-            }
-        };
-        reader.readAsArrayBuffer(input.files[0]);
     };
 
     window.deleteEvalStudent = function (id) {
@@ -339,31 +383,38 @@
     };
 
     window.addNewEvalStudent = async function () {
-        const id = prompt("Student ID:");
+        const id = prompt("Student ID (e.g. 702723):");
         if (!id) return;
         const name = prompt("Student Name:");
         const roll = prompt("Roll:");
-        const grp = prompt("Group (Science / Humanities / B.Studies):", "Science");
+        const grp = prompt("SubGroup (Group-A / Group-B / Group-C):", "Group-A");
         const sec = prompt("Section (SA / DH / SHO):", "SA");
 
-        const obj = { id, name, roll: parseInt(roll)||1, group: grp, section: sec };
+        const obj = { id, name, roll: parseInt(roll)||1, group: "Science", subGroup: grp, section: sec };
         await window.writeToFirebase(`evaluation_system/students/${id}`, obj);
         if (window.showToast) window.showToast("Added!", "success");
     };
 
+    // ==========================================================
+    // ৪. পিন ও পরীক্ষা সেটিংস
+    // ==========================================================
     window.renderEvalPins = function () {
         const tbody = document.getElementById('evalPinTbody');
         if (!tbody) return;
         tbody.innerHTML = '';
 
         const subs = [
-            { key: 'Phy', name: 'Physics', grp: 'Science' },
-            { key: 'HM', name: 'Higher Math', grp: 'Science' },
-            { key: 'Che', name: 'Chemistry', grp: 'Science' },
-            { key: 'Bio', name: 'Biology', grp: 'Science' },
+            { key: 'B1', name: 'Bangla 1st', grp: 'Science' },
             { key: 'B2', name: 'Bangla 2nd', grp: 'All Groups' },
+            { key: 'E1', name: 'English 1st', grp: 'Science' },
             { key: 'E2', name: 'English 2nd', grp: 'All Groups' },
             { key: 'Math', name: 'General Math', grp: 'All Groups' },
+            { key: 'HM', name: 'Higher Math', grp: 'Science' },
+            { key: 'Phy', name: 'Physics', grp: 'Science' },
+            { key: 'Che', name: 'Chemistry', grp: 'Science' },
+            { key: 'Bio', name: 'Biology', grp: 'Science' },
+            { key: 'BGS', name: 'BGS', grp: 'Science' },
+            { key: 'Reli', name: 'Religion', grp: 'All Groups' },
             { key: 'ICT', name: 'ICT', grp: 'Science' }
         ];
 
@@ -408,6 +459,9 @@
         });
     };
 
+    // ==========================================================
+    // ৫. টেবুলেশন শিট (Total 180 ও ১ থেকে ১৪৬ মেধা তালিকা)
+    // ==========================================================
     window.renderEvalTabulation = function () {
         const grp = document.getElementById('evalTabGroup').value;
         const thead = document.getElementById('evalTabThead');
@@ -417,17 +471,18 @@
 
         if (grp === 'Humanities') {
             meta.innerText = "Class: Ten (Humanities) • Date: " + currentExam.date + " • 22 Students";
-            buildGroupTable('Humanities', 135, SUBJECTS.Humanities, thead, tbody);
+            buildGenericTab('Humanities', 135, SUBJECTS.Humanities, thead, tbody);
         } else if (grp === 'B.Studies') {
             meta.innerText = "Class: Ten (B.Studies) • Date: " + currentExam.date + " • 5 Students";
-            buildGroupTable('B.Studies', 120, SUBJECTS.BStudies, thead, tbody);
+            buildGenericTab('B.Studies', 120, SUBJECTS.BStudies, thead, tbody);
         } else {
-            meta.innerText = "Class: Ten (Science) • Date: " + currentExam.date + " • Combined Sections (SA, DH, SHO)";
-            buildScienceTable(thead, tbody);
+            // Science: Group-A, B, C কম্বাইন্ড
+            meta.innerText = "Class: Ten (Science) • Date: " + currentExam.date + " • Total: 180 • Combined Sections (SA, DH, SHO)";
+            buildScienceTab(thead, tbody, grp);
         }
     };
 
-    function buildScienceTable(thead, tbody) {
+    function buildScienceTab(thead, tbody, filterSubGrp) {
         const subs = SUBJECTS.Science;
         thead.innerHTML = `
             <tr style="background:#f1f5f9;">
@@ -436,12 +491,16 @@
                 <th style="border:1px solid #000; padding:6px; text-align:left; padding-left:10px;">Student Name</th>
                 <th style="border:1px solid #000; padding:6px; width:45px;">Roll</th>
                 <th style="border:1px solid #000; padding:6px; width:45px;">Sec</th>
-                ${subs.map(s => `<th style="border:1px solid #000; padding:6px;">${s.key}</th>`).join('')}
-                <th style="border:1px solid #000; padding:6px; width:75px; background:#e2e8f0;">Total (150)</th>
+                ${subs.map(s => `<th style="border:1px solid #000; padding:5px;">${s.key}</th>`).join('')}
+                <th style="border:1px solid #000; padding:6px; width:75px; background:#e2e8f0;">Total (180)</th>
             </tr>
         `;
 
         let list = studentsList.filter(s => s.group === 'Science' || ['SA', 'DH', 'SHO'].includes(s.section));
+        if (filterSubGrp !== 'Science_Merit') {
+            list = list.filter(s => s.subGroup === filterSubGrp);
+        }
+
         let computed = list.map(s => {
             const m = examMarks[s.id] || {};
             let total = 0;
@@ -470,7 +529,7 @@
         });
     }
 
-    function buildGroupTable(grpName, maxTot, subs, thead, tbody) {
+    function buildGenericTab(grpName, maxTot, subs, thead, tbody) {
         thead.innerHTML = `
             <tr style="background:#f1f5f9;">
                 <th style="border:1px solid #000; padding:6px; width:45px;">SL</th>
@@ -510,23 +569,7 @@
         });
     }
 
-    async function seedSampleData() {
-        const demos = [
-            { id: "702723", roll: 1, name: "Md. Nahiduzzaman Arik", group: "Science", section: "SA" },
-            { id: "701923", roll: 4, name: "Md. Tazbiduzzaman", group: "Science", section: "DH" },
-            { id: "700623", roll: 7, name: "Zarin Tasnim", group: "Science", section: "SA" },
-            { id: "702123", roll: 1, name: "Rukaiya Rahnuma", group: "Science", section: "SHO" },
-            { id: "100917", roll: 5, name: "Indika Tarannum Nusfy", group: "Science", section: "SA" },
-            { id: "601122", roll: 2, name: "Syeda Nusrat Jahan", group: "Humanities", section: "A" },
-            { id: "901825", roll: 1, name: "Nafisa Anjum Hiya", group: "Humanities", section: "A" },
-            { id: "602322", roll: 1, name: "Md. Israfil Hossain Nehal", group: "B.Studies", section: "A" }
-        ];
-        for (let d of demos) {
-            await window.writeToFirebase(`evaluation_system/students/${d.id}`, d);
-        }
-    }
-
-    // স্বয়ংক্রিয় লোডার (Page ready)
+    // লোড হওয়া
     function runModule() {
         injectExamModule();
         setTimeout(initFirebaseSync, 1000);
