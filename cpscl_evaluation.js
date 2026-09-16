@@ -260,10 +260,10 @@
                     </div>
                 </div>
 
-                <!-- SUB-SECTION 2: EXAM & PIN SETUP -->
+                <!-- SUB-SECTION 2: EXAM & PIN SETUP (WITH REFRESH BUTTON) -->
                 <div id="eval-config-sec" class="eval-sub-sec" style="display: none;">
                     <div class="erp-form-card" style="max-width: 100%; padding: 16px; margin-bottom: 16px; background:#fff; border-radius:10px; border:1px solid #e2e8f0;">
-                        <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
                             <div style="flex: 1; min-width: 180px;">
                                 <label style="font-size: 0.75rem; font-weight: 700; color: #64748b;">Exam Name</label>
                                 <input type="text" id="evalExTitle" value="${currentExam.title}" class="dcr-filter-input" style="width: 100%;">
@@ -277,6 +277,7 @@
                                 <input type="number" id="evalExMax" value="${currentExam.max || 15}" class="dcr-filter-input" style="width: 100%;">
                             </div>
                             <button class="dcr-btn-filter" onclick="window.saveEvalExamSettings()"><i class="fa-solid fa-save"></i> Save Settings</button>
+                            <button class="dcr-btn-filter" style="background: #6366f1;" id="btnRefreshPins" onclick="window.refreshEvalPinsLive()"><i class="fa-solid fa-rotate"></i> Refresh PINs</button>
                             <button class="dcr-btn-filter" style="background: #0ea5e9;" onclick="window.copyEvalTeacherLink()"><i class="fa-solid fa-link"></i> Copy Teacher Link</button>
                         </div>
                     </div>
@@ -337,7 +338,7 @@
                     </div>
                 </div>
 
-                <!-- ৪. আপলোড ইঞ্জিন মডাল পপ-আপ -->
+                <!-- ৪. আপলোড ইঞ্জিন মডাল -->
                 <div class="eval-modal-overlay" id="evalUploadModal" onclick="if(event.target === this) window.closeEvalUploadModal()">
                     <div class="eval-modal-card">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
@@ -716,7 +717,7 @@
     };
 
     // ==========================================================
-    // ৭. পিন ও শিক্ষক কন্ট্রোল (লাইভ সিঙ্ক)
+    // ৭. পিন ও শিক্ষক কন্ট্রোল (লাইভ সিঙ্ক ও রিফ্রেশ ইঞ্জিন)
     // ==========================================================
     window.renderEvalPins = function () {
         const tbody = document.getElementById('evalPinTbody');
@@ -732,8 +733,8 @@
         const uniqueSubs = Array.from(new Set(allSubs.map(a => a.key))).map(k => allSubs.find(a => a.key === k));
 
         uniqueSubs.forEach(s => {
-            // গ্রুপভিত্তিক বা সাধারণ পিন উভয়ই চেক করা হচ্ছে
-            const p = subjectPins[s.key] || subjectPins[`Group-A_${s.key}`] || subjectPins[`Humanities_${s.key}`] || subjectPins[`B.Studies_${s.key}`] || '';
+            // পিন পাওয়ার ক্ষেত্রে মূল বিষয় পাথকেই প্রাধান্য দেওয়া হচ্ছে
+            const p = subjectPins[s.key] || '';
             
             let hasMarks = false;
             Object.values(examMarks).forEach(stdMarkObj => {
@@ -748,7 +749,7 @@
                         ${hasMarks ? '✓ Submitted' : (p ? 'PIN Set (Ready)' : 'Pending (No PIN)')}
                     </span>
                 </td>
-                <td><strong style="letter-spacing: 2px; font-size:1.05rem; color:#1e40af;">${p || '----'}</strong></td>
+                <td><strong style="letter-spacing: 2px; font-size:1.1rem; color:#1e40af;">${p || '----'}</strong></td>
                 <td style="text-align:center;">
                     <button class="btn-action btn-delete" onclick="window.resetEvalPin('${s.key}')" ${!p ? 'disabled style="opacity:0.3;"' : ''}>
                         <i class="fa-solid fa-rotate-left"></i> Reset
@@ -759,19 +760,40 @@
         });
     };
 
+    // ফায়ারবেস থেকে লাইভ পিন রিফ্রেশ করার ফাংশন
+    window.refreshEvalPinsLive = async function () {
+        const btn = document.getElementById('btnRefreshPins');
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking...';
+
+        try {
+            if (window.getDatabase && window.ref && window.get) {
+                const db = window.getDatabase();
+                const pinSnap = await window.get(window.ref(db, 'evaluation_system/pins'));
+                if (pinSnap.exists()) {
+                    subjectPins = pinSnap.val() || {};
+                } else {
+                    subjectPins = {};
+                }
+                const marksSnap = await window.get(window.ref(db, `evaluation_system/marks/${currentExam.id}`));
+                if (marksSnap.exists()) {
+                    examMarks = marksSnap.val() || {};
+                }
+                window.renderEvalPins();
+                alert("✅ ফায়ারবেস থেকে সকল বিষয়ের সর্বশেষ পিন সফলভাবে সিঙ্ক হয়েছে!");
+            }
+        } catch (e) {
+            alert("সিঙ্ক করতে সমস্যা: " + e.message);
+        } finally {
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Refresh PINs';
+        }
+    };
+
     window.resetEvalPin = function (k) {
         if (confirm("Reset PIN for " + k + "? Teacher can set a new PIN.")) {
             delete subjectPins[k];
-            delete subjectPins[`Group-A_${k}`];
-            delete subjectPins[`Group-B_${k}`];
-            delete subjectPins[`Group-C_${k}`];
-            delete subjectPins[`Humanities_${k}`];
-            delete subjectPins[`B.Studies_${k}`];
-            
             window.renderEvalPins();
             if (window.writeToFirebase) {
                 window.writeToFirebase(`evaluation_system/pins/${k}`, null);
-                window.writeToFirebase(`evaluation_system/pins/Group-A_${k}`, null);
             }
         }
     };
@@ -795,7 +817,7 @@
     };
 
     // ==========================================================
-    // ৮. টেবুলেশন শিট ও লাইভ মেরিট লিস্ট (ডাইনামিক মোট নম্বর)
+    // ৮. টেবুলেশন শিট ও লাইভ মেরিট লিস্ট
     // ==========================================================
     window.renderEvalTabulation = function () {
         const grp = document.getElementById('evalTabGroup').value;
@@ -848,7 +870,7 @@
             return { ...s, total, marksObj: m };
         });
 
-        // মেরিট সাজানো (সমান নম্বর হলে রোল দিয়ে টাই-ব্রেক)
+        // মেরিট সাজানো (সমান নম্বরে রোল দিয়ে টাই-ব্রেক)
         if (grp === 'Science_Merit') {
             computedList.sort((a, b) => {
                 if (b.total !== a.total) return b.total - a.total;
@@ -869,7 +891,6 @@
                 <td style="border:1px solid #000; text-align:center; font-weight:700;">${s.section}</td>
                 ${activeSubs.map(sb => {
                     const markVal = s.marksObj[sb.key];
-                    // নম্বর না দেওয়া থাকলে '-' দেখাবে, আর দেওয়া থাকলে মান দেখাবে
                     const displayMark = markVal !== undefined && markVal !== null && markVal !== '' ? markVal : '-';
                     return `<td style="border:1px solid #000; text-align:center; font-weight:${displayMark !== '-' ? '700' : 'normal'}; color:${displayMark === '0' ? '#dc2626' : 'inherit'};">${displayMark}</td>`;
                 }).join('')}
@@ -909,7 +930,7 @@
                 window.renderEvalTabulation();
             }
 
-            // রিয়েল-টাইম সিঙ্ক লিসেনার (লাইভ আপডেট)
+            // রিয়েল-টাইম লিসেনার
             import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(({ onValue }) => {
                 onValue(window.ref(db, `evaluation_system/marks/${currentExam.id}`), (s) => {
                     examMarks = s.val() || {};
