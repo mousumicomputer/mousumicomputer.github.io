@@ -56,7 +56,7 @@
             gap: 10px;
             background: #ffffff;
         }
-        .eval-tab-group { display: flex; background: #f1f5f9; padding: 3px; border-radius: 6px; gap: 2px; }
+        .eval-tab-group { display: flex; background: #f1f5f9; padding: 3px; border-radius: 6px; gap: 2px; flex-wrap: wrap; }
         .eval-tab-btn {
             border: none; background: transparent; padding: 5px 12px; border-radius: 5px;
             font-size: 0.78rem; font-weight: 600; color: #64748b; cursor: pointer; transition: 0.15s; white-space: nowrap;
@@ -88,7 +88,7 @@
         .sec-hum { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
         .sec-bs  { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
 
-        /* ৪. আপলোড ইঞ্জিন মডাল (Upload Engine Modal) */
+        /* ৪. আপলোড মডাল */
         .eval-modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.45);
             backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; z-index: 999999;
@@ -109,7 +109,6 @@
             border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: not-allowed; transition: 0.15s;
         }
         .btn-eval-upload-now.active { background: #1e40af; color: white; cursor: pointer; box-shadow: 0 3px 8px rgba(30,64,175,0.25); }
-        .btn-eval-upload-now.active:hover { background: #1e3a8a; }
     `;
     document.head.appendChild(evalStyle);
 
@@ -178,10 +177,8 @@
             viewDiv.className = 'view-panel';
             viewDiv.id = 'exam-eval-view';
             viewDiv.innerHTML = `
-                <!-- SUB-SECTION 1: STUDENT DATABASE (REDESIGNED) -->
+                <!-- SUB-SECTION 1: STUDENT DATABASE -->
                 <div id="eval-student-sec" class="eval-sub-sec">
-                    
-                    <!-- স্লিম পরিসংখ্যান রিবন -->
                     <div class="eval-stats-ribbon">
                         <div class="eval-stat-item active" id="statCardAll" style="border-left-color: #2563eb;" onclick="window.filterEvalByTab('All')">
                             <div>
@@ -216,17 +213,16 @@
                         </div>
                     </div>
 
-                    <!-- মূল বক্স ও টেবিল -->
                     <div class="eval-main-box">
                         <div class="eval-ctrl-bar">
-                            <div class="eval-tab-group">
-                                <button class="eval-tab-btn active" onclick="window.filterEvalByTab('All', this)">All Students</button>
-                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('Science', this)">Science (146)</button>
-                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('Group-A', this)">Group-A (56)</button>
-                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('Group-B', this)">Group-B (50)</button>
-                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('Group-C', this)">Group-C (40)</button>
-                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('Humanities', this)">Humanities (22)</button>
-                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('B.Studies', this)">B.Studies (5)</button>
+                            <div class="eval-tab-group" id="evalTabButtonsGroup">
+                                <button class="eval-tab-btn active" onclick="window.filterEvalByTab('All', this)">All Students (<span id="cntAll">0</span>)</button>
+                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('Science', this)">Science (<span id="cntSci">0</span>)</button>
+                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('Group-A', this)">Group-A (<span id="cntGrpA">0</span>)</button>
+                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('Group-B', this)">Group-B (<span id="cntGrpB">0</span>)</button>
+                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('Group-C', this)">Group-C (<span id="cntGrpC">0</span>)</button>
+                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('Humanities', this)">Humanities (<span id="cntHum">0</span>)</button>
+                                <button class="eval-tab-btn" onclick="window.filterEvalByTab('B.Studies', this)">B.Studies (<span id="cntBs">0</span>)</button>
                             </div>
 
                             <div style="display: flex; align-items: center; gap: 8px;">
@@ -276,7 +272,11 @@
                                 <label style="font-size: 0.75rem; font-weight: 700; color: #64748b;">Exam Date</label>
                                 <input type="text" id="evalExDate" value="${currentExam.date}" class="dcr-filter-input" style="width: 100%;">
                             </div>
-                            <button class="dcr-btn-filter" onclick="window.saveEvalExamSettings()"><i class="fa-solid fa-save"></i> Save</button>
+                            <div style="width: 110px;">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: #64748b;">Full Mark (Per Sub)</label>
+                                <input type="number" id="evalExMax" value="${currentExam.max || 15}" class="dcr-filter-input" style="width: 100%;">
+                            </div>
+                            <button class="dcr-btn-filter" onclick="window.saveEvalExamSettings()"><i class="fa-solid fa-save"></i> Save Settings</button>
                             <button class="dcr-btn-filter" style="background: #0ea5e9;" onclick="window.copyEvalTeacherLink()"><i class="fa-solid fa-link"></i> Copy Teacher Link</button>
                         </div>
                     </div>
@@ -302,12 +302,12 @@
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <label style="font-size: 0.75rem; font-weight: 700; color: #64748b;">View Group Sheet:</label>
                                 <select id="evalTabGroup" class="dcr-filter-input" onchange="window.renderEvalTabulation()">
-                                    <option value="Science_Merit">Science (Combined Merit - 146 Students)</option>
-                                    <option value="Group-A">Science (Group-A: 56)</option>
-                                    <option value="Group-B">Science (Group-B: 50)</option>
-                                    <option value="Group-C">Science (Group-C: 40)</option>
-                                    <option value="Humanities">Humanities (22 Students)</option>
-                                    <option value="B.Studies">Business Studies (5 Students)</option>
+                                    <option value="Science_Merit">Science (Combined Merit)</option>
+                                    <option value="Group-A">Science (Group-A)</option>
+                                    <option value="Group-B">Science (Group-B)</option>
+                                    <option value="Group-C">Science (Group-C)</option>
+                                    <option value="Humanities">Humanities</option>
+                                    <option value="B.Studies">Business Studies</option>
                                 </select>
                             </div>
                             <div style="display: flex; gap: 8px;">
@@ -320,11 +320,11 @@
                     <div class="erp-form-card" style="max-width: 100%; padding: 25px; background: #fff; border: 1px solid #000;">
                         <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 15px;">
                             <h2 style="font-size: 1.3rem; font-weight: 800; text-transform: uppercase; margin: 0;">Cantonment Public School and College Lalmonirhat</h2>
-                            <h4 style="font-size: 0.95rem; font-weight: 700; margin: 3px 0;">Performance Evaluation</h4>
-                            <p id="evalPrintMeta" style="font-size: 0.85rem; font-weight: 600; color: #475569; margin: 0;">Class: Ten • Total: 180 Marks</p>
+                            <h4 style="font-size: 0.95rem; font-weight: 700; margin: 3px 0;">Academic Performance Evaluation</h4>
+                            <p id="evalPrintMeta" style="font-size: 0.85rem; font-weight: 600; color: #475569; margin: 0;"></p>
                         </div>
                         <div class="table-container" style="border: 1px solid #000; overflow-x: auto;">
-                            <table id="evalTabTable">
+                            <table id="evalTabTable" style="width:100%; border-collapse: collapse;">
                                 <thead id="evalTabThead"></thead>
                                 <tbody id="evalTabTbody"></tbody>
                             </table>
@@ -341,16 +341,16 @@
                 <div class="eval-modal-overlay" id="evalUploadModal" onclick="if(event.target === this) window.closeEvalUploadModal()">
                     <div class="eval-modal-card">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                            <div style="font-size: 1.05rem; font-weight: 700; color: #0f172a;"><i class="fa-solid fa-file-excel text-success"></i> Upload File</div>
+                            <div style="font-size: 1.05rem; font-weight: 700; color: #0f172a;"><i class="fa-solid fa-file-excel text-success"></i> Upload Student List</div>
                             <button style="background:transparent; border:none; font-size:1.1rem; color:#94a3b8; cursor:pointer;" onclick="window.closeEvalUploadModal()"><i class="fa-solid fa-xmark"></i></button>
                         </div>
 
                         <div style="margin-bottom: 14px;">
                             <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 5px; display: block;">Target Stream / Department:</label>
                             <select id="evalUploadTargetGroup" style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.82rem; font-weight: 600; outline:none; background:#fff;">
-                                <option value="Science">Science (3 Sheets: Group-A, B, C)</option>
-                                <option value="Humanities">Humanities (22 Students)</option>
-                                <option value="B.Studies">Business Studies (5 Students)</option>
+                                <option value="Science">Science (Group-A, B, C)</option>
+                                <option value="Humanities">Humanities</option>
+                                <option value="B.Studies">Business Studies</option>
                             </select>
                         </div>
 
@@ -441,7 +441,7 @@
                     window.handleEvalFileSelected(e.dataTransfer.files[0]);
                 }
             });
-        }, 600);
+        }, 500);
     }
 
     // ==========================================================
@@ -480,7 +480,7 @@
     };
 
     // ==========================================================
-    // ৫. ১০০% নিরাপদ বিভাগভিত্তিক আপলোডার (জিরো ডেটা লস)
+    // ৫. নিরাপদ বিভাগভিত্তিক এক্সেল আপলোডার
     // ==========================================================
     window.importUniversalExcel = function (input) {
         if (!input.files || !input.files[0]) return;
@@ -501,11 +501,9 @@
 
                 const data = new Uint8Array(e.target.result);
                 const wb = XLSX.read(data, { type: 'array' });
-                
                 let newBatch = {};
                 let count = 0;
 
-                // ১. যদি বিজ্ঞান (Science) নির্বাচন করা হয়:
                 if (targetGroup === 'Science') {
                     for (let sheetName of wb.SheetNames) {
                         const sheet = wb.Sheets[sheetName];
@@ -529,7 +527,7 @@
                             let stdId = null, idIdx = -1;
                             for (let i = 0; i < r.length; i++) {
                                 let val = String(r[i] || '').trim();
-                                if (/^\d{6}$/.test(val)) { stdId = val; idIdx = i; break; }
+                                if (/^\d{5,8}$/.test(val)) { stdId = val; idIdx = i; break; }
                             }
 
                             if (stdId && idIdx !== -1) {
@@ -554,9 +552,7 @@
                             }
                         }
                     }
-                } 
-                // ২. যদি মানবিক (Humanities) নির্বাচন করা হয়:
-                else if (targetGroup === 'Humanities') {
+                } else if (targetGroup === 'Humanities' || targetGroup === 'B.Studies') {
                     const sheet = wb.Sheets[wb.SheetNames[0]];
                     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
                     let autoSl = 1;
@@ -566,7 +562,7 @@
                         let stdId = null, idIdx = -1;
                         for (let i = 0; i < r.length; i++) {
                             let val = String(r[i] || '').trim();
-                            if (/^\d{6}$/.test(val)) { stdId = val; idIdx = i; break; }
+                            if (/^\d{5,8}$/.test(val)) { stdId = val; idIdx = i; break; }
                         }
 
                         if (stdId && idIdx !== -1) {
@@ -579,43 +575,9 @@
                                 id: stdId,
                                 name: name,
                                 roll: roll,
-                                section: "HUM",
-                                group: "Humanities",
-                                subGroup: "Humanities",
-                                overallRank: sl
-                            };
-                            count++;
-                            autoSl++;
-                        }
-                    }
-                }
-                // ৩. যদি ব্যবসায় শিক্ষা (B.Studies) নির্বাচন করা হয়:
-                else if (targetGroup === 'B.Studies') {
-                    const sheet = wb.Sheets[wb.SheetNames[0]];
-                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-                    let autoSl = 1;
-
-                    for (let r of rows) {
-                        if (!r || r.length < 4) continue;
-                        let stdId = null, idIdx = -1;
-                        for (let i = 0; i < r.length; i++) {
-                            let val = String(r[i] || '').trim();
-                            if (/^\d{6}$/.test(val)) { stdId = val; idIdx = i; break; }
-                        }
-
-                        if (stdId && idIdx !== -1) {
-                            let sl = parseInt(r[idIdx - 1]) || autoSl;
-                            let name = String(r[idIdx + 1] || 'Student').trim();
-                            let roll = parseInt(r[idIdx + 2]) || 1;
-
-                            newBatch[stdId] = {
-                                sl: sl,
-                                id: stdId,
-                                name: name,
-                                roll: roll,
-                                section: "BS",
-                                group: "B.Studies",
-                                subGroup: "B.Studies",
+                                section: targetGroup === 'Humanities' ? 'HUM' : 'BS',
+                                group: targetGroup,
+                                subGroup: targetGroup,
                                 overallRank: sl
                             };
                             count++;
@@ -625,22 +587,14 @@
                 }
 
                 if (count > 0) {
-                    // ★★★ কোনো অবস্থাতেই অন্য বিভাগের কোনো ছাত্রের ক্ষতি হবে না ★★★
                     const finalMerged = {};
-                    
-                    // ১. ডেটাবেজে থাকা অন্যান্য সব বিভাগের ডেটা অপরিবর্তিত রাখা
                     studentsList.forEach(s => {
-                        if (s.group !== targetGroup) {
-                            finalMerged[s.id] = s;
-                        }
+                        if (s.group !== targetGroup) finalMerged[s.id] = s;
                     });
-
-                    // ২. নতুন ইমপোর্ট করা ডেটা মার্জ করা
                     Object.keys(newBatch).forEach(id => {
                         finalMerged[id] = newBatch[id];
                     });
 
-                    // ৩. ফায়ারবেসে পার্মানেন্ট স্টোর
                     if (window.writeToFirebase) {
                         await window.writeToFirebase('evaluation_system/students', finalMerged);
                     }
@@ -649,10 +603,10 @@
                     window.renderEvalStudents();
 
                     if (window.hideLoader) window.hideLoader();
-                    alert(`🎉 Success! ${count} records for stream "${targetGroup}" saved permanently to Firebase!`);
+                    alert(`🎉 Success! ${count} records for stream "${targetGroup}" saved successfully!`);
                 } else {
                     if (window.hideLoader) window.hideLoader();
-                    alert("No 6-digit student IDs found in this file!");
+                    alert("No valid student IDs found in this file!");
                 }
 
                 if (input) input.value = '';
@@ -666,7 +620,7 @@
     };
 
     // ==========================================================
-    // ৬. লাইভ পরিসংখ্যান ও টেবিল রেন্ডারিং
+    // ৬. লাইভ পরিসংখ্যান ও ডাইনামিক টেবিল রেন্ডার
     // ==========================================================
     window.filterEvalByTab = function (filter, btn) {
         currentEvalFilter = filter;
@@ -687,7 +641,6 @@
         if (!tbody) return;
         tbody.innerHTML = '';
 
-        // লাইভ পরিসংখ্যান ক্যালকুলেশন
         const total = studentsList.length;
         const sciList = studentsList.filter(s => s.group === 'Science');
         const humList = studentsList.filter(s => s.group === 'Humanities');
@@ -697,13 +650,22 @@
         const grpB = sciList.filter(s => s.subGroup === 'Group-B').length;
         const grpC = sciList.filter(s => s.subGroup === 'Group-C').length;
 
+        // পরিসংখ্যান কার্ড
         if (document.getElementById('statValTotal')) document.getElementById('statValTotal').innerText = total;
         if (document.getElementById('statValSci')) document.getElementById('statValSci').innerText = sciList.length;
         if (document.getElementById('statSciBreakdown')) document.getElementById('statSciBreakdown').innerText = `A: ${grpA} | B: ${grpB} | C: ${grpC}`;
         if (document.getElementById('statValHum')) document.getElementById('statValHum').innerText = humList.length;
         if (document.getElementById('statValBs')) document.getElementById('statValBs').innerText = bsList.length;
 
-        // ফিল্টারিং ও লাইভ সার্চ
+        // বাটনের লাইভ কাউন্ট
+        if (document.getElementById('cntAll')) document.getElementById('cntAll').innerText = total;
+        if (document.getElementById('cntSci')) document.getElementById('cntSci').innerText = sciList.length;
+        if (document.getElementById('cntGrpA')) document.getElementById('cntGrpA').innerText = grpA;
+        if (document.getElementById('cntGrpB')) document.getElementById('cntGrpB').innerText = grpB;
+        if (document.getElementById('cntGrpC')) document.getElementById('cntGrpC').innerText = grpC;
+        if (document.getElementById('cntHum')) document.getElementById('cntHum').innerText = humList.length;
+        if (document.getElementById('cntBs')) document.getElementById('cntBs').innerText = bsList.length;
+
         const qEl = document.getElementById('evalSearchInp');
         const q = (qEl ? qEl.value : '').toLowerCase().trim();
 
@@ -732,7 +694,6 @@
             return (a.overallRank || a.sl) - (b.overallRank || b.sl);
         });
 
-        // মার্জিত টেবিল রো
         list.forEach(s => {
             let secClass = 'sec-sa';
             if (s.section === 'DH') secClass = 'sec-dh';
@@ -742,7 +703,7 @@
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="text-align:center; font-weight:700; color:#1e40af;"><span style="display:inline-block; width:26px;">${s.sl}</span></td>
+                <td style="text-align:center; font-weight:700; color:#1e40af;">${s.sl}</td>
                 <td><span style="background:#f1f5f9; border:1px solid #e2e8f0; padding:2px 6px; border-radius:4px; font-weight:700; font-size:0.78rem;">${s.id}</span></td>
                 <td style="font-weight:600; color:#0f172a;">${s.name}</td>
                 <td style="text-align:center; color:#64748b; font-weight:600;">${s.roll}</td>
@@ -755,7 +716,7 @@
     };
 
     // ==========================================================
-    // ৭. পিন ও শিক্ষক কন্ট্রোল
+    // ৭. পিন ও শিক্ষক কন্ট্রোল (লাইভ সিঙ্ক)
     // ==========================================================
     window.renderEvalPins = function () {
         const tbody = document.getElementById('evalPinTbody');
@@ -771,7 +732,9 @@
         const uniqueSubs = Array.from(new Set(allSubs.map(a => a.key))).map(k => allSubs.find(a => a.key === k));
 
         uniqueSubs.forEach(s => {
-            const p = subjectPins[s.key] || '';
+            // গ্রুপভিত্তিক বা সাধারণ পিন উভয়ই চেক করা হচ্ছে
+            const p = subjectPins[s.key] || subjectPins[`Group-A_${s.key}`] || subjectPins[`Humanities_${s.key}`] || subjectPins[`B.Studies_${s.key}`] || '';
+            
             let hasMarks = false;
             Object.values(examMarks).forEach(stdMarkObj => {
                 if (stdMarkObj && stdMarkObj[s.key] !== undefined && stdMarkObj[s.key] !== '') hasMarks = true;
@@ -785,7 +748,7 @@
                         ${hasMarks ? '✓ Submitted' : (p ? 'PIN Set (Ready)' : 'Pending (No PIN)')}
                     </span>
                 </td>
-                <td><strong style="letter-spacing: 2px;">${p || '----'}</strong></td>
+                <td><strong style="letter-spacing: 2px; font-size:1.05rem; color:#1e40af;">${p || '----'}</strong></td>
                 <td style="text-align:center;">
                     <button class="btn-action btn-delete" onclick="window.resetEvalPin('${s.key}')" ${!p ? 'disabled style="opacity:0.3;"' : ''}>
                         <i class="fa-solid fa-rotate-left"></i> Reset
@@ -799,16 +762,29 @@
     window.resetEvalPin = function (k) {
         if (confirm("Reset PIN for " + k + "? Teacher can set a new PIN.")) {
             delete subjectPins[k];
+            delete subjectPins[`Group-A_${k}`];
+            delete subjectPins[`Group-B_${k}`];
+            delete subjectPins[`Group-C_${k}`];
+            delete subjectPins[`Humanities_${k}`];
+            delete subjectPins[`B.Studies_${k}`];
+            
             window.renderEvalPins();
-            if (window.writeToFirebase) window.writeToFirebase(`evaluation_system/pins/${k}`, null);
+            if (window.writeToFirebase) {
+                window.writeToFirebase(`evaluation_system/pins/${k}`, null);
+                window.writeToFirebase(`evaluation_system/pins/Group-A_${k}`, null);
+            }
         }
     };
 
     window.saveEvalExamSettings = function () {
         currentExam.title = document.getElementById('evalExTitle').value;
         currentExam.date = document.getElementById('evalExDate').value;
-        if (window.writeToFirebase) window.writeToFirebase(`evaluation_system/exams/${currentExam.id}`, currentExam);
-        alert("Exam settings saved!");
+        currentExam.max = parseFloat(document.getElementById('evalExMax').value) || 15;
+        
+        if (window.writeToFirebase) {
+            window.writeToFirebase(`evaluation_system/exams/${currentExam.id}`, currentExam);
+        }
+        alert("Exam settings saved successfully!");
     };
 
     window.copyEvalTeacherLink = function () {
@@ -819,7 +795,7 @@
     };
 
     // ==========================================================
-    // ৮. টেবুলেশন শিট ও লাইভ মেরিট লিস্ট
+    // ৮. টেবুলেশন শিট ও লাইভ মেরিট লিস্ট (ডাইনামিক মোট নম্বর)
     // ==========================================================
     window.renderEvalTabulation = function () {
         const grp = document.getElementById('evalTabGroup').value;
@@ -839,17 +815,20 @@
             groupTitle = "Business Studies";
         }
 
-        meta.innerText = `Class: Ten (${groupTitle}) • Exam: ${currentExam.title} • Date: ${currentExam.date} • Total: 180 Marks`;
+        const perSubMax = currentExam.max || 15;
+        const streamTotalMarks = activeSubs.length * perSubMax;
+
+        meta.innerText = `Class: Ten (${groupTitle}) • Exam: ${currentExam.title} • Date: ${currentExam.date} • Total: ${streamTotalMarks} Marks`;
 
         thead.innerHTML = `
             <tr style="background:#f1f5f9;">
-                <th style="border:1px solid #000; padding:6px; width:45px;">SL</th>
-                <th style="border:1px solid #000; padding:6px; width:75px;">Std ID</th>
+                <th style="border:1px solid #000; padding:6px; width:45px; text-align:center;">SL</th>
+                <th style="border:1px solid #000; padding:6px; width:75px; text-align:center;">Std ID</th>
                 <th style="border:1px solid #000; padding:6px; text-align:left; padding-left:10px;">Student Name</th>
-                <th style="border:1px solid #000; padding:6px; width:45px;">Roll</th>
-                <th style="border:1px solid #000; padding:6px; width:45px;">Sec</th>
-                ${activeSubs.map(s => `<th style="border:1px solid #000; padding:4px;">${s.key}</th>`).join('')}
-                <th style="border:1px solid #000; padding:6px; width:70px; background:#e2e8f0;">Total (180)</th>
+                <th style="border:1px solid #000; padding:6px; width:45px; text-align:center;">Roll</th>
+                <th style="border:1px solid #000; padding:6px; width:45px; text-align:center;">Sec</th>
+                ${activeSubs.map(s => `<th style="border:1px solid #000; padding:4px; text-align:center;">${s.key}</th>`).join('')}
+                <th style="border:1px solid #000; padding:6px; width:75px; background:#e2e8f0; text-align:center;">Total (${streamTotalMarks})</th>
             </tr>
         `;
 
@@ -869,8 +848,12 @@
             return { ...s, total, marksObj: m };
         });
 
+        // মেরিট সাজানো (সমান নম্বর হলে রোল দিয়ে টাই-ব্রেক)
         if (grp === 'Science_Merit') {
-            computedList.sort((a, b) => b.total - a.total);
+            computedList.sort((a, b) => {
+                if (b.total !== a.total) return b.total - a.total;
+                return (a.roll || 0) - (b.roll || 0);
+            });
         } else {
             computedList.sort((a, b) => (a.overallRank || a.sl) - (b.overallRank || b.sl));
         }
@@ -884,8 +867,13 @@
                 <td style="border:1px solid #000; text-align:left; padding-left:10px; font-weight:700;">${s.name}</td>
                 <td style="border:1px solid #000; text-align:center;">${s.roll}</td>
                 <td style="border:1px solid #000; text-align:center; font-weight:700;">${s.section}</td>
-                ${activeSubs.map(sb => `<td style="border:1px solid #000; text-align:center;">${s.marksObj[sb.key] !== undefined ? s.marksObj[sb.key] : '0'}</td>`).join('')}
-                <td style="border:1px solid #000; text-align:center; font-weight:800; background:#f8fafc;">${s.total}</td>
+                ${activeSubs.map(sb => {
+                    const markVal = s.marksObj[sb.key];
+                    // নম্বর না দেওয়া থাকলে '-' দেখাবে, আর দেওয়া থাকলে মান দেখাবে
+                    const displayMark = markVal !== undefined && markVal !== null && markVal !== '' ? markVal : '-';
+                    return `<td style="border:1px solid #000; text-align:center; font-weight:${displayMark !== '-' ? '700' : 'normal'}; color:${displayMark === '0' ? '#dc2626' : 'inherit'};">${displayMark}</td>`;
+                }).join('')}
+                <td style="border:1px solid #000; text-align:center; font-weight:800; background:#f8fafc; color:#1e40af;">${s.total}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -921,7 +909,7 @@
                 window.renderEvalTabulation();
             }
 
-            // রিয়েল-টাইম সিঙ্ক লিসেনার
+            // রিয়েল-টাইম সিঙ্ক লিসেনার (লাইভ আপডেট)
             import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(({ onValue }) => {
                 onValue(window.ref(db, `evaluation_system/marks/${currentExam.id}`), (s) => {
                     examMarks = s.val() || {};
@@ -929,6 +917,10 @@
                     if (document.getElementById('eval-tab-sec') && document.getElementById('eval-tab-sec').style.display !== 'none') {
                         window.renderEvalTabulation();
                     }
+                });
+                onValue(window.ref(db, 'evaluation_system/pins'), (s) => {
+                    subjectPins = s.val() || {};
+                    window.renderEvalPins();
                 });
                 onValue(window.ref(db, 'evaluation_system/students'), (s) => {
                     const d = s.val();
