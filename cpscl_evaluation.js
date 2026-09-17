@@ -264,7 +264,7 @@
                             </div>
                         </div>
 
-                        <!-- সিলেক্টেড বিষয় নির্বাচন (যে বিষয়ের পরীক্ষা হবে) -->
+                        <!-- সিলেক্টেড বিষয় নির্বাচন -->
                         <div>
                             <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 6px; display: block;">
                                 Active Exam Subjects (Uncheck to exclude non-evaluated subjects):
@@ -314,9 +314,9 @@
                                 </select>
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                <button class="eval-btn" style="background:#475569; color:white;" onclick="window.printBlankSheet()"><i class="fa-solid fa-file-lines"></i> Blank Sheet (Print)</button>
+                                <button class="eval-btn" style="background:#475569; color:white;" onclick="window.openEvaluationPrintTab(true)"><i class="fa-solid fa-file-lines"></i> Blank Sheet (Print)</button>
                                 <button class="eval-btn eval-btn-success" onclick="window.exportTabulationToExcel()"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
-                                <button class="eval-btn eval-btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Print Result PDF</button>
+                                <button class="eval-btn eval-btn-primary" onclick="window.openEvaluationPrintTab(false)"><i class="fa-solid fa-print"></i> Print Result PDF</button>
                             </div>
                         </div>
                     </div>
@@ -512,7 +512,6 @@
             lockBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Lock Entry';
         }
 
-        // চিপস রেন্ডার
         const chipBox = document.getElementById('activeSubjectsChips');
         chipBox.innerHTML = '';
         const allSubs = [
@@ -591,14 +590,12 @@
         };
 
         if (window.writeToFirebase) {
-            // ১. পূর্ববর্তী রেজাল্ট আর্কাইভে সেভ
             await window.writeToFirebase(`evaluation_system/archives/${activeExamId}`, {
                 examInfo: activeExamData,
                 marks: examMarks,
                 archivedAt: new Date().toISOString()
             });
 
-            // ২. নতুন পরীক্ষা সেট
             await window.writeToFirebase(`evaluation_system/exams/${newId}`, newExamObj);
             await window.writeToFirebase(`evaluation_system/active_exam_id`, newId);
         }
@@ -683,47 +680,32 @@
     };
 
     // ==========================================================
-    // ৭. লাইভ টেবুলেশন ও ডাইনামিক মার্কস
+    // ৭. সার্বজনীন ডাটা প্রসেসর (Tabulation Data Helper)
     // ==========================================================
-    window.renderEvalTabulation = function () {
-        const grp = document.getElementById('evalTabGroup').value;
-        const thead = document.getElementById('evalTabThead');
-        const tbody = document.getElementById('evalTabTbody');
-        const meta = document.getElementById('evalPrintMeta');
-        if (!thead || !tbody) return;
-
+    function getProcessedTabulationData() {
+        const grp = document.getElementById('evalTabGroup') ? document.getElementById('evalTabGroup').value : 'Science_Merit';
         let activeSubs = MASTER_SUBJECTS.Science;
-        let groupTitle = "Science";
+        let groupLabel = "Science";
+        let subGroupLabel = grp;
 
         if (grp === 'Humanities') {
             activeSubs = MASTER_SUBJECTS.Humanities;
-            groupTitle = "Humanities";
+            groupLabel = "Humanities";
+            subGroupLabel = "Humanities";
         } else if (grp === 'B.Studies') {
             activeSubs = MASTER_SUBJECTS.BStudies;
-            groupTitle = "Business Studies";
+            groupLabel = "Business Studies";
+            subGroupLabel = "Business Studies";
+        } else if (grp === 'Science_Merit') {
+            subGroupLabel = "Combined Merit";
         }
 
-        // বাদ দেওয়া বিষয় বাদ দিয়ে শুধু সক্রিয় বিষয় রাখা
         if (activeExamData.activeSubjects && activeExamData.activeSubjects.length > 0) {
             activeSubs = activeSubs.filter(s => activeExamData.activeSubjects.includes(s.key));
         }
 
         const perSubMax = activeExamData.max || 15;
         const streamTotalMarks = activeSubs.length * perSubMax;
-
-        meta.innerText = `Class: Ten (${groupTitle}) • Exam: ${activeExamData.title} • Date: ${activeExamData.date} • Total: ${streamTotalMarks} Marks`;
-
-        thead.innerHTML = `
-            <tr style="background:#f1f5f9;">
-                <th style="border:1px solid #000; padding:6px; width:45px; text-align:center;">SL</th>
-                <th style="border:1px solid #000; padding:6px; width:75px; text-align:center;">Std ID</th>
-                <th style="border:1px solid #000; padding:6px; text-align:left; padding-left:10px;">Student Name</th>
-                <th style="border:1px solid #000; padding:6px; width:45px; text-align:center;">Roll</th>
-                <th style="border:1px solid #000; padding:6px; width:45px; text-align:center;">Sec</th>
-                ${activeSubs.map(s => `<th style="border:1px solid #000; padding:4px; text-align:center;">${s.key}</th>`).join('')}
-                <th style="border:1px solid #000; padding:6px; width:75px; background:#e2e8f0; text-align:center;">Total (${streamTotalMarks})</th>
-            </tr>
-        `;
 
         let list = [];
         if (grp === 'Humanities') list = studentsList.filter(s => s.group === 'Humanities');
@@ -750,6 +732,34 @@
             computedList.sort((a, b) => (a.overallRank || a.sl) - (b.overallRank || b.sl));
         }
 
+        return { grp, groupLabel, subGroupLabel, activeSubs, streamTotalMarks, computedList };
+    }
+
+    // ==========================================================
+    // ৮. অন-স্ক্রিন লাইভ টেবুলেশন রেন্ডার
+    // ==========================================================
+    window.renderEvalTabulation = function () {
+        const thead = document.getElementById('evalTabThead');
+        const tbody = document.getElementById('evalTabTbody');
+        const meta = document.getElementById('evalPrintMeta');
+        if (!thead || !tbody) return;
+
+        const { groupLabel, activeSubs, streamTotalMarks, computedList } = getProcessedTabulationData();
+
+        meta.innerText = `Class: Ten (${groupLabel}) • Exam: ${activeExamData.title} • Date: ${activeExamData.date} • Total: ${streamTotalMarks} Marks`;
+
+        thead.innerHTML = `
+            <tr style="background:#f1f5f9;">
+                <th style="border:1px solid #000; padding:6px; width:45px; text-align:center;">SL</th>
+                <th style="border:1px solid #000; padding:6px; width:75px; text-align:center;">Std ID</th>
+                <th style="border:1px solid #000; padding:6px; text-align:left; padding-left:10px;">Student Name</th>
+                <th style="border:1px solid #000; padding:6px; width:45px; text-align:center;">Roll</th>
+                <th style="border:1px solid #000; padding:6px; width:45px; text-align:center;">Sec</th>
+                ${activeSubs.map(s => `<th style="border:1px solid #000; padding:4px; text-align:center;">${s.key === 'HM_AG' ? 'HM/AG' : (s.key === 'AG_HE' ? 'AG/HE' : s.key)}</th>`).join('')}
+                <th style="border:1px solid #000; padding:6px; width:75px; background:#e2e8f0; text-align:center;">Total (${streamTotalMarks})</th>
+            </tr>
+        `;
+
         tbody.innerHTML = '';
         computedList.forEach((s, idx) => {
             const tr = document.createElement('tr');
@@ -758,7 +768,7 @@
                 <td style="border:1px solid #000; text-align:center; font-family:monospace; font-weight:700;">${s.id}</td>
                 <td style="border:1px solid #000; text-align:left; padding-left:10px; font-weight:700;">${s.name}</td>
                 <td style="border:1px solid #000; text-align:center;">${s.roll}</td>
-                <td style="border:1px solid #000; text-align:center; font-weight:700;">${s.section}</td>
+                <td style="border:1px solid #000; text-align:center; font-weight:700;">${s.section || ''}</td>
                 ${activeSubs.map(sb => {
                     const markVal = s.marksObj[sb.key];
                     const displayMark = markVal !== undefined && markVal !== null && markVal !== '' ? markVal : '-';
@@ -770,34 +780,319 @@
         });
     };
 
-    // প্রিন্টের জন্য ব্ল্যাঙ্ক মূল্যায়ন শিট
-    window.printBlankSheet = function () {
-        const tbody = document.getElementById('evalTabTbody');
-        if (!tbody) return;
-        const rows = tbody.querySelectorAll('tr');
-        rows.forEach(r => {
-            const cells = r.querySelectorAll('td');
-            for (let i = 5; i < cells.length; i++) {
-                cells[i].innerText = ''; // নম্বর ফাঁকা করে প্রিন্ট
-            }
-        });
-        window.print();
-        window.renderEvalTabulation();
-    };
+    // ==========================================================
+    // ৯. নতুন ট্যাবে নিখুঁত প্রিন্ট রিপোর্ট ওপেন করা (Result & Blank)
+    // ==========================================================
+    window.openEvaluationPrintTab = function (isBlank = false) {
+        const { groupLabel, subGroupLabel, activeSubs, streamTotalMarks, computedList } = getProcessedTabulationData();
 
-    // এক্সেল ডাউনলোড
-    window.exportTabulationToExcel = function () {
-        if (typeof XLSX === 'undefined') {
-            alert("SheetJS library not loaded!");
+        const printWin = window.open('', '_blank');
+        if (!printWin) {
+            alert("পপ-আপ উইন্ডো ব্লক করা রয়েছে! দয়া করে ব্রাউজারের Pop-up Allow করুন।");
             return;
         }
-        const tbl = document.getElementById('evalTabTable');
-        const wb = XLSX.utils.table_to_book(tbl, { sheet: "ResultSheet" });
-        XLSX.writeFile(wb, `${activeExamData.title}_Tabulation.xlsx`);
+
+        const totalCols = 5 + activeSubs.length + 1;
+
+        const reportHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>${activeExamData.title} - ${subGroupLabel} ${isBlank ? '(Blank Sheet)' : ''}</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 12mm 10mm 12mm 10mm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            color: #000;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+            -webkit-print-color-adjust: exact;
+        }
+
+        .report-container {
+            width: 100%;
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        /* প্রাতিষ্ঠানিক হেডার */
+        .header-cell {
+            border: none !important;
+            padding: 0 0 8px 0 !important;
+            text-align: center;
+        }
+
+        .header-cell h1 {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 3px 0;
+        }
+
+        .header-cell p {
+            font-size: 13px;
+            margin: 2px 0;
+            font-weight: normal;
+        }
+
+        .date-container {
+            text-align: right;
+            font-size: 12px;
+            font-weight: normal;
+            margin-top: 5px;
+            padding-right: 5px;
+        }
+
+        /* টেবিল ফরম্যাট */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px; /* আরামদায়ক ও স্পষ্ট ফন্ট সাইজ */
+        }
+
+        thead {
+            display: table-header-group; /* প্রতিটি পাতায় স্বয়ংক্রিয় হেডার রিপিট */
+        }
+
+        tr {
+            break-inside: avoid;
+            page-break-inside: avoid; /* রো মাঝখান দিয়ে কাটবে না */
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 4px 3px;
+            text-align: center;
+        }
+
+        th.col-header {
+            font-weight: bold;
+            font-size: 11px;
+            background-color: #fff;
+            padding: 5px 2px;
+        }
+
+        .col-sl { width: 26px; }
+        .col-id { width: 50px; }
+        .col-name { 
+            width: 185px; 
+            text-align: left; 
+            padding-left: 6px; 
+            white-space: nowrap; 
+        }
+        .col-roll { width: 30px; }
+        .col-sec { width: 32px; }
+        .col-sub { width: 28px; }
+        .col-hm { width: 32px; font-size: 9.5px; line-height: 1.1; }
+        .col-total { width: 38px; }
+
+        /* স্বাক্ষর এরিয়া (১ ইঞ্চি নিচে নামানো) */
+        .signature-section {
+            margin-top: calc(60px + 1in);
+            display: flex;
+            justify-content: space-between;
+            padding: 0 60px;
+            font-size: 13px;
+            font-weight: bold;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        /* প্রিন্ট কন্ট্রোল বার (শুধু স্ক্রিনে দেখাবে) */
+        .no-print-bar {
+            max-width: 210mm;
+            margin: 15px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e40af;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-family: sans-serif;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-print-action {
+            background: #ffffff;
+            color: #1e40af;
+            font-weight: 700;
+            border: none;
+            padding: 7px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-print-action:hover { background: #eff6ff; }
+
+        @media screen {
+            body { background-color: #e5e5e5; padding-bottom: 30px; }
+            .report-container {
+                background: white;
+                padding: 15mm 12mm;
+                box-shadow: 0 0 10px rgba(0,0,0,0.15);
+            }
+        }
+
+        @media print {
+            .no-print-bar { display: none !important; }
+            body { padding: 0; background: #fff; }
+            .report-container { padding: 0; box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print-bar">
+        <span><strong>${activeExamData.title}</strong> — ${subGroupLabel} (${isBlank ? 'Blank Sheet' : 'Result Sheet'})</span>
+        <button class="btn-print-action" onclick="window.print()">🖨️ Print Report</button>
+    </div>
+
+    <div class="report-container">
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="${totalCols}" class="header-cell">
+                        <h1>Cantonment Public School and College Lalmonirhat</h1>
+                        <p>Performance Evaluation</p>
+                        <p>Class: Ten (${groupLabel})</p>
+                        <p>${activeExamData.title}</p>
+                        <p>${subGroupLabel}</p>
+                        <div class="date-container">Date : ${activeExamData.date || ''}</div>
+                    </th>
+                </tr>
+                <tr>
+                    <th class="col-header col-sl">SL</th>
+                    <th class="col-header col-id">Std ID</th>
+                    <th class="col-header col-name">Student Name</th>
+                    <th class="col-header col-roll">Roll</th>
+                    <th class="col-header col-sec">Sec</th>
+                    ${activeSubs.map(s => {
+                        const key = s.key;
+                        const label = (key === 'HM_AG') ? 'HM/<br>AG' : ((key === 'AG_HE') ? 'AG/<br>HE' : key);
+                        const isHm = (key === 'HM_AG' || key === 'AG_HE');
+                        return `<th class="col-header ${isHm ? 'col-hm' : 'col-sub'}">${label}</th>`;
+                    }).join('')}
+                    <th class="col-header col-total">Total<br>(${streamTotalMarks})</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${computedList.map((s, idx) => `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td>${s.id}</td>
+                        <td class="col-name">${s.name}</td>
+                        <td>${s.roll}</td>
+                        <td>${s.section || ''}</td>
+                        ${activeSubs.map(sb => {
+                            if (isBlank) return '<td></td>';
+                            const markVal = s.marksObj[sb.key];
+                            const displayMark = (markVal !== undefined && markVal !== null && markVal !== '') ? markVal : '0';
+                            return `<td>${displayMark}</td>`;
+                        }).join('')}
+                        <td>${isBlank ? '0' : s.total}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+
+        <!-- সিগনেচার সেকশন -->
+        <div class="signature-section">
+            <div>Vice Principal</div>
+            <div>Principal</div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            setTimeout(function() { window.print(); }, 400);
+        };
+    <\/script>
+</body>
+</html>`;
+
+        printWin.document.open();
+        printWin.document.write(reportHTML);
+        printWin.document.close();
+    };
+
+    // ব্ল্যাঙ্ক শিট প্রিন্ট ট্রিগার
+    window.printBlankSheet = function () {
+        window.openEvaluationPrintTab(true);
     };
 
     // ==========================================================
-    // ৮. ডাইনামিক অটো-গ্রুপিং ইঞ্জিন (Top 55=A, 50=B, Rest=C)
+    // ১০. প্রাতিষ্ঠানিক ফরম্যাটে এক্সেল এক্সপোর্ট
+    // ==========================================================
+    window.exportTabulationToExcel = function () {
+        if (typeof XLSX === 'undefined') {
+            alert("SheetJS (XLSX) লাইব্রেরি পাওয়া যায়নি!");
+            return;
+        }
+
+        const { groupLabel, subGroupLabel, activeSubs, streamTotalMarks, computedList } = getProcessedTabulationData();
+
+        // প্রাতিষ্ঠানিক হেডার সহ সম্পূর্ণ ডাটা অ্যারে তৈরি
+        const aoaData = [
+            ["Cantonment Public School and College Lalmonirhat"],
+            ["Performance Evaluation"],
+            [`Class: Ten (${groupLabel})`],
+            [`${activeExamData.title} - ${subGroupLabel}`],
+            [`Date : ${activeExamData.date || ''}`],
+            [] // খালি রো
+        ];
+
+        // টেবিল কলাম হেডার
+        const headerRow = ["SL", "Std ID", "Student Name", "Roll", "Sec"];
+        activeSubs.forEach(s => {
+            headerRow.push(s.key === 'HM_AG' ? 'HM/AG' : (s.key === 'AG_HE' ? 'AG/HE' : s.key));
+        });
+        headerRow.push(`Total (${streamTotalMarks})`);
+        aoaData.push(headerRow);
+
+        // ছাত্র-ছাত্রীদের ডাটা
+        computedList.forEach((s, idx) => {
+            const row = [idx + 1, s.id, s.name, s.roll, s.section || ''];
+            activeSubs.forEach(sb => {
+                const markVal = s.marksObj[sb.key];
+                row.push((markVal !== undefined && markVal !== null && markVal !== '') ? Number(markVal) : 0);
+            });
+            row.push(s.total);
+            aoaData.push(row);
+        });
+
+        // সিগনেচার স্পেস
+        aoaData.push([]);
+        aoaData.push([]);
+        aoaData.push(["Vice Principal", "", "", "", "", ...new Array(activeSubs.length - 1).fill(""), "Principal"]);
+
+        const ws = XLSX.utils.aoa_to_sheet(aoaData);
+
+        // হেডার সেল মার্জ করা
+        const lastColIdx = headerRow.length - 1;
+        ws['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: lastColIdx } },
+            { s: { r: 1, c: 0 }, e: { r: 1, c: lastColIdx } },
+            { s: { r: 2, c: 0 }, e: { r: 2, c: lastColIdx } },
+            { s: { r: 3, c: 0 }, e: { r: 3, c: lastColIdx } },
+            { s: { r: 4, c: 0 }, e: { r: 4, c: lastColIdx } }
+        ];
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Evaluation_Report");
+        XLSX.writeFile(wb, `${activeExamData.title}_${subGroupLabel}_Report.xlsx`);
+    };
+
+    // ==========================================================
+    // ১১. ডাইনামিক অটো-গ্রুপিং ইঞ্জিন (Top 55=A, 50=B, Rest=C)
     // ==========================================================
     window.setupRegroupSection = function () {
         document.getElementById('regroupPreviewBox').style.display = 'none';
@@ -821,13 +1116,11 @@
             return { ...s, total };
         });
 
-        // মোট নম্বরের ভিত্তিতে মেধা সাজানো (টাই-ব্রেকার রোল)
         computed.sort((a, b) => {
             if (b.total !== a.total) return b.total - a.total;
             return (a.roll || 0) - (b.roll || 0);
         });
 
-        // ৫৫ জন Group-A, ৫০ জন Group-B, বাকিরা Group-C
         computed.forEach((s, idx) => {
             const rank = idx + 1;
             let newGrp = "Group-C";
@@ -886,7 +1179,7 @@
     };
 
     // ==========================================================
-    // ৯. আর্কাইভ ভিউয়ার
+    // ১২. আর্কাইভ ভিউয়ার
     // ==========================================================
     window.renderArchivesDropdown = async function () {
         const sel = document.getElementById('archiveExamSelect');
@@ -929,7 +1222,7 @@
     };
 
     // ==========================================================
-    // ১০. স্টুডেন্ট ডিরেক্টরি লাইভ টেবিল
+    // ১৩. স্টুডেন্ট ডিরেক্টরি লাইভ টেবিল
     // ==========================================================
     window.filterEvalByTab = function (filter, btn) {
         currentEvalFilter = filter;
@@ -1013,7 +1306,7 @@
     };
 
     // ==========================================================
-    // ১১. ফায়ারবেস ক্লাউড লোডার
+    // ১৪. ফায়ারবেস ক্লাউড লোডার
     // ==========================================================
     async function loadDirectlyFromFirebase(retries = 25) {
         if (!window.getDatabase || !window.ref || !window.get) {
@@ -1048,7 +1341,6 @@
                 window.renderEvalTabulation();
             }
 
-            // রিয়েল-টাইম লিসেনার
             import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(({ onValue }) => {
                 onValue(window.ref(db, `evaluation_system/marks/${activeExamId}`), (s) => {
                     examMarks = s.val() || {};
