@@ -1,13 +1,13 @@
 /**
  * CPSCL Academic Evaluation Module - Bulletproof Multi-Department Manager
  * File: cpscl_evaluation.js
- * Architecture: End-to-End Exam Lifecycle, Auto-Grouping & Dynamic Tabulation
- * UI: Professional Academic Theme with Google Tiro Bangla
+ * Architecture: End-to-End Exam Lifecycle, Admin Override & Dynamic Tabulation
+ * UI: Professional Academic Theme with Google Tiro Bangla & Rounded Aesthetic
  */
 
 (function () {
     // ==========================================================
-    // ১. গুগল ফন্ট ও মার্জিত স্টাইল ইনজেকশন
+    // ১. গুগল ফন্ট ও সম্পূর্ণ গোলাকার (Rounded) স্টাইল ইনজেকশন
     // ==========================================================
     const evalStyle = document.createElement('style');
     evalStyle.innerHTML = `
@@ -21,35 +21,42 @@
         .eval-sub-sec { display: none; }
         .eval-sub-sec.active { display: block; }
 
-        /* স্লিম পরিসংখ্যান রিবন */
+        /* পরিসংখ্যান কার্ড (গোলাকার শেপ) */
         .eval-stats-ribbon {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-bottom: 12px;
+            gap: 14px;
+            margin-bottom: 14px;
         }
         .eval-stat-item {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-left: 4px solid #94a3b8;
-            border-radius: 8px;
-            padding: 8px 14px;
+            border-left: 5px solid #94a3b8;
+            border-radius: 16px;
+            padding: 10px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
             transition: 0.15s ease;
         }
-        .eval-stat-item:hover { background: #fbfcfe; border-color: #cbd5e1; }
+        .eval-stat-item:hover { background: #fbfcfe; border-color: #cbd5e1; transform: translateY(-1px); }
         .eval-stat-item.active { border-left-color: #1e40af; background: #eff6ff; border-color: #bfdbfe; }
-        .eval-stat-title { font-size: 0.72rem; text-transform: uppercase; color: #64748b; font-weight: 600; letter-spacing: 0.5px; }
+        .eval-stat-title { font-size: 0.72rem; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.5px; }
         .eval-stat-meta { font-size: 0.68rem; color: #94a3b8; }
         .eval-stat-num { font-size: 1.35rem; font-weight: 700; color: #0f172a; }
 
-        .eval-main-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
+        .eval-main-box { 
+            background: #fff; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 18px; 
+            overflow: hidden; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03); 
+            margin-bottom: 16px; 
+        }
         .eval-ctrl-bar {
-            padding: 8px 14px;
+            padding: 10px 16px;
             border-bottom: 1px solid #e2e8f0;
             display: flex;
             align-items: center;
@@ -58,34 +65,36 @@
             gap: 10px;
             background: #ffffff;
         }
-        .eval-tab-group { display: flex; background: #f1f5f9; padding: 3px; border-radius: 6px; gap: 2px; flex-wrap: wrap; }
+        .eval-tab-group { display: flex; background: #f1f5f9; padding: 4px; border-radius: 25px; gap: 3px; flex-wrap: wrap; }
         .eval-tab-btn {
-            border: none; background: transparent; padding: 5px 12px; border-radius: 5px;
-            font-size: 0.78rem; font-weight: 600; color: #64748b; cursor: pointer; transition: 0.15s; white-space: nowrap;
+            border: none; background: transparent; padding: 6px 14px; border-radius: 20px;
+            font-size: 0.78rem; font-weight: 700; color: #64748b; cursor: pointer; transition: 0.15s; white-space: nowrap;
         }
         .eval-tab-btn:hover { color: #0f172a; }
-        .eval-tab-btn.active { background: #ffffff; color: #1e40af; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+        .eval-tab-btn.active { background: #ffffff; color: #1e40af; font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
 
         .eval-search-wrap { position: relative; width: 220px; }
-        .eval-search-wrap i { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; }
-        .eval-search-inp { width: 100%; padding: 5px 10px 5px 28px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.78rem; outline: none; }
+        .eval-search-wrap .eval-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; fill: #94a3b8; }
+        .eval-search-inp { width: 100%; padding: 7px 14px 7px 32px; border: 1.5px solid #cbd5e1; border-radius: 25px; font-size: 0.78rem; outline: none; }
         .eval-search-inp:focus { border-color: #1e40af; }
 
+        /* সব বাটন সম্পূর্ণ গোলাকার (Pill Shapes) */
         .eval-btn {
-            padding: 6px 14px; border-radius: 6px; font-size: 0.78rem; font-weight: 700;
+            padding: 8px 18px; border-radius: 25px; font-size: 0.78rem; font-weight: 700;
             cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border: none; transition: 0.15s; text-decoration: none;
         }
+        .eval-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
         .eval-btn-primary { background: #1e40af; color: white; }
         .eval-btn-primary:hover { background: #1e3a8a; }
-        .eval-btn-success { background: #10b981; color: white; }
-        .eval-btn-success:hover { background: #059669; }
+        .eval-btn-success { background: #16a34a; color: white; }
+        .eval-btn-success:hover { background: #15803d; }
         .eval-btn-info { background: #0ea5e9; color: white; }
         .eval-btn-purple { background: #6366f1; color: white; }
 
         .eval-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
         .eval-table thead tr { background: #f8fafc; border-bottom: 1.5px solid #cbd5e1; }
-        .eval-table th { padding: 8px 12px; text-align: left; font-size: 0.70rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.6px; white-space: nowrap; }
-        .eval-table td { padding: 7px 12px; border-bottom: 1px solid #f1f5f9; color: #0f172a; vertical-align: middle; white-space: nowrap; }
+        .eval-table th { padding: 10px 14px; text-align: left; font-size: 0.70rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.6px; white-space: nowrap; }
+        .eval-table td { padding: 8px 14px; border-bottom: 1px solid #f1f5f9; color: #0f172a; vertical-align: middle; white-space: nowrap; }
         .eval-table tbody tr:hover { background-color: #f8faff; }
 
         .eval-modal-overlay {
@@ -93,18 +102,47 @@
             backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; z-index: 999999;
         }
         .eval-modal-card {
-            background: #ffffff; border-radius: 14px; width: 100%; max-width: 480px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15); padding: 22px; animation: evalPop 0.2s ease-out;
+            background: #ffffff; border-radius: 20px; width: 100%; max-width: 480px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); padding: 24px; animation: evalPop 0.2s ease-out;
         }
         @keyframes evalPop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         .sub-chip {
-            display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; background: #f1f5f9;
-            border-radius: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer; user-select: none; border: 1px solid #cbd5e1;
+            display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; background: #f1f5f9;
+            border-radius: 20px; font-size: 0.75rem; font-weight: 700; cursor: pointer; user-select: none; border: 1px solid #cbd5e1;
         }
         .sub-chip.active { background: #dbeafe; border-color: #3b82f6; color: #1e40af; }
+
+        .eval-badge {
+            display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700;
+        }
+        .eval-badge-primary { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+        .eval-badge-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+        .eval-badge-danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+        /* Admin Override Engine Specific Roundings */
+        .admin-eval-inp {
+            width: 70px; height: 36px; border-radius: 12px; border: 1.5px solid #cbd5e1;
+            text-align: center; font-size: 1.15rem; font-weight: 800; color: #1e40af; outline: none; background: #ffffff;
+        }
+        .admin-eval-inp:focus { border-color: #2563eb; background-color: #eff6ff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18); }
+
+        .eval-icon { width: 14px; height: 14px; fill: currentColor; display: inline-block; vertical-align: middle; }
     `;
     document.head.appendChild(evalStyle);
+
+    // এসভিজি আইকন হেল্পার ফাংশন (কোনো ভাঙা আইকন আসবে না)
+    const ICONS = {
+        users: `<svg class="eval-icon" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>`,
+        sliders: `<svg class="eval-icon" viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>`,
+        pen: `<svg class="eval-icon" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`,
+        table: `<svg class="eval-icon" viewBox="0 0 24 24"><path d="M4 3h16c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2zm0 4h16V5H4v2zm0 4h7V9H4v2zm9 0h7V9h-7v2zm-9 4h7v-2H4v2zm9 0h7v-2h-7v2zm-9 4h7v-2H4v2zm9 0h7v-2h-7v2z"/></svg>`,
+        star: `<svg class="eval-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
+        box: `<svg class="eval-icon" viewBox="0 0 24 24"><path d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"/></svg>`,
+        arrowRight: `<svg class="eval-icon" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>`,
+        save: `<svg class="eval-icon" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>`,
+        search: `<svg class="eval-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>`
+    };
 
     // সব বিষয়ের মাস্টার তালিকা
     const MASTER_SUBJECTS = {
@@ -146,11 +184,10 @@
         activeSubjects: ['B1', 'B2', 'E1', 'E2', 'Math', 'HM_AG', 'Phy', 'Che', 'Bio', 'BGS', 'Reli', 'ICT', 'His', 'Geo', 'Civ', 'Fin', 'Acc', 'Sci']
     };
     let currentEvalFilter = 'All';
-    let evalChosenFile = null;
     let computedMeritCache = [];
 
     // ==========================================================
-    // ২. সাইডবার ইনজেকশন ও মূল লেআউট নির্মাণ (৫টি সাব-সেকশন)
+    // ২. সাইডবার ইনজেকশন (নতুন এডমিন এন্ট্রি সেকশন সহ ৬টি সেকশন)
     // ==========================================================
     function injectExamModule() {
         const menuList = document.querySelector('.menu-list');
@@ -164,15 +201,16 @@
         evalLi.id = 'menu-exam-eval-parent';
         evalLi.innerHTML = `
             <a onclick="window.toggleExamMenu(event)">
-                <span class="menu-link-inner"><i class="fa-solid fa-file-signature"></i> <span>Exam Evaluation</span></span>
-                <i class="fa-solid fa-chevron-down chevron-icon" id="exam-chevron-icon"></i>
+                <span class="menu-link-inner">${ICONS.pen} <span>Exam Evaluation</span></span>
+                <span id="exam-chevron-icon" style="transition:0.2s; display:inline-block;">▾</span>
             </a>
             <ul class="submenu-list" id="exam-submenu-list" style="display: none;">
-                <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-student-sec')"><i class="fa-solid fa-users"></i> <span>Student Directory</span></a></li>
-                <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-config-sec')"><i class="fa-solid fa-sliders"></i> <span>Exam Manager</span></a></li>
-                <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-tab-sec')"><i class="fa-solid fa-table-list"></i> <span>Live Tabulation</span></a></li>
-                <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-regroup-sec')"><i class="fa-solid fa-ranking-star"></i> <span>Merit & Grouping</span></a></li>
-                <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-archive-sec')"><i class="fa-solid fa-box-archive"></i> <span>Exam Archives</span></a></li>
+                <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-student-sec')">${ICONS.users} <span>Student Directory</span></a></li>
+                <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-config-sec')">${ICONS.sliders} <span>Exam Manager</span></a></li>
+                <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-admin-entry-sec')" style="color:#16a34a; font-weight:700;">${ICONS.pen} <span>Admin Mark Entry</span></a></li>
+                <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-tab-sec')">${ICONS.table} <span>Live Tabulation</span></a></li>
+                <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-regroup-sec')">${ICONS.star} <span>Merit & Grouping</span></a></li>
+                <li class="submenu-item"><a onclick="window.switchExamSubSection('eval-archive-sec')">${ICONS.box} <span>Exam Archives</span></a></li>
             </ul>
         `;
         menuList.appendChild(evalLi);
@@ -219,11 +257,11 @@
 
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <div class="eval-search-wrap">
-                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    ${ICONS.search}
                                     <input type="text" id="evalSearchInp" class="eval-search-inp" placeholder="Search ID, Name, Roll..." oninput="window.renderEvalStudents()">
                                 </div>
                                 <button class="eval-btn eval-btn-primary" onclick="window.openEvalUploadModal()">
-                                    <i class="fa-solid fa-cloud-arrow-up"></i> <span>Import Excel</span>
+                                    ${ICONS.save} <span>Import Excel</span>
                                 </button>
                             </div>
                         </div>
@@ -249,37 +287,35 @@
 
                 <!-- SUB-SECTION 2: EXAM MANAGER -->
                 <div id="eval-config-sec" class="eval-sub-sec">
-                    <div class="eval-main-box" style="padding: 16px; margin-bottom: 14px;">
+                    <div class="eval-main-box" style="padding: 18px; margin-bottom: 14px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
                             <div>
                                 <h3 id="mgrExamTitle" style="font-size: 1.15rem; font-weight: 800; margin: 0; color: #0f172a;">Active: Fortnightly Test-02</h3>
                                 <p id="mgrExamMeta" style="font-size: 0.78rem; color: #64748b; margin: 2px 0 0 0;">Date: 15 Sep 2026 • Full Mark: 15</p>
                             </div>
                             <div style="display: flex; gap: 8px; align-items: center;">
-                                <button class="eval-btn eval-btn-purple" onclick="window.openCreateExamModal()"><i class="fa-solid fa-plus"></i> Create New Exam</button>
+                                <button class="eval-btn eval-btn-purple" onclick="window.openCreateExamModal()">+ Create New Exam</button>
                                 <button class="eval-btn" id="btnToggleLock" style="background:#dc2626; color:white;" onclick="window.toggleExamLock()">
-                                    <i class="fa-solid fa-lock"></i> Lock Entry
+                                    Lock Entry
                                 </button>
-                                <button class="eval-btn eval-btn-info" onclick="window.copyEvalTeacherLink()"><i class="fa-solid fa-link"></i> Copy Teacher Link</button>
+                                <button class="eval-btn eval-btn-info" onclick="window.copyEvalTeacherLink()">Copy Teacher Link</button>
                             </div>
                         </div>
 
-                        <!-- সিলেক্টেড বিষয় নির্বাচন -->
                         <div>
-                            <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 6px; display: block;">
-                                Active Exam Subjects (Uncheck to exclude non-evaluated subjects):
+                            <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 8px; display: block;">
+                                Active Exam Subjects (Uncheck to exclude):
                             </label>
-                            <div id="activeSubjectsChips" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                            <div id="activeSubjectsChips" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
                         </div>
                     </div>
 
-                    <!-- পিন ম্যানেজমেন্ট টেবিল -->
                     <div class="eval-main-box">
                         <div class="eval-ctrl-bar">
-                            <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a;"><i class="fa-solid fa-key text-warning"></i> Teacher PINs & Status</div>
+                            <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a;">Teacher PINs & Status</div>
                             <div style="display: flex; gap: 8px;">
-                                <button class="eval-btn eval-btn-purple" id="btnRefreshPins" onclick="window.refreshEvalPinsLive()"><i class="fa-solid fa-rotate"></i> Refresh PINs</button>
-                                <button class="eval-btn eval-btn-success" onclick="window.openAdminOverrideModal()"><i class="fa-solid fa-pen-to-square"></i> Admin Mark Entry</button>
+                                <button class="eval-btn eval-btn-purple" id="btnRefreshPins" onclick="window.refreshEvalPinsLive()">Refresh PINs</button>
+                                <button class="eval-btn eval-btn-success" onclick="window.switchExamSubSection('eval-admin-entry-sec')">${ICONS.pen} Open Admin Mark Entry</button>
                             </div>
                         </div>
                         <div style="overflow-x: auto;">
@@ -298,13 +334,90 @@
                     </div>
                 </div>
 
-                <!-- SUB-SECTION 3: LIVE TABULATION -->
+                <!-- SUB-SECTION 3: ADMIN MARK ENTRY ENGINE (নতুন ও ১০০% গোলাকার শেপ) -->
+                <div id="eval-admin-entry-sec" class="eval-sub-sec">
+                    <div class="eval-main-box" style="border-radius: 20px;">
+                        <div style="background: linear-gradient(90deg, #1e40af 0%, #2563eb 100%); color: #fff; padding: 12px 20px; font-weight: 700; font-size: 0.92rem; display: flex; align-items: center; gap: 8px;">
+                            ${ICONS.pen} Admin Mark Entry (Direct Override)
+                        </div>
+
+                        <div style="padding: 18px 20px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px 18px;">
+                                <div>
+                                    <label style="font-size: 0.72rem; color: #64748b; margin-bottom: 5px; margin-left: 6px; font-weight: 700; text-transform: uppercase; display: block;">Academic Year <span style="color:#dc2626;">*</span></label>
+                                    <select class="eval-search-inp" id="adminSelYear" style="width: 100%; border-radius: 25px; padding: 8px 14px;">
+                                        <option selected>2026</option>
+                                        <option>2025</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.72rem; color: #64748b; margin-bottom: 5px; margin-left: 6px; font-weight: 700; text-transform: uppercase; display: block;">Exam Name <span style="color:#dc2626;">*</span></label>
+                                    <select class="eval-search-inp" id="adminSelExam" style="width: 100%; border-radius: 25px; padding: 8px 14px;">
+                                        <!-- Will load active exam -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.72rem; color: #64748b; margin-bottom: 5px; margin-left: 6px; font-weight: 700; text-transform: uppercase; display: block;">Group / Stream <span style="color:#dc2626;">*</span></label>
+                                    <select class="eval-search-inp" id="adminSelGroup" style="width: 100%; border-radius: 25px; padding: 8px 14px;" onchange="window.adminOnGroupChanged()">
+                                        <option value="Group-A" selected>Science (Group-A)</option>
+                                        <option value="Group-B">Science (Group-B)</option>
+                                        <option value="Group-C">Science (Group-C)</option>
+                                        <option value="Humanities">Humanities</option>
+                                        <option value="B.Studies">Business Studies</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.72rem; color: #64748b; margin-bottom: 5px; margin-left: 6px; font-weight: 700; text-transform: uppercase; display: block;">Subject <span style="color:#dc2626;">*</span></label>
+                                    <select class="eval-search-inp" id="adminSelSubject" style="width: 100%; border-radius: 25px; padding: 8px 14px;">
+                                        <!-- Dynamic Subjects -->
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+                                <button class="eval-btn eval-btn-primary" onclick="window.adminLoadStudentsForEntry()">
+                                    Next ${ICONS.arrowRight}
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- মার্ক টেবিল বক্স -->
+                        <div id="adminMarkTableBox" style="display: none; border-top: 1px solid #e2e8f0;">
+                            <div style="overflow-x: auto;">
+                                <table class="eval-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px; text-align: center;">SL</th>
+                                            <th style="width: 120px;">Student ID</th>
+                                            <th>Name</th>
+                                            <th style="width: 70px; text-align: center;">Roll</th>
+                                            <th style="width: 70px; text-align: center;">Sec</th>
+                                            <th style="width: 120px; text-align: center;">Mark (<span id="adminMaxMarkSpan">15</span>)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminStudentTbody"></tbody>
+                                </table>
+                            </div>
+
+                            <div style="padding: 14px 22px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                <span style="font-size: 0.78rem; color: #64748b; font-weight: 600;">
+                                    * Type 0 for Absent. Press [Enter] to move to the next student.
+                                </span>
+                                <button class="eval-btn eval-btn-success" id="btnAdminSaveMarks" onclick="window.adminSaveMarksLive()">
+                                    ${ICONS.save} Save Marks
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-SECTION 4: LIVE TABULATION -->
                 <div id="eval-tab-sec" class="eval-sub-sec">
-                    <div class="eval-main-box" style="padding: 12px 16px;">
+                    <div class="eval-main-box" style="padding: 12px 18px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <label style="font-size: 0.75rem; font-weight: 700; color: #64748b;">View Stream Sheet:</label>
-                                <select id="evalTabGroup" class="eval-search-inp" style="width: auto;" onchange="window.renderEvalTabulation()">
+                                <select id="evalTabGroup" class="eval-search-inp" style="width: auto; border-radius: 20px;" onchange="window.renderEvalTabulation()">
                                     <option value="Science_Merit">Science (Combined Merit)</option>
                                     <option value="Group-A">Science (Group-A)</option>
                                     <option value="Group-B">Science (Group-B)</option>
@@ -314,9 +427,9 @@
                                 </select>
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                <button class="eval-btn" style="background:#475569; color:white;" onclick="window.openEvaluationPrintTab(true)"><i class="fa-solid fa-file-lines"></i> Blank Sheet (Print)</button>
-                                <button class="eval-btn eval-btn-success" onclick="window.exportTabulationToExcel()"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
-                                <button class="eval-btn eval-btn-primary" onclick="window.openEvaluationPrintTab(false)"><i class="fa-solid fa-print"></i> Print Result PDF</button>
+                                <button class="eval-btn" style="background:#475569; color:white;" onclick="window.openEvaluationPrintTab(true)">Blank Sheet</button>
+                                <button class="eval-btn eval-btn-success" onclick="window.exportTabulationToExcel()">Export Excel</button>
+                                <button class="eval-btn eval-btn-primary" onclick="window.openEvaluationPrintTab(false)">Print Result PDF</button>
                             </div>
                         </div>
                     </div>
@@ -341,24 +454,24 @@
                     </div>
                 </div>
 
-                <!-- SUB-SECTION 4: MERIT & AUTO-GROUPING ENGINE -->
+                <!-- SUB-SECTION 5: MERIT & AUTO-GROUPING ENGINE -->
                 <div id="eval-regroup-sec" class="eval-sub-sec">
-                    <div class="eval-main-box" style="padding: 16px;">
+                    <div class="eval-main-box" style="padding: 18px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                             <div>
                                 <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0; color: #0f172a;">Dynamic Merit & Grouping Engine</h3>
                                 <p style="font-size: 0.78rem; color: #64748b; margin: 2px 0 0 0;">Top 55 ➔ Group-A | Next 50 ➔ Group-B | Rest ➔ Group-C</p>
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                <button class="eval-btn eval-btn-primary" onclick="window.runAutoGroupingPreview()"><i class="fa-solid fa-calculator"></i> Calculate New Groups</button>
-                                <button class="eval-btn eval-btn-success" id="btnApplyRegroup" style="display:none;" onclick="window.applyPromoteNewGroups()"><i class="fa-solid fa-check-double"></i> Promote & Set for Next Exam</button>
+                                <button class="eval-btn eval-btn-primary" onclick="window.runAutoGroupingPreview()">Calculate New Groups</button>
+                                <button class="eval-btn eval-btn-success" id="btnApplyRegroup" style="display:none;" onclick="window.applyPromoteNewGroups()">Promote & Set for Next Exam</button>
                             </div>
                         </div>
                     </div>
 
                     <div class="eval-main-box" id="regroupPreviewBox" style="display: none;">
-                        <div style="padding: 10px 14px; background: #eff6ff; border-bottom: 1px solid #bfdbfe; font-size: 0.82rem; font-weight: 700; color: #1e40af;">
-                            Preview of Generated New Groups (Review before applying):
+                        <div style="padding: 10px 16px; background: #eff6ff; border-bottom: 1px solid #bfdbfe; font-size: 0.82rem; font-weight: 700; color: #1e40af;">
+                            Preview of Generated New Groups:
                         </div>
                         <div style="overflow-x: auto;">
                             <table class="eval-table">
@@ -379,12 +492,12 @@
                     </div>
                 </div>
 
-                <!-- SUB-SECTION 5: EXAM ARCHIVES -->
+                <!-- SUB-SECTION 6: EXAM ARCHIVES -->
                 <div id="eval-archive-sec" class="eval-sub-sec">
-                    <div class="eval-main-box" style="padding: 14px;">
+                    <div class="eval-main-box" style="padding: 16px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <label style="font-size: 0.80rem; font-weight: 700; color: #475569;">Select Past Exam:</label>
-                            <select id="archiveExamSelect" class="eval-search-inp" style="width: 260px;" onchange="window.loadArchivedExamData()">
+                            <select id="archiveExamSelect" class="eval-search-inp" style="width: 260px; border-radius: 20px;" onchange="window.loadArchivedExamData()">
                                 <option value="">-- Select Archived Exam --</option>
                             </select>
                         </div>
@@ -396,31 +509,27 @@
                 <div class="eval-modal-overlay" id="createExamModal" onclick="if(event.target === this) window.closeCreateExamModal()">
                     <div class="eval-modal-card">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <div style="font-size: 1.05rem; font-weight: 800; color: #0f172a;"><i class="fa-solid fa-calendar-plus text-primary"></i> Create New Exam Sheet</div>
-                            <button style="background:transparent; border:none; font-size:1.1rem; color:#94a3b8; cursor:pointer;" onclick="window.closeCreateExamModal()"><i class="fa-solid fa-xmark"></i></button>
+                            <div style="font-size: 1.05rem; font-weight: 800; color: #0f172a;">Create New Exam Sheet</div>
+                            <button style="background:transparent; border:none; font-size:1.2rem; color:#94a3b8; cursor:pointer;" onclick="window.closeCreateExamModal()">✕</button>
                         </div>
 
                         <div style="margin-bottom: 10px;">
-                            <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 3px; display: block;">Exam Name:</label>
-                            <input type="text" id="newExName" placeholder="e.g. Fortnightly Test-03" class="eval-search-inp" style="width: 100%;">
+                            <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block;">Exam Name:</label>
+                            <input type="text" id="newExName" placeholder="e.g. Fortnightly Test-03" class="eval-search-inp" style="width: 100%; border-radius:12px;">
                         </div>
 
                         <div style="display: flex; gap: 10px; margin-bottom: 12px;">
                             <div style="flex: 1;">
-                                <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 3px; display: block;">Exam Date:</label>
-                                <input type="text" id="newExDate" placeholder="e.g. 05 Oct 2026" class="eval-search-inp" style="width: 100%;">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block;">Exam Date:</label>
+                                <input type="text" id="newExDate" placeholder="e.g. 05 Oct 2026" class="eval-search-inp" style="width: 100%; border-radius:12px;">
                             </div>
                             <div style="width: 120px;">
-                                <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 3px; display: block;">Mark Per Sub:</label>
-                                <input type="number" id="newExMax" value="15" class="eval-search-inp" style="width: 100%;">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block;">Mark Per Sub:</label>
+                                <input type="number" id="newExMax" value="15" class="eval-search-inp" style="width: 100%; border-radius:12px;">
                             </div>
                         </div>
 
-                        <p style="font-size: 0.72rem; color: #64748b; margin-bottom: 14px;">
-                            <i class="fa-solid fa-circle-info"></i> This will create a fresh blank evaluation session and prompt new PINs. Past marks will be automatically archived safely.
-                        </p>
-
-                        <button type="button" class="eval-btn eval-btn-primary" style="width: 100%; justify-content: center; padding: 10px;" onclick="window.confirmCreateNewExam()">
+                        <button type="button" class="eval-btn eval-btn-primary" style="width: 100%; justify-content: center; padding: 10px; border-radius:25px;" onclick="window.confirmCreateNewExam()">
                             Create Exam Session
                         </button>
                     </div>
@@ -430,27 +539,25 @@
                 <div class="eval-modal-overlay" id="evalUploadModal" onclick="if(event.target === this) window.closeEvalUploadModal()">
                     <div class="eval-modal-card">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                            <div style="font-size: 1.05rem; font-weight: 700; color: #0f172a;"><i class="fa-solid fa-file-excel text-success"></i> Upload Student List</div>
-                            <button style="background:transparent; border:none; font-size:1.1rem; color:#94a3b8; cursor:pointer;" onclick="window.closeEvalUploadModal()"><i class="fa-solid fa-xmark"></i></button>
+                            <div style="font-size: 1.05rem; font-weight: 700; color: #0f172a;">Upload Student List</div>
+                            <button style="background:transparent; border:none; font-size:1.2rem; color:#94a3b8; cursor:pointer;" onclick="window.closeEvalUploadModal()">✕</button>
                         </div>
                         <div style="margin-bottom: 14px;">
                             <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 5px; display: block;">Target Stream:</label>
-                            <select id="evalUploadTargetGroup" style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.82rem; font-weight: 600; outline:none; background:#fff;">
+                            <select id="evalUploadTargetGroup" style="width: 100%; padding: 8px 12px; border: 1.5px solid #cbd5e1; border-radius: 20px; font-size: 0.82rem; font-weight: 600; outline:none; background:#fff;">
                                 <option value="Science">Science (Group-A, B, C)</option>
                                 <option value="Humanities">Humanities</option>
                                 <option value="B.Studies">Business Studies</option>
                             </select>
                         </div>
-                        <div style="border: 2px dashed #93c5fd; border-radius: 10px; background: #f8fafc; padding: 20px; text-align: center; cursor: pointer;" onclick="document.getElementById('evalExcelFile').click()">
-                            <i class="fa-solid fa-folder-open fa-2x text-warning"></i>
-                            <div style="font-size: 0.82rem; color: #475569; margin-top: 6px; font-weight: 600;">Choose Excel File</div>
+                        <div style="border: 2px dashed #93c5fd; border-radius: 16px; background: #f8fafc; padding: 20px; text-align: center; cursor: pointer;" onclick="document.getElementById('evalExcelFile').click()">
+                            <div style="font-size: 0.85rem; color: #1e40af; font-weight: 700;">Choose Excel File (.xlsx, .csv)</div>
                             <input type="file" id="evalExcelFile" accept=".xlsx, .xls, .csv" style="display: none;" onchange="window.handleEvalFileSelected(this.files[0])">
                         </div>
-                        <div id="evalFileStatusBox" style="display:none; align-items:center; justify-content:space-between; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:8px 12px; margin-top:12px; font-size:0.78rem;">
+                        <div id="evalFileStatusBox" style="display:none; align-items:center; justify-content:space-between; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:12px; padding:8px 12px; margin-top:12px; font-size:0.78rem;">
                             <span id="evalSelectedFileName" style="font-weight:700; color:#0f172a;"></span>
-                            <i class="fa-solid fa-circle-check text-success"></i>
                         </div>
-                        <button type="button" class="eval-btn eval-btn-primary" id="evalUploadNowBtn" style="width: 100%; margin-top: 14px; justify-content:center;" onclick="window.triggerEvalUpload()">Upload Now</button>
+                        <button type="button" class="eval-btn eval-btn-primary" id="evalUploadNowBtn" style="width: 100%; margin-top: 14px; justify-content:center; border-radius:25px;" onclick="window.triggerEvalUpload()">Upload Now</button>
                     </div>
                 </div>
 
@@ -491,13 +598,192 @@
 
         if (secId === 'eval-student-sec') window.renderEvalStudents();
         if (secId === 'eval-config-sec') window.renderExamManager();
+        if (secId === 'eval-admin-entry-sec') window.initAdminMarkEntryView();
         if (secId === 'eval-tab-sec') window.renderEvalTabulation();
         if (secId === 'eval-regroup-sec') window.setupRegroupSection();
         if (secId === 'eval-archive-sec') window.renderArchivesDropdown();
     };
 
     // ==========================================================
-    // ৪. এক্সাম ম্যানেজার ও সাবজেক্ট কন্ট্রোল
+    // ৪. এডমিন মার্ক এন্ট্রি ইঞ্জিন লজিক (Admin Override Logic)
+    // ==========================================================
+    window.initAdminMarkEntryView = function () {
+        const exSel = document.getElementById('adminSelExam');
+        if (exSel) {
+            exSel.innerHTML = `<option value="${activeExamId}">${activeExamData.title}</option>`;
+        }
+        document.getElementById('adminMaxMarkSpan').innerText = activeExamData.max || 15;
+        window.adminOnGroupChanged();
+        document.getElementById('adminMarkTableBox').style.display = 'none';
+    };
+
+    window.adminOnGroupChanged = function () {
+        const grp = document.getElementById('adminSelGroup').value;
+        const subSel = document.getElementById('adminSelSubject');
+        if (!subSel) return;
+        subSel.innerHTML = '';
+
+        let cat = 'Science';
+        if (grp === 'Humanities') cat = 'Humanities';
+        else if (grp === 'B.Studies') cat = 'BStudies';
+
+        let subs = MASTER_SUBJECTS[cat] || [];
+        if (activeExamData.activeSubjects && activeExamData.activeSubjects.length > 0) {
+            subs = subs.filter(s => activeExamData.activeSubjects.includes(s.key));
+        }
+
+        subs.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.key;
+            opt.innerText = `${s.name} (${s.key})`;
+            subSel.appendChild(opt);
+        });
+    };
+
+    window.adminLoadStudentsForEntry = function () {
+        const grp = document.getElementById('adminSelGroup').value;
+        const sub = document.getElementById('adminSelSubject').value;
+        const tbody = document.getElementById('adminStudentTbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (!sub) {
+            alert("Please select a subject!");
+            return;
+        }
+
+        let filtered = studentsList.filter(s => {
+            if (grp === 'Humanities') return s.group === 'Humanities';
+            if (grp === 'B.Studies') return s.group === 'B.Studies';
+            return s.group === 'Science' && s.subGroup === grp;
+        });
+
+        filtered.sort((a, b) => {
+            let rA = (a.overallRank !== undefined) ? a.overallRank : (a.sl || 0);
+            let rB = (b.overallRank !== undefined) ? b.overallRank : (b.sl || 0);
+            return rA - rB;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#dc2626; font-weight:700;">No students found for ${grp}!</td></tr>`;
+            document.getElementById('adminMarkTableBox').style.display = 'block';
+            return;
+        }
+
+        const maxMark = activeExamData.max || 15;
+
+        filtered.forEach((s, idx) => {
+            const prevVal = (examMarks[s.id] && examMarks[s.id][sub] !== undefined) ? examMarks[s.id][sub] : '';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="text-align: center; font-weight: 700; color: #1e40af;">${idx + 1}</td>
+                <td><span style="font-family: monospace; font-weight: 700;">${s.id}</span></td>
+                <td style="font-weight: 600;">${s.name}</td>
+                <td style="text-align: center;">${s.roll}</td>
+                <td style="text-align: center; font-weight: 700;">${s.section || ''}</td>
+                <td style="text-align: center;">
+                    <input type="text" 
+                           inputmode="decimal" 
+                           class="admin-eval-inp" 
+                           id="admin_inp_${idx}" 
+                           data-id="${s.id}" 
+                           value="${prevVal}" 
+                           placeholder="-"
+                           oninput="window.adminValidateInput(this, ${maxMark})"
+                           onkeydown="window.adminOnKeyEnter(event, ${idx})">
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('adminMarkTableBox').style.display = 'block';
+
+        // Auto focus to the first box
+        setTimeout(() => {
+            const first = document.getElementById('admin_inp_0');
+            if (first) {
+                first.focus();
+                first.select();
+            }
+        }, 150);
+    };
+
+    window.adminValidateInput = function (inp, max) {
+        inp.value = inp.value.replace(/[^0-9.]/g, '');
+        if ((inp.value.match(/\./g) || []).length > 1) {
+            inp.value = inp.value.slice(0, -1);
+        }
+        const num = parseFloat(inp.value);
+        if (num > max) {
+            alert(`Full mark is ${max}!`);
+            inp.value = '';
+        }
+    };
+
+    window.adminOnKeyEnter = function (e, idx) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const next = document.getElementById(`admin_inp_${idx + 1}`);
+            if (next) {
+                next.focus();
+                next.select();
+            } else {
+                document.getElementById('btnAdminSaveMarks').focus();
+            }
+        }
+    };
+
+    window.adminSaveMarksLive = async function () {
+        const sub = document.getElementById('adminSelSubject').value;
+        const grp = document.getElementById('adminSelGroup').value;
+        const inputs = document.querySelectorAll('.admin-eval-inp');
+        if (inputs.length === 0) return;
+
+        const btn = document.getElementById('btnAdminSaveMarks');
+        btn.disabled = true;
+        btn.innerText = "Saving...";
+
+        const updates = {};
+        const maxMark = activeExamData.max || 15;
+        let count = 0;
+
+        inputs.forEach(inp => {
+            const stdId = inp.getAttribute('data-id');
+            const val = inp.value.trim();
+            const path = `evaluation_system/marks/${activeExamId}/${stdId}/${sub}`;
+
+            if (val === '') {
+                updates[path] = null;
+                if (examMarks[stdId]) delete examMarks[stdId][sub];
+            } else {
+                const num = parseFloat(val);
+                if (!isNaN(num) && num >= 0 && num <= maxMark) {
+                    updates[path] = String(num);
+                    if (!examMarks[stdId]) examMarks[stdId] = {};
+                    examMarks[stdId][sub] = String(num);
+                    count++;
+                }
+            }
+        });
+
+        try {
+            if (window.writeToFirebase) {
+                await window.writeToFirebase('evaluation_system/marks', null, updates);
+            } else if (window.getDatabase && window.update && window.ref) {
+                await window.update(window.ref(window.getDatabase()), updates);
+            }
+            alert(`Success!\nMarks saved for ${count} students in ${sub} (${grp}).`);
+        } catch (err) {
+            alert("Error saving: " + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `${ICONS.save} Save Marks`;
+        }
+    };
+
+    // ==========================================================
+    // ৫. এক্সাম ম্যানেজার ও সাবজেক্ট কন্ট্রোল
     // ==========================================================
     window.renderExamManager = function () {
         document.getElementById('mgrExamTitle').innerText = `Active: ${activeExamData.title}`;
@@ -506,10 +792,10 @@
         const lockBtn = document.getElementById('btnToggleLock');
         if (activeExamData.isLocked) {
             lockBtn.style.background = "#16a34a";
-            lockBtn.innerHTML = '<i class="fa-solid fa-unlock"></i> Unlock Entry';
+            lockBtn.innerHTML = 'Unlock Entry';
         } else {
             lockBtn.style.background = "#dc2626";
-            lockBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Lock Entry';
+            lockBtn.innerHTML = 'Lock Entry';
         }
 
         const chipBox = document.getElementById('activeSubjectsChips');
@@ -534,15 +820,11 @@
     };
 
     window.toggleSubjectActive = function (key) {
-        if (!activeExamData.activeSubjects) {
-            activeExamData.activeSubjects = [];
-        }
+        if (!activeExamData.activeSubjects) activeExamData.activeSubjects = [];
         const idx = activeExamData.activeSubjects.indexOf(key);
-        if (idx > -1) {
-            activeExamData.activeSubjects.splice(idx, 1);
-        } else {
-            activeExamData.activeSubjects.push(key);
-        }
+        if (idx > -1) activeExamData.activeSubjects.splice(idx, 1);
+        else activeExamData.activeSubjects.push(key);
+
         if (window.writeToFirebase) {
             window.writeToFirebase(`evaluation_system/exams/${activeExamId}/activeSubjects`, activeExamData.activeSubjects);
         }
@@ -558,15 +840,8 @@
         alert(activeExamData.isLocked ? "Exam locked! Teachers cannot edit marks." : "Exam unlocked! Teachers can now enter marks.");
     };
 
-    // ==========================================================
-    // ৫. নতুন পরীক্ষা তৈরি (New Exam Creation)
-    // ==========================================================
-    window.openCreateExamModal = function () {
-        document.getElementById('createExamModal').style.display = 'flex';
-    };
-    window.closeCreateExamModal = function () {
-        document.getElementById('createExamModal').style.display = 'none';
-    };
+    window.openCreateExamModal = function () { document.getElementById('createExamModal').style.display = 'flex'; };
+    window.closeCreateExamModal = function () { document.getElementById('createExamModal').style.display = 'none'; };
 
     window.confirmCreateNewExam = async function () {
         const title = document.getElementById('newExName').value.trim();
@@ -607,7 +882,7 @@
 
         window.closeCreateExamModal();
         window.renderExamManager();
-        alert(`🎉 New Exam Session "${title}" created successfully!\nPast marks safely archived.`);
+        alert(`New Exam Session "${title}" created successfully!`);
     };
 
     // ==========================================================
@@ -638,10 +913,10 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="padding-left: 15px; font-weight:700;">${s.name} (${s.key})</td>
-                <td><span class="badge ${hasMarks ? 'badge-success' : (p ? 'badge-primary' : 'badge-danger')}">${hasMarks ? '✓ Submitted' : (p ? 'Ready' : 'Pending')}</span></td>
+                <td><span class="eval-badge ${hasMarks ? 'eval-badge-success' : (p ? 'eval-badge-primary' : 'eval-badge-danger')}">${hasMarks ? '✓ Submitted' : (p ? 'Ready' : 'Pending')}</span></td>
                 <td><strong style="letter-spacing: 2px; color:#1e40af;">${p || '----'}</strong></td>
                 <td style="text-align:center;">
-                    <button class="btn-action btn-delete" onclick="window.resetEvalPin('${s.key}')" ${!p ? 'disabled style="opacity:0.3;"' : ''}><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                    <button class="eval-btn" style="background:#fee2e2; color:#dc2626; padding:4px 10px; font-size:0.72rem;" onclick="window.resetEvalPin('${s.key}')" ${!p ? 'disabled style="opacity:0.3;"' : ''}>Reset</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -650,7 +925,7 @@
 
     window.refreshEvalPinsLive = async function () {
         const btn = document.getElementById('btnRefreshPins');
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        if (btn) btn.innerText = "Syncing...";
         try {
             if (window.getDatabase && window.ref && window.get) {
                 const db = window.getDatabase();
@@ -659,10 +934,10 @@
                 const mSnap = await window.get(window.ref(db, `evaluation_system/marks/${activeExamId}`));
                 examMarks = mSnap.exists() ? mSnap.val() : {};
                 window.renderEvalPins();
-                alert("✅ Pins & Marks live synced!");
+                alert("Pins & Marks live synced!");
             }
         } finally {
-            if (btn) btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Refresh PINs';
+            if (btn) btn.innerText = "Refresh PINs";
         }
     };
 
@@ -680,7 +955,7 @@
     };
 
     // ==========================================================
-    // ৭. সার্বজনীন ডাটা প্রসেসর (Tabulation Data Helper)
+    // ৭. টেবুলেশন ডাটা ও অন-স্ক্রিন শিট রেন্ডার
     // ==========================================================
     function getProcessedTabulationData() {
         const grp = document.getElementById('evalTabGroup') ? document.getElementById('evalTabGroup').value : 'Science_Merit';
@@ -735,9 +1010,6 @@
         return { grp, groupLabel, subGroupLabel, activeSubs, streamTotalMarks, computedList };
     }
 
-    // ==========================================================
-    // ৮. অন-স্ক্রিন লাইভ টেবুলেশন রেন্ডার
-    // ==========================================================
     window.renderEvalTabulation = function () {
         const thead = document.getElementById('evalTabThead');
         const tbody = document.getElementById('evalTabTbody');
@@ -781,14 +1053,14 @@
     };
 
     // ==========================================================
-    // ৯. নতুন ট্যাবে নিখুঁত প্রিন্ট রিপোর্ট ওপেন করা (Result & Blank)
+    // ৮. প্রিন্ট ও এক্সেল রিপোর্ট
     // ==========================================================
     window.openEvaluationPrintTab = function (isBlank = false) {
         const { groupLabel, subGroupLabel, activeSubs, streamTotalMarks, computedList } = getProcessedTabulationData();
 
         const printWin = window.open('', '_blank');
         if (!printWin) {
-            alert("পপ-আপ উইন্ডো ব্লক করা রয়েছে! দয়া করে ব্রাউজারের Pop-up Allow করুন।");
+            alert("Pop-up blocked! Please allow pop-ups for this site.");
             return;
         }
 
@@ -800,162 +1072,25 @@
     <meta charset="UTF-8">
     <title>${activeExamData.title} - ${subGroupLabel} ${isBlank ? '(Blank Sheet)' : ''}</title>
     <style>
-        @page {
-            size: A4 portrait;
-            margin: 12mm 10mm 12mm 10mm;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Times New Roman', Times, serif;
-            color: #000;
-            margin: 0;
-            padding: 0;
-            background-color: #fff;
-            -webkit-print-color-adjust: exact;
-        }
-
-        .report-container {
-            width: 100%;
-            max-width: 210mm;
-            margin: 0 auto;
-        }
-
-        /* প্রাতিষ্ঠানিক হেডার */
-        .header-cell {
-            border: none !important;
-            padding: 0 0 8px 0 !important;
-            text-align: center;
-        }
-
-        .header-cell h1 {
-            font-size: 18px;
-            font-weight: bold;
-            margin: 0 0 3px 0;
-        }
-
-        .header-cell p {
-            font-size: 13px;
-            margin: 2px 0;
-            font-weight: normal;
-        }
-
-        .date-container {
-            text-align: right;
-            font-size: 12px;
-            font-weight: normal;
-            margin-top: 5px;
-            padding-right: 5px;
-        }
-
-        /* টেবিল ফরম্যাট */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 11px; /* আরামদায়ক ও স্পষ্ট ফন্ট সাইজ */
-        }
-
-        thead {
-            display: table-header-group; /* প্রতিটি পাতায় স্বয়ংক্রিয় হেডার রিপিট */
-        }
-
-        tr {
-            break-inside: avoid;
-            page-break-inside: avoid; /* রো মাঝখান দিয়ে কাটবে না */
-        }
-
-        th, td {
-            border: 1px solid #000;
-            padding: 4px 3px;
-            text-align: center;
-        }
-
-        th.col-header {
-            font-weight: bold;
-            font-size: 11px;
-            background-color: #fff;
-            padding: 5px 2px;
-        }
-
-        .col-sl { width: 26px; }
-        .col-id { width: 50px; }
-        .col-name { 
-            width: 185px; 
-            text-align: left; 
-            padding-left: 6px; 
-            white-space: nowrap; 
-        }
-        .col-roll { width: 30px; }
-        .col-sec { width: 32px; }
-        .col-sub { width: 28px; }
-        .col-hm { width: 32px; font-size: 9.5px; line-height: 1.1; }
-        .col-total { width: 38px; }
-
-        /* স্বাক্ষর এরিয়া (১ ইঞ্চি নিচে নামানো) */
-        .signature-section {
-            margin-top: calc(60px + 1in);
-            display: flex;
-            justify-content: space-between;
-            padding: 0 60px;
-            font-size: 13px;
-            font-weight: bold;
-            break-inside: avoid;
-            page-break-inside: avoid;
-        }
-
-        /* প্রিন্ট কন্ট্রোল বার (শুধু স্ক্রিনে দেখাবে) */
-        .no-print-bar {
-            max-width: 210mm;
-            margin: 15px auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #1e40af;
-            color: white;
-            padding: 10px 18px;
-            border-radius: 8px;
-            font-family: sans-serif;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .btn-print-action {
-            background: #ffffff;
-            color: #1e40af;
-            font-weight: 700;
-            border: none;
-            padding: 7px 18px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .btn-print-action:hover { background: #eff6ff; }
-
-        @media screen {
-            body { background-color: #e5e5e5; padding-bottom: 30px; }
-            .report-container {
-                background: white;
-                padding: 15mm 12mm;
-                box-shadow: 0 0 10px rgba(0,0,0,0.15);
-            }
-        }
-
-        @media print {
-            .no-print-bar { display: none !important; }
-            body { padding: 0; background: #fff; }
-            .report-container { padding: 0; box-shadow: none; }
-        }
+        @page { size: A4 portrait; margin: 12mm 10mm 12mm 10mm; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; padding: 0; background-color: #fff; }
+        .report-container { width: 100%; max-width: 210mm; margin: 0 auto; }
+        .header-cell { border: none !important; padding: 0 0 8px 0 !important; text-align: center; }
+        .header-cell h1 { font-size: 18px; font-weight: bold; margin: 0 0 3px 0; }
+        .header-cell p { font-size: 13px; margin: 2px 0; font-weight: normal; }
+        .date-container { text-align: right; font-size: 12px; font-weight: normal; margin-top: 5px; padding-right: 5px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        thead { display: table-header-group; }
+        tr { break-inside: avoid; page-break-inside: avoid; }
+        th, td { border: 1px solid #000; padding: 4px 3px; text-align: center; }
+        th.col-header { font-weight: bold; font-size: 11px; background-color: #fff; padding: 5px 2px; }
+        .col-name { width: 185px; text-align: left; padding-left: 6px; white-space: nowrap; }
+        .signature-section { margin-top: calc(60px + 1in); display: flex; justify-content: space-between; padding: 0 60px; font-size: 13px; font-weight: bold; }
+        @media print { body { padding: 0; background: #fff; } .report-container { padding: 0; box-shadow: none; } }
     </style>
 </head>
 <body>
-
-    <div class="no-print-bar">
-        <span><strong>${activeExamData.title}</strong> — ${subGroupLabel} (${isBlank ? 'Blank Sheet' : 'Result Sheet'})</span>
-        <button class="btn-print-action" onclick="window.print()">🖨️ Print Report</button>
-    </div>
-
     <div class="report-container">
         <table>
             <thead>
@@ -970,18 +1105,13 @@
                     </th>
                 </tr>
                 <tr>
-                    <th class="col-header col-sl">SL</th>
-                    <th class="col-header col-id">Std ID</th>
+                    <th class="col-header">SL</th>
+                    <th class="col-header">Std ID</th>
                     <th class="col-header col-name">Student Name</th>
-                    <th class="col-header col-roll">Roll</th>
-                    <th class="col-header col-sec">Sec</th>
-                    ${activeSubs.map(s => {
-                        const key = s.key;
-                        const label = (key === 'HM_AG') ? 'HM/<br>AG' : ((key === 'AG_HE') ? 'AG/<br>HE' : key);
-                        const isHm = (key === 'HM_AG' || key === 'AG_HE');
-                        return `<th class="col-header ${isHm ? 'col-hm' : 'col-sub'}">${label}</th>`;
-                    }).join('')}
-                    <th class="col-header col-total">Total<br>(${streamTotalMarks})</th>
+                    <th class="col-header">Roll</th>
+                    <th class="col-header">Sec</th>
+                    ${activeSubs.map(s => `<th class="col-header">${s.key}</th>`).join('')}
+                    <th class="col-header">Total<br>(${streamTotalMarks})</th>
                 </tr>
             </thead>
             <tbody>
@@ -995,26 +1125,20 @@
                         ${activeSubs.map(sb => {
                             if (isBlank) return '<td></td>';
                             const markVal = s.marksObj[sb.key];
-                            const displayMark = (markVal !== undefined && markVal !== null && markVal !== '') ? markVal : '0';
-                            return `<td>${displayMark}</td>`;
+                            return `<td>${(markVal !== undefined && markVal !== null && markVal !== '') ? markVal : '0'}</td>`;
                         }).join('')}
                         <td>${isBlank ? '0' : s.total}</td>
                     </tr>
                 `).join('')}
             </tbody>
         </table>
-
-        <!-- সিগনেচার সেকশন -->
         <div class="signature-section">
             <div>Vice Principal</div>
             <div>Principal</div>
         </div>
     </div>
-
     <script>
-        window.onload = function() {
-            setTimeout(function() { window.print(); }, 400);
-        };
+        window.onload = function() { setTimeout(function() { window.print(); }, 400); };
     <\/script>
 </body>
 </html>`;
@@ -1024,41 +1148,28 @@
         printWin.document.close();
     };
 
-    // ব্ল্যাঙ্ক শিট প্রিন্ট ট্রিগার
-    window.printBlankSheet = function () {
-        window.openEvaluationPrintTab(true);
-    };
-
-    // ==========================================================
-    // ১০. প্রাতিষ্ঠানিক ফরম্যাটে এক্সেল এক্সপোর্ট
-    // ==========================================================
     window.exportTabulationToExcel = function () {
         if (typeof XLSX === 'undefined') {
-            alert("SheetJS (XLSX) লাইব্রেরি পাওয়া যায়নি!");
+            alert("SheetJS (XLSX) library not found!");
             return;
         }
 
         const { groupLabel, subGroupLabel, activeSubs, streamTotalMarks, computedList } = getProcessedTabulationData();
 
-        // প্রাতিষ্ঠানিক হেডার সহ সম্পূর্ণ ডাটা অ্যারে তৈরি
         const aoaData = [
             ["Cantonment Public School and College Lalmonirhat"],
             ["Performance Evaluation"],
             [`Class: Ten (${groupLabel})`],
             [`${activeExamData.title} - ${subGroupLabel}`],
             [`Date : ${activeExamData.date || ''}`],
-            [] // খালি রো
+            []
         ];
 
-        // টেবিল কলাম হেডার
         const headerRow = ["SL", "Std ID", "Student Name", "Roll", "Sec"];
-        activeSubs.forEach(s => {
-            headerRow.push(s.key === 'HM_AG' ? 'HM/AG' : (s.key === 'AG_HE' ? 'AG/HE' : s.key));
-        });
+        activeSubs.forEach(s => headerRow.push(s.key));
         headerRow.push(`Total (${streamTotalMarks})`);
         aoaData.push(headerRow);
 
-        // ছাত্র-ছাত্রীদের ডাটা
         computedList.forEach((s, idx) => {
             const row = [idx + 1, s.id, s.name, s.roll, s.section || ''];
             activeSubs.forEach(sb => {
@@ -1069,30 +1180,14 @@
             aoaData.push(row);
         });
 
-        // সিগনেচার স্পেস
-        aoaData.push([]);
-        aoaData.push([]);
-        aoaData.push(["Vice Principal", "", "", "", "", ...new Array(activeSubs.length - 1).fill(""), "Principal"]);
-
         const ws = XLSX.utils.aoa_to_sheet(aoaData);
-
-        // হেডার সেল মার্জ করা
-        const lastColIdx = headerRow.length - 1;
-        ws['!merges'] = [
-            { s: { r: 0, c: 0 }, e: { r: 0, c: lastColIdx } },
-            { s: { r: 1, c: 0 }, e: { r: 1, c: lastColIdx } },
-            { s: { r: 2, c: 0 }, e: { r: 2, c: lastColIdx } },
-            { s: { r: 3, c: 0 }, e: { r: 3, c: lastColIdx } },
-            { s: { r: 4, c: 0 }, e: { r: 4, c: lastColIdx } }
-        ];
-
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Evaluation_Report");
         XLSX.writeFile(wb, `${activeExamData.title}_${subGroupLabel}_Report.xlsx`);
     };
 
     // ==========================================================
-    // ১১. ডাইনামিক অটো-গ্রুপিং ইঞ্জিন (Top 55=A, 50=B, Rest=C)
+    // ৯. অটো-গ্রুপিং ইঞ্জিন (Top 55=A, 50=B, Rest=C)
     // ==========================================================
     window.setupRegroupSection = function () {
         document.getElementById('regroupPreviewBox').style.display = 'none';
@@ -1144,7 +1239,7 @@
                 <td style="text-align:center;">${s.roll}</td>
                 <td style="text-align:center; font-weight:800;">${s.total}</td>
                 <td style="text-align:center;"><span style="color:#64748b;">${s.subGroup || s.group}</span></td>
-                <td style="text-align:center;"><span style="background:#1e40af; color:white; padding:2px 8px; border-radius:4px; font-weight:800;">${s.newGroupTag}</span></td>
+                <td style="text-align:center;"><span style="background:#1e40af; color:white; padding:3px 10px; border-radius:20px; font-weight:800;">${s.newGroupTag}</span></td>
             `;
             tbody.appendChild(tr);
         });
@@ -1157,11 +1252,7 @@
         if (!computedMeritCache || computedMeritCache.length === 0) return;
 
         if (confirm("Are you sure you want to promote and save these NEW groups permanently for the Next Exam?")) {
-            const updates = {};
             computedMeritCache.forEach(s => {
-                updates[`evaluation_system/students/${s.id}/subGroup`] = s.newGroupTag;
-                updates[`evaluation_system/students/${s.id}/overallRank`] = s.overallRank;
-
                 const found = studentsList.find(st => st.id === s.id);
                 if (found) {
                     found.subGroup = s.newGroupTag;
@@ -1173,13 +1264,13 @@
                 await window.writeToFirebase('evaluation_system/students', studentsList.reduce((acc, cur) => { acc[cur.id] = cur; return acc; }, {}));
             }
 
-            alert("🎉 Groups successfully updated and locked for Next Exam!\nTeachers will now see students in their new groups.");
+            alert("Groups successfully updated and locked for Next Exam!");
             window.renderEvalStudents();
         }
     };
 
     // ==========================================================
-    // ১২. আর্কাইভ ভিউয়ার
+    // ১০. আর্কাইভ ভিউয়ার
     // ==========================================================
     window.renderArchivesDropdown = async function () {
         const sel = document.getElementById('archiveExamSelect');
@@ -1205,15 +1296,15 @@
         const area = document.getElementById('archiveContentArea');
         if (!exId) { area.innerHTML = ''; return; }
 
-        area.innerHTML = '<div class="text-center p-4"><i class="fa-solid fa-spinner fa-spin fa-2x"></i> Loading Archive...</div>';
+        area.innerHTML = '<div style="text-align:center; padding:20px;">Loading Archive...</div>';
         const snap = await window.get(window.ref(window.getDatabase(), `evaluation_system/archives/${exId}`));
         if (snap.exists()) {
             const data = snap.val();
             area.innerHTML = `
-                <div class="eval-main-box" style="padding:15px; margin-top:12px;">
+                <div class="eval-main-box" style="padding:16px; margin-top:12px;">
                     <h4 style="font-weight:800; color:#1e40af; margin-bottom:5px;">${data.examInfo?.title} (${data.examInfo?.date})</h4>
                     <p style="font-size:0.80rem; color:#64748b;">Archived at: ${new Date(data.archivedAt).toLocaleString()}</p>
-                    <div style="background:#f8fafc; padding:12px; border-radius:6px; font-size:0.85rem;">
+                    <div style="background:#f8fafc; padding:12px; border-radius:12px; font-size:0.85rem;">
                         Total student marks archived: <strong>${Object.keys(data.marks || {}).length}</strong> records.
                     </div>
                 </div>
@@ -1222,7 +1313,7 @@
     };
 
     // ==========================================================
-    // ১৩. স্টুডেন্ট ডিরেক্টরি লাইভ টেবিল
+    // ১১. স্টুডেন্ট ডিরেক্টরি লাইভ টেবিল
     // ==========================================================
     window.filterEvalByTab = function (filter, btn) {
         currentEvalFilter = filter;
@@ -1294,19 +1385,19 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="text-align:center; font-weight:700; color:#1e40af;">${s.sl}</td>
-                <td><span style="background:#f1f5f9; border:1px solid #e2e8f0; padding:2px 6px; border-radius:4px; font-weight:700; font-size:0.78rem;">${s.id}</span></td>
+                <td><span style="background:#f1f5f9; border:1px solid #e2e8f0; padding:3px 8px; border-radius:12px; font-weight:700; font-size:0.78rem;">${s.id}</span></td>
                 <td style="font-weight:600; color:#0f172a;">${s.name}</td>
                 <td style="text-align:center; color:#64748b; font-weight:600;">${s.roll}</td>
-                <td style="text-align:center;"><span class="badge ${s.section === 'DH' ? 'badge-primary' : 'badge-success'}">${s.section}</span></td>
-                <td><span style="background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; padding:2px 7px; border-radius:4px; font-size:0.75rem; font-weight:700;">${s.subGroup || s.group}</span></td>
-                <td style="text-align:center;"><span style="background:#f8fafc; border:1px solid #e2e8f0; padding:1px 8px; border-radius:10px; font-size:0.70rem; font-weight:700;">Rank #${s.overallRank || s.sl}</span></td>
+                <td style="text-align:center;"><span class="eval-badge ${s.section === 'DH' ? 'eval-badge-primary' : 'eval-badge-success'}">${s.section}</span></td>
+                <td><span style="background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; padding:3px 10px; border-radius:14px; font-size:0.75rem; font-weight:700;">${s.subGroup || s.group}</span></td>
+                <td style="text-align:center;"><span style="background:#f8fafc; border:1px solid #e2e8f0; padding:2px 10px; border-radius:14px; font-size:0.70rem; font-weight:700;">Rank #${s.overallRank || s.sl}</span></td>
             `;
             tbody.appendChild(tr);
         });
     };
 
     // ==========================================================
-    // ১৪. ফায়ারবেস ক্লাউড লোডার
+    // ১২. ফায়ারবেস ক্লাউড লোডার
     // ==========================================================
     async function loadDirectlyFromFirebase(retries = 25) {
         if (!window.getDatabase || !window.ref || !window.get) {
