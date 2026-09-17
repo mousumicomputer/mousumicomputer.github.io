@@ -768,11 +768,13 @@
         });
 
         try {
-            if (window.writeToFirebase) {
-                await window.writeToFirebase('evaluation_system/marks', null, updates);
-            } else if (window.getDatabase && window.update && window.ref) {
-                await window.update(window.ref(window.getDatabase()), updates);
+            if (window.update && window.ref && window.getDatabase) {
+            await window.update(window.ref(window.getDatabase()), updates);
+        } else if (window.writeToFirebase) {
+            for (const [p, v] of Object.entries(updates)) {
+                await window.writeToFirebase(p, v);
             }
+        }
             alert(`Success!\nMarks saved for ${count} students in ${sub} (${grp}).`);
         } catch (err) {
             alert("Error saving: " + err.message);
