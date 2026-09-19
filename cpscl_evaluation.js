@@ -146,7 +146,7 @@
         search: `<svg class="eval-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>`
     };
 
-    // সব বিষয়ের মাস্টার তালিকা (৩ গ্রুপে সম্পূর্ণ ও সামঞ্জস্যপূর্ণ)
+    // সব বিষয়ের মাস্টার তালিকা
     const MASTER_SUBJECTS = {
         Science: [
             { key: 'B1', name: 'Bangla 1st' }, { key: 'B2', name: 'Bangla 2nd' },
@@ -173,11 +173,18 @@
         ]
     };
 
-    // স্ট্রিম-সচেতন পিন কি (PIN Collision Fix)
+    // স্ট্রিম-সচেতন পিন কি
     function getStreamPinKey(stream, subKey) {
         const cleanStream = stream === 'B.Studies' ? 'BStudies' : stream;
         return `${cleanStream}_${subKey}`;
     }
+
+    // ফায়ারবেস মডিউল ইন্টারনাল রেফারেন্স
+    let _db = null;
+    let _ref = null;
+    let _get = null;
+    let _set = null;
+    let _update = null;
 
     let studentsList = [];
     let examMarks = {};
@@ -193,6 +200,28 @@
     };
     let currentEvalFilter = 'All';
     let computedMeritCache = [];
+    let selectedUploadFile = null;
+
+    // নিরাপদ ডাটাবেজ রাইটার হেল্পার
+    async function dbSet(path, val) {
+        if (_set && _ref && _db) {
+            return await _set(_ref(_db, path), val);
+        } else if (window.writeToFirebase) {
+            return await window.writeToFirebase(path, val);
+        }
+    }
+
+    async function dbUpdate(updates) {
+        if (_update && _ref && _db) {
+            return await _update(_ref(_db), updates);
+        } else if (window.update && window.ref && window.getDatabase) {
+            return await window.update(window.ref(window.getDatabase()), updates);
+        } else if (window.writeToFirebase) {
+            for (const [p, v] of Object.entries(updates)) {
+                await window.writeToFirebase(p, v);
+            }
+        }
+    }
 
     // ==========================================================
     // ২. সাইডবার ইনজেকশন
@@ -407,7 +436,7 @@
 
                             <div style="padding: 14px 22px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                                 <span style="font-size: 0.78rem; color: #64748b; font-weight: 600;">
-                                    * Type 0 for Zero/Absent. Leave blank to clear. Press [Enter] for next student.
+                                    * Type 0 for Zero/Absent. Leave blank to retain previous marks. Press [Enter] for next student.
                                 </span>
                                 <button class="eval-btn eval-btn-success" id="btnAdminSaveMarks" onclick="window.adminSaveMarksLive()">
                                     ${ICONS.save} Save Marks
@@ -466,7 +495,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                             <div>
                                 <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0; color: #0f172a;">Dynamic Merit & Grouping Engine</h3>
-                                <p style="font-size: 0.78rem; color: #64748b; margin: 2px 0 0 0;">Top 55 ➔ Group-A | Next 50 ➔ Group-B | Rest ➔ Group-C (Includes Fair Tie-Breaking)</p>
+                                <p style="font-size: 0.78rem; color: #64748b; margin: 2px 0 0 0;">Top 55 ➔ Group-A | Next 50 ➔ Group-B | Rest ➔ Group-C (Tie-break by Previous Merit SL)</p>
                             </div>
                             <div style="display: flex; gap: 8px;">
                                 <button class="eval-btn eval-btn-primary" onclick="window.runAutoGroupingPreview()">Calculate New Groups</button>
@@ -663,9 +692,10 @@
             return s.group === 'Science' && s.subGroup === grp;
         });
 
+        // পূর্ববর্তী পরীক্ষার ক্রমিক (overallRank / sl) অনুযায়ী সর্ট
         filtered.sort((a, b) => {
-            let rA = (a.overallRank !== undefined) ? a.overallRank : (a.sl || 0);
-            let rB = (b.overallRank !== undefined) ? b.overallRank : (b.sl || 0);
+            const rA = (a.overallRank !== undefined && a.overallRank !== null) ? Number(a.overallRank) : (Number(a.sl) || 9999);
+            const rB = (b.overallRank !== undefined && b.overallRank !== null) ? Number(b.overallRank) : (Number(b.sl) || 9999);
             return rA - rB;
         });
 
@@ -713,7 +743,6 @@
         }, 150);
     };
 
-    // স্মুথ নন-ব্লকিং ইনপুট ভ্যালিডেশন
     window.adminValidateInput = function (inp, max) {
         inp.value = inp.value.replace(/[^0-9.]/g, '');
         if ((inp.value.match(/\./g) || []).length > 1) {
@@ -740,6 +769,7 @@
         }
     };
 
+    // নিরাপদ মার্কস সেভ (ফাঁকা ঘর থাকলেও ডাটা ডিলিট হবে না)
     window.adminSaveMarksLive = async function () {
         const sub = document.getElementById('adminSelSubject').value;
         const grp = document.getElementById('adminSelGroup').value;
@@ -770,10 +800,7 @@
             const val = inp.value.trim();
             const path = `evaluation_system/marks/${activeExamId}/${stdId}/${sub}`;
 
-            if (val === '') {
-                updates[path] = null;
-                if (examMarks[stdId]) delete examMarks[stdId][sub];
-            } else {
+            if (val !== '') {
                 const num = parseFloat(val);
                 if (!isNaN(num) && num >= 0 && num <= maxMark) {
                     updates[path] = String(num);
@@ -785,13 +812,7 @@
         });
 
         try {
-            if (window.update && window.ref && window.getDatabase) {
-                await window.update(window.ref(window.getDatabase()), updates);
-            } else if (window.writeToFirebase) {
-                for (const [p, v] of Object.entries(updates)) {
-                    await window.writeToFirebase(p, v);
-                }
-            }
+            await dbUpdate(updates);
             alert(`Success!\nMarks saved for ${count} students in ${sub} (${grp}).`);
         } catch (err) {
             alert("Error saving: " + err.message);
@@ -840,23 +861,19 @@
         window.renderEvalPins();
     };
 
-    window.toggleSubjectActive = function (key) {
+    window.toggleSubjectActive = async function (key) {
         if (!activeExamData.activeSubjects) activeExamData.activeSubjects = [];
         const idx = activeExamData.activeSubjects.indexOf(key);
         if (idx > -1) activeExamData.activeSubjects.splice(idx, 1);
         else activeExamData.activeSubjects.push(key);
 
-        if (window.writeToFirebase) {
-            window.writeToFirebase(`evaluation_system/exams/${activeExamId}/activeSubjects`, activeExamData.activeSubjects);
-        }
+        await dbSet(`evaluation_system/exams/${activeExamId}/activeSubjects`, activeExamData.activeSubjects);
         window.renderExamManager();
     };
 
-    window.toggleExamLock = function () {
+    window.toggleExamLock = async function () {
         activeExamData.isLocked = !activeExamData.isLocked;
-        if (window.writeToFirebase) {
-            window.writeToFirebase(`evaluation_system/exams/${activeExamId}/isLocked`, activeExamData.isLocked);
-        }
+        await dbSet(`evaluation_system/exams/${activeExamId}/isLocked`, activeExamData.isLocked);
         window.renderExamManager();
         alert(activeExamData.isLocked ? "Exam locked! Teachers cannot edit marks." : "Exam unlocked! Teachers can now enter marks.");
     };
@@ -874,12 +891,10 @@
             return;
         }
 
-        // ফ্রেশ ডাটা ফেচ করে তবেই আর্কাইভ করা হবে
         let freshMarks = examMarks;
-        if (window.getDatabase && window.ref && window.get) {
+        if (_get && _ref && _db) {
             try {
-                const db = window.getDatabase();
-                const mSnap = await window.get(window.ref(db, `evaluation_system/marks/${activeExamId}`));
+                const mSnap = await _get(_ref(_db, `evaluation_system/marks/${activeExamId}`));
                 if (mSnap.exists()) freshMarks = mSnap.val();
             } catch (e) {
                 console.warn("Could not fetch fresh marks for archive:", e);
@@ -897,21 +912,18 @@
             activeSubjects: ['B1', 'B2', 'E1', 'E2', 'Math', 'HM_AG', 'Phy', 'Che', 'Bio', 'BGS', 'Reli', 'ICT', 'His', 'Geo', 'Civ', 'Fin', 'Acc', 'Sci', 'AG_HE']
         };
 
-        if (window.writeToFirebase) {
-            await window.writeToFirebase(`evaluation_system/archives/${activeExamId}`, {
-                examInfo: activeExamData,
-                marks: freshMarks,
-                archivedAt: new Date().toISOString()
-            });
+        await dbSet(`evaluation_system/archives/${activeExamId}`, {
+            examInfo: activeExamData,
+            marks: freshMarks,
+            archivedAt: new Date().toISOString()
+        });
 
-            await window.writeToFirebase(`evaluation_system/exams/${newId}`, newExamObj);
-            await window.writeToFirebase(`evaluation_system/active_exam_id`, newId);
-        }
+        await dbSet(`evaluation_system/exams/${newId}`, newExamObj);
+        await dbSet(`evaluation_system/active_exam_id`, newId);
 
         activeExamId = newId;
         activeExamData = newExamObj;
         examMarks = {};
-        subjectPins = {};
 
         window.closeCreateExamModal();
         window.renderExamManager();
@@ -919,7 +931,7 @@
     };
 
     // ==========================================================
-    // ৬. পিন ও কন্ট্রোল (স্ট্রিম-সচেতন পিন সিস্টেম)
+    // ৬. পিন ও কন্ট্রোল
     // ==========================================================
     window.renderEvalPins = function () {
         const tbody = document.getElementById('evalPinTbody');
@@ -938,7 +950,7 @@
                 if (!isAct) return;
 
                 const pinKey = getStreamPinKey(strObj.name, s.key);
-                const p = subjectPins[pinKey] || subjectPins[s.key] || ''; // ব্যাকওয়ার্ড কম্প্যাটিবিলিটি
+                const p = subjectPins[pinKey] || subjectPins[s.key] || '';
 
                 let hasMarks = false;
                 Object.keys(examMarks).forEach(stdId => {
@@ -968,11 +980,10 @@
         const btn = document.getElementById('btnRefreshPins');
         if (btn) btn.innerText = "Syncing...";
         try {
-            if (window.getDatabase && window.ref && window.get) {
-                const db = window.getDatabase();
-                const pSnap = await window.get(window.ref(db, 'evaluation_system/pins'));
+            if (_get && _ref && _db) {
+                const pSnap = await _get(_ref(_db, 'evaluation_system/pins'));
                 subjectPins = pSnap.exists() ? pSnap.val() : {};
-                const mSnap = await window.get(window.ref(db, `evaluation_system/marks/${activeExamId}`));
+                const mSnap = await _get(_ref(_db, `evaluation_system/marks/${activeExamId}`));
                 examMarks = mSnap.exists() ? mSnap.val() : {};
                 window.renderEvalPins();
                 alert("Pins & Marks live synced!");
@@ -982,16 +993,17 @@
         }
     };
 
-    window.resetEvalPin = function (pinKey) {
+    window.resetEvalPin = async function (pinKey) {
         if (confirm("Reset PIN for " + pinKey + "?")) {
             delete subjectPins[pinKey];
             window.renderEvalPins();
-            if (window.writeToFirebase) window.writeToFirebase(`evaluation_system/pins/${pinKey}`, null);
+            await dbSet(`evaluation_system/pins/${pinKey}`, null);
         }
     };
 
+    // টিচার লিংক সরাসরি ফিক্সড লিংক
     window.copyEvalTeacherLink = function () {
-        const link = window.location.origin ? `${window.location.origin}/index.html` : "https://cpscl.vercel.app";
+        const link = "https://cpscl.vercel.app";
         navigator.clipboard.writeText(link).then(() => alert("Teacher link copied:\n" + link));
     };
 
@@ -1039,13 +1051,20 @@
             return { ...s, total, marksObj: m };
         });
 
+        // রোল নয়, গত পরীক্ষার ক্রমিক (overallRank / sl) দিয়ে টাই-ব্রেক
         if (grp === 'Science_Merit') {
             computedList.sort((a, b) => {
                 if (b.total !== a.total) return b.total - a.total;
-                return (a.roll || 0) - (b.roll || 0);
+                const prevRankA = (a.overallRank !== undefined && a.overallRank !== null) ? Number(a.overallRank) : (Number(a.sl) || 9999);
+                const prevRankB = (b.overallRank !== undefined && b.overallRank !== null) ? Number(b.overallRank) : (Number(b.sl) || 9999);
+                return prevRankA - prevRankB;
             });
         } else {
-            computedList.sort((a, b) => (a.overallRank || a.sl) - (b.overallRank || b.sl));
+            computedList.sort((a, b) => {
+                const rankA = (a.overallRank !== undefined && a.overallRank !== null) ? Number(a.overallRank) : (Number(a.sl) || 9999);
+                const rankB = (b.overallRank !== undefined && b.overallRank !== null) ? Number(b.overallRank) : (Number(b.sl) || 9999);
+                return rankA - rankB;
+            });
         }
 
         return { grp, groupLabel, subGroupLabel, activeSubs, streamTotalMarks, computedList };
@@ -1178,15 +1197,16 @@
             <div>Principal</div>
         </div>
     </div>
-    <script>
-        window.onload = function() { setTimeout(function() { window.print(); }, 400); };
-    <\/script>
 </body>
 </html>`;
 
         printWin.document.open();
         printWin.document.write(reportHTML);
         printWin.document.close();
+        setTimeout(() => {
+            printWin.focus();
+            printWin.print();
+        }, 500);
     };
 
     window.exportTabulationToExcel = function () {
@@ -1228,7 +1248,7 @@
     };
 
     // ==========================================================
-    // ৯. অটো-গ্রুপিং ইঞ্জিন (Fair Tie-Breaking সহ)
+    // ৯. অটো-গ্রুপিং ইঞ্জিন (পূর্ববর্তী ক্রমিক দিয়ে Fair Tie-Breaking)
     // ==========================================================
     window.setupRegroupSection = function () {
         document.getElementById('regroupPreviewBox').style.display = 'none';
@@ -1252,9 +1272,12 @@
             return { ...s, total };
         });
 
+        // রোল নয়, গত পরীক্ষার ক্রমিক (overallRank / sl) দিয়ে টাই-ব্রেক
         computed.sort((a, b) => {
             if (b.total !== a.total) return b.total - a.total;
-            return (a.roll || 0) - (b.roll || 0);
+            const rankA = (a.overallRank !== undefined && a.overallRank !== null) ? Number(a.overallRank) : (Number(a.sl) || 9999);
+            const rankB = (b.overallRank !== undefined && b.overallRank !== null) ? Number(b.overallRank) : (Number(b.sl) || 9999);
+            return rankA - rankB;
         });
 
         // কাট-অফ স্কোর নির্ধারণ
@@ -1271,12 +1294,12 @@
             const rank = s.overallRank;
             let newGrp = "Group-C";
 
-            // টাই-ব্রেক সুরক্ষা: ৫৫তম জনের সমান নম্বর পেলে সেও Group-A পাবে
-            if (rank <= 55 || (cutoffScoreA !== null && s.total >= cutoffScoreA && s.total > 0)) {
+            // ৫৫তম জনের সমান নম্বর পেলে সেও Group-A পাবে
+            if (rank <= 55 || (cutoffScoreA !== null && s.total >= cutoffScoreA)) {
                 newGrp = "Group-A";
             } 
             // ১০৫তম জনের সমান নম্বর পেলে সেও Group-B পাবে
-            else if (rank <= 105 || (cutoffScoreB !== null && s.total >= cutoffScoreB && s.total > 0)) {
+            else if (rank <= 105 || (cutoffScoreB !== null && s.total >= cutoffScoreB)) {
                 newGrp = "Group-B";
             }
 
@@ -1305,7 +1328,6 @@
         document.getElementById('btnApplyRegroup').style.display = 'inline-flex';
     };
 
-    // নিরাপদ মাল্টি-পাথ আপডেট (সম্পূর্ণ নোড ডিলিট হওয়া বন্ধ)
     window.applyPromoteNewGroups = async function () {
         if (!computedMeritCache || computedMeritCache.length === 0) return;
 
@@ -1322,13 +1344,7 @@
             });
 
             try {
-                if (window.update && window.ref && window.getDatabase) {
-                    await window.update(window.ref(window.getDatabase()), updates);
-                } else if (window.writeToFirebase) {
-                    for (const [p, v] of Object.entries(updates)) {
-                        await window.writeToFirebase(p, v);
-                    }
-                }
+                await dbUpdate(updates);
                 alert("Groups successfully updated and locked for Next Exam!");
                 window.renderEvalStudents();
             } catch (err) {
@@ -1344,8 +1360,8 @@
         const sel = document.getElementById('archiveExamSelect');
         sel.innerHTML = '<option value="">-- Select Archived Exam --</option>';
 
-        if (window.getDatabase && window.ref && window.get) {
-            const snap = await window.get(window.ref(window.getDatabase(), 'evaluation_system/archives'));
+        if (_get && _ref && _db) {
+            const snap = await _get(_ref(_db, 'evaluation_system/archives'));
             if (snap.exists()) {
                 const data = snap.val();
                 Object.keys(data).forEach(k => {
@@ -1365,24 +1381,121 @@
         if (!exId) { area.innerHTML = ''; return; }
 
         area.innerHTML = '<div style="text-align:center; padding:20px;">Loading Archive...</div>';
-        const snap = await window.get(window.ref(window.getDatabase(), `evaluation_system/archives/${exId}`));
-        if (snap.exists()) {
-            const data = snap.val();
-            area.innerHTML = `
-                <div class="eval-main-box" style="padding:16px; margin-top:12px;">
-                    <h4 style="font-weight:800; color:#1e40af; margin-bottom:5px;">${data.examInfo?.title} (${data.examInfo?.date})</h4>
-                    <p style="font-size:0.80rem; color:#64748b;">Archived at: ${new Date(data.archivedAt).toLocaleString()}</p>
-                    <div style="background:#f8fafc; padding:12px; border-radius:12px; font-size:0.85rem;">
-                        Total student marks archived: <strong>${Object.keys(data.marks || {}).length}</strong> records.
+        if (_get && _ref && _db) {
+            const snap = await _get(_ref(_db, `evaluation_system/archives/${exId}`));
+            if (snap.exists()) {
+                const data = snap.val();
+                area.innerHTML = `
+                    <div class="eval-main-box" style="padding:16px; margin-top:12px;">
+                        <h4 style="font-weight:800; color:#1e40af; margin-bottom:5px;">${data.examInfo?.title} (${data.examInfo?.date})</h4>
+                        <p style="font-size:0.80rem; color:#64748b;">Archived at: ${new Date(data.archivedAt).toLocaleString()}</p>
+                        <div style="background:#f8fafc; padding:12px; border-radius:12px; font-size:0.85rem;">
+                            Total student marks archived: <strong>${Object.keys(data.marks || {}).length}</strong> records.
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
         }
     };
 
     // ==========================================================
-    // ১১. স্টুডেন্ট ডিরেক্টরি লাইভ টেবিল
+    // ১১. স্টুডেন্ট ডিরেক্টরি ও এক্সেল আপলোড ফাংশনসমূহ
     // ==========================================================
+    window.openEvalUploadModal = function () {
+        document.getElementById('evalUploadModal').style.display = 'flex';
+    };
+
+    window.closeEvalUploadModal = function () {
+        document.getElementById('evalUploadModal').style.display = 'none';
+        selectedUploadFile = null;
+        document.getElementById('evalFileStatusBox').style.display = 'none';
+        document.getElementById('evalExcelFile').value = '';
+    };
+
+    window.handleEvalFileSelected = function (file) {
+        if (!file) return;
+        selectedUploadFile = file;
+        document.getElementById('evalSelectedFileName').innerText = file.name;
+        document.getElementById('evalFileStatusBox').style.display = 'flex';
+    };
+
+    window.triggerEvalUpload = async function () {
+        if (!selectedUploadFile) {
+            alert("Please choose an Excel (.xlsx, .xls) file first!");
+            return;
+        }
+
+        if (typeof XLSX === 'undefined') {
+            alert("SheetJS (XLSX) library not found on the page!");
+            return;
+        }
+
+        const targetGroup = document.getElementById('evalUploadTargetGroup').value;
+        const uploadBtn = document.getElementById('evalUploadNowBtn');
+        uploadBtn.disabled = true;
+        uploadBtn.innerText = "Processing...";
+
+        try {
+            const data = await selectedUploadFile.arrayBuffer();
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rawRows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+
+            if (rawRows.length === 0) {
+                alert("Excel file contains no data!");
+                return;
+            }
+
+            const updates = {};
+            let count = 0;
+
+            rawRows.forEach((row, index) => {
+                const sId = String(row.id || row.ID || row.Student_ID || row.Roll || (index + 1)).trim();
+                const sName = String(row.name || row.Name || row.Student_Name || 'Unknown').trim();
+                const sRoll = String(row.roll || row.Roll || '').trim();
+                const sSec = String(row.section || row.Sec || row.Section || '').trim();
+                const sSl = Number(row.sl || row.SL || (index + 1));
+
+                let sSubGroup = targetGroup;
+                if (targetGroup === 'Science') {
+                    sSubGroup = row.subGroup || row.sub_group || (sSl <= 55 ? 'Group-A' : (sSl <= 105 ? 'Group-B' : 'Group-C'));
+                }
+
+                const stdObj = {
+                    id: sId,
+                    name: sName,
+                    roll: sRoll,
+                    section: sSec,
+                    group: targetGroup,
+                    subGroup: sSubGroup,
+                    sl: sSl,
+                    overallRank: sSl
+                };
+
+                updates[`evaluation_system/students/${sId}`] = stdObj;
+                count++;
+            });
+
+            await dbUpdate(updates);
+            alert(`🎉 Success!\nUploaded ${count} students to ${targetGroup}.`);
+            window.closeEvalUploadModal();
+
+            // লোকাল মেমোরি রিফ্রেশ
+            if (_get && _ref && _db) {
+                const stdSnap = await _get(_ref(_db, 'evaluation_system/students'));
+                if (stdSnap.exists()) {
+                    studentsList = Object.values(stdSnap.val());
+                    window.renderEvalStudents();
+                }
+            }
+        } catch (err) {
+            alert("Upload failed: " + err.message);
+        } finally {
+            uploadBtn.disabled = false;
+            uploadBtn.innerText = "Upload Now";
+        }
+    };
+
     window.filterEvalByTab = function (filter, btn) {
         currentEvalFilter = filter;
         document.querySelectorAll('.eval-tab-btn').forEach(b => b.classList.remove('active'));
@@ -1435,7 +1548,7 @@
             else if (currentEvalFilter === 'Science') mGrp = s.group === 'Science';
             else if (['Group-A', 'Group-B', 'Group-C'].includes(currentEvalFilter)) mGrp = s.subGroup === currentEvalFilter;
 
-            let mQ = !q || String(s.id).includes(q) || (s.name || '').toLowerCase().includes(q) || String(s.roll).includes(q);
+            let mQ = !q || String(s.id).toLowerCase().includes(q) || (s.name || '').toLowerCase().includes(q) || String(s.roll).toLowerCase().includes(q);
             return mGrp && mQ;
         });
 
@@ -1444,19 +1557,22 @@
             return;
         }
 
+        // ক্রমিক (overallRank / sl) অনুযায়ী মেধা তালিকায় সর্টিং
         list.sort((a, b) => {
             if (a.group !== b.group) return a.group === 'Science' ? -1 : 1;
-            return (a.overallRank || a.sl) - (b.overallRank || b.sl);
+            const rankA = (a.overallRank !== undefined && a.overallRank !== null) ? Number(a.overallRank) : (Number(a.sl) || 9999);
+            const rankB = (b.overallRank !== undefined && b.overallRank !== null) ? Number(b.overallRank) : (Number(b.sl) || 9999);
+            return rankA - rankB;
         });
 
         list.forEach(s => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="text-align:center; font-weight:700; color:#1e40af;">${s.sl}</td>
+                <td style="text-align:center; font-weight:700; color:#1e40af;">${s.sl || s.overallRank}</td>
                 <td><span style="background:#f1f5f9; border:1px solid #e2e8f0; padding:3px 8px; border-radius:12px; font-weight:700; font-size:0.78rem;">${s.id}</span></td>
                 <td style="font-weight:600; color:#0f172a;">${s.name}</td>
                 <td style="text-align:center; color:#64748b; font-weight:600;">${s.roll}</td>
-                <td style="text-align:center;"><span class="eval-badge ${s.section === 'DH' ? 'eval-badge-primary' : 'eval-badge-success'}">${s.section}</span></td>
+                <td style="text-align:center;"><span class="eval-badge ${s.section === 'DH' ? 'eval-badge-primary' : 'eval-badge-success'}">${s.section || '-'}</span></td>
                 <td><span style="background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; padding:3px 10px; border-radius:14px; font-size:0.75rem; font-weight:700;">${s.subGroup || s.group}</span></td>
                 <td style="text-align:center;"><span style="background:#f8fafc; border:1px solid #e2e8f0; padding:2px 10px; border-radius:14px; font-size:0.70rem; font-weight:700;">Rank #${s.overallRank || s.sl}</span></td>
             `;
@@ -1468,44 +1584,64 @@
     // ১২. ফায়ারবেস ক্লাউড লোডার
     // ==========================================================
     async function loadDirectlyFromFirebase(retries = 25) {
-        if (!window.getDatabase || !window.ref || !window.get) {
+        try {
+            const fb = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+            _get = fb.get;
+            _ref = fb.ref;
+            _set = fb.set;
+            _update = fb.update;
+
+            if (window.getDatabase) {
+                _db = window.getDatabase();
+            } else if (fb.getDatabase) {
+                _db = fb.getDatabase();
+            }
+        } catch (e) {
+            if (window.getDatabase && window.ref && window.get) {
+                _db = window.getDatabase();
+                _ref = window.ref;
+                _get = window.get;
+                _set = window.set;
+                _update = window.update;
+            }
+        }
+
+        if (!_db || !_ref || !_get) {
             if (retries > 0) setTimeout(() => loadDirectlyFromFirebase(retries - 1), 200);
             return;
         }
 
         try {
-            const db = window.getDatabase();
-
-            const actSnap = await window.get(window.ref(db, 'evaluation_system/active_exam_id'));
+            const actSnap = await _get(_ref(_db, 'evaluation_system/active_exam_id'));
             if (actSnap.exists()) activeExamId = actSnap.val();
 
-            const exSnap = await window.get(window.ref(db, `evaluation_system/exams/${activeExamId}`));
+            const exSnap = await _get(_ref(_db, `evaluation_system/exams/${activeExamId}`));
             if (exSnap.exists()) activeExamData = exSnap.val();
 
-            const stdSnap = await window.get(window.ref(db, 'evaluation_system/students'));
+            const stdSnap = await _get(_ref(_db, 'evaluation_system/students'));
             if (stdSnap.exists()) {
                 studentsList = Object.values(stdSnap.val());
                 window.renderEvalStudents();
             }
 
-            const pinSnap = await window.get(window.ref(db, 'evaluation_system/pins'));
+            const pinSnap = await _get(_ref(_db, 'evaluation_system/pins'));
             if (pinSnap.exists()) {
                 subjectPins = pinSnap.val() || {};
                 window.renderEvalPins();
             }
 
-            const mSnap = await window.get(window.ref(db, `evaluation_system/marks/${activeExamId}`));
+            const mSnap = await _get(_ref(_db, `evaluation_system/marks/${activeExamId}`));
             if (mSnap.exists()) {
                 examMarks = mSnap.val() || {};
                 window.renderEvalTabulation();
             }
 
             import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js").then(({ onValue }) => {
-                onValue(window.ref(db, `evaluation_system/marks/${activeExamId}`), (s) => {
+                onValue(_ref(_db, `evaluation_system/marks/${activeExamId}`), (s) => {
                     examMarks = s.val() || {};
                     window.renderEvalPins();
                 });
-                onValue(window.ref(db, 'evaluation_system/pins'), (s) => {
+                onValue(_ref(_db, 'evaluation_system/pins'), (s) => {
                     subjectPins = s.val() || {};
                     window.renderEvalPins();
                 });
