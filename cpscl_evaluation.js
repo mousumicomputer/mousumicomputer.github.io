@@ -120,18 +120,20 @@
         .eval-badge-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
         .eval-badge-danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
 
-        /* Admin Override Engine Specific Roundings */
+        /* Admin Override Input */
         .admin-eval-inp {
             width: 70px; height: 36px; border-radius: 12px; border: 1.5px solid #cbd5e1;
             text-align: center; font-size: 1.15rem; font-weight: 800; color: #1e40af; outline: none; background: #ffffff;
+            transition: border-color 0.2s, background-color 0.2s;
         }
         .admin-eval-inp:focus { border-color: #2563eb; background-color: #eff6ff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18); }
+        .admin-eval-inp.has-error { border-color: #dc2626 !important; background-color: #fef2f2 !important; color: #dc2626 !important; }
 
         .eval-icon { width: 14px; height: 14px; fill: currentColor; display: inline-block; vertical-align: middle; }
     `;
     document.head.appendChild(evalStyle);
 
-    // এসভিজি আইকন হেল্পার ফাংশন (কোনো ভাঙা আইকন আসবে না)
+    // এসভিজি আইকন
     const ICONS = {
         users: `<svg class="eval-icon" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>`,
         sliders: `<svg class="eval-icon" viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>`,
@@ -144,7 +146,7 @@
         search: `<svg class="eval-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>`
     };
 
-    // সব বিষয়ের মাস্টার তালিকা
+    // সব বিষয়ের মাস্টার তালিকা (৩ গ্রুপে সম্পূর্ণ ও সামঞ্জস্যপূর্ণ)
     const MASTER_SUBJECTS = {
         Science: [
             { key: 'B1', name: 'Bangla 1st' }, { key: 'B2', name: 'Bangla 2nd' },
@@ -171,6 +173,12 @@
         ]
     };
 
+    // স্ট্রিম-সচেতন পিন কি (PIN Collision Fix)
+    function getStreamPinKey(stream, subKey) {
+        const cleanStream = stream === 'B.Studies' ? 'BStudies' : stream;
+        return `${cleanStream}_${subKey}`;
+    }
+
     let studentsList = [];
     let examMarks = {};
     let subjectPins = {};
@@ -181,13 +189,13 @@
         date: "15 Sep 2026",
         max: 15,
         isLocked: false,
-        activeSubjects: ['B1', 'B2', 'E1', 'E2', 'Math', 'HM_AG', 'Phy', 'Che', 'Bio', 'BGS', 'Reli', 'ICT', 'His', 'Geo', 'Civ', 'Fin', 'Acc', 'Sci']
+        activeSubjects: ['B1', 'B2', 'E1', 'E2', 'Math', 'HM_AG', 'Phy', 'Che', 'Bio', 'BGS', 'Reli', 'ICT', 'His', 'Geo', 'Civ', 'Fin', 'Acc', 'Sci', 'AG_HE']
     };
     let currentEvalFilter = 'All';
     let computedMeritCache = [];
 
     // ==========================================================
-    // ২. সাইডবার ইনজেকশন (নতুন এডমিন এন্ট্রি সেকশন সহ ৬টি সেকশন)
+    // ২. সাইডবার ইনজেকশন
     // ==========================================================
     function injectExamModule() {
         const menuList = document.querySelector('.menu-list');
@@ -221,7 +229,6 @@
             viewDiv.className = 'view-panel';
             viewDiv.id = 'exam-eval-view';
             viewDiv.innerHTML = `
-                
                 <!-- SUB-SECTION 1: STUDENT DIRECTORY -->
                 <div id="eval-student-sec" class="eval-sub-sec active">
                     <div class="eval-stats-ribbon">
@@ -312,7 +319,7 @@
 
                     <div class="eval-main-box">
                         <div class="eval-ctrl-bar">
-                            <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a;">Teacher PINs & Status</div>
+                            <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a;">Teacher PINs & Submission Status</div>
                             <div style="display: flex; gap: 8px;">
                                 <button class="eval-btn eval-btn-purple" id="btnRefreshPins" onclick="window.refreshEvalPinsLive()">Refresh PINs</button>
                                 <button class="eval-btn eval-btn-success" onclick="window.switchExamSubSection('eval-admin-entry-sec')">${ICONS.pen} Open Admin Mark Entry</button>
@@ -322,7 +329,8 @@
                             <table class="eval-table">
                                 <thead>
                                     <tr>
-                                        <th style="padding-left: 15px;">Subject</th>
+                                        <th style="padding-left: 15px;">Stream</th>
+                                        <th>Subject</th>
                                         <th>Status</th>
                                         <th>Teacher Secret PIN</th>
                                         <th style="text-align: center; width: 100px;">Control</th>
@@ -334,7 +342,7 @@
                     </div>
                 </div>
 
-                <!-- SUB-SECTION 3: ADMIN MARK ENTRY ENGINE (নতুন ও ১০০% গোলাকার শেপ) -->
+                <!-- SUB-SECTION 3: ADMIN MARK ENTRY ENGINE -->
                 <div id="eval-admin-entry-sec" class="eval-sub-sec">
                     <div class="eval-main-box" style="border-radius: 20px;">
                         <div style="background: linear-gradient(90deg, #1e40af 0%, #2563eb 100%); color: #fff; padding: 12px 20px; font-weight: 700; font-size: 0.92rem; display: flex; align-items: center; gap: 8px;">
@@ -353,7 +361,6 @@
                                 <div>
                                     <label style="font-size: 0.72rem; color: #64748b; margin-bottom: 5px; margin-left: 6px; font-weight: 700; text-transform: uppercase; display: block;">Exam Name <span style="color:#dc2626;">*</span></label>
                                     <select class="eval-search-inp" id="adminSelExam" style="width: 100%; border-radius: 25px; padding: 8px 14px;">
-                                        <!-- Will load active exam -->
                                     </select>
                                 </div>
                                 <div>
@@ -369,7 +376,6 @@
                                 <div>
                                     <label style="font-size: 0.72rem; color: #64748b; margin-bottom: 5px; margin-left: 6px; font-weight: 700; text-transform: uppercase; display: block;">Subject <span style="color:#dc2626;">*</span></label>
                                     <select class="eval-search-inp" id="adminSelSubject" style="width: 100%; border-radius: 25px; padding: 8px 14px;">
-                                        <!-- Dynamic Subjects -->
                                     </select>
                                 </div>
                             </div>
@@ -392,7 +398,7 @@
                                             <th>Name</th>
                                             <th style="width: 70px; text-align: center;">Roll</th>
                                             <th style="width: 70px; text-align: center;">Sec</th>
-                                            <th style="width: 120px; text-align: center;">Mark (<span id="adminMaxMarkSpan">15</span>)</th>
+                                            <th style="width: 130px; text-align: center;">Mark (<span id="adminMaxMarkSpan">15</span>)</th>
                                         </tr>
                                     </thead>
                                     <tbody id="adminStudentTbody"></tbody>
@@ -401,7 +407,7 @@
 
                             <div style="padding: 14px 22px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                                 <span style="font-size: 0.78rem; color: #64748b; font-weight: 600;">
-                                    * Type 0 for Absent. Press [Enter] to move to the next student.
+                                    * Type 0 for Zero/Absent. Leave blank to clear. Press [Enter] for next student.
                                 </span>
                                 <button class="eval-btn eval-btn-success" id="btnAdminSaveMarks" onclick="window.adminSaveMarksLive()">
                                     ${ICONS.save} Save Marks
@@ -460,7 +466,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                             <div>
                                 <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0; color: #0f172a;">Dynamic Merit & Grouping Engine</h3>
-                                <p style="font-size: 0.78rem; color: #64748b; margin: 2px 0 0 0;">Top 55 ➔ Group-A | Next 50 ➔ Group-B | Rest ➔ Group-C</p>
+                                <p style="font-size: 0.78rem; color: #64748b; margin: 2px 0 0 0;">Top 55 ➔ Group-A | Next 50 ➔ Group-B | Rest ➔ Group-C (Includes Fair Tie-Breaking)</p>
                             </div>
                             <div style="display: flex; gap: 8px;">
                                 <button class="eval-btn eval-btn-primary" onclick="window.runAutoGroupingPreview()">Calculate New Groups</button>
@@ -483,7 +489,7 @@
                                         <th style="width: 60px; text-align:center;">Roll</th>
                                         <th style="width: 90px; text-align:center;">Total Marks</th>
                                         <th style="width: 110px; text-align:center;">Previous Group</th>
-                                        <th style="width: 110px; text-align:center; background:#dbeafe; color:#1e40af;">PROMOTED GROUP</th>
+                                        <th style="width: 130px; text-align:center; background:#dbeafe; color:#1e40af;">PROMOTED GROUP</th>
                                     </tr>
                                 </thead>
                                 <tbody id="regroupPreviewTbody"></tbody>
@@ -509,7 +515,7 @@
                 <div class="eval-modal-overlay" id="createExamModal" onclick="if(event.target === this) window.closeCreateExamModal()">
                     <div class="eval-modal-card">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <div style="font-size: 1.05rem; font-weight: 800; color: #0f172a;">Create New Exam Sheet</div>
+                            <div style="font-size: 1.05rem; font-weight: 800; color: #0f172a;">Create New Exam Session</div>
                             <button style="background:transparent; border:none; font-size:1.2rem; color:#94a3b8; cursor:pointer;" onclick="window.closeCreateExamModal()">✕</button>
                         </div>
 
@@ -560,7 +566,6 @@
                         <button type="button" class="eval-btn eval-btn-primary" id="evalUploadNowBtn" style="width: 100%; margin-top: 14px; justify-content:center; border-radius:25px;" onclick="window.triggerEvalUpload()">Upload Now</button>
                     </div>
                 </div>
-
             `;
             mainWrapper.appendChild(viewDiv);
         }
@@ -605,7 +610,7 @@
     };
 
     // ==========================================================
-    // ৪. এডমিন মার্ক এন্ট্রি ইঞ্জিন লজিক (Admin Override Logic)
+    // ৪. এডমিন মার্ক এন্ট্রি ইঞ্জিন লজিক
     // ==========================================================
     window.initAdminMarkEntryView = function () {
         const exSel = document.getElementById('adminSelExam');
@@ -699,7 +704,6 @@
 
         document.getElementById('adminMarkTableBox').style.display = 'block';
 
-        // Auto focus to the first box
         setTimeout(() => {
             const first = document.getElementById('admin_inp_0');
             if (first) {
@@ -709,15 +713,17 @@
         }, 150);
     };
 
+    // স্মুথ নন-ব্লকিং ইনপুট ভ্যালিডেশন
     window.adminValidateInput = function (inp, max) {
         inp.value = inp.value.replace(/[^0-9.]/g, '');
         if ((inp.value.match(/\./g) || []).length > 1) {
             inp.value = inp.value.slice(0, -1);
         }
         const num = parseFloat(inp.value);
-        if (num > max) {
-            alert(`Full mark is ${max}!`);
-            inp.value = '';
+        if (!isNaN(num) && (num > max || num < 0)) {
+            inp.classList.add('has-error');
+        } else {
+            inp.classList.remove('has-error');
         }
     };
 
@@ -740,12 +746,23 @@
         const inputs = document.querySelectorAll('.admin-eval-inp');
         if (inputs.length === 0) return;
 
+        const maxMark = activeExamData.max || 15;
+        let hasErrors = false;
+        inputs.forEach(inp => {
+            const num = parseFloat(inp.value.trim());
+            if (!isNaN(num) && (num > maxMark || num < 0)) hasErrors = true;
+        });
+
+        if (hasErrors) {
+            alert(`Some marks exceed the maximum mark (${maxMark}). Please correct red fields.`);
+            return;
+        }
+
         const btn = document.getElementById('btnAdminSaveMarks');
         btn.disabled = true;
         btn.innerText = "Saving...";
 
         const updates = {};
-        const maxMark = activeExamData.max || 15;
         let count = 0;
 
         inputs.forEach(inp => {
@@ -769,12 +786,12 @@
 
         try {
             if (window.update && window.ref && window.getDatabase) {
-            await window.update(window.ref(window.getDatabase()), updates);
-        } else if (window.writeToFirebase) {
-            for (const [p, v] of Object.entries(updates)) {
-                await window.writeToFirebase(p, v);
+                await window.update(window.ref(window.getDatabase()), updates);
+            } else if (window.writeToFirebase) {
+                for (const [p, v] of Object.entries(updates)) {
+                    await window.writeToFirebase(p, v);
+                }
             }
-        }
             alert(`Success!\nMarks saved for ${count} students in ${sub} (${grp}).`);
         } catch (err) {
             alert("Error saving: " + err.message);
@@ -802,19 +819,21 @@
 
         const chipBox = document.getElementById('activeSubjectsChips');
         chipBox.innerHTML = '';
-        const allSubs = [
-            ...MASTER_SUBJECTS.Science,
-            { key: 'His', name: 'History' }, { key: 'Geo', name: 'Geography' },
-            { key: 'Civ', name: 'Civics' }, { key: 'Fin', name: 'Finance' }, { key: 'Acc', name: 'Accounting' }
-        ];
-        const uniqueSubs = Array.from(new Set(allSubs.map(a => a.key))).map(k => allSubs.find(a => a.key === k));
+        
+        const allSubsMap = new Map();
+        Object.keys(MASTER_SUBJECTS).forEach(stream => {
+            MASTER_SUBJECTS[stream].forEach(s => {
+                if (!allSubsMap.has(s.key)) allSubsMap.set(s.key, s.name);
+            });
+        });
 
-        uniqueSubs.forEach(s => {
-            const isAct = !activeExamData.activeSubjects || activeExamData.activeSubjects.includes(s.key);
+        allSubsMap.forEach((name, key) => {
+            const isAct = !activeExamData.activeSubjects || activeExamData.activeSubjects.includes(key);
             const chip = document.createElement('span');
             chip.className = `sub-chip ${isAct ? 'active' : ''}`;
-            chip.innerHTML = `${isAct ? '✓' : '+'} ${s.key}`;
-            chip.onclick = () => window.toggleSubjectActive(s.key);
+            chip.innerHTML = `${isAct ? '✓' : '+'} ${key}`;
+            chip.title = name;
+            chip.onclick = () => window.toggleSubjectActive(key);
             chipBox.appendChild(chip);
         });
 
@@ -855,6 +874,18 @@
             return;
         }
 
+        // ফ্রেশ ডাটা ফেচ করে তবেই আর্কাইভ করা হবে
+        let freshMarks = examMarks;
+        if (window.getDatabase && window.ref && window.get) {
+            try {
+                const db = window.getDatabase();
+                const mSnap = await window.get(window.ref(db, `evaluation_system/marks/${activeExamId}`));
+                if (mSnap.exists()) freshMarks = mSnap.val();
+            } catch (e) {
+                console.warn("Could not fetch fresh marks for archive:", e);
+            }
+        }
+
         const newId = `exam_${Date.now()}`;
         const newExamObj = {
             id: newId,
@@ -863,13 +894,13 @@
             max: max,
             isLocked: false,
             createdAt: new Date().toISOString(),
-            activeSubjects: ['B1', 'B2', 'E1', 'E2', 'Math', 'HM_AG', 'Phy', 'Che', 'Bio', 'BGS', 'Reli', 'ICT', 'His', 'Geo', 'Civ', 'Fin', 'Acc', 'Sci']
+            activeSubjects: ['B1', 'B2', 'E1', 'E2', 'Math', 'HM_AG', 'Phy', 'Che', 'Bio', 'BGS', 'Reli', 'ICT', 'His', 'Geo', 'Civ', 'Fin', 'Acc', 'Sci', 'AG_HE']
         };
 
         if (window.writeToFirebase) {
             await window.writeToFirebase(`evaluation_system/archives/${activeExamId}`, {
                 examInfo: activeExamData,
-                marks: examMarks,
+                marks: freshMarks,
                 archivedAt: new Date().toISOString()
             });
 
@@ -888,40 +919,48 @@
     };
 
     // ==========================================================
-    // ৬. পিন ও কন্ট্রোল
+    // ৬. পিন ও কন্ট্রোল (স্ট্রিম-সচেতন পিন সিস্টেম)
     // ==========================================================
     window.renderEvalPins = function () {
         const tbody = document.getElementById('evalPinTbody');
         if (!tbody) return;
         tbody.innerHTML = '';
 
-        const allSubs = [
-            ...MASTER_SUBJECTS.Science,
-            { key: 'His', name: 'History' }, { key: 'Geo', name: 'Geography' },
-            { key: 'Civ', name: 'Civics' }, { key: 'Fin', name: 'Finance' }, { key: 'Acc', name: 'Accounting' }
+        const streams = [
+            { name: 'Science', list: MASTER_SUBJECTS.Science },
+            { name: 'Humanities', list: MASTER_SUBJECTS.Humanities },
+            { name: 'B.Studies', list: MASTER_SUBJECTS.BStudies }
         ];
-        const uniqueSubs = Array.from(new Set(allSubs.map(a => a.key))).map(k => allSubs.find(a => a.key === k));
 
-        uniqueSubs.forEach(s => {
-            const isAct = !activeExamData.activeSubjects || activeExamData.activeSubjects.includes(s.key);
-            if (!isAct) return;
+        streams.forEach(strObj => {
+            strObj.list.forEach(s => {
+                const isAct = !activeExamData.activeSubjects || activeExamData.activeSubjects.includes(s.key);
+                if (!isAct) return;
 
-            const p = subjectPins[s.key] || '';
-            let hasMarks = false;
-            Object.values(examMarks).forEach(stdObj => {
-                if (stdObj && stdObj[s.key] !== undefined && stdObj[s.key] !== '') hasMarks = true;
+                const pinKey = getStreamPinKey(strObj.name, s.key);
+                const p = subjectPins[pinKey] || subjectPins[s.key] || ''; // ব্যাকওয়ার্ড কম্প্যাটিবিলিটি
+
+                let hasMarks = false;
+                Object.keys(examMarks).forEach(stdId => {
+                    const student = studentsList.find(st => st.id === stdId);
+                    if (student && student.group === strObj.name) {
+                        const stdObj = examMarks[stdId];
+                        if (stdObj && stdObj[s.key] !== undefined && stdObj[s.key] !== '') hasMarks = true;
+                    }
+                });
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="padding-left: 15px;"><span class="eval-badge eval-badge-primary">${strObj.name}</span></td>
+                    <td style="font-weight:700;">${s.name} (${s.key})</td>
+                    <td><span class="eval-badge ${hasMarks ? 'eval-badge-success' : (p ? 'eval-badge-primary' : 'eval-badge-danger')}">${hasMarks ? '✓ Submitted' : (p ? 'Ready' : 'Pending')}</span></td>
+                    <td><strong style="letter-spacing: 2px; color:#1e40af;">${p || '----'}</strong></td>
+                    <td style="text-align:center;">
+                        <button class="eval-btn" style="background:#fee2e2; color:#dc2626; padding:4px 10px; font-size:0.72rem;" onclick="window.resetEvalPin('${pinKey}')" ${!p ? 'disabled style="opacity:0.3;"' : ''}>Reset</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
             });
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="padding-left: 15px; font-weight:700;">${s.name} (${s.key})</td>
-                <td><span class="eval-badge ${hasMarks ? 'eval-badge-success' : (p ? 'eval-badge-primary' : 'eval-badge-danger')}">${hasMarks ? '✓ Submitted' : (p ? 'Ready' : 'Pending')}</span></td>
-                <td><strong style="letter-spacing: 2px; color:#1e40af;">${p || '----'}</strong></td>
-                <td style="text-align:center;">
-                    <button class="eval-btn" style="background:#fee2e2; color:#dc2626; padding:4px 10px; font-size:0.72rem;" onclick="window.resetEvalPin('${s.key}')" ${!p ? 'disabled style="opacity:0.3;"' : ''}>Reset</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
         });
     };
 
@@ -943,16 +982,16 @@
         }
     };
 
-    window.resetEvalPin = function (k) {
-        if (confirm("Reset PIN for " + k + "?")) {
-            delete subjectPins[k];
+    window.resetEvalPin = function (pinKey) {
+        if (confirm("Reset PIN for " + pinKey + "?")) {
+            delete subjectPins[pinKey];
             window.renderEvalPins();
-            if (window.writeToFirebase) window.writeToFirebase(`evaluation_system/pins/${k}`, null);
+            if (window.writeToFirebase) window.writeToFirebase(`evaluation_system/pins/${pinKey}`, null);
         }
     };
 
     window.copyEvalTeacherLink = function () {
-        const link = "https://cpscl.vercel.app";
+        const link = window.location.origin ? `${window.location.origin}/index.html` : "https://cpscl.vercel.app";
         navigator.clipboard.writeText(link).then(() => alert("Teacher link copied:\n" + link));
     };
 
@@ -1189,7 +1228,7 @@
     };
 
     // ==========================================================
-    // ৯. অটো-গ্রুপিং ইঞ্জিন (Top 55=A, 50=B, Rest=C)
+    // ৯. অটো-গ্রুপিং ইঞ্জিন (Fair Tie-Breaking সহ)
     // ==========================================================
     window.setupRegroupSection = function () {
         document.getElementById('regroupPreviewBox').style.display = 'none';
@@ -1218,14 +1257,30 @@
             return (a.roll || 0) - (b.roll || 0);
         });
 
+        // কাট-অফ স্কোর নির্ধারণ
+        let cutoffScoreA = null;
+        let cutoffScoreB = null;
+
         computed.forEach((s, idx) => {
-            const rank = idx + 1;
+            s.overallRank = idx + 1;
+            if (idx === 54) cutoffScoreA = s.total;  // ৫৫তম পজিশন
+            if (idx === 104) cutoffScoreB = s.total; // ১০৫তম পজিশন
+        });
+
+        computed.forEach(s => {
+            const rank = s.overallRank;
             let newGrp = "Group-C";
-            if (rank <= 55) newGrp = "Group-A";
-            else if (rank <= 105) newGrp = "Group-B";
+
+            // টাই-ব্রেক সুরক্ষা: ৫৫তম জনের সমান নম্বর পেলে সেও Group-A পাবে
+            if (rank <= 55 || (cutoffScoreA !== null && s.total >= cutoffScoreA && s.total > 0)) {
+                newGrp = "Group-A";
+            } 
+            // ১০৫তম জনের সমান নম্বর পেলে সেও Group-B পাবে
+            else if (rank <= 105 || (cutoffScoreB !== null && s.total >= cutoffScoreB && s.total > 0)) {
+                newGrp = "Group-B";
+            }
 
             s.newGroupTag = newGrp;
-            s.overallRank = rank;
         });
 
         computedMeritCache = computed;
@@ -1250,24 +1305,35 @@
         document.getElementById('btnApplyRegroup').style.display = 'inline-flex';
     };
 
+    // নিরাপদ মাল্টি-পাথ আপডেট (সম্পূর্ণ নোড ডিলিট হওয়া বন্ধ)
     window.applyPromoteNewGroups = async function () {
         if (!computedMeritCache || computedMeritCache.length === 0) return;
 
         if (confirm("Are you sure you want to promote and save these NEW groups permanently for the Next Exam?")) {
+            const updates = {};
             computedMeritCache.forEach(s => {
                 const found = studentsList.find(st => st.id === s.id);
                 if (found) {
                     found.subGroup = s.newGroupTag;
                     found.overallRank = s.overallRank;
                 }
+                updates[`evaluation_system/students/${s.id}/subGroup`] = s.newGroupTag;
+                updates[`evaluation_system/students/${s.id}/overallRank`] = s.overallRank;
             });
 
-            if (window.writeToFirebase) {
-                await window.writeToFirebase('evaluation_system/students', studentsList.reduce((acc, cur) => { acc[cur.id] = cur; return acc; }, {}));
+            try {
+                if (window.update && window.ref && window.getDatabase) {
+                    await window.update(window.ref(window.getDatabase()), updates);
+                } else if (window.writeToFirebase) {
+                    for (const [p, v] of Object.entries(updates)) {
+                        await window.writeToFirebase(p, v);
+                    }
+                }
+                alert("Groups successfully updated and locked for Next Exam!");
+                window.renderEvalStudents();
+            } catch (err) {
+                alert("Failed to update groups: " + err.message);
             }
-
-            alert("Groups successfully updated and locked for Next Exam!");
-            window.renderEvalStudents();
         }
     };
 
