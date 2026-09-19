@@ -169,7 +169,9 @@
             { key: 'E1', name: 'English 1st' }, { key: 'E2', name: 'English 2nd' },
             { key: 'Math', name: 'General Math' }, { key: 'AG_HE', name: 'AG/HE' },
             { key: 'Fin', name: 'Finance' }, { key: 'Acc', name: 'Accounting' },
-            { key: 'Sci', name: 'General Science' }, { key: 'Reli', name: 'Religion' }
+            { key: 'BE', name: 'Business Ent.' },
+            { key: 'Sci', name: 'General Science' }, { key: 'Reli', name: 'Religion' },
+            { key: 'ICT', name: 'ICT' }
         ]
     };
 
@@ -196,7 +198,7 @@
         date: "15 Sep 2026",
         max: 15,
         isLocked: false,
-        activeSubjects: ['B1', 'B2', 'E1', 'E2', 'Math', 'HM_AG', 'Phy', 'Che', 'Bio', 'BGS', 'Reli', 'ICT', 'His', 'Geo', 'Civ', 'Fin', 'Acc', 'Sci', 'AG_HE']
+        activeSubjects: ['B1', 'B2', 'E1', 'E2', 'Math', 'HM_AG', 'Phy', 'Che', 'Bio', 'BGS', 'Reli', 'ICT', 'His', 'Geo', 'Civ', 'Fin', 'Acc', 'BE', 'Sci', 'AG_HE']
     };
     let currentEvalFilter = 'All';
     let computedMeritCache = [];
@@ -909,7 +911,7 @@
             max: max,
             isLocked: false,
             createdAt: new Date().toISOString(),
-            activeSubjects: ['B1', 'B2', 'E1', 'E2', 'Math', 'HM_AG', 'Phy', 'Che', 'Bio', 'BGS', 'Reli', 'ICT', 'His', 'Geo', 'Civ', 'Fin', 'Acc', 'Sci', 'AG_HE']
+            activeSubjects: ['B1', 'B2', 'E1', 'E2', 'Math', 'HM_AG', 'Phy', 'Che', 'Bio', 'BGS', 'Reli', 'ICT', 'His', 'Geo', 'Civ', 'Fin', 'Acc', 'BE', 'Sci', 'AG_HE']
         };
 
         await dbSet(`evaluation_system/archives/${activeExamId}`, {
