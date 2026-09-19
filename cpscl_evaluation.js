@@ -455,7 +455,7 @@
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <label style="font-size: 0.75rem; font-weight: 700; color: #64748b;">View Stream Sheet:</label>
                                 <select id="evalTabGroup" class="eval-search-inp" style="width: auto; border-radius: 20px;" onchange="window.renderEvalTabulation()">
-                                    <option value="Science_Merit">Science (Combined Merit)</option>
+                                    <option value="Science_Merit" selected>Science (Combined Merit)</option>
                                     <option value="Group-A">Science (Group-A)</option>
                                     <option value="Group-B">Science (Group-B)</option>
                                     <option value="Group-C">Science (Group-C)</option>
@@ -497,7 +497,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                             <div>
                                 <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0; color: #0f172a;">Dynamic Merit & Grouping Engine</h3>
-                                <p style="font-size: 0.78rem; color: #64748b; margin: 2px 0 0 0;">Top 55 ➔ Group-A | Next 50 ➔ Group-B | Rest ➔ Group-C (Tie-break by Previous Merit SL)</p>
+                                <p style="font-size: 0.78rem; color: #64748b; margin: 2px 0 0 0;">Top 55 ➔ Group-A | Next 50 ➔ Group-B | Rest ➔ Group-C (Combined Science Merit)</p>
                             </div>
                             <div style="display: flex; gap: 8px;">
                                 <button class="eval-btn eval-btn-primary" onclick="window.runAutoGroupingPreview()">Calculate New Groups</button>
@@ -691,10 +691,14 @@
         let filtered = studentsList.filter(s => {
             if (grp === 'Humanities') return s.group === 'Humanities';
             if (grp === 'B.Studies') return s.group === 'B.Studies';
-            return s.group === 'Science' && s.subGroup === grp;
+            
+            // সায়েন্স গ্রুপ সমন্বয় (নিরাপদ fallback সহ)
+            const sRank = Number(s.overallRank !== undefined && s.overallRank !== null ? s.overallRank : s.sl);
+            const subGrp = s.subGroup || (sRank <= 55 ? 'Group-A' : (sRank <= 105 ? 'Group-B' : 'Group-C'));
+            return s.group === 'Science' && subGrp === grp;
         });
 
-        // পূর্ববর্তী পরীক্ষার ক্রমিক (overallRank / sl) অনুযায়ী সর্ট
+        // মেধা অনুযায়ী সর্ট
         filtered.sort((a, b) => {
             const rA = (a.overallRank !== undefined && a.overallRank !== null) ? Number(a.overallRank) : (Number(a.sl) || 9999);
             const rB = (b.overallRank !== undefined && b.overallRank !== null) ? Number(b.overallRank) : (Number(b.sl) || 9999);
@@ -771,7 +775,7 @@
         }
     };
 
-    // নিরাপদ মার্কস সেভ (ফাঁকা ঘর থাকলেও ডাটা ডিলিট হবে না)
+    // নিরাপদ মার্কস সেভ (নিরাপত্তা গার্ড সহ)
     window.adminSaveMarksLive = async function () {
         const sub = document.getElementById('adminSelSubject').value;
         const grp = document.getElementById('adminSelGroup').value;
@@ -791,9 +795,6 @@
         }
 
         const btn = document.getElementById('btnAdminSaveMarks');
-        btn.disabled = true;
-        btn.innerText = "Saving...";
-
         const updates = {};
         let count = 0;
 
@@ -812,6 +813,14 @@
                 }
             }
         });
+
+        if (Object.keys(updates).length === 0) {
+            alert("কোনো নতুন বা পরিবর্তিত নম্বর পাওয়া যায়নি। দয়া করে নম্বর বসিয়ে সেভ করুন।");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Saving...";
 
         try {
             await dbUpdate(updates);
@@ -923,13 +932,8 @@
         await dbSet(`evaluation_system/exams/${newId}`, newExamObj);
         await dbSet(`evaluation_system/active_exam_id`, newId);
 
-        activeExamId = newId;
-        activeExamData = newExamObj;
-        examMarks = {};
-
-        window.closeCreateExamModal();
-        window.renderExamManager();
-        alert(`New Exam Session "${title}" created successfully!`);
+        alert(`New Exam Session "${title}" created successfully! The system will now reload.`);
+        window.location.reload();
     };
 
     // ==========================================================
@@ -1003,14 +1007,13 @@
         }
     };
 
-    // টিচার লিংক সরাসরি ফিক্সড লিংক
     window.copyEvalTeacherLink = function () {
         const link = "https://cpscl.vercel.app";
         navigator.clipboard.writeText(link).then(() => alert("Teacher link copied:\n" + link));
     };
 
     // ==========================================================
-    // ৭. টেবুলেশন ডাটা ও অন-স্ক্রিন শিট রেন্ডার
+    // ৭. টেবুলেশন ডাটা ও অন-স্ক্রিন শিট রেন্ডার (কম্বাইন্ড মেধা ভিত্তি)
     // ==========================================================
     function getProcessedTabulationData() {
         const grp = document.getElementById('evalTabGroup') ? document.getElementById('evalTabGroup').value : 'Science_Merit';
@@ -1041,7 +1044,14 @@
         if (grp === 'Humanities') list = studentsList.filter(s => s.group === 'Humanities');
         else if (grp === 'B.Studies') list = studentsList.filter(s => s.group === 'B.Studies');
         else if (grp === 'Science_Merit') list = studentsList.filter(s => s.group === 'Science');
-        else list = studentsList.filter(s => s.subGroup === grp);
+        else {
+            list = studentsList.filter(s => {
+                if (s.group !== 'Science') return false;
+                const sRank = Number(s.overallRank !== undefined && s.overallRank !== null ? s.overallRank : s.sl);
+                const subGrp = s.subGroup || (sRank <= 55 ? 'Group-A' : (sRank <= 105 ? 'Group-B' : 'Group-C'));
+                return subGrp === grp;
+            });
+        }
 
         let computedList = list.map(s => {
             const m = examMarks[s.id] || {};
@@ -1053,7 +1063,7 @@
             return { ...s, total, marksObj: m };
         });
 
-        // রোল নয়, গত পরীক্ষার ক্রমিক (overallRank / sl) দিয়ে টাই-ব্রেক
+        // বিজ্ঞান বিভাগের কম্বাইন্ড মেধা তালিকা তৈরি (মোট নম্বরের ভিত্তিতে সর্টিং)
         if (grp === 'Science_Merit') {
             computedList.sort((a, b) => {
                 if (b.total !== a.total) return b.total - a.total;
@@ -1115,7 +1125,7 @@
     };
 
     // ==========================================================
-    // ৮. প্রিন্ট ও এক্সেল রিপোর্ট
+    // ৮. প্রিন্ট ও এক্সেল রিপোর্ট (নিখুঁত ফাঁকা শিট ও ৩ জনের স্বাক্ষর)
     // ==========================================================
     window.openEvaluationPrintTab = function (isBlank = false) {
         const { groupLabel, subGroupLabel, activeSubs, streamTotalMarks, computedList } = getProcessedTabulationData();
@@ -1148,7 +1158,7 @@
         th, td { border: 1px solid #000; padding: 4px 3px; text-align: center; }
         th.col-header { font-weight: bold; font-size: 11px; background-color: #fff; padding: 5px 2px; }
         .col-name { width: 185px; text-align: left; padding-left: 6px; white-space: nowrap; }
-        .signature-section { margin-top: calc(60px + 1in); display: flex; justify-content: space-between; padding: 0 60px; font-size: 13px; font-weight: bold; }
+        .signature-section { margin-top: calc(60px + 0.8in); display: flex; justify-content: space-between; padding: 0 30px; font-size: 13px; font-weight: bold; }
         @media print { body { padding: 0; background: #fff; } .report-container { padding: 0; box-shadow: none; } }
     </style>
 </head>
@@ -1172,7 +1182,7 @@
                     <th class="col-header col-name">Student Name</th>
                     <th class="col-header">Roll</th>
                     <th class="col-header">Sec</th>
-                    ${activeSubs.map(s => `<th class="col-header">${s.key}</th>`).join('')}
+                    ${activeSubs.map(s => `<th class="col-header">${s.key === 'HM_AG' ? 'HM/AG' : (s.key === 'AG_HE' ? 'AG/HE' : s.key)}</th>`).join('')}
                     <th class="col-header">Total<br>(${streamTotalMarks})</th>
                 </tr>
             </thead>
@@ -1189,14 +1199,15 @@
                             const markVal = s.marksObj[sb.key];
                             return `<td>${(markVal !== undefined && markVal !== null && markVal !== '') ? markVal : '0'}</td>`;
                         }).join('')}
-                        <td>${isBlank ? '0' : s.total}</td>
+                        <td>${isBlank ? '' : s.total}</td>
                     </tr>
                 `).join('')}
             </tbody>
         </table>
         <div class="signature-section">
-            <div>Vice Principal</div>
-            <div>Principal</div>
+            <div style="text-align: center;"><hr style="width: 140px; border-top: 1px solid #000; margin-bottom: 4px;">Course Coordinator</div>
+            <div style="text-align: center;"><hr style="width: 140px; border-top: 1px solid #000; margin-bottom: 4px;">Vice Principal</div>
+            <div style="text-align: center;"><hr style="width: 140px; border-top: 1px solid #000; margin-bottom: 4px;">Principal</div>
         </div>
     </div>
 </body>
@@ -1229,7 +1240,7 @@
         ];
 
         const headerRow = ["SL", "Std ID", "Student Name", "Roll", "Sec"];
-        activeSubs.forEach(s => headerRow.push(s.key));
+        activeSubs.forEach(s => headerRow.push(s.key === 'HM_AG' ? 'HM/AG' : (s.key === 'AG_HE' ? 'AG/HE' : s.key)));
         headerRow.push(`Total (${streamTotalMarks})`);
         aoaData.push(headerRow);
 
@@ -1250,7 +1261,7 @@
     };
 
     // ==========================================================
-    // ৯. অটো-গ্রুপিং ইঞ্জিন (পূর্ববর্তী ক্রমিক দিয়ে Fair Tie-Breaking)
+    // ৯. অটো-গ্রুপিং ইঞ্জিন (আগে একক রেজাল্ট ➔ পরে গ্রুপ বণ্টন)
     // ==========================================================
     window.setupRegroupSection = function () {
         document.getElementById('regroupPreviewBox').style.display = 'none';
@@ -1274,7 +1285,14 @@
             return { ...s, total };
         });
 
-        // রোল নয়, গত পরীক্ষার ক্রমিক (overallRank / sl) দিয়ে টাই-ব্রেক
+        // নিরাপত্তা গার্ড: বিজ্ঞান বিভাগের কারও নম্বর না উঠলে গ্রুপ পরিবর্তন বন্ধ থাকবে
+        const maxScore = Math.max(...computed.map(s => s.total), 0);
+        if (maxScore <= 0) {
+            alert("⚠️ পরীক্ষার কোনো নম্বর এখনো ওঠেনি (সবার মোট নম্বর ০)!\nআগে শিক্ষকদের নম্বর এন্ট্রি করতে দিন, তারপর মেধা অনুযায়ী নতুন গ্রুপ তৈরি করা যাবে।");
+            return;
+        }
+
+        // বিজ্ঞান বিভাগের একক মেধা তালিকা (Combined Merit) তৈরি
         computed.sort((a, b) => {
             if (b.total !== a.total) return b.total - a.total;
             const rankA = (a.overallRank !== undefined && a.overallRank !== null) ? Number(a.overallRank) : (Number(a.sl) || 9999);
@@ -1292,16 +1310,14 @@
             if (idx === 104) cutoffScoreB = s.total; // ১০৫তম পজিশন
         });
 
+        // মেধার ভিত্তিতে গ্রুপ বণ্টন
         computed.forEach(s => {
             const rank = s.overallRank;
             let newGrp = "Group-C";
 
-            // ৫৫তম জনের সমান নম্বর পেলে সেও Group-A পাবে
-            if (rank <= 55 || (cutoffScoreA !== null && s.total >= cutoffScoreA)) {
+            if (rank <= 55 || (cutoffScoreA !== null && cutoffScoreA > 0 && s.total >= cutoffScoreA)) {
                 newGrp = "Group-A";
-            } 
-            // ১০৫তম জনের সমান নম্বর পেলে সেও Group-B পাবে
-            else if (rank <= 105 || (cutoffScoreB !== null && s.total >= cutoffScoreB)) {
+            } else if (rank <= 105 || (cutoffScoreB !== null && cutoffScoreB > 0 && s.total >= cutoffScoreB)) {
                 newGrp = "Group-B";
             }
 
@@ -1482,7 +1498,6 @@
             alert(`🎉 Success!\nUploaded ${count} students to ${targetGroup}.`);
             window.closeEvalUploadModal();
 
-            // লোকাল মেমোরি রিফ্রেশ
             if (_get && _ref && _db) {
                 const stdSnap = await _get(_ref(_db, 'evaluation_system/students'));
                 if (stdSnap.exists()) {
@@ -1559,7 +1574,7 @@
             return;
         }
 
-        // ক্রমিক (overallRank / sl) অনুযায়ী মেধা তালিকায় সর্টিং
+        // মেধা অনুযায়ী সঠিক সর্টিং
         list.sort((a, b) => {
             if (a.group !== b.group) return a.group === 'Science' ? -1 : 1;
             const rankA = (a.overallRank !== undefined && a.overallRank !== null) ? Number(a.overallRank) : (Number(a.sl) || 9999);
@@ -1568,15 +1583,16 @@
         });
 
         list.forEach(s => {
+            const meritVal = (s.overallRank !== undefined && s.overallRank !== null && s.overallRank !== '') ? s.overallRank : (s.sl || '-');
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="text-align:center; font-weight:700; color:#1e40af;">${s.sl || s.overallRank}</td>
+                <td style="text-align:center; font-weight:700; color:#1e40af;">${meritVal}</td>
                 <td><span style="background:#f1f5f9; border:1px solid #e2e8f0; padding:3px 8px; border-radius:12px; font-weight:700; font-size:0.78rem;">${s.id}</span></td>
                 <td style="font-weight:600; color:#0f172a;">${s.name}</td>
                 <td style="text-align:center; color:#64748b; font-weight:600;">${s.roll}</td>
                 <td style="text-align:center;"><span class="eval-badge ${s.section === 'DH' ? 'eval-badge-primary' : 'eval-badge-success'}">${s.section || '-'}</span></td>
                 <td><span style="background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; padding:3px 10px; border-radius:14px; font-size:0.75rem; font-weight:700;">${s.subGroup || s.group}</span></td>
-                <td style="text-align:center;"><span style="background:#f8fafc; border:1px solid #e2e8f0; padding:2px 10px; border-radius:14px; font-size:0.70rem; font-weight:700;">Rank #${s.overallRank || s.sl}</span></td>
+                <td style="text-align:center;"><span style="background:#f8fafc; border:1px solid #e2e8f0; padding:2px 10px; border-radius:14px; font-size:0.70rem; font-weight:700;">Rank #${meritVal}</span></td>
             `;
             tbody.appendChild(tr);
         });
