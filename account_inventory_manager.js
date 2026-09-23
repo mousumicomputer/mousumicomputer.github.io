@@ -1,19 +1,36 @@
 /**
  * Mousumi ERP - Master Configuration Addon Module
- * (Category Filter for Accounts + Operator Filter for Cards + Sidebar Dropdown)
+ * (Account Setup + Card Setup + Collection Setup)
  * Language: English | Font: Tiro Bangla | Pure Text, Tables & Clean Shapes
  */
 
 (function () {
-    // ১. ফায়ারবেস ডেটাবেজ সংযোগ
     let dbInstance = null;
     let dbRef = null;
     let dbSet = null;
+    let dbGet = null;
+
+    // ডিফল্ট কালেকশন আইটেম (যাতে আগের কোনো হিসাব হারিয়ে না যায়)
+    const DEFAULT_COLLECTION_CONFIG = [
+        { id: 'col_1', category: 'banking', name: 'bKash', order: 1, active: true },
+        { id: 'col_2', category: 'banking', name: 'Nagad', order: 2, active: true },
+        { id: 'col_3', category: 'banking', name: 'Rocket', order: 3, active: true },
+        { id: 'col_4', category: 'banking', name: 'Tap', order: 4, active: true },
+        { id: 'col_5', category: 'banking', name: 'Cant Public', order: 5, active: true },
+        { id: 'col_6', category: 'recharge', name: 'Grameen-1', order: 1, active: true },
+        { id: 'col_7', category: 'recharge', name: 'Grameen-2', order: 2, active: true },
+        { id: 'col_8', category: 'recharge', name: 'Banglalink', order: 3, active: true },
+        { id: 'col_9', category: 'recharge', name: 'Robi', order: 4, active: true },
+        { id: 'col_10', category: 'recharge', name: 'Airtel', order: 5, active: true },
+        { id: 'col_11', category: 'services', name: 'Photocopy', order: 1, active: true },
+        { id: 'col_12', category: 'services', name: 'Computer', order: 2, active: true },
+        { id: 'col_13', category: 'services', name: 'Others', order: 3, active: true }
+    ];
 
     async function initFirebaseBridge() {
         try {
             const { getApps, initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-            const { getDatabase, ref, set } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+            const { getDatabase, ref, set, get } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
 
             let app;
             const apps = getApps();
@@ -30,6 +47,10 @@
             dbInstance = getDatabase(app);
             dbRef = ref;
             dbSet = set;
+            dbGet = get;
+
+            // কালেকশন কনফিগ ক্লাউড থেকে ফেচ করা
+            syncCollectionConfigFromCloud();
         } catch (err) {
             console.warn("Firebase Bridge fallback:", err);
         }
@@ -47,11 +68,29 @@
         return false;
     }
 
+    async function syncCollectionConfigFromCloud() {
+        if (dbInstance && dbGet && dbRef) {
+            try {
+                const snap = await dbGet(dbRef(dbInstance, 'erp/collection_config'));
+                if (snap.exists() && Array.isArray(snap.val()) && snap.val().length > 0) {
+                    window.collectionConfig = snap.val();
+                } else {
+                    window.collectionConfig = DEFAULT_COLLECTION_CONFIG;
+                    await saveToFirebase('erp/collection_config', DEFAULT_COLLECTION_CONFIG);
+                }
+            } catch (e) {
+                window.collectionConfig = DEFAULT_COLLECTION_CONFIG;
+            }
+        } else {
+            window.collectionConfig = DEFAULT_COLLECTION_CONFIG;
+        }
+    }
+
     // ফিল্টার স্টেট
     let activeAccCatFilter = 'ALL';
     let activeCardFilter = 'ALL';
+    let activeColFilter = 'ALL';
 
-    // ২. সিএসএস স্টাইল
     function injectStyles() {
         if (document.getElementById('mc-dropdown-styles')) return;
         const style = document.createElement('style');
@@ -109,7 +148,6 @@
                 background: #ffffff;
             }
             .mc-input-control:focus { border-color: #0284c7; }
-            
             .mc-btn {
                 height: 36px;
                 padding: 0 16px;
@@ -121,20 +159,15 @@
             }
             .mc-btn-primary { background: #0284c7; color: #ffffff; }
             .mc-btn-primary:hover { background: #0369a1; }
-            
             .mc-btn-edit { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; padding: 2px 8px; font-size: 0.85rem; cursor: pointer; border-radius: 4px; font-weight: bold; }
             .mc-btn-edit:hover { background: #0284c7; color: #ffffff; }
-            
             .mc-btn-danger { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 8px; font-size: 0.85rem; cursor: pointer; border-radius: 4px; font-weight: bold; }
             .mc-btn-danger:hover { background: #dc2626; color: #ffffff; }
-            
             .mc-btn-cancel { background: #e2e8f0; color: #475569; }
             .mc-btn-cancel:hover { background: #cbd5e1; }
-            
             .mc-btn-toggle { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 3px 8px; font-size: 0.85rem; cursor: pointer; border-radius: 4px; font-weight: bold; }
             .mc-btn-active { background: #dcfce7; color: #15803d; border-color: #86efac; }
             .mc-btn-inactive { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
-            
             .mc-table-responsive { overflow-x: auto; }
             .mc-simple-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
             .mc-simple-table th, .mc-simple-table td {
@@ -146,7 +179,6 @@
             .mc-simple-table tr:hover { background-color: #f8fafc; }
             .mc-text-right { text-align: right; }
             .mc-text-center { text-align: center; }
-            
             .mc-filter-links { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
             .mc-filter-btn {
                 background: #ffffff;
@@ -163,7 +195,7 @@
         document.head.appendChild(style);
     }
 
-    // ৩. সাইডবারে ড্রপডাউন মেনু ইনজেকশন
+    // সাইডবারে Card Setup-এর নিচে ৩ নম্বর "Collection Setup" যুক্ত করা
     function injectSidebarDropdownMenu() {
         if (document.getElementById('menu-master-config-parent')) return;
         const menuList = document.querySelector('#sidebar .menu-list');
@@ -191,6 +223,11 @@
                         <i class="fa-solid fa-angle-right"></i> <span>Card Setup</span>
                     </a>
                 </li>
+                <li class="submenu-item" id="sub-mc-collections">
+                    <a onclick="window.switchMCSubSection('collections')">
+                        <i class="fa-solid fa-angle-right"></i> <span>Collection Setup</span>
+                    </a>
+                </li>
             </ul>
         `;
 
@@ -202,7 +239,7 @@
         }
     }
 
-    // ৪. ভিউ প্যানেল ইনজেকশন (অ্যাকাউন্ট ফিল্টার বাটন সহ)
+    // ভিউ প্যানেল ইনজেকশন (নতুন Collection Setup প্যানেল সহ)
     function injectViewPanel() {
         if (document.getElementById('master-config-view')) return;
         const mainWrapper = document.querySelector('.main-wrapper');
@@ -238,7 +275,6 @@
                         <button type="button" class="mc-btn mc-btn-cancel" id="mcBtnAccCancel" style="display:none;" onclick="window.cancelMCAccEdit()">Cancel</button>
                     </form>
 
-                    <!-- ক্যাটাগরি ফিল্টার বার (স্ক্রল কমানোর জন্য) -->
                     <div class="mc-filter-links" id="mcAccFilterContainer"></div>
 
                     <div class="mc-table-responsive">
@@ -297,7 +333,6 @@
                         <button type="button" class="mc-btn mc-btn-cancel" id="mcBtnCardCancel" style="display:none;" onclick="window.cancelMCCardEdit()">Cancel</button>
                     </form>
 
-                    <!-- অপারেটর ফিল্টার বার -->
                     <div class="mc-filter-links">
                         <button class="mc-filter-btn active" onclick="window.filterMCCards('ALL')">All Operators</button>
                         <button class="mc-filter-btn" onclick="window.filterMCCards('GP')">GP</button>
@@ -323,11 +358,62 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ৩. নতুন কালেকশন সেটআপ সেকশন (Collection Heads Setup) -->
+            <div id="mc-panel-collections" style="display: none;">
+                <div class="mc-box-card">
+                    <div class="mc-box-title">Counter Daily Collection Heads Setup</div>
+                    <form class="mc-form-row" id="mcColHeadForm" onsubmit="window.saveMCColHead(event)">
+                        <input type="hidden" id="mcColEditId" value="">
+
+                        <div class="mc-input-group" style="max-width: 90px;">
+                            <label>SL No.</label>
+                            <input type="number" id="mcColSerial" class="mc-input-control" value="1" required>
+                        </div>
+                        <div class="mc-input-group">
+                            <label>Category</label>
+                            <select id="mcColCat" class="mc-input-control" required>
+                                <option value="banking">Mobile Banking</option>
+                                <option value="recharge">Operator Recharge</option>
+                                <option value="services">Counter Services</option>
+                            </select>
+                        </div>
+                        <div class="mc-input-group" style="flex: 2;">
+                            <label>Head / Service Name</label>
+                            <input type="text" id="mcColName" class="mc-input-control" placeholder="e.g. Upay, Bkash, Photocopy" required>
+                        </div>
+                        <button type="submit" class="mc-btn mc-btn-primary" id="mcBtnColSubmit">Save Item</button>
+                        <button type="button" class="mc-btn mc-btn-cancel" id="mcBtnColCancel" style="display:none;" onclick="window.cancelMCColEdit()">Cancel</button>
+                    </form>
+
+                    <div class="mc-filter-links">
+                        <button class="mc-filter-btn active" onclick="window.filterMCCols('ALL')">All Heads</button>
+                        <button class="mc-filter-btn" onclick="window.filterMCCols('banking')">Mobile Banking</button>
+                        <button class="mc-filter-btn" onclick="window.filterMCCols('recharge')">Operator Recharge</button>
+                        <button class="mc-filter-btn" onclick="window.filterMCCols('services')">Counter Services</button>
+                    </div>
+
+                    <div class="mc-table-responsive">
+                        <table class="mc-simple-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 8%;" class="mc-text-center">SL</th>
+                                    <th style="width: 25%;">Category</th>
+                                    <th style="width: 37%;">Head / Service Name</th>
+                                    <th style="width: 15%;" class="mc-text-center">Status</th>
+                                    <th style="width: 15%;" class="mc-text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mcColTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         `;
         mainWrapper.appendChild(panel);
     }
 
-    // ৫. সাইডবার টগল
+    // সাইডবার টগল
     window.toggleMasterConfigParent = function () {
         const parent = document.getElementById('menu-master-config-parent');
         if (parent) {
@@ -337,7 +423,7 @@
         }
     };
 
-    // ৬. সাব-সেকশন সুইচিং
+    // সাব-সেকশন সুইচিং (Accounts, Cards, Collections)
     window.switchMCSubSection = function (sectionKey) {
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
         const masterPanel = document.getElementById('master-config-view');
@@ -351,28 +437,30 @@
 
         const secAccounts = document.getElementById('mc-panel-accounts');
         const secCards = document.getElementById('mc-panel-cards');
+        const secCols = document.getElementById('mc-panel-collections');
         const titleEl = document.getElementById('top-title');
 
+        if (secAccounts) secAccounts.style.display = 'none';
+        if (secCards) secCards.style.display = 'none';
+        if (secCols) secCols.style.display = 'none';
+
         if (sectionKey === 'accounts') {
-            const subItem = document.getElementById('sub-mc-accounts');
-            if (subItem) subItem.classList.add('active');
-
+            document.getElementById('sub-mc-accounts')?.classList.add('active');
             if (secAccounts) secAccounts.style.display = 'block';
-            if (secCards) secCards.style.display = 'none';
             if (titleEl) titleEl.innerText = "ACCOUNT MANAGEMENT & SETUP";
-
             populateCategoryDropdown();
             renderAccCategoryFilterButtons();
             renderMCAccountsTable();
         } else if (sectionKey === 'cards') {
-            const subItem = document.getElementById('sub-mc-cards');
-            if (subItem) subItem.classList.add('active');
-
-            if (secAccounts) secAccounts.style.display = 'none';
+            document.getElementById('sub-mc-cards')?.classList.add('active');
             if (secCards) secCards.style.display = 'block';
             if (titleEl) titleEl.innerText = "CARD INVENTORY CONFIGURATION";
-
             renderMCCardsTable();
+        } else if (sectionKey === 'collections') {
+            document.getElementById('sub-mc-collections')?.classList.add('active');
+            if (secCols) secCols.style.display = 'block';
+            if (titleEl) titleEl.innerText = "COLLECTION HEADS SETUP";
+            renderMCColTable();
         }
     };
 
@@ -393,22 +481,18 @@
         if (current) sel.value = current;
     }
 
-    // অ্যাকাউন্ট ক্যাটাগরি ফিল্টার বাটন জেনারেটর (All, Bank, Agent, Personal, Recharge)
     function renderAccCategoryFilterButtons() {
         const container = document.getElementById('mcAccFilterContainer');
         if (!container) return;
         container.innerHTML = '';
 
         const cats = Array.isArray(window.categories) ? window.categories : [];
-
-        // All Accounts Button
         const allBtn = document.createElement('button');
         allBtn.className = `mc-filter-btn ${activeAccCatFilter === 'ALL' ? 'active' : ''}`;
         allBtn.innerText = 'All Accounts';
         allBtn.onclick = () => window.filterMCAccounts('ALL');
         container.appendChild(allBtn);
 
-        // Individual Category Buttons
         cats.filter(c => c.enabled !== false).sort((a, b) => (a.order || 0) - (b.order || 0)).forEach(cat => {
             const btn = document.createElement('button');
             btn.className = `mc-filter-btn ${activeAccCatFilter === cat.id ? 'active' : ''}`;
@@ -435,8 +519,6 @@
         const balances = window.balanceStore || {};
 
         let list = [...accs].sort((a, b) => (a.order || 0) - (b.order || 0));
-
-        // ফিল্টারিং লজিক (স্ক্রল কমানোর জন্য)
         if (activeAccCatFilter !== 'ALL') {
             list = list.filter(acc => acc.catId === activeAccCatFilter);
         }
@@ -714,6 +796,140 @@
             }
         });
         renderMCCardsTable();
+    };
+
+    /* ==================== ৩. COLLECTION HEADS OPERATIONS ==================== */
+    function getCategoryLabel(cat) {
+        if (cat === 'banking') return 'Mobile Banking';
+        if (cat === 'recharge') return 'Operator Recharge';
+        if (cat === 'services') return 'Counter Services';
+        return cat;
+    }
+
+    function renderMCColTable() {
+        const tbody = document.getElementById('mcColTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (!Array.isArray(window.collectionConfig)) {
+            window.collectionConfig = DEFAULT_COLLECTION_CONFIG;
+        }
+
+        let list = [...window.collectionConfig].sort((a, b) => (a.order || 0) - (b.order || 0));
+        if (activeColFilter !== 'ALL') {
+            list = list.filter(item => item.category === activeColFilter);
+        }
+
+        list.forEach((item, idx) => {
+            const sl = item.order || (idx + 1);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="mc-text-center" style="font-weight:bold;">${sl}</td>
+                <td><span style="font-weight:600; color:#4338ca;">${getCategoryLabel(item.category)}</span></td>
+                <td><strong>${item.name}</strong></td>
+                <td class="mc-text-center">
+                    <button class="mc-btn-toggle ${item.active !== false ? 'mc-btn-active' : 'mc-btn-inactive'}" onclick="window.toggleMCColStatus('${item.id}')">
+                        ${item.active !== false ? 'Active' : 'Disabled'}
+                    </button>
+                </td>
+                <td class="mc-text-center" style="white-space: nowrap;">
+                    <button class="mc-btn-edit" onclick="window.editMCColHead('${item.id}')">Edit</button>
+                    <button class="mc-btn-danger" onclick="window.deleteMCColHead('${item.id}')">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('mcColSerial').value = (window.collectionConfig || []).length + 1;
+    }
+
+    window.saveMCColHead = async function (e) {
+        e.preventDefault();
+        const editId = document.getElementById('mcColEditId').value;
+        const sl = parseInt(document.getElementById('mcColSerial').value) || 1;
+        const cat = document.getElementById('mcColCat').value;
+        const name = document.getElementById('mcColName').value.trim();
+
+        if (!Array.isArray(window.collectionConfig)) window.collectionConfig = [];
+
+        if (editId) {
+            const item = window.collectionConfig.find(c => c.id === editId);
+            if (item) {
+                item.category = cat;
+                item.name = name;
+                item.order = sl;
+            }
+        } else {
+            const newId = 'col_' + Date.now();
+            window.collectionConfig.push({
+                id: newId,
+                category: cat,
+                name: name,
+                order: sl,
+                active: true
+            });
+        }
+
+        await saveToFirebase('erp/collection_config', window.collectionConfig);
+        if (typeof window.showToast === 'function') window.showToast("Collection Head saved successfully!", "success");
+
+        // যদি কালেকশন পেজ ব্যাকগ্রাউন্ডে খোলা থাকে তবে তা আপডেট করা
+        if (typeof window.rebuildCollectionFormUI === 'function') window.rebuildCollectionFormUI();
+
+        window.cancelMCColEdit();
+        renderMCColTable();
+    };
+
+    window.editMCColHead = function (id) {
+        const item = (window.collectionConfig || []).find(c => c.id === id);
+        if (!item) return;
+
+        document.getElementById('mcColEditId').value = item.id;
+        document.getElementById('mcColSerial').value = item.order || 1;
+        document.getElementById('mcColCat').value = item.category || 'banking';
+        document.getElementById('mcColName').value = item.name || '';
+
+        document.getElementById('mcBtnColSubmit').innerText = 'Update Item';
+        document.getElementById('mcBtnColCancel').style.display = 'inline-block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.cancelMCColEdit = function () {
+        document.getElementById('mcColEditId').value = '';
+        document.getElementById('mcColName').value = '';
+        document.getElementById('mcBtnColSubmit').innerText = 'Save Item';
+        document.getElementById('mcBtnColCancel').style.display = 'none';
+        document.getElementById('mcColSerial').value = (window.collectionConfig || []).length + 1;
+    };
+
+    window.toggleMCColStatus = async function (id) {
+        const item = (window.collectionConfig || []).find(c => c.id === id);
+        if (item) {
+            item.active = item.active === false ? true : false;
+            await saveToFirebase('erp/collection_config', window.collectionConfig);
+            if (typeof window.rebuildCollectionFormUI === 'function') window.rebuildCollectionFormUI();
+            renderMCColTable();
+        }
+    };
+
+    window.deleteMCColHead = function (id) {
+        if (confirm("Are you sure you want to delete this collection head?")) {
+            window.collectionConfig = (window.collectionConfig || []).filter(c => c.id !== id);
+            saveToFirebase('erp/collection_config', window.collectionConfig);
+            if (typeof window.rebuildCollectionFormUI === 'function') window.rebuildCollectionFormUI();
+            renderMCColTable();
+        }
+    };
+
+    window.filterMCCols = function (cat) {
+        activeColFilter = cat;
+        document.querySelectorAll('#mc-panel-collections .mc-filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.innerText.toLowerCase().includes(cat.toLowerCase()) || (cat === 'ALL' && btn.innerText.includes('All'))) {
+                btn.classList.add('active');
+            }
+        });
+        renderMCColTable();
     };
 
     // স্টার্টআপ ইনিশিয়ালাইজার
