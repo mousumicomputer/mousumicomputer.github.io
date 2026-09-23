@@ -287,13 +287,27 @@
                     left: 0 !important;
                     top: 0 !important;
                     width: 100% !important;
-                    max-width: 680px !important;
-                    margin: 0 auto !important;
+                    box-sizing: border-box !important;
                     background: #ffffff !important;
                     color: #000000 !important;
                     padding: 0 !important;
+                    margin: 0 !important;
                     z-index: 9999999 !important;
                     page-break-inside: avoid !important;
+                }
+                .col-rpt-table {
+                    width: 100% !important;
+                    border-collapse: collapse !important;
+                    margin-top: 8px !important;
+                    margin-bottom: 12px !important;
+                    page-break-inside: avoid !important;
+                }
+                .col-rpt-table th, .col-rpt-table td {
+                    border: 1px solid #000 !important;
+                    padding: 4px 8px !important;
+                    font-size: 11.5px !important;
+                    line-height: 1.25 !important;
+                    color: #000 !important;
                 }
                 .col-rpt-table {
                     width: 100% !important;
