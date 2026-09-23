@@ -1,14 +1,14 @@
 /**
  * ============================================================================
  * MOUSUMI COMPUTER ERP - DAILY COUNTER COLLECTION & AUDIT MODULE
- * File: daily_collection_module.js (Self-Contained Pure CSS Edition)
+ * File: daily_collection_module.js (Permanent Cloud Sync & Clean Print Edition)
  * ============================================================================
  */
 
 (function () {
     "use strict";
 
-    // ১. সম্পূর্ণ পিওর সিএসএস ইনজেকশন (কোনো বাহ্যিক Tailwind বা সিডিএন ছাড়া)
+    // ১. সম্পূর্ণ নিজস্ব সিএসএস এবং প্রিন্ট রুলস (সাদা পাতা রোধ করার ফিক্স সহ)
     const moduleStyles = `
         <style id="collection-module-styles">
             @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap');
@@ -23,7 +23,6 @@
                 box-sizing: border-box;
             }
 
-            /* ইনপুটের তীরচিহ্ন লুকানো */
             input[type=number]::-webkit-inner-spin-button, 
             input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
             input[type=number] { -moz-appearance: textfield; }
@@ -96,7 +95,6 @@
                 padding-left: 4px;
             }
 
-            /* পিল রো ও ইনপুট */
             .dcol-item-list {
                 display: flex;
                 flex-direction: column;
@@ -129,9 +127,7 @@
                 padding: 0 8px;
                 outline: none;
             }
-            .dcol-inp:focus {
-                border-color: #4f46e5;
-            }
+            .dcol-inp:focus { border-color: #4f46e5; }
 
             /* সাবটোটাল পিল */
             .dcol-subtotal-pill {
@@ -148,7 +144,7 @@
             .sub-indigo { background: #eef2ff; border: 1px solid #c7d2fe; color: #4338ca; }
             .sub-amber { background: #fffbeb; border: 1px solid #fde68a; color: #b45309; }
 
-            /* নিচের অ্যাকশন বার */
+            /* বটম বার */
             .dcol-bottom-bar {
                 display: flex;
                 justify-content: space-between;
@@ -221,7 +217,7 @@
                 transform: scale(1.04);
             }
 
-            /* হিস্ট্রি টেবিল স্টাইল */
+            /* হিস্ট্রি টেবিল */
             .dcol-table-card {
                 background: #ffffff;
                 border: 1px solid #cbd5e1;
@@ -253,30 +249,48 @@
                 background: #eff6ff;
                 border: 1px solid #bfdbfe;
                 border-radius: 9999px;
-                padding: 3px 6px;
+                padding: 4px 7px;
                 color: #1d4ed8;
                 cursor: pointer;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
+                transition: 0.2s;
             }
-            .dcol-icon-btn:hover { background: #dbeafe; }
+            .dcol-icon-btn:hover { background: #dbeafe; color: #1e40af; }
 
-            /* A4 প্রিন্ট স্টাইল */
-            #col-printable-invoice { display: none; }
+            /* 🌟 সাদা পাতা বন্ধ করার ১০০% কার্যকর A4 প্রিন্ট রুলস 🌟 */
+            #col-printable-invoice {
+                display: none;
+            }
+
             @media print {
-                body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
-                aside, main, .no-print, .col-floating-save-btn, .hub-floating-btn { display: none !important; }
-                
+                @page {
+                    size: A4 portrait;
+                    margin: 10mm;
+                }
+                html, body {
+                    background: #ffffff !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                }
+                body * {
+                    visibility: hidden !important;
+                }
+                #col-printable-invoice, #col-printable-invoice * {
+                    visibility: visible !important;
+                }
                 #col-printable-invoice {
                     display: block !important;
+                    position: absolute !important;
+                    left: 0 !important;
+                    top: 0 !important;
                     width: 100% !important;
-                    max-width: 680px !important;
-                    margin: 0 auto !important;
-                    padding: 15mm 10mm !important;
-                    color: #000 !important;
-                    font-size: 12px !important;
-                    font-family: 'Tiro Bangla', serif !important;
+                    background: #ffffff !important;
+                    color: #000000 !important;
+                    margin: 0 !important;
+                    padding: 5mm !important;
+                    z-index: 9999999 !important;
                 }
                 .col-rpt-table {
                     width: 100%;
@@ -287,11 +301,12 @@
                 .col-rpt-table th, .col-rpt-table td {
                     border: 1px solid #000 !important;
                     padding: 5px 8px !important;
-                    font-size: 11.5px !important;
+                    font-size: 12px !important;
+                    color: #000 !important;
                 }
-                .col-rpt-table th { background: #f1f5f9 !important; }
+                .col-rpt-table th { background: #f1f5f9 !important; font-weight: bold; }
                 .col-rpt-sub-head { background: #f8fafc !important; font-weight: bold; }
-                .col-rpt-grand-row { background: #e2e8f0 !important; font-weight: bold; font-size: 13px !important; }
+                .col-rpt-grand-row { background: #e2e8f0 !important; font-weight: 900; font-size: 13px !important; }
             }
         </style>
     `;
@@ -299,7 +314,7 @@
 
     const fmt = (n) => '৳ ' + (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    // ২. সাইডবার সাব-মেনু ইনজেকশন
+    // ২. সাইডবারে নতুন দুটি মেনু আইটেম যুক্ত করা
     function injectSubmenus() {
         const submenuList = document.querySelector('#menu-asset-hub-parent .submenu-list');
         if (!submenuList || document.getElementById('sub-asset-collection')) return;
@@ -325,7 +340,7 @@
         }
     }
 
-    // ৩. ভিউ কনটেন্ট ইনজেকশন (পিওর সিএসএস ক্লাস সহ)
+    // ৩. ভিউ কনটেন্ট ইনজেকশন
     function injectViews() {
         const hubView = document.getElementById('asset-hub-view');
         if (!hubView || document.getElementById('hub-tab-collection')) return;
@@ -355,23 +370,23 @@
                             <div class="dcol-item-list">
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">bKash</span>
-                                    <input type="number" id="col_bkash" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" id="col_bkash" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Nagad</span>
-                                    <input type="number" id="col_nagad" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" id="col_nagad" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Rocket</span>
-                                    <input type="number" id="col_rocket" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" id="col_rocket" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Tap</span>
-                                    <input type="number" id="col_tap" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" id="col_tap" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Cant Public</span>
-                                    <input type="number" id="col_cant" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" id="col_cant" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
                                 </div>
                             </div>
                         </div>
@@ -388,23 +403,23 @@
                             <div class="dcol-item-list">
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Grameen-1</span>
-                                    <input type="number" id="col_gp1" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" id="col_gp1" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Grameen-2</span>
-                                    <input type="number" id="col_gp2" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" id="col_gp2" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Banglalink</span>
-                                    <input type="number" id="col_bl" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" id="col_bl" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Robi</span>
-                                    <input type="number" id="col_robi" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" id="col_robi" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Airtel</span>
-                                    <input type="number" id="col_airtel" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" id="col_airtel" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
                                 </div>
                             </div>
                         </div>
@@ -421,15 +436,15 @@
                             <div class="dcol-item-list">
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Photocopy</span>
-                                    <input type="number" id="col_photo" oninput="window.calculateCollectionLive()" class="inp-col-service dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" id="col_photo" oninput="window.calculateCollectionLive()" class="inp-col-service dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Computer</span>
-                                    <input type="number" id="col_comp" oninput="window.calculateCollectionLive()" class="inp-col-service dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" id="col_comp" oninput="window.calculateCollectionLive()" class="inp-col-service dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Others</span>
-                                    <input type="number" id="col_oth" oninput="window.calculateCollectionLive()" class="inp-col-service dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" id="col_oth" oninput="window.calculateCollectionLive()" class="inp-col-service dcol-inp" placeholder="0.00">
                                 </div>
                             </div>
                         </div>
@@ -452,9 +467,10 @@
                             <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                             Reset
                         </button>
+                        <!-- প্রিন্টার আইকন বাটন -->
                         <button onclick="window.printActiveCollectionStatement()" class="dcol-btn">
-                            <svg style="width:13px;height:13px;color:#dc2626;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
-                            PDF
+                            <svg style="width:13px;height:13px;color:#4338ca;" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                            Print
                         </button>
                     </div>
                 </div>
@@ -492,41 +508,46 @@
                 <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
                 <span>Save</span>
             </button>
-
-            <!-- A4 Printable Document Container -->
-            <div id="col-printable-invoice">
-                <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px;">
-                    <h1 style="margin: 0; font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Mousumi Computer</h1>
-                    <h3 style="margin: 3px 0 0 0; font-size: 13px; font-weight: 700; text-transform: uppercase;">Daily Collection & Counter Income Statement</h3>
-                    <div style="font-size: 11px; margin-top: 4px; color: #333;" id="colRptDateHeader">Date: --- | Shift: Counter Day Close</div>
-                </div>
-
-                <table class="col-rpt-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 35%; text-align: left;">Category / Head</th>
-                            <th style="width: 40%; text-align: left;">Particulars</th>
-                            <th style="width: 25%; text-align: right;">Amount (৳)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="colRptTableContent"></tbody>
-                </table>
-
-                <div style="margin-top: 50px; display: flex; justify-content: space-between; align-items: flex-end;">
-                    <div style="width: 170px; text-align: center;">
-                        <div style="border-top: 1px solid #000; margin-bottom: 4px;"></div>
-                        <div style="font-size: 11px; font-weight: bold;">Prepared By</div>
-                    </div>
-                    <div style="font-size: 10px; color: #555;">Generated from Mousumi ERP</div>
-                    <div style="width: 170px; text-align: center;">
-                        <div style="border-top: 1px solid #000; margin-bottom: 4px;"></div>
-                        <div style="font-size: 11px; font-weight: bold;">Authorized Signature</div>
-                    </div>
-                </div>
-            </div>
         `;
 
         hubView.insertAdjacentHTML('beforeend', viewsHTML);
+
+        // প্রিন্ট টেমপ্লেট বডির শেষে ইনজেক্ট করা
+        if (!document.getElementById('col-printable-invoice')) {
+            const printHTML = `
+                <div id="col-printable-invoice">
+                    <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px;">
+                        <h1 style="margin: 0; font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Mousumi Computer</h1>
+                        <h3 style="margin: 3px 0 0 0; font-size: 13px; font-weight: 700; text-transform: uppercase;">Daily Collection & Counter Income Statement</h3>
+                        <div style="font-size: 11px; margin-top: 4px; color: #333;" id="colRptDateHeader">Date: --- | Shift: Counter Day Close</div>
+                    </div>
+
+                    <table class="col-rpt-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 35%; text-align: left;">Category / Head</th>
+                                <th style="width: 40%; text-align: left;">Particulars</th>
+                                <th style="width: 25%; text-align: right;">Amount (৳)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="colRptTableContent"></tbody>
+                    </table>
+
+                    <div style="margin-top: 50px; display: flex; justify-content: space-between; align-items: flex-end;">
+                        <div style="width: 170px; text-align: center;">
+                            <div style="border-top: 1px solid #000; margin-bottom: 4px;"></div>
+                            <div style="font-size: 11px; font-weight: bold;">Prepared By</div>
+                        </div>
+                        <div style="font-size: 10px; color: #555;">Generated from Mousumi ERP</div>
+                        <div style="width: 170px; text-align: center;">
+                            <div style="border-top: 1px solid #000; margin-bottom: 4px;"></div>
+                            <div style="font-size: 11px; font-weight: bold;">Authorized Signature</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', printHTML);
+        }
     }
 
     // ৪. লাইভ ক্যালকুলেশন
@@ -664,7 +685,7 @@
         }
     };
 
-    // ৭. হিস্ট্রি টেবিল লোড
+    // ৭. হিস্ট্রি টেবিল লোড (প্রিন্টার আইকন সহ)
     window.renderCollectionHistoryList = async function () {
         const tbody = document.getElementById('colHistoryTableBody');
         if (!tbody) return;
@@ -698,8 +719,9 @@
                                 <button onclick="window.loadCollectionDateToEdit('${item.date}')" class="dcol-btn" style="padding:2px 10px; font-size:10px;">
                                     Edit
                                 </button>
+                                <!-- 🌟 নিখুঁত প্রিন্টার আইকন বাটন 🌟 -->
                                 <button onclick="window.printCollectionA4Report('${item.date}')" title="Print Detailed Report" class="dcol-icon-btn">
-                                    <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                                 </button>
                             </div>
                         </td>
@@ -719,7 +741,7 @@
         window.onCollectionDateChange();
     };
 
-    // ৮. ১ পাতার অফিসিয়াল A4 ডিটেইল্ড স্টেটমেন্ট প্রিন্ট ইঞ্জিন
+    // ৮. ১ পাতার অফিসিয়াল A4 ডিটেইল্ড স্টেটমেন্ট প্রিন্ট ইঞ্জিন (সাদা পাতা ফিক্সড)
     window.printCollectionA4Report = async function (dateStr) {
         let record = null;
         if (window.getDatabase && window.ref && window.get) {
@@ -732,15 +754,17 @@
             return;
         }
 
-        document.getElementById('colRptDateHeader').innerText = `Date: ${record.date} | Shift: Counter Day Close | Verified`;
+        const dateHeader = document.getElementById('colRptDateHeader');
+        if (dateHeader) dateHeader.innerText = `Date: ${record.date} | Shift: Counter Day Close | Verified`;
 
         let rowsHtml = '';
         let bSub = 0, rSub = 0, sSub = 0;
 
         // Banking
         rowsHtml += `<tr class="col-rpt-sub-head"><td colspan="2">1. Mobile Banking Collection</td><td style="text-align:right;">Subtotal</td></tr>`;
-        for (let k in record.banking) {
-            const val = record.banking[k] || 0;
+        const bankingItems = record.banking || {};
+        for (let k of ['bKash', 'Nagad', 'Rocket', 'Tap', 'Cant Public']) {
+            const val = parseFloat(bankingItems[k]) || 0;
             bSub += val;
             rowsHtml += `<tr><td>Mobile Banking</td><td>${k}</td><td style="text-align:right;">${fmt(val)}</td></tr>`;
         }
@@ -748,8 +772,9 @@
 
         // Recharge
         rowsHtml += `<tr class="col-rpt-sub-head"><td colspan="2">2. Operator Recharge Collection</td><td style="text-align:right;">Subtotal</td></tr>`;
-        for (let k in record.recharge) {
-            const val = record.recharge[k] || 0;
+        const rechargeItems = record.recharge || {};
+        for (let k of ['Grameen-1', 'Grameen-2', 'Banglalink', 'Robi', 'Airtel']) {
+            const val = parseFloat(rechargeItems[k]) || 0;
             rSub += val;
             rowsHtml += `<tr><td>Operators</td><td>${k}</td><td style="text-align:right;">${fmt(val)}</td></tr>`;
         }
@@ -757,8 +782,9 @@
 
         // Services
         rowsHtml += `<tr class="col-rpt-sub-head"><td colspan="2">3. Other Services Collection</td><td style="text-align:right;">Subtotal</td></tr>`;
-        for (let k in record.services) {
-            const val = record.services[k] || 0;
+        const serviceItems = record.services || {};
+        for (let k of ['Photocopy', 'Computer', 'Others']) {
+            const val = parseFloat(serviceItems[k]) || 0;
             sSub += val;
             rowsHtml += `<tr><td>Services</td><td>${k}</td><td style="text-align:right;">${fmt(val)}</td></tr>`;
         }
@@ -768,8 +794,10 @@
         const grandTotal = bSub + rSub + sSub;
         rowsHtml += `<tr class="col-rpt-grand-row"><td colspan="2">GRAND TOTAL REAL COLLECTION:</td><td style="text-align:right;">${fmt(grandTotal)}</td></tr>`;
 
-        document.getElementById('colRptTableContent').innerHTML = rowsHtml;
+        const contentEl = document.getElementById('colRptTableContent');
+        if (contentEl) contentEl.innerHTML = rowsHtml;
 
+        // প্রিন্ট ডায়ালগ কল
         setTimeout(() => {
             window.print();
         }, 150);
@@ -877,7 +905,6 @@
         };
     }
 
-    // ইনিশিয়ালাইজেশন
     function init() {
         injectSubmenus();
         injectViews();
