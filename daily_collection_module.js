@@ -1,21 +1,22 @@
 /**
  * ============================================================================
  * MOUSUMI COMPUTER ERP - DAILY COUNTER COLLECTION & AUDIT MODULE
- * File: daily_collection_module.js (Clean, Optimized & Safe Production Edition)
+ * File: daily_collection_module.js (Dynamic Master-Linked Production Edition)
  * 
- * Safe Updates Applied:
- * 1. Timezone: Locked strictly to Bangladesh Time (Asia/Dhaka / GMT+6).
- * 2. Delete Relocation: Removed from input tab; safely placed in History table.
- * 3. Validation: Negative (-) and exponent values strictly blocked on inputs.
- * 4. Performance: Infinite setInterval completely eliminated.
- * 5. Print Perfection: 100% single-page A4 portrait styling with font assurance.
+ * Features:
+ * 1. 100% Dynamic Collection Heads linked to Master Config.
+ * 2. Permanent Firebase Cloud Storage (erp/daily_collection_records/{date}).
+ * 3. Safe Deletion relocated strictly inside History Table with alert.
+ * 4. Locked strictly to Bangladesh Timezone (Asia/Dhaka).
+ * 5. No lagging loops (Super lightweight).
+ * 6. 1-Page Locked A4 Portrait Printable Statement.
  * ============================================================================
  */
 
 (function () {
     "use strict";
 
-    // বাংলাদেশ সময় অনুযায়ী YYYY-MM-DD ফরম্যাটে আজকের তারিখ বের করার নিরাপদ ফাংশন
+    // বাংলাদেশ সময় অনুযায়ী YYYY-MM-DD ফরম্যাটে তারিখ
     function getBDDateString() {
         try {
             return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Dhaka' }).format(new Date());
@@ -26,6 +27,8 @@
             return bdTime.toISOString().split('T')[0];
         }
     }
+
+    const fmt = (n) => '৳ ' + (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     // ১. সম্পূর্ণ পিওর সিএসএস ইনজেকশন
     const moduleStyles = `
@@ -46,7 +49,6 @@
             input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
             input[type=number] { -moz-appearance: textfield; }
 
-            /* টপ বার */
             .dcol-top-bar {
                 display: flex;
                 justify-content: space-between;
@@ -87,7 +89,6 @@
                 font-weight: 900;
             }
 
-            /* ৩ কলাম গ্রিড লেআউট */
             .dcol-grid-3 {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -148,7 +149,6 @@
             }
             .dcol-inp:focus { border-color: #4f46e5; }
 
-            /* সাবটোটাল পিল */
             .dcol-subtotal-pill {
                 display: flex;
                 justify-content: space-between;
@@ -163,7 +163,6 @@
             .sub-indigo { background: #eef2ff; border: 1px solid #c7d2fe; color: #4338ca; }
             .sub-amber { background: #fffbeb; border: 1px solid #fde68a; color: #b45309; }
 
-            /* বটম বার */
             .dcol-bottom-bar {
                 display: flex;
                 justify-content: space-between;
@@ -206,12 +205,8 @@
                 gap: 6px;
                 transition: 0.2s;
             }
-            .dcol-btn:hover {
-                background: #e2e8f0;
-                color: #0f172a;
-            }
+            .dcol-btn:hover { background: #e2e8f0; color: #0f172a; }
 
-            /* ভাসমান সেভ বাটন */
             .col-floating-save-btn {
                 position: fixed;
                 bottom: 24px;
@@ -231,12 +226,8 @@
                 gap: 8px;
                 transition: transform 0.2s, background 0.2s;
             }
-            .col-floating-save-btn:hover {
-                background: #1e293b;
-                transform: scale(1.04);
-            }
+            .col-floating-save-btn:hover { background: #1e293b; transform: scale(1.04); }
 
-            /* হিস্ট্রি টেবিল ও আইকন বাটন */
             .dcol-table-card {
                 background: #ffffff;
                 border: 1px solid #cbd5e1;
@@ -273,20 +264,12 @@
                 justify-content: center;
                 transition: 0.2s;
             }
-            .dcol-print-btn {
-                background: #eff6ff;
-                border: 1px solid #bfdbfe;
-                color: #1d4ed8;
-            }
+            .dcol-print-btn { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
             .dcol-print-btn:hover { background: #dbeafe; color: #1e40af; }
-            .dcol-delete-btn {
-                background: #fef2f2;
-                border: 1px solid #fecaca;
-                color: #dc2626;
-            }
+            .dcol-delete-btn { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
             .dcol-delete-btn:hover { background: #fee2e2; color: #b91c1c; }
 
-            /* 🌟 A4 প্রিন্ট স্টাইল (১০০% ১ পাতা পোর্ট্রেট ও টেক্সট ফিট) 🌟 */
+            /* A4 প্রিন্ট স্টাইল */
             #col-printable-invoice { display: none; }
 
             @media print {
@@ -299,14 +282,9 @@
                     margin: 0 !important;
                     padding: 0 !important;
                     height: auto !important;
-                    overflow: visible !important;
                 }
-                body * {
-                    visibility: hidden !important;
-                }
-                #col-printable-invoice, #col-printable-invoice * {
-                    visibility: visible !important;
-                }
+                body * { visibility: hidden !important; }
+                #col-printable-invoice, #col-printable-invoice * { visibility: visible !important; }
                 #col-printable-invoice {
                     display: block !important;
                     position: absolute !important;
@@ -320,7 +298,6 @@
                     margin: 0 !important;
                     z-index: 9999999 !important;
                     page-break-inside: avoid !important;
-                    page-break-after: avoid !important;
                 }
                 .col-rpt-table {
                     width: 100% !important;
@@ -332,25 +309,13 @@
                 .col-rpt-table th, .col-rpt-table td {
                     border: 1.5px solid #000 !important;
                     padding: 5px 10px !important;
-                    font-size: 14.5px !important;
+                    font-size: 14px !important;
                     line-height: 1.3 !important;
                     color: #000 !important;
                 }
-                .col-rpt-table th { 
-                    background: #f1f5f9 !important; 
-                    font-size: 15px !important; 
-                    font-weight: 800 !important; 
-                }
-                .col-rpt-sub-head { 
-                    background: #f8fafc !important; 
-                    font-size: 15px !important; 
-                    font-weight: 800 !important; 
-                }
-                .col-rpt-grand-row { 
-                    background: #e2e8f0 !important; 
-                    font-weight: 900 !important; 
-                    font-size: 16.5px !important; 
-                }
+                .col-rpt-table th { background: #f1f5f9 !important; font-weight: 800 !important; }
+                .col-rpt-sub-head { background: #f8fafc !important; font-weight: 800 !important; }
+                .col-rpt-grand-row { background: #e2e8f0 !important; font-weight: 900 !important; font-size: 16px !important; }
             }
         </style>
     `;
@@ -358,9 +323,31 @@
         document.head.insertAdjacentHTML('beforeend', moduleStyles);
     }
 
-    const fmt = (n) => '৳ ' + (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    // ডিফল্ট আইটেম (ব্যাকআপ)
+    const DEFAULT_HEADS = [
+        { id: 'col_1', category: 'banking', name: 'bKash', order: 1, active: true },
+        { id: 'col_2', category: 'banking', name: 'Nagad', order: 2, active: true },
+        { id: 'col_3', category: 'banking', name: 'Rocket', order: 3, active: true },
+        { id: 'col_4', category: 'banking', name: 'Tap', order: 4, active: true },
+        { id: 'col_5', category: 'banking', name: 'Cant Public', order: 5, active: true },
+        { id: 'col_6', category: 'recharge', name: 'Grameen-1', order: 1, active: true },
+        { id: 'col_7', category: 'recharge', name: 'Grameen-2', order: 2, active: true },
+        { id: 'col_8', category: 'recharge', name: 'Banglalink', order: 3, active: true },
+        { id: 'col_9', category: 'recharge', name: 'Robi', order: 4, active: true },
+        { id: 'col_10', category: 'recharge', name: 'Airtel', order: 5, active: true },
+        { id: 'col_11', category: 'services', name: 'Photocopy', order: 1, active: true },
+        { id: 'col_12', category: 'services', name: 'Computer', order: 2, active: true },
+        { id: 'col_13', category: 'services', name: 'Others', order: 3, active: true }
+    ];
 
-    // ২. সাইডবারে সাব-মেনু ইনজেকশন
+    function getActiveHeads() {
+        const list = Array.isArray(window.collectionConfig) && window.collectionConfig.length > 0 
+            ? window.collectionConfig 
+            : DEFAULT_HEADS;
+        return list.filter(item => item.active !== false).sort((a, b) => (a.order || 0) - (b.order || 0));
+    }
+
+    // ২. সাইডবার সাব-মেনু ইনজেকশন
     function injectSubmenus() {
         const submenuList = document.querySelector('#menu-asset-hub-parent .submenu-list');
         if (!submenuList || document.getElementById('sub-asset-collection')) return;
@@ -386,18 +373,15 @@
         }
     }
 
-    // ৩. ভিউ কনটেন্ট ইনজেকশন (মাইনাস বাটন ও ডিলিট বাটন সম্পূর্ণ সুরক্ষিত)
+    // ৩. ভিউ কনটেন্ট ইনজেকশন
     function injectViews() {
         const hubView = document.getElementById('asset-hub-view');
         if (!hubView || document.getElementById('hub-tab-collection')) return;
-
-        const noNeg = `min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();"`;
 
         const viewsHTML = `
             <!-- SUB-TAB: DAILY COLLECTION -->
             <div id="hub-tab-collection" style="display: none;">
                 
-                <!-- Date Bar -->
                 <div class="dcol-top-bar">
                     <div class="dcol-date-wrap">
                         <span>Date:</span>
@@ -408,35 +392,14 @@
                     </div>
                 </div>
 
-                <!-- 3-Column Compact Grid -->
+                <!-- ৩টি কলাম যা Master Config অনুযায়ী রেন্ডার হবে -->
                 <div class="dcol-grid-3">
                     
                     <!-- Col 1: Banking -->
                     <div class="dcol-card">
                         <div>
                             <div class="dcol-card-title">Mobile Banking</div>
-                            <div class="dcol-item-list">
-                                <div class="dcol-pill-row">
-                                    <span class="dcol-label">bKash</span>
-                                    <input type="number" step="any" ${noNeg} id="col_bkash" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
-                                </div>
-                                <div class="dcol-pill-row">
-                                    <span class="dcol-label">Nagad</span>
-                                    <input type="number" step="any" ${noNeg} id="col_nagad" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
-                                </div>
-                                <div class="dcol-pill-row">
-                                    <span class="dcol-label">Rocket</span>
-                                    <input type="number" step="any" ${noNeg} id="col_rocket" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
-                                </div>
-                                <div class="dcol-pill-row">
-                                    <span class="dcol-label">Tap</span>
-                                    <input type="number" step="any" ${noNeg} id="col_tap" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
-                                </div>
-                                <div class="dcol-pill-row">
-                                    <span class="dcol-label">Cant Public</span>
-                                    <input type="number" step="any" ${noNeg} id="col_cant" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
-                                </div>
-                            </div>
+                            <div class="dcol-item-list" id="dynColListBanking"></div>
                         </div>
                         <div class="dcol-subtotal-pill sub-blue">
                             <span>Sub</span>
@@ -448,28 +411,7 @@
                     <div class="dcol-card">
                         <div>
                             <div class="dcol-card-title">Recharge</div>
-                            <div class="dcol-item-list">
-                                <div class="dcol-pill-row">
-                                    <span class="dcol-label">Grameen-1</span>
-                                    <input type="number" step="any" ${noNeg} id="col_gp1" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
-                                </div>
-                                <div class="dcol-pill-row">
-                                    <span class="dcol-label">Grameen-2</span>
-                                    <input type="number" step="any" ${noNeg} id="col_gp2" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
-                                </div>
-                                <div class="dcol-pill-row">
-                                    <span class="dcol-label">Banglalink</span>
-                                    <input type="number" step="any" ${noNeg} id="col_bl" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
-                                </div>
-                                <div class="dcol-pill-row">
-                                    <span class="dcol-label">Robi</span>
-                                    <input type="number" step="any" ${noNeg} id="col_robi" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
-                                </div>
-                                <div class="dcol-pill-row">
-                                    <span class="dcol-label">Airtel</span>
-                                    <input type="number" step="any" ${noNeg} id="col_airtel" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
-                                </div>
-                            </div>
+                            <div class="dcol-item-list" id="dynColListRecharge"></div>
                         </div>
                         <div class="dcol-subtotal-pill sub-indigo">
                             <span>Sub</span>
@@ -481,20 +423,7 @@
                     <div class="dcol-card">
                         <div>
                             <div class="dcol-card-title">Services</div>
-                            <div class="dcol-item-list">
-                                <div class="dcol-pill-row">
-                                    <span class="dcol-label">Photocopy</span>
-                                    <input type="number" step="any" ${noNeg} id="col_photo" oninput="window.calculateCollectionLive()" class="inp-col-service dcol-inp" placeholder="0.00">
-                                </div>
-                                <div class="dcol-pill-row">
-                                    <span class="dcol-label">Computer</span>
-                                    <input type="number" step="any" ${noNeg} id="col_comp" oninput="window.calculateCollectionLive()" class="inp-col-service dcol-inp" placeholder="0.00">
-                                </div>
-                                <div class="dcol-pill-row">
-                                    <span class="dcol-label">Others</span>
-                                    <input type="number" step="any" ${noNeg} id="col_oth" oninput="window.calculateCollectionLive()" class="inp-col-service dcol-inp" placeholder="0.00">
-                                </div>
-                            </div>
+                            <div class="dcol-item-list" id="dynColListServices"></div>
                         </div>
                         <div class="dcol-subtotal-pill sub-amber">
                             <span>Sub</span>
@@ -504,7 +433,7 @@
 
                 </div>
 
-                <!-- Action Bar (Delete Button Removed from here for safety) -->
+                <!-- Action Bar -->
                 <div class="dcol-bottom-bar">
                     <div class="dcol-grand-text">
                         Total Collection: <span id="colGrandTotalBottom">৳ 0.00</span>
@@ -564,7 +493,7 @@
             const printHTML = `
                 <div id="col-printable-invoice">
                     <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px;">
-                        <h1 style="margin: 0; font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Mousumi Computer</h1>
+                        <h1 style="margin: 0; font-size: 22px; font-weight: 800; text-transform: uppercase;">Mousumi Computer</h1>
                         <h3 style="margin: 3px 0 0 0; font-size: 14.5px; font-weight: 700; text-transform: uppercase;">Daily Collection & Counter Income Statement</h3>
                         <div style="font-size: 12px; margin-top: 4px; color: #333;" id="colRptDateHeader">Date: --- | Shift: Counter Day Close</div>
                     </div>
@@ -595,10 +524,57 @@
             `;
             document.body.insertAdjacentHTML('beforeend', printHTML);
         }
+
+        window.rebuildCollectionFormUI();
     }
 
-    // ৪. লাইভ ক্যালকুলেশন (নেগেটিভ সংখ্যা ফিল্টার সহ)
-    function sumClass(cls) {
+    // ৪. ডাইনামিক ইনপুট ফিল্ড তৈরি (Master Config থেকে)
+    window.rebuildCollectionFormUI = function () {
+        const bankListEl = document.getElementById('dynColListBanking');
+        const rechListEl = document.getElementById('dynColListRecharge');
+        const servListEl = document.getElementById('dynColListServices');
+
+        if (!bankListEl || !rechListEl || !servListEl) return;
+
+        // বর্তমান টাইপ করা মান সাময়িকভাবে সেভ রাখা
+        const currentVals = {};
+        document.querySelectorAll('.inp-dyn-col').forEach(inp => {
+            currentVals[inp.dataset.headName] = inp.value;
+        });
+
+        bankListEl.innerHTML = '';
+        rechListEl.innerHTML = '';
+        servListEl.innerHTML = '';
+
+        const heads = getActiveHeads();
+        const noNeg = `min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();"`;
+
+        heads.forEach(h => {
+            const cleanKey = h.name.replace(/[^a-zA-Z0-9]/g, '_');
+            const rowHtml = `
+                <div class="dcol-pill-row">
+                    <span class="dcol-label">${h.name}</span>
+                    <input type="number" step="any" ${noNeg} 
+                        id="dyn_col_${cleanKey}" 
+                        data-head-name="${h.name}" 
+                        data-head-cat="${h.category}" 
+                        oninput="window.calculateCollectionLive()" 
+                        class="inp-dyn-col inp-dyn-${h.category} dcol-inp" 
+                        placeholder="0.00" 
+                        value="${currentVals[h.name] || ''}">
+                </div>
+            `;
+
+            if (h.category === 'banking') bankListEl.insertAdjacentHTML('beforeend', rowHtml);
+            else if (h.category === 'recharge') rechListEl.insertAdjacentHTML('beforeend', rowHtml);
+            else if (h.category === 'services') servListEl.insertAdjacentHTML('beforeend', rowHtml);
+        });
+
+        window.calculateCollectionLive();
+    };
+
+    // ৫. লাইভ ক্যালকুলেশন
+    function sumDynClass(cls) {
         let sum = 0;
         document.querySelectorAll(cls).forEach(i => {
             const v = Math.max(0, parseFloat(i.value) || 0);
@@ -608,9 +584,9 @@
     }
 
     window.calculateCollectionLive = function () {
-        const bTot = sumClass('.inp-col-bank');
-        const rTot = sumClass('.inp-col-recharge');
-        const sTot = sumClass('.inp-col-service');
+        const bTot = sumDynClass('.inp-dyn-banking');
+        const rTot = sumDynClass('.inp-dyn-recharge');
+        const sTot = sumDynClass('.inp-dyn-services');
         const grand = bTot + rTot + sTot;
 
         const setT = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = fmt(val); };
@@ -623,37 +599,29 @@
         syncWithDailyIncomeView(grand);
     };
 
-    // ৫. ফায়ারবেসে স্থায়ী সংরক্ষণ (বাংলাদেশ টাইমজোন অনুযায়ী)
+    // ৬. ফায়ারবেসে সেভ করা (ডাইনামিক অবজেক্ট)
     window.saveDailyCollectionToFirebase = async function () {
         const d = document.getElementById('colInputDate')?.value || getBDDateString();
         if (typeof window.showLoader === 'function') window.showLoader("Saving Collection to Firebase...");
-
-        const getV = (id) => Math.max(0, parseFloat(document.getElementById(id)?.value) || 0);
 
         const payload = {
             date: d,
             timestamp: Date.now(),
             updatedAt: new Date().toLocaleString('en-US', { timeZone: 'Asia/Dhaka' }),
-            banking: {
-                'bKash': getV('col_bkash'),
-                'Nagad': getV('col_nagad'),
-                'Rocket': getV('col_rocket'),
-                'Tap': getV('col_tap'),
-                'Cant Public': getV('col_cant')
-            },
-            recharge: {
-                'Grameen-1': getV('col_gp1'),
-                'Grameen-2': getV('col_gp2'),
-                'Banglalink': getV('col_bl'),
-                'Robi': getV('col_robi'),
-                'Airtel': getV('col_airtel')
-            },
-            services: {
-                'Photocopy': getV('col_photo'),
-                'Computer': getV('col_comp'),
-                'Others': getV('col_oth')
-            }
+            banking: {},
+            recharge: {},
+            services: {}
         };
+
+        document.querySelectorAll('.inp-dyn-col').forEach(inp => {
+            const headName = inp.dataset.headName;
+            const cat = inp.dataset.headCat;
+            const val = Math.max(0, parseFloat(inp.value) || 0);
+
+            if (payload[cat]) {
+                payload[cat][headName] = val;
+            }
+        });
 
         const bTot = Object.values(payload.banking).reduce((a, b) => a + b, 0);
         const rTot = Object.values(payload.recharge).reduce((a, b) => a + b, 0);
@@ -680,7 +648,7 @@
         }
     };
 
-    // ৬. তারিখ পরিবর্তন হলে ফায়ারবেস থেকে লোড
+    // ৭. তারিখ পরিবর্তনে লোড
     window.onCollectionDateChange = async function () {
         const d = document.getElementById('colInputDate')?.value;
         if (!d) return;
@@ -694,24 +662,16 @@
                 if (snap.exists()) record = snap.val();
             }
 
+            // আগের ইনপুটগুলো খালি করা
+            document.querySelectorAll('.inp-dyn-col').forEach(i => i.value = '');
+
             if (record) {
-                setInp('col_bkash', record.banking?.['bKash']);
-                setInp('col_nagad', record.banking?.['Nagad']);
-                setInp('col_rocket', record.banking?.['Rocket']);
-                setInp('col_tap', record.banking?.['Tap']);
-                setInp('col_cant', record.banking?.['Cant Public']);
-
-                setInp('col_gp1', record.recharge?.['Grameen-1']);
-                setInp('col_gp2', record.recharge?.['Grameen-2']);
-                setInp('col_bl', record.recharge?.['Banglalink']);
-                setInp('col_robi', record.recharge?.['Robi']);
-                setInp('col_airtel', record.recharge?.['Airtel']);
-
-                setInp('col_photo', record.services?.['Photocopy']);
-                setInp('col_comp', record.services?.['Computer']);
-                setInp('col_oth', record.services?.['Others']);
-            } else {
-                window.resetCollectionInputs(false);
+                document.querySelectorAll('.inp-dyn-col').forEach(inp => {
+                    const headName = inp.dataset.headName;
+                    const cat = inp.dataset.headCat;
+                    const val = record[cat]?.[headName];
+                    inp.value = (val && val !== 0) ? val : '';
+                });
             }
 
             window.calculateCollectionLive();
@@ -722,19 +682,14 @@
         }
     };
 
-    function setInp(id, val) {
-        const el = document.getElementById(id);
-        if (el) el.value = (val && val !== 0) ? val : '';
-    }
-
     window.resetCollectionInputs = function (showConfirm = true) {
         if (!showConfirm || confirm("Reset all collection inputs to 0.00?")) {
-            document.querySelectorAll('.inp-col-bank, .inp-col-recharge, .inp-col-service').forEach(i => i.value = '');
+            document.querySelectorAll('.inp-dyn-col').forEach(i => i.value = '');
             window.calculateCollectionLive();
         }
     };
 
-    // ৭. হিস্ট্রি টেবিল লোড (প্রিন্টার ও লাল ডিলিট বাটন সহ)
+    // ৮. হিস্ট্রি টেবিল লোড
     window.renderCollectionHistoryList = async function () {
         const tbody = document.getElementById('colHistoryTableBody');
         if (!tbody) return;
@@ -786,13 +741,11 @@
         }
     };
 
-    // ৮. হিস্ট্রি টেবিল থেকে নিরাপদ ডিলিট ফাংশন (স্পষ্ট বাংলা সতর্কবার্তা সহ)
+    // ৯. হিস্ট্রি টেবিল থেকে নিরাপদ ডিলিট
     window.deleteCollectionRecordFromHistory = async function (dateStr, totalVal) {
         const confirmMsg = `⚠️ সতর্কবার্তা (Warning)!\n\nআপনি কি নিশ্চিত যে [ ${dateStr} ] তারিখের মোট ${fmt(totalVal)} টাকার হিসাবটি ক্লাউড থেকে স্থায়ীভাবে মুছে ফেলতে চান?\n\nমুছে ফেললে এটি আর কখনো ফিরিয়ে আনা যাবে না!`;
         
-        if (!confirm(confirmMsg)) {
-            return; // বাতিল করলে কিছুই হবে না
-        }
+        if (!confirm(confirmMsg)) return;
 
         if (typeof window.showLoader === 'function') window.showLoader("Deleting record for " + dateStr);
         try {
@@ -803,13 +756,11 @@
                 window.showToast(`Record for ${dateStr} deleted!`, "success");
             }
             
-            // যদি ইনপুট স্ক্রিনে এই তারিখটিই খোলা থাকে, তবে ইনপুটগুলো খালি করা
             const currentInputDate = document.getElementById('colInputDate')?.value;
             if (currentInputDate === dateStr) {
                 window.resetCollectionInputs(false);
             }
 
-            // হিস্ট্রি টেবিল রিফ্রেশ করা
             window.renderCollectionHistoryList();
         } catch (e) {
             alert("Delete Error: " + e.message);
@@ -825,38 +776,26 @@
         window.onCollectionDateChange();
     };
 
-    // ৯. প্রিন্ট বাটন: সরাসরি বর্তমান ইনপুট দিয়ে প্রিন্ট
+    // ১০. প্রিন্ট বাটন
     window.printActiveCollectionStatement = function () {
         const d = document.getElementById('colInputDate')?.value || getBDDateString();
-        const getV = (id) => Math.max(0, parseFloat(document.getElementById(id)?.value) || 0);
-
         const liveRecord = {
             date: d,
-            banking: {
-                'bKash': getV('col_bkash'),
-                'Nagad': getV('col_nagad'),
-                'Rocket': getV('col_rocket'),
-                'Tap': getV('col_tap'),
-                'Cant Public': getV('col_cant')
-            },
-            recharge: {
-                'Grameen-1': getV('col_gp1'),
-                'Grameen-2': getV('col_gp2'),
-                'Banglalink': getV('col_bl'),
-                'Robi': getV('col_robi'),
-                'Airtel': getV('col_airtel')
-            },
-            services: {
-                'Photocopy': getV('col_photo'),
-                'Computer': getV('col_comp'),
-                'Others': getV('col_oth')
-            }
+            banking: {},
+            recharge: {},
+            services: {}
         };
+
+        document.querySelectorAll('.inp-dyn-col').forEach(inp => {
+            const headName = inp.dataset.headName;
+            const cat = inp.dataset.headCat;
+            const val = Math.max(0, parseFloat(inp.value) || 0);
+            if (liveRecord[cat]) liveRecord[cat][headName] = val;
+        });
 
         window.renderAndPrintInvoice(liveRecord);
     };
 
-    // ১০. হিস্ট্রি থেকে ১ পাতার অফিসিয়াল A4 স্টেটমেন্ট প্রিন্ট
     window.printCollectionA4Report = async function (dateStr) {
         let record = null;
         if (window.getDatabase && window.ref && window.get) {
@@ -872,7 +811,7 @@
         window.renderAndPrintInvoice(record);
     };
 
-    // ১১. প্রিন্ট রেন্ডারার কমন ফাংশন (ফন্ট নিশ্চিত হয়ে প্রিন্ট উইন্ডো আসবে)
+    // ১১. ডাইনামিক প্রিন্ট রেন্ডারার
     window.renderAndPrintInvoice = function (record) {
         const dateHeader = document.getElementById('colRptDateHeader');
         if (dateHeader) dateHeader.innerText = `Date: ${record.date} | Shift: Counter Day Close | Verified`;
@@ -880,34 +819,34 @@
         let rowsHtml = '';
         let bSub = 0, rSub = 0, sSub = 0;
 
-        // Banking
+        // 1. Mobile Banking
         rowsHtml += `<tr class="col-rpt-sub-head"><td colspan="2">1. Mobile Banking Collection</td><td style="text-align:right;">Subtotal</td></tr>`;
         const bankingItems = record.banking || {};
-        for (let k of ['bKash', 'Nagad', 'Rocket', 'Tap', 'Cant Public']) {
+        Object.keys(bankingItems).forEach(k => {
             const val = parseFloat(bankingItems[k]) || 0;
             bSub += val;
             rowsHtml += `<tr><td>Mobile Banking</td><td>${k}</td><td style="text-align:right;">${fmt(val)}</td></tr>`;
-        }
+        });
         rowsHtml += `<tr style="font-weight:bold; background:#f8fafc;"><td colspan="2" style="text-align:right;">Banking Subtotal:</td><td style="text-align:right;">${fmt(bSub)}</td></tr>`;
 
-        // Recharge
+        // 2. Recharge
         rowsHtml += `<tr class="col-rpt-sub-head"><td colspan="2">2. Operator Recharge Collection</td><td style="text-align:right;">Subtotal</td></tr>`;
         const rechargeItems = record.recharge || {};
-        for (let k of ['Grameen-1', 'Grameen-2', 'Banglalink', 'Robi', 'Airtel']) {
+        Object.keys(rechargeItems).forEach(k => {
             const val = parseFloat(rechargeItems[k]) || 0;
             rSub += val;
             rowsHtml += `<tr><td>Operators</td><td>${k}</td><td style="text-align:right;">${fmt(val)}</td></tr>`;
-        }
+        });
         rowsHtml += `<tr style="font-weight:bold; background:#f8fafc;"><td colspan="2" style="text-align:right;">Recharge Subtotal:</td><td style="text-align:right;">${fmt(rSub)}</td></tr>`;
 
-        // Services
+        // 3. Services
         rowsHtml += `<tr class="col-rpt-sub-head"><td colspan="2">3. Other Services Collection</td><td style="text-align:right;">Subtotal</td></tr>`;
         const serviceItems = record.services || {};
-        for (let k of ['Photocopy', 'Computer', 'Others']) {
+        Object.keys(serviceItems).forEach(k => {
             const val = parseFloat(serviceItems[k]) || 0;
             sSub += val;
             rowsHtml += `<tr><td>Services</td><td>${k}</td><td style="text-align:right;">${fmt(val)}</td></tr>`;
-        }
+        });
         rowsHtml += `<tr style="font-weight:bold; background:#f8fafc;"><td colspan="2" style="text-align:right;">Service Subtotal:</td><td style="text-align:right;">${fmt(sSub)}</td></tr>`;
 
         // Grand Total
@@ -917,7 +856,6 @@
         const contentEl = document.getElementById('colRptTableContent');
         if (contentEl) contentEl.innerHTML = rowsHtml;
 
-        // ফন্ট লোড নিশ্চিত করে তারপর প্রিন্ট চালু করা
         if (document.fonts && document.fonts.ready) {
             document.fonts.ready.then(() => {
                 setTimeout(() => { window.print(); }, 200);
@@ -927,7 +865,7 @@
         }
     };
 
-    // ১২. Daily Income পেজে রিকনসিলিয়েশন সমন্বয়
+    // ১২. Daily Income সমন্বয়
     function syncWithDailyIncomeView(realTotal) {
         const table = document.querySelector('.hub-inc-table tbody');
         if (!table) return;
@@ -1014,6 +952,7 @@
                 if (dInp && !dInp.value) {
                     dInp.value = getBDDateString();
                 }
+                window.rebuildCollectionFormUI();
                 window.onCollectionDateChange();
             } else if (tabType === 'col-history') {
                 document.querySelectorAll('#menu-asset-hub-parent .submenu-item').forEach(i => i.classList.remove('active'));
@@ -1031,7 +970,6 @@
         hookSubTabSwitching();
     }
 
-    // ১৪. হালকা ও সুরক্ষিত লোডিং (কোনো স্লোয়িং লুপ নেই)
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
@@ -1039,7 +977,6 @@
     }
     window.addEventListener('load', init);
 
-    // এসপিএ (SPA) নেভিগেশনের জন্য সর্বোচ্চ ৫ বার হালকা চেক করে থেমে যাবে
     let retries = 0;
     const safetyCheck = setInterval(() => {
         init();
