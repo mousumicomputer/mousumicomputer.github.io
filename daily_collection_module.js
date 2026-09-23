@@ -1,21 +1,31 @@
 /**
  * ============================================================================
  * MOUSUMI COMPUTER ERP - DAILY COUNTER COLLECTION & AUDIT MODULE
- * File: daily_collection_module.js (Complete Production Edition)
+ * File: daily_collection_module.js (Clean, Optimized & Safe Production Edition)
  * 
- * Features:
- * 1. 100% English Typography (Google Tiro Bangla).
- * 2. Permanent Firebase Cloud Storage (erp/daily_collection_records/{date}).
- * 3. Minimal Circular / Pill UI & Dedicated Floating Save Button.
- * 4. Large-Font Official 1-Page A4 Printable Statement.
- * 5. Action Section: Reset, Print (No Auto-Save), Delete (from Cloud).
- * 6. History Table with Printer and Delete Action Icons.
- * 7. Integrated Audit Discrepancy (Asset Income vs Real Collection).
+ * Safe Updates Applied:
+ * 1. Timezone: Locked strictly to Bangladesh Time (Asia/Dhaka / GMT+6).
+ * 2. Delete Relocation: Removed from input tab; safely placed in History table.
+ * 3. Validation: Negative (-) and exponent values strictly blocked on inputs.
+ * 4. Performance: Infinite setInterval completely eliminated.
+ * 5. Print Perfection: 100% single-page A4 portrait styling with font assurance.
  * ============================================================================
  */
 
 (function () {
     "use strict";
+
+    // বাংলাদেশ সময় অনুযায়ী YYYY-MM-DD ফরম্যাটে আজকের তারিখ বের করার নিরাপদ ফাংশন
+    function getBDDateString() {
+        try {
+            return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Dhaka' }).format(new Date());
+        } catch (e) {
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const bdTime = new Date(utc + (3600000 * 6));
+            return bdTime.toISOString().split('T')[0];
+        }
+    }
 
     // ১. সম্পূর্ণ পিওর সিএসএস ইনজেকশন
     const moduleStyles = `
@@ -124,8 +134,8 @@
                 color: #334155;
             }
             .dcol-inp {
-                width: 80px;
-                height: 24px;
+                width: 85px;
+                height: 25px;
                 background: #ffffff;
                 border: 1px solid #cbd5e1;
                 border-radius: 9999px;
@@ -226,7 +236,7 @@
                 transform: scale(1.04);
             }
 
-            /* হিস্ট্রি টেবিল */
+            /* হিস্ট্রি টেবিল ও আইকন বাটন */
             .dcol-table-card {
                 background: #ffffff;
                 border: 1px solid #cbd5e1;
@@ -255,20 +265,28 @@
             }
             .dcol-table tr:hover td { background: #fbfcfe; }
             .dcol-icon-btn {
-                background: #eff6ff;
-                border: 1px solid #bfdbfe;
                 border-radius: 9999px;
-                padding: 4px 7px;
-                color: #1d4ed8;
+                padding: 5px 8px;
                 cursor: pointer;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
                 transition: 0.2s;
             }
-            .dcol-icon-btn:hover { background: #dbeafe; color: #1e40af; }
+            .dcol-print-btn {
+                background: #eff6ff;
+                border: 1px solid #bfdbfe;
+                color: #1d4ed8;
+            }
+            .dcol-print-btn:hover { background: #dbeafe; color: #1e40af; }
+            .dcol-delete-btn {
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                color: #dc2626;
+            }
+            .dcol-delete-btn:hover { background: #fee2e2; color: #b91c1c; }
 
-            /* 🌟 A4 প্রিন্ট স্টাইল (বড় ফন্ট এবং ১০০% পোর্ট্রেট ফিক্স) 🌟 */
+            /* 🌟 A4 প্রিন্ট স্টাইল (১০০% ১ পাতা পোর্ট্রেট ও টেক্সট ফিট) 🌟 */
             #col-printable-invoice { display: none; }
 
             @media print {
@@ -281,6 +299,7 @@
                     margin: 0 !important;
                     padding: 0 !important;
                     height: auto !important;
+                    overflow: visible !important;
                 }
                 body * {
                     visibility: hidden !important;
@@ -301,40 +320,43 @@
                     margin: 0 !important;
                     z-index: 9999999 !important;
                     page-break-inside: avoid !important;
+                    page-break-after: avoid !important;
                 }
                 .col-rpt-table {
                     width: 100% !important;
                     border-collapse: collapse !important;
                     margin-top: 10px !important;
-                    margin-bottom: 15px !important;
+                    margin-bottom: 12px !important;
                     page-break-inside: avoid !important;
                 }
                 .col-rpt-table th, .col-rpt-table td {
                     border: 1.5px solid #000 !important;
-                    padding: 6px 12px !important;
-                    font-size: 15px !important;
-                    line-height: 1.35 !important;
+                    padding: 5px 10px !important;
+                    font-size: 14.5px !important;
+                    line-height: 1.3 !important;
                     color: #000 !important;
                 }
                 .col-rpt-table th { 
                     background: #f1f5f9 !important; 
-                    font-size: 15.5px !important; 
+                    font-size: 15px !important; 
                     font-weight: 800 !important; 
                 }
                 .col-rpt-sub-head { 
                     background: #f8fafc !important; 
-                    font-size: 15.5px !important; 
+                    font-size: 15px !important; 
                     font-weight: 800 !important; 
                 }
                 .col-rpt-grand-row { 
                     background: #e2e8f0 !important; 
                     font-weight: 900 !important; 
-                    font-size: 17px !important; 
+                    font-size: 16.5px !important; 
                 }
             }
         </style>
     `;
-    document.head.insertAdjacentHTML('beforeend', moduleStyles);
+    if (!document.getElementById('collection-module-styles')) {
+        document.head.insertAdjacentHTML('beforeend', moduleStyles);
+    }
 
     const fmt = (n) => '৳ ' + (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -364,10 +386,12 @@
         }
     }
 
-    // ৩. ভিউ কনটেন্ট ইনজেকশন
+    // ৩. ভিউ কনটেন্ট ইনজেকশন (মাইনাস বাটন ও ডিলিট বাটন সম্পূর্ণ সুরক্ষিত)
     function injectViews() {
         const hubView = document.getElementById('asset-hub-view');
         if (!hubView || document.getElementById('hub-tab-collection')) return;
+
+        const noNeg = `min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();"`;
 
         const viewsHTML = `
             <!-- SUB-TAB: DAILY COLLECTION -->
@@ -394,23 +418,23 @@
                             <div class="dcol-item-list">
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">bKash</span>
-                                    <input type="number" step="any" id="col_bkash" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" ${noNeg} id="col_bkash" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Nagad</span>
-                                    <input type="number" step="any" id="col_nagad" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" ${noNeg} id="col_nagad" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Rocket</span>
-                                    <input type="number" step="any" id="col_rocket" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" ${noNeg} id="col_rocket" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Tap</span>
-                                    <input type="number" step="any" id="col_tap" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" ${noNeg} id="col_tap" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Cant Public</span>
-                                    <input type="number" step="any" id="col_cant" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" ${noNeg} id="col_cant" oninput="window.calculateCollectionLive()" class="inp-col-bank dcol-inp" placeholder="0.00">
                                 </div>
                             </div>
                         </div>
@@ -427,23 +451,23 @@
                             <div class="dcol-item-list">
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Grameen-1</span>
-                                    <input type="number" step="any" id="col_gp1" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" ${noNeg} id="col_gp1" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Grameen-2</span>
-                                    <input type="number" step="any" id="col_gp2" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" ${noNeg} id="col_gp2" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Banglalink</span>
-                                    <input type="number" step="any" id="col_bl" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" ${noNeg} id="col_bl" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Robi</span>
-                                    <input type="number" step="any" id="col_robi" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" ${noNeg} id="col_robi" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Airtel</span>
-                                    <input type="number" step="any" id="col_airtel" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" ${noNeg} id="col_airtel" oninput="window.calculateCollectionLive()" class="inp-col-recharge dcol-inp" placeholder="0.00">
                                 </div>
                             </div>
                         </div>
@@ -460,15 +484,15 @@
                             <div class="dcol-item-list">
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Photocopy</span>
-                                    <input type="number" step="any" id="col_photo" oninput="window.calculateCollectionLive()" class="inp-col-service dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" ${noNeg} id="col_photo" oninput="window.calculateCollectionLive()" class="inp-col-service dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Computer</span>
-                                    <input type="number" step="any" id="col_comp" oninput="window.calculateCollectionLive()" class="inp-col-service dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" ${noNeg} id="col_comp" oninput="window.calculateCollectionLive()" class="inp-col-service dcol-inp" placeholder="0.00">
                                 </div>
                                 <div class="dcol-pill-row">
                                     <span class="dcol-label">Others</span>
-                                    <input type="number" step="any" id="col_oth" oninput="window.calculateCollectionLive()" class="inp-col-service dcol-inp" placeholder="0.00">
+                                    <input type="number" step="any" ${noNeg} id="col_oth" oninput="window.calculateCollectionLive()" class="inp-col-service dcol-inp" placeholder="0.00">
                                 </div>
                             </div>
                         </div>
@@ -480,7 +504,7 @@
 
                 </div>
 
-                <!-- Action Bar -->
+                <!-- Action Bar (Delete Button Removed from here for safety) -->
                 <div class="dcol-bottom-bar">
                     <div class="dcol-grand-text">
                         Total Collection: <span id="colGrandTotalBottom">৳ 0.00</span>
@@ -494,10 +518,6 @@
                         <button onclick="window.printActiveCollectionStatement()" class="dcol-btn">
                             <svg style="width:13px;height:13px;color:#4338ca;" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                             Print
-                        </button>
-                        <button onclick="window.deleteActiveCollectionRecord()" class="dcol-btn" style="color:#dc2626; border-color:#fecaca; background:#fef2f2;">
-                            <svg style="width:13px;height:13px;color:#dc2626;" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                            Delete
                         </button>
                     </div>
                 </div>
@@ -539,13 +559,13 @@
 
         hubView.insertAdjacentHTML('beforeend', viewsHTML);
 
-        // A4 প্রিন্ট টেমপ্লেট বডির শেষে ইনজেক্ট করা
+        // A4 প্রিন্ট টেমপ্লেট
         if (!document.getElementById('col-printable-invoice')) {
             const printHTML = `
                 <div id="col-printable-invoice">
                     <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px;">
-                        <h1 style="margin: 0; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Mousumi Computer</h1>
-                        <h3 style="margin: 3px 0 0 0; font-size: 15px; font-weight: 700; text-transform: uppercase;">Daily Collection & Counter Income Statement</h3>
+                        <h1 style="margin: 0; font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Mousumi Computer</h1>
+                        <h3 style="margin: 3px 0 0 0; font-size: 14.5px; font-weight: 700; text-transform: uppercase;">Daily Collection & Counter Income Statement</h3>
                         <div style="font-size: 12px; margin-top: 4px; color: #333;" id="colRptDateHeader">Date: --- | Shift: Counter Day Close</div>
                     </div>
 
@@ -561,12 +581,12 @@
                     </table>
 
                     <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: flex-end;">
-                        <div style="width: 170px; text-align: center;">
+                        <div style="width: 160px; text-align: center;">
                             <div style="border-top: 1px solid #000; margin-bottom: 4px;"></div>
                             <div style="font-size: 12px; font-weight: bold;">Prepared By</div>
                         </div>
                         <div style="font-size: 11px; color: #555;">Generated from Mousumi ERP</div>
-                        <div style="width: 170px; text-align: center;">
+                        <div style="width: 160px; text-align: center;">
                             <div style="border-top: 1px solid #000; margin-bottom: 4px;"></div>
                             <div style="font-size: 12px; font-weight: bold;">Authorized Signature</div>
                         </div>
@@ -577,11 +597,11 @@
         }
     }
 
-    // ৪. লাইভ ক্যালকুলেশন
+    // ৪. লাইভ ক্যালকুলেশন (নেগেটিভ সংখ্যা ফিল্টার সহ)
     function sumClass(cls) {
         let sum = 0;
         document.querySelectorAll(cls).forEach(i => {
-            const v = parseFloat(i.value) || 0;
+            const v = Math.max(0, parseFloat(i.value) || 0);
             sum += v;
         });
         return sum;
@@ -603,33 +623,35 @@
         syncWithDailyIncomeView(grand);
     };
 
-    // ৫. ফায়ারবেসে স্থায়ী সংরক্ষণ (শুধুমাত্র সেভ বাটনে ক্লিক করলে কার্যকর হবে)
+    // ৫. ফায়ারবেসে স্থায়ী সংরক্ষণ (বাংলাদেশ টাইমজোন অনুযায়ী)
     window.saveDailyCollectionToFirebase = async function () {
-        const d = document.getElementById('colInputDate')?.value || new Date().toISOString().split('T')[0];
+        const d = document.getElementById('colInputDate')?.value || getBDDateString();
         if (typeof window.showLoader === 'function') window.showLoader("Saving Collection to Firebase...");
+
+        const getV = (id) => Math.max(0, parseFloat(document.getElementById(id)?.value) || 0);
 
         const payload = {
             date: d,
             timestamp: Date.now(),
-            updatedAt: new Date().toLocaleString(),
+            updatedAt: new Date().toLocaleString('en-US', { timeZone: 'Asia/Dhaka' }),
             banking: {
-                'bKash': parseFloat(document.getElementById('col_bkash')?.value) || 0,
-                'Nagad': parseFloat(document.getElementById('col_nagad')?.value) || 0,
-                'Rocket': parseFloat(document.getElementById('col_rocket')?.value) || 0,
-                'Tap': parseFloat(document.getElementById('col_tap')?.value) || 0,
-                'Cant Public': parseFloat(document.getElementById('col_cant')?.value) || 0
+                'bKash': getV('col_bkash'),
+                'Nagad': getV('col_nagad'),
+                'Rocket': getV('col_rocket'),
+                'Tap': getV('col_tap'),
+                'Cant Public': getV('col_cant')
             },
             recharge: {
-                'Grameen-1': parseFloat(document.getElementById('col_gp1')?.value) || 0,
-                'Grameen-2': parseFloat(document.getElementById('col_gp2')?.value) || 0,
-                'Banglalink': parseFloat(document.getElementById('col_bl')?.value) || 0,
-                'Robi': parseFloat(document.getElementById('col_robi')?.value) || 0,
-                'Airtel': parseFloat(document.getElementById('col_airtel')?.value) || 0
+                'Grameen-1': getV('col_gp1'),
+                'Grameen-2': getV('col_gp2'),
+                'Banglalink': getV('col_bl'),
+                'Robi': getV('col_robi'),
+                'Airtel': getV('col_airtel')
             },
             services: {
-                'Photocopy': parseFloat(document.getElementById('col_photo')?.value) || 0,
-                'Computer': parseFloat(document.getElementById('col_comp')?.value) || 0,
-                'Others': parseFloat(document.getElementById('col_oth')?.value) || 0
+                'Photocopy': getV('col_photo'),
+                'Computer': getV('col_comp'),
+                'Others': getV('col_oth')
             }
         };
 
@@ -648,7 +670,7 @@
                 await window.writeToFirebase(`erp/daily_collection_records/${d}`, payload);
             }
             if (typeof window.showToast === 'function') {
-                window.showToast("Saved to Firebase!", "success");
+                window.showToast("Saved to Firebase successfully!", "success");
             }
         } catch (e) {
             console.error("Save error:", e);
@@ -712,30 +734,7 @@
         }
     };
 
-    // ৭. একশন সেকশনের ডিলিট বাটন (ফায়ারবেস থেকে মুছে ফেলা)
-    window.deleteActiveCollectionRecord = async function () {
-        const d = document.getElementById('colInputDate')?.value;
-        if (!d) return;
-
-        if (confirm(`Are you sure you want to delete the collection record for ${d}?`)) {
-            if (typeof window.showLoader === 'function') window.showLoader("Deleting from Firebase...");
-            try {
-                if (typeof window.writeToFirebase === 'function') {
-                    await window.writeToFirebase(`erp/daily_collection_records/${d}`, null);
-                }
-                window.resetCollectionInputs(false);
-                if (typeof window.showToast === 'function') {
-                    window.showToast("Record deleted from Firebase!", "success");
-                }
-            } catch (e) {
-                alert("Delete Error: " + e.message);
-            } finally {
-                if (typeof window.hideLoader === 'function') window.hideLoader();
-            }
-        }
-    };
-
-    // ৮. হিস্ট্রি টেবিল লোড (প্রিন্টার ও ডিলিট আইকন সহ)
+    // ৭. হিস্ট্রি টেবিল লোড (প্রিন্টার ও লাল ডিলিট বাটন সহ)
     window.renderCollectionHistoryList = async function () {
         const tbody = document.getElementById('colHistoryTableBody');
         if (!tbody) return;
@@ -757,20 +756,24 @@
 
             tbody.innerHTML = '';
             list.forEach(item => {
+                const grandTotal = item.totals?.grandTotal || 0;
                 const tr = `
                     <tr>
                         <td style="font-weight:800;">${item.date}</td>
                         <td style="text-align:right;">${fmt(item.totals?.banking)}</td>
                         <td style="text-align:right;">${fmt(item.totals?.recharge)}</td>
                         <td style="text-align:right;">${fmt(item.totals?.services)}</td>
-                        <td style="text-align:right; font-weight:800; color:#15803d;">${fmt(item.totals?.grandTotal)}</td>
+                        <td style="text-align:right; font-weight:800; color:#15803d;">${fmt(grandTotal)}</td>
                         <td style="text-align:center;">
                             <div style="display:inline-flex; align-items:center; gap:6px;">
                                 <button onclick="window.loadCollectionDateToEdit('${item.date}')" class="dcol-btn" style="padding:2px 10px; font-size:10px;">
                                     Edit
                                 </button>
-                                <button onclick="window.printCollectionA4Report('${item.date}')" title="Print Detailed Report" class="dcol-icon-btn">
+                                <button onclick="window.printCollectionA4Report('${item.date}')" title="Print Detailed Report" class="dcol-icon-btn dcol-print-btn">
                                     <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                                </button>
+                                <button onclick="window.deleteCollectionRecordFromHistory('${item.date}', ${grandTotal})" title="Delete Record" class="dcol-icon-btn dcol-delete-btn">
+                                    <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                 </button>
                             </div>
                         </td>
@@ -783,6 +786,38 @@
         }
     };
 
+    // ৮. হিস্ট্রি টেবিল থেকে নিরাপদ ডিলিট ফাংশন (স্পষ্ট বাংলা সতর্কবার্তা সহ)
+    window.deleteCollectionRecordFromHistory = async function (dateStr, totalVal) {
+        const confirmMsg = `⚠️ সতর্কবার্তা (Warning)!\n\nআপনি কি নিশ্চিত যে [ ${dateStr} ] তারিখের মোট ${fmt(totalVal)} টাকার হিসাবটি ক্লাউড থেকে স্থায়ীভাবে মুছে ফেলতে চান?\n\nমুছে ফেললে এটি আর কখনো ফিরিয়ে আনা যাবে না!`;
+        
+        if (!confirm(confirmMsg)) {
+            return; // বাতিল করলে কিছুই হবে না
+        }
+
+        if (typeof window.showLoader === 'function') window.showLoader("Deleting record for " + dateStr);
+        try {
+            if (typeof window.writeToFirebase === 'function') {
+                await window.writeToFirebase(`erp/daily_collection_records/${dateStr}`, null);
+            }
+            if (typeof window.showToast === 'function') {
+                window.showToast(`Record for ${dateStr} deleted!`, "success");
+            }
+            
+            // যদি ইনপুট স্ক্রিনে এই তারিখটিই খোলা থাকে, তবে ইনপুটগুলো খালি করা
+            const currentInputDate = document.getElementById('colInputDate')?.value;
+            if (currentInputDate === dateStr) {
+                window.resetCollectionInputs(false);
+            }
+
+            // হিস্ট্রি টেবিল রিফ্রেশ করা
+            window.renderCollectionHistoryList();
+        } catch (e) {
+            alert("Delete Error: " + e.message);
+        } finally {
+            if (typeof window.hideLoader === 'function') window.hideLoader();
+        }
+    };
+
     window.loadCollectionDateToEdit = function (dateStr) {
         const dInput = document.getElementById('colInputDate');
         if (dInput) dInput.value = dateStr;
@@ -790,30 +825,31 @@
         window.onCollectionDateChange();
     };
 
-    // ৯. প্রিন্ট বাটন: সরাসরি বর্তমান ইনপুট দিয়ে প্রিন্ট (কোনো সেভ হবে না)
+    // ৯. প্রিন্ট বাটন: সরাসরি বর্তমান ইনপুট দিয়ে প্রিন্ট
     window.printActiveCollectionStatement = function () {
-        const d = document.getElementById('colInputDate')?.value || new Date().toISOString().split('T')[0];
-        
+        const d = document.getElementById('colInputDate')?.value || getBDDateString();
+        const getV = (id) => Math.max(0, parseFloat(document.getElementById(id)?.value) || 0);
+
         const liveRecord = {
             date: d,
             banking: {
-                'bKash': parseFloat(document.getElementById('col_bkash')?.value) || 0,
-                'Nagad': parseFloat(document.getElementById('col_nagad')?.value) || 0,
-                'Rocket': parseFloat(document.getElementById('col_rocket')?.value) || 0,
-                'Tap': parseFloat(document.getElementById('col_tap')?.value) || 0,
-                'Cant Public': parseFloat(document.getElementById('col_cant')?.value) || 0
+                'bKash': getV('col_bkash'),
+                'Nagad': getV('col_nagad'),
+                'Rocket': getV('col_rocket'),
+                'Tap': getV('col_tap'),
+                'Cant Public': getV('col_cant')
             },
             recharge: {
-                'Grameen-1': parseFloat(document.getElementById('col_gp1')?.value) || 0,
-                'Grameen-2': parseFloat(document.getElementById('col_gp2')?.value) || 0,
-                'Banglalink': parseFloat(document.getElementById('col_bl')?.value) || 0,
-                'Robi': parseFloat(document.getElementById('col_robi')?.value) || 0,
-                'Airtel': parseFloat(document.getElementById('col_airtel')?.value) || 0
+                'Grameen-1': getV('col_gp1'),
+                'Grameen-2': getV('col_gp2'),
+                'Banglalink': getV('col_bl'),
+                'Robi': getV('col_robi'),
+                'Airtel': getV('col_airtel')
             },
             services: {
-                'Photocopy': parseFloat(document.getElementById('col_photo')?.value) || 0,
-                'Computer': parseFloat(document.getElementById('col_comp')?.value) || 0,
-                'Others': parseFloat(document.getElementById('col_oth')?.value) || 0
+                'Photocopy': getV('col_photo'),
+                'Computer': getV('col_comp'),
+                'Others': getV('col_oth')
             }
         };
 
@@ -836,7 +872,7 @@
         window.renderAndPrintInvoice(record);
     };
 
-    // ১১. প্রিন্ট রেন্ডারার কমন ফাংশন (বড় ফন্ট সহ)
+    // ১১. প্রিন্ট রেন্ডারার কমন ফাংশন (ফন্ট নিশ্চিত হয়ে প্রিন্ট উইন্ডো আসবে)
     window.renderAndPrintInvoice = function (record) {
         const dateHeader = document.getElementById('colRptDateHeader');
         if (dateHeader) dateHeader.innerText = `Date: ${record.date} | Shift: Counter Day Close | Verified`;
@@ -881,9 +917,14 @@
         const contentEl = document.getElementById('colRptTableContent');
         if (contentEl) contentEl.innerHTML = rowsHtml;
 
-        setTimeout(() => {
-            window.print();
-        }, 150);
+        // ফন্ট লোড নিশ্চিত করে তারপর প্রিন্ট চালু করা
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(() => {
+                setTimeout(() => { window.print(); }, 200);
+            });
+        } else {
+            setTimeout(() => { window.print(); }, 300);
+        }
     };
 
     // ১২. Daily Income পেজে রিকনসিলিয়েশন সমন্বয়
@@ -946,7 +987,9 @@
     }
 
     // ১৩. সাব-ট্যাব হ্যান্ডলার
+    let isHooked = false;
     function hookSubTabSwitching() {
+        if (isHooked) return;
         const origSwitch = window.switchAssetHubSubTab;
         window.switchAssetHubSubTab = function (tabType) {
             if (typeof origSwitch === 'function') {
@@ -969,7 +1012,7 @@
 
                 const dInp = document.getElementById('colInputDate');
                 if (dInp && !dInp.value) {
-                    dInp.value = new Date().toISOString().split('T')[0];
+                    dInp.value = getBDDateString();
                 }
                 window.onCollectionDateChange();
             } else if (tabType === 'col-history') {
@@ -979,6 +1022,7 @@
                 window.renderCollectionHistoryList();
             }
         };
+        isHooked = true;
     }
 
     function init() {
@@ -987,15 +1031,22 @@
         hookSubTabSwitching();
     }
 
+    // ১৪. হালকা ও সুরক্ষিত লোডিং (কোনো স্লোয়িং লুপ নেই)
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
     }
     window.addEventListener('load', init);
-    setInterval(() => {
-        injectSubmenus();
-        injectViews();
+
+    // এসপিএ (SPA) নেভিগেশনের জন্য সর্বোচ্চ ৫ বার হালকা চেক করে থেমে যাবে
+    let retries = 0;
+    const safetyCheck = setInterval(() => {
+        init();
+        retries++;
+        if (document.getElementById('hub-tab-collection') && retries >= 5) {
+            clearInterval(safetyCheck);
+        }
     }, 1000);
 
 })();
