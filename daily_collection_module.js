@@ -264,15 +264,16 @@
                 display: none;
             }
 
-            @media print {
+        @media print {
                 @page {
-                    size: A4 portrait;
-                    margin: 10mm;
+                    size: A4 portrait !important;
+                    margin: 8mm 12mm !important;
                 }
                 html, body {
                     background: #ffffff !important;
                     margin: 0 !important;
                     padding: 0 !important;
+                    height: auto !important;
                 }
                 body * {
                     visibility: hidden !important;
@@ -286,27 +287,31 @@
                     left: 0 !important;
                     top: 0 !important;
                     width: 100% !important;
+                    max-width: 680px !important;
+                    margin: 0 auto !important;
                     background: #ffffff !important;
                     color: #000000 !important;
-                    margin: 0 !important;
-                    padding: 5mm !important;
+                    padding: 0 !important;
                     z-index: 9999999 !important;
+                    page-break-inside: avoid !important;
                 }
                 .col-rpt-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-top: 10px;
-                    margin-bottom: 15px;
+                    width: 100% !important;
+                    border-collapse: collapse !important;
+                    margin-top: 6px !important;
+                    margin-bottom: 8px !important;
+                    page-break-inside: avoid !important;
                 }
                 .col-rpt-table th, .col-rpt-table td {
                     border: 1px solid #000 !important;
-                    padding: 5px 8px !important;
-                    font-size: 12px !important;
+                    padding: 3.5px 7px !important;
+                    font-size: 11px !important;
+                    line-height: 1.2 !important;
                     color: #000 !important;
                 }
                 .col-rpt-table th { background: #f1f5f9 !important; font-weight: bold; }
                 .col-rpt-sub-head { background: #f8fafc !important; font-weight: bold; }
-                .col-rpt-grand-row { background: #e2e8f0 !important; font-weight: 900; font-size: 13px !important; }
+                .col-rpt-grand-row { background: #e2e8f0 !important; font-weight: 900; font-size: 12px !important; }
             }
         </style>
     `;
