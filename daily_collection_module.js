@@ -302,31 +302,35 @@
                     margin-bottom: 12px !important;
                     page-break-inside: avoid !important;
                 }
-                .col-rpt-table th, .col-rpt-table td {
-                    border: 1px solid #000 !important;
-                    padding: 4px 8px !important;
-                    font-size: 11.5px !important;
-                    line-height: 1.25 !important;
-                    color: #000 !important;
-                }
-                .col-rpt-table {
-                    width: 100% !important;
-                    border-collapse: collapse !important;
-                    margin-top: 6px !important;
-                    margin-bottom: 8px !important;
-                    page-break-inside: avoid !important;
-                }
-                .col-rpt-table th, .col-rpt-table td {
-                    border: 1px solid #000 !important;
-                    padding: 3.5px 7px !important;
-                    font-size: 11px !important;
-                    line-height: 1.2 !important;
-                    color: #000 !important;
-                }
-                .col-rpt-table th { background: #f1f5f9 !important; font-weight: bold; }
-                .col-rpt-sub-head { background: #f8fafc !important; font-weight: bold; }
-                .col-rpt-grand-row { background: #e2e8f0 !important; font-weight: 900; font-size: 12px !important; }
-            }
+        .col-rpt-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-top: 8px !important;
+        margin-bottom: 12px !important;
+        page-break-inside: avoid !important;
+    }
+    .col-rpt-table th, .col-rpt-table td {
+        border: 1.5px solid #000 !important;
+        padding: 5px 10px !important;
+        font-size: 13px !important;
+        line-height: 1.3 !important;
+        color: #000 !important;
+    }
+    .col-rpt-table th { 
+        background: #f1f5f9 !important; 
+        font-size: 13.5px !important;
+        font-weight: 800 !important; 
+    }
+    .col-rpt-sub-head { 
+        background: #f8fafc !important; 
+        font-size: 13.5px !important;
+        font-weight: 800 !important; 
+    }
+    .col-rpt-grand-row { 
+        background: #e2e8f0 !important; 
+        font-weight: 900 !important; 
+        font-size: 15px !important; 
+    }
         </style>
     `;
     document.head.insertAdjacentHTML('beforeend', moduleStyles);
