@@ -1,14 +1,23 @@
 /**
  * ============================================================================
  * MOUSUMI COMPUTER ERP - DAILY COUNTER COLLECTION & AUDIT MODULE
- * File: daily_collection_module.js (Permanent Cloud Sync & Clean Print Edition)
+ * File: daily_collection_module.js (Complete Production Edition)
+ * 
+ * Features:
+ * 1. 100% English Typography (Google Tiro Bangla).
+ * 2. Permanent Firebase Cloud Storage (erp/daily_collection_records/{date}).
+ * 3. Minimal Circular / Pill UI & Dedicated Floating Save Button.
+ * 4. Large-Font Official 1-Page A4 Printable Statement.
+ * 5. Action Section: Reset, Print (No Auto-Save), Delete (from Cloud).
+ * 6. History Table with Printer and Delete Action Icons.
+ * 7. Integrated Audit Discrepancy (Asset Income vs Real Collection).
  * ============================================================================
  */
 
 (function () {
     "use strict";
 
-    // ১. সম্পূর্ণ নিজস্ব সিএসএস এবং প্রিন্ট রুলস (সাদা পাতা রোধ করার ফিক্স সহ)
+    // ১. সম্পূর্ণ পিওর সিএসএস ইনজেকশন
     const moduleStyles = `
         <style id="collection-module-styles">
             @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap');
@@ -259,12 +268,10 @@
             }
             .dcol-icon-btn:hover { background: #dbeafe; color: #1e40af; }
 
-            /* 🌟 সাদা পাতা বন্ধ করার ১০০% কার্যকর A4 প্রিন্ট রুলস 🌟 */
-            #col-printable-invoice {
-                display: none;
-            }
+            /* 🌟 A4 প্রিন্ট স্টাইল (বড় ফন্ট এবং ১০০% পোর্ট্রেট ফিক্স) 🌟 */
+            #col-printable-invoice { display: none; }
 
-        @media print {
+            @media print {
                 @page {
                     size: A4 portrait !important;
                     margin: 8mm 12mm !important;
@@ -298,46 +305,40 @@
                 .col-rpt-table {
                     width: 100% !important;
                     border-collapse: collapse !important;
-                    margin-top: 8px !important;
-                    margin-bottom: 12px !important;
+                    margin-top: 10px !important;
+                    margin-bottom: 15px !important;
                     page-break-inside: avoid !important;
                 }
-        .col-rpt-table {
-        width: 100% !important;
-        border-collapse: collapse !important;
-        margin-top: 8px !important;
-        margin-bottom: 12px !important;
-        page-break-inside: avoid !important;
-    }
-    .col-rpt-table th, .col-rpt-table td {
-        border: 1.5px solid #000 !important;
-        padding: 5px 10px !important;
-        font-size: 13px !important;
-        line-height: 1.3 !important;
-        color: #000 !important;
-    }
-    .col-rpt-table th { 
-        background: #f1f5f9 !important; 
-        font-size: 13.5px !important;
-        font-weight: 800 !important; 
-    }
-    .col-rpt-sub-head { 
-        background: #f8fafc !important; 
-        font-size: 13.5px !important;
-        font-weight: 800 !important; 
-    }
-    .col-rpt-grand-row { 
-        background: #e2e8f0 !important; 
-        font-weight: 900 !important; 
-        font-size: 15px !important; 
-    }
+                .col-rpt-table th, .col-rpt-table td {
+                    border: 1.5px solid #000 !important;
+                    padding: 6px 12px !important;
+                    font-size: 15px !important;
+                    line-height: 1.35 !important;
+                    color: #000 !important;
+                }
+                .col-rpt-table th { 
+                    background: #f1f5f9 !important; 
+                    font-size: 15.5px !important; 
+                    font-weight: 800 !important; 
+                }
+                .col-rpt-sub-head { 
+                    background: #f8fafc !important; 
+                    font-size: 15.5px !important; 
+                    font-weight: 800 !important; 
+                }
+                .col-rpt-grand-row { 
+                    background: #e2e8f0 !important; 
+                    font-weight: 900 !important; 
+                    font-size: 17px !important; 
+                }
+            }
         </style>
     `;
     document.head.insertAdjacentHTML('beforeend', moduleStyles);
 
     const fmt = (n) => '৳ ' + (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    // ২. সাইডবারে নতুন দুটি মেনু আইটেম যুক্ত করা
+    // ২. সাইডবারে সাব-মেনু ইনজেকশন
     function injectSubmenus() {
         const submenuList = document.querySelector('#menu-asset-hub-parent .submenu-list');
         if (!submenuList || document.getElementById('sub-asset-collection')) return;
@@ -372,7 +373,7 @@
             <!-- SUB-TAB: DAILY COLLECTION -->
             <div id="hub-tab-collection" style="display: none;">
                 
-                <!-- Date Bar Minimal -->
+                <!-- Date Bar -->
                 <div class="dcol-top-bar">
                     <div class="dcol-date-wrap">
                         <span>Date:</span>
@@ -490,10 +491,13 @@
                             <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                             Reset
                         </button>
-                        <!-- প্রিন্টার আইকন বাটন -->
                         <button onclick="window.printActiveCollectionStatement()" class="dcol-btn">
                             <svg style="width:13px;height:13px;color:#4338ca;" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                             Print
+                        </button>
+                        <button onclick="window.deleteActiveCollectionRecord()" class="dcol-btn" style="color:#dc2626; border-color:#fecaca; background:#fef2f2;">
+                            <svg style="width:13px;height:13px;color:#dc2626;" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            Delete
                         </button>
                     </div>
                 </div>
@@ -535,14 +539,14 @@
 
         hubView.insertAdjacentHTML('beforeend', viewsHTML);
 
-        // প্রিন্ট টেমপ্লেট বডির শেষে ইনজেক্ট করা
+        // A4 প্রিন্ট টেমপ্লেট বডির শেষে ইনজেক্ট করা
         if (!document.getElementById('col-printable-invoice')) {
             const printHTML = `
                 <div id="col-printable-invoice">
                     <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px;">
-                        <h1 style="margin: 0; font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Mousumi Computer</h1>
-                        <h3 style="margin: 3px 0 0 0; font-size: 13px; font-weight: 700; text-transform: uppercase;">Daily Collection & Counter Income Statement</h3>
-                        <div style="font-size: 11px; margin-top: 4px; color: #333;" id="colRptDateHeader">Date: --- | Shift: Counter Day Close</div>
+                        <h1 style="margin: 0; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Mousumi Computer</h1>
+                        <h3 style="margin: 3px 0 0 0; font-size: 15px; font-weight: 700; text-transform: uppercase;">Daily Collection & Counter Income Statement</h3>
+                        <div style="font-size: 12px; margin-top: 4px; color: #333;" id="colRptDateHeader">Date: --- | Shift: Counter Day Close</div>
                     </div>
 
                     <table class="col-rpt-table">
@@ -556,15 +560,15 @@
                         <tbody id="colRptTableContent"></tbody>
                     </table>
 
-                    <div style="margin-top: 50px; display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: flex-end;">
                         <div style="width: 170px; text-align: center;">
                             <div style="border-top: 1px solid #000; margin-bottom: 4px;"></div>
-                            <div style="font-size: 11px; font-weight: bold;">Prepared By</div>
+                            <div style="font-size: 12px; font-weight: bold;">Prepared By</div>
                         </div>
-                        <div style="font-size: 10px; color: #555;">Generated from Mousumi ERP</div>
+                        <div style="font-size: 11px; color: #555;">Generated from Mousumi ERP</div>
                         <div style="width: 170px; text-align: center;">
                             <div style="border-top: 1px solid #000; margin-bottom: 4px;"></div>
-                            <div style="font-size: 11px; font-weight: bold;">Authorized Signature</div>
+                            <div style="font-size: 12px; font-weight: bold;">Authorized Signature</div>
                         </div>
                     </div>
                 </div>
@@ -599,7 +603,7 @@
         syncWithDailyIncomeView(grand);
     };
 
-    // ৫. ফায়ারবেসে স্থায়ী সংরক্ষণ
+    // ৫. ফায়ারবেসে স্থায়ী সংরক্ষণ (শুধুমাত্র সেভ বাটনে ক্লিক করলে কার্যকর হবে)
     window.saveDailyCollectionToFirebase = async function () {
         const d = document.getElementById('colInputDate')?.value || new Date().toISOString().split('T')[0];
         if (typeof window.showLoader === 'function') window.showLoader("Saving Collection to Firebase...");
@@ -654,7 +658,7 @@
         }
     };
 
-    // ৬. তারিখ পরিবর্তন হলে ফায়ারবেস থেকে স্বয়ংক্রিয় লোড
+    // ৬. তারিখ পরিবর্তন হলে ফায়ারবেস থেকে লোড
     window.onCollectionDateChange = async function () {
         const d = document.getElementById('colInputDate')?.value;
         if (!d) return;
@@ -708,7 +712,30 @@
         }
     };
 
-    // ৭. হিস্ট্রি টেবিল লোড (প্রিন্টার আইকন সহ)
+    // ৭. একশন সেকশনের ডিলিট বাটন (ফায়ারবেস থেকে মুছে ফেলা)
+    window.deleteActiveCollectionRecord = async function () {
+        const d = document.getElementById('colInputDate')?.value;
+        if (!d) return;
+
+        if (confirm(`Are you sure you want to delete the collection record for ${d}?`)) {
+            if (typeof window.showLoader === 'function') window.showLoader("Deleting from Firebase...");
+            try {
+                if (typeof window.writeToFirebase === 'function') {
+                    await window.writeToFirebase(`erp/daily_collection_records/${d}`, null);
+                }
+                window.resetCollectionInputs(false);
+                if (typeof window.showToast === 'function') {
+                    window.showToast("Record deleted from Firebase!", "success");
+                }
+            } catch (e) {
+                alert("Delete Error: " + e.message);
+            } finally {
+                if (typeof window.hideLoader === 'function') window.hideLoader();
+            }
+        }
+    };
+
+    // ৮. হিস্ট্রি টেবিল লোড (প্রিন্টার ও ডিলিট আইকন সহ)
     window.renderCollectionHistoryList = async function () {
         const tbody = document.getElementById('colHistoryTableBody');
         if (!tbody) return;
@@ -742,7 +769,6 @@
                                 <button onclick="window.loadCollectionDateToEdit('${item.date}')" class="dcol-btn" style="padding:2px 10px; font-size:10px;">
                                     Edit
                                 </button>
-                                <!-- 🌟 নিখুঁত প্রিন্টার আইকন বাটন 🌟 -->
                                 <button onclick="window.printCollectionA4Report('${item.date}')" title="Print Detailed Report" class="dcol-icon-btn">
                                     <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                                 </button>
@@ -764,7 +790,37 @@
         window.onCollectionDateChange();
     };
 
-    // ৮. ১ পাতার অফিসিয়াল A4 ডিটেইল্ড স্টেটমেন্ট প্রিন্ট ইঞ্জিন (সাদা পাতা ফিক্সড)
+    // ৯. প্রিন্ট বাটন: সরাসরি বর্তমান ইনপুট দিয়ে প্রিন্ট (কোনো সেভ হবে না)
+    window.printActiveCollectionStatement = function () {
+        const d = document.getElementById('colInputDate')?.value || new Date().toISOString().split('T')[0];
+        
+        const liveRecord = {
+            date: d,
+            banking: {
+                'bKash': parseFloat(document.getElementById('col_bkash')?.value) || 0,
+                'Nagad': parseFloat(document.getElementById('col_nagad')?.value) || 0,
+                'Rocket': parseFloat(document.getElementById('col_rocket')?.value) || 0,
+                'Tap': parseFloat(document.getElementById('col_tap')?.value) || 0,
+                'Cant Public': parseFloat(document.getElementById('col_cant')?.value) || 0
+            },
+            recharge: {
+                'Grameen-1': parseFloat(document.getElementById('col_gp1')?.value) || 0,
+                'Grameen-2': parseFloat(document.getElementById('col_gp2')?.value) || 0,
+                'Banglalink': parseFloat(document.getElementById('col_bl')?.value) || 0,
+                'Robi': parseFloat(document.getElementById('col_robi')?.value) || 0,
+                'Airtel': parseFloat(document.getElementById('col_airtel')?.value) || 0
+            },
+            services: {
+                'Photocopy': parseFloat(document.getElementById('col_photo')?.value) || 0,
+                'Computer': parseFloat(document.getElementById('col_comp')?.value) || 0,
+                'Others': parseFloat(document.getElementById('col_oth')?.value) || 0
+            }
+        };
+
+        window.renderAndPrintInvoice(liveRecord);
+    };
+
+    // ১০. হিস্ট্রি থেকে ১ পাতার অফিসিয়াল A4 স্টেটমেন্ট প্রিন্ট
     window.printCollectionA4Report = async function (dateStr) {
         let record = null;
         if (window.getDatabase && window.ref && window.get) {
@@ -777,6 +833,11 @@
             return;
         }
 
+        window.renderAndPrintInvoice(record);
+    };
+
+    // ১১. প্রিন্ট রেন্ডারার কমন ফাংশন (বড় ফন্ট সহ)
+    window.renderAndPrintInvoice = function (record) {
         const dateHeader = document.getElementById('colRptDateHeader');
         if (dateHeader) dateHeader.innerText = `Date: ${record.date} | Shift: Counter Day Close | Verified`;
 
@@ -820,20 +881,12 @@
         const contentEl = document.getElementById('colRptTableContent');
         if (contentEl) contentEl.innerHTML = rowsHtml;
 
-        // প্রিন্ট ডায়ালগ কল
         setTimeout(() => {
             window.print();
         }, 150);
     };
 
-    window.printActiveCollectionStatement = function () {
-        const d = document.getElementById('colInputDate')?.value || new Date().toISOString().split('T')[0];
-        window.saveDailyCollectionToFirebase().then(() => {
-            window.printCollectionA4Report(d);
-        });
-    };
-
-    // ৯. Daily Income পেজে সমন্বয় (Reconciliation Integration)
+    // ১২. Daily Income পেজে রিকনসিলিয়েশন সমন্বয়
     function syncWithDailyIncomeView(realTotal) {
         const table = document.querySelector('.hub-inc-table tbody');
         if (!table) return;
@@ -892,7 +945,7 @@
         }
     }
 
-    // ১০. সাব-ট্যাব হ্যান্ডলার এক্সটেনশন
+    // ১৩. সাব-ট্যাব হ্যান্ডলার
     function hookSubTabSwitching() {
         const origSwitch = window.switchAssetHubSubTab;
         window.switchAssetHubSubTab = function (tabType) {
