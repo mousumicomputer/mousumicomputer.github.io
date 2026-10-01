@@ -7,7 +7,7 @@
     "use strict";
 
     window.ExamSystem = {
-        version: "1.0.1-compact",
+        version: "1.0.2-compact-sidebar",
         dbRoot: "exam_system",
         submodules: {},
 
@@ -18,12 +18,51 @@
             }
         },
 
-        // Dedicated Compact Styles for Examination System
+        // Dedicated Styles for Sidebar Menu and Dashboard
         injectStyles: function () {
             if (document.getElementById("exam-system-styles")) return;
             const style = document.createElement("style");
             style.id = "exam-system-styles";
             style.innerHTML = `
+                /* -------------------------------------------------------------
+                   SIDEBAR MENU FIX: Single-line & exact match with other modules
+                   ------------------------------------------------------------- */
+                #menu-exam-parent > a {
+                    white-space: nowrap !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: space-between !important;
+                    padding: 12px 14px !important;
+                    line-height: 1.2 !important;
+                }
+                #menu-exam-parent .menu-link-inner {
+                    display: flex !important;
+                    align-items: center !important;
+                    gap: 10px !important;
+                    white-space: nowrap !important;
+                    min-width: 0 !important;
+                    flex: 1 !important;
+                    overflow: hidden !important;
+                }
+                #menu-exam-parent .menu-link-inner i {
+                    flex-shrink: 0 !important;
+                    font-size: 0.95rem !important;
+                }
+                #menu-exam-parent .menu-link-inner span {
+                    white-space: nowrap !important;
+                    overflow: hidden !important;
+                    text-overflow: ellipsis !important;
+                    font-size: 0.86rem !important; /* Calibrated to fit 22 chars comfortably on 1 line */
+                    letter-spacing: -0.2px !important;
+                    font-weight: 500 !important;
+                    display: inline-block !important;
+                }
+                #menu-exam-parent .chevron-icon {
+                    flex-shrink: 0 !important;
+                    margin-left: 6px !important;
+                    font-size: 0.75rem !important;
+                }
+
                 /* Compact Top Hero Banner */
                 .exam-hero-banner {
                     background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%);
@@ -144,7 +183,7 @@
                     text-overflow: ellipsis;
                 }
 
-                /* Compact Info/Notice Box */
+                /* Compact Notice Box */
                 .exam-notice-box {
                     background: #ffffff;
                     border: 1px dashed #cbd5e1;
@@ -222,7 +261,7 @@
                 }
             }
 
-            // 2. View Panel Ingestion
+            // 2. View Panel Injection
             if (!document.getElementById("exam-system-view")) {
                 const mainWrapper = document.querySelector(".main-wrapper");
                 if (mainWrapper) {
@@ -246,7 +285,6 @@
 
                             <!-- Compact Balanced 8-Card Grid (4x2) -->
                             <div class="exam-stat-grid">
-                                <!-- Card 1 -->
                                 <div class="exam-stat-card" style="border-left-color: #4f46e5;">
                                     <div class="exam-stat-header">
                                         <h4 class="exam-stat-title">Active Session</h4>
@@ -255,7 +293,6 @@
                                     <div class="exam-stat-amount" id="examStatCardSession" style="font-size: 1.05rem;">2026–2027</div>
                                 </div>
 
-                                <!-- Card 2 -->
                                 <div class="exam-stat-card" style="border-left-color: #0284c7;">
                                     <div class="exam-stat-header">
                                         <h4 class="exam-stat-title">Total Students</h4>
@@ -264,7 +301,6 @@
                                     <div class="exam-stat-amount" id="examStatCardTotalStudents">0</div>
                                 </div>
 
-                                <!-- Card 3 -->
                                 <div class="exam-stat-card" style="border-left-color: #059669;">
                                     <div class="exam-stat-header">
                                         <h4 class="exam-stat-title">Total Classes</h4>
@@ -273,7 +309,6 @@
                                     <div class="exam-stat-amount" id="examStatCardTotalClasses">0</div>
                                 </div>
 
-                                <!-- Card 4 -->
                                 <div class="exam-stat-card" style="border-left-color: #d97706;">
                                     <div class="exam-stat-header">
                                         <h4 class="exam-stat-title">Total Subjects</h4>
@@ -282,7 +317,6 @@
                                     <div class="exam-stat-amount" id="examStatCardTotalSubjects">0</div>
                                 </div>
 
-                                <!-- Card 5 -->
                                 <div class="exam-stat-card" style="border-left-color: #8b5cf6;">
                                     <div class="exam-stat-header">
                                         <h4 class="exam-stat-title">Active Exams</h4>
@@ -291,7 +325,6 @@
                                     <div class="exam-stat-amount" id="examStatCardActiveExams">0</div>
                                 </div>
 
-                                <!-- Card 6 -->
                                 <div class="exam-stat-card" style="border-left-color: #f97316;">
                                     <div class="exam-stat-header">
                                         <h4 class="exam-stat-title">Pending Marks</h4>
@@ -300,7 +333,6 @@
                                     <div class="exam-stat-amount" id="examStatCardPendingMarks" style="color: #f97316;">0</div>
                                 </div>
 
-                                <!-- Card 7 -->
                                 <div class="exam-stat-card" style="border-left-color: #ef4444;">
                                     <div class="exam-stat-header">
                                         <h4 class="exam-stat-title">Pending Verification</h4>
@@ -309,7 +341,6 @@
                                     <div class="exam-stat-amount" id="examStatCardPendingVerify" style="color: #ef4444;">0</div>
                                 </div>
 
-                                <!-- Card 8 -->
                                 <div class="exam-stat-card" style="border-left-color: #10b981;">
                                     <div class="exam-stat-header">
                                         <h4 class="exam-stat-title">Published Results</h4>
@@ -391,7 +422,6 @@
             }
         },
 
-        // All Metadata in Strict Professional English
         renderPlaceholder: function (moduleId) {
             const meta = {
                 "academic-setup": { title: "Academic Setup", icon: "fa-school", desc: "Configure academic sessions, shifts, classes, sections, groups, and dynamic grade rules." },
