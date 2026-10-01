@@ -1,13 +1,13 @@
 /**
  * Mousumi Computer - Dynamic Examination Management System
- * Core Architecture & Auto-DOM Injection Engine (Foundation Phase)
+ * Core Architecture & Compact UI Auto-Injection (Foundation Phase)
  */
 
 (function () {
     "use strict";
 
     window.ExamSystem = {
-        version: "1.0.0-foundation",
+        version: "1.0.1-compact",
         dbRoot: "exam_system",
         submodules: {},
 
@@ -18,13 +18,178 @@
             }
         },
 
-        // সাইডবার ও ড্যাশবোর্ড স্বয়ংক্রিয়ভাবে HTML-এ বসানোর ফাংশন
+        // Dedicated Compact Styles for Examination System
+        injectStyles: function () {
+            if (document.getElementById("exam-system-styles")) return;
+            const style = document.createElement("style");
+            style.id = "exam-system-styles";
+            style.innerHTML = `
+                /* Compact Top Hero Banner */
+                .exam-hero-banner {
+                    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%);
+                    border-radius: 12px;
+                    padding: 12px 18px;
+                    color: #ffffff;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    gap: 15px;
+                    margin-bottom: 14px;
+                    box-shadow: 0 4px 12px rgba(30, 27, 75, 0.08);
+                }
+                .exam-hero-left h2 {
+                    font-size: 1.15rem;
+                    font-weight: 800;
+                    color: #ffffff;
+                    margin: 0;
+                    letter-spacing: -0.2px;
+                }
+                .exam-hero-left p {
+                    font-size: 0.78rem;
+                    color: #cbd5e1;
+                    margin: 2px 0 0 0;
+                }
+                .exam-session-pill {
+                    background: rgba(255, 255, 255, 0.12);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    padding: 6px 14px;
+                    border-radius: 8px;
+                    text-align: right;
+                    white-space: nowrap;
+                }
+                .exam-session-pill .label {
+                    font-size: 0.65rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    color: #93c5fd;
+                    display: block;
+                }
+                .exam-session-pill .value {
+                    font-size: 0.95rem;
+                    font-weight: 800;
+                    color: #ffffff;
+                    margin-top: 1px;
+                }
+
+                /* Balanced 4-Column Compact Grid */
+                .exam-stat-grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 12px;
+                    margin-bottom: 14px;
+                }
+                @media (max-width: 1200px) {
+                    .exam-stat-grid { grid-template-columns: repeat(2, 1fr); }
+                }
+                @media (max-width: 600px) {
+                    .exam-stat-grid { grid-template-columns: 1fr; }
+                    .exam-hero-banner { flex-direction: column; align-items: flex-start; }
+                    .exam-session-pill { text-align: left; width: 100%; }
+                }
+
+                /* Compact Metric Card */
+                .exam-stat-card {
+                    background: #ffffff;
+                    border: 1px solid #e2e8f0;
+                    border-left: 3px solid #4f46e5;
+                    border-radius: 10px;
+                    padding: 10px 14px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+                    transition: transform 0.15s ease, box-shadow 0.15s ease;
+                }
+                .exam-stat-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+                }
+                .exam-stat-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 8px;
+                    margin-bottom: 4px;
+                }
+                .exam-stat-title {
+                    font-size: 0.72rem;
+                    font-weight: 700;
+                    color: #64748b;
+                    text-transform: uppercase;
+                    letter-spacing: 0.4px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    margin: 0;
+                    flex: 1;
+                }
+                .exam-stat-icon {
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 6px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 0.75rem;
+                    flex-shrink: 0;
+                }
+                .exam-stat-amount {
+                    font-size: 1.25rem;
+                    font-weight: 800;
+                    color: #0f172a;
+                    line-height: 1.2;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                /* Compact Info/Notice Box */
+                .exam-notice-box {
+                    background: #ffffff;
+                    border: 1px dashed #cbd5e1;
+                    border-left: 4px solid #4f46e5;
+                    border-radius: 10px;
+                    padding: 12px 16px;
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 12px;
+                }
+                .exam-notice-icon {
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 8px;
+                    background: #eef2ff;
+                    color: #4f46e5;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 0.95rem;
+                    flex-shrink: 0;
+                }
+                .exam-notice-content h4 {
+                    font-size: 0.88rem;
+                    font-weight: 700;
+                    color: #0f172a;
+                    margin: 0 0 2px 0;
+                }
+                .exam-notice-content p {
+                    font-size: 0.8rem;
+                    color: #64748b;
+                    margin: 0;
+                    line-height: 1.4;
+                }
+            `;
+            document.head.appendChild(style);
+        },
+
+        // Auto DOM Ingestion (Sidebar & Views)
         injectDOM: function () {
-            // ১. সাইডবার মেনু ইনজেকশন
+            this.injectStyles();
+
+            // 1. Sidebar Menu Injection
             if (!document.getElementById("menu-exam-parent")) {
                 const settingsMenu = document.getElementById("menu-settings-parent");
-                const menuList = document.querySelector("#sidebar .menu-list");
-
                 if (settingsMenu && settingsMenu.parentNode) {
                     const li = document.createElement("li");
                     li.className = "menu-item";
@@ -57,7 +222,7 @@
                 }
             }
 
-            // ২. ড্যাশবোর্ড ও মডিউল ভিউ ইনজেকশন
+            // 2. View Panel Ingestion
             if (!document.getElementById("exam-system-view")) {
                 const mainWrapper = document.querySelector(".main-wrapper");
                 if (mainWrapper) {
@@ -65,97 +230,117 @@
                     viewDiv.className = "view-panel";
                     viewDiv.id = "exam-system-view";
                     viewDiv.innerHTML = `
-                        <!-- ড্যাশবোর্ড প্যানেল -->
+                        <!-- Dashboard Sub-view -->
                         <div id="exam-dashboard-panel" class="exam-sub-panel">
-                            <!-- সেশন ব্যানার -->
-                            <div class="fintech-hero-card" style="background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 100%); margin-bottom: 20px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-                                    <div style="text-align: left;">
-                                        <span style="background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; text-transform: uppercase;">
-                                            <i class="fa-solid fa-shield-halved"></i> Super Admin Managed
-                                        </span>
-                                        <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 8px; color: #fff;">Examination Management</h2>
-                                        <p style="font-size: 0.88rem; opacity: 0.85; margin-top: 4px;">ডায়নামিক সেশনভিত্তিক পরীক্ষা ও ফলাফল ব্যবস্থাপনা</p>
-                                    </div>
-                                    <div style="background: rgba(255,255,255,0.12); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); text-align: right;">
-                                        <div style="font-size: 0.75rem; text-transform: uppercase; color: #cbd5e1;">Active Academic Session</div>
-                                        <div id="examStatActiveSession" style="font-size: 1.25rem; font-weight: 800; color: #38bdf8;">Loading...</div>
-                                    </div>
+                            <!-- Compact Hero Header -->
+                            <div class="exam-hero-banner">
+                                <div class="exam-hero-left">
+                                    <h2>Examination Management System</h2>
+                                    <p>Dynamic Session-Driven Exam, Marks & Result Processing Hub</p>
+                                </div>
+                                <div class="exam-session-pill">
+                                    <span class="label">Active Academic Session</span>
+                                    <div class="value" id="examStatActiveSession">Academic Session 2026–2027</div>
                                 </div>
                             </div>
 
-                            <!-- ৮টি রিকোয়ার্ড স্ট্যাটিস্টিক কার্ড -->
-                            <div class="summary-grid" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 25px;">
-                                <div class="fintech-card" style="border-left: 4px solid #4f46e5;">
-                                    <div class="card-icon" style="background: #eef2ff; color: #4f46e5;"><i class="fa-solid fa-calendar-check"></i></div>
-                                    <h4>Active Academic Session</h4>
-                                    <div class="amount" id="examStatCardSession" style="font-size: 1.15rem;">None Selected</div>
+                            <!-- Compact Balanced 8-Card Grid (4x2) -->
+                            <div class="exam-stat-grid">
+                                <!-- Card 1 -->
+                                <div class="exam-stat-card" style="border-left-color: #4f46e5;">
+                                    <div class="exam-stat-header">
+                                        <h4 class="exam-stat-title">Active Session</h4>
+                                        <div class="exam-stat-icon" style="background: #eef2ff; color: #4f46e5;"><i class="fa-solid fa-calendar-check"></i></div>
+                                    </div>
+                                    <div class="exam-stat-amount" id="examStatCardSession" style="font-size: 1.05rem;">2026–2027</div>
                                 </div>
-                                <div class="fintech-card" style="border-left: 4px solid #0284c7;">
-                                    <div class="card-icon" style="background: #e0f2fe; color: #0284c7;"><i class="fa-solid fa-user-graduate"></i></div>
-                                    <h4>Total Students</h4>
-                                    <div class="amount" id="examStatCardTotalStudents">0</div>
+
+                                <!-- Card 2 -->
+                                <div class="exam-stat-card" style="border-left-color: #0284c7;">
+                                    <div class="exam-stat-header">
+                                        <h4 class="exam-stat-title">Total Students</h4>
+                                        <div class="exam-stat-icon" style="background: #e0f2fe; color: #0284c7;"><i class="fa-solid fa-user-graduate"></i></div>
+                                    </div>
+                                    <div class="exam-stat-amount" id="examStatCardTotalStudents">0</div>
                                 </div>
-                                <div class="fintech-card" style="border-left: 4px solid #059669;">
-                                    <div class="card-icon" style="background: #d1fae5; color: #059669;"><i class="fa-solid fa-school"></i></div>
-                                    <h4>Total Classes</h4>
-                                    <div class="amount" id="examStatCardTotalClasses">0</div>
+
+                                <!-- Card 3 -->
+                                <div class="exam-stat-card" style="border-left-color: #059669;">
+                                    <div class="exam-stat-header">
+                                        <h4 class="exam-stat-title">Total Classes</h4>
+                                        <div class="exam-stat-icon" style="background: #d1fae5; color: #059669;"><i class="fa-solid fa-school"></i></div>
+                                    </div>
+                                    <div class="exam-stat-amount" id="examStatCardTotalClasses">0</div>
                                 </div>
-                                <div class="fintech-card" style="border-left: 4px solid #d97706;">
-                                    <div class="card-icon" style="background: #fef3c7; color: #d97706;"><i class="fa-solid fa-book-bookmark"></i></div>
-                                    <h4>Total Subjects</h4>
-                                    <div class="amount" id="examStatCardTotalSubjects">0</div>
+
+                                <!-- Card 4 -->
+                                <div class="exam-stat-card" style="border-left-color: #d97706;">
+                                    <div class="exam-stat-header">
+                                        <h4 class="exam-stat-title">Total Subjects</h4>
+                                        <div class="exam-stat-icon" style="background: #fef3c7; color: #d97706;"><i class="fa-solid fa-book-bookmark"></i></div>
+                                    </div>
+                                    <div class="exam-stat-amount" id="examStatCardTotalSubjects">0</div>
                                 </div>
-                                <div class="fintech-card" style="border-left: 4px solid #8b5cf6;">
-                                    <div class="card-icon" style="background: #f5f3ff; color: #8b5cf6;"><i class="fa-solid fa-file-pen"></i></div>
-                                    <h4>Active Examinations</h4>
-                                    <div class="amount" id="examStatCardActiveExams">0</div>
+
+                                <!-- Card 5 -->
+                                <div class="exam-stat-card" style="border-left-color: #8b5cf6;">
+                                    <div class="exam-stat-header">
+                                        <h4 class="exam-stat-title">Active Exams</h4>
+                                        <div class="exam-stat-icon" style="background: #f5f3ff; color: #8b5cf6;"><i class="fa-solid fa-file-pen"></i></div>
+                                    </div>
+                                    <div class="exam-stat-amount" id="examStatCardActiveExams">0</div>
                                 </div>
-                                <div class="fintech-card" style="border-left: 4px solid #f97316;">
-                                    <div class="card-icon" style="background: #ffedd5; color: #f97316;"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                                    <h4>Pending Marks</h4>
-                                    <div class="amount" id="examStatCardPendingMarks" style="color: #f97316;">0</div>
+
+                                <!-- Card 6 -->
+                                <div class="exam-stat-card" style="border-left-color: #f97316;">
+                                    <div class="exam-stat-header">
+                                        <h4 class="exam-stat-title">Pending Marks</h4>
+                                        <div class="exam-stat-icon" style="background: #ffedd5; color: #f97316;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                                    </div>
+                                    <div class="exam-stat-amount" id="examStatCardPendingMarks" style="color: #f97316;">0</div>
                                 </div>
-                                <div class="fintech-card" style="border-left: 4px solid #ef4444;">
-                                    <div class="card-icon" style="background: #fee2e2; color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                                    <h4>Pending Verification</h4>
-                                    <div class="amount" id="examStatCardPendingVerify" style="color: #ef4444;">0</div>
+
+                                <!-- Card 7 -->
+                                <div class="exam-stat-card" style="border-left-color: #ef4444;">
+                                    <div class="exam-stat-header">
+                                        <h4 class="exam-stat-title">Pending Verification</h4>
+                                        <div class="exam-stat-icon" style="background: #fee2e2; color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                                    </div>
+                                    <div class="exam-stat-amount" id="examStatCardPendingVerify" style="color: #ef4444;">0</div>
                                 </div>
-                                <div class="fintech-card" style="border-left: 4px solid #10b981;">
-                                    <div class="card-icon" style="background: #dcfce7; color: #10b981;"><i class="fa-solid fa-circle-check"></i></div>
-                                    <h4>Published Results</h4>
-                                    <div class="amount" id="examStatCardPublishedResults" style="color: #10b981;">0</div>
+
+                                <!-- Card 8 -->
+                                <div class="exam-stat-card" style="border-left-color: #10b981;">
+                                    <div class="exam-stat-header">
+                                        <h4 class="exam-stat-title">Published Results</h4>
+                                        <div class="exam-stat-icon" style="background: #dcfce7; color: #10b981;"><i class="fa-solid fa-circle-check"></i></div>
+                                    </div>
+                                    <div class="exam-stat-amount" id="examStatCardPublishedResults" style="color: #10b981;">0</div>
                                 </div>
                             </div>
 
-                            <!-- ইনফো ব্যানার -->
-                            <div class="erp-form-card" style="border: 1px dashed #cbd5e1; background: #ffffff;">
-                                <div style="display: flex; align-items: flex-start; gap: 16px;">
-                                    <div style="width: 44px; height: 44px; border-radius: 12px; background: #eef2ff; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
-                                        <i class="fa-solid fa-cubes"></i>
-                                    </div>
-                                    <div>
-                                        <h3 style="font-size: 1.1rem; font-weight: 700; color: #1e1b4b; margin-bottom: 6px;">Foundation Phase Ready</h3>
-                                        <p style="font-size: 0.9rem; color: #64748b; line-height: 1.5;">
-                                            Examination Management System-এর ফ্রেমওয়ার্ক সংযুক্ত হয়েছে। কোনো তথ্য হার্ডকোড করা নেই। পরবর্তী ধাপে "Academic Setup"-এর মাধ্যমে সেশন, ক্লাস ও সেকশন যুক্ত করা যাবে।
-                                        </p>
-                                    </div>
+                            <!-- Compact Foundation Notice -->
+                            <div class="exam-notice-box">
+                                <div class="exam-notice-icon"><i class="fa-solid fa-cubes"></i></div>
+                                <div class="exam-notice-content">
+                                    <h4>Foundation Phase Initialized</h4>
+                                    <p>Examination Management System foundation has been successfully initialized. Academic configuration can now be managed from the Academic Setup module.</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- প্লেসহোল্ডার প্যানেল -->
+                        <!-- Dynamic Placeholder Sub-view -->
                         <div id="exam-module-placeholder-panel" class="exam-sub-panel" style="display: none;">
-                            <div class="erp-form-card" style="text-align: center; padding: 45px 20px;">
-                                <div style="width: 60px; height: 60px; border-radius: 50%; background: #eef2ff; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin: 0 auto 15px auto;">
+                            <div class="erp-form-card" style="text-align: center; padding: 35px 20px; max-width: 600px; margin: 20px auto;">
+                                <div style="width: 50px; height: 50px; border-radius: 50%; background: #eef2ff; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin: 0 auto 12px auto;">
                                     <i id="examPlaceholderIcon" class="fa-solid fa-layer-group"></i>
                                 </div>
-                                <h3 id="examPlaceholderTitle" style="font-size: 1.3rem; font-weight: 800; color: #1e1b4b; margin-bottom: 8px;">Module Name</h3>
-                                <p id="examPlaceholderDesc" style="color: #64748b; font-size: 0.92rem; max-width: 500px; margin: 0 auto 20px auto;">
-                                    এই মডিউলটির ফাউন্ডেশন প্রস্তুত। পরবর্তী ধাপে এর ডায়নামিক অ্যাডমিন কন্ট্রোল তৈরি করা হবে।
+                                <h3 id="examPlaceholderTitle" style="font-size: 1.15rem; font-weight: 800; color: #1e1b4b; margin-bottom: 6px;">Module Name</h3>
+                                <p id="examPlaceholderDesc" style="color: #64748b; font-size: 0.85rem; line-height: 1.5; margin: 0 auto 18px auto;">
+                                    This module framework is initialized and ready for configuration.
                                 </p>
-                                <button class="btn-submit" onclick="ExamSystem.navigateTo('exam-dashboard')" style="display: inline-flex; width: auto; padding: 10px 24px; background: #4f46e5;">
-                                    <i class="fa-solid fa-arrow-left"></i> ব্যাক টু ড্যাশবোর্ড
+                                <button class="btn-submit" onclick="ExamSystem.navigateTo('exam-dashboard')" style="display: inline-flex; width: auto; padding: 8px 20px; font-size: 0.85rem; background: #4f46e5;">
+                                    <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
                                 </button>
                             </div>
                         </div>
@@ -206,26 +391,27 @@
             }
         },
 
+        // All Metadata in Strict Professional English
         renderPlaceholder: function (moduleId) {
             const meta = {
-                "academic-setup": { title: "Academic Setup", icon: "fa-school", desc: "সেশন, শিফট, ক্লাস, সেকশন, গ্রুপ ও ডায়নামিক গ্রেড রুল কনফিগারেশন।" },
-                "student-management": { title: "Student Management", icon: "fa-user-graduate", desc: "শ্রেণিভিত্তিক শিক্ষার্থী ডাটা, রোল ও সেশন রেজিস্ট্রেশন।" },
-                "subject-marks-setup": { title: "Subject & Marks Setup", icon: "fa-book-bookmark", desc: "বিষয় তালিকা, আবশ্যিক/ঐচ্ছিক ক্যাটাগরি ও মার্কস ডিস্ট্রিবিউশন রুল।" },
-                "exam-setup": { title: "Exam Setup", icon: "fa-file-pen", desc: "পরীক্ষার নাম, ধরন, টার্ম ও পূর্ণমান সেটিংস।" },
-                "exam-routine": { title: "Exam Routine", icon: "fa-calendar-days", desc: "পরীক্ষার তারিখ, সময় ও বিষয়ভিত্তিক রুটিন প্রস্তুতকরণ।" },
-                "seat-plan": { title: "Seat Plan", icon: "fa-chair", desc: "রোলভিত্তিক রুম ও সিট প্ল্যানিং সিস্টেম।" },
-                "attendance": { title: "Exam Attendance", icon: "fa-clipboard-user", desc: "পরীক্ষার্থী উপস্থিতি ও অনুপস্থিতির হিসাব ব্যবস্থাপনা।" },
-                "marks-entry": { title: "Marks Entry", icon: "fa-pen-to-square", desc: "বিষয় ও খাতভিত্তিক (CQ, MCQ, Practical) নম্বর এন্ট্রি।" },
-                "marks-verification": { title: "Marks Verification", icon: "fa-check-double", desc: "নম্বর অডিট, নির্ভুলতা যাচাই ও অনুমোদন।" },
-                "result-processing": { title: "Result Processing", icon: "fa-calculator", desc: "জিপিএ, মোট নম্বর ও স্বয়ংক্রিয় পাস/ফেল রেজাল্ট প্রসেসিং।" },
-                "report-card": { title: "Report Card", icon: "fa-id-card", desc: "শিক্ষার্থীর একক গ্রেড শিট ও মার্কশিট জেনারেশন।" },
-                "tabulation": { title: "Tabulation Sheet", icon: "fa-table-list", desc: "শ্রেণিভিত্তিক সামগ্রিক ট্যাবুলেশন শিট প্রস্তুত ও প্রিন্ট।" },
-                "merit-list": { title: "Merit List", icon: "fa-award", desc: "মেধাক্রম, জিপিএ ও সর্বোচ্চ নম্বরের ভিত্তিতে মেধা তালিকা।" },
-                "result-publish": { title: "Result Publish", icon: "fa-bullhorn", desc: "ফলাফল চূড়ান্ত অনুমোদন ও সর্বসাধারণের জন্য প্রকাশনা।" },
-                "examination-reports": { title: "Reports & Analytics", icon: "fa-chart-line", desc: "পরীক্ষার সামগ্রিক পরিসংখ্যান ও অ্যানালিটিক্স রিপোর্ট।" }
+                "academic-setup": { title: "Academic Setup", icon: "fa-school", desc: "Configure academic sessions, shifts, classes, sections, groups, and dynamic grade rules." },
+                "student-management": { title: "Student Management", icon: "fa-user-graduate", desc: "Manage student enrollments, academic roll numbers, and class allocations." },
+                "subject-marks-setup": { title: "Subject & Marks Setup", icon: "fa-book-bookmark", desc: "Define subject structures, paper combinations, and marks distribution schemes." },
+                "exam-setup": { title: "Exam Setup", icon: "fa-file-pen", desc: "Create examinations, set exam types, terms, and total marks configurations." },
+                "exam-routine": { title: "Exam Routine", icon: "fa-calendar-days", desc: "Schedule exam dates, time slots, and subject-wise timetables." },
+                "seat-plan": { title: "Seat Plan", icon: "fa-chair", desc: "Generate roll-wise room allocations and printable seating arrangements." },
+                "attendance": { title: "Exam Attendance", icon: "fa-clipboard-user", desc: "Track student attendance, absentees, and exam room registries." },
+                "marks-entry": { title: "Marks Entry", icon: "fa-pen-to-square", desc: "Enter student marks by component (CQ, MCQ, Practical, Assessment)." },
+                "marks-verification": { title: "Marks Verification", icon: "fa-check-double", desc: "Audit entered marks, verify discrepancies, and lock entries for processing." },
+                "result-processing": { title: "Result Processing", icon: "fa-calculator", desc: "Process GPA, total marks, grades, and pass/fail status dynamically." },
+                "report-card": { title: "Report Card", icon: "fa-id-card", desc: "Generate and print individual student grade sheets and progress reports." },
+                "tabulation": { title: "Tabulation Sheet", icon: "fa-table-list", desc: "Generate class-wide consolidated tabulation sheets for academic records." },
+                "merit-list": { title: "Merit List", icon: "fa-award", desc: "Rank students based on GPA, total marks, and institutional criteria." },
+                "result-publish": { title: "Result Publish", icon: "fa-bullhorn", desc: "Approve and publish finalized examination results." },
+                "examination-reports": { title: "Reports & Analytics", icon: "fa-chart-line", desc: "View institutional exam performance statistics and analytical reports." }
             };
 
-            const data = meta[moduleId] || { title: moduleId.replace(/-/g, " ").toUpperCase(), icon: "fa-cubes", desc: "Foundation Ready." };
+            const data = meta[moduleId] || { title: moduleId.replace(/-/g, " ").toUpperCase(), icon: "fa-cubes", desc: "Module foundation ready." };
             document.getElementById("examPlaceholderTitle").innerText = data.title;
             document.getElementById("examPlaceholderIcon").className = `fa-solid ${data.icon}`;
             document.getElementById("examPlaceholderDesc").innerText = data.desc;
