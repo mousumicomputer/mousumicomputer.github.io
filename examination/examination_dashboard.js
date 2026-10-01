@@ -1,6 +1,6 @@
 /**
  * Mousumi Computer - Dynamic Examination Management System
- * Examination Dashboard Submodule
+ * Examination Dashboard Submodule (English Presentation)
  */
 
 (function () {
@@ -13,7 +13,8 @@
 
         refresh: function () {
             const stats = {
-                activeSession: "Academic Session 2026-2027",
+                activeSession: "Academic Session 2026–2027",
+                sessionShort: "2026–2027",
                 totalStudents: 0,
                 totalClasses: 0,
                 totalSubjects: 0,
@@ -29,7 +30,7 @@
             };
 
             setTxt("examStatActiveSession", stats.activeSession);
-            setTxt("examStatCardSession", stats.activeSession);
+            setTxt("examStatCardSession", stats.sessionShort);
             setTxt("examStatCardTotalStudents", stats.totalStudents);
             setTxt("examStatCardTotalClasses", stats.totalClasses);
             setTxt("examStatCardTotalSubjects", stats.totalSubjects);
