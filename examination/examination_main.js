@@ -7,7 +7,7 @@
     "use strict";
 
     window.ExamSystem = {
-        version: "1.0.3-flat-menu-match",
+        version: "1.0.4-short-dash-menu",
         dbRoot: "exam_system",
         submodules: {},
 
@@ -80,6 +80,11 @@
                 }
                 #menu-exam-parent.open .chevron-icon {
                     transform: rotate(180deg) !important;
+                }
+
+                /* Submenu Single Line Guarantee */
+                #menu-exam-parent .submenu-item a span {
+                    white-space: nowrap !important;
                 }
 
                 /* Compact Top Hero Banner */
@@ -258,7 +263,7 @@
                             <i class="fa-solid fa-chevron-down chevron-icon"></i>
                         </a>
                         <ul class="submenu-list">
-                            <li class="submenu-item" id="sub-exam-dash"><a onclick="ExamSystem.navigateTo('exam-dashboard')"><i class="fa-solid fa-gauge-high"></i> <span>Examination Dashboard</span></a></li>
+                            <li class="submenu-item" id="sub-exam-dash"><a onclick="ExamSystem.navigateTo('exam-dashboard')"><i class="fa-solid fa-gauge-high"></i> <span>Dashboard</span></a></li>
                             <li class="submenu-item" id="sub-academic-setup"><a onclick="ExamSystem.navigateTo('academic-setup')"><i class="fa-solid fa-school"></i> <span>Academic Setup</span></a></li>
                             <li class="submenu-item" id="sub-student-management"><a onclick="ExamSystem.navigateTo('student-management')"><i class="fa-solid fa-user-graduate"></i> <span>Student Management</span></a></li>
                             <li class="submenu-item" id="sub-subject-marks-setup"><a onclick="ExamSystem.navigateTo('subject-marks-setup')"><i class="fa-solid fa-book-bookmark"></i> <span>Subject & Marks Setup</span></a></li>
@@ -418,17 +423,17 @@
             const examView = document.getElementById("exam-system-view");
             if (examView) examView.classList.add("active");
 
-            // Never make the parent menu an active heavy card
+            // Keep parent menu clean and flat
             document.querySelectorAll(".menu-item").forEach(m => m.classList.remove("active"));
             const parentMenu = document.getElementById("menu-exam-parent");
             if (parentMenu) {
-                parentMenu.classList.remove("active"); // Keep parent flat
-                parentMenu.classList.add("open"); // Keep chevron rotated
+                parentMenu.classList.remove("active");
+                parentMenu.classList.add("open");
                 const s = parentMenu.querySelector(".submenu-list");
-                if (s) s.classList.add("show"); // Ensure submenus are open
+                if (s) s.classList.add("show");
             }
 
-            // Only mark the clicked submenu as active
+            // Only mark active submenu
             document.querySelectorAll("#menu-exam-parent .submenu-item").forEach(sm => sm.classList.remove("active"));
             const activeSub = document.getElementById("sub-" + submoduleId);
             if (activeSub) activeSub.classList.add("active");
