@@ -1,13 +1,13 @@
 /**
  * Mousumi Computer - Dynamic Examination Management System
- * Core Architecture & Compact UI Auto-Injection (Foundation Phase)
+ * Core Architecture & Flat Native Sidebar Matching (Foundation Phase)
  */
 
 (function () {
     "use strict";
 
     window.ExamSystem = {
-        version: "1.0.2-compact-sidebar",
+        version: "1.0.3-flat-menu-match",
         dbRoot: "exam_system",
         submodules: {},
 
@@ -18,49 +18,68 @@
             }
         },
 
-        // Dedicated Styles for Sidebar Menu and Dashboard
+        // Dedicated Styles to match existing ERP perfectly
         injectStyles: function () {
             if (document.getElementById("exam-system-styles")) return;
             const style = document.createElement("style");
             style.id = "exam-system-styles";
             style.innerHTML = `
                 /* -------------------------------------------------------------
-                   SIDEBAR MENU FIX: Single-line & exact match with other modules
+                   EXACT MATCH WITH BALANCE MANAGEMENT (Flat, Normal, No Heavy Card)
                    ------------------------------------------------------------- */
+                #menu-exam-parent {
+                    background: transparent !important;
+                    box-shadow: none !important;
+                    border: none !important;
+                    border-radius: 0 !important;
+                    margin-bottom: 2px !important;
+                }
                 #menu-exam-parent > a {
-                    white-space: nowrap !important;
+                    background: transparent !important;
+                    box-shadow: none !important;
+                    border: none !important;
+                    border-radius: 8px !important;
+                    color: #1e293b !important;
+                    padding: 10px 12px !important;
                     display: flex !important;
                     align-items: center !important;
                     justify-content: space-between !important;
-                    padding: 12px 14px !important;
-                    line-height: 1.2 !important;
+                    white-space: nowrap !important;
+                    text-decoration: none !important;
+                    transition: background 0.2s ease !important;
+                }
+                #menu-exam-parent > a:hover {
+                    background: rgba(0, 0, 0, 0.04) !important;
                 }
                 #menu-exam-parent .menu-link-inner {
                     display: flex !important;
                     align-items: center !important;
-                    gap: 10px !important;
+                    gap: 12px !important;
                     white-space: nowrap !important;
-                    min-width: 0 !important;
-                    flex: 1 !important;
-                    overflow: hidden !important;
+                    overflow: visible !important;
                 }
                 #menu-exam-parent .menu-link-inner i {
-                    flex-shrink: 0 !important;
                     font-size: 0.95rem !important;
+                    color: #475569 !important;
+                    width: 16px !important;
+                    text-align: center !important;
                 }
                 #menu-exam-parent .menu-link-inner span {
+                    font-size: 0.92rem !important;
+                    font-weight: 700 !important;
+                    color: #1e293b !important;
                     white-space: nowrap !important;
-                    overflow: hidden !important;
-                    text-overflow: ellipsis !important;
-                    font-size: 0.86rem !important; /* Calibrated to fit 22 chars comfortably on 1 line */
+                    overflow: visible !important;
+                    text-overflow: clip !important;
                     letter-spacing: -0.2px !important;
-                    font-weight: 500 !important;
-                    display: inline-block !important;
                 }
                 #menu-exam-parent .chevron-icon {
-                    flex-shrink: 0 !important;
-                    margin-left: 6px !important;
                     font-size: 0.75rem !important;
+                    color: #64748b !important;
+                    transition: transform 0.2s ease !important;
+                }
+                #menu-exam-parent.open .chevron-icon {
+                    transform: rotate(180deg) !important;
                 }
 
                 /* Compact Top Hero Banner */
@@ -226,7 +245,7 @@
         injectDOM: function () {
             this.injectStyles();
 
-            // 1. Sidebar Menu Injection
+            // 1. Sidebar Menu Injection (Clean & Native)
             if (!document.getElementById("menu-exam-parent")) {
                 const settingsMenu = document.getElementById("menu-settings-parent");
                 if (settingsMenu && settingsMenu.parentNode) {
@@ -350,7 +369,7 @@
                                 </div>
                             </div>
 
-                            <!-- Compact Foundation Notice -->
+                            <!-- Compact Notice Box -->
                             <div class="exam-notice-box">
                                 <div class="exam-notice-icon"><i class="fa-solid fa-cubes"></i></div>
                                 <div class="exam-notice-content">
@@ -382,11 +401,15 @@
         },
 
         toggleMenu: function () {
-            const m = document.getElementById("menu-exam-parent");
-            if (m) {
-                const s = m.querySelector(".submenu-list");
-                if (s) s.classList.toggle("show");
-                m.classList.toggle("open");
+            if (typeof window.toggleParentMenu === "function") {
+                window.toggleParentMenu("menu-exam-parent");
+            } else {
+                const m = document.getElementById("menu-exam-parent");
+                if (m) {
+                    const s = m.querySelector(".submenu-list");
+                    if (s) s.classList.toggle("show");
+                    m.classList.toggle("open");
+                }
             }
         },
 
@@ -395,10 +418,17 @@
             const examView = document.getElementById("exam-system-view");
             if (examView) examView.classList.add("active");
 
+            // Never make the parent menu an active heavy card
             document.querySelectorAll(".menu-item").forEach(m => m.classList.remove("active"));
             const parentMenu = document.getElementById("menu-exam-parent");
-            if (parentMenu) parentMenu.classList.add("active");
+            if (parentMenu) {
+                parentMenu.classList.remove("active"); // Keep parent flat
+                parentMenu.classList.add("open"); // Keep chevron rotated
+                const s = parentMenu.querySelector(".submenu-list");
+                if (s) s.classList.add("show"); // Ensure submenus are open
+            }
 
+            // Only mark the clicked submenu as active
             document.querySelectorAll("#menu-exam-parent .submenu-item").forEach(sm => sm.classList.remove("active"));
             const activeSub = document.getElementById("sub-" + submoduleId);
             if (activeSub) activeSub.classList.add("active");
