@@ -19,14 +19,23 @@
         groups: [],
         shifts: [],
 
-        // Modal tracking
-        modalType: null, // "session" | "class" | "section" | "group" | "shift"
+        modalType: null,
         editingId: null,
 
         init: function () {
             this.injectStyles();
             this.bindEvents();
-            this.loadAllData();
+
+            // Safe DOM check to load data as soon as container is ready
+            const ensureLoaded = () => {
+                const panel = document.getElementById("exam-academic-setup-panel");
+                if (panel) {
+                    this.loadAllData();
+                } else {
+                    setTimeout(ensureLoaded, 100);
+                }
+            };
+            ensureLoaded();
         },
 
         injectStyles: function () {
@@ -34,7 +43,6 @@
             const style = document.createElement("style");
             style.id = "academic-setup-extra-styles";
             style.innerHTML = `
-                /* Academic Setup Tabs Header */
                 .acad-tabs-bar {
                     display: flex;
                     gap: 6px;
@@ -82,7 +90,6 @@
                     background: #4f46e5;
                     color: #ffffff;
                 }
-                /* Badge styling */
                 .acad-badge-active { background: #dcfce7; color: #15803d; }
                 .acad-badge-inactive { background: #fee2e2; color: #b91c1c; }
                 .acad-badge-neutral { background: #f1f5f9; color: #475569; }
@@ -96,6 +103,11 @@
                     this.loadAllData();
                 }
             });
+        },
+
+        // Alias to prevent any router mismatch
+        fetchSessions: function () {
+            return this.loadAllData();
         },
 
         // Master Data Loader
@@ -147,7 +159,6 @@
 
             this.render();
 
-            // Refresh Dashboard live metrics
             if (window.ExamSystem && window.ExamSystem.submodules.dashboard) {
                 window.ExamSystem.submodules.dashboard.refresh();
             }
@@ -235,7 +246,6 @@
             `;
         },
 
-        // Render tab content dynamically
         renderActiveTabContent: function () {
             if (this.activeTab === "sessions") return this.renderSessionsView();
             if (!this.activeSessionObj) {
@@ -260,7 +270,6 @@
             return "";
         },
 
-        // ---------------- TAB 1: SESSIONS VIEW ----------------
         renderSessionsView: function () {
             return `
                 <div class="erp-form-header" style="margin-bottom: 14px;">
@@ -310,7 +319,6 @@
             `;
         },
 
-        // ---------------- TAB 2: CLASSES VIEW ----------------
         renderClassesView: function () {
             return `
                 <div class="erp-form-header" style="margin-bottom: 14px;">
@@ -363,7 +371,6 @@
             `;
         },
 
-        // ---------------- TAB 3: SECTIONS VIEW ----------------
         renderSectionsView: function () {
             return `
                 <div class="erp-form-header" style="margin-bottom: 14px;">
@@ -415,13 +422,12 @@
             `;
         },
 
-        // ---------------- TAB 4: GROUPS VIEW ----------------
         renderGroupsView: function () {
             return `
                 <div class="erp-form-header" style="margin-bottom: 14px;">
                     <div>
                         <span><i class="fa-solid fa-users-rectangle" style="color: #4f46e5;"></i> Academic Groups</span>
-                        <p style="font-size: 0.78rem; color: #64748b; font-weight: 500; margin: 2px 0 0 0;">Configuring academic discipline groups (e.g. Science, Humanities, Business Studies) for session: <strong>${this.activeSessionObj.name}</strong></p>
+                        <p style="font-size: 0.78rem; color: #64748b; font-weight: 500; margin: 2px 0 0 0;">Configuring academic discipline groups for session: <strong>${this.activeSessionObj.name}</strong></p>
                     </div>
                     <button class="btn-submit" onclick="ExamAcademicSetup.openAddModal('group')" style="width: auto; padding: 7px 16px; font-size: 0.82rem; background: #4f46e5;">
                         <i class="fa-solid fa-plus"></i> Add Group
@@ -461,13 +467,12 @@
             `;
         },
 
-        // ---------------- TAB 5: SHIFTS VIEW ----------------
         renderShiftsView: function () {
             return `
                 <div class="erp-form-header" style="margin-bottom: 14px;">
                     <div>
                         <span><i class="fa-solid fa-clock" style="color: #4f46e5;"></i> Shifts Management</span>
-                        <p style="font-size: 0.78rem; color: #64748b; font-weight: 500; margin: 2px 0 0 0;">Configuring academic shifts (e.g. Morning, Day) for session: <strong>${this.activeSessionObj.name}</strong></p>
+                        <p style="font-size: 0.78rem; color: #64748b; font-weight: 500; margin: 2px 0 0 0;">Configuring academic shifts for session: <strong>${this.activeSessionObj.name}</strong></p>
                     </div>
                     <button class="btn-submit" onclick="ExamAcademicSetup.openAddModal('shift')" style="width: auto; padding: 7px 16px; font-size: 0.82rem; background: #4f46e5;">
                         <i class="fa-solid fa-plus"></i> Add Shift
@@ -511,7 +516,6 @@
             `;
         },
 
-        // ---------------- MODAL BUILDER & HANDLERS ----------------
         openAddModal: function (type) {
             this.modalType = type;
             this.editingId = null;
@@ -549,7 +553,6 @@
 
             const isEdit = !!this.editingId;
 
-            // 1. Session Modal Form
             if (this.modalType === "session") {
                 const s = isEdit ? this.sessions.find(x => x.id === this.editingId) : {};
                 titleEl.innerText = isEdit ? "Edit Academic Session" : "Add Academic Session";
@@ -582,10 +585,7 @@
                         <textarea id="f_session_desc" rows="2" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; resize:none;">${s.description || ""}</textarea>
                     </div>
                 `;
-            }
-
-            // 2. Class Modal Form
-            else if (this.modalType === "class") {
+            } else if (this.modalType === "class") {
                 const c = isEdit ? this.classes.find(x => x.id === this.editingId) : {};
                 titleEl.innerText = isEdit ? "Edit Class" : "Add Class";
                 bodyEl.innerHTML = `
@@ -615,10 +615,7 @@
                         <textarea id="f_class_desc" rows="2" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; resize:none;">${c.description || ""}</textarea>
                     </div>
                 `;
-            }
-
-            // 3. Section Modal Form
-            else if (this.modalType === "section") {
+            } else if (this.modalType === "section") {
                 const sec = isEdit ? this.sections.find(x => x.id === this.editingId) : {};
                 titleEl.innerText = isEdit ? "Edit Section" : "Add Section";
 
@@ -637,11 +634,11 @@
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
                         <div>
                             <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">Section Name <span style="color:#ef4444;">*</span></label>
-                            <input type="text" id="f_sec_name" value="${sec.name || ""}" placeholder="e.g. A, B, Padma, Rose" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+                            <input type="text" id="f_sec_name" value="${sec.name || ""}" placeholder="e.g. A, B, Padma" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px;">
                         </div>
                         <div>
                             <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">Section Code <span style="color:#ef4444;">*</span></label>
-                            <input type="text" id="f_sec_code" value="${sec.code || ""}" placeholder="e.g. SEC-A, PADMA" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+                            <input type="text" id="f_sec_code" value="${sec.code || ""}" placeholder="e.g. SEC-A" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px;">
                         </div>
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
@@ -658,21 +655,18 @@
                         </div>
                     </div>
                 `;
-            }
-
-            // 4. Group Modal Form
-            else if (this.modalType === "group") {
+            } else if (this.modalType === "group") {
                 const g = isEdit ? this.groups.find(x => x.id === this.editingId) : {};
                 titleEl.innerText = isEdit ? "Edit Academic Group" : "Add Academic Group";
                 bodyEl.innerHTML = `
                     <div style="margin-bottom: 12px;">
                         <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">Group Name <span style="color:#ef4444;">*</span></label>
-                        <input type="text" id="f_grp_name" value="${g.name || ""}" placeholder="e.g. Science, Humanities, Business Studies, General" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+                        <input type="text" id="f_grp_name" value="${g.name || ""}" placeholder="e.g. Science, Humanities, Business Studies" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px;">
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
                         <div>
                             <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">Group Code <span style="color:#ef4444;">*</span></label>
-                            <input type="text" id="f_grp_code" value="${g.code || ""}" placeholder="e.g. SCI, HUM, BIZ, GEN" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+                            <input type="text" id="f_grp_code" value="${g.code || ""}" placeholder="e.g. SCI, HUM" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px;">
                         </div>
                         <div>
                             <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">Status</label>
@@ -687,16 +681,13 @@
                         <textarea id="f_grp_desc" rows="2" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; resize:none;">${g.description || ""}</textarea>
                     </div>
                 `;
-            }
-
-            // 5. Shift Modal Form
-            else if (this.modalType === "shift") {
+            } else if (this.modalType === "shift") {
                 const sh = isEdit ? this.shifts.find(x => x.id === this.editingId) : {};
                 titleEl.innerText = isEdit ? "Edit Shift" : "Add Shift";
                 bodyEl.innerHTML = `
                     <div style="margin-bottom: 12px;">
                         <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">Shift Name <span style="color:#ef4444;">*</span></label>
-                        <input type="text" id="f_shift_name" value="${sh.name || ""}" placeholder="e.g. Morning, Day, Evening" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+                        <input type="text" id="f_shift_name" value="${sh.name || ""}" placeholder="e.g. Morning, Day" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px;">
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
                         <div>
@@ -729,7 +720,6 @@
             }
         },
 
-        // Universal Form Submission Router
         handleModalSubmit: async function (e) {
             e.preventDefault();
             const btn = document.getElementById("btnSaveAcadModal");
@@ -750,7 +740,6 @@
             }
         },
 
-        // Save Session
         saveSession: async function () {
             const name = document.getElementById("f_session_name").value.trim();
             const startDate = document.getElementById("f_session_start").value;
@@ -793,7 +782,6 @@
             await this.loadAllData();
         },
 
-        // Save Class
         saveClass: async function () {
             const name = document.getElementById("f_class_name").value.trim();
             const code = document.getElementById("f_class_code").value.trim().toUpperCase();
@@ -801,7 +789,6 @@
             const status = document.getElementById("f_class_status").value;
             const description = document.getElementById("f_class_desc").value.trim();
 
-            // Validation: Duplicate Name or Code within same session
             const dupName = this.classes.find(c => c.name.toLowerCase() === name.toLowerCase() && c.id !== this.editingId);
             if (dupName) {
                 this.showModalAlert(`A class named "${name}" already exists in this session.`);
@@ -824,7 +811,6 @@
             await this.loadAllData();
         },
 
-        // Save Section
         saveSection: async function () {
             const classId = document.getElementById("f_sec_class").value;
             const name = document.getElementById("f_sec_name").value.trim();
@@ -832,7 +818,6 @@
             const order = parseInt(document.getElementById("f_sec_order").value) || 1;
             const status = document.getElementById("f_sec_status").value;
 
-            // Validation: Duplicate Section Name or Code for the same class
             const dupName = this.sections.find(s => s.classId === classId && s.name.toLowerCase() === name.toLowerCase() && s.id !== this.editingId);
             if (dupName) {
                 this.showModalAlert(`Section "${name}" already exists for this class.`);
@@ -850,7 +835,6 @@
             await this.loadAllData();
         },
 
-        // Save Group
         saveGroup: async function () {
             const name = document.getElementById("f_grp_name").value.trim();
             const code = document.getElementById("f_grp_code").value.trim().toUpperCase();
@@ -874,7 +858,6 @@
             await this.loadAllData();
         },
 
-        // Save Shift
         saveShift: async function () {
             const name = document.getElementById("f_shift_name").value.trim();
             const code = document.getElementById("f_shift_code").value.trim().toUpperCase();
@@ -900,7 +883,6 @@
             await this.loadAllData();
         },
 
-        // ---------------- TOGGLE STATUS ACTIONS ----------------
         toggleClassStatus: async function (id) {
             const item = this.classes.find(x => x.id === id);
             if (!item) return;
@@ -937,21 +919,19 @@
             await this.loadAllData();
         },
 
-        // ---------------- DELETE PROTECTION ACTIONS ----------------
         deleteClass: async function (id) {
             const item = this.classes.find(x => x.id === id);
             if (!item) return;
 
-            // Protection Rule 1: Check if sections exist under this class
             const hasSections = this.sections.some(s => s.classId === id);
             if (hasSections) {
-                this.showToast(`Cannot delete class "${item.name}" because active sections are assigned to it. Please reassign or delete its sections first, or set status to Inactive.`, "error");
+                this.showToast(`Cannot delete class "${item.name}" because active sections are assigned to it. Please remove its sections first, or set status to Inactive.`, "error");
                 return;
             }
 
             this.confirmAction(
                 "Delete Class?",
-                `Are you sure you want to permanently delete class "${item.name}" from this academic session?`,
+                `Permanently delete class "${item.name}" from this academic session?`,
                 async () => {
                     await window.ExamSystem.saveData(`session_data/${this.activeSessionId}/classes/${id}`, null);
                     this.showToast("Class deleted successfully.");
@@ -966,7 +946,7 @@
 
             this.confirmAction(
                 "Delete Section?",
-                `Are you sure you want to delete section "${item.name}"? If students are assigned to this section in future steps, consider disabling it instead.`,
+                `Permanently delete section "${item.name}"?`,
                 async () => {
                     await window.ExamSystem.saveData(`session_data/${this.activeSessionId}/sections/${id}`, null);
                     this.showToast("Section deleted.");
@@ -981,7 +961,7 @@
 
             this.confirmAction(
                 "Delete Group?",
-                `Are you sure you want to delete group "${item.name}"?`,
+                `Permanently delete group "${item.name}"?`,
                 async () => {
                     await window.ExamSystem.saveData(`session_data/${this.activeSessionId}/groups/${id}`, null);
                     this.showToast("Group deleted.");
@@ -996,7 +976,7 @@
 
             this.confirmAction(
                 "Delete Shift?",
-                `Are you sure you want to delete shift "${item.name}"?`,
+                `Permanently delete shift "${item.name}"?`,
                 async () => {
                     await window.ExamSystem.saveData(`session_data/${this.activeSessionId}/shifts/${id}`, null);
                     this.showToast("Shift deleted.");
@@ -1005,7 +985,6 @@
             );
         },
 
-        // Helper: Delete Session
         deleteSession: async function (id) {
             const target = this.sessions.find(s => s.id === id);
             if (!target) return;
@@ -1017,7 +996,7 @@
 
             this.confirmAction(
                 "Delete Academic Session?",
-                `Permanently delete session "${target.name}" and all its historical class/section configurations?`,
+                `Permanently delete session "${target.name}" and all its historical configurations?`,
                 async () => {
                     await window.ExamSystem.saveData(`sessions/${id}`, null);
                     await window.ExamSystem.saveData(`session_data/${id}`, null);
@@ -1027,14 +1006,13 @@
             );
         },
 
-        // Set Active Session
         setActiveSession: async function (id) {
             const target = this.sessions.find(s => s.id === id);
             if (!target) return;
 
             this.confirmAction(
                 "Activate Academic Session?",
-                `Set "${target.name}" as the active academic session? All class, section, exam, and marks views will automatically shift to this session context.`,
+                `Set "${target.name}" as the active academic session? All class, section, and examination setups will switch to this session.`,
                 async () => {
                     for (const s of this.sessions) {
                         if (s.id !== id && s.status === "Active") {
@@ -1049,7 +1027,6 @@
             );
         },
 
-        // Universal Confirmation Bridge
         confirmAction: function (title, message, callback) {
             if (typeof window.showConfirmModal === "function") {
                 window.showConfirmModal({
