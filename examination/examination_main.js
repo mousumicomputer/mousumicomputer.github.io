@@ -1,13 +1,13 @@
 /**
  * Mousumi Computer - Dynamic Examination Management System
- * Core Architecture & Dynamic Submodule Router (Academic Setup Enabled)
+ * Core Architecture & Dynamic Submodule Router (Subject & Marks Enabled)
  */
 
 (function () {
     "use strict";
 
     window.ExamSystem = {
-        version: "1.0.5-academic-setup",
+        version: "1.0.6-subject-marks-setup",
         dbRoot: "exam_system",
         submodules: {},
         activeSession: null,
@@ -19,7 +19,6 @@
             }
         },
 
-        // Isolated Database Write Helper
         saveData: async function (subPath, data) {
             const fullPath = `${this.dbRoot}/${subPath}`;
             if (typeof window.writeToFirebase === "function") {
@@ -29,13 +28,11 @@
             return false;
         },
 
-        // Dedicated Styles for Examination System
         injectStyles: function () {
             if (document.getElementById("exam-system-styles")) return;
             const style = document.createElement("style");
             style.id = "exam-system-styles";
             style.innerHTML = `
-                /* Native Flat Menu Header */
                 #menu-exam-parent {
                     background: transparent !important;
                     box-shadow: none !important;
@@ -57,9 +54,7 @@
                     text-decoration: none !important;
                     transition: background 0.2s ease !important;
                 }
-                #menu-exam-parent > a:hover {
-                    background: rgba(0, 0, 0, 0.04) !important;
-                }
+                #menu-exam-parent > a:hover { background: rgba(0, 0, 0, 0.04) !important; }
                 #menu-exam-parent .menu-link-inner {
                     display: flex !important;
                     align-items: center !important;
@@ -84,14 +79,9 @@
                     color: #64748b !important;
                     transition: transform 0.2s ease !important;
                 }
-                #menu-exam-parent.open .chevron-icon {
-                    transform: rotate(180deg) !important;
-                }
-                #menu-exam-parent .submenu-item a span {
-                    white-space: nowrap !important;
-                }
+                #menu-exam-parent.open .chevron-icon { transform: rotate(180deg) !important; }
+                #menu-exam-parent .submenu-item a span { white-space: nowrap !important; }
 
-                /* Compact Top Hero Banner */
                 .exam-hero-banner {
                     background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%);
                     border-radius: 12px;
@@ -104,18 +94,8 @@
                     margin-bottom: 14px;
                     box-shadow: 0 4px 12px rgba(30, 27, 75, 0.08);
                 }
-                .exam-hero-left h2 {
-                    font-size: 1.15rem;
-                    font-weight: 800;
-                    color: #ffffff;
-                    margin: 0;
-                    letter-spacing: -0.2px;
-                }
-                .exam-hero-left p {
-                    font-size: 0.78rem;
-                    color: #cbd5e1;
-                    margin: 2px 0 0 0;
-                }
+                .exam-hero-left h2 { font-size: 1.15rem; font-weight: 800; color: #ffffff; margin: 0; }
+                .exam-hero-left p { font-size: 0.78rem; color: #cbd5e1; margin: 2px 0 0 0; }
                 .exam-session-pill {
                     background: rgba(255, 255, 255, 0.12);
                     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -124,31 +104,16 @@
                     text-align: right;
                     white-space: nowrap;
                 }
-                .exam-session-pill .label {
-                    font-size: 0.65rem;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                    color: #93c5fd;
-                    display: block;
-                }
-                .exam-session-pill .value {
-                    font-size: 0.95rem;
-                    font-weight: 800;
-                    color: #ffffff;
-                    margin-top: 1px;
-                }
+                .exam-session-pill .label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: #93c5fd; display: block; }
+                .exam-session-pill .value { font-size: 0.95rem; font-weight: 800; color: #ffffff; margin-top: 1px; }
 
-                /* Balanced 4-Column Compact Grid */
                 .exam-stat-grid {
                     display: grid;
                     grid-template-columns: repeat(4, 1fr);
                     gap: 12px;
                     margin-bottom: 14px;
                 }
-                @media (max-width: 1200px) {
-                    .exam-stat-grid { grid-template-columns: repeat(2, 1fr); }
-                }
+                @media (max-width: 1200px) { .exam-stat-grid { grid-template-columns: repeat(2, 1fr); } }
                 @media (max-width: 600px) {
                     .exam-stat-grid { grid-template-columns: 1fr; }
                     .exam-hero-banner { flex-direction: column; align-items: flex-start; }
@@ -166,46 +131,11 @@
                     justify-content: space-between;
                     box-shadow: 0 1px 3px rgba(0,0,0,0.02);
                 }
-                .exam-stat-header {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    gap: 8px;
-                    margin-bottom: 4px;
-                }
-                .exam-stat-title {
-                    font-size: 0.72rem;
-                    font-weight: 700;
-                    color: #64748b;
-                    text-transform: uppercase;
-                    letter-spacing: 0.4px;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    margin: 0;
-                    flex: 1;
-                }
-                .exam-stat-icon {
-                    width: 26px;
-                    height: 26px;
-                    border-radius: 6px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 0.75rem;
-                    flex-shrink: 0;
-                }
-                .exam-stat-amount {
-                    font-size: 1.25rem;
-                    font-weight: 800;
-                    color: #0f172a;
-                    line-height: 1.2;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
+                .exam-stat-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+                .exam-stat-title { font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; flex: 1; }
+                .exam-stat-icon { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; }
+                .exam-stat-amount { font-size: 1.25rem; font-weight: 800; color: #0f172a; line-height: 1.2; }
 
-                /* Academic Setup Active Banner */
                 .exam-active-banner {
                     border-radius: 12px;
                     padding: 14px 20px;
@@ -216,54 +146,22 @@
                     gap: 15px;
                     flex-wrap: wrap;
                 }
-                .exam-active-banner.banner-active {
-                    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-                    border: 1.5px solid #a7f3d0;
-                }
-                .exam-active-banner.banner-empty {
-                    background: #fffbeb;
-                    border: 1.5px solid #fde68a;
-                }
-                .active-badge-icon {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 10px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 1.2rem;
-                }
+                .exam-active-banner.banner-active { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1.5px solid #a7f3d0; }
+                .exam-active-banner.banner-empty { background: #fffbeb; border: 1.5px solid #fde68a; }
+                .active-badge-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
                 .banner-active .active-badge-icon { background: #dcfce7; color: #16a34a; }
                 .banner-empty .active-badge-icon { background: #fef3c7; color: #d97706; }
-                .active-banner-label {
-                    font-size: 0.7rem;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                    color: #475569;
-                    display: block;
-                }
-                .active-banner-title {
-                    font-size: 1.15rem;
-                    font-weight: 800;
-                    color: #0f172a;
-                    margin: 2px 0;
-                }
-                .active-banner-dates {
-                    font-size: 0.8rem;
-                    color: #64748b;
-                    margin: 0;
-                    font-weight: 600;
-                }
+                .active-banner-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #475569; display: block; }
+                .active-banner-title { font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 2px 0; }
+                .active-banner-dates { font-size: 0.8rem; color: #64748b; margin: 0; font-weight: 600; }
             `;
             document.head.appendChild(style);
         },
 
-        // Auto DOM Ingestion
         injectDOM: function () {
             this.injectStyles();
 
-            // 1. Sidebar Menu Injection
+            // 1. Sidebar Injection
             if (!document.getElementById("menu-exam-parent")) {
                 const settingsMenu = document.getElementById("menu-settings-parent");
                 if (settingsMenu && settingsMenu.parentNode) {
@@ -278,8 +176,8 @@
                         <ul class="submenu-list">
                             <li class="submenu-item" id="sub-exam-dash"><a onclick="ExamSystem.navigateTo('exam-dashboard')"><i class="fa-solid fa-gauge-high"></i> <span>Dashboard</span></a></li>
                             <li class="submenu-item" id="sub-academic-setup"><a onclick="ExamSystem.navigateTo('academic-setup')"><i class="fa-solid fa-school"></i> <span>Academic Setup</span></a></li>
-                            <li class="submenu-item" id="sub-student-management"><a onclick="ExamSystem.navigateTo('student-management')"><i class="fa-solid fa-user-graduate"></i> <span>Student Management</span></a></li>
                             <li class="submenu-item" id="sub-subject-marks-setup"><a onclick="ExamSystem.navigateTo('subject-marks-setup')"><i class="fa-solid fa-book-bookmark"></i> <span>Subject & Marks Setup</span></a></li>
+                            <li class="submenu-item" id="sub-student-management"><a onclick="ExamSystem.navigateTo('student-management')"><i class="fa-solid fa-user-graduate"></i> <span>Student Management</span></a></li>
                             <li class="submenu-item" id="sub-exam-setup"><a onclick="ExamSystem.navigateTo('exam-setup')"><i class="fa-solid fa-file-pen"></i> <span>Exam Setup</span></a></li>
                             <li class="submenu-item" id="sub-exam-routine"><a onclick="ExamSystem.navigateTo('exam-routine')"><i class="fa-solid fa-calendar-days"></i> <span>Exam Routine</span></a></li>
                             <li class="submenu-item" id="sub-seat-plan"><a onclick="ExamSystem.navigateTo('seat-plan')"><i class="fa-solid fa-chair"></i> <span>Seat Plan</span></a></li>
@@ -389,7 +287,10 @@
                         <!-- 2. Academic Setup Sub-view -->
                         <div id="exam-academic-setup-panel" class="exam-sub-panel" style="display: none;"></div>
 
-                        <!-- 3. Dynamic Placeholder Sub-view for Future Modules -->
+                        <!-- 3. Subject & Marks Setup Sub-view -->
+                        <div id="exam-subject-setup-panel" class="exam-sub-panel" style="display: none;"></div>
+
+                        <!-- 4. Dynamic Placeholder Sub-view for Future Modules -->
                         <div id="exam-module-placeholder-panel" class="exam-sub-panel" style="display: none;">
                             <div class="erp-form-card" style="text-align: center; padding: 35px 20px; max-width: 600px; margin: 20px auto;">
                                 <div style="width: 50px; height: 50px; border-radius: 50%; background: #eef2ff; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin: 0 auto 12px auto;">
@@ -407,13 +308,6 @@
                     `;
                     mainWrapper.appendChild(viewDiv);
                 }
-            }
-
-            // Auto-load Academic Setup module script if not present
-            if (!document.querySelector('script[src*="academic_setup.js"]')) {
-                const s = document.createElement("script");
-                s.src = "examination/academic_setup.js";
-                document.body.appendChild(s);
             }
         },
 
@@ -435,7 +329,6 @@
             const examView = document.getElementById("exam-system-view");
             if (examView) examView.classList.add("active");
 
-            // Keep parent menu flat
             document.querySelectorAll(".menu-item").forEach(m => m.classList.remove("active"));
             const parentMenu = document.getElementById("menu-exam-parent");
             if (parentMenu) {
@@ -445,18 +338,18 @@
                 if (s) s.classList.add("show");
             }
 
-            // Active submenu highlight
             document.querySelectorAll("#menu-exam-parent .submenu-item").forEach(sm => sm.classList.remove("active"));
             const activeSub = document.getElementById("sub-" + submoduleId);
             if (activeSub) activeSub.classList.add("active");
 
             const dashPanel = document.getElementById("exam-dashboard-panel");
             const academicPanel = document.getElementById("exam-academic-setup-panel");
+            const subjectPanel = document.getElementById("exam-subject-setup-panel");
             const placeholderPanel = document.getElementById("exam-module-placeholder-panel");
 
-            // Hide all sub-panels first
             if (dashPanel) dashPanel.style.display = "none";
             if (academicPanel) academicPanel.style.display = "none";
+            if (subjectPanel) subjectPanel.style.display = "none";
             if (placeholderPanel) placeholderPanel.style.display = "none";
 
             const titleEl = document.getElementById("top-title");
@@ -464,16 +357,20 @@
             if (submoduleId === "exam-dashboard") {
                 if (dashPanel) dashPanel.style.display = "block";
                 if (titleEl) titleEl.innerText = "Examination Dashboard";
-
                 if (this.submodules.dashboard && typeof this.submodules.dashboard.refresh === "function") {
                     this.submodules.dashboard.refresh();
                 }
             } else if (submoduleId === "academic-setup") {
                 if (academicPanel) academicPanel.style.display = "block";
                 if (titleEl) titleEl.innerText = "Academic Setup & Sessions";
-
-                if (window.ExamAcademicSetup) {
-                    window.ExamAcademicSetup.fetchSessions();
+                if (window.ExamAcademicSetup && typeof window.ExamAcademicSetup.loadAllData === "function") {
+                    window.ExamAcademicSetup.loadAllData();
+                }
+            } else if (submoduleId === "subject-marks-setup") {
+                if (subjectPanel) subjectPanel.style.display = "block";
+                if (titleEl) titleEl.innerText = "Subject & Marks Configuration";
+                if (window.ExamSubjectSetup && typeof window.ExamSubjectSetup.loadAllData === "function") {
+                    window.ExamSubjectSetup.loadAllData();
                 }
             } else {
                 if (placeholderPanel) placeholderPanel.style.display = "block";
@@ -486,7 +383,6 @@
         renderPlaceholder: function (moduleId) {
             const meta = {
                 "student-management": { title: "Student Management", icon: "fa-user-graduate", desc: "Manage student enrollments, academic roll numbers, and class allocations." },
-                "subject-marks-setup": { title: "Subject & Marks Setup", icon: "fa-book-bookmark", desc: "Define subject structures, paper combinations, and marks distribution schemes." },
                 "exam-setup": { title: "Exam Setup", icon: "fa-file-pen", desc: "Create examinations, set exam types, terms, and total marks configurations." },
                 "exam-routine": { title: "Exam Routine", icon: "fa-calendar-days", desc: "Schedule exam dates, time slots, and subject-wise timetables." },
                 "seat-plan": { title: "Seat Plan", icon: "fa-chair", desc: "Generate roll-wise room allocations and printable seating arrangements." },
