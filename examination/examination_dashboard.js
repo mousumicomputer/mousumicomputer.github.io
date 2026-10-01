@@ -1,6 +1,6 @@
 /**
  * Mousumi Computer - Dynamic Examination Management System
- * Dynamic Dashboard Module - Live Active Session & Class Counters
+ * Dynamic Dashboard Module - Live Active Session, Classes & Subjects Counters
  */
 
 (function () {
@@ -11,11 +11,11 @@
             this.refresh();
         },
 
-        // Dynamically loads the active session and live class count from database
         refresh: async function () {
             let activeSessionName = "No Active Session";
             let sessionShort = "None";
             let totalClasses = 0;
+            let totalSubjects = 0;
 
             try {
                 if (typeof window.getDatabase === "function" && typeof window.ref === "function" && typeof window.get === "function") {
@@ -26,9 +26,10 @@
                     if (configSnap.exists()) {
                         const activeId = configSnap.val().active_session_id;
                         if (activeId) {
-                            const [sessionSnap, sessionDataSnap] = await Promise.all([
+                            const [sessionSnap, classesSnap, subjectsSnap] = await Promise.all([
                                 window.get(window.ref(db, `exam_system/sessions/${activeId}`)),
-                                window.get(window.ref(db, `exam_system/session_data/${activeId}/classes`))
+                                window.get(window.ref(db, `exam_system/session_data/${activeId}/classes`)),
+                                window.get(window.ref(db, `exam_system/session_data/${activeId}/subjects`))
                             ]);
 
                             if (sessionSnap.exists()) {
@@ -39,10 +40,14 @@
                                 }
                             }
 
-                            if (sessionDataSnap.exists()) {
-                                const classesObj = sessionDataSnap.val() || {};
-                                // Count active classes
+                            if (classesSnap.exists()) {
+                                const classesObj = classesSnap.val() || {};
                                 totalClasses = Object.values(classesObj).filter(c => c.status === "Active").length;
+                            }
+
+                            if (subjectsSnap.exists()) {
+                                const subjectsObj = subjectsSnap.val() || {};
+                                totalSubjects = Object.values(subjectsObj).filter(s => s.status === "Active").length;
                             }
                         }
                     }
@@ -56,12 +61,11 @@
                 if (el) el.innerText = val;
             };
 
-            // Live updates with zero hardcoding
             setTxt("examStatActiveSession", activeSessionName);
             setTxt("examStatCardSession", sessionShort);
             setTxt("examStatCardTotalStudents", 0);
             setTxt("examStatCardTotalClasses", totalClasses);
-            setTxt("examStatCardTotalSubjects", 0);
+            setTxt("examStatCardTotalSubjects", totalSubjects);
             setTxt("examStatCardActiveExams", 0);
             setTxt("examStatCardPendingMarks", 0);
             setTxt("examStatCardPendingVerify", 0);
