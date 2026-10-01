@@ -1,345 +1,643 @@
 /* =========================================================
    EXAMINATION MANAGEMENT SYSTEM
    Main Module
+   Version: 1.0
    ========================================================= */
 
 (function () {
+
     'use strict';
 
-    const EXAM_MENU_ID = 'examination-menu-parent';
-    const EXAM_VIEW_ID = 'examination-dashboard-view';
+    /* =========================================================
+       CONFIG
+       ========================================================= */
 
-    /* ---------------------------------------------------------
-       MAIN MENU
-       --------------------------------------------------------- */
+    const EXAM_MENU_ID = 'examination-menu-parent';
+    const EXAM_DASHBOARD_ID = 'examination-dashboard-view';
+
+
+    /* =========================================================
+       1. CREATE EXAMINATION MENU
+       ========================================================= */
 
     function createExaminationMenu() {
 
-        if (document.getElementById(EXAM_MENU_ID)) return;
+        // Already exists
+        if (document.getElementById(EXAM_MENU_ID)) {
+            return;
+        }
 
         const sidebar =
             document.getElementById('sidebar') ||
             document.querySelector('.sidebar');
 
         if (!sidebar) {
-            console.error('Examination: Sidebar not found.');
-            return;
-        }
-
-        const menu = document.createElement('div');
-
-        menu.id = EXAM_MENU_ID;
-        menu.className = 'menu-item examination-menu-parent';
-
-        menu.innerHTML = `
-            <div class="menu-link examination-menu-toggle"
-                 style="cursor:pointer;">
-
-                <span class="menu-icon">🎓</span>
-
-                <span class="menu-text">
-                    Examination Management
-                </span>
-
-                <span class="menu-arrow">⌄</span>
-            </div>
-
-            <div class="examination-submenu"
-                 style="display:none;">
-
-                <div class="examination-submenu-item"
-                     data-exam-view="examination-dashboard-view">
-                    📊 Examination Dashboard
-                </div>
-
-                <div class="examination-submenu-item"
-                     data-exam-view="academic-setup-view">
-                    🏫 Academic Setup
-                </div>
-
-                <div class="examination-submenu-item"
-                     data-exam-view="student-management-view">
-                    👨‍🎓 Student Management
-                </div>
-
-                <div class="examination-submenu-item"
-                     data-exam-view="subject-marks-view">
-                    📚 Subject & Marks Setup
-                </div>
-
-                <div class="examination-submenu-item"
-                     data-exam-view="exam-setup-view">
-                    📝 Exam Setup
-                </div>
-
-                <div class="examination-submenu-item"
-                     data-exam-view="exam-routine-view">
-                    📅 Exam Routine
-                </div>
-
-                <div class="examination-submenu-item"
-                     data-exam-view="seat-plan-view">
-                    🪑 Seat Plan
-                </div>
-
-                <div class="examination-submenu-item"
-                     data-exam-view="exam-attendance-view">
-                    ✅ Attendance
-                </div>
-
-                <div class="examination-submenu-item"
-                     data-exam-view="marks-entry-view">
-                    ✏️ Marks Entry
-                </div>
-
-                <div class="examination-submenu-item"
-                     data-exam-view="marks-verification-view">
-                    🔍 Marks Verification
-                </div>
-
-                <div class="examination-submenu-item"
-                     data-exam-view="result-processing-view">
-                    🧮 Result Processing
-                </div>
-
-                <div class="examination-submenu-item"
-                     data-exam-view="report-card-view">
-                    📄 Report Card
-                </div>
-
-                <div class="examination-submenu-item"
-                     data-exam-view="tabulation-view">
-                    📋 Tabulation Sheet
-                </div>
-
-                <div class="examination-submenu-item"
-                     data-exam-view="merit-list-view">
-                    🏆 Merit List
-                </div>
-
-                <div class="examination-submenu-item"
-                     data-exam-view="result-publish-view">
-                    📢 Result Publish
-                </div>
-
-                <div class="examination-submenu-item"
-                     data-exam-view="examination-reports-view">
-                    📊 Reports & Analytics
-                </div>
-
-            </div>
-        `;
-
-        sidebar.appendChild(menu);
-
-        setupExaminationMenuEvents();
-    }
-
-
-    /* ---------------------------------------------------------
-       MENU EVENTS
-       --------------------------------------------------------- */
-
-    function setupExaminationMenuEvents() {
-
-        const toggle =
-            document.querySelector('.examination-menu-toggle');
-
-        const submenu =
-            document.querySelector('.examination-submenu');
-
-        if (!toggle || !submenu) return;
-
-        toggle.addEventListener('click', function () {
-
-            const isOpen = submenu.style.display === 'block';
-
-            submenu.style.display = isOpen ? 'none' : 'block';
-
-            const arrow =
-                toggle.querySelector('.menu-arrow');
-
-            if (arrow) {
-                arrow.textContent = isOpen ? '⌄' : '⌃';
-            }
-        });
-
-
-        document
-            .querySelectorAll('.examination-submenu-item')
-            .forEach(item => {
-
-                item.addEventListener('click', function () {
-
-                    const viewId =
-                        this.getAttribute('data-exam-view');
-
-                    openExaminationView(viewId);
-
-                });
-
-            });
-    }
-
-
-    /* ---------------------------------------------------------
-       VIEW CONTAINER
-       --------------------------------------------------------- */
-
-    function createExaminationViews() {
-
-        const existing =
-            document.getElementById(EXAM_VIEW_ID);
-
-        if (existing) return;
-
-
-        const mainContainer =
-            document.querySelector('main') ||
-            document.querySelector('.main-content') ||
-            document.querySelector('.content-area') ||
-            document.querySelector('#main-content');
-
-        if (!mainContainer) {
             console.error(
-                'Examination: Main content container not found.'
+                'Examination Management: Sidebar not found.'
             );
             return;
         }
 
 
+        const menu = document.createElement('div');
+
+        menu.id = EXAM_MENU_ID;
+
+        menu.className = 'menu-item';
+
+
+        menu.innerHTML = `
+
+            <!-- MAIN EXAMINATION MENU -->
+
+            <div
+                class="menu-link examination-menu-toggle"
+                id="examination-menu-toggle"
+            >
+
+                <span class="menu-icon">
+                    🎓
+                </span>
+
+                <span class="menu-text">
+                    Examination Management
+                </span>
+
+                <span class="menu-arrow">
+                    ⌄
+                </span>
+
+            </div>
+
+
+            <!-- EXAMINATION SUB MENU -->
+
+            <div
+                class="examination-submenu"
+                id="examination-submenu"
+            >
+
+                <div
+                    class="examination-submenu-item"
+                    data-exam-view="examination-dashboard-view"
+                >
+                    📊
+                    <span>Examination Dashboard</span>
+                </div>
+
+
+                <div
+                    class="examination-submenu-item"
+                    data-exam-view="academic-setup-view"
+                >
+                    🏫
+                    <span>Academic Setup</span>
+                </div>
+
+
+                <div
+                    class="examination-submenu-item"
+                    data-exam-view="student-management-view"
+                >
+                    👨‍🎓
+                    <span>Student Management</span>
+                </div>
+
+
+                <div
+                    class="examination-submenu-item"
+                    data-exam-view="subject-marks-view"
+                >
+                    📚
+                    <span>Subject & Marks Setup</span>
+                </div>
+
+
+                <div
+                    class="examination-submenu-item"
+                    data-exam-view="exam-setup-view"
+                >
+                    📝
+                    <span>Exam Setup</span>
+                </div>
+
+
+                <div
+                    class="examination-submenu-item"
+                    data-exam-view="exam-routine-view"
+                >
+                    📅
+                    <span>Exam Routine</span>
+                </div>
+
+
+                <div
+                    class="examination-submenu-item"
+                    data-exam-view="seat-plan-view"
+                >
+                    🪑
+                    <span>Seat Plan</span>
+                </div>
+
+
+                <div
+                    class="examination-submenu-item"
+                    data-exam-view="exam-attendance-view"
+                >
+                    ✅
+                    <span>Attendance</span>
+                </div>
+
+
+                <div
+                    class="examination-submenu-item"
+                    data-exam-view="marks-entry-view"
+                >
+                    ✏️
+                    <span>Marks Entry</span>
+                </div>
+
+
+                <div
+                    class="examination-submenu-item"
+                    data-exam-view="marks-verification-view"
+                >
+                    🔍
+                    <span>Marks Verification</span>
+                </div>
+
+
+                <div
+                    class="examination-submenu-item"
+                    data-exam-view="result-processing-view"
+                >
+                    🧮
+                    <span>Result Processing</span>
+                </div>
+
+
+                <div
+                    class="examination-submenu-item"
+                    data-exam-view="report-card-view"
+                >
+                    📄
+                    <span>Report Card</span>
+                </div>
+
+
+                <div
+                    class="examination-submenu-item"
+                    data-exam-view="tabulation-view"
+                >
+                    📋
+                    <span>Tabulation Sheet</span>
+                </div>
+
+
+                <div
+                    class="examination-submenu-item"
+                    data-exam-view="merit-list-view"
+                >
+                    🏆
+                    <span>Merit List</span>
+                </div>
+
+
+                <div
+                    class="examination-submenu-item"
+                    data-exam-view="result-publish-view"
+                >
+                    📢
+                    <span>Result Publish</span>
+                </div>
+
+
+                <div
+                    class="examination-submenu-item"
+                    data-exam-view="examination-reports-view"
+                >
+                    📊
+                    <span>Reports & Analytics</span>
+                </div>
+
+            </div>
+
+        `;
+
+
+        /*
+         * Add menu at the end of sidebar.
+         */
+        sidebar.appendChild(menu);
+
+
+        setupExaminationMenuEvents();
+    }
+
+
+
+    /* =========================================================
+       2. MENU EVENTS
+       ========================================================= */
+
+    function setupExaminationMenuEvents() {
+
+        const toggle =
+            document.getElementById(
+                'examination-menu-toggle'
+            );
+
+        const submenu =
+            document.getElementById(
+                'examination-submenu'
+            );
+
+
+        if (!toggle || !submenu) {
+            return;
+        }
+
+
+        /*
+         * Open / Close Examination submenu
+         */
+
+        toggle.addEventListener(
+            'click',
+            function (event) {
+
+                event.preventDefault();
+                event.stopPropagation();
+
+
+                const isOpen =
+                    submenu.classList.contains(
+                        'exam-submenu-open'
+                    );
+
+
+                if (isOpen) {
+
+                    submenu.classList.remove(
+                        'exam-submenu-open'
+                    );
+
+                    submenu.style.display =
+                        'none';
+
+
+                    const arrow =
+                        toggle.querySelector(
+                            '.menu-arrow'
+                        );
+
+                    if (arrow) {
+                        arrow.textContent = '⌄';
+                    }
+
+                } else {
+
+                    submenu.classList.add(
+                        'exam-submenu-open'
+                    );
+
+                    submenu.style.display =
+                        'block';
+
+
+                    const arrow =
+                        toggle.querySelector(
+                            '.menu-arrow'
+                        );
+
+                    if (arrow) {
+                        arrow.textContent = '⌃';
+                    }
+                }
+
+            }
+        );
+
+
+        /*
+         * Submenu click
+         */
+
+        document
+            .querySelectorAll(
+                '.examination-submenu-item'
+            )
+            .forEach(function (item) {
+
+                item.addEventListener(
+                    'click',
+                    function (event) {
+
+                        event.preventDefault();
+                        event.stopPropagation();
+
+
+                        const viewId =
+                            item.getAttribute(
+                                'data-exam-view'
+                            );
+
+
+                        if (viewId) {
+                            openExaminationView(
+                                viewId
+                            );
+                        }
+
+                    }
+                );
+
+            });
+
+    }
+
+
+
+    /* =========================================================
+       3. CREATE EXAMINATION VIEWS
+       ========================================================= */
+
+    function createExaminationViews() {
+
+        /*
+         * Prevent duplicate creation
+         */
+
+        if (
+            document.getElementById(
+                EXAM_DASHBOARD_ID
+            )
+        ) {
+            return;
+        }
+
+
+        /*
+         * Try to find the existing main content area.
+         */
+
+        const mainContainer =
+            document.querySelector('main') ||
+            document.querySelector(
+                '.main-content'
+            ) ||
+            document.querySelector(
+                '.content-area'
+            ) ||
+            document.getElementById(
+                'main-content'
+            );
+
+
+        if (!mainContainer) {
+
+            console.error(
+                'Examination Management: Main content area not found.'
+            );
+
+            return;
+        }
+
+
+        /*
+         * All Examination pages
+         */
+
         const views = [
 
             {
-                id: 'examination-dashboard-view',
-                title: 'Examination Dashboard'
+                id:
+                    'examination-dashboard-view',
+
+                title:
+                    'Examination Dashboard'
             },
 
-            {
-                id: 'academic-setup-view',
-                title: 'Academic Setup'
-            },
 
             {
-                id: 'student-management-view',
-                title: 'Student Management'
+                id:
+                    'academic-setup-view',
+
+                title:
+                    'Academic Setup'
             },
 
-            {
-                id: 'subject-marks-view',
-                title: 'Subject & Marks Setup'
-            },
 
             {
-                id: 'exam-setup-view',
-                title: 'Exam Setup'
+                id:
+                    'student-management-view',
+
+                title:
+                    'Student Management'
             },
 
-            {
-                id: 'exam-routine-view',
-                title: 'Exam Routine'
-            },
 
             {
-                id: 'seat-plan-view',
-                title: 'Seat Plan'
+                id:
+                    'subject-marks-view',
+
+                title:
+                    'Subject & Marks Setup'
             },
 
-            {
-                id: 'exam-attendance-view',
-                title: 'Attendance'
-            },
 
             {
-                id: 'marks-entry-view',
-                title: 'Marks Entry'
+                id:
+                    'exam-setup-view',
+
+                title:
+                    'Exam Setup'
             },
 
-            {
-                id: 'marks-verification-view',
-                title: 'Marks Verification'
-            },
 
             {
-                id: 'result-processing-view',
-                title: 'Result Processing'
+                id:
+                    'exam-routine-view',
+
+                title:
+                    'Exam Routine'
             },
 
-            {
-                id: 'report-card-view',
-                title: 'Report Card'
-            },
 
             {
-                id: 'tabulation-view',
-                title: 'Tabulation Sheet'
+                id:
+                    'seat-plan-view',
+
+                title:
+                    'Seat Plan'
             },
 
-            {
-                id: 'merit-list-view',
-                title: 'Merit List'
-            },
 
             {
-                id: 'result-publish-view',
-                title: 'Result Publish'
+                id:
+                    'exam-attendance-view',
+
+                title:
+                    'Attendance'
             },
 
+
             {
-                id: 'examination-reports-view',
-                title: 'Reports & Analytics'
+                id:
+                    'marks-entry-view',
+
+                title:
+                    'Marks Entry'
+            },
+
+
+            {
+                id:
+                    'marks-verification-view',
+
+                title:
+                    'Marks Verification'
+            },
+
+
+            {
+                id:
+                    'result-processing-view',
+
+                title:
+                    'Result Processing'
+            },
+
+
+            {
+                id:
+                    'report-card-view',
+
+                title:
+                    'Report Card'
+            },
+
+
+            {
+                id:
+                    'tabulation-view',
+
+                title:
+                    'Tabulation Sheet'
+            },
+
+
+            {
+                id:
+                    'merit-list-view',
+
+                title:
+                    'Merit List'
+            },
+
+
+            {
+                id:
+                    'result-publish-view',
+
+                title:
+                    'Result Publish'
+            },
+
+
+            {
+                id:
+                    'examination-reports-view',
+
+                title:
+                    'Reports & Analytics'
             }
 
         ];
 
 
-        views.forEach((view, index) => {
+        /*
+         * Create every view
+         */
 
-            const panel =
-                document.createElement('section');
+        views.forEach(
+            function (view, index) {
 
-            panel.id = view.id;
-
-            panel.className =
-                'view-panel examination-view-panel';
-
-            panel.style.display =
-                index === 0 ? 'block' : 'none';
+                const panel =
+                    document.createElement(
+                        'section'
+                    );
 
 
-            panel.innerHTML = `
-                <div class="examination-page-header">
+                panel.id =
+                    view.id;
 
-                    <div>
-                        <h1>${view.title}</h1>
 
-                        <p>
-                            Examination Management System
-                        </p>
-                    </div>
+                panel.className =
+                    'view-panel examination-view-panel';
 
-                </div>
 
-                <div class="examination-page-content">
+                /*
+                 * Only dashboard visible initially.
+                 */
 
-                    ${
-                        view.id === EXAM_VIEW_ID
-                        ?
-                        `
-                        <div class="exam-welcome-card">
+                panel.style.display =
+                    index === 0
+                        ? 'block'
+                        : 'none';
 
-                            <div class="exam-welcome-icon">
+
+                /*
+                 * Dashboard content
+                 */
+
+                if (
+                    view.id ===
+                    'examination-dashboard-view'
+                ) {
+
+                    panel.innerHTML = `
+
+                        <div
+                            class="examination-page-header"
+                        >
+
+                            <div>
+
+                                <h1>
+                                    Examination Dashboard
+                                </h1>
+
+                                <p>
+                                    Examination Management System
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            class="exam-welcome-card"
+                        >
+
+                            <div
+                                class="exam-welcome-icon"
+                            >
                                 🎓
                             </div>
+
 
                             <h2>
                                 Examination Management
                             </h2>
 
+
                             <p>
                                 Welcome to the Examination
                                 Management System.
                             </p>
+
 
                             <p>
                                 Academic setup, students,
@@ -348,14 +646,45 @@
                             </p>
 
                         </div>
-                        `
-                        :
-                        `
-                        <div class="exam-module-placeholder">
+
+                    `;
+
+                } else {
+
+                    /*
+                     * Other pages are placeholders
+                     * for now.
+                     */
+
+                    panel.innerHTML = `
+
+                        <div
+                            class="examination-page-header"
+                        >
+
+                            <div>
+
+                                <h1>
+                                    ${view.title}
+                                </h1>
+
+                                <p>
+                                    Examination Management System
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            class="exam-module-placeholder"
+                        >
 
                             <h2>
                                 ${view.title}
                             </h2>
+
 
                             <p>
                                 This module will be developed
@@ -363,88 +692,168 @@
                             </p>
 
                         </div>
-                        `
-                    }
 
-                </div>
-            `;
+                    `;
+
+                }
 
 
-            mainContainer.appendChild(panel);
+                /*
+                 * Add to existing main area.
+                 */
 
-        });
+                mainContainer.appendChild(
+                    panel
+                );
+
+            }
+        );
+
+
+        /*
+         * Add CSS
+         */
 
         addExaminationStyles();
+
     }
 
 
-    /* ---------------------------------------------------------
-       OPEN VIEW
-       --------------------------------------------------------- */
 
-    function openExaminationView(viewId) {
+    /* =========================================================
+       4. OPEN EXAMINATION VIEW
+       ========================================================= */
+
+    function openExaminationView(
+        viewId
+    ) {
+
+        /*
+         * Hide all existing view panels
+         */
 
         document
-            .querySelectorAll('.view-panel')
-            .forEach(panel => {
+            .querySelectorAll(
+                '.view-panel'
+            )
+            .forEach(
+                function (panel) {
 
-                panel.style.display = 'none';
+                    panel.style.display =
+                        'none';
 
-            });
+                }
+            );
 
+
+        /*
+         * Find selected view
+         */
 
         const target =
-            document.getElementById(viewId);
+            document.getElementById(
+                viewId
+            );
+
 
         if (!target) {
+
             console.error(
                 'Examination view not found:',
                 viewId
             );
+
             return;
         }
 
 
-        target.style.display = 'block';
+        /*
+         * Show selected view
+         */
 
+        target.style.display =
+            'block';
+
+
+        /*
+         * Remove active status
+         */
 
         document
-            .querySelectorAll('.examination-submenu-item')
-            .forEach(item => {
+            .querySelectorAll(
+                '.examination-submenu-item'
+            )
+            .forEach(
+                function (item) {
 
-                item.classList.remove('active');
+                    item.classList.remove(
+                        'active'
+                    );
 
-            });
+                }
+            );
 
+
+        /*
+         * Add active status
+         */
 
         const activeItem =
             document.querySelector(
-                `[data-exam-view="${viewId}"]`
+                '[data-exam-view="' +
+                viewId +
+                '"]'
             );
 
+
         if (activeItem) {
-            activeItem.classList.add('active');
+
+            activeItem.classList.add(
+                'active'
+            );
+
         }
 
+
+        /*
+         * Update top title if available
+         */
 
         const title =
-            target.querySelector('h1');
+            target.querySelector(
+                'h1'
+            );
+
 
         const topTitle =
-            document.getElementById('top-title');
+            document.getElementById(
+                'top-title'
+            );
 
-        if (title && topTitle) {
+
+        if (
+            title &&
+            topTitle
+        ) {
+
             topTitle.textContent =
                 title.textContent;
+
         }
+
     }
 
 
-    /* ---------------------------------------------------------
-       CSS
-       --------------------------------------------------------- */
+
+    /* =========================================================
+       5. EXAMINATION CSS
+       ========================================================= */
 
     function addExaminationStyles() {
+
+        /*
+         * Don't add CSS twice.
+         */
 
         if (
             document.getElementById(
@@ -456,7 +865,10 @@
 
 
         const style =
-            document.createElement('style');
+            document.createElement(
+                'style'
+            );
+
 
         style.id =
             'examination-main-styles';
@@ -464,120 +876,436 @@
 
         style.textContent = `
 
-            .examination-submenu {
-                padding-left: 18px;
-                margin-top: 4px;
+            /* =================================================
+               EXAMINATION MAIN MENU
+               ================================================= */
+
+            #examination-menu-parent {
+
+                width: 100%;
+
+                box-sizing: border-box;
+
+                margin: 0;
+
+                padding: 0;
+
             }
 
-            .examination-submenu-item {
-                padding: 9px 12px;
-                margin: 2px 0;
-                border-radius: 7px;
-                cursor: pointer;
-                font-size: 14px;
-                transition: 0.2s;
-            }
 
-            .examination-submenu-item:hover {
-                background: #f0f2ff;
-            }
+            #examination-menu-parent
+            #examination-menu-toggle {
 
-            .examination-submenu-item.active {
-                background: #e8eaff;
+                display: flex;
+
+                align-items: center;
+
+                width: 100%;
+
+                min-height: 46px;
+
+                padding: 8px 12px;
+
+                box-sizing: border-box;
+
+                background: transparent;
+
+                color: #334155;
+
+                border: none;
+
+                border-radius: 8px;
+
+                font-family: inherit;
+
+                font-size: 15px;
+
                 font-weight: 600;
+
+                line-height: 1.3;
+
+                cursor: pointer;
+
+                text-align: left;
+
             }
+
+
+            #examination-menu-parent
+            #examination-menu-toggle:hover {
+
+                background: rgba(
+                    0,
+                    0,
+                    0,
+                    0.035
+                );
+
+            }
+
+
+            /* =================================================
+               MAIN ICON
+               ================================================= */
+
+            #examination-menu-parent
+            .menu-icon {
+
+                display: inline-flex;
+
+                align-items: center;
+
+                justify-content: center;
+
+                width: 27px;
+
+                min-width: 27px;
+
+                margin-right: 8px;
+
+                font-size: 16px;
+
+                line-height: 1;
+
+            }
+
+
+            /* =================================================
+               MENU TEXT
+               ================================================= */
+
+            #examination-menu-parent
+            .menu-text {
+
+                flex: 1;
+
+                color: #334155;
+
+                white-space: nowrap;
+
+            }
+
+
+            /* =================================================
+               ARROW
+               ================================================= */
+
+            #examination-menu-parent
+            .menu-arrow {
+
+                display: inline-flex;
+
+                align-items: center;
+
+                justify-content: center;
+
+                width: 20px;
+
+                min-width: 20px;
+
+                color: #334155;
+
+                font-size: 15px;
+
+            }
+
+
+            /* =================================================
+               SUBMENU
+               ================================================= */
+
+            #examination-menu-parent
+            .examination-submenu {
+
+                display: none;
+
+                width: 100%;
+
+                box-sizing: border-box;
+
+                padding: 3px 5px 6px 32px;
+
+                margin: 0;
+
+            }
+
+
+            /* =================================================
+               SUBMENU ITEM
+               ================================================= */
+
+            #examination-menu-parent
+            .examination-submenu-item {
+
+                display: flex;
+
+                align-items: center;
+
+                gap: 7px;
+
+                width: 100%;
+
+                min-height: 32px;
+
+                box-sizing: border-box;
+
+                padding: 5px 8px;
+
+                margin: 1px 0;
+
+                border-radius: 6px;
+
+                color: #64748b;
+
+                background: transparent;
+
+                font-family: inherit;
+
+                font-size: 13px;
+
+                font-weight: 500;
+
+                line-height: 1.25;
+
+                cursor: pointer;
+
+                white-space: nowrap;
+
+                transition:
+                    background 0.2s ease,
+                    color 0.2s ease;
+
+            }
+
+
+            #examination-menu-parent
+            .examination-submenu-item:hover {
+
+                background: #f1f5f9;
+
+                color: #334155;
+
+            }
+
+
+            #examination-menu-parent
+            .examination-submenu-item.active {
+
+                background: #eef2ff;
+
+                color: #4338ca;
+
+                font-weight: 600;
+
+            }
+
+
+            /* =================================================
+               EXAMINATION VIEW
+               ================================================= */
 
             .examination-view-panel {
+
+                width: 100%;
+
+                min-height: 100%;
+
                 padding: 25px;
+
                 box-sizing: border-box;
+
             }
+
+
+            /* =================================================
+               PAGE HEADER
+               ================================================= */
 
             .examination-page-header {
+
                 display: flex;
+
                 justify-content: space-between;
+
                 align-items: center;
+
                 margin-bottom: 25px;
+
             }
+
 
             .examination-page-header h1 {
+
                 margin: 0;
+
+                color: #1e293b;
+
                 font-size: 28px;
+
+                font-weight: 700;
+
             }
+
 
             .examination-page-header p {
-                margin-top: 6px;
-                color: #777;
+
+                margin: 6px 0 0;
+
+                color: #64748b;
+
+                font-size: 14px;
+
             }
+
+
+            /* =================================================
+               WELCOME CARD
+               ================================================= */
 
             .exam-welcome-card {
+
                 background: #ffffff;
+
                 border-radius: 15px;
+
                 padding: 35px;
+
                 text-align: center;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+
+                box-shadow:
+                    0 4px 20px
+                    rgba(0,0,0,0.07);
+
             }
+
 
             .exam-welcome-icon {
+
                 font-size: 55px;
+
                 margin-bottom: 10px;
+
             }
+
 
             .exam-welcome-card h2 {
-                margin-bottom: 10px;
+
+                margin: 0 0 10px;
+
+                color: #1e293b;
+
             }
+
 
             .exam-welcome-card p {
-                color: #666;
+
+                margin: 6px 0;
+
+                color: #64748b;
+
             }
 
+
+            /* =================================================
+               PLACEHOLDER
+               ================================================= */
+
             .exam-module-placeholder {
-                background: #fff;
+
+                background: #ffffff;
+
                 border-radius: 12px;
+
                 padding: 30px;
-                box-shadow: 0 3px 15px rgba(0,0,0,0.06);
+
+                box-shadow:
+                    0 3px 15px
+                    rgba(0,0,0,0.06);
+
+            }
+
+
+            .exam-module-placeholder h2 {
+
+                margin: 0 0 8px;
+
+                color: #1e293b;
+
+            }
+
+
+            .exam-module-placeholder p {
+
+                margin: 0;
+
+                color: #64748b;
+
             }
 
         `;
 
 
-        document.head.appendChild(style);
+        document.head.appendChild(
+            style
+        );
+
     }
 
 
-    /* ---------------------------------------------------------
-       INITIALIZE
-       --------------------------------------------------------- */
+
+    /* =========================================================
+       6. INITIALIZE SYSTEM
+       ========================================================= */
 
     function initializeExaminationSystem() {
 
-        createExaminationMenu();
+        try {
 
-        createExaminationViews();
+            createExaminationMenu();
 
-        console.log(
-            'Examination Management System initialized.'
-        );
+            createExaminationViews();
+
+            console.log(
+                '✓ Examination Management System initialized.'
+            );
+
+        } catch (error) {
+
+            console.error(
+                'Examination Management initialization error:',
+                error
+            );
+
+        }
+
     }
 
 
-    /* ---------------------------------------------------------
-       GLOBAL ACCESS
-       --------------------------------------------------------- */
+
+    /* =========================================================
+       7. GLOBAL ACCESS
+       ========================================================= */
 
     window.ExaminationManagement = {
 
-        init: initializeExaminationSystem,
+        init:
+            initializeExaminationSystem,
 
-        openView: openExaminationView
+        openView:
+            openExaminationView
 
     };
 
 
-    /* ---------------------------------------------------------
-       START AFTER PAGE LOAD
-       --------------------------------------------------------- */
 
-    if (document.readyState === 'loading') {
+    /* =========================================================
+       8. START
+       ========================================================= */
+
+    if (
+        document.readyState ===
+        'loading'
+    ) {
 
         document.addEventListener(
             'DOMContentLoaded',
