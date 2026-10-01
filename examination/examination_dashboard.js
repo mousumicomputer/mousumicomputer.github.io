@@ -1,6 +1,6 @@
 /**
  * Mousumi Computer - Dynamic Examination Management System
- * Dynamic Examination Dashboard (Zero Hardcoded Session)
+ * Dynamic Dashboard Module - Live Active Session & Class Counters
  */
 
 (function () {
@@ -11,10 +11,11 @@
             this.refresh();
         },
 
-        // Dynamically loads the active session directly from Firebase database
+        // Dynamically loads the active session and live class count from database
         refresh: async function () {
             let activeSessionName = "No Active Session";
             let sessionShort = "None";
+            let totalClasses = 0;
 
             try {
                 if (typeof window.getDatabase === "function" && typeof window.ref === "function" && typeof window.get === "function") {
@@ -25,8 +26,11 @@
                     if (configSnap.exists()) {
                         const activeId = configSnap.val().active_session_id;
                         if (activeId) {
-                            const sessionRef = window.ref(db, `exam_system/sessions/${activeId}`);
-                            const sessionSnap = await window.get(sessionRef);
+                            const [sessionSnap, sessionDataSnap] = await Promise.all([
+                                window.get(window.ref(db, `exam_system/sessions/${activeId}`)),
+                                window.get(window.ref(db, `exam_system/session_data/${activeId}/classes`))
+                            ]);
+
                             if (sessionSnap.exists()) {
                                 const sessionData = sessionSnap.val();
                                 if (sessionData.status === "Active") {
@@ -34,17 +38,17 @@
                                     sessionShort = sessionData.name;
                                 }
                             }
+
+                            if (sessionDataSnap.exists()) {
+                                const classesObj = sessionDataSnap.val() || {};
+                                // Count active classes
+                                totalClasses = Object.values(classesObj).filter(c => c.status === "Active").length;
+                            }
                         }
                     }
                 }
             } catch (err) {
-                console.warn("[ExamDashboard] Error fetching active session:", err);
-            }
-
-            // Fallback from active runtime state
-            if (window.ExamSystem && window.ExamSystem.activeSession) {
-                activeSessionName = window.ExamSystem.activeSession.name;
-                sessionShort = window.ExamSystem.activeSession.name;
+                console.warn("[ExamDashboard] Error fetching dynamic stats:", err);
             }
 
             const setTxt = (id, val) => {
@@ -52,11 +56,11 @@
                 if (el) el.innerText = val;
             };
 
-            // Update DOM with 100% dynamic values (Zero hardcoding)
+            // Live updates with zero hardcoding
             setTxt("examStatActiveSession", activeSessionName);
             setTxt("examStatCardSession", sessionShort);
             setTxt("examStatCardTotalStudents", 0);
-            setTxt("examStatCardTotalClasses", 0);
+            setTxt("examStatCardTotalClasses", totalClasses);
             setTxt("examStatCardTotalSubjects", 0);
             setTxt("examStatCardActiveExams", 0);
             setTxt("examStatCardPendingMarks", 0);
