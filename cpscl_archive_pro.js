@@ -2,22 +2,43 @@
  * CPSCL Academic Evaluation - Super Admin Archive Engine (PRO ADDON)
  * File: cpscl_archive_pro.js
  * Architecture: 100% Non-destructive Read-Only Addon
- * Safety: Never alters, deletes, or overwrites live exam marks or student databases
+ * Bug Fix: Tab Visibility Isolation + FontAwesome Icon Specificity Enforcer
  */
 
 (function () {
     // ==========================================================
-    // ১. আল্ট্রা-কম্প্যাক্ট ও স্কোপড সিএসএস ইনজেকশন (মেইন থিমে ক্লাশিং হবে না)
+    // ১. আল্ট্রা-কম্প্যাক্ট ও নিরাপদ সিএসএস ইনজেকশন
     // ==========================================================
     const archiveStyle = document.createElement('style');
     archiveStyle.id = 'cpscl-archive-pro-style';
     archiveStyle.innerHTML = `
+        /* ১. ডিসপ্লে ফিক্স: অন্য কোনো মেনুতে দেখাবে না, শুধু active হলে দেখাবে */
         #eval-archive-sec {
+            display: none !important;
             width: 100%;
-            display: flex;
+        }
+        #eval-archive-sec.active {
+            display: flex !important;
             flex-direction: column;
             gap: 8px;
             font-family: 'Inter', 'Plus Jakarta Sans', sans-serif !important;
+        }
+
+        /* ২. আইকন ফিক্স: Tiro Bangla ফন্ট ওভাররাইড করে FontAwesome নিশ্চিত করা */
+        #eval-archive-sec i, 
+        #eval-archive-sec .fa, 
+        #eval-archive-sec .fas, 
+        #eval-archive-sec .fa-solid, 
+        #eval-archive-sec [class*="fa-"],
+        #arcSigModal i,
+        #arcSigModal [class*="fa-"] {
+            font-family: "Font Awesome 6 Free", "FontAwesome" !important;
+            font-weight: 900 !important;
+            font-style: normal !important;
+            display: inline-block !important;
+            line-height: 1 !important;
+            text-rendering: auto !important;
+            -webkit-font-smoothing: antialiased !important;
         }
 
         .arc-pill-card {
@@ -250,7 +271,7 @@
     `;
     document.head.appendChild(archiveStyle);
 
-    // MASTER SUBJECT DEFINITIONS (সায়েন্সের ১২টি সহ সকল বিভাগ)
+    // MASTER SUBJECT DEFINITIONS
     const MASTER_SUBJECTS = {
         Science: [
             { key: 'B1', name: 'Bangla 1st' }, { key: 'B2', name: 'Bangla 2nd' },
@@ -283,7 +304,7 @@
     let _db = null, _ref = null, _get = null;
     let archivesMap = {};
     let activeArchiveId = null;
-    let activeArchiveData = null; // { examInfo, marks, archivedAt }
+    let activeArchiveData = null;
     let cachedStudents = [];
 
     // SUPER ADMIN SIGNATURE CONFIG
@@ -298,7 +319,7 @@
     };
 
     // ==========================================================
-    // ২. ইন্টারফেস রেন্ডার (আপনার আল্ট্রা-কম্প্যাক্ট ড্যাশবোর্ড ইনজেকশন)
+    // ২. ইন্টারফেস রেন্ডার
     // ==========================================================
     function setupArchiveInterface() {
         const targetSec = document.getElementById('eval-archive-sec');
@@ -417,14 +438,12 @@
         if (!_get || !_ref || !_db) return;
 
         try {
-            // ১. স্টুডেন্ট লিস্ট ক্যাশ সংগ্রহ
             const stdSnap = await _get(_ref(_db, 'evaluation_system/students'));
             if (stdSnap.exists()) {
                 const val = stdSnap.val();
                 cachedStudents = Array.isArray(val) ? val : Object.values(val);
             }
 
-            // ২. আর্কাইভ তালিকা সংগ্রহ
             const arcSnap = await _get(_ref(_db, 'evaluation_system/archives'));
             const picker = document.getElementById('arcExamPicker');
             if (!picker) return;
@@ -438,7 +457,6 @@
                     return;
                 }
 
-                // তারিখ অনুযায়ী সাজানো (সাম্প্রতিক আগে)
                 keys.reverse().forEach(k => {
                     const ex = archivesMap[k].examInfo || {};
                     const opt = document.createElement('option');
@@ -447,7 +465,6 @@
                     picker.appendChild(opt);
                 });
 
-                // প্রথম পরীক্ষাটি স্বয়ংক্রিয়ভাবে লোড করা
                 window.arcOnExamChanged();
             } else {
                 picker.innerHTML = '<option value="">No archives found</option>';
@@ -504,7 +521,6 @@
             subGroupLabel = "Combined Merit";
         }
 
-        // যদি ওই পরীক্ষায় সাবজেক্ট ফিল্টার থাকে
         if (exInfo.activeSubjects && exInfo.activeSubjects.length > 0) {
             activeSubs = activeSubs.filter(s => exInfo.activeSubjects.includes(s.key));
         }
@@ -512,7 +528,6 @@
         const perSubMax = exInfo.max || 15;
         const streamTotalMarks = activeSubs.length * perSubMax;
 
-        // স্টুডেন্ট ফিল্টার
         let list = [];
         if (grp === 'Humanities') list = cachedStudents.filter(s => s.group === 'Humanities');
         else if (grp === 'B.Studies') list = cachedStudents.filter(s => s.group === 'B.Studies');
@@ -536,7 +551,6 @@
             return { ...s, total, marksObj: m };
         });
 
-        // মেধা অনুযায়ী সর্টিং
         if (grp === 'Science_Merit') {
             computedList.sort((a, b) => {
                 if (b.total !== a.total) return b.total - a.total;
@@ -643,7 +657,6 @@
 
         const totalCols = 5 + activeSubs.length + 1;
 
-        // সুপার অ্যাডমিন ডাইনামিক সিগনেচার ব্লক
         let dynamicSigBlockHTML = '';
         if (signatureSettings.enabled) {
             const activeSignatures = signatureSettings.list.filter(item => item.active);
@@ -849,16 +862,22 @@
         setupArchiveInterface();
         initFirebaseBinding();
 
-        // যদি সাবমেনুর "Exam Archives"-এ ক্লিক করা হয়, যাতে ইন্টারফেসটি রেডি থাকে
-        const archMenu = document.querySelector('a[onclick*="eval-archive-sec"]');
-        if (archMenu) {
-            const origOnClick = archMenu.getAttribute('onclick');
-            archMenu.onclick = function (e) {
-                setupArchiveInterface();
-                if (origOnClick) eval(origOnClick);
-                loadArchivedExamsFromFirebase();
-            };
-        }
+        // Exam Archives সাব-মেনুতে ক্লিক ইভেন্ট হুক করা
+        const hookMenu = () => {
+            const archMenu = document.querySelector('a[onclick*="eval-archive-sec"]');
+            if (archMenu && !archMenu.getAttribute('data-arc-hooked')) {
+                archMenu.setAttribute('data-arc-hooked', 'true');
+                const origOnClick = archMenu.getAttribute('onclick');
+                archMenu.onclick = function (e) {
+                    setupArchiveInterface();
+                    if (origOnClick) eval(origOnClick);
+                    loadArchivedExamsFromFirebase();
+                };
+            }
+        };
+
+        hookMenu();
+        setInterval(hookMenu, 1000);
     }
 
     if (document.readyState === 'loading') {
