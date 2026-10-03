@@ -30,7 +30,7 @@
 
     const fmt = (n) => '৳ ' + (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    // ১. সম্পূর্ণ পিওর সিএসএস ইনজেকশন
+    // ১. সম্পূর্ণ পিওর সিএসএস ইনজেকশন (প্রিন্ট আইসোলেশন ফিক্সড)
     const moduleStyles = `
         <style id="collection-module-styles">
             @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap');
@@ -269,23 +269,30 @@
             .dcol-delete-btn { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
             .dcol-delete-btn:hover { background: #fee2e2; color: #b91c1c; }
 
-            /* A4 প্রিন্ট স্টাইল */
-            #col-printable-invoice { display: none; }
+            /* A4 প্রিন্ট স্টাইল - সম্পূর্ণ সুরক্ষিত ও আইসোলেটেড */
+            #col-printable-invoice { display: none !important; }
 
             @media print {
-                @page {
+                body:not(.printing-daily-collection) #col-printable-invoice {
+                    display: none !important;
+                    visibility: hidden !important;
+                }
+
+                body.printing-daily-collection @page {
                     size: A4 portrait !important;
                     margin: 8mm 12mm !important;
                 }
-                html, body {
+                body.printing-daily-collection html, 
+                body.printing-daily-collection {
                     background: #ffffff !important;
                     margin: 0 !important;
                     padding: 0 !important;
                     height: auto !important;
                 }
-                body * { visibility: hidden !important; }
-                #col-printable-invoice, #col-printable-invoice * { visibility: visible !important; }
-                #col-printable-invoice {
+                body.printing-daily-collection * { visibility: hidden !important; }
+                body.printing-daily-collection #col-printable-invoice, 
+                body.printing-daily-collection #col-printable-invoice * { visibility: visible !important; }
+                body.printing-daily-collection #col-printable-invoice {
                     display: block !important;
                     position: absolute !important;
                     left: 0 !important;
@@ -536,7 +543,6 @@
 
         if (!bankListEl || !rechListEl || !servListEl) return;
 
-        // বর্তমান টাইপ করা মান সাময়িকভাবে সেভ রাখা
         const currentVals = {};
         document.querySelectorAll('.inp-dyn-col').forEach(inp => {
             currentVals[inp.dataset.headName] = inp.value;
@@ -662,7 +668,6 @@
                 if (snap.exists()) record = snap.val();
             }
 
-            // আগের ইনপুটগুলো খালি করা
             document.querySelectorAll('.inp-dyn-col').forEach(i => i.value = '');
 
             if (record) {
@@ -811,7 +816,7 @@
         window.renderAndPrintInvoice(record);
     };
 
-    // ১১. ডাইনামিক প্রিন্ট রেন্ডারার
+    // ১১. ডাইনামিক প্রিন্ট রেন্ডারার (ক্লাস আইসোলেশন যুক্ত)
     window.renderAndPrintInvoice = function (record) {
         const dateHeader = document.getElementById('colRptDateHeader');
         if (dateHeader) dateHeader.innerText = `Date: ${record.date} | Shift: Counter Day Close | Verified`;
@@ -856,12 +861,27 @@
         const contentEl = document.getElementById('colRptTableContent');
         if (contentEl) contentEl.innerHTML = rowsHtml;
 
+        // প্রিন্ট শুরু করার আগে শুধু কালেকশনের জন্য ক্লাস অন করা হচ্ছে
+        document.body.classList.add('printing-daily-collection');
+
+        const cleanupPrintClass = () => {
+            document.body.classList.remove('printing-daily-collection');
+            window.removeEventListener('afterprint', cleanupPrintClass);
+        };
+        window.addEventListener('afterprint', cleanupPrintClass);
+
         if (document.fonts && document.fonts.ready) {
             document.fonts.ready.then(() => {
-                setTimeout(() => { window.print(); }, 200);
+                setTimeout(() => { 
+                    window.print(); 
+                    setTimeout(cleanupPrintClass, 1000);
+                }, 200);
             });
         } else {
-            setTimeout(() => { window.print(); }, 300);
+            setTimeout(() => { 
+                window.print(); 
+                setTimeout(cleanupPrintClass, 1000);
+            }, 300);
         }
     };
 
