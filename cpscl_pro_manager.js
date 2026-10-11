@@ -1,5 +1,5 @@
 /**
- * CPSCL Pro Manager - Safe Cloud Sync, Multi-Year, Smart Edit, Bulk Print & Flat Table UI
+ * CPSCL Pro Manager - Safe Cloud Sync, Multi-Year, Smart Edit, Bulk Print & Soft Green Table UI
  * 100% Cloud Persistence (Firebase), Zero Data-Loss Guarantee, Full English Interface
  */
 
@@ -79,7 +79,7 @@
     }
 
     /* ==========================================================
-       2. STYLES (Rounded Controls & Clean Flat Professional Table)
+       2. STYLES (Soft Mint Green Selection & Clean Zebra Table)
        ========================================================== */
     function injectProStyles() {
         if (document.getElementById('cpscl-pro-styles')) return;
@@ -128,26 +128,26 @@
             .pro-pill-control {
                 border-radius: 20px !important;
                 border: 1.5px solid #cbd5e1 !important;
-                height: 38px !important;
-                padding: 0 16px !important;
-                font-size: 0.85rem !important;
+                height: 36px !important;
+                padding: 0 14px !important;
+                font-size: 0.84rem !important;
                 font-weight: 600 !important;
                 outline: none !important;
                 background: #ffffff !important;
                 color: #334155 !important;
             }
-            .pro-pill-control:focus { border-color: #6366f1 !important; }
+            .pro-pill-control:focus { border-color: #10b981 !important; }
 
-            /* Table Scroll Wrapper */
+            /* Table Outer Container */
             .pro-table-wrapper {
                 width: 100%;
                 overflow-x: auto;
                 border: 1px solid #e2e8f0;
-                border-radius: 12px;
+                border-radius: 10px;
                 background: #ffffff;
             }
 
-            /* Professional Flat Table (Single-line row, No Card Wrapping) */
+            /* Professional Zebra Flat Table */
             .pro-flat-table {
                 width: 100% !important;
                 border-collapse: collapse !important;
@@ -155,38 +155,73 @@
             }
             .pro-flat-table thead th {
                 background: #f8fafc !important;
-                color: #475569 !important;
-                font-size: 0.82rem !important;
-                font-weight: 700 !important;
+                color: #64748b !important;
+                font-size: 0.78rem !important;
+                font-weight: 800 !important;
+                letter-spacing: 0.5px !important;
                 padding: 11px 14px !important;
                 text-align: left !important;
                 white-space: nowrap !important;
                 border-bottom: 2px solid #e2e8f0 !important;
+                user-select: none !important;
             }
+            .pro-sort-icon {
+                color: #94a3b8;
+                font-size: 0.75rem;
+                margin-right: 4px;
+            }
+
+            /* Alternating Zebra Rows */
+            .pro-flat-table tbody tr:nth-child(even) td {
+                background-color: #fcfdfe;
+            }
+            .pro-flat-table tbody tr:nth-child(odd) td {
+                background-color: #ffffff;
+            }
+
             .pro-flat-table tbody td {
                 padding: 10px 14px !important;
-                font-size: 0.87rem !important;
+                font-size: 0.86rem !important;
                 color: #1e293b !important;
-                white-space: nowrap !important; /* Keep single-line, prevents breaking */
+                white-space: nowrap !important;
                 border-bottom: 1px solid #f1f5f9 !important;
-                background: transparent;
-            }
-
-            /* Subtle Touch Row Interaction */
-            .pro-flat-table tbody tr {
-                cursor: pointer !important;
                 transition: background-color 0.15s ease !important;
             }
-            .pro-flat-table tbody tr:hover {
-                background-color: #f8fafc !important;
+
+            .pro-flat-table tbody tr {
+                cursor: pointer !important;
             }
-            .pro-flat-table tbody tr.pro-row-active td {
-                background-color: #eff6ff !important;
-                color: #1d4ed8 !important;
-                font-weight: 600 !important;
+            .pro-flat-table tbody tr:hover td {
+                background-color: #f0fdf4 !important; /* Gentle hover tint */
             }
 
-            /* Modal Overlay & Fields */
+            /* ========================================================
+               হালকা সবুজ (Soft Mint Green) সিলেকশন হাইলাইট
+               ======================================================== */
+            .pro-flat-table tbody tr.pro-row-active td {
+                background-color: #dcfce7 !important; /* Soft Mint Green */
+                color: #065f46 !important;           /* Deep Forest Green Text */
+                font-weight: 700 !important;
+            }
+            .pro-flat-table tbody tr.pro-row-active td:first-child {
+                border-left: 3.5px solid #10b981 !important; /* Left Green Accent */
+            }
+
+            /* Selection Badge */
+            .pro-selected-pill {
+                background: #dcfce7;
+                color: #065f46;
+                font-size: 0.78rem;
+                font-weight: 800;
+                padding: 3px 10px;
+                border-radius: 12px;
+                border: 1px solid #bbf7d0;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+            }
+
+            /* Modal Overlay */
             .pro-modal-overlay {
                 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
                 background: rgba(15, 23, 42, 0.5); display: none; align-items: center; 
@@ -208,7 +243,7 @@
                 width: 100%; height: 38px; border: 1.5px solid #cbd5e1; border-radius: 18px;
                 padding: 0 14px; font-size: 0.85rem; font-weight: 600; outline: none; box-sizing: border-box;
             }
-            .pro-field input:focus, .pro-field select:focus { border-color: #6366f1; }
+            .pro-field input:focus, .pro-field select:focus { border-color: #10b981; }
 
             /* Bulk Print / Save to PDF Container */
             #cpsclProBulkPrintWrapper { display: none; }
@@ -246,7 +281,7 @@
     }
 
     /* ==========================================================
-       3. UI STRUCTURE (100% English)
+       3. UI STRUCTURE (100% English & Image 1/2 Match)
        ========================================================== */
     function setupProInterface() {
         const listView = document.getElementById('cpscl-list-view');
@@ -301,14 +336,16 @@
                     <button class="cpscl-tab-btn" onclick="switchTemplateTab('character_cert', this)"><i class="fa-solid fa-award"></i> Character Certificate</button>
                 </div>
 
-                <!-- Controls Bar -->
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
+                <!-- Controls Bar (Matches Image 1 & 2 Layout) -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
                     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                        <div style="position: relative; width: 250px;">
-                            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 11px; color: #94a3b8; font-size: 0.85rem;"></i>
-                            <input type="text" id="proSearchInput" placeholder="Search Roll, Name or Reg..." class="pro-pill-control" style="padding-left: 34px; width: 100%; box-sizing: border-box;" oninput="onSearchChange()">
-                        </div>
+                        <span id="proPaginationInfoTop" style="font-size: 0.85rem; color: #475569; font-weight: 600;">Showing 0 to 0 of 0 entries</span>
+                        <span id="proSelectedBadge" class="pro-selected-pill" style="display: none;">
+                            <i class="fa-solid fa-check"></i> 1 row selected
+                        </span>
+                    </div>
 
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                         <select id="proYearFilter" class="pro-pill-control" onchange="onYearChange(this.value)">
                             <option value="all">All Years</option>
                         </select>
@@ -320,36 +357,38 @@
                             <option value="100">Show 100</option>
                             <option value="all">Show All</option>
                         </select>
-                    </div>
 
-                    <div style="font-weight: 700; color: #64748b; font-size: 0.85rem;">
-                        Total Students: <span id="proCountBadge" style="color: #4f46e5; font-size: 1rem;">0</span>
+                        <!-- Clean Search Input (Right aligned like Image 1/2) -->
+                        <div style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #64748b; font-weight: 700;">
+                            <span>Search:</span>
+                            <input type="text" id="proSearchInput" placeholder="" class="pro-pill-control" style="width: 170px;" oninput="onSearchChange()">
+                        </div>
                     </div>
                 </div>
 
-                <!-- Slim Flat Table (Horizontal scroll container) -->
+                <!-- Slim Flat Table with Zebra Striping -->
                 <div class="pro-table-wrapper">
                     <table class="pro-flat-table">
                         <thead>
                             <tr>
-                                <th>Roll</th>
-                                <th>Registration</th>
-                                <th>Student Name</th>
-                                <th>Father's Name</th>
-                                <th>Gender</th>
-                                <th>Template</th>
-                                <th>Group/Class</th>
-                                <th>Year</th>
-                                <th>GPA</th>
+                                <th><span class="pro-sort-icon">⇅</span> ROLL</th>
+                                <th><span class="pro-sort-icon">⇅</span> REGISTRATION</th>
+                                <th><span class="pro-sort-icon">⇅</span> STUDENT NAME</th>
+                                <th><span class="pro-sort-icon">⇅</span> FATHER'S NAME</th>
+                                <th><span class="pro-sort-icon">⇅</span> GENDER</th>
+                                <th><span class="pro-sort-icon">⇅</span> TEMPLATE</th>
+                                <th><span class="pro-sort-icon">⇅</span> GROUP/CLASS</th>
+                                <th><span class="pro-sort-icon">⇅</span> YEAR</th>
+                                <th><span class="pro-sort-icon">⇅</span> GPA</th>
                             </tr>
                         </thead>
                         <tbody id="cpsclProTableBody"></tbody>
                     </table>
                 </div>
 
-                <!-- Pagination Bar -->
+                <!-- Bottom Pagination Bar -->
                 <div id="proPaginationWrapper" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 12px;">
-                    <span id="proPaginationInfo" style="font-size: 0.82rem; color: #64748b; font-weight: 600;"></span>
+                    <span id="proPaginationInfoBottom" style="font-size: 0.82rem; color: #64748b; font-weight: 600;"></span>
                     <div style="display: flex; gap: 6px;">
                         <button class="pro-pill-btn" style="background:#f1f5f9; color:#475569; padding: 5px 14px !important;" id="btnPrevPage" onclick="changePage(-1)">Previous</button>
                         <button class="pro-pill-btn" style="background:#f1f5f9; color:#475569; padding: 5px 14px !important;" id="btnNextPage" onclick="changePage(1)">Next</button>
@@ -395,12 +434,11 @@
 
     function renderProTable() {
         const tbody = document.getElementById('cpsclProTableBody');
-        const countBadge = document.getElementById('proCountBadge');
         const bulkBadge = document.getElementById('proBulkBadgeCount');
+        const selectedBadge = document.getElementById('proSelectedBadge');
         if (!tbody) return;
 
         const filtered = getFilteredStudents();
-        if (countBadge) countBadge.innerText = filtered.length;
         if (bulkBadge) bulkBadge.innerText = filtered.length;
 
         const totalItems = filtered.length;
@@ -412,10 +450,12 @@
         const startIndex = (currentPage - 1) * effectiveSize;
         const pagedData = pageSize === 'all' ? filtered : filtered.slice(startIndex, startIndex + effectiveSize);
 
-        const info = document.getElementById('proPaginationInfo');
-        if (info) {
-            info.innerText = `Showing ${totalItems === 0 ? 0 : startIndex + 1} to ${Math.min(startIndex + pagedData.length, totalItems)} of ${totalItems} students`;
-        }
+        const countText = `Showing ${totalItems === 0 ? 0 : startIndex + 1} to ${Math.min(startIndex + pagedData.length, totalItems)} of ${totalItems} entries`;
+        const topInfo = document.getElementById('proPaginationInfoTop');
+        const btmInfo = document.getElementById('proPaginationInfoBottom');
+        if (topInfo) topInfo.innerText = countText;
+        if (btmInfo) btmInfo.innerText = countText;
+
         const btnPrev = document.getElementById('btnPrevPage');
         const btnNext = document.getElementById('btnNextPage');
         if (btnPrev) btnPrev.disabled = (currentPage <= 1);
@@ -424,8 +464,15 @@
         tbody.innerHTML = '';
         if (pagedData.length === 0) {
             tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 25px; color:#94a3b8;">No student records found.</td></tr>`;
+            if (selectedBadge) selectedBadge.style.display = 'none';
             updateActionButtonsState(null);
             return;
+        }
+
+        // Selected Status Check
+        const activeStudent = studentDB.find(s => s._uid === selectedStudentId);
+        if (selectedBadge) {
+            selectedBadge.style.display = activeStudent ? 'inline-flex' : 'none';
         }
 
         pagedData.forEach(s => {
@@ -449,6 +496,7 @@
                 <td><strong style="color:#16a34a;">${s.gpa || '-'}</strong></td>
             `;
 
+            // Soft Mint Green Selection Toggle
             tr.onclick = () => {
                 if (selectedStudentId === s._uid) {
                     selectedStudentId = null;
@@ -461,7 +509,6 @@
             tbody.appendChild(tr);
         });
 
-        const activeStudent = studentDB.find(s => s._uid === selectedStudentId);
         updateActionButtonsState(activeStudent);
     }
 
@@ -478,7 +525,7 @@
 
     /* ==========================================================
        4. SMART EDIT & ENTRY MODAL (Guaranteed No Duplicates)
-       ========================================================== */
+       ========================================================= */
     function injectModalHTML() {
         if (document.getElementById('proStudentModal')) return;
 
