@@ -1,6 +1,6 @@
 /**
- * CPSCL Pro Manager - Safe Cloud Sync, Multi-Year, Smart Edit, Bulk Print & Clean Rounded UI
- * 100% Cloud Persistence (Firebase), Zero Data-Loss Guarantee
+ * CPSCL Pro Manager - Safe Cloud Sync, Multi-Year, Smart Edit, Bulk Print & Flat Table UI
+ * 100% Cloud Persistence (Firebase), Zero Data-Loss Guarantee, Full English Interface
  */
 
 (function () {
@@ -16,7 +16,7 @@
     let dbSetFunc = null;
 
     /* ==========================================================
-       ১. ফায়ারবেস ক্লাউড কানেকশন (১০০% নিরাপদ: কোনো ডাটা মুছবে না)
+       1. SAFE FIREBASE SYNC (Permanent Cloud Storage, No Data Loss)
        ========================================================== */
     async function initSafeFirebase() {
         try {
@@ -46,7 +46,7 @@
                     const rawList = Array.isArray(cloudData) ? cloudData : Object.values(cloudData);
                     studentDB = rawList.map((st, idx) => ({
                         ...st,
-                        _uid: st._uid || (st.roll + '_' + (st.reg || idx) + '_' + (st.template || 'ssc'))
+                        _uid: st._uid || (String(st.roll || '') + '_' + String(st.reg || idx) + '_' + String(st.template || 'ssc'))
                     }));
                     localStorage.setItem('cpscl_students_data', JSON.stringify(studentDB));
                     populateYearOptions();
@@ -54,11 +54,11 @@
                 }
             });
         } catch (err) {
-            console.warn("Offline/LocalStorage Mode:", err);
+            console.warn("Offline / Fallback to LocalStorage:", err);
             const localData = JSON.parse(localStorage.getItem('cpscl_students_data') || '[]');
             studentDB = localData.map((st, idx) => ({
                 ...st,
-                _uid: st._uid || (st.roll + '_' + (st.reg || idx))
+                _uid: st._uid || (String(st.roll || '') + '_' + String(st.reg || idx))
             }));
             populateYearOptions();
             renderProTable();
@@ -79,17 +79,18 @@
     }
 
     /* ==========================================================
-       ২. গোল শেইপ ও প্রিন্ট পেপার স্টাইল ইনজেকশন
+       2. STYLES (Rounded Controls & Clean Flat Professional Table)
        ========================================================== */
     function injectProStyles() {
         if (document.getElementById('cpscl-pro-styles')) return;
         const style = document.createElement('style');
         style.id = 'cpscl-pro-styles';
         style.innerHTML = `
+            /* Rounded Action Buttons */
             .pro-pill-btn {
                 border-radius: 25px !important;
-                padding: 8px 16px !important;
-                font-size: 0.85rem !important;
+                padding: 7px 16px !important;
+                font-size: 0.84rem !important;
                 font-weight: 700 !important;
                 display: inline-flex !important;
                 align-items: center !important;
@@ -110,25 +111,14 @@
             .pro-btn-delete:hover:not(:disabled) { background: #dc2626 !important; }
             .pro-btn-print { background: #059669 !important; color: #ffffff !important; }
             .pro-btn-print:hover:not(:disabled) { background: #047857 !important; }
-            .pro-btn-export { background: #334155 !important; color: #ffffff !important; }
-            .pro-btn-export:hover { background: #1e293b !important; }
-
-            /* বাল্ক প্রিন্ট বাটন ও ব্যাজ */
-            .pro-btn-bulk {
-                background: #047857 !important;
-                color: #ffffff !important;
-                position: relative !important;
-            }
+            .pro-btn-bulk { background: #047857 !important; color: #ffffff !important; }
             .pro-btn-bulk:hover { background: #065f46 !important; }
             .pro-bulk-badge {
-                background: #ef4444;
-                color: #ffffff;
-                font-size: 0.72rem;
-                font-weight: 800;
-                padding: 1px 6px;
-                border-radius: 10px;
-                margin-left: 4px;
+                background: #ef4444; color: #ffffff; font-size: 0.72rem;
+                font-weight: 800; padding: 1px 6px; border-radius: 10px; margin-left: 3px;
             }
+            .pro-btn-export { background: #334155 !important; color: #ffffff !important; }
+            .pro-btn-export:hover { background: #1e293b !important; }
 
             .pro-pill-btn:disabled {
                 opacity: 0.35 !important;
@@ -148,26 +138,55 @@
             }
             .pro-pill-control:focus { border-color: #6366f1 !important; }
 
-            #cpsclProTableBody tr {
+            /* Table Scroll Wrapper */
+            .pro-table-wrapper {
+                width: 100%;
+                overflow-x: auto;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                background: #ffffff;
+            }
+
+            /* Professional Flat Table (Single-line row, No Card Wrapping) */
+            .pro-flat-table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                border-spacing: 0 !important;
+            }
+            .pro-flat-table thead th {
+                background: #f8fafc !important;
+                color: #475569 !important;
+                font-size: 0.82rem !important;
+                font-weight: 700 !important;
+                padding: 11px 14px !important;
+                text-align: left !important;
+                white-space: nowrap !important;
+                border-bottom: 2px solid #e2e8f0 !important;
+            }
+            .pro-flat-table tbody td {
+                padding: 10px 14px !important;
+                font-size: 0.87rem !important;
+                color: #1e293b !important;
+                white-space: nowrap !important; /* Keep single-line, prevents breaking */
+                border-bottom: 1px solid #f1f5f9 !important;
+                background: transparent;
+            }
+
+            /* Subtle Touch Row Interaction */
+            .pro-flat-table tbody tr {
                 cursor: pointer !important;
                 transition: background-color 0.15s ease !important;
             }
-            #cpsclProTableBody tr:hover { background-color: #f8fafc !important; }
-            #cpsclProTableBody tr.pro-row-active td {
-                background-color: #f0f7ff !important;
-                color: #1e40af !important;
+            .pro-flat-table tbody tr:hover {
+                background-color: #f8fafc !important;
+            }
+            .pro-flat-table tbody tr.pro-row-active td {
+                background-color: #eff6ff !important;
+                color: #1d4ed8 !important;
                 font-weight: 600 !important;
             }
-            #cpsclProTableBody tr.pro-row-active td:first-child {
-                border-top-left-radius: 12px !important;
-                border-bottom-left-radius: 12px !important;
-                border-left: 3px solid #3b82f6 !important;
-            }
-            #cpsclProTableBody tr.pro-row-active td:last-child {
-                border-top-right-radius: 12px !important;
-                border-bottom-right-radius: 12px !important;
-            }
 
+            /* Modal Overlay & Fields */
             .pro-modal-overlay {
                 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
                 background: rgba(15, 23, 42, 0.5); display: none; align-items: center; 
@@ -189,10 +208,11 @@
                 width: 100%; height: 38px; border: 1.5px solid #cbd5e1; border-radius: 18px;
                 padding: 0 14px; font-size: 0.85rem; font-weight: 600; outline: none; box-sizing: border-box;
             }
+            .pro-field input:focus, .pro-field select:focus { border-color: #6366f1; }
 
+            /* Bulk Print / Save to PDF Container */
             #cpsclProBulkPrintWrapper { display: none; }
 
-            /* বাল্ক প্রিন্ট এবং পিডিএফ পেজ সেটআপ (A4 Landscape নিখুঁত ক্যালিব্রেশন) */
             @media print {
                 body.cpscl-bulk-mode * { visibility: hidden !important; }
                 body.cpscl-bulk-mode #cpsclProBulkPrintWrapper,
@@ -226,18 +246,19 @@
     }
 
     /* ==========================================================
-       ৩. ইউজার ইন্টারফেস (UI) সেটআপ
+       3. UI STRUCTURE (100% English)
        ========================================================== */
     function setupProInterface() {
         const listView = document.getElementById('cpscl-list-view');
         if (!listView) return;
 
         listView.innerHTML = `
+            <!-- Top Action Header -->
             <div class="cpscl-card" style="padding: 16px 22px; margin-bottom: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                     <div>
-                        <h3 style="font-size: 1.2rem; font-weight: 800; color: #0f172a; margin: 0 0 4px 0;">Student Database & Certificate Hub</h3>
-                        <p style="font-size: 0.82rem; color: #64748b; margin: 0;">নিরাপদ ক্লাউড ডাটাবেজ, স্মার্ট এডিট ও বাল্ক PDF ডাউনলোড</p>
+                        <h3 style="font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0 0 3px 0;">Student Database & Certificate Hub</h3>
+                        <p style="font-size: 0.82rem; color: #64748b; margin: 0;">Cloud Synchronized Database, Smart Editor & Bulk Certificate Engine</p>
                     </div>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                         <button class="pro-pill-btn pro-btn-upload" onclick="document.getElementById('proExcelInput').click()">
@@ -258,7 +279,7 @@
                         <button class="pro-pill-btn pro-btn-print" id="btnProPrint" disabled onclick="printSelectedCertificate()">
                             <i class="fa-solid fa-print"></i> Print
                         </button>
-                        <button class="pro-pill-btn pro-btn-bulk" title="Print/Save all as PDF" onclick="executeProBulkPrint()">
+                        <button class="pro-pill-btn pro-btn-bulk" title="Print/Save all filtered certificates as PDF" onclick="executeProBulkPrint()">
                             <i class="fa-solid fa-file-pdf"></i> Bulk Print / PDF <span class="pro-bulk-badge" id="proBulkBadgeCount">0</span>
                         </button>
                         <button class="pro-pill-btn pro-btn-export" onclick="exportFilteredExcel()">
@@ -269,7 +290,9 @@
                 </div>
             </div>
 
+            <!-- Filters & Flat Table Card -->
             <div class="cpscl-card" style="padding: 18px 22px;">
+                <!-- Template Tabs -->
                 <div class="cpscl-tabs-wrapper" style="margin-bottom: 16px;">
                     <button class="cpscl-tab-btn active" onclick="switchTemplateTab('all', this)"><i class="fa-solid fa-layer-group"></i> All Students</button>
                     <button class="cpscl-tab-btn" onclick="switchTemplateTab('ssc_testimonial', this)"><i class="fa-solid fa-graduation-cap"></i> SSC Testimonial</button>
@@ -278,6 +301,7 @@
                     <button class="cpscl-tab-btn" onclick="switchTemplateTab('character_cert', this)"><i class="fa-solid fa-award"></i> Character Certificate</button>
                 </div>
 
+                <!-- Controls Bar -->
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
                     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                         <div style="position: relative; width: 250px;">
@@ -286,7 +310,7 @@
                         </div>
 
                         <select id="proYearFilter" class="pro-pill-control" onchange="onYearChange(this.value)">
-                            <option value="all">All Years (সকল বছর)</option>
+                            <option value="all">All Years</option>
                         </select>
 
                         <select id="proPageSize" class="pro-pill-control" onchange="onPageSizeChange(this.value)">
@@ -303,8 +327,9 @@
                     </div>
                 </div>
 
-                <div style="overflow-x: auto;">
-                    <table class="cpscl-table" style="width: 100%;">
+                <!-- Slim Flat Table (Horizontal scroll container) -->
+                <div class="pro-table-wrapper">
+                    <table class="pro-flat-table">
                         <thead>
                             <tr>
                                 <th>Roll</th>
@@ -322,6 +347,7 @@
                     </table>
                 </div>
 
+                <!-- Pagination Bar -->
                 <div id="proPaginationWrapper" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 12px;">
                     <span id="proPaginationInfo" style="font-size: 0.82rem; color: #64748b; font-weight: 600;"></span>
                     <div style="display: flex; gap: 6px;">
@@ -344,7 +370,7 @@
         studentDB.forEach(s => { if (s.year) yearsSet.add(String(s.year)); });
 
         const sortedYears = Array.from(yearsSet).sort((a, b) => b - a);
-        let opts = `<option value="all">All Years (সকল বছর)</option>`;
+        let opts = `<option value="all">All Years</option>`;
         sortedYears.forEach(y => {
             opts += `<option value="${y}">${y}</option>`;
         });
@@ -397,7 +423,7 @@
 
         tbody.innerHTML = '';
         if (pagedData.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 25px; color:#94a3b8;">কোনো শিক্ষার্থীর তথ্য পাওয়া যায়নি।</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 25px; color:#94a3b8;">No student records found.</td></tr>`;
             updateActionButtonsState(null);
             return;
         }
@@ -418,7 +444,7 @@
                 <td>${s.father || '-'}</td>
                 <td>${genderBadge}</td>
                 <td><span style="font-size:0.8rem; font-weight:700; color:#475569;">${s.template || 'SSC'}</span></td>
-                <td><span style="background:#eef2ff; color:#4f46e5; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 700;">${s.group || '-'}</span></td>
+                <td><span style="background:#eef2ff; color:#4f46e5; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; font-weight: 700;">${s.group || '-'}</span></td>
                 <td><strong>${s.year || '-'}</strong></td>
                 <td><strong style="color:#16a34a;">${s.gpa || '-'}</strong></td>
             `;
@@ -451,7 +477,7 @@
     }
 
     /* ==========================================================
-       ৪. স্মার্ট এডিট ও এন্ট্রি মডাল (ডাবল রোল সমস্যা স্থায়ী সমাধান)
+       4. SMART EDIT & ENTRY MODAL (Guaranteed No Duplicates)
        ========================================================== */
     function injectModalHTML() {
         if (document.getElementById('proStudentModal')) return;
@@ -507,7 +533,7 @@
                     </div>
                     <div class="pro-grid-2">
                         <div class="pro-field">
-                            <label>Roll No * (সংশোধন করলেও ডাবল হবে না)</label>
+                            <label>Roll / ID No *</label>
                             <input type="text" id="modalRoll" required>
                         </div>
                         <div class="pro-field">
@@ -564,8 +590,8 @@
             const st = studentDB.find(s => s._uid === selectedStudentId);
             if (!st) return;
 
-            title.innerText = "Edit Student (সংশোধন)";
-            submitBtn.innerText = "Update & Save";
+            title.innerText = "Edit Student Record";
+            submitBtn.innerText = "Update Record";
             submitBtn.className = "pro-pill-btn pro-btn-edit";
 
             document.getElementById('modalUid').value = st._uid;
@@ -584,8 +610,8 @@
             document.getElementById('modalGpa').value = st.gpa || '';
             document.getElementById('modalPubDate').value = st.pubDate || '';
         } else {
-            title.innerText = "Add New Student";
-            submitBtn.innerText = "Save to Database";
+            title.innerText = "Add New Student Record";
+            submitBtn.innerText = "Save Student";
             submitBtn.className = "pro-pill-btn pro-btn-add";
             document.getElementById('proStudentForm').reset();
             document.getElementById('modalUid').value = '';
@@ -639,22 +665,22 @@
         closeStudentModal();
         populateYearOptions();
         renderProTable();
-        alert(uid ? "শিক্ষার্থীর তথ্য সফলভাবে আপডেট হয়েছে!" : "নতুন শিক্ষার্থী সফলভাবে সংরক্ষিত হয়েছে!");
+        alert(uid ? "Student record updated successfully." : "New student record added successfully.");
     };
 
     /* ==========================================================
-       ৫. একক প্রিন্ট, ডিলিট এবং এক্সেল এক্সপোর্ট
+       5. DELETE & SINGLE PRINT
        ========================================================== */
     window.deleteSelectedStudent = async function () {
         const st = studentDB.find(s => s._uid === selectedStudentId);
         if (!st) return;
 
-        if (confirm(`আপনি কি নিশ্চিত যে "${st.name}" (রোল: ${st.roll}) এর তথ্য মুছে ফেলতে চান?`)) {
+        if (confirm(`Are you sure you want to delete ${st.name} (Roll: ${st.roll})? This will be permanently removed from cloud database.`)) {
             const updated = studentDB.filter(s => s._uid !== selectedStudentId);
             selectedStudentId = null;
             await saveToCloud(updated);
             renderProTable();
-            alert("শিক্ষার্থীর তথ্য মুছে ফেলা হয়েছে।");
+            alert("Student record deleted successfully.");
         }
     };
 
@@ -685,7 +711,7 @@
 
     window.exportFilteredExcel = function () {
         const list = getFilteredStudents();
-        if (list.length === 0) return alert("ডাউনলোড করার মতো কোনো তথ্য নেই!");
+        if (list.length === 0) return alert("No student records found to export.");
 
         const cleanData = list.map(s => ({
             "Roll": s.roll,
@@ -709,7 +735,7 @@
     };
 
     /* ==========================================================
-       ৬. অল ইন ওয়ান বাল্ক প্রিন্ট ও পিডিএফ ইঞ্জিন (Bulk Print / Save to PDF)
+       6. BULK CERTIFICATE PRINT ENGINE (Save as PDF)
        ========================================================== */
     function buildCertSheetHTML(st) {
         const isMale = (st.gender || 'Male').toLowerCase().startsWith('m');
@@ -757,7 +783,7 @@
     window.executeProBulkPrint = function () {
         const listToPrint = getFilteredStudents();
         if (listToPrint.length === 0) {
-            alert("প্রিন্ট বা পিডিএফ করার মতো কোনো শিক্ষার্থী নেই!");
+            alert("No students found to print or save as PDF.");
             return;
         }
 
@@ -768,14 +794,11 @@
             document.body.appendChild(wrapper);
         }
 
-        // সব সার্টিফিকেটের নিখুঁত HTML তৈরি
         wrapper.innerHTML = listToPrint.map(s => buildCertSheetHTML(s)).join('');
 
-        // প্রিন্ট ট্রিগার (Save as PDF অপশন পাবেন এখান থেকেই)
         document.body.classList.add('cpscl-bulk-mode');
         window.print();
 
-        // ক্লিনআপ
         setTimeout(() => {
             document.body.classList.remove('cpscl-bulk-mode');
             wrapper.innerHTML = '';
@@ -783,7 +806,7 @@
     };
 
     /* ==========================================================
-       ৭. ফিল্টারিং ও পেজিনেশন ফাংশনসমূহ
+       7. FILTER & PAGINATION CONTROLLERS
        ========================================================== */
     window.switchTemplateTab = function (tpl, btn) {
         currentTemplate = tpl;
@@ -816,7 +839,7 @@
     };
 
     /* ==========================================================
-       ৮. অটো ইনিশিয়ালাইজার
+       8. INITIALIZATION
        ========================================================== */
     function initProManager() {
         injectProStyles();
