@@ -1,54 +1,23 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Student Registration (Permanent Dual Submenu + 1:1 Screen)
+   SUB-SECTION: Student Registration (Fully Dynamic 1:1 Engine)
    Path: cpscl/student_registration.js
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Student Registration Suite...");
+    console.log("Loading CPSCL Dynamic Student Registration Suite...");
 
-    // ১. সাইডবার ও স্ক্রিন সিএসএস
     function injectFullStyles() {
         if (document.getElementById('cpscl-full-bundle-style')) return;
         const style = document.createElement('style');
         style.id = 'cpscl-full-bundle-style';
         style.innerHTML = `
             /* সাইডবার ডিজাইন */
-            .trust-section-label {
-                font-size: 11px !important;
-                font-weight: 800 !important;
-                color: #8c98a4 !important;
-                text-transform: uppercase !important;
-                letter-spacing: 0.8px !important;
-                padding: 18px 18px 6px 18px !important;
-                display: block;
-            }
-            .trust-module-wrapper {
-                margin: 4px 0 !important;
-                list-style: none !important;
-                position: relative;
-                transition: all 0.25s ease;
-            }
-            .trust-module-wrapper.expanded {
-                border-left: 4px solid #2563eb !important;
-            }
-            .trust-parent-btn {
-                display: flex !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                padding: 12px 18px !important;
-                color: #374151 !important;
-                background-color: transparent !important;
-                font-size: 13.5px !important;
-                font-weight: 600 !important;
-                cursor: pointer !important;
-                text-decoration: none !important;
-                transition: background 0.2s ease, color 0.2s ease;
-            }
-            .trust-module-wrapper.expanded .trust-parent-btn {
-                background-color: #e5e7eb !important;
-                color: #1f2937 !important;
-            }
+            .trust-section-label { font-size: 11px !important; font-weight: 800 !important; color: #8c98a4 !important; text-transform: uppercase !important; letter-spacing: 0.8px !important; padding: 18px 18px 6px 18px !important; display: block; }
+            .trust-module-wrapper { margin: 4px 0 !important; list-style: none !important; position: relative; transition: all 0.25s ease; }
+            .trust-module-wrapper.expanded { border-left: 4px solid #2563eb !important; }
+            .trust-parent-btn { display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 12px 18px !important; color: #374151 !important; background-color: transparent !important; font-size: 13.5px !important; font-weight: 600 !important; cursor: pointer !important; text-decoration: none !important; transition: background 0.2s ease, color 0.2s ease; }
+            .trust-module-wrapper.expanded .trust-parent-btn { background-color: #e5e7eb !important; color: #1f2937 !important; }
             .trust-parent-btn:hover { background-color: #e5e7eb !important; color: #111827 !important; }
             .trust-parent-left { display: flex !important; align-items: center !important; gap: 12px !important; }
             .trust-parent-left i { font-size: 15px !important; color: #4b5563 !important; }
@@ -69,12 +38,15 @@
             .stu-title-area h2 { font-size: 1.45rem; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
             .stu-breadcrumb { font-size: 0.82rem; color: #64748b; display: flex; align-items: center; gap: 6px; }
             .stu-breadcrumb a { color: #2563eb; text-decoration: none; font-weight: 600; }
-            .stu-top-actions { display: flex; gap: 10px; }
+            .stu-top-actions { display: flex; gap: 10px; flex-wrap: wrap; }
             .btn-stu-pill { padding: 9px 20px; border-radius: 50px; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
             .btn-stu-primary { background-color: #2563eb; color: #ffffff; border: 1.5px solid #2563eb; }
             .btn-stu-primary:hover { background-color: #1d4ed8; }
             .btn-stu-outline { background-color: #ffffff; color: #2563eb; border: 1.5px solid #60a5fa; }
             .btn-stu-outline:hover { background-color: #eff6ff; }
+            .btn-stu-success { background-color: #16a34a; color: #ffffff; border: 1.5px solid #16a34a; }
+            .btn-stu-danger { background-color: #dc2626; color: #ffffff; border: 1.5px solid #dc2626; }
+
             .stu-main-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
             .stu-ribbon-bar { background: linear-gradient(90deg, #0ea5e9, #0284c7); color: #ffffff; padding: 12px 20px; font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 10px; }
             .stu-toolbar { padding: 15px 20px; display: flex; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; }
@@ -82,6 +54,7 @@
             .btn-tool:hover { background: #eff6ff; }
             .btn-tool-active { background: #06b6d4 !important; color: #ffffff !important; border-color: #06b6d4 !important; }
             .btn-tool-orange { border-color: #f59e0b !important; color: #d97706 !important; }
+
             .stu-filter-grid { padding: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: #ffffff; border-bottom: 1px solid #f1f5f9; }
             @media (max-width: 992px) { .stu-filter-grid { grid-template-columns: repeat(2, 1fr); } }
             @media (max-width: 650px) { .stu-filter-grid { grid-template-columns: 1fr; } }
@@ -98,7 +71,6 @@
         document.head.appendChild(style);
     }
 
-    // ২. সাইডবার ইনজেকশন (দুটি সাব-মেনুই স্থায়ীভাবে একসাথে থাকবে)
     function injectTrustSidebar() {
         const menuList = document.querySelector('.sidebar .menu-list');
         if (!menuList) return;
@@ -126,14 +98,12 @@
             </a>
 
             <ul class="trust-submenu-box" id="trust-submenu-items">
-                <!-- সাব-মেনু ১: Student Registration -->
                 <li>
                     <a class="trust-sub-link active" id="sub-link-student-reg" onclick="switchTrustSubTab(this, 'student-reg')">
                         <span class="trust-sub-indicator"></span>
                         <span>Student Registration</span>
                     </a>
                 </li>
-                <!-- সাব-মেনু ২: Registration Setup (স্থায়ীভাবে যুক্ত) -->
                 <li>
                     <a class="trust-sub-link" id="sub-link-reg-setup" onclick="switchTrustSubTab(this, 'reg-setup')">
                         <span class="trust-sub-indicator"></span>
@@ -152,7 +122,6 @@
         if (wrapper) wrapper.classList.toggle('expanded');
     };
 
-    // ৩. সাব-মেনু ট্যাব সুইচিং লজিক
     window.switchTrustSubTab = function (element, tabKey) {
         document.querySelectorAll('.trust-sub-link').forEach(link => link.classList.remove('active'));
         if (element) element.classList.add('active');
@@ -177,7 +146,6 @@
         }
     };
 
-    // ৪. ডাইনামিক স্টুডেন্ট লিস্ট স্ক্রিন রেন্ডারার
     window.renderDynamicStudentScreen = function () {
         const mainWrapper = document.querySelector('.main-wrapper');
         if (!mainWrapper) return;
@@ -193,14 +161,17 @@
         const cfg = typeof window.getCPSCLMasterConfig === 'function' ? window.getCPSCLMasterConfig() : null;
         if (!cfg) return;
 
-        // টপ বাটনস
+        // টপ বাটনসমূহ
         let topBtnsHtml = '';
         cfg.topButtons.filter(b => b.enabled).forEach(btn => {
-            const cls = btn.type === 'primary' ? 'btn-stu-primary' : 'btn-stu-outline';
+            let cls = 'btn-stu-outline';
+            if (btn.type === 'primary') cls = 'btn-stu-primary';
+            if (btn.type === 'success') cls = 'btn-stu-success';
+            if (btn.type === 'danger') cls = 'btn-stu-danger';
             topBtnsHtml += `<button class="btn-stu-pill ${cls}"><i class="fa-solid ${btn.icon}"></i> ${btn.label}</button>`;
         });
 
-        // টুলবার বাটনস
+        // টুলবার বাটনসমূহ
         let toolbarBtnsHtml = '';
         cfg.toolbarButtons.filter(b => b.enabled).forEach(btn => {
             const dropCaret = btn.hasDropdown ? ' <i class="fa-solid fa-caret-down"></i>' : '';
@@ -223,7 +194,7 @@
             `;
         });
 
-        // টেবিল কলামস
+        // টেবিল কলামসমূহ
         let tableThsHtml = '';
         cfg.tableColumns.filter(c => c.enabled).forEach(c => {
             tableThsHtml += `<th>${c.label}</th>`;
@@ -255,7 +226,7 @@
                     </div>
 
                     <div class="stu-filter-grid">
-                        ${filterBoxesHtml || '<p style="color:#64748b; padding:10px;">কোনো ফিল্টার বক্স সক্রিয় নেই।</p>'}
+                        ${filterBoxesHtml || '<p style="color:#64748b; padding:10px;">No filter boxes currently enabled.</p>'}
                     </div>
 
                     <div class="stu-table-header">
