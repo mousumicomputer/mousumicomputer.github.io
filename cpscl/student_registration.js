@@ -1,17 +1,123 @@
 /* ==========================================================================
-   MODULE: CPSCL - Student Registration (Trust Edu ERP Replica)
+   MODULE: CPSCL
+   SUB-SECTION: Student Registration (Sidebar + 1:1 Screen Layout)
    Path: cpscl/student_registration.js
    ========================================================================== */
 
 (function () {
-    console.log("Rendering 1:1 Trust Edu ERP Student List Screen...");
+    console.log("Initializing CPSCL Student Registration Module...");
 
-    // ১. ছবির অবিকল সিএসএস (CSS)
-    function injectStyles() {
-        if (document.getElementById('trust-student-list-style')) return;
+    // ১. সাইডবার ও পেজের সমস্ত সিএসএস (CSS)
+    function injectFullStyles() {
+        if (document.getElementById('cpscl-full-bundle-style')) return;
         const style = document.createElement('style');
-        style.id = 'trust-student-list-style';
+        style.id = 'cpscl-full-bundle-style';
         style.innerHTML = `
+            /* --- সাইডবার স্টাইল (Trust Edu ERP Style) --- */
+            .trust-section-label {
+                font-size: 11px !important;
+                font-weight: 800 !important;
+                color: #8c98a4 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.8px !important;
+                padding: 18px 18px 6px 18px !important;
+                display: block;
+            }
+            .trust-module-wrapper {
+                margin: 4px 0 !important;
+                list-style: none !important;
+                position: relative;
+                transition: all 0.25s ease;
+            }
+            .trust-module-wrapper.expanded {
+                border-left: 4px solid #2563eb !important; /* সলিড নীল রেল */
+            }
+            .trust-parent-btn {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                padding: 12px 18px !important;
+                color: #374151 !important;
+                background-color: transparent !important;
+                font-size: 13.5px !important;
+                font-weight: 600 !important;
+                cursor: pointer !important;
+                text-decoration: none !important;
+                transition: background 0.2s ease, color 0.2s ease;
+            }
+            .trust-module-wrapper.expanded .trust-parent-btn {
+                background-color: #e5e7eb !important; /* হালকা অ্যাশ হেডার */
+                color: #1f2937 !important;
+            }
+            .trust-parent-btn:hover {
+                background-color: #e5e7eb !important;
+                color: #111827 !important;
+            }
+            .trust-parent-left {
+                display: flex !important;
+                align-items: center !important;
+                gap: 12px !important;
+            }
+            .trust-parent-left i {
+                font-size: 15px !important;
+                color: #4b5563 !important;
+            }
+            .trust-parent-btn .chevron-arrow {
+                font-size: 11px !important;
+                color: #6b7280 !important;
+                transition: transform 0.3s ease;
+            }
+            .trust-module-wrapper.expanded .chevron-arrow {
+                transform: rotate(180deg) !important;
+            }
+            .trust-submenu-box {
+                list-style: none !important;
+                padding: 6px 0 !important;
+                margin: 0 !important;
+                background-color: #f8fafc !important;
+                display: none;
+                flex-direction: column !important;
+            }
+            .trust-module-wrapper.expanded .trust-submenu-box {
+                display: flex !important;
+            }
+            .trust-sub-link {
+                display: flex !important;
+                align-items: center !important;
+                padding: 10px 18px 10px 24px !important;
+                color: #4b5563 !important;
+                font-size: 13px !important;
+                font-weight: 500 !important;
+                text-decoration: none !important;
+                cursor: pointer !important;
+                transition: all 0.2s ease !important;
+                position: relative;
+            }
+            .trust-sub-indicator {
+                width: 3.5px !important;
+                height: 18px !important;
+                background-color: transparent !important;
+                border-radius: 2px !important;
+                margin-right: 12px !important;
+                display: inline-block !important;
+                transition: background-color 0.2s ease !important;
+            }
+            .trust-sub-link:hover {
+                color: #2563eb !important;
+                background-color: #f1f5f9 !important;
+            }
+            .trust-sub-link:hover .trust-sub-indicator {
+                background-color: #2563eb !important;
+            }
+            .trust-sub-link.active {
+                color: #2563eb !important;
+                font-weight: 600 !important;
+            }
+            .trust-sub-link.active .trust-sub-indicator {
+                background-color: #2563eb !important;
+            }
+
+            /* --- ১:১ স্টুডেন্ট লিস্ট স্ক্রিন স্টাইল --- */
             .stu-page-wrapper {
                 padding: 10px 5px;
                 font-family: 'Plus Jakarta Sans', sans-serif;
@@ -69,8 +175,6 @@
                 border: 1.5px solid #60a5fa;
             }
             .btn-stu-outline:hover { background-color: #eff6ff; }
-
-            /* মূল কার্ড ও স্কাই-ব্লু রিবন হেডার */
             .stu-main-card {
                 background: #ffffff;
                 border: 1px solid #e2e8f0;
@@ -88,8 +192,6 @@
                 align-items: center;
                 gap: 10px;
             }
-
-            /* অ্যাকশন টুলবার */
             .stu-toolbar {
                 padding: 15px 20px;
                 display: flex;
@@ -120,8 +222,6 @@
                 border-color: #f59e0b !important;
                 color: #d97706 !important;
             }
-
-            /* ৯টি ফিল্টার বক্সের ৩-কলাম গ্রিড */
             .stu-filter-grid {
                 padding: 20px;
                 display: grid;
@@ -141,7 +241,6 @@
                 border: 1.5px solid #e2e8f0;
                 border-radius: 12px;
                 padding: 8px 14px;
-                position: relative;
                 transition: border-color 0.2s;
             }
             .stu-filter-box:focus-within {
@@ -163,10 +262,7 @@
                 color: #1e293b;
                 outline: none;
                 cursor: pointer;
-                padding-right: 15px;
             }
-
-            /* টেবিল ও সার্চ বার */
             .stu-table-header {
                 padding: 15px 20px;
                 display: flex;
@@ -208,7 +304,7 @@
         document.head.appendChild(style);
     }
 
-    // ২. সুপার অ্যাডমিন ডাইনামিক ফিল্টার ডেটা লোডার
+    // ২. ফিল্টার অপশন রিডার (সুপার অ্যাডমিনের সেটআপ থেকে পড়বে)
     function getDynamicFilterData() {
         const defaultFilters = {
             academicYears: ["2026", "2025", "2024"],
@@ -225,20 +321,88 @@
         return saved ? JSON.parse(saved) : defaultFilters;
     }
 
-    // ৩. মূল স্ক্রিন ইনজেকশন
-    function renderStudentRegistrationScreen() {
+    // ৩. সাইডবারে CPSCL মডিউল তৈরি (পুনরুদ্ধার করা হলো)
+    function injectTrustSidebar() {
+        const menuList = document.querySelector('.sidebar .menu-list');
+        if (!menuList) return;
+
+        // আগের নোড থাকলে মুছে নতুন করে পরিষ্কার ইনজেক্ট করা
+        const oldLabel = document.querySelector('.trust-section-label');
+        if (oldLabel) oldLabel.remove();
+        const oldRoot = document.getElementById('trust-cpscl-module-root');
+        if (oldRoot) oldRoot.remove();
+
+        // সেকশন হেডার: শুধুই "CPSCL"
+        const sectionHeader = document.createElement('div');
+        sectionHeader.className = 'trust-section-label';
+        sectionHeader.innerText = 'CPSCL';
+
+        // মডিউল আইটেম
+        const moduleLi = document.createElement('li');
+        moduleLi.className = 'trust-module-wrapper expanded';
+        moduleLi.id = 'trust-cpscl-module-root';
+
+        moduleLi.innerHTML = `
+            <a class="trust-parent-btn" onclick="toggleTrustModule()">
+                <div class="trust-parent-left">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span>Student Registration</span>
+                </div>
+                <i class="fa-solid fa-chevron-down chevron-arrow"></i>
+            </a>
+
+            <ul class="trust-submenu-box" id="trust-submenu-items">
+                <li>
+                    <a class="trust-sub-link active" onclick="switchTrustSubTab(this, 'student-reg')">
+                        <span class="trust-sub-indicator"></span>
+                        <span>Student Registration</span>
+                    </a>
+                </li>
+            </ul>
+        `;
+
+        menuList.appendChild(sectionHeader);
+        menuList.appendChild(moduleLi);
+    }
+
+    window.toggleTrustModule = function () {
+        const wrapper = document.getElementById('trust-cpscl-module-root');
+        if (wrapper) wrapper.classList.toggle('expanded');
+    };
+
+    window.switchTrustSubTab = function (element, tabKey) {
+        document.querySelectorAll('.trust-sub-link').forEach(link => link.classList.remove('active'));
+        if (element) element.classList.add('active');
+
+        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
         const view = document.getElementById('trust-cpscl-main-view');
-        if (!view) return;
+        if (view) view.classList.add('active');
+
+        const topTitle = document.getElementById('top-title');
+        if (topTitle) topTitle.innerText = "CPSCL - Student Registration";
+    };
+
+    // ৪. ডান পাশের মূল কন্টেন্ট প্যানেল ও ১:১ স্ক্রিন
+    function injectTrustViewPanel() {
+        const mainWrapper = document.querySelector('.main-wrapper');
+        if (!mainWrapper) return;
+
+        let panel = document.getElementById('trust-cpscl-main-view');
+        if (!panel) {
+            panel = document.createElement('div');
+            panel.className = 'view-panel active';
+            panel.id = 'trust-cpscl-main-view';
+            mainWrapper.appendChild(panel);
+        }
 
         const filters = getDynamicFilterData();
-
         const buildOptions = (arr, allLabel) => {
             let html = `<option value="">${allLabel}...</option>`;
             arr.forEach(item => html += `<option value="${item}">${item}</option>`);
             return html;
         };
 
-        view.innerHTML = `
+        panel.innerHTML = `
             <div class="stu-page-wrapper">
                 <!-- টপ হেডার ও ব্রেডক্রাম্ব -->
                 <div class="stu-top-header">
@@ -351,19 +515,19 @@
         `;
     }
 
-    // গ্লোবাল ফাংশন যা সেটআপ পেজ থেকে ডাটা পরিবর্তনের পর এই ফিল্টারগুলো সাথে সাথে রিলোড করবে
-    window.refreshStudentFilterDropdowns = function() {
-        renderStudentRegistrationScreen();
+    window.refreshStudentFilterDropdowns = function () {
+        injectTrustViewPanel();
     };
 
     function init() {
-        injectStyles();
-        setTimeout(renderStudentRegistrationScreen, 350);
+        injectFullStyles();
+        injectTrustSidebar();
+        injectTrustViewPanel();
     }
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
-        init();
+        setTimeout(init, 300);
     }
 })();
