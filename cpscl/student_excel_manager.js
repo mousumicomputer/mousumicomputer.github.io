@@ -1,13 +1,12 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Student Excel Bulk Import Engine
+   SUB-SECTION: Student Excel Bulk Import Engine (Bulletproof Auto-Mount)
    Path: cpscl/student_excel_manager.js
-   Architecture: 100% Super Admin Controlled | Dynamic Template | Append-Only Cloud Sync
    Language: Pure English (Corporate ERP Standard)
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Dynamic Excel Import Engine...");
+    console.log("Loading CPSCL Dynamic Excel Import Suite...");
 
     let parsedExcelStudents = [];
 
@@ -177,7 +176,6 @@
                     </button>
                 </div>
 
-                <!-- Preview Area -->
                 <div class="excel-preview-wrapper" id="cpsclExcelPreviewBox">
                     <div class="excel-preview-header">
                         <span id="excelPreviewCountText">Found 0 Students Ready for Import</span>
@@ -193,7 +191,6 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="create-form-actions" style="margin-top: 20px;">
                     <button type="button" class="btn-action-cancel" onclick="window.closeExcelImportInlineCard()">
                         <i class="fa-solid fa-xmark"></i> Cancel
@@ -209,28 +206,40 @@
         setupDragAndDropEvents();
     }
 
-    // ৩. টপ অ্যাকশন বারে "Import Students (Excel)" বাটন ইনজেকশন
-    function injectTopImportButton() {
+    // ৩. বুলেটপ্রুফ বাটন ইনজেকশন (কখনোই মুছবে না)
+    function ensureExcelButtonMounted() {
         const topActions = document.querySelector('.stu-top-actions');
-        if (!topActions || document.getElementById('btn-top-excel-import')) return;
+        if (!topActions) return;
 
-        const btn = document.createElement('button');
-        btn.id = 'btn-top-excel-import';
-        btn.className = 'btn-stu-pill btn-stu-success';
-        btn.innerHTML = `<i class="fa-solid fa-file-excel"></i> Import Students (Excel)`;
-        btn.onclick = function () {
-            window.openExcelImportInlineCard();
-        };
-
-        topActions.appendChild(btn);
+        if (!document.getElementById('btn-top-excel-import')) {
+            const btn = document.createElement('button');
+            btn.id = 'btn-top-excel-import';
+            btn.className = 'btn-stu-pill btn-stu-success';
+            btn.style.cssText = 'background-color: #16a34a !important; color: #ffffff !important; border: 1.5px solid #16a34a !important;';
+            btn.innerHTML = `<i class="fa-solid fa-file-excel"></i> Import Students (Excel)`;
+            btn.onclick = function (e) {
+                e.preventDefault();
+                window.openExcelImportInlineCard();
+            };
+            topActions.appendChild(btn);
+        }
+        injectInlineExcelCard();
     }
 
-    // ৪. স্লাইড ডাউন কার্ড ওপেন / ক্লোজ
+    // স্ক্রিন রেন্ডারিং হুক
+    const originalRender = window.renderDynamicStudentScreen;
+    window.renderDynamicStudentScreen = function () {
+        if (typeof originalRender === 'function') {
+            originalRender.apply(this, arguments);
+        }
+        setTimeout(ensureExcelButtonMounted, 80);
+    };
+
+    // ৪. স্লাইড-ডাউন কন্ট্রোল
     window.openExcelImportInlineCard = function () {
         injectInlineExcelCard();
         const card = document.getElementById('excelImportStudentInlineCard');
         if (card) {
-            // ফর্ম খোলা থাকলে বন্ধ করা
             if (typeof window.closeCreateStudentInlineForm === 'function') {
                 window.closeCreateStudentInlineForm();
             }
@@ -258,10 +267,10 @@
         }
     }
 
-    // ৫. ডায়নামিক স্যাম্পল এক্সেল ডাউনলোড ইঞ্জিন (Super Admin ফিল্ড অনুযায়ী)
+    // ৫. ডায়নামিক স্যাম্পল এক্সেল ডাউনলোড
     window.downloadCPSCLStudentSampleExcel = function () {
         if (typeof XLSX === 'undefined') {
-            alert("Excel library is loading, please wait...");
+            alert("Excel library is still loading, please try again in a few seconds.");
             return;
         }
 
@@ -269,14 +278,11 @@
         const activeFields = fields.filter(f => f.enabled);
 
         if (activeFields.length === 0) {
-            alert("No active fields found in Super Admin Setup!");
+            alert("No active form fields found in Super Admin Setup!");
             return;
         }
 
-        // কলাম হেডার তৈরি (Mandatory হলে সাথে স্টার থাকবে)
         const headers = activeFields.map(f => f.label + (f.required ? ' *' : ''));
-
-        // ডেমো নমুনা সারি
         const sampleRow = {};
         activeFields.forEach(f => {
             const colKey = f.label + (f.required ? ' *' : '');
@@ -289,19 +295,16 @@
             else if (f.id === 'religion') sampleRow[colKey] = 'Islam';
             else if (f.id === 'nationality') sampleRow[colKey] = 'Bangladesh';
             else if (f.id === 'mobile_no') sampleRow[colKey] = '01712345678';
-            else if (f.id === 'father_name') sampleRow[colKey] = 'MD RAFIQUL ISLAM';
-            else if (f.id === 'mother_name') sampleRow[colKey] = 'MORIOM BEGUM';
             else sampleRow[colKey] = '';
         });
 
         const worksheet = XLSX.utils.json_to_sheet([sampleRow], { header: headers });
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Students Template");
-
         XLSX.writeFile(workbook, "CPSCL_Student_Import_Template.xlsx");
     };
 
-    // ৬. এক্সেল ফাইল ড্রপ ও সিলেকশন হ্যান্ডলার
+    // ৬. ড্র্যাগ অ্যান্ড ড্রপ ইভেন্ট
     function setupDragAndDropEvents() {
         const dropZone = document.getElementById('cpsclExcelDropZone');
         if (!dropZone) return;
@@ -324,20 +327,16 @@
 
         dropZone.addEventListener('drop', (e) => {
             const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                parseExcelFile(files[0]);
-            }
+            if (files.length > 0) parseExcelFile(files[0]);
         }, false);
     }
 
     window.handleCPSCLExcelFileSelect = function (e) {
         const files = e.target.files;
-        if (files.length > 0) {
-            parseExcelFile(files[0]);
-        }
+        if (files.length > 0) parseExcelFile(files[0]);
     };
 
-    // ৭. এক্সেল ফাইল ডাটা রিডার ও প্রিভিউ
+    // ৭. ফাইল পার্সিং ও প্রিভিউ
     function parseExcelFile(file) {
         if (!file.name.match(/\.(xlsx|xls)$/i)) {
             alert("Please upload a valid Excel file (.xlsx or .xls)!");
@@ -353,13 +352,13 @@
                 const rawRows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName]);
 
                 if (!rawRows || rawRows.length === 0) {
-                    alert("The uploaded Excel sheet contains no data rows!");
+                    alert("Uploaded Excel file has no student records!");
                     return;
                 }
 
                 processExcelRows(rawRows);
             } catch (err) {
-                alert("Error reading Excel file: " + err.message);
+                alert("Error reading Excel: " + err.message);
             }
         };
         reader.readAsArrayBuffer(file);
@@ -379,24 +378,21 @@
             };
 
             activeFields.forEach(f => {
-                // ম্যাচিং: হুবহু নাম অথবা স্টার ছাড়া নাম
                 const val = row[f.label + ' *'] !== undefined ? row[f.label + ' *'] :
                             (row[f.label] !== undefined ? row[f.label] : '');
-
                 studentObj[f.id] = String(val || '').trim();
             });
 
-            // Student ID নিশ্চিতকরণ
             studentObj.std_id = studentObj.std_id || ('26' + Math.floor(1000 + Math.random() * 9000));
             studentObj.student_name = studentObj.student_name || ('Student ' + (idx + 1));
 
             parsedExcelStudents.push(studentObj);
         });
 
-        renderExcelPreview(activeFields);
+        renderExcelPreview();
     }
 
-    function renderExcelPreview(activeFields) {
+    function renderExcelPreview() {
         const previewBox = document.getElementById('cpsclExcelPreviewBox');
         const countText = document.getElementById('excelPreviewCountText');
         const thead = document.getElementById('excelPreviewThead');
@@ -405,12 +401,9 @@
 
         if (!previewBox || !thead || !tbody) return;
 
-        countText.innerText = `Found ${parsedExcelStudents.length} Students Ready for Permanent Import`;
-
-        // টেবিল হেডার
+        countText.innerText = `Found ${parsedExcelStudents.length} Students Ready for Import`;
         thead.innerHTML = `<th>#</th><th>Student ID</th><th>Name</th><th>Class</th><th>Section</th><th>Roll</th>`;
 
-        // প্রথম ৫টি রো প্রিভিউ
         tbody.innerHTML = '';
         parsedExcelStudents.slice(0, 5).forEach((s, i) => {
             const tr = document.createElement('tr');
@@ -438,12 +431,9 @@
         }
     }
 
-    // ৮. ক্লাউড ফায়ারবেসে পার্মানেন্ট আপলোড ইঞ্জিন (Append-Only Guarantee)
+    // ৮. ক্লাউড ফায়ারবেসে পার্মানেন্ট সেভ (Append-Only)
     window.executeCPSCLBulkUpload = async function () {
-        if (!parsedExcelStudents || parsedExcelStudents.length === 0) {
-            alert("No student data available to import!");
-            return;
-        }
+        if (!parsedExcelStudents || parsedExcelStudents.length === 0) return;
 
         const submitBtn = document.getElementById('btnConfirmBulkUpload');
         if (submitBtn) {
@@ -452,8 +442,6 @@
         }
 
         try {
-            // কোনো পুরাতন ডাটা ডিলিট বা ওভাররাইট হবে না
-            // প্রতিটি শিক্ষার্থী স্বতন্ত্র কি (key) দিয়ে পুশ হবে
             for (let i = 0; i < parsedExcelStudents.length; i++) {
                 const stu = parsedExcelStudents[i];
                 if (typeof window.writeToFirebase === 'function') {
@@ -461,7 +449,6 @@
                 }
             }
 
-            // লোকাল ক্যাশে যুক্ত করা
             let localCache = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
             localCache = [...parsedExcelStudents, ...localCache];
             localStorage.setItem('cpscl_students_cache', JSON.stringify(localCache));
@@ -472,12 +459,11 @@
 
             window.closeExcelImportInlineCard();
 
-            // লাইভ টেবিল রিফ্রেশ
             if (typeof window.fetchAndRenderRealCPSCLStudents === 'function') {
                 window.fetchAndRenderRealCPSCLStudents();
             }
         } catch (err) {
-            alert("Error uploading students to Firebase: " + err.message);
+            alert("Error saving students to Firebase: " + err.message);
         } finally {
             if (submitBtn) {
                 submitBtn.disabled = false;
@@ -486,15 +472,16 @@
         }
     };
 
+    // লুপ গার্ড দিয়ে বাটনকে স্ক্রিনে ধরে রাখা
     function init() {
         injectExcelStyles();
-        injectInlineExcelCard();
-        injectTopImportButton();
+        ensureExcelButtonMounted();
+        setInterval(ensureExcelButtonMounted, 600);
     }
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
-        setTimeout(init, 300);
+        setTimeout(init, 200);
     }
 })();
