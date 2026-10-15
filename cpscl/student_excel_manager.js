@@ -1,12 +1,13 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Student Excel Bulk Import Engine (Bulletproof Auto-Mount)
+   SUB-SECTION: Student Excel Bulk Import Engine
    Path: cpscl/student_excel_manager.js
+   Architecture: Pure Listener Engine | Zero Hardcode | 100% Super Admin Driven
    Language: Pure English (Corporate ERP Standard)
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Dynamic Excel Import Suite...");
+    console.log("Loading CPSCL Excel Import Engine (Pure Listener Mode)...");
 
     let parsedExcelStudents = [];
 
@@ -146,7 +147,7 @@
         document.head.appendChild(style);
     }
 
-    // ২. ইনলাইন আপলোড কার্ড তৈরি
+    // ২. ইনলাইন আপলোড প্যানেল
     function injectInlineExcelCard() {
         const view = document.getElementById('trust-cpscl-main-view');
         if (!view || document.getElementById('excelImportStudentInlineCard')) return;
@@ -206,36 +207,21 @@
         setupDragAndDropEvents();
     }
 
-    // ৩. বুলেটপ্রুফ বাটন ইনজেকশন (কখনোই মুছবে না)
-    function ensureExcelButtonMounted() {
-        const topActions = document.querySelector('.stu-top-actions');
-        if (!topActions) return;
+    // ৩. বাটন ক্লিক হ্যান্ডলার (সুপার অ্যাডমিনের বাটনের জন্য অপেক্ষায় থাকে)
+    function bindExcelButtonEvents() {
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-stu-pill');
+            if (!btn) return;
+            const text = btn.innerText.trim();
 
-        if (!document.getElementById('btn-top-excel-import')) {
-            const btn = document.createElement('button');
-            btn.id = 'btn-top-excel-import';
-            btn.className = 'btn-stu-pill btn-stu-success';
-            btn.style.cssText = 'background-color: #16a34a !important; color: #ffffff !important; border: 1.5px solid #16a34a !important;';
-            btn.innerHTML = `<i class="fa-solid fa-file-excel"></i> Import Students (Excel)`;
-            btn.onclick = function (e) {
+            // সুপার অ্যাডমিনের বাটনে 'Import' বা 'Excel' থাকলেই এটি ওপেন হবে
+            if (text.includes('Import') || text.includes('Excel')) {
                 e.preventDefault();
                 window.openExcelImportInlineCard();
-            };
-            topActions.appendChild(btn);
-        }
-        injectInlineExcelCard();
+            }
+        });
     }
 
-    // স্ক্রিন রেন্ডারিং হুক
-    const originalRender = window.renderDynamicStudentScreen;
-    window.renderDynamicStudentScreen = function () {
-        if (typeof originalRender === 'function') {
-            originalRender.apply(this, arguments);
-        }
-        setTimeout(ensureExcelButtonMounted, 80);
-    };
-
-    // ৪. স্লাইড-ডাউন কন্ট্রোল
     window.openExcelImportInlineCard = function () {
         injectInlineExcelCard();
         const card = document.getElementById('excelImportStudentInlineCard');
@@ -267,10 +253,10 @@
         }
     }
 
-    // ৫. ডায়নামিক স্যাম্পল এক্সেল ডাউনলোড
+    // ৪. সুপার অ্যাডমিন ফিল্ড অনুযায়ী ডায়নামিক এক্সেল টেমপ্লেট
     window.downloadCPSCLStudentSampleExcel = function () {
         if (typeof XLSX === 'undefined') {
-            alert("Excel library is still loading, please try again in a few seconds.");
+            alert("Excel library is still loading, please wait...");
             return;
         }
 
@@ -304,7 +290,7 @@
         XLSX.writeFile(workbook, "CPSCL_Student_Import_Template.xlsx");
     };
 
-    // ৬. ড্র্যাগ অ্যান্ড ড্রপ ইভেন্ট
+    // ৫. ড্র্যাগ অ্যান্ড ড্রপ
     function setupDragAndDropEvents() {
         const dropZone = document.getElementById('cpsclExcelDropZone');
         if (!dropZone) return;
@@ -336,7 +322,7 @@
         if (files.length > 0) parseExcelFile(files[0]);
     };
 
-    // ৭. ফাইল পার্সিং ও প্রিভিউ
+    // ৬. ফাইল পার্সিং ও প্রিভিউ
     function parseExcelFile(file) {
         if (!file.name.match(/\.(xlsx|xls)$/i)) {
             alert("Please upload a valid Excel file (.xlsx or .xls)!");
@@ -352,13 +338,13 @@
                 const rawRows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName]);
 
                 if (!rawRows || rawRows.length === 0) {
-                    alert("Uploaded Excel file has no student records!");
+                    alert("Uploaded Excel sheet contains no student records!");
                     return;
                 }
 
                 processExcelRows(rawRows);
             } catch (err) {
-                alert("Error reading Excel: " + err.message);
+                alert("Error reading Excel file: " + err.message);
             }
         };
         reader.readAsArrayBuffer(file);
@@ -431,7 +417,7 @@
         }
     }
 
-    // ৮. ক্লাউড ফায়ারবেসে পার্মানেন্ট সেভ (Append-Only)
+    // ৭. ক্লাউড ফায়ারবেসে পার্মানেন্ট সেভ (Append-Only)
     window.executeCPSCLBulkUpload = async function () {
         if (!parsedExcelStudents || parsedExcelStudents.length === 0) return;
 
@@ -472,16 +458,14 @@
         }
     };
 
-    // লুপ গার্ড দিয়ে বাটনকে স্ক্রিনে ধরে রাখা
     function init() {
         injectExcelStyles();
-        ensureExcelButtonMounted();
-        setInterval(ensureExcelButtonMounted, 600);
+        bindExcelButtonEvents();
     }
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
-        setTimeout(init, 200);
+        setTimeout(init, 150);
     }
 })();
