@@ -2,34 +2,34 @@
    MODULE: CPSCL
    SUB-SECTION: Student Creation & Form Fields Builder Engine
    Path: cpscl/student_create_manager.js
-   Safety: Permanent Firebase Cloud Storage | Zero-Auto-Delete Immune System
+   Architecture: 100% Super Admin Controlled Dropdowns | Firebase Permanent Sync
    ========================================================================== */
 
 (function () {
-    console.log("Initializing CPSCL Student Create Manager & Firebase Sync Engine...");
+    console.log("Loading CPSCL Super Admin Controlled Student Engine with Auto-Repair...");
 
-    // ডিফল্ট ফিল্ড তালিকা (ছবির ফর্মের সাথে ১০০% মিল রেখে তৈরি)
+    // ডিফল্ট ফিল্ড ও অপশন তালিকা (Admission Year সহ সব ড্রপডাউনে অপশন দেওয়া আছে)
     const DEFAULT_FORM_FIELDS = [
         // Academic Info
-        { id: 'admission_year', label: 'Admission Year', type: 'dropdown', group: 'Academic Info', enabled: true, required: true, optionsKey: 'academicYears' },
-        { id: 'class_name', label: 'Class Name', type: 'dropdown', group: 'Academic Info', enabled: true, required: true, optionsKey: 'classes' },
-        { id: 'section', label: 'Section/Batch', type: 'dropdown', group: 'Academic Info', enabled: true, required: true, optionsKey: 'sections' },
-        { id: 'category', label: "Student's Category", type: 'dropdown', group: 'Academic Info', enabled: true, required: false, optionsKey: 'categories' },
+        { id: 'admission_year', label: 'Admission Year', type: 'dropdown', group: 'Academic Info', enabled: true, required: true, options: ['2026', '2025', '2024'] },
+        { id: 'class_name', label: 'Class Name', type: 'dropdown', group: 'Academic Info', enabled: true, required: true, options: ['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'HSC 1st Year', 'HSC 2nd Year'] },
+        { id: 'section', label: 'Section/Batch', type: 'dropdown', group: 'Academic Info', enabled: true, required: true, options: ['Section A', 'Section B', 'Padma', 'Meghna', 'Jamuna'] },
+        { id: 'category', label: "Student's Category", type: 'dropdown', group: 'Academic Info', enabled: true, required: false, options: ['Civil', 'General', 'Defence', "Teacher's Child"] },
         { id: 'roll_no', label: 'Roll No', type: 'text', group: 'Academic Info', enabled: true, required: true },
         { id: 'std_id', label: 'Student ID (Auto)', type: 'text', group: 'Academic Info', enabled: true, required: false, readonly: true },
         { id: 'tuition_fee', label: 'Monthly/Tuition Fee', type: 'text', group: 'Academic Info', enabled: true, required: false },
         { id: 'admission_fee', label: 'Admission Fee', type: 'text', group: 'Academic Info', enabled: true, required: false },
-        { id: 'house', label: 'Student House', type: 'dropdown', group: 'Academic Info', enabled: true, required: true, optionsKey: 'houses' },
+        { id: 'house', label: 'Student House', type: 'dropdown', group: 'Academic Info', enabled: true, required: true, options: ['House 1', 'House 2', 'House 3'] },
 
         // Personal Info
         { id: 'student_name', label: 'Name (English)', type: 'text', group: 'Personal Info', enabled: true, required: true },
         { id: 'nick_name', label: 'Nick Name', type: 'text', group: 'Personal Info', enabled: true, required: false },
         { id: 'student_name_bn', label: 'নাম (বাংলা)', type: 'text', group: 'Personal Info', enabled: true, required: false },
-        { id: 'gender', label: 'Gender', type: 'dropdown', group: 'Personal Info', enabled: true, required: true, staticOptions: ['Male', 'Female', 'Other'] },
+        { id: 'gender', label: 'Gender', type: 'dropdown', group: 'Personal Info', enabled: true, required: true, options: ['Male', 'Female', 'Other'] },
         { id: 'mobile_no', label: 'Mobile No (Primary)', type: 'text', group: 'Personal Info', enabled: true, required: true },
-        { id: 'blood_group', label: 'Blood Group', type: 'dropdown', group: 'Personal Info', enabled: true, required: false, staticOptions: ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'] },
-        { id: 'religion', label: 'Religion', type: 'dropdown', group: 'Personal Info', enabled: true, required: true, staticOptions: ['Islam', 'Hinduism', 'Christianity', 'Buddhism', 'Other'] },
-        { id: 'nationality', label: 'Nationality', type: 'dropdown', group: 'Personal Info', enabled: true, required: true, staticOptions: ['Bangladesh', 'Other'] },
+        { id: 'blood_group', label: 'Blood Group', type: 'dropdown', group: 'Personal Info', enabled: true, required: false, options: ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'] },
+        { id: 'religion', label: 'Religion', type: 'dropdown', group: 'Personal Info', enabled: true, required: true, options: ['Islam', 'Hinduism', 'Christianity', 'Buddhism', 'Other'] },
+        { id: 'nationality', label: 'Nationality', type: 'dropdown', group: 'Personal Info', enabled: true, required: true, options: ['Bangladesh', 'Other'] },
         { id: 'birth_date', label: 'Birth Date (DD/MM/YYYY)', type: 'date', group: 'Personal Info', enabled: true, required: false },
         { id: 'birth_cert_no', label: 'Birth Certificate No', type: 'text', group: 'Personal Info', enabled: true, required: false },
         { id: 'email', label: 'Email', type: 'email', group: 'Personal Info', enabled: true, required: false },
@@ -41,26 +41,43 @@
         { id: 'permanent_address', label: 'Permanent Address', type: 'textarea', group: 'Address Info', enabled: true, required: false }
     ];
 
-    // ফিল্ড কনফিগ রিডার
+    // অটো-রিপেয়ার যুক্ত রিডার: কোনো ড্রপডাউনে অপশন খালি থাকলে তা সাথে সাথে পূরণ করবে
     window.getCPSCLFormFields = function () {
         const saved = localStorage.getItem('cpscl_student_form_fields');
-        return saved ? JSON.parse(saved) : DEFAULT_FORM_FIELDS;
+        let fields = saved ? JSON.parse(saved) : DEFAULT_FORM_FIELDS;
+
+        // Auto-Repair: নিশ্চিত করা যে admission_year বা যেকোনো ড্রপডাউনে অপশন যেন ফাঁকা না থাকে
+        let repaired = false;
+        fields.forEach(f => {
+            if (f.type === 'dropdown' && (!f.options || f.options.length === 0)) {
+                const def = DEFAULT_FORM_FIELDS.find(d => d.id === f.id);
+                if (def && def.options) {
+                    f.options = [...def.options];
+                    repaired = true;
+                }
+            }
+        });
+
+        if (repaired) {
+            localStorage.setItem('cpscl_student_form_fields', JSON.stringify(fields));
+        }
+
+        return fields;
     };
 
     function saveFormFields(fields) {
         localStorage.setItem('cpscl_student_form_fields', JSON.stringify(fields));
         if (typeof window.showToast === 'function') {
-            window.showToast("Form fields schema updated successfully!", "success");
+            window.showToast("Configuration saved successfully!", "success");
         }
     }
 
-    // ১. স্টুডেন্ট ফর্ম বিল্ডারের সিএসএস (ছবি ১ ও ২ এর মতো ইনলাইন স্টাইল)
+    // ১. স্টাইল ইনজেকশন
     function injectInlineFormStyles() {
         if (document.getElementById('cpscl-inline-form-styles')) return;
         const st = document.createElement('style');
         st.id = 'cpscl-inline-form-styles';
         st.innerHTML = `
-            /* ইনলাইন ক্রিয়েট স্টুডেন্ট কার্ড */
             #createStudentInlineCard {
                 display: none;
                 background: #ffffff;
@@ -85,9 +102,7 @@
                 align-items: center;
                 gap: 10px;
             }
-            .create-form-content {
-                padding: 25px;
-            }
+            .create-form-content { padding: 25px; }
             .form-grid-layout {
                 display: grid;
                 grid-template-columns: repeat(4, 1fr);
@@ -115,10 +130,7 @@
                 color: #64748b;
                 margin-bottom: 2px;
             }
-            .create-field-box label span.req-star {
-                color: #ef4444;
-                font-weight: bold;
-            }
+            .create-field-box label span.req-star { color: #ef4444; font-weight: bold; }
             .create-form-input {
                 width: 100%;
                 border: none;
@@ -129,11 +141,7 @@
                 outline: none;
                 padding: 2px 0;
             }
-            .create-form-input:disabled {
-                background: #f8fafc;
-                color: #94a3b8;
-                cursor: not-allowed;
-            }
+            .create-form-input:disabled { background: #f8fafc; color: #94a3b8; cursor: not-allowed; }
             .create-form-actions {
                 display: flex;
                 justify-content: flex-end;
@@ -170,17 +178,11 @@
                 box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);
                 transition: all 0.2s;
             }
-            .btn-action-submit:hover { opacity: 0.95; }
-
-            /* টেবিল কন্টেইনার ফর্ম ওপেন থাকা অবস্থায় হালকা নিচে থাকা */
-            .push-down-active {
-                opacity: 0.95;
-            }
         `;
         document.head.appendChild(st);
     }
 
-    // ২. ইনলাইন ফর্ম ইনজেকশন (Student List এর ঠিক উপরে বসবে)
+    // ২. ইনলাইন ফর্ম ইনজেকশন
     function injectInlineCreateForm() {
         const view = document.getElementById('trust-cpscl-main-view');
         if (!view || document.getElementById('createStudentInlineCard')) return;
@@ -196,7 +198,6 @@
             </div>
             <form id="cpsclStudentCreateForm" onsubmit="handleStudentFormSubmit(event)" class="create-form-content">
                 <div class="form-grid-layout" id="dynamicFormFieldsContainer"></div>
-                
                 <div class="create-form-actions">
                     <button type="button" class="btn-action-cancel" onclick="closeCreateStudentInlineForm()">
                         <i class="fa-solid fa-xmark"></i> Cancel
@@ -208,48 +209,33 @@
             </form>
         `;
 
-        // মূল টেবিল কার্ডের ঠিক উপরে ইনজেক্ট করা
         mainCard.parentNode.insertBefore(createCard, mainCard);
     }
 
-    // ৩. ডাইনামিক ফিল্ড রেন্ডারার (সুপার অ্যাডমিনের টিক দেওয়া ফিল্ড অনুযায়ী)
+    // ৩. ড্রপডাউনে অপশনসহ সরাসরি ফর্ম ফিল্ড রেন্ডার
     window.renderDynamicCreateFormFields = function (isManualId = false) {
         const container = document.getElementById('dynamicFormFieldsContainer');
         if (!container) return;
 
         const fields = window.getCPSCLFormFields();
-        const masterCfg = typeof window.getCPSCLMasterConfig === 'function' ? window.getCPSCLMasterConfig() : {};
         container.innerHTML = '';
-
-        // অটো স্টুডেন্ট আইডি জেনারেশন
         const generatedAutoId = '26' + Math.floor(1000 + Math.random() * 9000);
 
         fields.filter(f => f.enabled).forEach(field => {
             const box = document.createElement('div');
             box.className = 'create-field-box';
-            if (field.type === 'textarea') {
-                box.style.gridColumn = 'span 2';
-            }
+            if (field.type === 'textarea') box.style.gridColumn = 'span 2';
 
             const reqStar = field.required ? '<span class="req-star">*</span>' : '';
             let inputHtml = '';
 
             if (field.type === 'dropdown') {
                 let optionsHtml = `<option value="">Select ${field.label}...</option>`;
+                const opts = field.options || [];
 
-                // সুপার অ্যাডমিনের পূর্বের সেটআপ থেকে ড্রপডাউন অপশন নেওয়া
-                if (field.optionsKey && masterCfg.filterBoxes) {
-                    const matchedBox = masterCfg.filterBoxes.find(b => b.id.includes(field.id) || b.label.toLowerCase().includes(field.label.toLowerCase()));
-                    if (matchedBox && matchedBox.options) {
-                        matchedBox.options.forEach(opt => {
-                            optionsHtml += `<option value="${opt}">${opt}</option>`;
-                        });
-                    }
-                } else if (field.staticOptions) {
-                    field.staticOptions.forEach(opt => {
-                        optionsHtml += `<option value="${opt}">${opt}</option>`;
-                    });
-                }
+                opts.forEach(opt => {
+                    optionsHtml += `<option value="${opt}">${opt}</option>`;
+                });
 
                 inputHtml = `
                     <select id="inp_form_${field.id}" class="create-form-input" ${field.required ? 'required' : ''}>
@@ -286,16 +272,13 @@
         });
     };
 
-    // ৪. ফর্ম ওপেন ও ক্লোজ ফাংশনসমূহ
     window.openCreateStudentInlineForm = function (isManualId = false) {
         injectInlineCreateForm();
         window.renderDynamicCreateFormFields(isManualId);
 
         const card = document.getElementById('createStudentInlineCard');
         const titleEl = document.getElementById('createFormTitleHeader');
-        if (titleEl) {
-            titleEl.innerText = isManualId ? "Create Student (Manual ID)" : "Create Student";
-        }
+        if (titleEl) titleEl.innerText = isManualId ? "Create Student (Manual ID)" : "Create Student";
 
         if (card) {
             card.style.display = 'block';
@@ -305,12 +288,10 @@
 
     window.closeCreateStudentInlineForm = function () {
         const card = document.getElementById('createStudentInlineCard');
-        if (card) {
-            card.style.display = 'none';
-        }
+        if (card) card.style.display = 'none';
     };
 
-    // ৫. ফায়ারবেস স্থায়ী ক্লাউড সেভ ইঞ্জিন (নিরাপত্তা নিশ্চিতকরণ)
+    // ৪. ফায়ারবেসে পার্মানেন্ট সেভ
     window.handleStudentFormSubmit = async function (e) {
         e.preventDefault();
         const submitBtn = document.getElementById('btnSubmitStudent');
@@ -326,38 +307,29 @@
             status: 'Active'
         };
 
-        // প্রতিটি ফিল্ডের ডাটা রিড করা
         fields.filter(f => f.enabled).forEach(f => {
             const el = document.getElementById(`inp_form_${f.id}`);
             studentObj[f.id] = el ? el.value.trim() : '';
         });
 
-        // মূল ফিল্ড ব্যাকআপ
         studentObj.std_id = studentObj.std_id || ('26' + Math.floor(1000 + Math.random() * 9000));
         studentObj.student_name = studentObj.student_name || 'Unnamed Student';
 
         try {
-            // ১. ফায়ারবেস স্থায়ী ক্লাউডে সেভ (কোনো পুরানো ডাটা ওভাররাইট হবে না)
             if (typeof window.writeToFirebase === 'function') {
                 await window.writeToFirebase(`cpscl_students/${studentObj.id}`, studentObj);
             }
-
-            // ২. লোকাল ক্যাশ ব্যাকআপ
             let localCache = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
             localCache.unshift(studentObj);
             localStorage.setItem('cpscl_students_cache', JSON.stringify(localCache));
 
             if (typeof window.showToast === 'function') {
-                window.showToast("Student registered successfully to Cloud Database!", "success");
+                window.showToast("Student registered successfully to Firebase!", "success");
             }
-
-            // ফর্ম বন্ধ করা ও টেবিল আপডেট
             window.closeCreateStudentInlineForm();
             window.fetchAndRenderRealCPSCLStudents();
-
         } catch (err) {
-            console.error("Firebase write error:", err);
-            alert("Error saving student to Firebase: " + err.message);
+            alert("Error saving student: " + err.message);
         } finally {
             if (submitBtn) {
                 submitBtn.disabled = false;
@@ -366,31 +338,26 @@
         }
     };
 
-    // ৬. ফায়ারবেস থেকে লাইভ ডাটা লোড ও টেবিলে রেন্ডার (কোনো শিক্ষার্থী মুছবে না)
+    // ৫. ফায়ারবেস থেকে ডাটা লোড ও টেবিলে দেখানো
     window.fetchAndRenderRealCPSCLStudents = function () {
         const tbody = document.querySelector('.stu-table tbody');
         if (!tbody) return;
 
-        // ফায়ারবেস ক্লাউড থেকে ডাটা রিড
         if (window.getDatabase && window.ref && window.get) {
             const db = window.getDatabase();
             const stuRef = window.ref(db, 'cpscl_students');
             window.get(stuRef).then((snapshot) => {
                 if (snapshot.exists()) {
                     const data = snapshot.val();
-                    const students = Object.values(data);
-                    renderTableRows(students);
+                    renderTableRows(Object.values(data));
                 } else {
-                    const local = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
-                    renderTableRows(local);
+                    renderTableRows(JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]'));
                 }
             }).catch(() => {
-                const local = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
-                renderTableRows(local);
+                renderTableRows(JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]'));
             });
         } else {
-            const local = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
-            renderTableRows(local);
+            renderTableRows(JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]'));
         }
     };
 
@@ -425,7 +392,6 @@
                 colsHtml += `<td>${val}</td>`;
             });
 
-            // সুপার অ্যাডমিনের ম্যানুয়াল ডিলিট বাটন (একমাত্র উপায়)
             colsHtml += `
                 <td style="text-align:right;">
                     <button onclick="confirmSuperAdminDeleteStudent('${s.id}')" title="Delete Student" style="background:#fee2e2; border:none; color:#dc2626; padding:5px 10px; border-radius:6px; cursor:pointer;">
@@ -439,11 +405,8 @@
         });
     }
 
-    // ৭. সুপার অ্যাডমিনের জন্য সুরক্ষিত ম্যানুয়াল ডিলিট (কোডিং নয়, শুধুই ক্লিকে)
     window.confirmSuperAdminDeleteStudent = async function (studentId) {
-        const confirmed = confirm("WARNING: Are you sure you want to PERMANENTLY delete this student from Firebase Cloud? This action cannot be undone.");
-        if (!confirmed) return;
-
+        if (!confirm("WARNING: Are you sure you want to PERMANENTLY delete this student from Firebase Cloud?")) return;
         try {
             if (typeof window.writeToFirebase === 'function') {
                 await window.writeToFirebase(`cpscl_students/${studentId}`, null);
@@ -452,22 +415,19 @@
             localCache = localCache.filter(item => item.id !== studentId);
             localStorage.setItem('cpscl_students_cache', JSON.stringify(localCache));
 
-            if (typeof window.showToast === 'function') {
-                window.showToast("Student deleted by Super Admin.", "info");
-            }
+            if (typeof window.showToast === 'function') window.showToast("Student deleted by Super Admin.", "info");
             window.fetchAndRenderRealCPSCLStudents();
         } catch (err) {
             alert("Error deleting student: " + err.message);
         }
     };
 
-    // ৮. `Registration Setup`-এ ফিল্ড বিল্ডার ট্যাব ইনজেকশন (চেকলিস্ট তালিকা)
+    // ৬. `Registration Setup`-এ ফিল্ড বিল্ডার ও ড্রপডাউন অপশন ম্যানেজমেন্ট টেবিল
     function injectFieldsBuilderTab() {
         const setupCard = document.querySelector('#cpscl-reg-setup-view .stu-main-card');
         const tabHeader = document.querySelector('#cpscl-reg-setup-view [style*="border-bottom:2px solid #e2e8f0"]');
         if (!setupCard || !tabHeader || document.getElementById('tab-btn-fields-builder')) return;
 
-        // ট্যাব বাটন যুক্ত করা
         const tabBtn = document.createElement('button');
         tabBtn.className = 'setup-tab-btn';
         tabBtn.id = 'tab-btn-fields-builder';
@@ -475,7 +435,6 @@
         tabBtn.innerHTML = `<i class="fa-solid fa-list-check"></i> Student Form Fields`;
         tabHeader.appendChild(tabBtn);
 
-        // ট্যাব কনটেন্ট প্যানেল যুক্ত করা
         const panel = document.createElement('div');
         panel.id = 'tab-fields-builder';
         panel.className = 'setup-tab-panel';
@@ -483,15 +442,14 @@
         panel.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
                 <div>
-                    <h3 style="font-size:1.15rem; color:#1e293b; margin-bottom:3px;">Student Registration Form Field Builder</h3>
-                    <p style="font-size:0.85rem; color:#64748b;">Tick or untick fields to control which inputs appear on the '+ Create Student' form.</p>
+                    <h3 style="font-size:1.15rem; color:#1e293b; margin-bottom:3px;">Student Form Fields & Dropdown Options Manager</h3>
+                    <p style="font-size:0.85rem; color:#64748b;">Control form inputs and directly manage options for any dropdown field.</p>
                 </div>
                 <button onclick="openAddNewCustomFieldDialog()" class="btn-admin-action btn-admin-primary" style="padding:9px 18px;">
                     <i class="fa-solid fa-plus"></i> Add New Custom Field
                 </button>
             </div>
 
-            <!-- চেকলিস্ট টেবিল -->
             <div style="overflow-x:auto; background:#fff; border:1px solid #e2e8f0; border-radius:10px;">
                 <table style="width:100%; border-collapse:collapse; text-align:left;">
                     <thead>
@@ -500,7 +458,7 @@
                             <th style="padding:12px 16px; width:70px; text-align:center;">REQ (*)</th>
                             <th style="padding:12px 16px;">FIELD LABEL</th>
                             <th style="padding:12px 16px;">TYPE</th>
-                            <th style="padding:12px 16px;">SECTION GROUP</th>
+                            <th style="padding:12px 16px;">DROPDOWN OPTIONS</th>
                             <th style="padding:12px 16px; text-align:right;">ACTION</th>
                         </tr>
                     </thead>
@@ -511,7 +469,7 @@
         setupCard.appendChild(panel);
     }
 
-    // ফিল্ড চেকলিস্ট রেন্ডারার
+    // ফিল্ড চেকলিস্ট টেবিল রেন্ডার
     window.renderFieldsBuilderChecklist = function () {
         const tbody = document.getElementById('fieldsBuilderTableBody');
         if (!tbody) return;
@@ -521,6 +479,16 @@
         fields.forEach((f, idx) => {
             const tr = document.createElement('tr');
             tr.style.borderBottom = '1px solid #f1f5f9';
+
+            let manageOptsBtn = '-';
+            if (f.type === 'dropdown') {
+                const optCount = (f.options || []).length;
+                manageOptsBtn = `
+                    <button onclick="openManageFieldOptionsModal(${idx})" class="btn-admin-action" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; padding:4px 10px; font-size:0.8rem;">
+                        <i class="fa-solid fa-gear"></i> Options (${optCount})
+                    </button>
+                `;
+            }
 
             tr.innerHTML = `
                 <td style="text-align:center; padding:12px;">
@@ -535,8 +503,8 @@
                 <td style="padding:12px;">
                     <span style="background:#f1f5f9; padding:3px 10px; border-radius:6px; font-size:0.8rem; font-weight:700; color:#475569;">${f.type.toUpperCase()}</span>
                 </td>
-                <td style="padding:12px; color:#64748b; font-size:0.85rem; font-weight:600;">
-                    ${f.group}
+                <td style="padding:12px;">
+                    ${manageOptsBtn}
                 </td>
                 <td style="padding:12px; text-align:right;">
                     <button onclick="deleteCustomFormField(${idx})" title="Delete Field" style="background:#fee2e2; border:none; color:#dc2626; padding:6px 10px; border-radius:6px; cursor:pointer;">
@@ -556,11 +524,87 @@
     };
 
     window.deleteCustomFormField = function (idx) {
-        if (confirm("Are you sure you want to remove this field from the registration form?")) {
-            const fields = window.getCPSCLFormFields();
-            fields.splice(idx, 1);
-            saveFormFields(fields);
-            window.renderFieldsBuilderChecklist();
+        if (!confirm("Are you sure you want to remove this field?")) return;
+        const fields = window.getCPSCLFormFields();
+        fields.splice(idx, 1);
+        saveFormFields(fields);
+        window.renderFieldsBuilderChecklist();
+    };
+
+    // ৭. ড্রপডাউন অপশন এডিটর মডাল
+    window.openManageFieldOptionsModal = function (fieldIdx) {
+        const fields = window.getCPSCLFormFields();
+        const field = fields[fieldIdx];
+        if (!field) return;
+
+        const renderTags = () => {
+            const list = field.options || [];
+            return list.map((opt, oIdx) => `
+                <span style="background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; padding:5px 12px; border-radius:20px; font-size:0.85rem; font-weight:700; display:inline-flex; align-items:center; gap:8px; margin:4px;">
+                    ${opt}
+                    <i class="fa-solid fa-xmark" style="color:#ef4444; cursor:pointer;" onclick="removeOptionFromField(${fieldIdx}, ${oIdx})"></i>
+                </span>
+            `).join('') || '<span style="color:#94a3b8; font-size:0.85rem;">No options currently configured.</span>';
+        };
+
+        const body = `
+            <div style="margin-bottom:15px;">
+                <p style="font-size:0.88rem; color:#64748b; margin-bottom:12px;">Add or remove options for <strong>${field.label}</strong> dropdown:</p>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="new_opt_val_input" class="modal-form-control" placeholder="Type new option (e.g. 2026, Science, House A)...">
+                    <button type="button" onclick="addOptionToField(${fieldIdx})" class="btn-admin-action btn-admin-primary" style="padding:9px 18px; white-space:nowrap;">
+                        <i class="fa-solid fa-plus"></i> Add
+                    </button>
+                </div>
+            </div>
+            <div style="min-height:100px; max-height:220px; overflow-y:auto; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:10px; padding:12px;" id="fieldOptionsTagContainer">
+                ${renderTags()}
+            </div>
+        `;
+
+        if (typeof window.openCPSCLModal === 'function') {
+            window.openCPSCLModal(`Manage Options: ${field.label}`, body, () => {
+                window.closeCPSCLModal();
+                window.renderFieldsBuilderChecklist();
+            });
+        }
+    };
+
+    window.addOptionToField = function (fieldIdx) {
+        const inp = document.getElementById('new_opt_val_input');
+        const val = inp ? inp.value.trim() : '';
+        if (!val) return;
+
+        const fields = window.getCPSCLFormFields();
+        if (!fields[fieldIdx].options) fields[fieldIdx].options = [];
+        fields[fieldIdx].options.push(val);
+        saveFormFields(fields);
+
+        const cont = document.getElementById('fieldOptionsTagContainer');
+        if (cont) {
+            cont.innerHTML = fields[fieldIdx].options.map((opt, oIdx) => `
+                <span style="background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; padding:5px 12px; border-radius:20px; font-size:0.85rem; font-weight:700; display:inline-flex; align-items:center; gap:8px; margin:4px;">
+                    ${opt}
+                    <i class="fa-solid fa-xmark" style="color:#ef4444; cursor:pointer;" onclick="removeOptionFromField(${fieldIdx}, ${oIdx})"></i>
+                </span>
+            `).join('');
+        }
+        inp.value = '';
+    };
+
+    window.removeOptionFromField = function (fieldIdx, optIdx) {
+        const fields = window.getCPSCLFormFields();
+        fields[fieldIdx].options.splice(optIdx, 1);
+        saveFormFields(fields);
+
+        const cont = document.getElementById('fieldOptionsTagContainer');
+        if (cont) {
+            cont.innerHTML = fields[fieldIdx].options.map((opt, oIdx) => `
+                <span style="background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; padding:5px 12px; border-radius:20px; font-size:0.85rem; font-weight:700; display:inline-flex; align-items:center; gap:8px; margin:4px;">
+                    ${opt}
+                    <i class="fa-solid fa-xmark" style="color:#ef4444; cursor:pointer;" onclick="removeOptionFromField(${fieldIdx}, ${oIdx})"></i>
+                </span>
+            `).join('') || '<span style="color:#94a3b8; font-size:0.85rem;">No options currently configured.</span>';
         }
     };
 
@@ -604,7 +648,8 @@
                     type,
                     group,
                     enabled: true,
-                    required: false
+                    required: false,
+                    options: type === 'dropdown' ? ['Option 1', 'Option 2'] : []
                 });
                 saveFormFields(fields);
                 window.closeCPSCLModal();
@@ -613,7 +658,6 @@
         }
     };
 
-    // ৯. `+ Create Student` বাটনে ক্লিক হ্যান্ডলার বাইন্ড করা
     function bindCreateStudentButtons() {
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.btn-stu-pill');
