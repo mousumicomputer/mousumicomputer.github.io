@@ -2,16 +2,17 @@
    MODULE: CPSCL
    SUB-SECTION: Student Excel Bulk Import Engine
    Path: cpscl/student_excel_manager.js
-   Architecture: Pure Listener Engine | Zero Hardcode | 100% Super Admin Driven
+   Architecture: Zero Hardcode | Smart ID Validation | Color-Coded Preview
    Language: Pure English (Corporate ERP Standard)
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Excel Import Engine (Pure Listener Mode)...");
+    console.log("Loading CPSCL Smart Excel Import Engine with ID Verification...");
 
     let parsedExcelStudents = [];
+    let currentFilterStatus = 'all';
 
-    // ১. স্টাইল ইনজেকশন
+    // ১. আধুনিক সিএসএস ও কালার কোডিং স্টাইল
     function injectExcelStyles() {
         if (document.getElementById('cpscl-excel-import-styles')) return;
         const style = document.createElement('style');
@@ -103,9 +104,9 @@
                 gap: 8px;
                 transition: all 0.2s;
             }
-            .btn-download-template:hover {
-                background: #ecfdf5;
-            }
+            .btn-download-template:hover { background: #ecfdf5; }
+
+            /* ফিল্টার পিলস ও স্ট্যাটাস বার */
             .excel-preview-wrapper {
                 margin-top: 20px;
                 display: none;
@@ -114,40 +115,85 @@
                 border-radius: 10px;
                 overflow: hidden;
             }
-            .excel-preview-header {
+            .excel-filter-pills-bar {
                 background: #f8fafc;
                 padding: 12px 18px;
                 display: flex;
-                justify-content: space-between;
+                flex-wrap: wrap;
                 align-items: center;
-                border-bottom: 1px solid #e2e8f0;
-                font-weight: 700;
-                font-size: 0.9rem;
-                color: #1e293b;
+                justify-content: space-between;
+                border-bottom: 1.5px solid #e2e8f0;
+                gap: 10px;
             }
+            .pills-group { display: flex; gap: 8px; flex-wrap: wrap; }
+            .filter-pill-btn {
+                padding: 6px 14px;
+                border-radius: 50px;
+                border: 1.5px solid #cbd5e1;
+                font-size: 0.8rem;
+                font-weight: 700;
+                cursor: pointer;
+                background: #ffffff;
+                color: #475569;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                transition: all 0.2s;
+            }
+            .filter-pill-btn:hover { background: #f1f5f9; }
+            .filter-pill-btn.active {
+                border-color: #2563eb;
+                background: #eff6ff;
+                color: #2563eb;
+            }
+            .filter-pill-btn.pill-danger { border-color: #fca5a5; color: #dc2626; }
+            .filter-pill-btn.pill-danger.active { background: #fee2e2; border-color: #dc2626; color: #b91c1c; }
+            .filter-pill-btn.pill-warning { border-color: #fde68a; color: #d97706; }
+            .filter-pill-btn.pill-warning.active { background: #fef3c7; border-color: #d97706; color: #b45309; }
+            .filter-pill-btn.pill-success { border-color: #86efac; color: #16a34a; }
+            .filter-pill-btn.pill-success.active { background: #dcfce7; border-color: #16a34a; color: #15803d; }
+
+            /* টেবিল ও ব্যাজ ডিজাইন */
             .excel-preview-table {
                 width: 100%;
                 border-collapse: collapse;
-                font-size: 0.85rem;
+                font-size: 0.86rem;
             }
             .excel-preview-table th {
                 background: #f1f5f9;
-                padding: 10px 14px;
-                font-weight: 700;
+                padding: 11px 14px;
+                font-weight: 800;
                 color: #475569;
                 text-align: left;
                 border-bottom: 1px solid #e2e8f0;
             }
             .excel-preview-table td {
-                padding: 10px 14px;
+                padding: 11px 14px;
                 border-bottom: 1px solid #f1f5f9;
                 color: #1e293b;
             }
+            .badge-status-pill {
+                padding: 4px 10px;
+                border-radius: 50px;
+                font-size: 0.74rem;
+                font-weight: 800;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+            }
+            .badge-danger-fill { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+            .badge-warning-fill { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+            .badge-success-fill { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+
+            .row-missing-alert { background: #fff5f5 !important; }
+            .row-existing-alert { background: #fffdf5 !important; }
         `;
         document.head.appendChild(style);
     }
 
-    // ২. ইনলাইন আপলোড প্যানেল
+    // ২. ইনলাইন আপলোড প্যানেল ফ্রেমওয়ার্ক
     function injectInlineExcelCard() {
         const view = document.getElementById('trust-cpscl-main-view');
         if (!view || document.getElementById('excelImportStudentInlineCard')) return;
@@ -177,26 +223,36 @@
                     </button>
                 </div>
 
+                <!-- স্মার্ট প্রিভিউ টেবিল ও ফিল্টার বাটনস -->
                 <div class="excel-preview-wrapper" id="cpsclExcelPreviewBox">
-                    <div class="excel-preview-header">
-                        <span id="excelPreviewCountText">Found 0 Students Ready for Import</span>
-                        <span style="font-size:0.8rem; color:#10b981; font-weight:800;">✔ Verification Passed</span>
+                    <div class="excel-filter-pills-bar">
+                        <div class="pills-group" id="excelFilterPillsGroup"></div>
+                        <div style="font-size:0.82rem; font-weight:700; color:#64748b;" id="excelFilterStatusNotice"></div>
                     </div>
-                    <div style="max-height: 250px; overflow-y: auto;">
+                    <div style="max-height: 280px; overflow-y: auto;">
                         <table class="excel-preview-table">
                             <thead>
-                                <tr id="excelPreviewThead"></tr>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Student ID</th>
+                                    <th>Name</th>
+                                    <th>Class</th>
+                                    <th>Section</th>
+                                    <th>Roll</th>
+                                    <th>Verification Status</th>
+                                </tr>
                             </thead>
                             <tbody id="excelPreviewTbody"></tbody>
                         </table>
                     </div>
                 </div>
 
+                <!-- অ্যাকশন বাটনসমূহ -->
                 <div class="create-form-actions" style="margin-top: 20px;">
                     <button type="button" class="btn-action-cancel" onclick="window.closeExcelImportInlineCard()">
                         <i class="fa-solid fa-xmark"></i> Cancel
                     </button>
-                    <button type="button" class="btn-action-submit" id="btnConfirmBulkUpload" style="background: linear-gradient(90deg, #10b981, #059669); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);" onclick="window.executeCPSCLBulkUpload()" disabled>
+                    <button type="button" class="btn-action-submit" id="btnConfirmBulkUpload" style="background: linear-gradient(90deg, #10b981, #059669);" onclick="window.executeCPSCLBulkUpload()" disabled>
                         <i class="fa-solid fa-cloud-arrow-up"></i> Confirm & Save to Cloud
                     </button>
                 </div>
@@ -207,14 +263,13 @@
         setupDragAndDropEvents();
     }
 
-    // ৩. বাটন ক্লিক হ্যান্ডলার (সুপার অ্যাডমিনের বাটনের জন্য অপেক্ষায় থাকে)
+    // ৩. বাটন ক্লিক হ্যান্ডলার (সুপার অ্যাডমিনের বাটনের সাথে সিঙ্ক)
     function bindExcelButtonEvents() {
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.btn-stu-pill');
             if (!btn) return;
             const text = btn.innerText.trim();
 
-            // সুপার অ্যাডমিনের বাটনে 'Import' বা 'Excel' থাকলেই এটি ওপেন হবে
             if (text.includes('Import') || text.includes('Excel')) {
                 e.preventDefault();
                 window.openExcelImportInlineCard();
@@ -242,6 +297,7 @@
 
     function resetExcelImportState() {
         parsedExcelStudents = [];
+        currentFilterStatus = 'all';
         const fileInp = document.getElementById('cpsclExcelFileInput');
         if (fileInp) fileInp.value = '';
         const previewBox = document.getElementById('cpsclExcelPreviewBox');
@@ -249,11 +305,12 @@
         const submitBtn = document.getElementById('btnConfirmBulkUpload');
         if (submitBtn) {
             submitBtn.disabled = true;
+            submitBtn.style.background = '#94a3b8';
             submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Confirm & Save to Cloud';
         }
     }
 
-    // ৪. সুপার অ্যাডমিন ফিল্ড অনুযায়ী ডায়নামিক এক্সেল টেমপ্লেট
+    // ৪. স্যাম্পল এক্সেল ডাউনলোড
     window.downloadCPSCLStudentSampleExcel = function () {
         if (typeof XLSX === 'undefined') {
             alert("Excel library is still loading, please wait...");
@@ -268,20 +325,29 @@
             return;
         }
 
-        const headers = activeFields.map(f => f.label + (f.required ? ' *' : ''));
-        const sampleRow = {};
+        // Student ID অবশ্যই প্রথম কলাম হিসেবে থাকবে
+        let headers = ['Student ID *'];
         activeFields.forEach(f => {
-            const colKey = f.label + (f.required ? ' *' : '');
-            if (f.id === 'admission_year') sampleRow[colKey] = '2026';
-            else if (f.id === 'class_name') sampleRow[colKey] = (f.options && f.options[0]) || 'Class 1';
-            else if (f.id === 'section') sampleRow[colKey] = (f.options && f.options[0]) || 'Section A';
-            else if (f.id === 'roll_no') sampleRow[colKey] = '101';
-            else if (f.id === 'student_name') sampleRow[colKey] = 'MD ARIFUL ISLAM';
-            else if (f.id === 'gender') sampleRow[colKey] = 'Male';
-            else if (f.id === 'religion') sampleRow[colKey] = 'Islam';
-            else if (f.id === 'nationality') sampleRow[colKey] = 'Bangladesh';
-            else if (f.id === 'mobile_no') sampleRow[colKey] = '01712345678';
-            else sampleRow[colKey] = '';
+            if (f.id !== 'std_id') {
+                headers.push(f.label + (f.required ? ' *' : ''));
+            }
+        });
+
+        const sampleRow = { 'Student ID *': '26101' };
+        activeFields.forEach(f => {
+            if (f.id !== 'std_id') {
+                const colKey = f.label + (f.required ? ' *' : '');
+                if (f.id === 'admission_year') sampleRow[colKey] = '2026';
+                else if (f.id === 'class_name') sampleRow[colKey] = (f.options && f.options[0]) || 'Class 1';
+                else if (f.id === 'section') sampleRow[colKey] = (f.options && f.options[0]) || 'Section A';
+                else if (f.id === 'roll_no') sampleRow[colKey] = '101';
+                else if (f.id === 'student_name') sampleRow[colKey] = 'MD RABBI HOSEN';
+                else if (f.id === 'gender') sampleRow[colKey] = 'Male';
+                else if (f.id === 'religion') sampleRow[colKey] = 'Islam';
+                else if (f.id === 'nationality') sampleRow[colKey] = 'Bangladesh';
+                else if (f.id === 'mobile_no') sampleRow[colKey] = '01712345678';
+                else sampleRow[colKey] = '';
+            }
         });
 
         const worksheet = XLSX.utils.json_to_sheet([sampleRow], { header: headers });
@@ -290,7 +356,7 @@
         XLSX.writeFile(workbook, "CPSCL_Student_Import_Template.xlsx");
     };
 
-    // ৫. ড্র্যাগ অ্যান্ড ড্রপ
+    // ৫. ড্র্যাগ অ্যান্ড ড্রপ ইভেন্টস
     function setupDragAndDropEvents() {
         const dropZone = document.getElementById('cpsclExcelDropZone');
         if (!dropZone) return;
@@ -322,15 +388,46 @@
         if (files.length > 0) parseExcelFile(files[0]);
     };
 
-    // ৬. ফাইল পার্সিং ও প্রিভিউ
-    function parseExcelFile(file) {
+    // ফায়ারবেস থেকে আগের সংরক্ষিত শিক্ষার্থীদের মানচিত্র তৈরি করা
+    async function getExistingStudentsFromCloud() {
+        const map = new Map();
+        try {
+            if (window.getDatabase && window.ref && window.get) {
+                const db = window.getDatabase();
+                const stuRef = window.ref(db, 'cpscl_students');
+                const snapshot = await window.get(stuRef);
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    Object.values(data).forEach(s => {
+                        if (s && s.std_id) {
+                            map.set(String(s.std_id).trim(), s);
+                        }
+                    });
+                    return map;
+                }
+            }
+        } catch (e) {
+            console.warn("Using local cache fallback for conflict check:", e);
+        }
+
+        const localCache = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
+        localCache.forEach(s => {
+            if (s && s.std_id) {
+                map.set(String(s.std_id).trim(), s);
+            }
+        });
+        return map;
+    }
+
+    // ৬. এক্সেল ফাইল পড়া এবং ভ্যালিডেশন ইঞ্জিন
+    async function parseExcelFile(file) {
         if (!file.name.match(/\.(xlsx|xls)$/i)) {
             alert("Please upload a valid Excel file (.xlsx or .xls)!");
             return;
         }
 
         const reader = new FileReader();
-        reader.onload = function (e) {
+        reader.onload = async function (e) {
             try {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
@@ -342,7 +439,7 @@
                     return;
                 }
 
-                processExcelRows(rawRows);
+                await processAndValidateExcelRows(rawRows);
             } catch (err) {
                 alert("Error reading Excel file: " + err.message);
             }
@@ -350,11 +447,17 @@
         reader.readAsArrayBuffer(file);
     }
 
-    function processExcelRows(rows) {
+    async function processAndValidateExcelRows(rows) {
         const fields = typeof window.getCPSCLFormFields === 'function' ? window.getCPSCLFormFields() : [];
         const activeFields = fields.filter(f => f.enabled);
+        const existingCloudStudents = await getExistingStudentsFromCloud();
 
         parsedExcelStudents = [];
+        const seenInSheet = new Set();
+
+        let missingCount = 0;
+        let existingCount = 0;
+        let newCount = 0;
 
         rows.forEach((row, idx) => {
             const studentObj = {
@@ -363,84 +466,242 @@
                 status: 'Active'
             };
 
+            // ফিল্ডগুলো ম্যাপিং করা
             activeFields.forEach(f => {
                 const val = row[f.label + ' *'] !== undefined ? row[f.label + ' *'] :
                             (row[f.label] !== undefined ? row[f.label] : '');
-                studentObj[f.id] = String(val || '').trim();
+                studentObj[f.id] = String(val !== undefined && val !== null ? val : '').trim();
             });
 
-            studentObj.std_id = studentObj.std_id || ('26' + Math.floor(1000 + Math.random() * 9000));
-            studentObj.student_name = studentObj.student_name || ('Student ' + (idx + 1));
+            // Student ID খুঁজে বের করা
+            const explicitId = row['Student ID *'] || row['Student ID'] || row['std_id'] || studentObj.std_id || '';
+            const stdIdClean = String(explicitId).trim();
+            studentObj.std_id = stdIdClean;
+
+            studentObj.student_name = studentObj.student_name || row['Name *'] || row['Name'] || ('Row ' + (idx + 2));
+
+            // ভ্যালিডেশন স্ট্যাটাস নির্ধারণ
+            if (!stdIdClean || stdIdClean === '' || stdIdClean.toLowerCase() === 'undefined') {
+                studentObj.validationStatus = 'missing';
+                missingCount++;
+            } else if (existingCloudStudents.has(stdIdClean)) {
+                studentObj.validationStatus = 'existing';
+                // আগের সংরক্ষিত ফায়ারবেস ইউনিক কি সংরক্ষণ যাতে ঠিক ওই রেকর্ডটাই আপডেট হয়
+                const oldRec = existingCloudStudents.get(stdIdClean);
+                studentObj.existingTargetId = oldRec.id;
+                existingCount++;
+            } else if (seenInSheet.has(stdIdClean)) {
+                studentObj.validationStatus = 'existing';
+                existingCount++;
+            } else {
+                studentObj.validationStatus = 'new';
+                seenInSheet.add(stdIdClean);
+                newCount++;
+            }
 
             parsedExcelStudents.push(studentObj);
         });
 
-        renderExcelPreview();
+        // সংক্ষিপ্ত ও পরিষ্কার টোস্ট মেসেজ
+        if (typeof window.showToast === 'function') {
+            if (missingCount > 0) {
+                window.showToast(`Alert: ${missingCount} student(s) have Missing ID! Upload blocked.`, "error");
+            } else if (existingCount > 0) {
+                window.showToast(`Notice: ${existingCount} student(s) already exist (will overwrite/update).`, "warning");
+            } else {
+                window.showToast(`Success: All ${newCount} students verified and ready!`, "success");
+            }
+        }
+
+        renderFilterPills(missingCount, existingCount, newCount);
+        renderExcelPreviewTable();
+        updateSaveButtonState(missingCount, existingCount, newCount);
     }
 
-    function renderExcelPreview() {
+    // ৭. স্মার্ট ফিল্টার পিলস রেন্ডার
+    function renderFilterPills(missingCount, existingCount, newCount) {
+        const pillsGroup = document.getElementById('excelFilterPillsGroup');
+        const statusNotice = document.getElementById('excelFilterStatusNotice');
+        if (!pillsGroup) return;
+
+        const total = parsedExcelStudents.length;
+
+        pillsGroup.innerHTML = `
+            <button type="button" class="filter-pill-btn ${currentFilterStatus === 'all' ? 'active' : ''}" onclick="window.filterExcelPreview('all')">
+                All Students (${total})
+            </button>
+            <button type="button" class="filter-pill-btn pill-danger ${currentFilterStatus === 'missing' ? 'active' : ''}" onclick="window.filterExcelPreview('missing')">
+                <i class="fa-solid fa-circle-exclamation"></i> Missing ID (${missingCount})
+            </button>
+            <button type="button" class="filter-pill-btn pill-warning ${currentFilterStatus === 'existing' ? 'active' : ''}" onclick="window.filterExcelPreview('existing')">
+                <i class="fa-solid fa-arrows-rotate"></i> Existing / Overwrite (${existingCount})
+            </button>
+            <button type="button" class="filter-pill-btn pill-success ${currentFilterStatus === 'new' ? 'active' : ''}" onclick="window.filterExcelPreview('new')">
+                <i class="fa-solid fa-circle-check"></i> New Entry (${newCount})
+            </button>
+        `;
+
+        if (statusNotice) {
+            if (missingCount > 0) {
+                statusNotice.innerHTML = `<span style="color:#dc2626;"><i class="fa-solid fa-lock"></i> Fix ${missingCount} missing ID(s) to unlock upload</span>`;
+            } else if (existingCount > 0) {
+                statusNotice.innerHTML = `<span style="color:#d97706;"><i class="fa-solid fa-triangle-exclamation"></i> Overwrite mode enabled</span>`;
+            } else {
+                statusNotice.innerHTML = `<span style="color:#16a34a;"><i class="fa-solid fa-check-double"></i> 100% Ready to save</span>`;
+            }
+        }
+    }
+
+    window.filterExcelPreview = function (status) {
+        currentFilterStatus = status;
+        document.querySelectorAll('.filter-pill-btn').forEach(btn => btn.classList.remove('active'));
+
+        const targetBtn = Array.from(document.querySelectorAll('.filter-pill-btn')).find(b => {
+            if (status === 'all') return b.innerText.includes('All Students');
+            if (status === 'missing') return b.innerText.includes('Missing ID');
+            if (status === 'existing') return b.innerText.includes('Existing');
+            if (status === 'new') return b.innerText.includes('New Entry');
+            return false;
+        });
+        if (targetBtn) targetBtn.classList.add('active');
+
+        renderExcelPreviewTable();
+    };
+
+    // ৮. কালার-কোডেড প্রিভিউ টেবিল রেন্ডার
+    function renderExcelPreviewTable() {
         const previewBox = document.getElementById('cpsclExcelPreviewBox');
-        const countText = document.getElementById('excelPreviewCountText');
-        const thead = document.getElementById('excelPreviewThead');
         const tbody = document.getElementById('excelPreviewTbody');
-        const submitBtn = document.getElementById('btnConfirmBulkUpload');
-
-        if (!previewBox || !thead || !tbody) return;
-
-        countText.innerText = `Found ${parsedExcelStudents.length} Students Ready for Import`;
-        thead.innerHTML = `<th>#</th><th>Student ID</th><th>Name</th><th>Class</th><th>Section</th><th>Roll</th>`;
+        if (!previewBox || !tbody) return;
 
         tbody.innerHTML = '';
-        parsedExcelStudents.slice(0, 5).forEach((s, i) => {
+
+        const filteredList = parsedExcelStudents.filter(s => {
+            if (currentFilterStatus === 'all') return true;
+            return s.validationStatus === currentFilterStatus;
+        });
+
+        if (filteredList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#94a3b8;">No records found for this filter.</td></tr>`;
+            previewBox.style.display = 'block';
+            return;
+        }
+
+        filteredList.forEach((s, i) => {
             const tr = document.createElement('tr');
+
+            let badgeHtml = '';
+            let rowClass = '';
+            let idDisplay = s.std_id;
+
+            if (s.validationStatus === 'missing') {
+                rowClass = 'row-missing-alert';
+                idDisplay = '<span style="color:#dc2626; font-weight:800;"><i class="fa-solid fa-circle-xmark"></i> Empty</span>';
+                badgeHtml = '<span class="badge-status-pill badge-danger-fill"><i class="fa-solid fa-triangle-exclamation"></i> Missing ID</span>';
+            } else if (s.validationStatus === 'existing') {
+                rowClass = 'row-existing-alert';
+                idDisplay = `<strong>${s.std_id}</strong>`;
+                badgeHtml = '<span class="badge-status-pill badge-warning-fill"><i class="fa-solid fa-arrows-rotate"></i> Overwrites Old</span>';
+            } else {
+                idDisplay = `<strong>${s.std_id}</strong>`;
+                badgeHtml = '<span class="badge-status-pill badge-success-fill"><i class="fa-solid fa-check"></i> New Student</span>';
+            }
+
+            tr.className = rowClass;
             tr.innerHTML = `
                 <td><strong>${i + 1}</strong></td>
-                <td><strong>${s.std_id}</strong></td>
+                <td>${idDisplay}</td>
                 <td style="color:#2563eb; font-weight:700;">${s.student_name}</td>
                 <td>${s.class_name || '-'}</td>
                 <td>${s.section || '-'}</td>
                 <td>${s.roll_no || '-'}</td>
+                <td>${badgeHtml}</td>
             `;
             tbody.appendChild(tr);
         });
 
-        if (parsedExcelStudents.length > 5) {
-            const trMore = document.createElement('tr');
-            trMore.innerHTML = `<td colspan="6" style="text-align:center; color:#64748b; font-weight:700;">... and ${parsedExcelStudents.length - 5} more students.</td>`;
-            tbody.appendChild(trMore);
-        }
-
         previewBox.style.display = 'block';
-        if (submitBtn) {
+    }
+
+    // ৯. সেভ বাটনের বুদ্ধিমান রূপান্তর (Button Intelligence)
+    function updateSaveButtonState(missingCount, existingCount, newCount) {
+        const submitBtn = document.getElementById('btnConfirmBulkUpload');
+        if (!submitBtn) return;
+
+        if (missingCount > 0) {
+            submitBtn.disabled = true;
+            submitBtn.style.background = '#dc2626';
+            submitBtn.style.cursor = 'not-allowed';
+            submitBtn.style.boxShadow = 'none';
+            submitBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Cannot Save: Fix ${missingCount} Missing ID(s) First`;
+        } else if (existingCount > 0) {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Confirm & Save ${parsedExcelStudents.length} Students`;
+            submitBtn.style.background = 'linear-gradient(90deg, #d97706, #b45309)';
+            submitBtn.style.cursor = 'pointer';
+            submitBtn.style.boxShadow = '0 4px 15px rgba(217, 119, 6, 0.3)';
+            submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Save & Update (${existingCount} Overwrite, ${newCount} New)`;
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+            submitBtn.style.cursor = 'pointer';
+            submitBtn.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.3)';
+            submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Confirm & Save All ${newCount} Students`;
         }
     }
 
-    // ৭. ক্লাউড ফায়ারবেসে পার্মানেন্ট সেভ (Append-Only)
+    // ১০. ফায়ারবেস ক্লাউডে পার্মানেন্ট সেভ ও নিখুঁত ওভাররাইট ইঞ্জিন
     window.executeCPSCLBulkUpload = async function () {
         if (!parsedExcelStudents || parsedExcelStudents.length === 0) return;
+
+        const hasMissing = parsedExcelStudents.some(s => s.validationStatus === 'missing');
+        if (hasMissing) {
+            alert("Upload rejected: Please assign Student IDs to all rows before uploading.");
+            return;
+        }
 
         const submitBtn = document.getElementById('btnConfirmBulkUpload');
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading to Firebase Cloud...';
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving to Firebase Cloud...';
         }
 
         try {
             for (let i = 0; i < parsedExcelStudents.length; i++) {
                 const stu = parsedExcelStudents[i];
+
+                // যদি পুরাতন ছাত্র হয়, তবে তার আগের কি (Key)-তেই আপডেট হবে যাতে কোনো ডুপ্লিকেট না তৈরি হয়
+                const targetCloudKey = stu.existingTargetId || stu.id;
+
+                const payload = { ...stu };
+                delete payload.validationStatus;
+                delete payload.existingTargetId;
+
+                payload.id = targetCloudKey;
+                payload.updatedAt = new Date().toISOString();
+
                 if (typeof window.writeToFirebase === 'function') {
-                    await window.writeToFirebase(`cpscl_students/${stu.id}`, stu);
+                    await window.writeToFirebase(`cpscl_students/${targetCloudKey}`, payload);
                 }
             }
 
+            // লোকাল ক্যাশ আপডেট
             let localCache = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
-            localCache = [...parsedExcelStudents, ...localCache];
+            parsedExcelStudents.forEach(newStu => {
+                const cleanObj = { ...newStu };
+                delete cleanObj.validationStatus;
+                delete cleanObj.existingTargetId;
+
+                const existIdx = localCache.findIndex(c => String(c.std_id).trim() === String(cleanObj.std_id).trim());
+                if (existIdx !== -1) {
+                    localCache[existIdx] = cleanObj;
+                } else {
+                    localCache.unshift(cleanObj);
+                }
+            });
             localStorage.setItem('cpscl_students_cache', JSON.stringify(localCache));
 
             if (typeof window.showToast === 'function') {
-                window.showToast(`Successfully uploaded ${parsedExcelStudents.length} students to Firebase Cloud!`, "success");
+                window.showToast(`Successfully processed ${parsedExcelStudents.length} student records in Firebase!`, "success");
             }
 
             window.closeExcelImportInlineCard();
@@ -453,7 +714,6 @@
         } finally {
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Confirm & Save to Cloud';
             }
         }
     };
