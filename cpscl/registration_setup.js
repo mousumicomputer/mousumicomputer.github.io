@@ -1,285 +1,317 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Student Registration (Fully Dynamic 1:1 Screen)
-   Path: cpscl/student_registration.js
+   SUB-SECTION: Registration Setup Engine
+   Path: cpscl/registration_setup.js
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Dynamic Student Registration View...");
+    console.log("Loading Registration Setup View Engine...");
 
-    // ১. সাইডবার ও স্ক্রিন সিএসএস
-    function injectFullStyles() {
-        if (document.getElementById('cpscl-full-bundle-style')) return;
-        const style = document.createElement('style');
-        style.id = 'cpscl-full-bundle-style';
-        style.innerHTML = `
-            /* সাইডবার ডিজাইন */
-            .trust-section-label {
-                font-size: 11px !important;
-                font-weight: 800 !important;
-                color: #8c98a4 !important;
-                text-transform: uppercase !important;
-                letter-spacing: 0.8px !important;
-                padding: 18px 18px 6px 18px !important;
-                display: block;
-            }
-            .trust-module-wrapper {
-                margin: 4px 0 !important;
-                list-style: none !important;
-                position: relative;
-                transition: all 0.25s ease;
-            }
-            .trust-module-wrapper.expanded {
-                border-left: 4px solid #2563eb !important;
-            }
-            .trust-parent-btn {
-                display: flex !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                padding: 12px 18px !important;
-                color: #374151 !important;
-                background-color: transparent !important;
-                font-size: 13.5px !important;
-                font-weight: 600 !important;
-                cursor: pointer !important;
-                text-decoration: none !important;
-                transition: background 0.2s ease, color 0.2s ease;
-            }
-            .trust-module-wrapper.expanded .trust-parent-btn {
-                background-color: #e5e7eb !important;
-                color: #1f2937 !important;
-            }
-            .trust-parent-btn:hover { background-color: #e5e7eb !important; color: #111827 !important; }
-            .trust-parent-left { display: flex !important; align-items: center !important; gap: 12px !important; }
-            .trust-parent-left i { font-size: 15px !important; color: #4b5563 !important; }
-            .trust-parent-btn .chevron-arrow { font-size: 11px !important; color: #6b7280 !important; transition: transform 0.3s ease; }
-            .trust-module-wrapper.expanded .chevron-arrow { transform: rotate(180deg) !important; }
-            .trust-submenu-box { list-style: none !important; padding: 6px 0 !important; margin: 0 !important; background-color: #f8fafc !important; display: none; flex-direction: column !important; }
-            .trust-module-wrapper.expanded .trust-submenu-box { display: flex !important; }
-            .trust-sub-link { display: flex !important; align-items: center !important; padding: 10px 18px 10px 24px !important; color: #4b5563 !important; font-size: 13px !important; font-weight: 500 !important; text-decoration: none !important; cursor: pointer !important; transition: all 0.2s ease !important; position: relative; }
-            .trust-sub-indicator { width: 3.5px !important; height: 18px !important; background-color: transparent !important; border-radius: 2px !important; margin-right: 12px !important; display: inline-block !important; transition: background-color 0.2s ease !important; }
-            .trust-sub-link:hover { color: #2563eb !important; background-color: #f1f5f9 !important; }
-            .trust-sub-link:hover .trust-sub-indicator { background-color: #2563eb !important; }
-            .trust-sub-link.active { color: #2563eb !important; font-weight: 600 !important; }
-            .trust-sub-link.active .trust-sub-indicator { background-color: #2563eb !important; }
-
-            /* ১:১ স্ক্রিন সিএসএস */
-            .stu-page-wrapper { padding: 10px 5px; font-family: 'Plus Jakarta Sans', sans-serif; }
-            .stu-top-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-            .stu-title-area h2 { font-size: 1.45rem; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
-            .stu-breadcrumb { font-size: 0.82rem; color: #64748b; display: flex; align-items: center; gap: 6px; }
-            .stu-breadcrumb a { color: #2563eb; text-decoration: none; font-weight: 600; }
-            .stu-top-actions { display: flex; gap: 10px; }
-            .btn-stu-pill { padding: 9px 20px; border-radius: 50px; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
-            .btn-stu-primary { background-color: #2563eb; color: #ffffff; border: 1.5px solid #2563eb; }
-            .btn-stu-primary:hover { background-color: #1d4ed8; }
-            .btn-stu-outline { background-color: #ffffff; color: #2563eb; border: 1.5px solid #60a5fa; }
-            .btn-stu-outline:hover { background-color: #eff6ff; }
-            .stu-main-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
-            .stu-ribbon-bar { background: linear-gradient(90deg, #0ea5e9, #0284c7); color: #ffffff; padding: 12px 20px; font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 10px; }
-            .stu-toolbar { padding: 15px 20px; display: flex; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; }
-            .btn-tool { padding: 6px 16px; border-radius: 50px; font-size: 0.82rem; font-weight: 600; border: 1px solid #93c5fd; background: #ffffff; color: #2563eb; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-            .btn-tool:hover { background: #eff6ff; }
-            .btn-tool-active { background: #06b6d4 !important; color: #ffffff !important; border-color: #06b6d4 !important; }
-            .btn-tool-orange { border-color: #f59e0b !important; color: #d97706 !important; }
-            .stu-filter-grid { padding: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: #ffffff; border-bottom: 1px solid #f1f5f9; }
-            @media (max-width: 992px) { .stu-filter-grid { grid-template-columns: repeat(2, 1fr); } }
-            @media (max-width: 650px) { .stu-filter-grid { grid-template-columns: 1fr; } }
-            .stu-filter-box { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 8px 14px; transition: border-color 0.2s; }
-            .stu-filter-box:focus-within { border-color: #2563eb; }
-            .stu-filter-box label { display: block; font-size: 0.72rem; font-weight: 700; color: #64748b; margin-bottom: 2px; }
-            .stu-filter-box select { width: 100%; border: none; background: transparent; font-size: 0.9rem; font-weight: 600; color: #1e293b; outline: none; cursor: pointer; }
-            .stu-table-header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #64748b; flex-wrap: wrap; gap: 12px; }
-            .stu-search-input { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; outline: none; }
-            .stu-table { width: 100%; border-collapse: collapse; text-align: left; }
-            .stu-table th { background: #f8fafc; padding: 12px 18px; font-size: 0.78rem; font-weight: 800; color: #475569; text-transform: uppercase; border-bottom: 1.5px solid #e2e8f0; }
-            .stu-table td { padding: 14px 18px; font-size: 0.88rem; color: #1e293b; border-bottom: 1px solid #f1f5f9; }
-        `;
-        document.head.appendChild(style);
-    }
-
-    // ২. সাইডবার ড্রপডাউন ইনজেকশন
-    function injectTrustSidebar() {
-        const menuList = document.querySelector('.sidebar .menu-list');
-        if (!menuList) return;
-
-        const oldLabel = document.querySelector('.trust-section-label');
-        if (oldLabel) oldLabel.remove();
-        const oldRoot = document.getElementById('trust-cpscl-module-root');
-        if (oldRoot) oldRoot.remove();
-
-        const sectionHeader = document.createElement('div');
-        sectionHeader.className = 'trust-section-label';
-        sectionHeader.innerText = 'CPSCL';
-
-        const moduleLi = document.createElement('li');
-        moduleLi.className = 'trust-module-wrapper expanded';
-        moduleLi.id = 'trust-cpscl-module-root';
-
-        moduleLi.innerHTML = `
-            <a class="trust-parent-btn" onclick="toggleTrustModule()">
-                <div class="trust-parent-left">
-                    <i class="fa-solid fa-user-plus"></i>
-                    <span>Student Registration</span>
-                </div>
-                <i class="fa-solid fa-chevron-down chevron-arrow"></i>
-            </a>
-
-            <ul class="trust-submenu-box" id="trust-submenu-items">
-                <li>
-                    <a class="trust-sub-link active" onclick="switchTrustSubTab(this, 'student-reg')">
-                        <span class="trust-sub-indicator"></span>
-                        <span>Student Registration</span>
-                    </a>
-                </li>
-            </ul>
-        `;
-
-        menuList.appendChild(sectionHeader);
-        menuList.appendChild(moduleLi);
-    }
-
-    window.toggleTrustModule = function () {
-        const wrapper = document.getElementById('trust-cpscl-module-root');
-        if (wrapper) wrapper.classList.toggle('expanded');
+    const DEFAULT_MASTER_CONFIG = {
+        topButtons: [
+            { id: 'btn_create', label: 'Create Student', icon: 'fa-circle-plus', type: 'primary', enabled: true },
+            { id: 'btn_create_manual', label: 'Create Student (Manual ID)', icon: 'fa-circle-plus', type: 'outline', enabled: true }
+        ],
+        toolbarButtons: [
+            { id: 'tb_edit', label: 'Edit', icon: 'fa-pen', active: false, hasDropdown: false, colorClass: '', enabled: true },
+            { id: 'tb_fee', label: 'Fee & Admission Setup', icon: 'fa-sliders', active: false, hasDropdown: false, colorClass: '', enabled: true },
+            { id: 'tb_detail', label: 'Detail', icon: 'fa-circle-info', active: true, hasDropdown: false, colorClass: 'btn-tool-active', enabled: true },
+            { id: 'tb_dash', label: 'Dashboard', icon: 'fa-gauge-high', active: false, hasDropdown: false, colorClass: '', enabled: true },
+            { id: 'tb_app_pin', label: 'App Pin Action', icon: 'fa-shield-halved', active: false, hasDropdown: true, colorClass: '', enabled: true },
+            { id: 'tb_print', label: 'Print', icon: 'fa-print', active: false, hasDropdown: true, colorClass: '', enabled: true },
+            { id: 'tb_manage', label: 'Manage Student', icon: 'fa-user-pen', active: false, hasDropdown: true, colorClass: 'btn-tool-orange', enabled: true }
+        ],
+        filterBoxes: [
+            { id: 'academic_year', label: 'Academic Year *', placeholder: 'All', options: ['2026', '2025', '2024'], enabled: true },
+            { id: 'shift', label: 'Shift *', placeholder: 'All', options: ['Morning', 'Day'], enabled: true },
+            { id: 'version', label: 'Education Version', placeholder: 'All', options: ['Bangla Version', 'English Version'], enabled: true },
+            { id: 'class_name', label: 'Class Name *', placeholder: 'All Class', options: ['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'HSC 1st Year', 'HSC 2nd Year'], enabled: true },
+            { id: 'section', label: 'Section/Batch *', placeholder: 'All Section/Batch', options: ['Section A', 'Section B', 'Padma', 'Meghna', 'Jamuna'], enabled: true },
+            { id: 'group', label: 'Group', placeholder: 'General', options: ['General', 'Science', 'Business Studies', 'Humanities'], enabled: true },
+            { id: 'category', label: "Student's Category", placeholder: 'General', options: ['General', 'Defence', "Teacher's Child"], enabled: true },
+            { id: 'house', label: 'Student House *', placeholder: 'All', options: ['House 1', 'House 2', 'House 3'], enabled: true },
+            { id: 'type', label: 'Student Type *', placeholder: 'Active', options: ['Active', 'Inactive', 'TC'], enabled: true }
+        ],
+        tableColumns: [
+            { id: 'col_serial', label: 'SERIAL', enabled: true },
+            { id: 'col_stdid', label: 'STD-ID', enabled: true },
+            { id: 'col_name', label: 'NAME', enabled: true },
+            { id: 'col_roll', label: 'ROLL NO', enabled: true },
+            { id: 'col_father', label: "FATHER'S NAME", enabled: true },
+            { id: 'col_mother', label: "MOTHER'S NAME", enabled: true },
+            { id: 'col_status', label: 'STATUS', enabled: true }
+        ]
     };
 
-    window.switchTrustSubTab = function (element, tabKey) {
-        document.querySelectorAll('.trust-sub-link').forEach(link => link.classList.remove('active'));
-        if (element) element.classList.add('active');
-
-        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-        const view = document.getElementById('trust-cpscl-main-view');
-        if (view) view.classList.add('active');
-
-        const topTitle = document.getElementById('top-title');
-        if (topTitle) topTitle.innerText = "CPSCL - Student Registration";
+    window.getCPSCLMasterConfig = function () {
+        const saved = localStorage.getItem('cpscl_superadmin_master_config');
+        return saved ? JSON.parse(saved) : DEFAULT_MASTER_CONFIG;
     };
 
-    // ৩. সম্পূর্ণ ডাইনামিক স্ক্রিন রেন্ডারার (যা সুপার অ্যাডমিনের কনফিগ অনুযায়ী রেন্ডার হয়)
-    window.renderDynamicStudentScreen = function () {
-        const mainWrapper = document.querySelector('.main-wrapper');
-        if (!mainWrapper) return;
-
-        let panel = document.getElementById('trust-cpscl-main-view');
-        if (!panel) {
-            panel = document.createElement('div');
-            panel.className = 'view-panel active';
-            panel.id = 'trust-cpscl-main-view';
-            mainWrapper.appendChild(panel);
+    function saveMasterConfig(cfg) {
+        localStorage.setItem('cpscl_superadmin_master_config', JSON.stringify(cfg));
+        if (typeof window.renderDynamicStudentScreen === 'function') {
+            window.renderDynamicStudentScreen();
         }
+    }
 
-        const cfg = typeof window.getCPSCLMasterConfig === 'function' ? window.getCPSCLMasterConfig() : null;
-        if (!cfg) return;
+    // সেটআপ ভিউ প্যানেল তৈরি
+    function injectSetupView() {
+        const mainWrapper = document.querySelector('.main-wrapper');
+        if (!mainWrapper || document.getElementById('cpscl-reg-setup-view')) return;
 
-        // ১. ডাইনামিক টপ বাটনস
-        let topBtnsHtml = '';
-        cfg.topButtons.filter(b => b.enabled).forEach(btn => {
-            const cls = btn.type === 'primary' ? 'btn-stu-primary' : 'btn-stu-outline';
-            topBtnsHtml += `<button class="btn-stu-pill ${cls}"><i class="fa-solid ${btn.icon}"></i> ${btn.label}</button>`;
-        });
-
-        // ২. ডাইনামিক টুলবার বাটনস
-        let toolbarBtnsHtml = '';
-        cfg.toolbarButtons.filter(b => b.enabled).forEach(btn => {
-            const dropCaret = btn.hasDropdown ? ' <i class="fa-solid fa-caret-down"></i>' : '';
-            toolbarBtnsHtml += `<button class="btn-tool ${btn.colorClass}"><i class="fa-solid ${btn.icon}"></i> ${btn.label}${dropCaret}</button>`;
-        });
-
-        // ৩. ডাইনামিক ফিল্টার বক্সসমূহ
-        let filterBoxesHtml = '';
-        cfg.filterBoxes.filter(b => b.enabled).forEach(box => {
-            let optHtml = `<option value="">${box.placeholder}...</option>`;
-            box.options.forEach(o => {
-                optHtml += `<option value="${o}">${o}</option>`;
-            });
-
-            filterBoxesHtml += `
-                <div class="stu-filter-box">
-                    <label>${box.label}</label>
-                    <select id="dyn_${box.id}">${optHtml}</select>
-                </div>
-            `;
-        });
-
-        // ৪. ডাইনামিক টেবিল কলামস
-        let tableThsHtml = '';
-        cfg.tableColumns.filter(c => c.enabled).forEach(c => {
-            tableThsHtml += `<th>${c.label}</th>`;
-        });
-
+        const panel = document.createElement('div');
+        panel.className = 'view-panel';
+        panel.id = 'cpscl-reg-setup-view';
         panel.innerHTML = `
             <div class="stu-page-wrapper">
-                <!-- ডাইনামিক টপ হেডার -->
                 <div class="stu-top-header">
                     <div class="stu-title-area">
-                        <h2>Student List</h2>
+                        <h2>Registration Master Configuration</h2>
                         <div class="stu-breadcrumb">
-                            <a href="#">Home</a> <i class="fa-solid fa-chevron-right" style="font-size: 9px;"></i>
-                            <a href="#">Student Information</a> <i class="fa-solid fa-chevron-right" style="font-size: 9px;"></i>
-                            <span>Student List</span>
+                            <span>CPSCL</span> <i class="fa-solid fa-chevron-right" style="font-size: 9px;"></i>
+                            <span>Super Admin Control Center</span>
                         </div>
                     </div>
-                    <div class="stu-top-actions">
-                        ${topBtnsHtml}
+                    <div>
+                        <button onclick="resetToDefaultConfig()" style="background:#ef4444; color:#fff; border:none; padding:8px 18px; border-radius:8px; font-weight:700; cursor:pointer;">
+                            <i class="fa-solid fa-rotate-left"></i> Reset to Default
+                        </button>
                     </div>
                 </div>
 
-                <!-- মূল কার্ড -->
-                <div class="stu-main-card">
-                    <div class="stu-ribbon-bar">
-                        <i class="fa-solid fa-database"></i> <span>Student List</span>
+                <div style="display:flex; gap:10px; margin-bottom:20px; border-bottom:2px solid #e2e8f0; padding-bottom:10px; overflow-x:auto;">
+                    <button class="setup-tab-btn active" onclick="switchSetupTab('tab-filters', this)">
+                        <i class="fa-solid fa-filter"></i> ফিল্টার বক্সসমূহ (${9})
+                    </button>
+                    <button class="setup-tab-btn" onclick="switchSetupTab('tab-top-buttons', this)">
+                        <i class="fa-solid fa-toggle-on"></i> টপ অ্যাকশন বাটনসমূহ
+                    </button>
+                    <button class="setup-tab-btn" onclick="switchSetupTab('tab-toolbar-buttons', this)">
+                        <i class="fa-solid fa-screwdriver-wrench"></i> টুলবার বাটনসমূহ
+                    </button>
+                    <button class="setup-tab-btn" onclick="switchSetupTab('tab-columns', this)">
+                        <i class="fa-solid fa-table-columns"></i> টেবিল কলামসমূহ
+                    </button>
+                </div>
+
+                <div class="stu-main-card" style="padding:25px;">
+                    <div id="tab-filters" class="setup-tab-panel">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                            <h3 style="font-size:1.1rem; color:#1e293b;">ফিল্টার বক্স ম্যানেজমেন্ট ও অপশন এডিটর</h3>
+                            <button onclick="openAddNewFilterBoxModal()" style="background:#2563eb; color:#fff; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer;">
+                                <i class="fa-solid fa-plus"></i> নতুন ফিল্টার বক্স যুক্ত করুন
+                            </button>
+                        </div>
+                        <div id="adminFilterBoxesList" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:20px;"></div>
                     </div>
 
-                    <!-- ডাইনামিক টুলবার -->
-                    <div class="stu-toolbar">
-                        ${toolbarBtnsHtml}
+                    <div id="tab-top-buttons" class="setup-tab-panel" style="display:none;">
+                        <h3 style="font-size:1.1rem; color:#1e293b; margin-bottom:15px;">টপ বাটনসমূহ অন/অফ বা লেবেল পরিবর্তন</h3>
+                        <div id="adminTopButtonsList" style="display:flex; flex-direction:column; gap:12px;"></div>
                     </div>
 
-                    <!-- ডাইনামিক ফিল্টার গ্রিড -->
-                    <div class="stu-filter-grid">
-                        ${filterBoxesHtml || '<p style="color:#64748b; padding:10px;">সুপার অ্যাডমিন কর্তৃক কোনো ফিল্টার বক্স সক্রিয় করা হয়নি।</p>'}
+                    <div id="tab-toolbar-buttons" class="setup-tab-panel" style="display:none;">
+                        <h3 style="font-size:1.1rem; color:#1e293b; margin-bottom:15px;">টুলবার অ্যাকশন বাটনসমূহ অন/অফ</h3>
+                        <div id="adminToolbarButtonsList" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:15px;"></div>
                     </div>
 
-                    <!-- টেবিল হেডার বার -->
-                    <div class="stu-table-header">
-                        <div>Showing 1 to 25 of 1,843 entries</div>
-                        <div>Search: <input type="text" class="stu-search-input" placeholder="Search student..."></div>
-                    </div>
-
-                    <!-- ডাইনামিক টেবিল -->
-                    <div style="overflow-x: auto;">
-                        <table class="stu-table">
-                            <thead>
-                                <tr>${tableThsHtml}</tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1843</td>
-                                    <td><strong>251012</strong></td>
-                                    <td style="font-weight: 700; color: #2563eb;">RIDOWANUZZAMAN</td>
-                                    <td>2132</td>
-                                    <td>MD NURUZZAMAN MIAH</td>
-                                    <td>RASHIDA KHATUN</td>
-                                    <td><span style="background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 20px; font-weight: 800; font-size: 0.75rem;">Active</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div id="tab-columns" class="setup-tab-panel" style="display:none;">
+                        <h3 style="font-size:1.1rem; color:#1e293b; margin-bottom:15px;">স্টুডেন্ট টেবিলের কলাম কন্ট্রোল</h3>
+                        <div id="adminTableColumnsList" style="display:flex; flex-wrap:wrap; gap:15px;"></div>
                     </div>
                 </div>
             </div>
         `;
+        mainWrapper.appendChild(panel);
+    }
+
+    window.switchSetupTab = function (tabId, btn) {
+        document.querySelectorAll('.setup-tab-panel').forEach(p => p.style.display = 'none');
+        document.querySelectorAll('.setup-tab-btn').forEach(b => b.classList.remove('active'));
+        const target = document.getElementById(tabId);
+        if (target) target.style.display = 'block';
+        if (btn) btn.classList.add('active');
+    };
+
+    window.renderAdminSetupViews = function () {
+        const cfg = window.getCPSCLMasterConfig();
+
+        // ফিল্টার বক্স
+        const filterCont = document.getElementById('adminFilterBoxesList');
+        if (filterCont) {
+            filterCont.innerHTML = '';
+            cfg.filterBoxes.forEach((box, bIdx) => {
+                const card = document.createElement('div');
+                card.style.cssText = 'background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:18px;';
+                
+                let tags = box.options.map((opt, oIdx) => `
+                    <span style="background:#fff; border:1px solid #cbd5e1; padding:3px 8px; border-radius:6px; font-size:0.8rem; font-weight:700; display:inline-flex; align-items:center; gap:6px; margin:3px;">
+                        ${opt}
+                        <i class="fa-solid fa-xmark" style="color:#ef4444; cursor:pointer;" onclick="removeFilterOption(${bIdx}, ${oIdx})"></i>
+                    </span>
+                `).join('');
+
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <input type="checkbox" ${box.enabled ? 'checked' : ''} onchange="toggleFilterBox(${bIdx}, this.checked)" style="width:18px; height:18px; cursor:pointer; accent-color:#2563eb;">
+                            <strong style="color:#1e293b; font-size:0.95rem;">${box.label}</strong>
+                        </div>
+                        <span style="font-size:0.75rem; background:${box.enabled ? '#dcfce7' : '#fee2e2'}; color:${box.enabled ? '#15803d' : '#991b1b'}; padding:2px 8px; border-radius:12px; font-weight:800;">
+                            ${box.enabled ? 'সক্রিয়' : 'বন্ধ'}
+                        </span>
+                    </div>
+
+                    <div style="display:flex; gap:6px; margin-bottom:12px;">
+                        <input type="text" id="add_opt_input_${bIdx}" placeholder="নতুন অপশন লিখুন..." style="flex:1; padding:7px 10px; border:1.5px solid #cbd5e1; border-radius:6px; font-size:0.85rem; outline:none;">
+                        <button onclick="addFilterOption(${bIdx})" style="background:#2563eb; color:#fff; border:none; padding:7px 14px; border-radius:6px; font-weight:700; cursor:pointer;">
+                            Add
+                        </button>
+                    </div>
+
+                    <div style="min-height:55px; max-height:140px; overflow-y:auto; background:#fff; padding:8px; border-radius:8px; border:1px solid #e2e8f0;">
+                        ${tags || '<span style="color:#94a3b8; font-size:0.8rem;">কোনো অপশন নেই</span>'}
+                    </div>
+                `;
+                filterCont.appendChild(card);
+            });
+        }
+
+        // টপ বাটন
+        const topCont = document.getElementById('adminTopButtonsList');
+        if (topCont) {
+            topCont.innerHTML = '';
+            cfg.topButtons.forEach((btn, idx) => {
+                const row = document.createElement('div');
+                row.style.cssText = 'background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:10px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center;';
+                row.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <input type="checkbox" ${btn.enabled ? 'checked' : ''} onchange="toggleTopBtn(${idx}, this.checked)" style="width:18px; height:18px; cursor:pointer; accent-color:#2563eb;">
+                        <strong style="color:#1e293b;"><i class="fa-solid ${btn.icon}"></i> ${btn.label}</strong>
+                    </div>
+                    <div>
+                        <input type="text" value="${btn.label}" onchange="updateTopBtnLabel(${idx}, this.value)" style="padding:6px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem; font-weight:600;">
+                    </div>
+                `;
+                topCont.appendChild(row);
+            });
+        }
+
+        // টুলবার বাটন
+        const toolCont = document.getElementById('adminToolbarButtonsList');
+        if (toolCont) {
+            toolCont.innerHTML = '';
+            cfg.toolbarButtons.forEach((btn, idx) => {
+                const box = document.createElement('div');
+                box.style.cssText = 'background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:space-between;';
+                box.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <input type="checkbox" ${btn.enabled ? 'checked' : ''} onchange="toggleToolbarBtn(${idx}, this.checked)" style="width:18px; height:18px; cursor:pointer; accent-color:#2563eb;">
+                        <span style="font-weight:700; color:#334155; font-size:0.88rem;"><i class="fa-solid ${btn.icon}"></i> ${btn.label}</span>
+                    </div>
+                `;
+                toolCont.appendChild(box);
+            });
+        }
+
+        // টেবিল কলাম
+        const colCont = document.getElementById('adminTableColumnsList');
+        if (colCont) {
+            colCont.innerHTML = '';
+            cfg.tableColumns.forEach((col, idx) => {
+                const item = document.createElement('label');
+                item.style.cssText = 'background:#f8fafc; border:1px solid #cbd5e1; padding:8px 14px; border-radius:8px; display:inline-flex; align-items:center; gap:8px; font-weight:700; font-size:0.85rem; cursor:pointer;';
+                item.innerHTML = `
+                    <input type="checkbox" ${col.enabled ? 'checked' : ''} onchange="toggleTableCol(${idx}, this.checked)" style="width:16px; height:16px; cursor:pointer; accent-color:#2563eb;">
+                    <span>${col.label}</span>
+                `;
+                colCont.appendChild(item);
+            });
+        }
+    };
+
+    window.toggleFilterBox = function (bIdx, val) {
+        const cfg = window.getCPSCLMasterConfig();
+        cfg.filterBoxes[bIdx].enabled = val;
+        saveMasterConfig(cfg);
+        window.renderAdminSetupViews();
+    };
+
+    window.addFilterOption = function (bIdx) {
+        const inp = document.getElementById(`add_opt_input_${bIdx}`);
+        const val = inp.value.trim();
+        if (!val) return;
+        const cfg = window.getCPSCLMasterConfig();
+        cfg.filterBoxes[bIdx].options.push(val);
+        saveMasterConfig(cfg);
+        inp.value = '';
+        window.renderAdminSetupViews();
+    };
+
+    window.removeFilterOption = function (bIdx, oIdx) {
+        const cfg = window.getCPSCLMasterConfig();
+        cfg.filterBoxes[bIdx].options.splice(oIdx, 1);
+        saveMasterConfig(cfg);
+        window.renderAdminSetupViews();
+    };
+
+    window.openAddNewFilterBoxModal = function () {
+        const label = prompt("নতুন ফিল্টার বক্সের নাম লিখুন:");
+        if (!label || !label.trim()) return;
+        const cfg = window.getCPSCLMasterConfig();
+        cfg.filterBoxes.push({
+            id: 'custom_' + Date.now(),
+            label: label.trim(),
+            placeholder: 'All',
+            options: ['Option 1', 'Option 2'],
+            enabled: true
+        });
+        saveMasterConfig(cfg);
+        window.renderAdminSetupViews();
+    };
+
+    window.toggleTopBtn = function (idx, val) {
+        const cfg = window.getCPSCLMasterConfig();
+        cfg.topButtons[idx].enabled = val;
+        saveMasterConfig(cfg);
+    };
+
+    window.updateTopBtnLabel = function (idx, val) {
+        const cfg = window.getCPSCLMasterConfig();
+        cfg.topButtons[idx].label = val.trim();
+        saveMasterConfig(cfg);
+    };
+
+    window.toggleToolbarBtn = function (idx, val) {
+        const cfg = window.getCPSCLMasterConfig();
+        cfg.toolbarButtons[idx].enabled = val;
+        saveMasterConfig(cfg);
+    };
+
+    window.toggleTableCol = function (idx, val) {
+        const cfg = window.getCPSCLMasterConfig();
+        cfg.tableColumns[idx].enabled = val;
+        saveMasterConfig(cfg);
+    };
+
+    window.resetToDefaultConfig = function () {
+        if (confirm("সব সেটিংস কি ডিফল্ট অবস্থায় ফিরিয়ে নিতে চান?")) {
+            localStorage.removeItem('cpscl_superadmin_master_config');
+            window.renderAdminSetupViews();
+            if (typeof window.renderDynamicStudentScreen === 'function') {
+                window.renderDynamicStudentScreen();
+            }
+        }
     };
 
     function init() {
-        injectFullStyles();
-        injectTrustSidebar();
-        setTimeout(window.renderDynamicStudentScreen, 300);
+        injectSetupView();
     }
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
-        setTimeout(init, 300);
+        setTimeout(init, 250);
     }
 })();
