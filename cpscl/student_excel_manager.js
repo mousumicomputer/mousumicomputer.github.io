@@ -1,13 +1,13 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Student Excel Bulk Import Engine (Permanent Auto-Persistence)
+   SUB-SECTION: Student Excel Bulk Import Engine (Permanent Persistence & Auto-Fetch)
    Path: cpscl/student_excel_manager.js
-   Architecture: 100% Super Admin Controlled | Permanent Auto-Seed | Smart ID Engine
+   Architecture: Zero Hardcode | Smart ID Validation | Live Auto-Restore on Refresh
    Language: Pure English (Corporate ERP Standard)
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Permanent Excel Import Engine...");
+    console.log("Loading CPSCL Smart Excel Import Engine with Auto-Restore...");
 
     let parsedExcelStudents = [];
     let currentFilterStatus = 'all';
@@ -36,7 +36,6 @@
         }
     }
 
-    // মাস্টার কনফিগ হুক (যাতে ক্যাশ মুছে গেলেও বাটন সব সময় জীবিত থাকে)
     const originalGetMasterConfig = window.getCPSCLMasterConfig;
     window.getCPSCLMasterConfig = function () {
         let cfg = typeof originalGetMasterConfig === 'function' ? originalGetMasterConfig() : null;
@@ -305,7 +304,7 @@
         setupDragAndDropEvents();
     }
 
-    // ৪. বাটন ক্লিক হ্যান্ডলার (ডায়নামিক ইভেন্ট ডেলিগেশন)
+    // ৪. বাটন ক্লিক হ্যান্ডলার
     function bindExcelButtonEvents() {
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.btn-stu-pill');
@@ -460,7 +459,7 @@
         return map;
     }
 
-    // ৭. এক্সেল ফাইল রিডিং ও ভ্যালিডেশন ইঞ্জিন
+    // ৭. এক্সেল ফাইল রিডিং ও ভ্যালিডেশন
     async function parseExcelFile(file) {
         if (!file.name.match(/\.(xlsx|xls)$/i)) {
             alert("Please upload a valid Excel file (.xlsx or .xls)!");
@@ -513,13 +512,11 @@
                 studentObj[f.id] = String(val !== undefined && val !== null ? val : '').trim();
             });
 
-            // Student ID খুঁজে বের করা
             const explicitId = row['Student ID *'] || row['Student ID'] || row['std_id'] || studentObj.std_id || '';
             const stdIdClean = String(explicitId).trim();
             studentObj.std_id = stdIdClean;
             studentObj.student_name = studentObj.student_name || row['Name *'] || row['Name'] || ('Row ' + (idx + 2));
 
-            // ভ্যালিডেশন
             if (!stdIdClean || stdIdClean === '' || stdIdClean.toLowerCase() === 'undefined') {
                 studentObj.validationStatus = 'missing';
                 missingCount++;
@@ -540,7 +537,6 @@
             parsedExcelStudents.push(studentObj);
         });
 
-        // সংক্ষিপ্ত টোস্ট
         if (typeof window.showToast === 'function') {
             if (missingCount > 0) {
                 window.showToast(`Alert: ${missingCount} student(s) have Missing ID! Upload blocked.`, "error");
@@ -720,6 +716,7 @@
                 }
             }
 
+            // লোকাল ক্যাশ আপডেট
             let localCache = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
             parsedExcelStudents.forEach(newStu => {
                 const cleanObj = { ...newStu };
@@ -740,10 +737,7 @@
             }
 
             window.closeExcelImportInlineCard();
-
-            if (typeof window.fetchAndRenderRealCPSCLStudents === 'function') {
-                window.fetchAndRenderRealCPSCLStudents();
-            }
+            triggerAutoStudentTableSync();
         } catch (err) {
             alert("Error saving students to Firebase: " + err.message);
         } finally {
@@ -753,20 +747,98 @@
         }
     };
 
+    // ১২. মূল সমস্যা সমাধানের অটো-সিঙ্ক ইঞ্জিন (রিফ্রেশ দিলেও ডামি ডাটা আসবে না)
+    function triggerAutoStudentTableSync() {
+        if (typeof window.fetchAndRenderRealCPSCLStudents === 'function') {
+            window.fetchAndRenderRealCPSCLStudents();
+        }
+
+        // ফায়ারবেস বা ক্যাশ থেকে সরাসরি টেবিলে রিয়েল ডেটা বসানো
+        const localCache = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
+        if (localCache.length > 0) {
+            paintRealStudentsToTable(localCache);
+        }
+
+        // ক্লাউড ডেটাবেস প্রস্তুত হওয়া মাত্রই লাইভ ফেচ
+        if (window.getDatabase && window.ref && window.get) {
+            try {
+                const db = window.getDatabase();
+                const stuRef = window.ref(db, 'cpscl_students');
+                window.get(stuRef).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const cloudStudents = Object.values(snapshot.val());
+                        localStorage.setItem('cpscl_students_cache', JSON.stringify(cloudStudents));
+                        paintRealStudentsToTable(cloudStudents);
+                    }
+                }).catch(e => console.warn("Live cloud sync retry:", e));
+            } catch(e) {}
+        }
+    }
+
+    // ডামি RIDOWANUZZAMAN সরিয়ে আপনার আসল ছাত্রকে টেবিলে পেইন্ট করা
+    function paintRealStudentsToTable(studentsList) {
+        const tbody = document.querySelector('.stu-table tbody');
+        if (!tbody || !studentsList || studentsList.length === 0) return;
+
+        // যদি এখনও ডামি ছাত্র বসে থাকে, তবে সাথে সাথে ক্লিয়ার করে আসল ছাত্র বসানো
+        const masterCfg = typeof window.getCPSCLMasterConfig === 'function' ? window.getCPSCLMasterConfig() : {};
+        const activeCols = (masterCfg.tableColumns || []).filter(c => c.enabled);
+
+        tbody.innerHTML = '';
+        studentsList.forEach((s, idx) => {
+            const tr = document.createElement('tr');
+            let colsHtml = '';
+
+            activeCols.forEach(col => {
+                let val = '-';
+                if (col.id === 'col_serial') val = (idx + 1);
+                else if (col.id === 'col_stdid') val = `<strong>${s.std_id || s.id}</strong>`;
+                else if (col.id === 'col_name') val = `<span style="font-weight:700; color:#2563eb;">${s.student_name || '-'}</span>`;
+                else if (col.id === 'col_roll') val = s.roll_no || '-';
+                else if (col.id === 'col_father') val = s.father_name || '-';
+                else if (col.id === 'col_mother') val = s.mother_name || '-';
+                else if (col.id === 'col_status') val = `<span style="background:#dcfce7; color:#15803d; padding:3px 10px; border-radius:20px; font-weight:800; font-size:0.75rem;">${s.status || 'Active'}</span>`;
+                else val = s[col.id] || '-';
+
+                colsHtml += `<td>${val}</td>`;
+            });
+
+            colsHtml += `
+                <td style="text-align:right;">
+                    <button onclick="confirmSuperAdminDeleteStudent('${s.id}')" title="Delete Student" style="background:#fee2e2; border:none; color:#dc2626; padding:5px 10px; border-radius:6px; cursor:pointer;">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </td>
+            `;
+
+            tr.innerHTML = colsHtml;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // ১৩. স্ক্রিন রেন্ডারিং হুক — প্রতিবার স্ক্রিন তৈরি হওয়ার পর ডামি ডাটা মুছে আসল ডাটা লোড হবে
+    const originalRenderScreen = window.renderDynamicStudentScreen;
+    window.renderDynamicStudentScreen = function () {
+        if (typeof originalRenderScreen === 'function') {
+            originalRenderScreen.apply(this, arguments);
+        }
+        setTimeout(triggerAutoStudentTableSync, 60);
+    };
+
     function init() {
         ensureButtonInMasterConfig();
         injectExcelStyles();
         bindExcelButtonEvents();
 
-        // লাইভ স্ক্রিন রেন্ডার যাতে বাটনটি সাথে সাথে দৃশ্যমান হয়
-        if (typeof window.renderDynamicStudentScreen === 'function') {
-            window.renderDynamicStudentScreen();
-        }
+        // পেজ ওপেন হওয়ার সাথে সাথে এবং ফায়ারবেস কানেক্ট হওয়া পর্যন্ত নজরদারি
+        setTimeout(triggerAutoStudentTableSync, 300);
+        setTimeout(triggerAutoStudentTableSync, 1000);
+        setTimeout(triggerAutoStudentTableSync, 2500);
     }
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
-        setTimeout(init, 150);
+        setTimeout(init, 100);
     }
 })();
