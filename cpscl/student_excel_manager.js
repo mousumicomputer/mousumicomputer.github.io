@@ -1,18 +1,64 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Student Excel Bulk Import Engine
+   SUB-SECTION: Student Excel Bulk Import Engine (Permanent Auto-Persistence)
    Path: cpscl/student_excel_manager.js
-   Architecture: Zero Hardcode | Smart ID Validation | Color-Coded Preview
+   Architecture: 100% Super Admin Controlled | Permanent Auto-Seed | Smart ID Engine
    Language: Pure English (Corporate ERP Standard)
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Smart Excel Import Engine with ID Verification...");
+    console.log("Loading CPSCL Permanent Excel Import Engine...");
 
     let parsedExcelStudents = [];
     let currentFilterStatus = 'all';
 
-    // ১. আধুনিক সিএসএস ও কালার কোডিং স্টাইল
+    // ১. বাটনটিকে মাস্টার কনফিগারেশনে স্থায়ীভাবে যুক্ত ও আজীবন ধরে রাখার লজিক
+    function ensureButtonInMasterConfig() {
+        try {
+            const saved = localStorage.getItem('cpscl_superadmin_master_config');
+            let cfg = saved ? JSON.parse(saved) : null;
+
+            if (cfg && Array.isArray(cfg.topButtons)) {
+                const btnExists = cfg.topButtons.some(b => b.id === 'btn_excel' || b.label.includes('Import Students'));
+                if (!btnExists) {
+                    cfg.topButtons.push({
+                        id: 'btn_excel',
+                        label: 'Import Students (Excel)',
+                        icon: 'fa-file-excel',
+                        type: 'success',
+                        enabled: true
+                    });
+                    localStorage.setItem('cpscl_superadmin_master_config', JSON.stringify(cfg));
+                }
+            }
+        } catch (e) {
+            console.error("Config auto-seed error:", e);
+        }
+    }
+
+    // মাস্টার কনফিগ হুক (যাতে ক্যাশ মুছে গেলেও বাটন সব সময় জীবিত থাকে)
+    const originalGetMasterConfig = window.getCPSCLMasterConfig;
+    window.getCPSCLMasterConfig = function () {
+        let cfg = typeof originalGetMasterConfig === 'function' ? originalGetMasterConfig() : null;
+        if (cfg && Array.isArray(cfg.topButtons)) {
+            const hasBtn = cfg.topButtons.some(b => b.id === 'btn_excel' || b.label.includes('Import Students'));
+            if (!hasBtn) {
+                cfg.topButtons.push({
+                    id: 'btn_excel',
+                    label: 'Import Students (Excel)',
+                    icon: 'fa-file-excel',
+                    type: 'success',
+                    enabled: true
+                });
+                try {
+                    localStorage.setItem('cpscl_superadmin_master_config', JSON.stringify(cfg));
+                } catch(err){}
+            }
+        }
+        return cfg;
+    };
+
+    // ২. স্টাইল ইনজেকশন
     function injectExcelStyles() {
         if (document.getElementById('cpscl-excel-import-styles')) return;
         const style = document.createElement('style');
@@ -106,7 +152,6 @@
             }
             .btn-download-template:hover { background: #ecfdf5; }
 
-            /* ফিল্টার পিলস ও স্ট্যাটাস বার */
             .excel-preview-wrapper {
                 margin-top: 20px;
                 display: none;
@@ -153,7 +198,6 @@
             .filter-pill-btn.pill-success { border-color: #86efac; color: #16a34a; }
             .filter-pill-btn.pill-success.active { background: #dcfce7; border-color: #16a34a; color: #15803d; }
 
-            /* টেবিল ও ব্যাজ ডিজাইন */
             .excel-preview-table {
                 width: 100%;
                 border-collapse: collapse;
@@ -193,7 +237,7 @@
         document.head.appendChild(style);
     }
 
-    // ২. ইনলাইন আপলোড প্যানেল ফ্রেমওয়ার্ক
+    // ৩. স্লাইড-ডাউন ইনলাইন প্যানেল
     function injectInlineExcelCard() {
         const view = document.getElementById('trust-cpscl-main-view');
         if (!view || document.getElementById('excelImportStudentInlineCard')) return;
@@ -223,7 +267,6 @@
                     </button>
                 </div>
 
-                <!-- স্মার্ট প্রিভিউ টেবিল ও ফিল্টার বাটনস -->
                 <div class="excel-preview-wrapper" id="cpsclExcelPreviewBox">
                     <div class="excel-filter-pills-bar">
                         <div class="pills-group" id="excelFilterPillsGroup"></div>
@@ -247,7 +290,6 @@
                     </div>
                 </div>
 
-                <!-- অ্যাকশন বাটনসমূহ -->
                 <div class="create-form-actions" style="margin-top: 20px;">
                     <button type="button" class="btn-action-cancel" onclick="window.closeExcelImportInlineCard()">
                         <i class="fa-solid fa-xmark"></i> Cancel
@@ -263,7 +305,7 @@
         setupDragAndDropEvents();
     }
 
-    // ৩. বাটন ক্লিক হ্যান্ডলার (সুপার অ্যাডমিনের বাটনের সাথে সিঙ্ক)
+    // ৪. বাটন ক্লিক হ্যান্ডলার (ডায়নামিক ইভেন্ট ডেলিগেশন)
     function bindExcelButtonEvents() {
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.btn-stu-pill');
@@ -310,7 +352,7 @@
         }
     }
 
-    // ৪. স্যাম্পল এক্সেল ডাউনলোড
+    // ৫. স্যাম্পল এক্সেল ডাউনলোড
     window.downloadCPSCLStudentSampleExcel = function () {
         if (typeof XLSX === 'undefined') {
             alert("Excel library is still loading, please wait...");
@@ -325,7 +367,6 @@
             return;
         }
 
-        // Student ID অবশ্যই প্রথম কলাম হিসেবে থাকবে
         let headers = ['Student ID *'];
         activeFields.forEach(f => {
             if (f.id !== 'std_id') {
@@ -356,7 +397,7 @@
         XLSX.writeFile(workbook, "CPSCL_Student_Import_Template.xlsx");
     };
 
-    // ৫. ড্র্যাগ অ্যান্ড ড্রপ ইভেন্টস
+    // ৬. ড্র্যাগ অ্যান্ড ড্রপ ইভেন্ট
     function setupDragAndDropEvents() {
         const dropZone = document.getElementById('cpsclExcelDropZone');
         if (!dropZone) return;
@@ -388,7 +429,7 @@
         if (files.length > 0) parseExcelFile(files[0]);
     };
 
-    // ফায়ারবেস থেকে আগের সংরক্ষিত শিক্ষার্থীদের মানচিত্র তৈরি করা
+    // ফায়ারবেস থেকে আগের সংরক্ষিত শিক্ষার্থী ডাটাবেস চেক করা
     async function getExistingStudentsFromCloud() {
         const map = new Map();
         try {
@@ -407,7 +448,7 @@
                 }
             }
         } catch (e) {
-            console.warn("Using local cache fallback for conflict check:", e);
+            console.warn("Using local cache fallback:", e);
         }
 
         const localCache = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
@@ -419,7 +460,7 @@
         return map;
     }
 
-    // ৬. এক্সেল ফাইল পড়া এবং ভ্যালিডেশন ইঞ্জিন
+    // ৭. এক্সেল ফাইল রিডিং ও ভ্যালিডেশন ইঞ্জিন
     async function parseExcelFile(file) {
         if (!file.name.match(/\.(xlsx|xls)$/i)) {
             alert("Please upload a valid Excel file (.xlsx or .xls)!");
@@ -466,7 +507,6 @@
                 status: 'Active'
             };
 
-            // ফিল্ডগুলো ম্যাপিং করা
             activeFields.forEach(f => {
                 const val = row[f.label + ' *'] !== undefined ? row[f.label + ' *'] :
                             (row[f.label] !== undefined ? row[f.label] : '');
@@ -477,16 +517,14 @@
             const explicitId = row['Student ID *'] || row['Student ID'] || row['std_id'] || studentObj.std_id || '';
             const stdIdClean = String(explicitId).trim();
             studentObj.std_id = stdIdClean;
-
             studentObj.student_name = studentObj.student_name || row['Name *'] || row['Name'] || ('Row ' + (idx + 2));
 
-            // ভ্যালিডেশন স্ট্যাটাস নির্ধারণ
+            // ভ্যালিডেশন
             if (!stdIdClean || stdIdClean === '' || stdIdClean.toLowerCase() === 'undefined') {
                 studentObj.validationStatus = 'missing';
                 missingCount++;
             } else if (existingCloudStudents.has(stdIdClean)) {
                 studentObj.validationStatus = 'existing';
-                // আগের সংরক্ষিত ফায়ারবেস ইউনিক কি সংরক্ষণ যাতে ঠিক ওই রেকর্ডটাই আপডেট হয়
                 const oldRec = existingCloudStudents.get(stdIdClean);
                 studentObj.existingTargetId = oldRec.id;
                 existingCount++;
@@ -502,7 +540,7 @@
             parsedExcelStudents.push(studentObj);
         });
 
-        // সংক্ষিপ্ত ও পরিষ্কার টোস্ট মেসেজ
+        // সংক্ষিপ্ত টোস্ট
         if (typeof window.showToast === 'function') {
             if (missingCount > 0) {
                 window.showToast(`Alert: ${missingCount} student(s) have Missing ID! Upload blocked.`, "error");
@@ -518,7 +556,7 @@
         updateSaveButtonState(missingCount, existingCount, newCount);
     }
 
-    // ৭. স্মার্ট ফিল্টার পিলস রেন্ডার
+    // ৮. ফিল্টার পিলস
     function renderFilterPills(missingCount, existingCount, newCount) {
         const pillsGroup = document.getElementById('excelFilterPillsGroup');
         const statusNotice = document.getElementById('excelFilterStatusNotice');
@@ -568,7 +606,7 @@
         renderExcelPreviewTable();
     };
 
-    // ৮. কালার-কোডেড প্রিভিউ টেবিল রেন্ডার
+    // ৯. প্রিভিউ টেবিল
     function renderExcelPreviewTable() {
         const previewBox = document.getElementById('cpsclExcelPreviewBox');
         const tbody = document.getElementById('excelPreviewTbody');
@@ -623,7 +661,7 @@
         previewBox.style.display = 'block';
     }
 
-    // ৯. সেভ বাটনের বুদ্ধিমান রূপান্তর (Button Intelligence)
+    // ১০. সেভ বাটন কন্ট্রোল
     function updateSaveButtonState(missingCount, existingCount, newCount) {
         const submitBtn = document.getElementById('btnConfirmBulkUpload');
         if (!submitBtn) return;
@@ -649,7 +687,7 @@
         }
     }
 
-    // ১০. ফায়ারবেস ক্লাউডে পার্মানেন্ট সেভ ও নিখুঁত ওভাররাইট ইঞ্জিন
+    // ১১. ক্লাউড ফায়ারবেসে পার্মানেন্ট সেভ
     window.executeCPSCLBulkUpload = async function () {
         if (!parsedExcelStudents || parsedExcelStudents.length === 0) return;
 
@@ -668,8 +706,6 @@
         try {
             for (let i = 0; i < parsedExcelStudents.length; i++) {
                 const stu = parsedExcelStudents[i];
-
-                // যদি পুরাতন ছাত্র হয়, তবে তার আগের কি (Key)-তেই আপডেট হবে যাতে কোনো ডুপ্লিকেট না তৈরি হয়
                 const targetCloudKey = stu.existingTargetId || stu.id;
 
                 const payload = { ...stu };
@@ -684,7 +720,6 @@
                 }
             }
 
-            // লোকাল ক্যাশ আপডেট
             let localCache = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
             parsedExcelStudents.forEach(newStu => {
                 const cleanObj = { ...newStu };
@@ -719,8 +754,14 @@
     };
 
     function init() {
+        ensureButtonInMasterConfig();
         injectExcelStyles();
         bindExcelButtonEvents();
+
+        // লাইভ স্ক্রিন রেন্ডার যাতে বাটনটি সাথে সাথে দৃশ্যমান হয়
+        if (typeof window.renderDynamicStudentScreen === 'function') {
+            window.renderDynamicStudentScreen();
+        }
     }
 
     if (document.readyState === 'loading') {
