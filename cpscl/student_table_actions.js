@@ -1,13 +1,13 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: 1:1 Pixel-Perfect Table Engine with Real Pagination & Counter
+   SUB-SECTION: 1:1 Pixel-Perfect Table Engine with Real Pagination & Controls
    Path: cpscl/student_table_actions.js
-   Architecture: Real Student Count | Pagination (10, 25, 50, 100) | Single Selection
+   Architecture: Real Count | Visible Bottom Footer (10, 25, 50, 100) | Single Select
    Language: Pure English (Corporate ERP Standard)
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL 1:1 Real Pagination & Dynamic Counter Engine...");
+    console.log("Loading CPSCL 1:1 Pixel-Perfect Pagination Engine...");
 
     let allStudentsData = [];
     let currentPage = 1;
@@ -72,111 +72,121 @@
                 color: #ffffff !important;
             }
 
-            /* ২ নম্বর ছবির মতো ফুটার ও পেজিনেশন বার */
+            /* ২ নম্বর ছবির মতো দৃশ্যমান ফুটার বার */
             .erp-table-footer-bar {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 18px 22px;
-                background: #ffffff;
-                border-top: 1px solid #f1f5f9;
-                flex-wrap: wrap;
-                gap: 15px;
-                font-family: inherit;
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                padding: 16px 20px !important;
+                background: #ffffff !important;
+                border-top: 1.5px solid #eef2f5 !important;
+                flex-wrap: wrap !important;
+                gap: 15px !important;
+                box-sizing: border-box !important;
+                width: 100% !important;
             }
             .erp-page-size-wrapper {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-size: 0.85rem;
-                color: #64748b;
-                font-weight: 500;
+                display: flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                font-size: 0.85rem !important;
+                color: #64748b !important;
+                font-weight: 500 !important;
             }
             .erp-select-entries {
-                padding: 6px 12px;
-                border: 1px solid #cbd5e1;
-                border-radius: 8px;
-                font-size: 0.85rem;
-                font-weight: 700;
-                color: #1e293b;
-                outline: none;
-                background: #ffffff;
-                cursor: pointer;
+                padding: 6px 12px !important;
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 6px !important;
+                font-size: 0.85rem !important;
+                font-weight: 700 !important;
+                color: #1e293b !important;
+                outline: none !important;
+                background: #ffffff !important;
+                cursor: pointer !important;
             }
             .erp-pagination-buttons {
-                display: flex;
-                align-items: center;
-                gap: 4px;
-                user-select: none;
+                display: flex !important;
+                align-items: center !important;
+                gap: 4px !important;
+                user-select: none !important;
             }
             .erp-page-btn {
-                min-width: 34px;
-                height: 34px;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                padding: 0 8px;
-                border: 1px solid #e2e8f0;
-                background: #ffffff;
-                color: #475569;
-                border-radius: 6px;
-                font-size: 0.85rem;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.2s;
+                min-width: 32px !important;
+                height: 32px !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 0 8px !important;
+                border: 1px solid #e2e8f0 !important;
+                background: #ffffff !important;
+                color: #475569 !important;
+                border-radius: 4px !important;
+                font-size: 0.85rem !important;
+                font-weight: 600 !important;
+                cursor: pointer !important;
+                transition: all 0.2s !important;
             }
             .erp-page-btn:hover:not(.disabled):not(.active) {
-                background: #f1f5f9;
-                border-color: #cbd5e1;
+                background: #f1f5f9 !important;
+                border-color: #cbd5e1 !important;
             }
             .erp-page-btn.active {
                 background: #3b82f6 !important;
                 border-color: #3b82f6 !important;
                 color: #ffffff !important;
-                font-weight: 700;
+                font-weight: 700 !important;
             }
             .erp-page-btn.disabled {
-                opacity: 0.4;
-                cursor: not-allowed;
+                opacity: 0.35 !important;
+                cursor: not-allowed !important;
             }
 
-            /* উপরে "1 row selected" টেক্সট */
-            .erp-selection-text {
-                margin-left: 12px;
-                font-size: 0.85rem;
-                color: #64748b;
-                font-weight: 600;
-                display: none;
+            .btn-tool-danger {
+                border-color: #fca5a5 !important;
+                color: #dc2626 !important;
+                font-weight: 700 !important;
+            }
+            .btn-tool-danger:hover {
+                background-color: #fef2f2 !important;
+                border-color: #ef4444 !important;
             }
         `;
         document.head.appendChild(style);
     }
 
-    // ২. পেজিনেশন বার ইনজেকশন (২ নম্বর ছবির মতো টেবিলের নিচে)
-    function injectPaginationFooter() {
-        const mainCard = document.querySelector('.stu-main-card');
-        if (!mainCard || document.getElementById('erpPaginationFooterBox')) return;
+    // ২. পেজিনেশন ফুটারকে স্টুডেন্ট কার্ডের ভেতরে সঠিকভাবে যুক্ত করা
+    function ensurePaginationFooterInjected() {
+        const studentView = document.getElementById('trust-cpscl-main-view');
+        if (!studentView) return;
 
-        const footer = document.createElement('div');
-        footer.id = 'erpPaginationFooterBox';
-        footer.className = 'erp-table-footer-bar';
-        footer.innerHTML = `
-            <div class="erp-page-size-wrapper">
-                <select class="erp-select-entries" id="erpEntriesPerPageSelect" onchange="window.changeCPSCLEntriesPerPage(this.value)">
-                    <option value="10">10</option>
-                    <option value="25" selected>25</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                </select>
-                <span>entries per page</span>
-            </div>
-            <div class="erp-pagination-buttons" id="erpPaginationBtnContainer"></div>
-        `;
+        const mainCard = studentView.querySelector('.stu-main-card');
+        if (!mainCard) return;
 
-        mainCard.appendChild(footer);
+        let footer = document.getElementById('erpPaginationFooterBox');
+        if (!footer) {
+            footer = document.createElement('div');
+            footer.id = 'erpPaginationFooterBox';
+            footer.className = 'erp-table-footer-bar';
+            footer.innerHTML = `
+                <div class="erp-page-size-wrapper">
+                    <select class="erp-select-entries" id="erpEntriesPerPageSelect" onchange="window.changeCPSCLEntriesPerPage(this.value)">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span>entries per page</span>
+                </div>
+                <div class="erp-pagination-buttons" id="erpPaginationBtnContainer"></div>
+            `;
+            mainCard.appendChild(footer);
+        } else {
+            // নিশ্চিত করা যে ফুটার কার্ডের একেবারে নিচে আছে
+            mainCard.appendChild(footer);
+        }
     }
 
-    // ৩. রিয়েল কাউন্টার ও পেজ বাটন রেন্ডার ইঞ্জিন
+    // ৩. পেজিনেশন বাটন রেন্ডার ইঞ্জিন (« < 1 2 3 > »)
     function renderPaginationControls(totalItems) {
         const container = document.getElementById('erpPaginationBtnContainer');
         if (!container) return;
@@ -187,11 +197,9 @@
 
         let btnsHtml = '';
 
-        // প্রথম ও আগের পৃষ্ঠা বাটন (« <)
         btnsHtml += `<button class="erp-page-btn ${currentPage === 1 ? 'disabled' : ''}" onclick="window.goToCPSCLPage(1)">«</button>`;
         btnsHtml += `<button class="erp-page-btn ${currentPage === 1 ? 'disabled' : ''}" onclick="window.goToCPSCLPage(${currentPage - 1})">&lt;</button>`;
 
-        // পেজ নম্বর বাটন (1, 2, 3...)
         let startPage = Math.max(1, currentPage - 2);
         let endPage = Math.min(totalPages, startPage + 4);
         if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
@@ -201,38 +209,38 @@
         }
 
         if (endPage < totalPages) {
-            btnsHtml += `<span style="padding:0 4px; color:#94a3b8;">...</span>`;
+            if (endPage < totalPages - 1) {
+                btnsHtml += `<span style="padding:0 5px; color:#94a3b8; font-weight:700;">...</span>`;
+            }
             btnsHtml += `<button class="erp-page-btn" onclick="window.goToCPSCLPage(${totalPages})">${totalPages}</button>`;
         }
 
-        // পরের ও শেষ পৃষ্ঠা বাটন (> »)
         btnsHtml += `<button class="erp-page-btn ${currentPage === totalPages ? 'disabled' : ''}" onclick="window.goToCPSCLPage(${currentPage + 1})">&gt;</button>`;
         btnsHtml += `<button class="erp-page-btn ${currentPage === totalPages ? 'disabled' : ''}" onclick="window.goToCPSCLPage(${totalPages})">»</button>`;
 
         container.innerHTML = btnsHtml;
     }
 
-    // ৪. টেবিলের উপরের টেক্সট আপডেট (রিয়েল হিসাব: Showing 1 to 25 of 81 entries)
+    // ৪. উপরের আসল হিসাব আপডেট (Showing 1 to 25 of 81 entries)
     function updateHeaderCounterText(totalItems) {
-        const headerDiv = document.querySelector('.stu-table-header div:first-child');
+        const headerDiv = document.querySelector('#trust-cpscl-main-view .stu-table-header div:first-child');
         if (!headerDiv) return;
 
         let start = totalItems === 0 ? 0 : (currentPage - 1) * entriesPerPage + 1;
         let end = Math.min(currentPage * entriesPerPage, totalItems);
 
         let selectionHtml = selectedStudent 
-            ? `<span class="erp-selection-text" style="display:inline;">${selectedStudent ? '1 row selected' : ''}</span>`
+            ? `<span style="margin-left:14px; color:#64748b; font-weight:500;">1 row selected</span>` 
             : '';
 
         headerDiv.innerHTML = `Showing ${start} to ${end} of ${totalItems} entries ${selectionHtml}`;
     }
 
-    // ৫. পৃষ্ঠায় শিক্ষার্থী তালিকা আঁকা
+    // ৫. পৃষ্ঠায় শিক্ষার্থী তালিকা পেইন্ট করা
     window.renderPaginatedStudentsTable = function () {
-        const tbody = document.querySelector('.stu-table tbody');
+        const tbody = document.querySelector('#trust-cpscl-main-view .stu-table tbody');
         if (!tbody) return;
 
-        // সার্চ কুয়েরি অনুযায়ী ফিল্টার
         let filtered = allStudentsData.filter(s => {
             if (!searchQuery) return true;
             const q = searchQuery.toLowerCase();
@@ -242,7 +250,7 @@
         });
 
         const totalItems = filtered.length;
-        injectPaginationFooter();
+        ensurePaginationFooterInjected();
         renderPaginationControls(totalItems);
         updateHeaderCounterText(totalItems);
 
@@ -253,7 +261,6 @@
             return;
         }
 
-        // বর্তমান পৃষ্ঠার জন্য স্লাইস করা (যেমন: ১ থেকে ২৫)
         const startIndex = (currentPage - 1) * entriesPerPage;
         const pageStudents = filtered.slice(startIndex, startIndex + entriesPerPage);
 
@@ -264,7 +271,6 @@
             const tr = document.createElement('tr');
             tr.dataset.studentId = s.id || s.std_id;
 
-            // যদি আগের সিলেক্ট করা ছাত্র হয়
             if (selectedStudent && (selectedStudent.key === s.id || selectedStudent.key === s.std_id)) {
                 tr.classList.add('erp-row-selected');
             }
@@ -278,13 +284,12 @@
                 else if (col.id === 'col_roll') val = s.roll_no || '-';
                 else if (col.id === 'col_father') val = s.father_name || '-';
                 else if (col.id === 'col_mother') val = s.mother_name || '-';
-                else if (col.id === 'col_status') val = `<span style="color: #15803d; font-weight: 700; font-size: 0.8rem;">Active</span>`;
+                else if (col.id === 'col_status') val = `<span style="color:#15803d; font-weight:700; font-size:0.8rem;">Active</span>`;
                 else val = s[col.id] || '-';
 
                 colsHtml += `<td>${val}</td>`;
             });
 
-            // ডিলিট বাটন ব্যাকগ্রাউন্ডে রাখা
             colsHtml += `
                 <td style="display:none;">
                     <button onclick="confirmSuperAdminDeleteStudent('${s.id}')"></button>
@@ -296,7 +301,7 @@
         });
     };
 
-    // ৬. পেজ পরিবর্তন ও পেজ সাইজ পরিবর্তন হ্যান্ডলার
+    // ৬. পেজ পরিবর্তন ও পেজ সাইজ নির্বাচন
     window.goToCPSCLPage = function (pageNum) {
         currentPage = pageNum;
         window.renderPaginatedStudentsTable();
@@ -305,20 +310,22 @@
     window.changeCPSCLEntriesPerPage = function (size) {
         entriesPerPage = parseInt(size) || 25;
         currentPage = 1;
+        const sel = document.getElementById('erpEntriesPerPageSelect');
+        if (sel) sel.value = entriesPerPage;
         window.renderPaginatedStudentsTable();
     };
 
-    // ৭. সিঙ্গেল রো সিলেকশন ইঞ্জিন
+    // ৭. সিঙ্গেল রো সিলেকশন
     function bindTableRowClickEvents() {
         document.addEventListener('click', (e) => {
-            const tr = e.target.closest('.stu-table tbody tr');
+            const tr = e.target.closest('#trust-cpscl-main-view .stu-table tbody tr');
             if (!tr) return;
 
-            if (e.target.closest('button') || e.target.closest('input')) return;
+            if (e.target.closest('button') || e.target.closest('input') || e.target.closest('select')) return;
 
             const isAlreadySelected = tr.classList.contains('erp-row-selected');
 
-            document.querySelectorAll('.stu-table tbody tr').forEach(row => {
+            document.querySelectorAll('#trust-cpscl-main-view .stu-table tbody tr').forEach(row => {
                 row.classList.remove('erp-row-selected');
             });
             selectedStudent = null;
@@ -340,7 +347,7 @@
         });
     }
 
-    // ৮. সার্চ ইনপুট লাইভ ফিল্টার
+    // ৮. লাইভ সার্চ ফিল্টার
     function bindLiveSearchInput() {
         document.addEventListener('input', (e) => {
             if (e.target.classList.contains('stu-search-input')) {
@@ -351,7 +358,7 @@
         });
     }
 
-    // ৯. ক্লাউড ও ক্যাশ থেকে ডেটা লোড
+    // ৯. ক্লাউড ও ক্যাশ থেকে লাইভ ডেটা সিঙ্ক
     function syncStudentsFromCloudAndCache() {
         const localCache = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
         if (localCache.length > 0) {
@@ -424,7 +431,6 @@
         }
     }
 
-    // গ্লোবাল ফাংশন ওভাররাইড যাতে ফায়ারবেস আপডেট হলে পেজিনেশন কাজ করে
     window.fetchAndRenderRealCPSCLStudents = function () {
         syncStudentsFromCloudAndCache();
     };
