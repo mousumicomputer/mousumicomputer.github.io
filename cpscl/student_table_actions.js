@@ -1,22 +1,231 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Premium Student Table Styling & Toolbar Delete Engine
+   SUB-SECTION: 1:1 Pixel-Perfect Student Table Styling & Single Selection Engine
    Path: cpscl/student_table_actions.js
-   Architecture: Toolbar Integrated | Permanent Auto-Lock | 1:1 ERP Selection
+   Architecture: Exact Match with s3.trusteduerp.xyz | Single Selection | Toolbar Delete
    Language: Pure English (Corporate ERP Standard)
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Toolbar Delete & Premium Table UI Engine...");
+    console.log("Loading CPSCL 1:1 Pixel-Perfect Table Engine...");
 
-    let selectedStudentRecords = new Map(); // id -> { stdId, name }
+    let selectedStudent = null; // Single selection: { id, cloudKey, name }
 
-    // ১. টুলবার বাটনকে আজীবনের জন্য লক ও স্থায়ী রাখার ইঞ্জিন (কালকে আর হারাবে না)
+    // ১. ১ নম্বর ছবির হুবহু প্রিমিয়াম স্টাইল (জেব্রা স্ট্রাইপ, বর্ডার ও ডার্ক টেক্সট)
+    function injectTableCustomStyles() {
+        if (document.getElementById('cpscl-premium-table-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'cpscl-premium-table-styles';
+        style.innerHTML = `
+            /* ডাস্টবিন বাটন ও স্ট্যাটাস কলাম আড়াল করা (১ নম্বর ছবির মতো ক্লিন লুক) */
+            .stu-table th:last-child,
+            .stu-table td:last-child {
+                display: none !important;
+            }
+
+            /* টেবিল হেডার (১ নম্বর ছবির মতো হালকা ফন্ট ও অ্যারো লুক) */
+            .stu-table th {
+                background: #ffffff !important;
+                color: #8c98a4 !important;
+                font-size: 0.75rem !important;
+                font-weight: 700 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.5px !important;
+                padding: 14px 18px !important;
+                border-bottom: 1.5px solid #eef2f5 !important;
+                user-select: none;
+            }
+
+            /* টেবিল ডেটা ফন্ট ও রঙ (নীল রঙ বাদ দিয়ে ১ নম্বর ছবির মতো গাঢ় টেক্সট) */
+            .stu-table tbody td {
+                color: #334155 !important;
+                font-size: 0.87rem !important;
+                font-weight: 500 !important;
+                padding: 13px 18px !important;
+                border-bottom: 1px solid #eef2f5 !important;
+            }
+            .stu-table tbody td strong,
+            .stu-table tbody td span,
+            .stu-table tbody td a {
+                color: #334155 !important;
+                font-weight: 600 !important;
+                text-decoration: none !important;
+            }
+
+            /* ১ নম্বর ছবির মতো জেব্রা স্ট্রাইপ (এক লাইন সাদা, এক লাইন হালকা ধূসর) */
+            .stu-table tbody tr:nth-child(even) {
+                background-color: #f8fafc !important;
+            }
+            .stu-table tbody tr:nth-child(odd) {
+                background-color: #ffffff !important;
+            }
+
+            /* মাউস নিলে হালকা সফট কালার */
+            .stu-table tbody tr:hover {
+                background-color: #f1f5f9 !important;
+            }
+
+            /* ১ নম্বর ছবির হুবহু সলিড ব্লু সিলেকশন (Solid Vibrant Blue) */
+            .stu-table tbody tr.erp-row-selected,
+            .stu-table tbody tr.erp-row-selected:nth-child(even),
+            .stu-table tbody tr.erp-row-selected:nth-child(odd) {
+                background-color: #3b82f6 !important;
+            }
+            .stu-table tbody tr.erp-row-selected td,
+            .stu-table tbody tr.erp-row-selected td * {
+                color: #ffffff !important;
+            }
+
+            /* "1 row selected" সাধারণ টেক্সট (কোনো ক্যাপসুল বাবল নেই) */
+            .erp-selection-text {
+                margin-left: 15px;
+                font-size: 0.85rem;
+                color: #64748b;
+                font-weight: 500;
+                display: none;
+            }
+
+            /* টুলবারের ডিলিট বাটন */
+            .btn-tool-danger {
+                border-color: #fca5a5 !important;
+                color: #dc2626 !important;
+                font-weight: 700 !important;
+            }
+            .btn-tool-danger:hover {
+                background-color: #fef2f2 !important;
+                border-color: #ef4444 !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // ২. "1 row selected" সাধারণ টেক্সট তৈরি
+    function ensureSelectionTextExists() {
+        const tableHeaderLeft = document.querySelector('.stu-table-header div:first-child');
+        if (!tableHeaderLeft || document.getElementById('erpSelectionTextDisplay')) return;
+
+        const span = document.createElement('span');
+        span.id = 'erpSelectionTextDisplay';
+        span.className = 'erp-selection-text';
+        tableHeaderLeft.appendChild(span);
+    }
+
+    function updateSelectionDisplay() {
+        const textEl = document.getElementById('erpSelectionTextDisplay');
+        if (!textEl) return;
+
+        if (selectedStudent) {
+            textEl.innerText = "1 row selected";
+            textEl.style.display = "inline";
+        } else {
+            textEl.innerText = "";
+            textEl.style.display = "none";
+        }
+    }
+
+    // ৩. সিঙ্গেল সিলেকশন ইঞ্জিন (একবারে মাত্র ১ জনই সিলেক্ট হবে)
+    function bindTableRowClickEvents() {
+        document.addEventListener('click', (e) => {
+            const tr = e.target.closest('.stu-table tbody tr');
+            if (!tr) return;
+
+            if (e.target.closest('button') || e.target.closest('input')) return;
+
+            const isAlreadySelected = tr.classList.contains('erp-row-selected');
+
+            // আগের সব সিলেকশন মুছে ফেলা (একের অধিক সিলেক্ট হবে না)
+            document.querySelectorAll('.stu-table tbody tr').forEach(row => {
+                row.classList.remove('erp-row-selected');
+            });
+            selectedStudent = null;
+
+            // যদি আগের সিলেক্ট করা না হয়ে থাকে, তবে বর্তমানটাকে সিলেক্ট করা
+            if (!isAlreadySelected) {
+                tr.classList.add('erp-row-selected');
+
+                const deleteBtn = tr.querySelector('button[onclick*="DeleteStudent"]');
+                let studentUniqueId = '';
+                if (deleteBtn) {
+                    const match = deleteBtn.getAttribute('onclick').match(/'([^']+)'/);
+                    if (match) studentUniqueId = match[1];
+                }
+
+                const stdIdCell = tr.children[1];
+                const stdIdText = stdIdCell ? stdIdCell.innerText.trim() : '';
+
+                selectedStudent = {
+                    key: studentUniqueId || stdIdText,
+                    cloudKey: studentUniqueId,
+                    stdId: stdIdText,
+                    name: tr.children[2] ? tr.children[2].innerText.trim() : 'Student'
+                };
+            }
+
+            updateSelectionDisplay();
+        });
+    }
+
+    // ৪. টুলবারের Delete বাটনে ক্লিক করলে অ্যাকশন
+    function bindToolbarDeleteAction() {
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-tool');
+            if (!btn) return;
+            const text = btn.innerText.trim();
+
+            if (text.includes('Delete') || btn.querySelector('.fa-trash-can')) {
+                e.preventDefault();
+                executeStudentDeletion();
+            }
+        });
+    }
+
+    async function executeStudentDeletion() {
+        if (!selectedStudent) {
+            if (typeof window.showToast === 'function') {
+                window.showToast("Please click and select a student from the table first!", "warning");
+            } else {
+                alert("Please click and select a student from the table first!");
+            }
+            return;
+        }
+
+        const confirmText = `Are you sure you want to PERMANENTLY delete student "${selectedStudent.name}" (ID: ${selectedStudent.stdId}) from Cloud?`;
+        if (!confirm(confirmText)) return;
+
+        try {
+            const targetKey = selectedStudent.cloudKey || selectedStudent.key;
+            if (typeof window.writeToFirebase === 'function') {
+                await window.writeToFirebase(`cpscl_students/${targetKey}`, null);
+            }
+
+            // লোকাল ক্যাশ থেকে বাদ দেওয়া
+            let localCache = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
+            localCache = localCache.filter(s => {
+                const sId = String(s.std_id || s.id).trim();
+                return sId !== selectedStudent.key && s.id !== targetKey;
+            });
+            localStorage.setItem('cpscl_students_cache', JSON.stringify(localCache));
+
+            if (typeof window.showToast === 'function') {
+                window.showToast(`Student "${selectedStudent.name}" deleted successfully!`, "info");
+            }
+
+            selectedStudent = null;
+            updateSelectionDisplay();
+
+            if (typeof window.fetchAndRenderRealCPSCLStudents === 'function') {
+                window.fetchAndRenderRealCPSCLStudents();
+            }
+        } catch (err) {
+            alert("Error deleting student: " + err.message);
+        }
+    }
+
+    // ৫. টুলবার ডিলিট বাটন স্থায়ী লক
     function lockToolbarDeleteButtonPermanently() {
         try {
             const saved = localStorage.getItem('cpscl_superadmin_master_config');
             let cfg = saved ? JSON.parse(saved) : null;
-
             if (cfg && Array.isArray(cfg.toolbarButtons)) {
                 const btnExists = cfg.toolbarButtons.some(b => b.id === 'tb_delete' || b.label.toLowerCase().includes('delete'));
                 if (!btnExists) {
@@ -31,252 +240,17 @@
                     localStorage.setItem('cpscl_superadmin_master_config', JSON.stringify(cfg));
                 }
             }
-        } catch (e) {
-            console.error("Toolbar config sync error:", e);
-        }
-    }
-
-    // মাস্টার কনফিগারেশনে ৩ নম্বর ট্যাবে বাটনটি চিরস্থায়ী করা
-    const origGetMasterConfig = window.getCPSCLMasterConfig;
-    window.getCPSCLMasterConfig = function () {
-        let cfg = typeof origGetMasterConfig === 'function' ? origGetMasterConfig() : null;
-        if (cfg && Array.isArray(cfg.toolbarButtons)) {
-            const hasBtn = cfg.toolbarButtons.some(b => b.id === 'tb_delete' || b.label.toLowerCase().includes('delete'));
-            if (!hasBtn) {
-                cfg.toolbarButtons.push({
-                    id: 'tb_delete',
-                    label: 'Delete',
-                    icon: 'fa-trash-can',
-                    hasDropdown: false,
-                    colorClass: 'btn-tool-danger',
-                    enabled: true
-                });
-                try {
-                    localStorage.setItem('cpscl_superadmin_master_config', JSON.stringify(cfg));
-                } catch(e){}
-            }
-        }
-        return cfg;
-    };
-
-    // ২. প্রিমিয়াম সিএসএস (আসল ERP-এর মতো টেবিল ও লাল টুলবার বাটন)
-    function injectTableCustomStyles() {
-        if (document.getElementById('cpscl-premium-table-styles')) return;
-        const style = document.createElement('style');
-        style.id = 'cpscl-premium-table-styles';
-        style.innerHTML = `
-            /* সারির ডানপাশের পুরোনো ডাস্টবিনগুলো চিরতরে মুছে ফেলা */
-            .stu-table th:last-child,
-            .stu-table td:last-child {
-                display: none !important;
-            }
-
-            /* টুলবারের লাল ডিলিট বাটন স্টাইল */
-            .btn-tool-danger {
-                border-color: #fca5a5 !important;
-                color: #dc2626 !important;
-                font-weight: 700 !important;
-            }
-            .btn-tool-danger:hover {
-                background-color: #fef2f2 !important;
-                border-color: #ef4444 !important;
-            }
-
-            /* টেবিল হেডার */
-            .stu-table th {
-                background: #f8fafc !important;
-                color: #64748b !important;
-                font-size: 0.76rem !important;
-                font-weight: 800 !important;
-                letter-spacing: 0.5px !important;
-                padding: 13px 18px !important;
-                border-bottom: 2px solid #e2e8f0 !important;
-                user-select: none;
-            }
-
-            /* রো হোভার */
-            .stu-table tbody tr {
-                cursor: pointer !important;
-                transition: background-color 0.15s ease;
-            }
-            .stu-table tbody tr:hover {
-                background-color: #f1f5f9 !important;
-            }
-
-            /* ক্লিক করলে উজ্জ্বল নীল সিলেকশন (৩ নম্বর ছবির মতো) */
-            .stu-table tbody tr.erp-row-selected {
-                background-color: #3b82f6 !important;
-                color: #ffffff !important;
-            }
-            .stu-table tbody tr.erp-row-selected td {
-                color: #ffffff !important;
-            }
-            .stu-table tbody tr.erp-row-selected td strong,
-            .stu-table tbody tr.erp-row-selected td span {
-                color: #ffffff !important;
-            }
-
-            /* সিলেকশন কাউন্টার ব্যাজ ("1 row selected") */
-            .erp-selection-counter-badge {
-                display: none;
-                margin-left: 12px;
-                background: #eff6ff;
-                color: #2563eb;
-                border: 1px solid #bfdbfe;
-                padding: 3px 12px;
-                border-radius: 20px;
-                font-size: 0.8rem;
-                font-weight: 700;
-                animation: fadeInBadge 0.2s ease-out;
-            }
-            @keyframes fadeInBadge {
-                from { opacity: 0; transform: scale(0.9); }
-                to { opacity: 1; transform: scale(1); }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    // ৩. সিলেকশন কাউন্টার ("1 row selected")
-    function ensureSelectionCounterExists() {
-        const tableHeaderLeft = document.querySelector('.stu-table-header div:first-child');
-        if (!tableHeaderLeft || document.getElementById('erpSelectionCounterDisplay')) return;
-
-        const badge = document.createElement('span');
-        badge.id = 'erpSelectionCounterDisplay';
-        badge.className = 'erp-selection-counter-badge';
-        tableHeaderLeft.appendChild(badge);
-    }
-
-    function updateSelectionCounterUI() {
-        const badge = document.getElementById('erpSelectionCounterDisplay');
-        const count = selectedStudentRecords.size;
-
-        if (badge) {
-            if (count > 0) {
-                badge.innerText = `${count} ${count === 1 ? 'row' : 'rows'} selected`;
-                badge.style.display = 'inline-block';
-            } else {
-                badge.style.display = 'none';
-            }
-        }
-    }
-
-    // ৪. রো ক্লিক সিলেকশন ইঞ্জিন
-    function bindTableRowClickEvents() {
-        document.addEventListener('click', (e) => {
-            const tr = e.target.closest('.stu-table tbody tr');
-            if (!tr) return;
-
-            if (e.target.closest('button') || e.target.closest('input')) return;
-
-            const deleteBtn = tr.querySelector('button[onclick*="DeleteStudent"]');
-            let studentUniqueId = '';
-
-            if (deleteBtn) {
-                const match = deleteBtn.getAttribute('onclick').match(/'([^']+)'/);
-                if (match) studentUniqueId = match[1];
-            }
-
-            const stdIdCell = tr.children[1];
-            const stdIdText = stdIdCell ? stdIdCell.innerText.trim() : '';
-            const key = studentUniqueId || stdIdText;
-
-            if (!key) return;
-
-            // টগল সিলেকশন (ক্লিক করলে নীল হবে, আবার দিলে স্বাভাবিক হবে)
-            if (selectedStudentRecords.has(key)) {
-                selectedStudentRecords.delete(key);
-                tr.classList.remove('erp-row-selected');
-            } else {
-                selectedStudentRecords.set(key, {
-                    cloudKey: studentUniqueId,
-                    stdId: stdIdText,
-                    name: tr.children[2] ? tr.children[2].innerText.trim() : 'Student'
-                });
-                tr.classList.add('erp-row-selected');
-            }
-
-            updateSelectionCounterUI();
-        });
-    }
-
-    // ৫. টুলবারের Delete বাটনে ক্লিক করলে অ্যাকশন
-    function bindToolbarDeleteAction() {
-        document.addEventListener('click', (e) => {
-            const btn = e.target.closest('.btn-tool');
-            if (!btn) return;
-            const text = btn.innerText.trim();
-
-            if (text.includes('Delete') || btn.querySelector('.fa-trash-can')) {
-                e.preventDefault();
-                executeSelectedStudentDeletion();
-            }
-        });
-    }
-
-    // ৬. ক্লাউড ফায়ারবেস থেকে পার্মানেন্ট ডিলিট ইঞ্জিন
-    async function executeSelectedStudentDeletion() {
-        const count = selectedStudentRecords.size;
-
-        if (count === 0) {
-            if (typeof window.showToast === 'function') {
-                window.showToast("Please click and select a student from the table first!", "warning");
-            } else {
-                alert("Please click and select a student from the table first!");
-            }
-            return;
-        }
-
-        const confirmText = count === 1
-            ? "Are you sure you want to PERMANENTLY delete this selected student from Cloud?"
-            : `Are you sure you want to PERMANENTLY delete ${count} selected students from Cloud?`;
-
-        if (!confirm(confirmText)) return;
-
-        try {
-            for (let [key, student] of selectedStudentRecords) {
-                const targetKey = student.cloudKey || key;
-                if (typeof window.writeToFirebase === 'function') {
-                    await window.writeToFirebase(`cpscl_students/${targetKey}`, null);
-                }
-            }
-
-            let localCache = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
-            localCache = localCache.filter(s => {
-                const isMatched = selectedStudentRecords.has(s.id) || selectedStudentRecords.has(String(s.std_id).trim());
-                return !isMatched;
-            });
-            localStorage.setItem('cpscl_students_cache', JSON.stringify(localCache));
-
-            if (typeof window.showToast === 'function') {
-                window.showToast(`Deleted ${count} student(s) permanently!`, "info");
-            }
-
-            selectedStudentRecords.clear();
-            updateSelectionCounterUI();
-
-            if (typeof window.fetchAndRenderRealCPSCLStudents === 'function') {
-                window.fetchAndRenderRealCPSCLStudents();
-            }
-        } catch (err) {
-            alert("Error deleting student: " + err.message);
-        }
+        } catch (e) {}
     }
 
     function init() {
         lockToolbarDeleteButtonPermanently();
         injectTableCustomStyles();
-        ensureSelectionCounterExists();
+        ensureSelectionTextExists();
         bindTableRowClickEvents();
         bindToolbarDeleteAction();
 
-        // স্ক্রিন রেন্ডার যাতে বাটনটি ৩ নম্বর ট্যাবে ও টুলবারে সাথে সাথে বসে যায়
-        if (typeof window.renderDynamicStudentScreen === 'function') {
-            window.renderDynamicStudentScreen();
-        }
-
-        setInterval(ensureSelectionCounterExists, 600);
+        setInterval(ensureSelectionTextExists, 600);
     }
 
     if (document.readyState === 'loading') {
