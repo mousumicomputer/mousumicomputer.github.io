@@ -2,11 +2,11 @@
    MODULE: CPSCL
    SUB-SECTION: Exam & Dynamic Student Group Management Suite
    Path: cpscl/exam_manager.js
-   Integration: 100% Native Sidebar Injection under CPSCL
+   Architecture: 100% Real Firebase (cpscl_students) Connected & Real Pagination
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Exam & Group Manager Suite (cpscl/exam_manager.js)...");
+    console.log("Loading CPSCL Real-Data Exam & Group Suite (cpscl/exam_manager.js)...");
 
     // ১. এক্সাম ও গ্রুপ ম্যানেজারের পূর্ণাঙ্গ স্টাইল ইনজেকশন
     function injectExamStyles() {
@@ -66,8 +66,8 @@
 
             /* টেবিল স্টাইল */
             .em-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            .em-table th { text-align: left; padding: 10px 12px; background: #f8fafc; color: #64748b; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; border-bottom: 1.5px solid #cbd5e1; }
-            .em-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 0.88rem; font-weight: 600; color: #1e293b; }
+            .em-table th { text-align: left; padding: 12px 14px; background: #f8fafc; color: #64748b; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; border-bottom: 1.5px solid #cbd5e1; }
+            .em-table td { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; font-size: 0.88rem; font-weight: 600; color: #1e293b; }
 
             .em-mark-inp { width: 85px; height: 36px; border: 1.5px solid #cbd5e1; border-radius: 50px; text-align: center; font-weight: 700; font-size: 0.95rem; outline: none; }
             .em-mark-inp:focus { border-color: #2563eb; }
@@ -175,7 +175,7 @@
     let examRegistry = [];
     let currentActiveSubjectsList = [];
     let selectedSubjectsMap = {};
-    let manualGroupOverrides = {}; // { examId: { studentId: 'Group B' } }
+    let manualGroupOverrides = {};
 
     function getDynamicClassOptions() {
         if (typeof window.getCPSCLMasterConfig === 'function') {
@@ -202,7 +202,8 @@
         }
 
         const classList = getDynamicClassOptions();
-        const defaultClass = classList.includes("Class 8") ? "Class 8" : classList[0];
+        const defaultClass = classList.includes("Eight Scholarship Batch-2026") ? "Eight Scholarship Batch-2026" : 
+                            (classList.includes("Class 8") ? "Class 8" : classList[0]);
 
         let classOptsHtml = '<option value="">-- Choose Class --</option>';
         classList.forEach(c => {
@@ -211,13 +212,11 @@
 
         panel.innerHTML = `
             <div class="em-wrapper">
-                <!-- Top Header -->
                 <div class="em-header">
                     <h1><i class="fa-solid fa-graduation-cap"></i> CPSCL Academic ERP - Exam & Group Management</h1>
                     <div class="em-badge"><i class="fa-solid fa-user-shield"></i> Administrator Portal</div>
                 </div>
 
-                <!-- মূল ২টি ট্যাব -->
                 <div class="em-nav-tabs">
                     <button class="em-tab-btn active" id="emTabBtn1" onclick="switchEMMainTab('createExam')">
                         <i class="fa-solid fa-file-pen"></i> 1. Exam & Dynamic Group Setup
@@ -348,7 +347,7 @@
                         <div class="em-card-title">
                             <span><i class="fa-solid fa-shuffle"></i> Student Group Allocation & Manual Transfer Override</span>
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <select id="emTransferExamSelect" class="em-control" style="width: 260px; height: 38px; font-size: 0.85rem;" onchange="loadEMStudentGroupAllocation()">
+                                <select id="emTransferExamSelect" class="em-control" style="width: 280px; height: 38px; font-size: 0.85rem;" onchange="loadEMStudentGroupAllocation()">
                                     <!-- Populated dynamically -->
                                 </select>
                             </div>
@@ -369,7 +368,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="emStudentAllocationTbody">
-                                    <!-- Populated dynamically -->
+                                    <!-- Populated dynamically with REAL STUDENTS -->
                                 </tbody>
                             </table>
                         </div>
@@ -414,7 +413,7 @@
         }
     };
 
-    // ৬. গ্রুপ রুলস ইনিশিয়ালাইজ ও যোগ করা
+    // ৬. গ্রুপ রুলস হ্যান্ডলার
     function initDefaultEMGroupRules() {
         const container = document.getElementById('emGroupRulesContainer');
         if (!container) return;
@@ -477,7 +476,7 @@
         } else if (defaultMasterSubjects[className]) {
             currentActiveSubjectsList = [...defaultMasterSubjects[className]];
         } else {
-            currentActiveSubjectsList = ["Bangla", "English", "Mathematics", "Science"];
+            currentActiveSubjectsList = ["Bangla", "English", "Mathematics", "Science", "BGS"];
         }
         selectedSubjectsMap = {};
         renderEMPills();
@@ -623,7 +622,7 @@
         document.getElementById('emSummaryTotal').innerText = sum;
     };
 
-    // ৯. ফর্ম সাবমিট ও ফায়ারবেস সেভ
+    // ৯. ফর্ম সাবমিট ও ক্লাউড সেভ
     window.handleEMSubmit = async function(e) {
         e.preventDefault();
         const editId = document.getElementById('emEditingId').value;
@@ -637,7 +636,6 @@
             return;
         }
 
-        // গ্রুপ রুলস রিড করা
         let groupsArr = [];
         document.querySelectorAll('.em-group-row').forEach(row => {
             const gName = row.querySelector('.g-name').value.trim() || "Group";
@@ -685,8 +683,8 @@
     async function saveExamsToCloud() {
         if (typeof window.writeToFirebase === 'function') {
             try {
-                await window.writeToFirebase('cpscl/exams', examRegistry);
-                await window.writeToFirebase('cpscl/exam_group_overrides', manualGroupOverrides);
+                await window.writeToFirebase('cpscl_exams', examRegistry);
+                await window.writeToFirebase('cpscl_exam_group_overrides', manualGroupOverrides);
             } catch (err) {
                 console.error("Firebase Save Error:", err);
             }
@@ -710,7 +708,7 @@
         if (typeof window.getDatabase === 'function' && typeof window.ref === 'function' && typeof window.get === 'function') {
             try {
                 const db = window.getDatabase();
-                const snap = await window.get(window.ref(db, 'cpscl/exams'));
+                const snap = await window.get(window.ref(db, 'cpscl_exams'));
                 if (snap.exists()) {
                     const data = snap.val();
                     examRegistry = Array.isArray(data) ? data : Object.values(data);
@@ -718,7 +716,7 @@
                     renderEMRegistry();
                     populateEMExamDropdown();
                 }
-                const snapOv = await window.get(window.ref(db, 'cpscl/exam_group_overrides'));
+                const snapOv = await window.get(window.ref(db, 'cpscl_exam_group_overrides'));
                 if (snapOv.exists()) {
                     manualGroupOverrides = snapOv.val() || {};
                     localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(manualGroupOverrides));
@@ -764,7 +762,7 @@
         });
     }
 
-    // ১০. TAB 2: স্টুডেন্ট গ্রুপ এলোকেশন ও ম্যানুয়াল ট্রান্সফার
+    // ১০. TAB 2: ১০০% আসল শিক্ষার্থী (cpscl_students) লোড ও গ্রুপ বণ্টন
     function populateEMExamDropdown() {
         const select = document.getElementById('emTransferExamSelect');
         if (!select) return;
@@ -782,7 +780,7 @@
         const tbody = document.getElementById('emStudentAllocationTbody');
         const select = document.getElementById('emTransferExamSelect');
         if (!tbody || !select) return;
-        tbody.innerHTML = '';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:25px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin"></i> Loading students from database...</td></tr>';
 
         const examId = select.value;
         const exam = examRegistry.find(x => x.id === examId);
@@ -796,26 +794,42 @@
             { name: "Group B", from: 41, to: "Rest" }
         ];
 
-        // সিস্টেম থেকে রিয়েল স্টুডেন্ট আনা অথবা ডাইনামিক রোল জেনারেট
-        let studentList = await getStudentsForClass(exam.class);
+        // ফায়ারবেস (cpscl_students) ও ক্যাশ থেকে সরাসরি আসল শিক্ষার্থী আনা
+        let studentList = await getRealStudentsForClass(exam.class);
+
+        if (studentList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#dc2626; padding:30px; font-weight:700;">No students found in database for class: "${exam.class}". Please ensure students are registered under this class.</td></tr>`;
+            return;
+        }
+
+        // রোল নম্বর অনুযায়ী ক্রমানুসারে সাজানো (১, ২, ৩, ৪...)
+        studentList.sort((a, b) => {
+            const rA = parseInt(a.roll_no || a.roll) || 999999;
+            const rB = parseInt(b.roll_no || b.roll) || 999999;
+            return rA - rB;
+        });
+
+        tbody.innerHTML = '';
 
         studentList.forEach(st => {
-            // ইনিশিয়াল গ্রুপ ক্যালকুলেট
-            let assignedGroup = groupsList[0].name;
-            const rollNum = parseInt(st.roll) || 1;
+            const studentId = String(st.std_id || st.id).trim();
+            const studentRoll = st.roll_no || st.roll || '-';
+            const rollNum = parseInt(studentRoll) || 1;
 
+            // রোল অনুযায়ী ইনিশিয়াল গ্রুপ নির্ণয়
+            let assignedGroup = groupsList[0].name;
             for (let g of groupsList) {
                 const fromNum = parseInt(g.from) || 1;
-                const toNum = (g.to && g.to.toLowerCase() === 'rest') ? 999999 : (parseInt(g.to) || 999999);
+                const toNum = (g.to && String(g.to).toLowerCase() === 'rest') ? 999999 : (parseInt(g.to) || 999999);
                 if (rollNum >= fromNum && rollNum <= toNum) {
                     assignedGroup = g.name;
                     break;
                 }
             }
 
-            // ম্যানুয়াল ওভাররাইড চেক
-            if (manualGroupOverrides[exam.id] && manualGroupOverrides[exam.id][st.id]) {
-                assignedGroup = manualGroupOverrides[exam.id][st.id];
+            // ম্যানুয়াল ওভাররাইড চেক (যদি এডমিন ট্রান্সফার করে থাকেন)
+            if (manualGroupOverrides[exam.id] && manualGroupOverrides[exam.id][studentId]) {
+                assignedGroup = manualGroupOverrides[exam.id][studentId];
             }
 
             let optionsHtml = '';
@@ -825,12 +839,12 @@
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong>Roll #${st.roll}</strong></td>
-                <td>${st.name}</td>
-                <td>${st.class}</td>
+                <td><strong>Roll #${studentRoll}</strong> <span style="font-size:0.75rem; color:#64748b; margin-left:4px;">(ID: ${studentId})</span></td>
+                <td style="color:#2563eb; font-weight:700;">${st.student_name || st.name}</td>
+                <td>${st.class_name || st.class || exam.class}</td>
                 <td><span style="background:#eff6ff; color:#2563eb; padding:4px 12px; border-radius:50px; font-size:0.8rem; font-weight:700;">${assignedGroup}</span></td>
                 <td style="text-align: right;">
-                    <select class="em-control" style="width: 140px; height: 36px; display: inline-block; font-size: 0.85rem;" onchange="manualTransferStudent('${exam.id}', '${st.id}', '${st.name}', this.value)">
+                    <select class="em-control" style="width: 140px; height: 36px; display: inline-block; font-size: 0.85rem;" onchange="manualTransferStudent('${exam.id}', '${studentId}', '${(st.student_name || st.name).replace(/'/g, "\\'")}', this.value)">
                         ${optionsHtml}
                     </select>
                 </td>
@@ -839,38 +853,45 @@
         });
     };
 
-    // স্টুডেন্ট ফেচ হেল্পার
-    async function getStudentsForClass(targetClass) {
-        // ১. ফায়ারবেস বা গ্লোবাল ডাটাবেজ চেক
-        let students = [];
-        if (typeof window.getDatabase === 'function' && typeof window.ref === 'function' && typeof window.get === 'function') {
+    // আসল শিক্ষার্থী রিডার (cpscl_students এবং cpscl_students_cache)
+    async function getRealStudentsForClass(targetClass) {
+        let allStudents = [];
+
+        // ১. ফায়ারবেস ক্লাউড থেকে cpscl_students চেক
+        if (window.getDatabase && window.ref && window.get) {
             try {
                 const db = window.getDatabase();
-                const snap = await window.get(window.ref(db, 'cpscl/students'));
+                const stuRef = window.ref(db, 'cpscl_students');
+                const snap = await window.get(stuRef);
                 if (snap.exists()) {
-                    const raw = snap.val();
-                    const allStudents = Array.isArray(raw) ? raw : Object.values(raw);
-                    students = allStudents.filter(s => s.class === targetClass || s.class_name === targetClass);
+                    const data = snap.val();
+                    allStudents = Array.isArray(data) ? data : Object.values(data);
+                    localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents));
                 }
+            } catch(e) {
+                console.warn("Cloud student sync fallback:", e);
+            }
+        }
+
+        // ২. লোকাল ক্যাশ চেক (যদি ক্লাউড কানেকশন দেরি করে)
+        if (allStudents.length === 0) {
+            try {
+                const local = localStorage.getItem('cpscl_students_cache');
+                if (local) allStudents = JSON.parse(local);
             } catch(e) {}
         }
 
-        // ২. যদি ডাটাবেজে স্টুডেন্ট না থাকে, রোল অনুযায়ী জেনারেট করে দেখাবে
-        if (students.length === 0) {
-            students = [
-                { id: "S1", roll: 1, name: "Tanvir Ahmed", class: targetClass },
-                { id: "S2", roll: 2, name: "Sadia Sultana", class: targetClass },
-                { id: "S3", roll: 3, name: "Rahim Uddin", class: targetClass },
-                { id: "S4", roll: 15, name: "Mahmud Hasan", class: targetClass },
-                { id: "S5", roll: 41, name: "Nusrat Jahan", class: targetClass },
-                { id: "S6", roll: 42, name: "Fahim Faisal", class: targetClass },
-                { id: "S7", roll: 43, name: "Sumaiya Akter", class: targetClass },
-                { id: "S8", roll: 55, name: "Tariqul Islam", class: targetClass }
-            ];
-        }
-        return students;
+        // ৩. ক্লাস অনুযায়ী ফিল্টার (কেস-ইনসেনসিটিভ ও ট্রিম করা)
+        const targetClean = String(targetClass).trim().toLowerCase();
+        let matched = allStudents.filter(s => {
+            const cName = String(s.class_name || s.class || '').trim().toLowerCase();
+            return cName === targetClean || cName.includes(targetClean) || targetClean.includes(cName);
+        });
+
+        return matched;
     }
 
+    // ম্যানুয়াল ট্রান্সফার হ্যান্ডলার
     window.manualTransferStudent = async function(examId, studentId, studentName, newGroup) {
         if (!manualGroupOverrides[examId]) manualGroupOverrides[examId] = {};
         manualGroupOverrides[examId][studentId] = newGroup;
@@ -902,7 +923,6 @@
             if (!currentActiveSubjectsList.includes(sub)) currentActiveSubjectsList.push(sub);
         });
 
-        // গ্রুপ রুলস লোড
         const container = document.getElementById('emGroupRulesContainer');
         container.innerHTML = '';
         if (exam.groups && exam.groups.length > 0) {
