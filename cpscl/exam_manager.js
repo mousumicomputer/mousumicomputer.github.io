@@ -1,14 +1,14 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Exam & Dynamic Student Group Management Suite
+   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v2.1)
    Path: cpscl/exam_manager.js
-   Architecture: 100% Real Firebase (cpscl_students) Connected & Real Pagination
+   Features: Real Pagination | SL Counter | Auto-Group Range | Live Search
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Real-Data Exam & Group Suite (cpscl/exam_manager.js)...");
+    console.log("Loading CPSCL Exam & Group Suite v2.1 (cpscl/exam_manager.js)...");
 
-    // ১. এক্সাম ও গ্রুপ ম্যানেজারের পূর্ণাঙ্গ স্টাইল ইনজেকশন
+    // ১. এক্সাম ও পেজিনেশন স্টাইল ইনজেকশন
     function injectExamStyles() {
         if (document.getElementById('cpscl-exam-manager-style')) return;
         const style = document.createElement('style');
@@ -41,17 +41,17 @@
             @media (max-width: 1024px) { .em-grid { grid-template-columns: 1fr !important; } }
 
             .em-card { background: #ffffff; border-radius: 16px; border: 1px solid #cbd5e1; padding: 22px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
-            .em-card-title { font-size: 1.05rem; font-weight: 700; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; }
+            .em-card-title { font-size: 1.05rem; font-weight: 700; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
             .em-card-title span { display: flex; align-items: center; gap: 8px; }
             .em-card-title i { color: #2563eb; }
 
             .em-form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
             .em-form-group label { font-size: 0.85rem; font-weight: 700; color: #0f172a; }
-            .em-control { width: 100%; height: 44px; border: 1.5px solid #cbd5e1; border-radius: 50px; padding: 0 18px; font-size: 0.9rem; outline: none; background: #ffffff; color: #0f172a; transition: 0.2s; }
+            .em-control { width: 100%; height: 42px; border: 1.5px solid #cbd5e1; border-radius: 50px; padding: 0 18px; font-size: 0.9rem; outline: none; background: #ffffff; color: #0f172a; transition: 0.2s; }
             .em-control:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
             select.em-control { cursor: pointer; }
 
-            /* সাবজেক্ট পিলস */
+            /* পিলস */
             .em-pills-box { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; margin-bottom: 12px; }
             .em-pill { display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; color: #2563eb; border: 1.5px solid #bfdbfe; padding: 7px 15px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; user-select: none; }
             .em-pill:hover { background: #dbeafe; border-color: #2563eb; transform: translateY(-1px); }
@@ -64,9 +64,9 @@
             .em-btn-add { background: #f8fafc; border: 1.5px dashed #cbd5e1; color: #2563eb; padding: 0 18px; border-radius: 50px; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap; transition: 0.2s; }
             .em-btn-add:hover { background: #eff6ff; border-color: #2563eb; }
 
-            /* টেবিল স্টাইল */
+            /* টেবিল */
             .em-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            .em-table th { text-align: left; padding: 12px 14px; background: #f8fafc; color: #64748b; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; border-bottom: 1.5px solid #cbd5e1; }
+            .em-table th { text-align: left; padding: 12px 14px; background: #f8fafc; color: #64748b; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; border-bottom: 1.5px solid #cbd5e1; user-select: none; }
             .em-table td { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; font-size: 0.88rem; font-weight: 600; color: #1e293b; }
 
             .em-mark-inp { width: 85px; height: 36px; border: 1.5px solid #cbd5e1; border-radius: 50px; text-align: center; font-weight: 700; font-size: 0.95rem; outline: none; }
@@ -87,6 +87,20 @@
             .em-group-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; background: #f8fafc; padding: 8px 14px; border-radius: 50px; border: 1.5px solid #cbd5e1; }
             .em-group-row input { height: 34px; border-radius: 50px; border: 1px solid #cbd5e1; padding: 0 14px; font-size: 0.85rem; font-weight: 700; outline: none; background: #ffffff; }
 
+            /* ফিল্টার ও পেজিনেশন বার */
+            .em-filter-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+            .em-group-pills-filter { display: flex; gap: 6px; flex-wrap: wrap; }
+            .em-filter-btn { padding: 6px 14px; border-radius: 50px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #475569; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
+            .em-filter-btn:hover { background: #f1f5f9; }
+            .em-filter-btn.active { background: #2563eb; color: #ffffff; border-color: #2563eb; box-shadow: 0 2px 8px rgba(37,99,235,0.2); }
+
+            /* পেজিনেশন ফুটার */
+            .em-pagination-footer { display: flex; justify-content: space-between; align-items: center; padding: 16px 8px; border-top: 1.5px solid #eef2f5; flex-wrap: wrap; gap: 12px; margin-top: 15px; }
+            .em-page-btn { min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0 8px; border: 1px solid #e2e8f0; background: #ffffff; color: #475569; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+            .em-page-btn:hover:not(.disabled):not(.active) { background: #f1f5f9; border-color: #cbd5e1; }
+            .em-page-btn.active { background: #2563eb; border-color: #2563eb; color: #ffffff; font-weight: 700; }
+            .em-page-btn.disabled { opacity: 0.35; cursor: not-allowed; }
+
             /* মোডাল */
             .em-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 999999; }
             .em-modal-card { background: #ffffff; border: 2px solid #cbd5e1; padding: 25px; border-radius: 25px; width: 100%; max-width: 420px; box-shadow: 0 20px 35px rgba(0,0,0,0.2); text-align: center; }
@@ -100,7 +114,7 @@
         document.head.appendChild(style);
     }
 
-    // ২. সাইডবারে CPSCL সেকশনে Student Registration এর নিচে ইনজেকশন
+    // ২. সাইডবার ইনজেকশন
     function injectExamManagerSidebar() {
         const studentRegModule = document.getElementById('trust-cpscl-module-root');
         if (!studentRegModule) {
@@ -156,7 +170,7 @@
         }
     };
 
-    // ৩. ডাটা স্টোর
+    // ৩. ডাটা স্টোর ও পেজিনেশন ভেরিয়েবল
     const defaultMasterSubjects = {
         "Class 1": ["Bangla", "English", "Mathematics"],
         "Class 2": ["Bangla", "English", "Mathematics"],
@@ -176,6 +190,13 @@
     let currentActiveSubjectsList = [];
     let selectedSubjectsMap = {};
     let manualGroupOverrides = {};
+
+    // Tab 2 স্টেট ভেরিয়েবল
+    let allocatedStudentsCache = [];
+    let emStudentSearchQuery = '';
+    let emSelectedGroupFilter = 'all';
+    let emStudentCurrentPage = 1;
+    let emStudentPageSize = 25;
 
     function getDynamicClassOptions() {
         if (typeof window.getCPSCLMasterConfig === 'function') {
@@ -303,7 +324,7 @@
                                             <label style="margin: 0;"><i class="fa-solid fa-layer-group" style="color: #2563eb;"></i> 5. Initial Serial-based Grouping Rules</label>
                                             <button type="button" class="em-btn-add" onclick="addEMGroupRuleRow()"><i class="fa-solid fa-plus"></i> Add Group</button>
                                         </div>
-                                        <span style="font-size: 0.75rem; color: #64748b; margin-bottom: 12px;">Define how student serials/rolls are initially distributed into groups:</span>
+                                        <span style="font-size: 0.75rem; color: #64748b; margin-bottom: 12px;">Define how student serials are distributed: (e.g. 1 to 40 = Group A, 41 to Rest = Group B)</span>
                                         
                                         <div id="emGroupRulesContainer"></div>
                                     </div>
@@ -352,25 +373,51 @@
                                 </select>
                             </div>
                         </div>
-                        <span style="font-size: 0.85rem; color: #64748b; display: block; margin-bottom: 16px;">
-                            Students are initially distributed based on roll/serial sequence. Authority/Super Admin can manually transfer any student from one group to another using the action column below.
-                        </span>
 
+                        <!-- ফিল্টার টুলবার: সার্চ ও গ্রুপ বাটনসমূহ -->
+                        <div class="em-filter-toolbar">
+                            <div style="display: flex; gap: 10px; align-items: center; flex: 1; max-width: 420px;">
+                                <i class="fa-solid fa-magnifying-glass" style="color: #64748b;"></i>
+                                <input type="text" id="emStudentSearchInp" class="em-control" style="height: 38px;" placeholder="Search student by Name, ID, or SL..." oninput="onEMStudentSearch(this.value)">
+                            </div>
+                            <div class="em-group-pills-filter" id="emGroupFilterPills">
+                                <!-- Dynamic Filter Buttons -->
+                            </div>
+                        </div>
+
+                        <!-- স্টুডেন্ট টেবিল -->
                         <div style="overflow-x: auto;">
                             <table class="em-table">
                                 <thead>
                                     <tr>
-                                        <th>Roll / Serial</th>
+                                        <th style="width: 70px;">SL #</th>
+                                        <th style="width: 130px;">Student ID</th>
                                         <th>Student Name</th>
                                         <th>Class</th>
                                         <th>Assigned Group</th>
-                                        <th style="text-align: right;">Manual Transfer Action</th>
+                                        <th style="text-align: right; width: 170px;">Manual Transfer</th>
                                     </tr>
                                 </thead>
                                 <tbody id="emStudentAllocationTbody">
-                                    <!-- Populated dynamically with REAL STUDENTS -->
+                                    <!-- Dynamic rows -->
                                 </tbody>
                             </table>
+                        </div>
+
+                        <!-- পেজিনেশন ও ফুটার -->
+                        <div class="em-pagination-footer">
+                            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #64748b;">
+                                <span>Show</span>
+                                <select class="em-control" style="width: 75px; height: 32px; padding: 0 10px; border-radius: 6px;" onchange="changeEMPageSize(this.value)">
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span>entries</span>
+                                <span id="emPaginationCounterText" style="margin-left: 10px; font-weight: 600;"></span>
+                            </div>
+                            <div id="emPaginationBtnsContainer" style="display: flex; gap: 4px;"></div>
                         </div>
                     </div>
                 </div>
@@ -395,7 +442,7 @@
         syncFromFirebase();
     }
 
-    // ৫. ট্যাব পরিবর্তন ফাংশন
+    // ৫. ট্যাব পরিবর্তন
     window.switchEMMainTab = function(tabKey) {
         document.getElementById('emTabBtn1').classList.remove('active');
         document.getElementById('emTabBtn2').classList.remove('active');
@@ -433,15 +480,15 @@
         row.className = 'em-group-row';
         row.innerHTML = `
             <input type="text" class="g-name" value="${name}" placeholder="Group Name" style="width: 35%;">
-            <input type="text" class="g-from" value="${fromVal}" placeholder="From Roll" style="width: 25%; text-align: center;">
+            <input type="text" class="g-from" value="${fromVal}" placeholder="From Serial" style="width: 25%; text-align: center;">
             <span style="font-size:0.8rem; font-weight:700; color:#64748b;">to</span>
-            <input type="text" class="g-to" value="${toVal}" placeholder="To Roll / Rest" style="width: 25%; text-align: center;">
+            <input type="text" class="g-to" value="${toVal}" placeholder="To Serial / Rest" style="width: 25%; text-align: center;">
             <button type="button" class="em-btn-icon delete" style="width: 30px; height: 30px; margin-left: auto;" onclick="this.closest('.em-group-row').remove()" title="Remove"><i class="fa-solid fa-trash"></i></button>
         `;
         container.appendChild(row);
     }
 
-    // ৭. স্প্লিট ও ফুল ভিউ নিয়ন্ত্রণ
+    // ৭. ভিউ মোড
     window.setEMWorkspaceView = function(mode) {
         const grid = document.getElementById('emMainGrid');
         const formCol = document.getElementById('emFormCol');
@@ -469,7 +516,7 @@
         }
     };
 
-    // ৮. ক্লাস ও সাবজেক্ট পিল হ্যান্ডলিং
+    // ৮. ক্লাস পরিবর্তন ও সাবজেক্ট পিলস
     window.onEMClassChange = function(className) {
         if (!className) {
             currentActiveSubjectsList = [];
@@ -622,7 +669,7 @@
         document.getElementById('emSummaryTotal').innerText = sum;
     };
 
-    // ৯. ফর্ম সাবমিট ও ক্লাউড সেভ
+    // ৯. ফর্ম সাবমিট
     window.handleEMSubmit = async function(e) {
         e.preventDefault();
         const editId = document.getElementById('emEditingId').value;
@@ -762,7 +809,7 @@
         });
     }
 
-    // ১০. TAB 2: ১০০% আসল শিক্ষার্থী (cpscl_students) লোড ও গ্রুপ বণ্টন
+    // ১০. TAB 2: ১০০% আসল শিক্ষার্থী, ক্রমিক নম্বর, ফিল্টার, সার্চ ও পেজিনেশন
     function populateEMExamDropdown() {
         const select = document.getElementById('emTransferExamSelect');
         if (!select) return;
@@ -777,81 +824,214 @@
     }
 
     window.loadEMStudentGroupAllocation = async function() {
-        const tbody = document.getElementById('emStudentAllocationTbody');
         const select = document.getElementById('emTransferExamSelect');
-        if (!tbody || !select) return;
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:25px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin"></i> Loading students from database...</td></tr>';
+        if (!select) return;
 
         const examId = select.value;
         const exam = examRegistry.find(x => x.id === examId);
-        if (!exam) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#64748b; padding:20px;">Please create and select an assessment first.</td></tr>`;
-            return;
-        }
+        if (!exam) return;
 
         const groupsList = (exam.groups && exam.groups.length > 0) ? exam.groups : [
             { name: "Group A", from: 1, to: 40 },
             { name: "Group B", from: 41, to: "Rest" }
         ];
 
-        // ফায়ারবেস (cpscl_students) ও ক্যাশ থেকে সরাসরি আসল শিক্ষার্থী আনা
-        let studentList = await getRealStudentsForClass(exam.class);
+        // ১. ফায়ারবেস বা ক্যাশ থেকে আসল শিক্ষার্থী লোড
+        let rawStudents = await getRealStudentsForClass(exam.class);
 
-        if (studentList.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#dc2626; padding:30px; font-weight:700;">No students found in database for class: "${exam.class}". Please ensure students are registered under this class.</td></tr>`;
-            return;
-        }
-
-        // রোল নম্বর অনুযায়ী ক্রমানুসারে সাজানো (১, ২, ৩, ৪...)
-        studentList.sort((a, b) => {
-            const rA = parseInt(a.roll_no || a.roll) || 999999;
-            const rB = parseInt(b.roll_no || b.roll) || 999999;
-            return rA - rB;
+        // ২. ক্রমানুসারে সাজানো ও নিশ্চিত ক্রমিক (SL) তৈরি করা
+        rawStudents.sort((a, b) => {
+            const rA = parseInt(a.roll_no || a.roll) || 0;
+            const rB = parseInt(b.roll_no || b.roll) || 0;
+            if (rA && rB) return rA - rB;
+            return String(a.std_id || a.id).localeCompare(String(b.std_id || b.id));
         });
 
-        tbody.innerHTML = '';
+        // ৩. প্রতিটি শিক্ষার্থীর জন্য সিরিয়াল ও গ্রুপ নির্ধারণ
+        allocatedStudentsCache = rawStudents.map((st, idx) => {
+            const slNumber = idx + 1;
+            const studentId = String(st.std_id || st.id || '').trim();
+            const studentRoll = st.roll_no || st.roll || '';
 
-        studentList.forEach(st => {
-            const studentId = String(st.std_id || st.id).trim();
-            const studentRoll = st.roll_no || st.roll || '-';
-            const rollNum = parseInt(studentRoll) || 1;
+            // ক্রমিক নম্বর বা রোল অনুযায়ী ইনিশিয়াল গ্রুপ ক্যালকুলেট
+            const effectiveNum = (studentRoll && !isNaN(parseInt(studentRoll))) ? parseInt(studentRoll) : slNumber;
 
-            // রোল অনুযায়ী ইনিশিয়াল গ্রুপ নির্ণয়
             let assignedGroup = groupsList[0].name;
             for (let g of groupsList) {
                 const fromNum = parseInt(g.from) || 1;
                 const toNum = (g.to && String(g.to).toLowerCase() === 'rest') ? 999999 : (parseInt(g.to) || 999999);
-                if (rollNum >= fromNum && rollNum <= toNum) {
+                if (effectiveNum >= fromNum && effectiveNum <= toNum) {
                     assignedGroup = g.name;
                     break;
                 }
             }
 
-            // ম্যানুয়াল ওভাররাইড চেক (যদি এডমিন ট্রান্সফার করে থাকেন)
+            // ম্যানুয়াল ট্রান্সফার চেক
             if (manualGroupOverrides[exam.id] && manualGroupOverrides[exam.id][studentId]) {
                 assignedGroup = manualGroupOverrides[exam.id][studentId];
             }
 
+            return {
+                sl: slNumber,
+                id: studentId,
+                name: st.student_name || st.name || 'Student',
+                class: st.class_name || st.class || exam.class,
+                roll: studentRoll,
+                group: assignedGroup,
+                availableGroups: groupsList.map(g => g.name)
+            };
+        });
+
+        renderGroupFilterPills();
+        emStudentCurrentPage = 1;
+        renderEMPaginatedStudentTable();
+    };
+
+    // গ্রুপ ফিল্টার পিলস রেন্ডার
+    function renderGroupFilterPills() {
+        const container = document.getElementById('emGroupFilterPills');
+        if (!container) return;
+
+        const total = allocatedStudentsCache.length;
+        const groupCounts = {};
+        allocatedStudentsCache.forEach(s => {
+            groupCounts[s.group] = (groupCounts[s.group] || 0) + 1;
+        });
+
+        let html = `
+            <button type="button" class="em-filter-btn ${emSelectedGroupFilter === 'all' ? 'active' : ''}" onclick="setEMGroupFilter('all')">
+                All Students (${total})
+            </button>
+        `;
+
+        Object.keys(groupCounts).forEach(gName => {
+            html += `
+                <button type="button" class="em-filter-btn ${emSelectedGroupFilter === gName ? 'active' : ''}" onclick="setEMGroupFilter('${gName}')">
+                    ${gName} (${groupCounts[gName]})
+                </button>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    window.setEMGroupFilter = function(groupName) {
+        emSelectedGroupFilter = groupName;
+        emStudentCurrentPage = 1;
+        renderGroupFilterPills();
+        renderEMPaginatedStudentTable();
+    };
+
+    window.onEMStudentSearch = function(val) {
+        emStudentSearchQuery = val.trim().toLowerCase();
+        emStudentCurrentPage = 1;
+        renderEMPaginatedStudentTable();
+    };
+
+    window.changeEMPageSize = function(size) {
+        emStudentPageSize = parseInt(size) || 25;
+        emStudentCurrentPage = 1;
+        renderEMPaginatedStudentTable();
+    };
+
+    window.goToEMStudentPage = function(page) {
+        emStudentCurrentPage = page;
+        renderEMPaginatedStudentTable();
+    };
+
+    // পেজ অনুযায়ী শিক্ষার্থী টেবিল রেন্ডার
+    function renderEMPaginatedStudentTable() {
+        const tbody = document.getElementById('emStudentAllocationTbody');
+        const counterEl = document.getElementById('emPaginationCounterText');
+        const btnsContainer = document.getElementById('emPaginationBtnsContainer');
+        const select = document.getElementById('emTransferExamSelect');
+        if (!tbody || !select) return;
+
+        const examId = select.value;
+
+        // ফিল্টারিং
+        let filtered = allocatedStudentsCache.filter(s => {
+            const matchesGroup = (emSelectedGroupFilter === 'all') || (s.group === emSelectedGroupFilter);
+            if (!matchesGroup) return false;
+
+            if (!emStudentSearchQuery) return true;
+            return s.name.toLowerCase().includes(emStudentSearchQuery) ||
+                   s.id.toLowerCase().includes(emStudentSearchQuery) ||
+                   String(s.sl).includes(emStudentSearchQuery);
+        });
+
+        const totalFiltered = filtered.length;
+        const totalPages = Math.ceil(totalFiltered / emStudentPageSize) || 1;
+        if (emStudentCurrentPage > totalPages) emStudentCurrentPage = totalPages;
+        if (emStudentCurrentPage < 1) emStudentCurrentPage = 1;
+
+        tbody.innerHTML = '';
+
+        if (totalFiltered === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:35px; color:#94a3b8;">No students match the criteria.</td></tr>`;
+            if (counterEl) counterEl.innerText = `Showing 0 of 0 entries`;
+            if (btnsContainer) btnsContainer.innerHTML = '';
+            return;
+        }
+
+        const startIndex = (emStudentCurrentPage - 1) * emStudentPageSize;
+        const pageStudents = filtered.slice(startIndex, startIndex + emStudentPageSize);
+
+        pageStudents.forEach(st => {
             let optionsHtml = '';
-            groupsList.forEach(g => {
-                optionsHtml += `<option value="${g.name}" ${assignedGroup === g.name ? 'selected' : ''}>${g.name}</option>`;
+            st.availableGroups.forEach(gName => {
+                optionsHtml += `<option value="${gName}" ${st.group === gName ? 'selected' : ''}>${gName}</option>`;
             });
+
+            const rollBadge = st.roll ? `<span style="font-size:0.75rem; background:#f1f5f9; padding:2px 8px; border-radius:10px; margin-left:4px;">Roll: ${st.roll}</span>` : '';
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong>Roll #${studentRoll}</strong> <span style="font-size:0.75rem; color:#64748b; margin-left:4px;">(ID: ${studentId})</span></td>
-                <td style="color:#2563eb; font-weight:700;">${st.student_name || st.name}</td>
-                <td>${st.class_name || st.class || exam.class}</td>
-                <td><span style="background:#eff6ff; color:#2563eb; padding:4px 12px; border-radius:50px; font-size:0.8rem; font-weight:700;">${assignedGroup}</span></td>
+                <td><strong>#${st.sl}</strong></td>
+                <td><span style="font-weight:700; color:#475569;">${st.id}</span></td>
+                <td>
+                    <span style="color:#2563eb; font-weight:700;">${st.name}</span>
+                    ${rollBadge}
+                </td>
+                <td>${st.class}</td>
+                <td><span style="background:#eff6ff; color:#2563eb; padding:4px 14px; border-radius:50px; font-size:0.8rem; font-weight:700;">${st.group}</span></td>
                 <td style="text-align: right;">
-                    <select class="em-control" style="width: 140px; height: 36px; display: inline-block; font-size: 0.85rem;" onchange="manualTransferStudent('${exam.id}', '${studentId}', '${(st.student_name || st.name).replace(/'/g, "\\'")}', this.value)">
+                    <select class="em-control" style="width: 140px; height: 36px; display: inline-block; font-size: 0.85rem;" onchange="manualTransferStudent('${examId}', '${st.id}', '${st.name.replace(/'/g, "\\'")}', this.value)">
                         ${optionsHtml}
                     </select>
                 </td>
             `;
             tbody.appendChild(tr);
         });
-    };
+
+        // ফুটার আপডেট
+        const end = Math.min(startIndex + emStudentPageSize, totalFiltered);
+        if (counterEl) {
+            counterEl.innerText = `Showing ${startIndex + 1} to ${end} of ${totalFiltered} students`;
+        }
+
+        // পেজিনেশন বাটন
+        if (btnsContainer) {
+            let btnsHtml = `
+                <button type="button" class="em-page-btn ${emStudentCurrentPage === 1 ? 'disabled' : ''}" onclick="goToEMStudentPage(1)">«</button>
+                <button type="button" class="em-page-btn ${emStudentCurrentPage === 1 ? 'disabled' : ''}" onclick="goToEMStudentPage(${emStudentCurrentPage - 1})">&lt;</button>
+            `;
+
+            let startP = Math.max(1, emStudentCurrentPage - 2);
+            let endP = Math.min(totalPages, startP + 4);
+            if (endP - startP < 4) startP = Math.max(1, endP - 4);
+
+            for (let p = startP; p <= endP; p++) {
+                btnsHtml += `<button type="button" class="em-page-btn ${p === emStudentCurrentPage ? 'active' : ''}" onclick="goToEMStudentPage(${p})">${p}</button>`;
+            }
+
+            btnsHtml += `
+                <button type="button" class="em-page-btn ${emStudentCurrentPage === totalPages ? 'disabled' : ''}" onclick="goToEMStudentPage(${emStudentCurrentPage + 1})">&gt;</button>
+                <button type="button" class="em-page-btn ${emStudentCurrentPage === totalPages ? 'disabled' : ''}" onclick="goToEMStudentPage(${totalPages})">»</button>
+            `;
+            btnsContainer.innerHTML = btnsHtml;
+        }
+    }
 
     // আসল শিক্ষার্থী রিডার (cpscl_students এবং cpscl_students_cache)
     async function getRealStudentsForClass(targetClass) {
@@ -868,12 +1048,10 @@
                     allStudents = Array.isArray(data) ? data : Object.values(data);
                     localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents));
                 }
-            } catch(e) {
-                console.warn("Cloud student sync fallback:", e);
-            }
+            } catch(e) {}
         }
 
-        // ২. লোকাল ক্যাশ চেক (যদি ক্লাউড কানেকশন দেরি করে)
+        // ২. লোকাল ক্যাশ চেক
         if (allStudents.length === 0) {
             try {
                 const local = localStorage.getItem('cpscl_students_cache');
@@ -881,7 +1059,7 @@
             } catch(e) {}
         }
 
-        // ৩. ক্লাস অনুযায়ী ফিল্টার (কেস-ইনসেনসিটিভ ও ট্রিম করা)
+        // ৩. ক্লাস অনুযায়ী ফিল্টার
         const targetClean = String(targetClass).trim().toLowerCase();
         let matched = allStudents.filter(s => {
             const cName = String(s.class_name || s.class || '').trim().toLowerCase();
@@ -896,6 +1074,10 @@
         if (!manualGroupOverrides[examId]) manualGroupOverrides[examId] = {};
         manualGroupOverrides[examId][studentId] = newGroup;
 
+        // লোকাল অবজেক্টেও গ্রুপ আপডেট যাতে রি-রেন্ডার দ্রুত হয়
+        const target = allocatedStudentsCache.find(s => s.id === studentId);
+        if (target) target.group = newGroup;
+
         await saveExamsToCloud();
 
         if (typeof window.showToast === 'function') {
@@ -903,7 +1085,9 @@
         } else {
             alert(`${studentName} successfully transferred to ${newGroup}!`);
         }
-        loadEMStudentGroupAllocation();
+
+        renderGroupFilterPills();
+        renderEMPaginatedStudentTable();
     };
 
     // ১১. এডিট, ডুপ্লিকেট, ডিলিট ও রিসেট
