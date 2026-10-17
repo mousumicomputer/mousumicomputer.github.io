@@ -1,14 +1,14 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v2.1)
+   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v2.2)
    Path: cpscl/exam_manager.js
-   Features: Real Pagination | SL Counter | Auto-Group Range | Live Search
+   Design: 1:1 Trust ERP Style (Solid Blue Row Selection & Top Action Bar)
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Exam & Group Suite v2.1 (cpscl/exam_manager.js)...");
+    console.log("Loading CPSCL Trust-ERP 1:1 Styled Suite (cpscl/exam_manager.js)...");
 
-    // ১. এক্সাম ও পেজিনেশন স্টাইল ইনজেকশন
+    // ১. ট্রাস্ট ইআরপি হুবহু স্টাইল ইনজেকশন
     function injectExamStyles() {
         if (document.getElementById('cpscl-exam-manager-style')) return;
         const style = document.createElement('style');
@@ -64,42 +64,113 @@
             .em-btn-add { background: #f8fafc; border: 1.5px dashed #cbd5e1; color: #2563eb; padding: 0 18px; border-radius: 50px; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap; transition: 0.2s; }
             .em-btn-add:hover { background: #eff6ff; border-color: #2563eb; }
 
-            /* টেবিল */
+            /* =======================================================
+               ছবি ২, ৩ ও ৪-এর হুবহু ১:১ ট্রাস্ট ইআরপি টেবিল ও সিলেকশন সিএসএস
+               ======================================================= */
             .em-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            .em-table th { text-align: left; padding: 12px 14px; background: #f8fafc; color: #64748b; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; border-bottom: 1.5px solid #cbd5e1; user-select: none; }
-            .em-table td { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; font-size: 0.88rem; font-weight: 600; color: #1e293b; }
+            .em-table th {
+                background: #ffffff !important;
+                color: #8c98a4 !important;
+                font-size: 0.75rem !important;
+                font-weight: 700 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.5px !important;
+                padding: 14px 18px !important;
+                border-bottom: 1.5px solid #eef2f5 !important;
+                user-select: none;
+                text-align: left;
+            }
+            .em-table tbody td {
+                color: #334155 !important;
+                font-size: 0.88rem !important;
+                font-weight: 500 !important;
+                padding: 13px 18px !important;
+                border-bottom: 1px solid #eef2f5 !important;
+                user-select: none;
+            }
 
-            .em-mark-inp { width: 85px; height: 36px; border: 1.5px solid #cbd5e1; border-radius: 50px; text-align: center; font-weight: 700; font-size: 0.95rem; outline: none; }
-            .em-mark-inp:focus { border-color: #2563eb; }
+            /* জেব্রা স্ট্রাইপ ও হোভার */
+            .em-table tbody tr:nth-child(even) { background-color: #f8fafc !important; }
+            .em-table tbody tr:nth-child(odd) { background-color: #ffffff !important; }
+            .em-table tbody tr:hover { background-color: #f1f5f9 !important; cursor: pointer; }
 
-            .em-btn-icon { width: 34px; height: 34px; border-radius: 50px; border: 1.5px solid #cbd5e1; background: #ffffff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.82rem; transition: 0.2s; }
-            .em-btn-icon.edit { color: #2563eb; }
-            .em-btn-icon.edit:hover { background: #eff6ff; border-color: #2563eb; }
-            .em-btn-icon.duplicate { color: #ca8a04; }
-            .em-btn-icon.duplicate:hover { background: #fef9c3; border-color: #ca8a04; }
-            .em-btn-icon.delete { color: #dc2626; }
-            .em-btn-icon.delete:hover { background: #fee2e2; border-color: #dc2626; }
+            /* ছবি ৩ ও ৪-এর হুবহু সলিড ব্লু সিলেকশন (#3b82f6) */
+            .em-table tbody tr.erp-row-selected,
+            .em-table tbody tr.erp-row-selected:nth-child(even),
+            .em-table tbody tr.erp-row-selected:nth-child(odd) {
+                background-color: #3b82f6 !important;
+            }
+            .em-table tbody tr.erp-row-selected td,
+            .em-table tbody tr.erp-row-selected td * {
+                color: #ffffff !important;
+            }
+            .em-table tbody tr.erp-row-selected .em-group-badge {
+                background-color: rgba(255, 255, 255, 0.25) !important;
+                color: #ffffff !important;
+                border-color: rgba(255, 255, 255, 0.4) !important;
+            }
 
-            .em-btn-submit { background: #2563eb; color: #fff; border: none; width: 100%; height: 48px; border-radius: 50px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 18px; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
-            .em-btn-submit:hover { background: #1d4ed8; }
+            /* গ্রুপ ব্যাজ */
+            .em-group-badge {
+                display: inline-block;
+                padding: 4px 12px;
+                border-radius: 50px;
+                font-size: 0.8rem;
+                font-weight: 700;
+                background: #eff6ff;
+                color: #2563eb;
+                border: 1px solid #bfdbfe;
+            }
 
-            /* ডায়নামিক গ্রুপ সারি */
-            .em-group-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; background: #f8fafc; padding: 8px 14px; border-radius: 50px; border: 1.5px solid #cbd5e1; }
-            .em-group-row input { height: 34px; border-radius: 50px; border: 1px solid #cbd5e1; padding: 0 14px; font-size: 0.85rem; font-weight: 700; outline: none; background: #ffffff; }
-
-            /* ফিল্টার ও পেজিনেশন বার */
-            .em-filter-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
-            .em-group-pills-filter { display: flex; gap: 6px; flex-wrap: wrap; }
-            .em-filter-btn { padding: 6px 14px; border-radius: 50px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #475569; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
-            .em-filter-btn:hover { background: #f1f5f9; }
-            .em-filter-btn.active { background: #2563eb; color: #ffffff; border-color: #2563eb; box-shadow: 0 2px 8px rgba(37,99,235,0.2); }
+            /* উপরের ট্রান্সফার অ্যাকশন বার */
+            .em-top-transfer-bar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background: #f8fafc;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 14px;
+                padding: 10px 18px;
+                margin-bottom: 16px;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            .em-transfer-btns-group {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .em-btn-move {
+                padding: 7px 16px;
+                border-radius: 50px;
+                font-size: 0.82rem;
+                font-weight: 700;
+                cursor: pointer;
+                border: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                transition: 0.2s;
+            }
+            .em-btn-move-a { background: #2563eb; color: #fff; box-shadow: 0 2px 6px rgba(37,99,235,0.25); }
+            .em-btn-move-a:hover { background: #1d4ed8; }
+            .em-btn-move-b { background: #059669; color: #fff; box-shadow: 0 2px 6px rgba(5,150,105,0.25); }
+            .em-btn-move-b:hover { background: #047857; }
+            .em-btn-move:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 
             /* পেজিনেশন ফুটার */
             .em-pagination-footer { display: flex; justify-content: space-between; align-items: center; padding: 16px 8px; border-top: 1.5px solid #eef2f5; flex-wrap: wrap; gap: 12px; margin-top: 15px; }
             .em-page-btn { min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0 8px; border: 1px solid #e2e8f0; background: #ffffff; color: #475569; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
             .em-page-btn:hover:not(.disabled):not(.active) { background: #f1f5f9; border-color: #cbd5e1; }
-            .em-page-btn.active { background: #2563eb; border-color: #2563eb; color: #ffffff; font-weight: 700; }
+            .em-page-btn.active { background: #3b82f6; border-color: #3b82f6; color: #ffffff; font-weight: 700; }
             .em-page-btn.disabled { opacity: 0.35; cursor: not-allowed; }
+
+            /* ড্যাশবোর্ড ফর্ম বাটন */
+            .em-btn-submit { background: #2563eb; color: #fff; border: none; width: 100%; height: 48px; border-radius: 50px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 18px; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
+            .em-btn-submit:hover { background: #1d4ed8; }
+            .em-group-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; background: #f8fafc; padding: 8px 14px; border-radius: 50px; border: 1.5px solid #cbd5e1; }
+            .em-group-row input { height: 34px; border-radius: 50px; border: 1px solid #cbd5e1; padding: 0 14px; font-size: 0.85rem; font-weight: 700; outline: none; background: #ffffff; }
 
             /* মোডাল */
             .em-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 999999; }
@@ -170,7 +241,7 @@
         }
     };
 
-    // ৩. ডাটা স্টোর ও পেজিনেশন ভেরিয়েবল
+    // ৩. ডাটা স্টোর
     const defaultMasterSubjects = {
         "Class 1": ["Bangla", "English", "Mathematics"],
         "Class 2": ["Bangla", "English", "Mathematics"],
@@ -191,8 +262,9 @@
     let selectedSubjectsMap = {};
     let manualGroupOverrides = {};
 
-    // Tab 2 স্টেট ভেরিয়েবল
+    // Tab 2 শিক্ষার্থী তালিকা ও সিলেকশন স্টেট
     let allocatedStudentsCache = [];
+    let selectedStudentIds = new Set(); // ক্লিক করে সিলেক্ট করা ছাত্রদের সেট
     let emStudentSearchQuery = '';
     let emSelectedGroupFilter = 'all';
     let emStudentCurrentPage = 1;
@@ -362,60 +434,72 @@
                     </div>
                 </div>
 
-                <!-- TAB 2: Student Group Allocation & Manual Transfer -->
+                <!-- TAB 2: Student Group Allocation & Manual Transfer (Trust ERP Style) -->
                 <div class="em-tab-content" id="emTabContent2">
                     <div class="em-card">
                         <div class="em-card-title">
-                            <span><i class="fa-solid fa-shuffle"></i> Student Group Allocation & Manual Transfer Override</span>
+                            <span><i class="fa-solid fa-shuffle"></i> Student Group Allocation & Manual Transfer</span>
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <select id="emTransferExamSelect" class="em-control" style="width: 280px; height: 38px; font-size: 0.85rem;" onchange="loadEMStudentGroupAllocation()">
+                                <select id="emTransferExamSelect" class="em-control" style="width: 290px; height: 38px; font-size: 0.85rem;" onchange="loadEMStudentGroupAllocation()">
                                     <!-- Populated dynamically -->
                                 </select>
                             </div>
                         </div>
 
-                        <!-- ফিল্টার টুলবার: সার্চ ও গ্রুপ বাটনসমূহ -->
-                        <div class="em-filter-toolbar">
-                            <div style="display: flex; gap: 10px; align-items: center; flex: 1; max-width: 420px;">
-                                <i class="fa-solid fa-magnifying-glass" style="color: #64748b;"></i>
+                        <!-- উপরের স্মার্ট ট্রান্সফার অ্যাকশন বার (ছবি ৩ ও ৪-এর জন্য নতুন কন্ট্রোল) -->
+                        <div class="em-top-transfer-bar">
+                            <div style="display: flex; align-items: center; gap: 12px; flex: 1; max-width: 380px;">
                                 <input type="text" id="emStudentSearchInp" class="em-control" style="height: 38px;" placeholder="Search student by Name, ID, or SL..." oninput="onEMStudentSearch(this.value)">
                             </div>
-                            <div class="em-group-pills-filter" id="emGroupFilterPills">
-                                <!-- Dynamic Filter Buttons -->
+                            
+                            <!-- নির্বাচিত শিক্ষার্থীদের জন্য ট্রান্সফার অ্যাকশন বাটনসমূহ -->
+                            <div class="em-transfer-btns-group">
+                                <span id="emSelectedCountBadge" style="font-size: 0.82rem; font-weight: 700; color: #64748b; padding: 0 8px;">
+                                    0 Selected
+                                </span>
+                                <div id="emDynamicTransferBtns" style="display: inline-flex; gap: 8px;">
+                                    <!-- Dynamic Action Buttons (e.g. Move to Group A, Move to Group B) -->
+                                </div>
                             </div>
                         </div>
 
-                        <!-- স্টুডেন্ট টেবিল -->
-                        <div style="overflow-x: auto;">
+                        <!-- গ্রুপ ফিল্টার পিলস -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                            <div class="em-group-pills-filter" id="emGroupFilterPills"></div>
+                            <span style="font-size: 0.8rem; color: #64748b; font-style: italic;">
+                                <i class="fa-solid fa-circle-info"></i> Click on any student row to select (turns blue) and click action buttons above to transfer.
+                            </span>
+                        </div>
+
+                        <!-- ট্রাস্ট ইআরপি ১:১ টেবিল -->
+                        <div style="overflow-x: auto; border: 1px solid #eef2f5; border-radius: 8px;">
                             <table class="em-table">
                                 <thead>
                                     <tr>
                                         <th style="width: 70px;">SL #</th>
-                                        <th style="width: 130px;">Student ID</th>
+                                        <th style="width: 140px;">Student ID</th>
                                         <th>Student Name</th>
                                         <th>Class</th>
-                                        <th>Assigned Group</th>
-                                        <th style="text-align: right; width: 170px;">Manual Transfer</th>
+                                        <th style="text-align: right; width: 140px;">Assigned Group</th>
                                     </tr>
                                 </thead>
                                 <tbody id="emStudentAllocationTbody">
-                                    <!-- Dynamic rows -->
+                                    <!-- Dynamic Rows with Solid Blue Row Click -->
                                 </tbody>
                             </table>
                         </div>
 
-                        <!-- পেজিনেশন ও ফুটার -->
+                        <!-- পেজিনেশন ও ফুটার (ছবি ৪-এর হুবহু) -->
                         <div class="em-pagination-footer">
                             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #64748b;">
-                                <span>Show</span>
                                 <select class="em-control" style="width: 75px; height: 32px; padding: 0 10px; border-radius: 6px;" onchange="changeEMPageSize(this.value)">
                                     <option value="10">10</option>
                                     <option value="25" selected>25</option>
                                     <option value="50">50</option>
                                     <option value="100">100</option>
                                 </select>
-                                <span>entries</span>
-                                <span id="emPaginationCounterText" style="margin-left: 10px; font-weight: 600;"></span>
+                                <span>entries per page</span>
+                                <span id="emPaginationCounterText" style="margin-left: 14px; font-weight: 600;"></span>
                             </div>
                             <div id="emPaginationBtnsContainer" style="display: flex; gap: 4px;"></div>
                         </div>
@@ -442,7 +526,7 @@
         syncFromFirebase();
     }
 
-    // ৫. ট্যাব পরিবর্তন
+    // ৫. ট্যাব সুইচিং
     window.switchEMMainTab = function(tabKey) {
         document.getElementById('emTabBtn1').classList.remove('active');
         document.getElementById('emTabBtn2').classList.remove('active');
@@ -460,7 +544,7 @@
         }
     };
 
-    // ৬. গ্রুপ রুলস হ্যান্ডলার
+    // ৬. গ্রুপ রুলস
     function initDefaultEMGroupRules() {
         const container = document.getElementById('emGroupRulesContainer');
         if (!container) return;
@@ -516,7 +600,7 @@
         }
     };
 
-    // ৮. ক্লাস পরিবর্তন ও সাবজেক্ট পিলস
+    // ৮. ক্লাস ও পিলস
     window.onEMClassChange = function(className) {
         if (!className) {
             currentActiveSubjectsList = [];
@@ -809,7 +893,7 @@
         });
     }
 
-    // ১০. TAB 2: ১০০% আসল শিক্ষার্থী, ক্রমিক নম্বর, ফিল্টার, সার্চ ও পেজিনেশন
+    // ১০. TAB 2: ১:১ ট্রাস্ট ইআরপি স্টাইল স্টুডেন্ট টেবিল ও টপ অ্যাকশন বার
     function populateEMExamDropdown() {
         const select = document.getElementById('emTransferExamSelect');
         if (!select) return;
@@ -839,7 +923,7 @@
         // ১. ফায়ারবেস বা ক্যাশ থেকে আসল শিক্ষার্থী লোড
         let rawStudents = await getRealStudentsForClass(exam.class);
 
-        // ২. ক্রমানুসারে সাজানো ও নিশ্চিত ক্রমিক (SL) তৈরি করা
+        // ২. ক্রমানুসারে সাজানো
         rawStudents.sort((a, b) => {
             const rA = parseInt(a.roll_no || a.roll) || 0;
             const rB = parseInt(b.roll_no || b.roll) || 0;
@@ -853,7 +937,6 @@
             const studentId = String(st.std_id || st.id || '').trim();
             const studentRoll = st.roll_no || st.roll || '';
 
-            // ক্রমিক নম্বর বা রোল অনুযায়ী ইনিশিয়াল গ্রুপ ক্যালকুলেট
             const effectiveNum = (studentRoll && !isNaN(parseInt(studentRoll))) ? parseInt(studentRoll) : slNumber;
 
             let assignedGroup = groupsList[0].name;
@@ -866,7 +949,6 @@
                 }
             }
 
-            // ম্যানুয়াল ট্রান্সফার চেক
             if (manualGroupOverrides[exam.id] && manualGroupOverrides[exam.id][studentId]) {
                 assignedGroup = manualGroupOverrides[exam.id][studentId];
             }
@@ -877,17 +959,90 @@
                 name: st.student_name || st.name || 'Student',
                 class: st.class_name || st.class || exam.class,
                 roll: studentRoll,
-                group: assignedGroup,
-                availableGroups: groupsList.map(g => g.name)
+                group: assignedGroup
             };
         });
 
+        // সিলেকশন ক্লিয়ার
+        selectedStudentIds.clear();
+        updateTopTransferBar(groupsList);
         renderGroupFilterPills();
         emStudentCurrentPage = 1;
         renderEMPaginatedStudentTable();
     };
 
-    // গ্রুপ ফিল্টার পিলস রেন্ডার
+    // উপরের অ্যাকশন বার বাটন রেন্ডার (Move to Group A, Move to Group B)
+    function updateTopTransferBar(groupsList) {
+        const btnsBox = document.getElementById('emDynamicTransferBtns');
+        const countBadge = document.getElementById('emSelectedCountBadge');
+        if (!btnsBox) return;
+
+        const count = selectedStudentIds.size;
+        if (countBadge) {
+            countBadge.innerText = `${count} Row(s) Selected`;
+            countBadge.style.color = count > 0 ? '#2563eb' : '#64748b';
+        }
+
+        const examSelect = document.getElementById('emTransferExamSelect');
+        const examId = examSelect ? examSelect.value : '';
+        const exam = examRegistry.find(x => x.id === examId);
+        const groups = (exam && exam.groups) ? exam.groups : (groupsList || [{ name: 'Group A' }, { name: 'Group B' }]);
+
+        let btnsHtml = '';
+        groups.forEach((g, idx) => {
+            const btnClass = idx % 2 === 0 ? 'em-btn-move-a' : 'em-btn-move-b';
+            btnsHtml += `
+                <button type="button" class="em-btn-move ${btnClass}" ${count === 0 ? 'disabled' : ''} onclick="bulkMoveSelectedStudents('${g.name}')">
+                    <i class="fa-solid fa-arrow-right-arrow-left"></i> Move to ${g.name}
+                </button>
+            `;
+        });
+
+        btnsBox.innerHTML = btnsHtml;
+    }
+
+    // নির্বাচিত শিক্ষার্থীদের এক ক্লিকে গ্রুপ ট্রান্সফার
+    window.bulkMoveSelectedStudents = async function(targetGroup) {
+        if (selectedStudentIds.size === 0) return;
+
+        const examSelect = document.getElementById('emTransferExamSelect');
+        const examId = examSelect ? examSelect.value : '';
+        if (!examId) return;
+
+        if (!manualGroupOverrides[examId]) manualGroupOverrides[examId] = {};
+
+        selectedStudentIds.forEach(sId => {
+            manualGroupOverrides[examId][sId] = targetGroup;
+            const stu = allocatedStudentsCache.find(s => s.id === sId);
+            if (stu) stu.group = targetGroup;
+        });
+
+        await saveExamsToCloud();
+
+        if (typeof window.showToast === 'function') {
+            window.showToast(`${selectedStudentIds.size} student(s) moved to ${targetGroup}!`, "success");
+        } else {
+            alert(`${selectedStudentIds.size} student(s) moved to ${targetGroup}!`);
+        }
+
+        selectedStudentIds.clear();
+        updateTopTransferBar();
+        renderGroupFilterPills();
+        renderEMPaginatedStudentTable();
+    };
+
+    // সারি সিলেকশন হ্যান্ডলার (ক্লিক করলে সলিড ব্লু হবে)
+    window.toggleStudentRowSelection = function(studentId) {
+        if (selectedStudentIds.has(studentId)) {
+            selectedStudentIds.delete(studentId);
+        } else {
+            selectedStudentIds.add(studentId);
+        }
+        updateTopTransferBar();
+        renderEMPaginatedStudentTable();
+    };
+
+    // গ্রুপ ফিল্টার পিলস
     function renderGroupFilterPills() {
         const container = document.getElementById('emGroupFilterPills');
         if (!container) return;
@@ -939,17 +1094,13 @@
         renderEMPaginatedStudentTable();
     };
 
-    // পেজ অনুযায়ী শিক্ষার্থী টেবিল রেন্ডার
+    // পেজ অনুযায়ী শিক্ষার্থী টেবিল রেন্ডার (ছবি ৩ ও ৪-এর সলিড ব্লু এফেক্টসহ)
     function renderEMPaginatedStudentTable() {
         const tbody = document.getElementById('emStudentAllocationTbody');
         const counterEl = document.getElementById('emPaginationCounterText');
         const btnsContainer = document.getElementById('emPaginationBtnsContainer');
-        const select = document.getElementById('emTransferExamSelect');
-        if (!tbody || !select) return;
+        if (!tbody) return;
 
-        const examId = select.value;
-
-        // ফিল্টারিং
         let filtered = allocatedStudentsCache.filter(s => {
             const matchesGroup = (emSelectedGroupFilter === 'all') || (s.group === emSelectedGroupFilter);
             if (!matchesGroup) return false;
@@ -968,7 +1119,7 @@
         tbody.innerHTML = '';
 
         if (totalFiltered === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:35px; color:#94a3b8;">No students match the criteria.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:35px; color:#94a3b8;">No students match the criteria.</td></tr>`;
             if (counterEl) counterEl.innerText = `Showing 0 of 0 entries`;
             if (btnsContainer) btnsContainer.innerHTML = '';
             return;
@@ -978,39 +1129,39 @@
         const pageStudents = filtered.slice(startIndex, startIndex + emStudentPageSize);
 
         pageStudents.forEach(st => {
-            let optionsHtml = '';
-            st.availableGroups.forEach(gName => {
-                optionsHtml += `<option value="${gName}" ${st.group === gName ? 'selected' : ''}>${gName}</option>`;
-            });
-
-            const rollBadge = st.roll ? `<span style="font-size:0.75rem; background:#f1f5f9; padding:2px 8px; border-radius:10px; margin-left:4px;">Roll: ${st.roll}</span>` : '';
+            const isSelected = selectedStudentIds.has(st.id);
+            const rollBadge = st.roll ? `<span style="font-size:0.75rem; background:rgba(0,0,0,0.06); padding:2px 8px; border-radius:10px; margin-left:6px;">Roll: ${st.roll}</span>` : '';
 
             const tr = document.createElement('tr');
+            if (isSelected) {
+                tr.classList.add('erp-row-selected'); // সলিড ব্লু ব্যাকগ্রাউন্ড ও সাদা টেক্সট
+            }
+
+            tr.onclick = () => toggleStudentRowSelection(st.id);
+
             tr.innerHTML = `
-                <td><strong>#${st.sl}</strong></td>
-                <td><span style="font-weight:700; color:#475569;">${st.id}</span></td>
+                <td><strong>${st.sl}</strong></td>
+                <td><strong>${st.id}</strong></td>
                 <td>
-                    <span style="color:#2563eb; font-weight:700;">${st.name}</span>
+                    <span style="font-weight:700;">${st.name}</span>
                     ${rollBadge}
                 </td>
                 <td>${st.class}</td>
-                <td><span style="background:#eff6ff; color:#2563eb; padding:4px 14px; border-radius:50px; font-size:0.8rem; font-weight:700;">${st.group}</span></td>
                 <td style="text-align: right;">
-                    <select class="em-control" style="width: 140px; height: 36px; display: inline-block; font-size: 0.85rem;" onchange="manualTransferStudent('${examId}', '${st.id}', '${st.name.replace(/'/g, "\\'")}', this.value)">
-                        ${optionsHtml}
-                    </select>
+                    <span class="em-group-badge">${st.group}</span>
                 </td>
             `;
             tbody.appendChild(tr);
         });
 
-        // ফুটার আপডেট
+        // ফুটার কাউন্টার
         const end = Math.min(startIndex + emStudentPageSize, totalFiltered);
         if (counterEl) {
-            counterEl.innerText = `Showing ${startIndex + 1} to ${end} of ${totalFiltered} students`;
+            const selCountText = selectedStudentIds.size > 0 ? ` (${selectedStudentIds.size} row selected)` : '';
+            counterEl.innerText = `Showing ${startIndex + 1} to ${end} of ${totalFiltered} entries ${selCountText}`;
         }
 
-        // পেজিনেশন বাটন
+        // পেজিনেশন বাটন (« < 1 2 3 > »)
         if (btnsContainer) {
             let btnsHtml = `
                 <button type="button" class="em-page-btn ${emStudentCurrentPage === 1 ? 'disabled' : ''}" onclick="goToEMStudentPage(1)">«</button>
@@ -1033,11 +1184,10 @@
         }
     }
 
-    // আসল শিক্ষার্থী রিডার (cpscl_students এবং cpscl_students_cache)
+    // আসল শিক্ষার্থী রিডার
     async function getRealStudentsForClass(targetClass) {
         let allStudents = [];
 
-        // ১. ফায়ারবেস ক্লাউড থেকে cpscl_students চেক
         if (window.getDatabase && window.ref && window.get) {
             try {
                 const db = window.getDatabase();
@@ -1051,7 +1201,6 @@
             } catch(e) {}
         }
 
-        // ২. লোকাল ক্যাশ চেক
         if (allStudents.length === 0) {
             try {
                 const local = localStorage.getItem('cpscl_students_cache');
@@ -1059,7 +1208,6 @@
             } catch(e) {}
         }
 
-        // ৩. ক্লাস অনুযায়ী ফিল্টার
         const targetClean = String(targetClass).trim().toLowerCase();
         let matched = allStudents.filter(s => {
             const cName = String(s.class_name || s.class || '').trim().toLowerCase();
@@ -1068,27 +1216,6 @@
 
         return matched;
     }
-
-    // ম্যানুয়াল ট্রান্সফার হ্যান্ডলার
-    window.manualTransferStudent = async function(examId, studentId, studentName, newGroup) {
-        if (!manualGroupOverrides[examId]) manualGroupOverrides[examId] = {};
-        manualGroupOverrides[examId][studentId] = newGroup;
-
-        // লোকাল অবজেক্টেও গ্রুপ আপডেট যাতে রি-রেন্ডার দ্রুত হয়
-        const target = allocatedStudentsCache.find(s => s.id === studentId);
-        if (target) target.group = newGroup;
-
-        await saveExamsToCloud();
-
-        if (typeof window.showToast === 'function') {
-            window.showToast(`${studentName} successfully transferred to ${newGroup}!`, "success");
-        } else {
-            alert(`${studentName} successfully transferred to ${newGroup}!`);
-        }
-
-        renderGroupFilterPills();
-        renderEMPaginatedStudentTable();
-    };
 
     // ১১. এডিট, ডুপ্লিকেট, ডিলিট ও রিসেট
     window.editEMExam = function(id) {
