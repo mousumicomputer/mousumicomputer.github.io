@@ -1,14 +1,14 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v2.3)
+   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v2.4 Final)
    Path: cpscl/exam_manager.js
-   Updates: Single-Row Blue Selection | True Rounded Pill Filters | Top Action
+   Architecture: 100% Uniform Pill Shapes Everywhere | Single-Select | Cloud Sync
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Suite v2.3 with Single-Select & Rounded Pills...");
+    console.log("Loading CPSCL Suite v2.4 (All Pills Unified & Single Select)...");
 
-    // ১. স্টাইল ইনজেকশন (পুরোনো স্টাইল থাকলে মুছে নতুনটি নিখুঁতভাবে বসানো)
+    // ১. সম্পূর্ণ ও নিখুঁত পিল (Pill) স্টাইল ইনজেকশন
     function injectExamStyles() {
         const oldStyle = document.getElementById('cpscl-exam-manager-style');
         if (oldStyle) oldStyle.remove();
@@ -17,26 +17,26 @@
         style.id = 'cpscl-exam-manager-style';
         style.innerHTML = `
             .em-wrapper { padding: 15px 5px; font-family: 'Plus Jakarta Sans', sans-serif; }
-            .em-header { background: #ffffff; border: 1px solid #e2e8f0; padding: 18px 25px; border-radius: 50px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+            .em-header { background: #ffffff; border: 1px solid #e2e8f0; padding: 18px 25px; border-radius: 50px !important; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
             .em-header h1 { font-size: 1.35rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 10px; margin: 0; }
             .em-header h1 i { color: #2563eb; }
-            .em-badge { background: #eff6ff; color: #2563eb; font-weight: 700; font-size: 0.82rem; padding: 6px 16px; border-radius: 50px; border: 1px solid #bfdbfe; }
+            .em-badge { background: #eff6ff; color: #2563eb; font-weight: 700; font-size: 0.82rem; padding: 6px 16px; border-radius: 50px !important; border: 1px solid #bfdbfe; }
 
-            /* মডিউল ন্যাভ ট্যাব */
+            /* মডিউল ন্যাভ ট্যাব (Pills) */
             .em-nav-tabs { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-            .em-tab-btn { background: #ffffff; border: 1.5px solid #cbd5e1; color: #64748b; padding: 11px 22px; border-radius: 50px; font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+            .em-tab-btn { background: #ffffff; border: 1.5px solid #cbd5e1; color: #64748b; padding: 11px 24px; border-radius: 50px !important; font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
             .em-tab-btn:hover { border-color: #2563eb; color: #2563eb; }
-            .em-tab-btn.active { background: #2563eb; color: #ffffff; border-color: #2563eb; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
+            .em-tab-btn.active { background: #2563eb !important; color: #ffffff !important; border-color: #2563eb !important; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
 
             .em-tab-content { display: none; }
             .em-tab-content.active { display: block; }
 
-            /* ওয়ার্কস্পেস ভিউ বার */
-            .em-view-bar { display: flex; gap: 8px; margin-bottom: 20px; background: #ffffff; padding: 10px 18px; border-radius: 50px; border: 1px solid #e2e8f0; align-items: center; flex-wrap: wrap; }
+            /* ওয়ার্কস্পেস ভিউ বার (Pills) */
+            .em-view-bar { display: flex; gap: 8px; margin-bottom: 20px; background: #ffffff; padding: 10px 18px; border-radius: 50px !important; border: 1px solid #e2e8f0; align-items: center; flex-wrap: wrap; }
             .em-view-bar span { font-size: 0.85rem; font-weight: 700; color: #64748b; margin-right: 5px; }
-            .em-btn-toggle { background: #f8fafc; border: 1px solid #cbd5e1; color: #0f172a; padding: 7px 16px; border-radius: 50px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+            .em-btn-toggle { background: #f8fafc; border: 1.5px solid #cbd5e1; color: #0f172a; padding: 7px 18px; border-radius: 50px !important; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
             .em-btn-toggle:hover { border-color: #2563eb; color: #2563eb; }
-            .em-btn-toggle.active { background: #2563eb; color: #ffffff; border-color: #2563eb; box-shadow: 0 4px 10px rgba(37,99,235,0.25); }
+            .em-btn-toggle.active { background: #2563eb !important; color: #ffffff !important; border-color: #2563eb !important; box-shadow: 0 4px 10px rgba(37,99,235,0.25); }
 
             /* গ্রিড ও কার্ড */
             .em-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; transition: all 0.3s ease; }
@@ -49,25 +49,25 @@
 
             .em-form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
             .em-form-group label { font-size: 0.85rem; font-weight: 700; color: #0f172a; }
-            .em-control { width: 100%; height: 42px; border: 1.5px solid #cbd5e1; border-radius: 50px; padding: 0 18px; font-size: 0.9rem; outline: none; background: #ffffff; color: #0f172a; transition: 0.2s; }
+            .em-control { width: 100%; height: 44px; border: 1.5px solid #cbd5e1; border-radius: 50px !important; padding: 0 18px; font-size: 0.9rem; outline: none; background: #ffffff; color: #0f172a; transition: 0.2s; }
             .em-control:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
             select.em-control { cursor: pointer; }
 
             /* সাবজেক্ট পিলস */
             .em-pills-box { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; margin-bottom: 12px; }
-            .em-pill { display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; color: #2563eb; border: 1.5px solid #bfdbfe; padding: 7px 15px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; user-select: none; }
+            .em-pill { display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; color: #2563eb; border: 1.5px solid #bfdbfe; padding: 7px 16px; border-radius: 50px !important; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; user-select: none; }
             .em-pill:hover { background: #dbeafe; border-color: #2563eb; transform: translateY(-1px); }
-            .em-pill.active { background: #2563eb; color: #ffffff; border-color: #2563eb; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25); }
+            .em-pill.active { background: #2563eb !important; color: #ffffff !important; border-color: #2563eb !important; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25); }
             .em-pill-actions { display: flex; gap: 5px; margin-left: 6px; align-items: center; }
             .em-pill-btn { font-size: 0.72rem; opacity: 0.7; cursor: pointer; transition: 0.2s; padding: 2px; }
             .em-pill-btn:hover { opacity: 1; }
 
             .em-custom-sub-bar { display: flex; gap: 8px; margin-bottom: 15px; }
-            .em-btn-add { background: #f8fafc; border: 1.5px dashed #cbd5e1; color: #2563eb; padding: 0 18px; border-radius: 50px; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap; transition: 0.2s; }
+            .em-btn-add { background: #f8fafc; border: 1.5px dashed #cbd5e1; color: #2563eb; padding: 0 20px; border-radius: 50px !important; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap; transition: 0.2s; }
             .em-btn-add:hover { background: #eff6ff; border-color: #2563eb; }
 
             /* =======================================================
-               নিখুঁত পিল বাটন সিএসএস (All Students, Group A, Group B)
+               নিখুঁত রাউন্ডেড পিল ফিল্টার বাটনসমূহ (All, Group A, Group B)
                ======================================================= */
             .em-group-pills-filter {
                 display: flex !important;
@@ -148,17 +148,67 @@
                 border-color: rgba(255, 255, 255, 0.4) !important;
             }
 
-            /* গ্রুপ ব্যাজ */
+            /* টেবিলের সব ব্যাজ (Pill Badges) */
             .em-group-badge {
-                display: inline-block;
-                padding: 4px 12px;
-                border-radius: 50px;
-                font-size: 0.8rem;
-                font-weight: 700;
-                background: #eff6ff;
-                color: #2563eb;
-                border: 1px solid #bfdbfe;
+                display: inline-block !important;
+                padding: 4px 14px !important;
+                border-radius: 50px !important;
+                font-size: 0.8rem !important;
+                font-weight: 700 !important;
+                background: #eff6ff !important;
+                color: #2563eb !important;
+                border: 1px solid #bfdbfe !important;
             }
+
+            .em-class-badge {
+                display: inline-block !important;
+                padding: 4px 14px !important;
+                border-radius: 50px !important;
+                font-size: 0.8rem !important;
+                font-weight: 700 !important;
+                background: #eff6ff !important;
+                color: #2563eb !important;
+                border: 1px solid #bfdbfe !important;
+            }
+
+            .em-rule-badge {
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 5px !important;
+                padding: 3px 12px !important;
+                border-radius: 50px !important;
+                font-size: 0.75rem !important;
+                font-weight: 700 !important;
+                background: #f1f5f9 !important;
+                color: #2563eb !important;
+                border: 1px solid #e2e8f0 !important;
+                margin-top: 4px !important;
+            }
+
+            /* =======================================================
+               হিস্ট্রি টেবিলের অ্যাকশন বাটনসমূহ (Pill Icon Buttons)
+               ======================================================= */
+            .em-btn-icon {
+                width: 36px !important;
+                height: 36px !important;
+                border-radius: 50px !important; /* সম্পূর্ণ গোল পিল */
+                border: 1.5px solid #cbd5e1 !important;
+                background: #ffffff !important;
+                cursor: pointer !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 0.85rem !important;
+                transition: all 0.2s ease !important;
+                margin: 0 3px !important;
+                outline: none !important;
+            }
+            .em-btn-icon.edit { color: #2563eb !important; }
+            .em-btn-icon.edit:hover { background: #eff6ff !important; border-color: #2563eb !important; transform: scale(1.05); }
+            .em-btn-icon.duplicate { color: #ca8a04 !important; }
+            .em-btn-icon.duplicate:hover { background: #fef9c3 !important; border-color: #ca8a04 !important; transform: scale(1.05); }
+            .em-btn-icon.delete { color: #dc2626 !important; }
+            .em-btn-icon.delete:hover { background: #fee2e2 !important; border-color: #dc2626 !important; transform: scale(1.05); }
 
             /* উপরের ট্রান্সফার বার */
             .em-top-transfer-bar {
@@ -167,8 +217,8 @@
                 justify-content: space-between;
                 background: #f8fafc;
                 border: 1.5px solid #e2e8f0;
-                border-radius: 14px;
-                padding: 12px 18px;
+                border-radius: 50px !important;
+                padding: 10px 20px;
                 margin-bottom: 16px;
                 flex-wrap: wrap;
                 gap: 12px;
@@ -180,44 +230,44 @@
                 flex-wrap: wrap;
             }
             .em-btn-move {
-                padding: 8px 18px;
-                border-radius: 50px;
-                font-size: 0.82rem;
-                font-weight: 700;
-                cursor: pointer;
-                border: none;
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                transition: 0.2s;
+                padding: 8px 20px !important;
+                border-radius: 50px !important;
+                font-size: 0.82rem !important;
+                font-weight: 700 !important;
+                cursor: pointer !important;
+                border: none !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 6px !important;
+                transition: 0.2s !important;
             }
-            .em-btn-move-a { background: #2563eb; color: #fff; box-shadow: 0 2px 6px rgba(37,99,235,0.25); }
-            .em-btn-move-a:hover { background: #1d4ed8; }
-            .em-btn-move-b { background: #059669; color: #fff; box-shadow: 0 2px 6px rgba(5,150,105,0.25); }
-            .em-btn-move-b:hover { background: #047857; }
-            .em-btn-move:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+            .em-btn-move-a { background: #2563eb !important; color: #fff !important; box-shadow: 0 2px 6px rgba(37,99,235,0.25); }
+            .em-btn-move-a:hover { background: #1d4ed8 !important; }
+            .em-btn-move-b { background: #059669 !important; color: #fff !important; box-shadow: 0 2px 6px rgba(5,150,105,0.25); }
+            .em-btn-move-b:hover { background: #047857 !important; }
+            .em-btn-move:disabled { opacity: 0.45 !important; cursor: not-allowed !important; box-shadow: none !important; }
 
             /* পেজিনেশন ফুটার */
             .em-pagination-footer { display: flex; justify-content: space-between; align-items: center; padding: 16px 8px; border-top: 1.5px solid #eef2f5; flex-wrap: wrap; gap: 12px; margin-top: 15px; }
-            .em-page-btn { min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0 8px; border: 1px solid #e2e8f0; background: #ffffff; color: #475569; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-            .em-page-btn:hover:not(.disabled):not(.active) { background: #f1f5f9; border-color: #cbd5e1; }
-            .em-page-btn.active { background: #3b82f6; border-color: #3b82f6; color: #ffffff; font-weight: 700; }
-            .em-page-btn.disabled { opacity: 0.35; cursor: not-allowed; }
+            .em-page-btn { min-width: 32px !important; height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; padding: 0 10px !important; border: 1px solid #e2e8f0 !important; background: #ffffff !important; color: #475569 !important; border-radius: 50px !important; font-size: 0.85rem !important; font-weight: 600 !important; cursor: pointer !important; transition: all 0.2s !important; }
+            .em-page-btn:hover:not(.disabled):not(.active) { background: #f1f5f9 !important; border-color: #cbd5e1 !important; }
+            .em-page-btn.active { background: #3b82f6 !important; border-color: #3b82f6 !important; color: #ffffff !important; font-weight: 700 !important; }
+            .em-page-btn.disabled { opacity: 0.35 !important; cursor: not-allowed !important; }
 
-            .em-btn-submit { background: #2563eb; color: #fff; border: none; width: 100%; height: 48px; border-radius: 50px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 18px; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
-            .em-btn-submit:hover { background: #1d4ed8; }
-            .em-group-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; background: #f8fafc; padding: 8px 14px; border-radius: 50px; border: 1.5px solid #cbd5e1; }
-            .em-group-row input { height: 34px; border-radius: 50px; border: 1px solid #cbd5e1; padding: 0 14px; font-size: 0.85rem; font-weight: 700; outline: none; background: #ffffff; }
+            .em-btn-submit { background: #2563eb !important; color: #fff !important; border: none !important; width: 100% !important; height: 48px !important; border-radius: 50px !important; font-size: 0.95rem !important; font-weight: 700 !important; cursor: pointer !important; transition: 0.2s !important; display: flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; margin-top: 18px !important; box-shadow: 0 4px 12px rgba(37,99,235,0.25) !important; }
+            .em-btn-submit:hover { background: #1d4ed8 !important; }
+            .em-group-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; background: #f8fafc; padding: 8px 14px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; }
+            .em-group-row input { height: 34px; border-radius: 50px !important; border: 1px solid #cbd5e1; padding: 0 14px; font-size: 0.85rem; font-weight: 700; outline: none; background: #ffffff; }
 
             /* মোডাল */
             .em-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 999999; }
-            .em-modal-card { background: #ffffff; border: 2px solid #cbd5e1; padding: 25px; border-radius: 25px; width: 100%; max-width: 420px; box-shadow: 0 20px 35px rgba(0,0,0,0.2); text-align: center; }
+            .em-modal-card { background: #ffffff; border: 2px solid #cbd5e1; padding: 25px; border-radius: 30px !important; width: 100%; max-width: 420px; box-shadow: 0 20px 35px rgba(0,0,0,0.2); text-align: center; }
             .em-modal-card h3 { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin-bottom: 14px; }
-            .em-modal-inp { width: 100%; height: 44px; border: 1.5px solid #cbd5e1; border-radius: 50px; padding: 0 18px; font-size: 0.95rem; font-weight: 600; outline: none; text-align: center; margin-bottom: 18px; background: #f8fafc; }
+            .em-modal-inp { width: 100%; height: 44px; border: 1.5px solid #cbd5e1; border-radius: 50px !important; padding: 0 18px; font-size: 0.95rem; font-weight: 600; outline: none; text-align: center; margin-bottom: 18px; background: #f8fafc; }
             .em-modal-inp:focus { border-color: #2563eb; background: #fff; }
-            .em-modal-btn { padding: 9px 20px; border-radius: 50px; font-weight: 700; font-size: 0.85rem; cursor: pointer; border: none; }
-            .em-modal-btn.confirm { background: #2563eb; color: #ffffff; }
-            .em-modal-btn.cancel { background: #f1f5f9; color: #64748b; border: 1.5px solid #cbd5e1; }
+            .em-modal-btn { padding: 9px 22px !important; border-radius: 50px !important; font-weight: 700 !important; font-size: 0.85rem !important; cursor: pointer !important; border: none !important; }
+            .em-modal-btn.confirm { background: #2563eb !important; color: #ffffff !important; }
+            .em-modal-btn.cancel { background: #f1f5f9 !important; color: #64748b !important; border: 1.5px solid #cbd5e1 !important; }
         `;
         document.head.appendChild(style);
     }
@@ -299,9 +349,8 @@
     let selectedSubjectsMap = {};
     let manualGroupOverrides = {};
 
-    // Tab 2 স্টেট ভেরিয়েবল (একক সিলেকশন)
     let allocatedStudentsCache = [];
-    let selectedSingleStudentId = null; // শুধুমাত্র ১ জন ছাত্র সিলেক্ট হবে
+    let selectedSingleStudentId = null;
     let emStudentSearchQuery = '';
     let emSelectedGroupFilter = 'all';
     let emStudentCurrentPage = 1;
@@ -427,7 +476,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- ৫. ডায়নামিক গ্রুপ রুলস -->
                                     <div class="em-form-group" style="margin-top: 25px; border-top: 2px solid #f1f5f9; padding-top: 18px;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                                             <label style="margin: 0;"><i class="fa-solid fa-layer-group" style="color: #2563eb;"></i> 5. Initial Serial-based Grouping Rules</label>
@@ -445,7 +493,7 @@
                             </div>
                         </div>
 
-                        <!-- Right: History Registry -->
+                        <!-- Right: History Registry (Pill Badges & Buttons) -->
                         <div id="emHistoryCol">
                             <div class="em-card">
                                 <div class="em-card-title">
@@ -457,10 +505,10 @@
                                     <table class="em-table">
                                         <thead>
                                             <tr>
-                                                <th>Exam Title & Group Rules</th>
-                                                <th>Class</th>
-                                                <th>Date</th>
-                                                <th style="text-align: right;">Actions</th>
+                                                <th>EXAM TITLE & GROUP RULES</th>
+                                                <th>CLASS</th>
+                                                <th>DATE</th>
+                                                <th style="text-align: right;">ACTIONS</th>
                                             </tr>
                                         </thead>
                                         <tbody id="emRegistryTbody"></tbody>
@@ -471,7 +519,7 @@
                     </div>
                 </div>
 
-                <!-- TAB 2: Student Group Allocation & Manual Transfer (Single Select & Rounded Pills) -->
+                <!-- TAB 2: Student Group Allocation & Manual Transfer -->
                 <div class="em-tab-content" id="emTabContent2">
                     <div class="em-card">
                         <div class="em-card-title">
@@ -483,28 +531,25 @@
                             </div>
                         </div>
 
-                        <!-- উপরের স্মার্ট ট্রান্সফার অ্যাকশন বার -->
+                        <!-- উপরের ট্রান্সফার বার (Pill Shaped) -->
                         <div class="em-top-transfer-bar">
                             <div style="display: flex; align-items: center; gap: 12px; flex: 1; max-width: 380px;">
                                 <input type="text" id="emStudentSearchInp" class="em-control" style="height: 38px;" placeholder="Search student by Name, ID, or SL..." oninput="onEMStudentSearch(this.value)">
                             </div>
                             
-                            <!-- একক শিক্ষার্থীর জন্য অ্যাকশন বাটনসমূহ -->
                             <div class="em-transfer-btns-group">
                                 <span id="emSelectedCountBadge" style="font-size: 0.85rem; font-weight: 700; color: #64748b; padding: 0 8px;">
                                     0 Row Selected (Click a row below)
                                 </span>
-                                <div id="emDynamicTransferBtns" style="display: inline-flex; gap: 8px;">
-                                    <!-- Dynamic Action Buttons (e.g. Move to Group A, Move to Group B) -->
-                                </div>
+                                <div id="emDynamicTransferBtns" style="display: inline-flex; gap: 8px;"></div>
                             </div>
                         </div>
 
-                        <!-- গ্রুপ ফিল্টার পিলস (সুন্দর গোলাকার ব্যাজ) -->
+                        <!-- ফিল্টার পিলস (Rounded Pills) -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
                             <div class="em-group-pills-filter" id="emGroupFilterPills"></div>
                             <span style="font-size: 0.8rem; color: #64748b; font-style: italic;">
-                                <i class="fa-solid fa-circle-info"></i> Click any student row to select (turns blue) and click action buttons above to transfer.
+                                <i class="fa-solid fa-circle-info"></i> Click any student row to select (turns solid blue) and click action buttons above to transfer.
                             </span>
                         </div>
 
@@ -514,22 +559,20 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 70px;">SL #</th>
-                                        <th style="width: 140px;">Student ID</th>
-                                        <th>Student Name</th>
-                                        <th>Class</th>
-                                        <th style="text-align: right; width: 140px;">Assigned Group</th>
+                                        <th style="width: 140px;">STUDENT ID</th>
+                                        <th>STUDENT NAME</th>
+                                        <th>CLASS</th>
+                                        <th style="text-align: right; width: 140px;">ASSIGNED GROUP</th>
                                     </tr>
                                 </thead>
-                                <tbody id="emStudentAllocationTbody">
-                                    <!-- Dynamic Single Select Rows -->
-                                </tbody>
+                                <tbody id="emStudentAllocationTbody"></tbody>
                             </table>
                         </div>
 
                         <!-- পেজিনেশন ও ফুটার -->
                         <div class="em-pagination-footer">
                             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #64748b;">
-                                <select class="em-control" style="width: 75px; height: 32px; padding: 0 10px; border-radius: 6px;" onchange="changeEMPageSize(this.value)">
+                                <select class="em-control" style="width: 75px; height: 32px; padding: 0 10px; border-radius: 50px !important;" onchange="changeEMPageSize(this.value)">
                                     <option value="10">10</option>
                                     <option value="25" selected>25</option>
                                     <option value="50">50</option>
@@ -604,7 +647,7 @@
             <input type="text" class="g-from" value="${fromVal}" placeholder="From Serial" style="width: 25%; text-align: center;">
             <span style="font-size:0.8rem; font-weight:700; color:#64748b;">to</span>
             <input type="text" class="g-to" value="${toVal}" placeholder="To Serial / Rest" style="width: 25%; text-align: center;">
-            <button type="button" class="em-btn-icon delete" style="width: 30px; height: 30px; margin-left: auto;" onclick="this.closest('.em-group-row').remove()" title="Remove"><i class="fa-solid fa-trash"></i></button>
+            <button type="button" class="em-btn-icon delete" style="width: 32px; height: 32px; margin-left: auto;" onclick="this.closest('.em-group-row').remove()" title="Remove"><i class="fa-solid fa-trash"></i></button>
         `;
         container.appendChild(row);
     }
@@ -895,6 +938,7 @@
         }
     }
 
+    // হিস্ট্রি টেবিল রেন্ডার (১০০% পিল বাটন ও ব্যাজ)
     function renderEMRegistry() {
         const tbody = document.getElementById('emRegistryTbody');
         if (!tbody) return;
@@ -913,17 +957,17 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>
-                    <strong>${ex.name}</strong><br>
-                    <span style="font-size:0.75rem; color:#2563eb; font-weight:700;">
+                    <strong style="color: #0f172a; font-size: 0.95rem;">${ex.name}</strong><br>
+                    <span class="em-rule-badge">
                         <i class="fa-solid fa-layer-group"></i> ${groupDesc}
                     </span>
                 </td>
-                <td><span style="background:#eff6ff; color:#2563eb; padding:4px 12px; border-radius:50px; font-size:0.8rem; font-weight:700;">${ex.class}</span></td>
-                <td>${ex.date}</td>
-                <td style="text-align: right;">
-                    <button class="em-btn-icon edit" onclick="editEMExam('${ex.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                    <button class="em-btn-icon duplicate" onclick="duplicateEMExam('${ex.id}')" title="Duplicate"><i class="fa-solid fa-copy"></i></button>
-                    <button class="em-btn-icon delete" onclick="deleteEMExam('${ex.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                <td><span class="em-class-badge">${ex.class}</span></td>
+                <td style="font-weight: 600; color: #475569;">${ex.date}</td>
+                <td style="text-align: right; white-space: nowrap;">
+                    <button class="em-btn-icon edit" onclick="editEMExam('${ex.id}')" title="Edit Assessment"><i class="fa-solid fa-pen"></i></button>
+                    <button class="em-btn-icon duplicate" onclick="duplicateEMExam('${ex.id}')" title="Duplicate Assessment"><i class="fa-solid fa-copy"></i></button>
+                    <button class="em-btn-icon delete" onclick="deleteEMExam('${ex.id}')" title="Delete Assessment"><i class="fa-solid fa-trash"></i></button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -997,14 +1041,13 @@
             };
         });
 
-        selectedSingleStudentId = null; // রিসেট
+        selectedSingleStudentId = null;
         updateTopTransferBar(groupsList);
         renderGroupFilterPills();
         emStudentCurrentPage = 1;
         renderEMPaginatedStudentTable();
     };
 
-    // উপরের অ্যাকশন বার বাটন
     function updateTopTransferBar(groupsList) {
         const btnsBox = document.getElementById('emDynamicTransferBtns');
         const countBadge = document.getElementById('emSelectedCountBadge');
@@ -1041,7 +1084,6 @@
         btnsBox.innerHTML = btnsHtml;
     }
 
-    // একক শিক্ষার্থীকে ট্রান্সফার
     window.moveSingleSelectedStudent = async function(targetGroup) {
         if (!selectedSingleStudentId) return;
 
@@ -1068,18 +1110,16 @@
         renderEMPaginatedStudentTable();
     };
 
-    // একক সারি সিলেকশন হ্যান্ডলার (একবারে শুধু ১টিই সিলেক্ট হবে)
     window.toggleSingleStudentSelection = function(studentId) {
         if (selectedSingleStudentId === studentId) {
-            selectedSingleStudentId = null; // আবার ক্লিক করলে ডিসিলেক্ট হবে
+            selectedSingleStudentId = null;
         } else {
-            selectedSingleStudentId = studentId; // শুধুমাত্র এটি সিলেক্ট থাকবে
+            selectedSingleStudentId = studentId;
         }
         updateTopTransferBar();
         renderEMPaginatedStudentTable();
     };
 
-    // ফিল্টার পিলস (সম্পূর্ণ গোলাকার রাউন্ডেড ডিজাইন)
     function renderGroupFilterPills() {
         const container = document.getElementById('emGroupFilterPills');
         if (!container) return;
@@ -1131,7 +1171,6 @@
         renderEMPaginatedStudentTable();
     };
 
-    // পেজ অনুযায়ী শিক্ষার্থী টেবিল রেন্ডার
     function renderEMPaginatedStudentTable() {
         const tbody = document.getElementById('emStudentAllocationTbody');
         const counterEl = document.getElementById('emPaginationCounterText');
@@ -1171,7 +1210,7 @@
 
             const tr = document.createElement('tr');
             if (isSelected) {
-                tr.classList.add('erp-row-selected'); // সলিড ব্লু ব্যাকগ্রাউন্ড ও সাদা টেক্সট
+                tr.classList.add('erp-row-selected');
             }
 
             tr.onclick = () => toggleSingleStudentSelection(st.id);
@@ -1219,7 +1258,6 @@
         }
     }
 
-    // আসল শিক্ষার্থী ফেচ হেল্পার
     async function getRealStudentsForClass(targetClass) {
         let allStudents = [];
 
@@ -1252,7 +1290,7 @@
         return matched;
     }
 
-    // ১১. এডিট, ডুপ্লিকেট, ডিলিট ও রিসেট
+    // এডিট, ডুপ্লিকেট, ডিলিট
     window.editEMExam = function(id) {
         const exam = examRegistry.find(x => x.id === id);
         if (!exam) return;
