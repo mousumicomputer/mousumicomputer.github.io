@@ -1,16 +1,18 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v2.2)
+   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v2.3)
    Path: cpscl/exam_manager.js
-   Design: 1:1 Trust ERP Style (Solid Blue Row Selection & Top Action Bar)
+   Updates: Single-Row Blue Selection | True Rounded Pill Filters | Top Action
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Trust-ERP 1:1 Styled Suite (cpscl/exam_manager.js)...");
+    console.log("Loading CPSCL Suite v2.3 with Single-Select & Rounded Pills...");
 
-    // ১. ট্রাস্ট ইআরপি হুবহু স্টাইল ইনজেকশন
+    // ১. স্টাইল ইনজেকশন (পুরোনো স্টাইল থাকলে মুছে নতুনটি নিখুঁতভাবে বসানো)
     function injectExamStyles() {
-        if (document.getElementById('cpscl-exam-manager-style')) return;
+        const oldStyle = document.getElementById('cpscl-exam-manager-style');
+        if (oldStyle) oldStyle.remove();
+
         const style = document.createElement('style');
         style.id = 'cpscl-exam-manager-style';
         style.innerHTML = `
@@ -51,7 +53,7 @@
             .em-control:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
             select.em-control { cursor: pointer; }
 
-            /* পিলস */
+            /* সাবজেক্ট পিলস */
             .em-pills-box { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; margin-bottom: 12px; }
             .em-pill { display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; color: #2563eb; border: 1.5px solid #bfdbfe; padding: 7px 15px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; user-select: none; }
             .em-pill:hover { background: #dbeafe; border-color: #2563eb; transform: translateY(-1px); }
@@ -65,7 +67,43 @@
             .em-btn-add:hover { background: #eff6ff; border-color: #2563eb; }
 
             /* =======================================================
-               ছবি ২, ৩ ও ৪-এর হুবহু ১:১ ট্রাস্ট ইআরপি টেবিল ও সিলেকশন সিএসএস
+               নিখুঁত পিল বাটন সিএসএস (All Students, Group A, Group B)
+               ======================================================= */
+            .em-group-pills-filter {
+                display: flex !important;
+                gap: 8px !important;
+                align-items: center !important;
+                flex-wrap: wrap !important;
+            }
+            .em-filter-pill-btn {
+                padding: 7px 18px !important;
+                border-radius: 50px !important;
+                border: 1.5px solid #cbd5e1 !important;
+                background: #ffffff !important;
+                color: #475569 !important;
+                font-size: 0.82rem !important;
+                font-weight: 700 !important;
+                cursor: pointer !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 6px !important;
+                transition: all 0.2s ease !important;
+                outline: none !important;
+                user-select: none !important;
+            }
+            .em-filter-pill-btn:hover {
+                background: #f1f5f9 !important;
+                border-color: #94a3b8 !important;
+            }
+            .em-filter-pill-btn.active {
+                background: #2563eb !important;
+                color: #ffffff !important;
+                border-color: #2563eb !important;
+                box-shadow: 0 4px 10px rgba(37,99,235,0.25) !important;
+            }
+
+            /* =======================================================
+               ১:১ ট্রাস্ট ইআরপি টেবিল ও সিলেকশন সিএসএস
                ======================================================= */
             .em-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
             .em-table th {
@@ -94,7 +132,7 @@
             .em-table tbody tr:nth-child(odd) { background-color: #ffffff !important; }
             .em-table tbody tr:hover { background-color: #f1f5f9 !important; cursor: pointer; }
 
-            /* ছবি ৩ ও ৪-এর হুবহু সলিড ব্লু সিলেকশন (#3b82f6) */
+            /* একক সারি সলিড ব্লু সিলেকশন (#3b82f6) */
             .em-table tbody tr.erp-row-selected,
             .em-table tbody tr.erp-row-selected:nth-child(even),
             .em-table tbody tr.erp-row-selected:nth-child(odd) {
@@ -122,7 +160,7 @@
                 border: 1px solid #bfdbfe;
             }
 
-            /* উপরের ট্রান্সফার অ্যাকশন বার */
+            /* উপরের ট্রান্সফার বার */
             .em-top-transfer-bar {
                 display: flex;
                 align-items: center;
@@ -130,7 +168,7 @@
                 background: #f8fafc;
                 border: 1.5px solid #e2e8f0;
                 border-radius: 14px;
-                padding: 10px 18px;
+                padding: 12px 18px;
                 margin-bottom: 16px;
                 flex-wrap: wrap;
                 gap: 12px;
@@ -138,11 +176,11 @@
             .em-transfer-btns-group {
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: 10px;
                 flex-wrap: wrap;
             }
             .em-btn-move {
-                padding: 7px 16px;
+                padding: 8px 18px;
                 border-radius: 50px;
                 font-size: 0.82rem;
                 font-weight: 700;
@@ -157,7 +195,7 @@
             .em-btn-move-a:hover { background: #1d4ed8; }
             .em-btn-move-b { background: #059669; color: #fff; box-shadow: 0 2px 6px rgba(5,150,105,0.25); }
             .em-btn-move-b:hover { background: #047857; }
-            .em-btn-move:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+            .em-btn-move:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
 
             /* পেজিনেশন ফুটার */
             .em-pagination-footer { display: flex; justify-content: space-between; align-items: center; padding: 16px 8px; border-top: 1.5px solid #eef2f5; flex-wrap: wrap; gap: 12px; margin-top: 15px; }
@@ -166,7 +204,6 @@
             .em-page-btn.active { background: #3b82f6; border-color: #3b82f6; color: #ffffff; font-weight: 700; }
             .em-page-btn.disabled { opacity: 0.35; cursor: not-allowed; }
 
-            /* ড্যাশবোর্ড ফর্ম বাটন */
             .em-btn-submit { background: #2563eb; color: #fff; border: none; width: 100%; height: 48px; border-radius: 50px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 18px; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
             .em-btn-submit:hover { background: #1d4ed8; }
             .em-group-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; background: #f8fafc; padding: 8px 14px; border-radius: 50px; border: 1.5px solid #cbd5e1; }
@@ -262,9 +299,9 @@
     let selectedSubjectsMap = {};
     let manualGroupOverrides = {};
 
-    // Tab 2 শিক্ষার্থী তালিকা ও সিলেকশন স্টেট
+    // Tab 2 স্টেট ভেরিয়েবল (একক সিলেকশন)
     let allocatedStudentsCache = [];
-    let selectedStudentIds = new Set(); // ক্লিক করে সিলেক্ট করা ছাত্রদের সেট
+    let selectedSingleStudentId = null; // শুধুমাত্র ১ জন ছাত্র সিলেক্ট হবে
     let emStudentSearchQuery = '';
     let emSelectedGroupFilter = 'all';
     let emStudentCurrentPage = 1;
@@ -434,7 +471,7 @@
                     </div>
                 </div>
 
-                <!-- TAB 2: Student Group Allocation & Manual Transfer (Trust ERP Style) -->
+                <!-- TAB 2: Student Group Allocation & Manual Transfer (Single Select & Rounded Pills) -->
                 <div class="em-tab-content" id="emTabContent2">
                     <div class="em-card">
                         <div class="em-card-title">
@@ -446,16 +483,16 @@
                             </div>
                         </div>
 
-                        <!-- উপরের স্মার্ট ট্রান্সফার অ্যাকশন বার (ছবি ৩ ও ৪-এর জন্য নতুন কন্ট্রোল) -->
+                        <!-- উপরের স্মার্ট ট্রান্সফার অ্যাকশন বার -->
                         <div class="em-top-transfer-bar">
                             <div style="display: flex; align-items: center; gap: 12px; flex: 1; max-width: 380px;">
                                 <input type="text" id="emStudentSearchInp" class="em-control" style="height: 38px;" placeholder="Search student by Name, ID, or SL..." oninput="onEMStudentSearch(this.value)">
                             </div>
                             
-                            <!-- নির্বাচিত শিক্ষার্থীদের জন্য ট্রান্সফার অ্যাকশন বাটনসমূহ -->
+                            <!-- একক শিক্ষার্থীর জন্য অ্যাকশন বাটনসমূহ -->
                             <div class="em-transfer-btns-group">
-                                <span id="emSelectedCountBadge" style="font-size: 0.82rem; font-weight: 700; color: #64748b; padding: 0 8px;">
-                                    0 Selected
+                                <span id="emSelectedCountBadge" style="font-size: 0.85rem; font-weight: 700; color: #64748b; padding: 0 8px;">
+                                    0 Row Selected (Click a row below)
                                 </span>
                                 <div id="emDynamicTransferBtns" style="display: inline-flex; gap: 8px;">
                                     <!-- Dynamic Action Buttons (e.g. Move to Group A, Move to Group B) -->
@@ -463,11 +500,11 @@
                             </div>
                         </div>
 
-                        <!-- গ্রুপ ফিল্টার পিলস -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                        <!-- গ্রুপ ফিল্টার পিলস (সুন্দর গোলাকার ব্যাজ) -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
                             <div class="em-group-pills-filter" id="emGroupFilterPills"></div>
                             <span style="font-size: 0.8rem; color: #64748b; font-style: italic;">
-                                <i class="fa-solid fa-circle-info"></i> Click on any student row to select (turns blue) and click action buttons above to transfer.
+                                <i class="fa-solid fa-circle-info"></i> Click any student row to select (turns blue) and click action buttons above to transfer.
                             </span>
                         </div>
 
@@ -484,12 +521,12 @@
                                     </tr>
                                 </thead>
                                 <tbody id="emStudentAllocationTbody">
-                                    <!-- Dynamic Rows with Solid Blue Row Click -->
+                                    <!-- Dynamic Single Select Rows -->
                                 </tbody>
                             </table>
                         </div>
 
-                        <!-- পেজিনেশন ও ফুটার (ছবি ৪-এর হুবহু) -->
+                        <!-- পেজিনেশন ও ফুটার -->
                         <div class="em-pagination-footer">
                             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #64748b;">
                                 <select class="em-control" style="width: 75px; height: 32px; padding: 0 10px; border-radius: 6px;" onchange="changeEMPageSize(this.value)">
@@ -893,7 +930,7 @@
         });
     }
 
-    // ১০. TAB 2: ১:১ ট্রাস্ট ইআরপি স্টাইল স্টুডেন্ট টেবিল ও টপ অ্যাকশন বার
+    // ১০. TAB 2: একক সিলেকশন (Single Select) ও রাউন্ডেড পিলস
     function populateEMExamDropdown() {
         const select = document.getElementById('emTransferExamSelect');
         if (!select) return;
@@ -920,10 +957,8 @@
             { name: "Group B", from: 41, to: "Rest" }
         ];
 
-        // ১. ফায়ারবেস বা ক্যাশ থেকে আসল শিক্ষার্থী লোড
         let rawStudents = await getRealStudentsForClass(exam.class);
 
-        // ২. ক্রমানুসারে সাজানো
         rawStudents.sort((a, b) => {
             const rA = parseInt(a.roll_no || a.roll) || 0;
             const rB = parseInt(b.roll_no || b.roll) || 0;
@@ -931,7 +966,6 @@
             return String(a.std_id || a.id).localeCompare(String(b.std_id || b.id));
         });
 
-        // ৩. প্রতিটি শিক্ষার্থীর জন্য সিরিয়াল ও গ্রুপ নির্ধারণ
         allocatedStudentsCache = rawStudents.map((st, idx) => {
             const slNumber = idx + 1;
             const studentId = String(st.std_id || st.id || '').trim();
@@ -963,24 +997,28 @@
             };
         });
 
-        // সিলেকশন ক্লিয়ার
-        selectedStudentIds.clear();
+        selectedSingleStudentId = null; // রিসেট
         updateTopTransferBar(groupsList);
         renderGroupFilterPills();
         emStudentCurrentPage = 1;
         renderEMPaginatedStudentTable();
     };
 
-    // উপরের অ্যাকশন বার বাটন রেন্ডার (Move to Group A, Move to Group B)
+    // উপরের অ্যাকশন বার বাটন
     function updateTopTransferBar(groupsList) {
         const btnsBox = document.getElementById('emDynamicTransferBtns');
         const countBadge = document.getElementById('emSelectedCountBadge');
         if (!btnsBox) return;
 
-        const count = selectedStudentIds.size;
+        const selectedStudent = allocatedStudentsCache.find(s => s.id === selectedSingleStudentId);
+
         if (countBadge) {
-            countBadge.innerText = `${count} Row(s) Selected`;
-            countBadge.style.color = count > 0 ? '#2563eb' : '#64748b';
+            if (selectedStudent) {
+                countBadge.innerHTML = `<span style="color:#2563eb; font-weight:800;">1 Row Selected:</span> <span style="color:#0f172a;">${selectedStudent.name} (SL #${selectedStudent.sl})</span>`;
+            } else {
+                countBadge.innerText = '0 Row Selected (Click a row below)';
+                countBadge.style.color = '#64748b';
+            }
         }
 
         const examSelect = document.getElementById('emTransferExamSelect');
@@ -991,8 +1029,10 @@
         let btnsHtml = '';
         groups.forEach((g, idx) => {
             const btnClass = idx % 2 === 0 ? 'em-btn-move-a' : 'em-btn-move-b';
+            const isCurrentGroup = selectedStudent && (selectedStudent.group === g.name);
+
             btnsHtml += `
-                <button type="button" class="em-btn-move ${btnClass}" ${count === 0 ? 'disabled' : ''} onclick="bulkMoveSelectedStudents('${g.name}')">
+                <button type="button" class="em-btn-move ${btnClass}" ${(!selectedStudent || isCurrentGroup) ? 'disabled' : ''} onclick="moveSingleSelectedStudent('${g.name}')">
                     <i class="fa-solid fa-arrow-right-arrow-left"></i> Move to ${g.name}
                 </button>
             `;
@@ -1001,48 +1041,45 @@
         btnsBox.innerHTML = btnsHtml;
     }
 
-    // নির্বাচিত শিক্ষার্থীদের এক ক্লিকে গ্রুপ ট্রান্সফার
-    window.bulkMoveSelectedStudents = async function(targetGroup) {
-        if (selectedStudentIds.size === 0) return;
+    // একক শিক্ষার্থীকে ট্রান্সফার
+    window.moveSingleSelectedStudent = async function(targetGroup) {
+        if (!selectedSingleStudentId) return;
 
         const examSelect = document.getElementById('emTransferExamSelect');
         const examId = examSelect ? examSelect.value : '';
         if (!examId) return;
 
         if (!manualGroupOverrides[examId]) manualGroupOverrides[examId] = {};
+        manualGroupOverrides[examId][selectedSingleStudentId] = targetGroup;
 
-        selectedStudentIds.forEach(sId => {
-            manualGroupOverrides[examId][sId] = targetGroup;
-            const stu = allocatedStudentsCache.find(s => s.id === sId);
-            if (stu) stu.group = targetGroup;
-        });
+        const stu = allocatedStudentsCache.find(s => s.id === selectedSingleStudentId);
+        if (stu) stu.group = targetGroup;
 
         await saveExamsToCloud();
 
         if (typeof window.showToast === 'function') {
-            window.showToast(`${selectedStudentIds.size} student(s) moved to ${targetGroup}!`, "success");
+            window.showToast(`${stu ? stu.name : 'Student'} successfully moved to ${targetGroup}!`, "success");
         } else {
-            alert(`${selectedStudentIds.size} student(s) moved to ${targetGroup}!`);
+            alert(`Student moved to ${targetGroup}!`);
         }
 
-        selectedStudentIds.clear();
         updateTopTransferBar();
         renderGroupFilterPills();
         renderEMPaginatedStudentTable();
     };
 
-    // সারি সিলেকশন হ্যান্ডলার (ক্লিক করলে সলিড ব্লু হবে)
-    window.toggleStudentRowSelection = function(studentId) {
-        if (selectedStudentIds.has(studentId)) {
-            selectedStudentIds.delete(studentId);
+    // একক সারি সিলেকশন হ্যান্ডলার (একবারে শুধু ১টিই সিলেক্ট হবে)
+    window.toggleSingleStudentSelection = function(studentId) {
+        if (selectedSingleStudentId === studentId) {
+            selectedSingleStudentId = null; // আবার ক্লিক করলে ডিসিলেক্ট হবে
         } else {
-            selectedStudentIds.add(studentId);
+            selectedSingleStudentId = studentId; // শুধুমাত্র এটি সিলেক্ট থাকবে
         }
         updateTopTransferBar();
         renderEMPaginatedStudentTable();
     };
 
-    // গ্রুপ ফিল্টার পিলস
+    // ফিল্টার পিলস (সম্পূর্ণ গোলাকার রাউন্ডেড ডিজাইন)
     function renderGroupFilterPills() {
         const container = document.getElementById('emGroupFilterPills');
         if (!container) return;
@@ -1054,14 +1091,14 @@
         });
 
         let html = `
-            <button type="button" class="em-filter-btn ${emSelectedGroupFilter === 'all' ? 'active' : ''}" onclick="setEMGroupFilter('all')">
+            <button type="button" class="em-filter-pill-btn ${emSelectedGroupFilter === 'all' ? 'active' : ''}" onclick="setEMGroupFilter('all')">
                 All Students (${total})
             </button>
         `;
 
         Object.keys(groupCounts).forEach(gName => {
             html += `
-                <button type="button" class="em-filter-btn ${emSelectedGroupFilter === gName ? 'active' : ''}" onclick="setEMGroupFilter('${gName}')">
+                <button type="button" class="em-filter-pill-btn ${emSelectedGroupFilter === gName ? 'active' : ''}" onclick="setEMGroupFilter('${gName}')">
                     ${gName} (${groupCounts[gName]})
                 </button>
             `;
@@ -1094,7 +1131,7 @@
         renderEMPaginatedStudentTable();
     };
 
-    // পেজ অনুযায়ী শিক্ষার্থী টেবিল রেন্ডার (ছবি ৩ ও ৪-এর সলিড ব্লু এফেক্টসহ)
+    // পেজ অনুযায়ী শিক্ষার্থী টেবিল রেন্ডার
     function renderEMPaginatedStudentTable() {
         const tbody = document.getElementById('emStudentAllocationTbody');
         const counterEl = document.getElementById('emPaginationCounterText');
@@ -1129,7 +1166,7 @@
         const pageStudents = filtered.slice(startIndex, startIndex + emStudentPageSize);
 
         pageStudents.forEach(st => {
-            const isSelected = selectedStudentIds.has(st.id);
+            const isSelected = (selectedSingleStudentId === st.id);
             const rollBadge = st.roll ? `<span style="font-size:0.75rem; background:rgba(0,0,0,0.06); padding:2px 8px; border-radius:10px; margin-left:6px;">Roll: ${st.roll}</span>` : '';
 
             const tr = document.createElement('tr');
@@ -1137,7 +1174,7 @@
                 tr.classList.add('erp-row-selected'); // সলিড ব্লু ব্যাকগ্রাউন্ড ও সাদা টেক্সট
             }
 
-            tr.onclick = () => toggleStudentRowSelection(st.id);
+            tr.onclick = () => toggleSingleStudentSelection(st.id);
 
             tr.innerHTML = `
                 <td><strong>${st.sl}</strong></td>
@@ -1154,14 +1191,12 @@
             tbody.appendChild(tr);
         });
 
-        // ফুটার কাউন্টার
         const end = Math.min(startIndex + emStudentPageSize, totalFiltered);
         if (counterEl) {
-            const selCountText = selectedStudentIds.size > 0 ? ` (${selectedStudentIds.size} row selected)` : '';
-            counterEl.innerText = `Showing ${startIndex + 1} to ${end} of ${totalFiltered} entries ${selCountText}`;
+            const selText = selectedSingleStudentId ? ` (1 row selected)` : '';
+            counterEl.innerText = `Showing ${startIndex + 1} to ${end} of ${totalFiltered} entries ${selText}`;
         }
 
-        // পেজিনেশন বাটন (« < 1 2 3 > »)
         if (btnsContainer) {
             let btnsHtml = `
                 <button type="button" class="em-page-btn ${emStudentCurrentPage === 1 ? 'disabled' : ''}" onclick="goToEMStudentPage(1)">«</button>
@@ -1184,7 +1219,7 @@
         }
     }
 
-    // আসল শিক্ষার্থী রিডার
+    // আসল শিক্ষার্থী ফেচ হেল্পার
     async function getRealStudentsForClass(targetClass) {
         let allStudents = [];
 
