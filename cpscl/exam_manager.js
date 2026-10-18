@@ -191,7 +191,7 @@
             .em-btn-icon {
                 width: 36px !important;
                 height: 36px !important;
-                border-radius: 50px !important; /* সম্পূর্ণ গোল পিল */
+                border-radius: 50px !important;
                 border: 1.5px solid #cbd5e1 !important;
                 background: #ffffff !important;
                 cursor: pointer !important;
@@ -891,19 +891,53 @@
         setEMWorkspaceView('history');
     };
 
+    // [FIXED] ক্লাউডে সেভ করার নির্ভরযোগ্য কোড
     async function saveExamsToCloud() {
+        let isSavedToCloud = false;
+
+        // উপায় ১: যদি প্রজেক্টের গ্লোবাল writeToFirebase ফাংশন থাকে
         if (typeof window.writeToFirebase === 'function') {
             try {
                 await window.writeToFirebase('cpscl_exams', examRegistry);
                 await window.writeToFirebase('cpscl_exam_group_overrides', manualGroupOverrides);
+                isSavedToCloud = true;
             } catch (err) {
-                console.error("Firebase Save Error:", err);
+                console.error("writeToFirebase Error:", err);
             }
         }
+
+        // উপায় ২: ফায়ারবেস মডুলার SDK (getDatabase, ref, set)
+        if (!isSavedToCloud && typeof window.getDatabase === 'function' && typeof window.ref === 'function') {
+            try {
+                const db = window.getDatabase();
+                if (typeof window.set === 'function') {
+                    await window.set(window.ref(db, 'cpscl_exams'), examRegistry);
+                    await window.set(window.ref(db, 'cpscl_exam_group_overrides'), manualGroupOverrides);
+                    isSavedToCloud = true;
+                }
+            } catch (err) {
+                console.error("Firebase Modular Save Error:", err);
+            }
+        }
+
+        // উপায় ৩: ফায়ারবেস ক্লাসিক SDK (v8)
+        if (!isSavedToCloud && window.firebase && typeof window.firebase.database === 'function') {
+            try {
+                const db = window.firebase.database();
+                await db.ref('cpscl_exams').set(examRegistry);
+                await db.ref('cpscl_exam_group_overrides').set(manualGroupOverrides);
+                isSavedToCloud = true;
+            } catch (err) {
+                console.error("Firebase v8 Save Error:", err);
+            }
+        }
+
+        // লোকালস্টোরেজ ক্যাশ ব্যাকআপ
         localStorage.setItem('cpscl_exams_registry', JSON.stringify(examRegistry));
         localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(manualGroupOverrides));
     }
 
+    // [FIXED] ক্লাউড থেকে ডাটা রিড করার নির্ভরযোগ্য কোড
     async function syncFromFirebase() {
         const local = localStorage.getItem('cpscl_exams_registry');
         if (local) {
@@ -916,6 +950,7 @@
             try { manualGroupOverrides = JSON.parse(localOverrides); } catch(e) {}
         }
 
+        // মডুলার SDK দিয়ে সিঙ্ক
         if (typeof window.getDatabase === 'function' && typeof window.ref === 'function' && typeof window.get === 'function') {
             try {
                 const db = window.getDatabase();
@@ -934,6 +969,27 @@
                 }
             } catch (e) {
                 console.log("Firebase sync fallback.");
+            }
+        }
+        // ক্লাসিক SDK দিয়ে সিঙ্ক
+        else if (window.firebase && typeof window.firebase.database === 'function') {
+            try {
+                const db = window.firebase.database();
+                const snap = await db.ref('cpscl_exams').once('value');
+                if (snap.exists()) {
+                    const data = snap.val();
+                    examRegistry = Array.isArray(data) ? data : Object.values(data);
+                    localStorage.setItem('cpscl_exams_registry', JSON.stringify(examRegistry));
+                    renderEMRegistry();
+                    populateEMExamDropdown();
+                }
+                const snapOv = await db.ref('cpscl_exam_group_overrides').once('value');
+                if (snapOv.exists()) {
+                    manualGroupOverrides = snapOv.val() || {};
+                    localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(manualGroupOverrides));
+                }
+            } catch (e) {
+                console.log("Firebase v8 sync fallback.");
             }
         }
     }
@@ -1272,6 +1328,16 @@
                     localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents));
                 }
             } catch(e) {}
+        } else if (window.firebase && typeof window.firebase.database === 'function') {
+            try {
+                const db = window.firebase.database();
+                const snap = await db.ref('cpscl_students').once('value');
+                if (snap.exists()) {
+                    const data = snap.val();
+                    allStudents = Array.isArray(data) ? data : Object.values(data);
+                    localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents));
+                }
+            } catch(e) {}
         }
 
         if (allStudents.length === 0) {
@@ -1387,6 +1453,7 @@
     function init() {
         injectExamStyles();
         injectExamManagerSidebar();
+        syncFromFirebase(); // পেজ লোড হওয়ার সাথে সাথে ক্লাউড থেকে ডাটা নিয়ে আসবে
     }
 
     if (document.readyState === 'loading') {
