@@ -1,13 +1,13 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Super Admin Mark Management Engine (v2.0 Clean Corporate & Dynamic Dual-Mode)
+   SUB-SECTION: Super Admin Mark Management Engine (v3.0 Minimalist Accordion)
    Path: cpscl/mark_entry_manager.js
-   Architecture: Clean White Header | Direct Marks Entry | Future-Ready Feature Switches | Cross-Device Cloud Sync
+   Architecture: Clean White Corporate | Minimalist Drawer Accordion | Firebase Sync
    Language: Pure English (Corporate ERP Standard)
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Super Admin Mark Management Engine (v2.0 Clean Corporate Edition)...");
+    console.log("Loading CPSCL Super Admin Mark Management Engine (v3.0 Minimalist Drawer Edition)...");
 
     // ১. সাইডবারে Exam Manager-এর নিচে "Mark Entry" সাব-মেনু ইনজেক্ট করা
     function injectMarkEntrySidebar() {
@@ -52,7 +52,7 @@
         }
     };
 
-    // ২. স্কোপড কর্পোরেট সিএসএস ইনজেকশন (মেইন ERP ডিজাইনের সাথে ১০০% ম্যাচিং)
+    // ২. স্কোপড কর্পোরেট সিএসএস (ড্রয়ার স্টাইল)
     function injectMarkEntryStyles() {
         if (document.getElementById('cpscl-mark-entry-scoped-styles')) return;
         const style = document.createElement('style');
@@ -60,24 +60,28 @@
         style.innerHTML = `
             .mem-wrapper { padding: 15px 5px; font-family: 'Plus Jakarta Sans', sans-serif; }
             
-            /* Clean Corporate White Header */
-            .mem-header { background: #ffffff; border: 1.5px solid #e2e8f0; padding: 14px 24px; border-radius: 50px !important; display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); flex-wrap: wrap; gap: 12px; }
+            /* Clean White Header */
+            .mem-header { background: #ffffff; border: 1.5px solid #e2e8f0; padding: 14px 24px; border-radius: 50px !important; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); flex-wrap: wrap; gap: 12px; }
             .mem-header h1 { font-size: 1.25rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 10px; margin: 0; }
             .mem-header h1 i { color: #2563eb; }
             .mem-badge-status { font-size: 11px; font-weight: 700; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 4px 14px; border-radius: 50px !important; }
 
-            /* Pill Navigation Tabs */
-            .mem-nav-tabs { display: flex; gap: 8px; margin-bottom: 18px; background: #ffffff; padding: 8px 14px; border-radius: 50px !important; border: 1.5px solid #e2e8f0; overflow-x: auto; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-            .mem-tab-btn { background: transparent; border: none; color: #64748b; padding: 9px 20px; border-radius: 50px !important; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
-            .mem-tab-btn:hover { background: #f8fafc; color: #2563eb; }
-            .mem-tab-btn.active { background: #2563eb !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
+            /* Minimalist Accordion Drawer */
+            .mem-drawer { margin-bottom: 12px; }
+            .mem-drawer-header { background: #ffffff; border: 1.5px solid #e2e8f0; padding: 16px 24px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+            .mem-drawer-header:hover { background: #f8fafc; border-color: #cbd5e1; }
+            .mem-drawer.open .mem-drawer-header { border-bottom-left-radius: 0; border-bottom-right-radius: 0; background: #f8fafc; border-bottom-color: #f1f5f9; }
+            .mem-drawer-title { font-size: 0.96rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 10px; margin: 0; }
+            .mem-drawer-title i { color: #2563eb; font-size: 0.95rem; }
+            .mem-drawer-arrow { font-size: 0.85rem; color: #94a3b8; transition: transform 0.25s ease; }
+            .mem-drawer.open .mem-drawer-arrow { transform: rotate(90deg); color: #2563eb; }
 
-            .mem-tab-content { display: none; }
-            .mem-tab-content.active { display: block; }
+            .mem-drawer-body { display: none; background: #ffffff; border: 1.5px solid #e2e8f0; border-top: none; border-radius: 0 0 16px 16px; padding: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+            .mem-drawer.open .mem-drawer-body { display: block; }
 
             /* Filter Controls Bar */
-            .mem-filter-bar { background: #ffffff; padding: 12px 20px; border-radius: 50px !important; border: 1.5px solid #e2e8f0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-            .mem-filter-group { display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 6px 16px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; flex: 1; min-width: 160px; }
+            .mem-filter-bar { background: #f8fafc; padding: 12px 18px; border-radius: 50px !important; border: 1.5px solid #e2e8f0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+            .mem-filter-group { display: flex; align-items: center; gap: 8px; background: #ffffff; padding: 7px 16px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; flex: 1; min-width: 160px; }
             .mem-filter-group select { border: none; background: transparent; font-size: 0.86rem; font-weight: 700; color: #1e293b; outline: none; width: 100%; cursor: pointer; }
 
             /* Stats Overview Grid */
@@ -86,8 +90,7 @@
             .mem-stat-card p { margin: 0; font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
             .mem-stat-card h3 { margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a; }
 
-            /* Main Table Card */
-            .mem-table-card { background: #ffffff; border-radius: 20px; border: 1.5px solid #e2e8f0; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+            /* Table Layout */
             .mem-table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
             .mem-table th { background: #f8fafc !important; color: #64748b !important; font-size: 0.75rem !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 12px 16px !important; text-align: left; }
             .mem-table td { background: #ffffff; padding: 12px 16px; font-size: 0.88rem; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; color: #334155; }
@@ -100,8 +103,8 @@
             .mem-mark-inp:focus { border-color: #2563eb; background: #ffffff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
             .mem-badge-pill { padding: 4px 12px; border-radius: 50px !important; font-size: 0.78rem; font-weight: 800; display: inline-block; }
 
-            /* Action Buttons (Pills) */
-            .mem-btn-pill { padding: 9px 20px; border-radius: 50px !important; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s; }
+            /* Pill Buttons */
+            .mem-btn-pill { padding: 8px 18px; border-radius: 50px !important; font-size: 0.83rem; font-weight: 700; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s; }
             .mem-btn-primary { background: #2563eb; color: #ffffff; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2); }
             .mem-btn-primary:hover { background: #1d4ed8; }
             .mem-btn-success { background: #10b981; color: #ffffff; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2); }
@@ -109,19 +112,17 @@
             .mem-btn-outline { background: #ffffff; border: 1.5px solid #cbd5e1; color: #475569; }
             .mem-btn-outline:hover { background: #f8fafc; border-color: #94a3b8; color: #1e293b; }
 
-            /* Switch Box Card */
-            .mem-config-card { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 18px; }
-            .mem-config-title { font-size: 1rem; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
-            .mem-switch-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e2e8f0; }
-            .mem-switch-row:last-child { border-bottom: none; }
+            /* Config Box */
+            .mem-config-card { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 18px; margin-bottom: 14px; }
+            .mem-config-title { font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
         `;
         document.head.appendChild(style);
     }
 
     // ৩. মাস্টার সেটিংস (লোকাল ও ক্লাউড সাপোর্টেড)
     const DEFAULT_CONFIG = {
-        markStructure: 'direct', // 'direct' = শুধু প্রাপ্ত নম্বর | 'split' = CQ+MCQ+Practical
-        enableGrading: false     // false = কোনো গ্রেড বা পাস/ফেল নেই | true = ফলাফল ইঞ্জিন চালু
+        markStructure: 'direct',
+        enableGrading: false
     };
 
     function getMemConfig() {
@@ -136,13 +137,13 @@
     let loadedExamsCache = [];
     let currentExamId = '';
     let currentSubject = '';
-    let currentSubjectFullMark = 30; // ডিফল্ট ৩০, পরে এক্সাম থেকে অটো রিড করবে
+    let currentSubjectFullMark = 30;
     let currentClass = '';
     let currentStudentsList = [];
     let isFrozen = false;
 
     let auditLogs = [
-        { time: new Date().toLocaleTimeString(), user: "Root Admin", action: "System Ready", details: "Direct Mark Entry Module Active", type: "System" }
+        { time: new Date().toLocaleTimeString(), user: "Root Admin", action: "System Ready", details: "Accordion Drawer Interface Loaded", type: "System" }
     ];
 
     let gradeScales = [
@@ -160,7 +161,7 @@
         { id: 102, teacher: "S. Sultana", classSec: "Class 9", subject: "English", count: 38, time: "1 hour ago", status: "Pending" }
     ];
 
-    // ৪. ক্লাউড ও লোকাল থেকে লাইভ ডেটা সিঙ্ক ইঞ্জিন (অন্য কম্পিউটারের জন্য)
+    // ৪. ক্লাউড ও লোকাল থেকে ডেটা সিঙ্ক
     async function syncFromCloud() {
         const localEx = localStorage.getItem('cpscl_exams_registry');
         if (localEx) {
@@ -174,7 +175,6 @@
             try {
                 const db = window.getDatabase();
                 
-                // ১. ক্লাউড থেকে এক্সাম রেজিস্ট্রি ফেচ
                 const snapEx = await window.get(window.ref(db, 'cpscl_exams'));
                 if (snapEx.exists()) {
                     const exData = snapEx.val();
@@ -183,7 +183,6 @@
                     populateExamDropdown();
                 }
 
-                // ২. ক্লাউড থেকে আসল ছাত্র তালিকা ফেচ
                 const snapStu = await window.get(window.ref(db, 'cpscl_students'));
                 if (snapStu.exists()) {
                     const stuData = snapStu.val();
@@ -217,7 +216,7 @@
         }
     }
 
-    // ৫. মূল ভিউ রেন্ডারার
+    // ৫. মূল ভিউ রেন্ডারার (মিনিমালিস্ট অ্যাকর্ডিয়ান লেআউট)
     function renderMarkEntryView() {
         const mainWrapper = document.querySelector('.main-wrapper');
         if (!mainWrapper) return;
@@ -251,50 +250,35 @@
                     </div>
                 </div>
 
-                <!-- 5 Pill Navigation Tabs -->
-                <div class="mem-nav-tabs">
-                    <button class="mem-tab-btn active" onclick="window.switchMemTab('entry', this)">
-                        <i class="fa-solid fa-table-cells"></i> Mark Entry & Overrides
-                    </button>
-                    <button class="mem-tab-btn" onclick="window.switchMemTab('approvals', this)">
-                        <i class="fa-solid fa-circle-check"></i> Bulk Approvals
-                    </button>
-                    <button class="mem-tab-btn" onclick="window.switchMemTab('limits', this)">
-                        <i class="fa-solid fa-sliders"></i> Distribution & Limits
-                    </button>
-                    <button class="mem-tab-btn" onclick="window.switchMemTab('grading', this)">
-                        <i class="fa-solid fa-chart-line"></i> Grade Scaling
-                    </button>
-                    <button class="mem-tab-btn" onclick="window.switchMemTab('logs', this)">
-                        <i class="fa-solid fa-clock-rotate-left"></i> Audit Logs
-                    </button>
-                </div>
-
-                <!-- TAB 1: Mark Entry -->
-                <div id="mem-tab-entry" class="mem-tab-content active">
-                    <div class="mem-filter-bar">
-                        <div class="mem-filter-group">
-                            <i class="fa-solid fa-file-pen" style="color: #64748b; font-size: 13px;"></i>
-                            <select id="memFilterExam" onchange="window.onMemExamChange(this.value)">
-                                <option value="">-- Choose Exam --</option>
-                            </select>
-                        </div>
-                        <div class="mem-filter-group">
-                            <i class="fa-solid fa-book" style="color: #64748b; font-size: 13px;"></i>
-                            <select id="memFilterSubject" onchange="window.loadMemMarksTable()">
-                                <option value="">-- Select Subject --</option>
-                            </select>
-                        </div>
-                        <button type="button" class="mem-btn-pill mem-btn-primary" onclick="window.loadMemMarksTable()">
-                            <i class="fa-solid fa-arrows-rotate"></i> Load Sheet
-                        </button>
+                <!-- DRAWER 1: Student Mark Entry & Live Sheet (Default Open) -->
+                <div class="mem-drawer open" id="drawer-entry">
+                    <div class="mem-drawer-header" onclick="window.toggleMemDrawer('entry')">
+                        <div class="mem-drawer-title"><i class="fa-solid fa-table-cells"></i> Student Mark Entry & Live Sheet</div>
+                        <i class="fa-solid fa-chevron-right mem-drawer-arrow"></i>
                     </div>
+                    <div class="mem-drawer-body">
+                        <div class="mem-filter-bar">
+                            <div class="mem-filter-group">
+                                <i class="fa-solid fa-file-pen" style="color: #64748b; font-size: 13px;"></i>
+                                <select id="memFilterExam" onchange="window.onMemExamChange(this.value)">
+                                    <option value="">-- Choose Exam --</option>
+                                </select>
+                            </div>
+                            <div class="mem-filter-group">
+                                <i class="fa-solid fa-book" style="color: #64748b; font-size: 13px;"></i>
+                                <select id="memFilterSubject" onchange="window.loadMemMarksTable()">
+                                    <option value="">-- Select Subject --</option>
+                                </select>
+                            </div>
+                            <button type="button" class="mem-btn-pill mem-btn-primary" onclick="window.loadMemMarksTable()">
+                                <i class="fa-solid fa-arrows-rotate"></i> Load Sheet
+                            </button>
+                        </div>
 
-                    <!-- Clean Dynamic Stats Grid (No pass/fail by default) -->
-                    <div class="mem-stats-grid" id="memDynamicStatsBox"></div>
+                        <!-- Stats Box -->
+                        <div class="mem-stats-grid" id="memDynamicStatsBox"></div>
 
-                    <!-- Mark Table Card -->
-                    <div class="mem-table-card">
+                        <!-- Action bar & Table -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
                             <input type="text" id="memSearchInput" placeholder="Search roll or name..." class="mem-mark-inp" style="width: 250px; text-align: left; padding: 9px 18px;" oninput="window.renderMemTableOnly(this.value)">
                             <div style="display: flex; gap: 8px;">
@@ -315,10 +299,13 @@
                     </div>
                 </div>
 
-                <!-- TAB 2: Approvals -->
-                <div id="mem-tab-approvals" class="mem-tab-content">
-                    <div class="mem-table-card">
-                        <h3 style="font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-bottom: 14px;">Teacher Grade Submissions (Pending Review)</h3>
+                <!-- DRAWER 2: Teacher Submissions & Approvals -->
+                <div class="mem-drawer" id="drawer-approvals">
+                    <div class="mem-drawer-header" onclick="window.toggleMemDrawer('approvals')">
+                        <div class="mem-drawer-title"><i class="fa-solid fa-circle-check"></i> Teacher Submissions & Approvals</div>
+                        <i class="fa-solid fa-chevron-right mem-drawer-arrow"></i>
+                    </div>
+                    <div class="mem-drawer-body">
                         <table class="mem-table">
                             <thead>
                                 <tr>
@@ -336,18 +323,16 @@
                     </div>
                 </div>
 
-                <!-- TAB 3: Master Feature Switches & Limits -->
-                <div id="mem-tab-limits" class="mem-tab-content">
-                    <div class="mem-table-card">
-                        <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin-bottom: 4px;">Mark Entry Architecture Controls</h3>
-                        <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 20px;">Control whether marks are direct single inputs or split (CQ/MCQ), and toggle automatic grading.</p>
-
-                        <!-- Feature Toggle 1: Structure -->
+                <!-- DRAWER 3: Entry Architecture & Mode Settings -->
+                <div class="mem-drawer" id="drawer-settings">
+                    <div class="mem-drawer-header" onclick="window.toggleMemDrawer('settings')">
+                        <div class="mem-drawer-title"><i class="fa-solid fa-sliders"></i> Entry Architecture & Mode Settings</div>
+                        <i class="fa-solid fa-chevron-right mem-drawer-arrow"></i>
+                    </div>
+                    <div class="mem-drawer-body">
                         <div class="mem-config-card">
                             <div class="mem-config-title"><i class="fa-solid fa-layer-group" style="color:#2563eb;"></i> 1. Mark Entry Format Mode</div>
-                            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">Choose how marks will be collected in the table:</p>
-                            
-                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 10px;">
                                 <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer;">
                                     <input type="radio" name="mem_opt_structure" value="direct" ${cfg.markStructure === 'direct' ? 'checked' : ''} onchange="window.updateMemConfigSetting('markStructure', 'direct')">
                                     Direct Single Mark (e.g. 30 Mark Entry)
@@ -359,29 +344,29 @@
                             </div>
                         </div>
 
-                        <!-- Feature Toggle 2: Grading Engine -->
                         <div class="mem-config-card">
                             <div class="mem-config-title"><i class="fa-solid fa-chart-line" style="color:#2563eb;"></i> 2. Academic Grading & Result Engine</div>
-                            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">Enable or disable automatic GPA, Letter Grade, and Pass/Fail calculations:</p>
-                            
-                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 10px;">
                                 <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer;">
                                     <input type="radio" name="mem_opt_grading" value="false" ${!cfg.enableGrading ? 'checked' : ''} onchange="window.updateMemConfigSetting('enableGrading', false)">
-                                    Raw Marks Only (Hide Grade, GPA & Status)
+                                    Raw Marks Only (Hide Grade, GPA & Pass/Fail)
                                 </label>
                                 <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer;">
                                     <input type="radio" name="mem_opt_grading" value="true" ${cfg.enableGrading ? 'checked' : ''} onchange="window.updateMemConfigSetting('enableGrading', true)">
-                                    Automatic Grading Enabled (Calculate Grade, GPA & Pass/Fail)
+                                    Automatic Grading Enabled (Calculate GPA & Pass/Fail)
                                 </label>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 4: Grading Scale -->
-                <div id="mem-tab-grading" class="mem-tab-content">
-                    <div class="mem-table-card">
-                        <h3 style="font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-bottom: 14px;">National Grading System Scale</h3>
+                <!-- DRAWER 4: National Grading System Scale -->
+                <div class="mem-drawer" id="drawer-grading">
+                    <div class="mem-drawer-header" onclick="window.toggleMemDrawer('grading')">
+                        <div class="mem-drawer-title"><i class="fa-solid fa-chart-line"></i> National Grading System Scale</div>
+                        <i class="fa-solid fa-chevron-right mem-drawer-arrow"></i>
+                    </div>
+                    <div class="mem-drawer-body">
                         <table class="mem-table">
                             <thead>
                                 <tr><th>Grade</th><th>Min %</th><th>Max %</th><th>GPA</th><th>Status</th></tr>
@@ -391,12 +376,15 @@
                     </div>
                 </div>
 
-                <!-- TAB 5: Audit Logs -->
-                <div id="mem-tab-logs" class="mem-tab-content">
-                    <div class="mem-table-card">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                            <h3 style="font-size: 1.1rem; font-weight: 800; color: #1e293b; margin:0;">Super Admin Immutable Trail</h3>
-                            <button type="button" class="mem-btn-pill mem-btn-outline" onclick="window.clearMemVisualLogs()">Clear Visual</button>
+                <!-- DRAWER 5: Super Admin Audit Trail & Logs -->
+                <div class="mem-drawer" id="drawer-logs">
+                    <div class="mem-drawer-header" onclick="window.toggleMemDrawer('logs')">
+                        <div class="mem-drawer-title"><i class="fa-solid fa-clock-rotate-left"></i> Super Admin Audit Trail & Logs</div>
+                        <i class="fa-solid fa-chevron-right mem-drawer-arrow"></i>
+                    </div>
+                    <div class="mem-drawer-body">
+                        <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+                            <button type="button" class="mem-btn-pill mem-btn-outline" onclick="window.clearMemVisualLogs()">Clear Visual Trail</button>
                         </div>
                         <table class="mem-table">
                             <thead>
@@ -414,7 +402,14 @@
         renderLogs();
     }
 
-    // ৬. মাস্টার কনফিগ আপডেট (সুইচ পরিবর্তন হলে টেবিলে তাৎক্ষণিক প্রতিফলন)
+    // ৬. ড্রয়ার টগল মেকানিজম (এক ক্লিকে ওপেন/ক্লোজ)
+    window.toggleMemDrawer = function (drawerKey) {
+        const drawer = document.getElementById(`drawer-${drawerKey}`);
+        if (!drawer) return;
+        drawer.classList.toggle('open');
+    };
+
+    // ৭. মাস্টার কনফিগ হ্যান্ডলার
     window.updateMemConfigSetting = function (key, value) {
         const cfg = getMemConfig();
         cfg[key] = value;
@@ -426,7 +421,7 @@
         window.renderMemTableOnly();
     };
 
-    // ৭. এক্সাম পরিবর্তনের সাথে সাথে বিষয় ও পূর্ণমান রিড করা
+    // ৮. এক্সাম ও বিষয় নির্বাচন
     window.onMemExamChange = function (examId) {
         currentExamId = examId;
         const exam = loadedExamsCache.find(x => x.id === examId);
@@ -446,7 +441,7 @@
         window.loadMemMarksTable();
     };
 
-    // ৮. আসল ছাত্র ও সেভ করা মার্কস লোড করা
+    // ৯. আসল ছাত্র ও সেভ করা মার্কস লোড করা
     window.loadMemMarksTable = async function () {
         const examSelect = document.getElementById('memFilterExam');
         const subSelect = document.getElementById('memFilterSubject');
@@ -462,11 +457,9 @@
 
         currentClass = exam.class;
 
-        // এক্সাম থেকে ঐ বিষয়ের পূর্ণমান বের করা (যেমন ৩০)
         const opt = subSelect.options[subSelect.selectedIndex];
         currentSubjectFullMark = opt ? parseInt(opt.getAttribute('data-full')) || 30 : 30;
 
-        // আসল ছাত্র তালিকা ফিল্টার করা
         let allStudents = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
         currentStudentsList = allStudents.filter(s => {
             const cName = String(s.class_name || s.class || '').trim().toLowerCase();
@@ -474,7 +467,6 @@
             return cName === target || cName.includes(target) || target.includes(cName);
         });
 
-        // রোল অনুযায়ী ক্রমানুসারে সাজানো
         currentStudentsList.sort((a, b) => {
             const rA = parseInt(a.roll_no || a.roll) || 0;
             const rB = parseInt(b.roll_no || b.roll) || 0;
@@ -482,7 +474,6 @@
             return String(a.std_id || a.id).localeCompare(String(b.std_id || b.id));
         });
 
-        // ক্লাউড ও ক্যাশ থেকে সেভ করা মার্কস লোড
         let savedMarks = JSON.parse(localStorage.getItem(`cpscl_marks_${examId}_${subject}`) || '{}');
 
         if (window.getDatabase && window.ref && window.get) {
@@ -509,7 +500,7 @@
         window.renderMemTableOnly();
     };
 
-    // ৯. ডায়নামিক টেবিল ও স্ট্যাটাস রেন্ডারার
+    // ১০. টেবিল ও লাইভ কাউন্টার
     window.renderMemTableOnly = function (searchQuery = '') {
         const thead = document.getElementById('memTableThead');
         const tbody = document.getElementById('memStudentMarksTbody');
@@ -520,7 +511,6 @@
         const isDirect = (cfg.markStructure === 'direct');
         const isGrading = !!cfg.enableGrading;
 
-        // ডায়নামিক টেবিল হেডার তৈরি
         let thHtml = `<tr>
             <th style="width: 70px; text-align: center;">Roll</th>
             <th>Student Name</th>
@@ -548,7 +538,6 @@
         thHtml += `<th>Note / Remarks</th></tr>`;
         thead.innerHTML = thHtml;
 
-        // সার্চ ফিল্টার
         const q = (searchQuery || '').toLowerCase();
         const filtered = currentStudentsList.filter(s => {
             const name = (s.student_name || s.name || '').toLowerCase();
@@ -586,8 +575,8 @@
             } else {
                 const cq = parseFloat(st.cq) || 0;
                 const mcq = parseFloat(st.mcq) || 0;
-                const prac = parseFloat(st.practical) || 0;
-                lineTotal = cq + mcq + prac;
+                const practical = parseFloat(st.practical) || 0;
+                lineTotal = cq + mcq + practical;
                 isEntered = (st.cq !== null || st.mcq !== null);
                 lineMarkDisplay = `
                     <td style="text-align: center;"><input type="number" class="mem-mark-inp" value="${st.cq !== null ? st.cq : ''}" placeholder="CQ" oninput="window.updateScoreSplit('${stId}', 'cq', this.value)"></td>
@@ -599,7 +588,6 @@
 
             if (isEntered) enteredCount++;
 
-            // পাস/ফেল হিসাব (যদি গ্রেডিং সুইচ চালু থাকে)
             const passThreshold = (currentSubjectFullMark * 0.33);
             const isPass = lineTotal >= passThreshold;
             if (isEntered) {
@@ -644,7 +632,6 @@
             tbody.appendChild(tr);
         });
 
-        // স্ট্যাটাস কার্ড আপডেট
         const pendingCount = (filtered.length - enteredCount);
         if (statsBox) {
             if (!isGrading) {
@@ -686,7 +673,7 @@
         }
     };
 
-    // ১০. স্কোর ইনপুট আপডেট হ্যান্ডলার
+    // ১১. মার্কস হ্যান্ডলারস
     window.updateScoreDirect = function (stId, val) {
         const student = currentStudentsList.find(s => (s.std_id || s.id) === stId);
         if (student) {
@@ -709,7 +696,7 @@
         }
     };
 
-    // ১১. ক্লাউড ফায়ারবেসে পার্মানেন্ট সেভ
+    // ১২. ক্লাউডে সেভ
     window.saveMarksToCloud = async function () {
         if (!currentExamId || !currentSubject) {
             alert("Please choose an Exam and Subject first!");
@@ -767,15 +754,6 @@
             st.remarks = '';
         });
         window.renderMemTableOnly();
-    };
-
-    window.switchMemTab = function (tabKey, btn) {
-        document.querySelectorAll('.mem-tab-btn').forEach(b => b.classList.remove('active'));
-        if (btn) btn.classList.add('active');
-
-        document.querySelectorAll('.mem-tab-content').forEach(c => c.classList.remove('active'));
-        const target = document.getElementById(`mem-tab-${tabKey}`);
-        if (target) target.classList.add('active');
     };
 
     function renderApprovals() {
@@ -884,7 +862,6 @@
         injectMarkEntryStyles();
         injectMarkEntrySidebar();
 
-        // মাল্টি-রিট্রাই ক্লাউড সিঙ্ক
         syncFromCloud();
         setTimeout(syncFromCloud, 600);
         setTimeout(syncFromCloud, 1800);
