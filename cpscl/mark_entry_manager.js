@@ -1,13 +1,13 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Super Admin Mark Management Engine (v3.0 Minimalist Accordion)
+   SUB-SECTION: Super Admin Mark Management Engine (v3.1 Filter & Strict Validation)
    Path: cpscl/mark_entry_manager.js
    Architecture: Clean White Corporate | Minimalist Drawer Accordion | Firebase Sync
    Language: Pure English (Corporate ERP Standard)
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Super Admin Mark Management Engine (v3.0 Minimalist Drawer Edition)...");
+    console.log("Loading CPSCL Super Admin Mark Management Engine (v3.1 with Group Filter & Validation)...");
 
     // ১. সাইডবারে Exam Manager-এর নিচে "Mark Entry" সাব-মেনু ইনজেক্ট করা
     function injectMarkEntrySidebar() {
@@ -80,8 +80,8 @@
             .mem-drawer.open .mem-drawer-body { display: block; }
 
             /* Filter Controls Bar */
-            .mem-filter-bar { background: #f8fafc; padding: 12px 18px; border-radius: 50px !important; border: 1.5px solid #e2e8f0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
-            .mem-filter-group { display: flex; align-items: center; gap: 8px; background: #ffffff; padding: 7px 16px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; flex: 1; min-width: 160px; }
+            .mem-filter-bar { background: #f8fafc; padding: 12px 18px; border-radius: 50px !important; border: 1.5px solid #e2e8f0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
+            .mem-filter-group { display: flex; align-items: center; gap: 8px; background: #ffffff; padding: 7px 16px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; flex: 1; min-width: 150px; }
             .mem-filter-group select { border: none; background: transparent; font-size: 0.86rem; font-weight: 700; color: #1e293b; outline: none; width: 100%; cursor: pointer; }
 
             /* Stats Overview Grid */
@@ -101,6 +101,7 @@
             /* Mark Inputs */
             .mem-mark-inp { width: 95px; text-align: center; padding: 7px 12px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; font-size: 0.9rem; font-weight: 700; outline: none; background: #f8fafc; transition: all 0.2s; }
             .mem-mark-inp:focus { border-color: #2563eb; background: #ffffff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+            .mem-mark-inp.is-invalid { border-color: #ef4444 !important; background: #fef2f2 !important; color: #dc2626 !important; }
             .mem-badge-pill { padding: 4px 12px; border-radius: 50px !important; font-size: 0.78rem; font-weight: 800; display: inline-block; }
 
             /* Pill Buttons */
@@ -119,7 +120,7 @@
         document.head.appendChild(style);
     }
 
-    // ৩. মাস্টার সেটিংস (লোকাল ও ক্লাউড সাপোর্টেড)
+    // ৩. মাস্টার সেটিংস
     const DEFAULT_CONFIG = {
         markStructure: 'direct',
         enableGrading: false
@@ -143,7 +144,7 @@
     let isFrozen = false;
 
     let auditLogs = [
-        { time: new Date().toLocaleTimeString(), user: "Root Admin", action: "System Ready", details: "Accordion Drawer Interface Loaded", type: "System" }
+        { time: new Date().toLocaleTimeString(), user: "Root Admin", action: "System Ready", details: "Validation & Group Filtering Engine Initialized", type: "System" }
     ];
 
     let gradeScales = [
@@ -216,7 +217,7 @@
         }
     }
 
-    // ৫. মূল ভিউ রেন্ডারার (মিনিমালিস্ট অ্যাকর্ডিয়ান লেআউট)
+    // ৫. মূল ভিউ রেন্ডারার
     function renderMarkEntryView() {
         const mainWrapper = document.querySelector('.main-wrapper');
         if (!mainWrapper) return;
@@ -250,13 +251,14 @@
                     </div>
                 </div>
 
-                <!-- DRAWER 1: Student Mark Entry & Live Sheet (Default Open) -->
+                <!-- DRAWER 1: Student Mark Entry & Live Sheet -->
                 <div class="mem-drawer open" id="drawer-entry">
                     <div class="mem-drawer-header" onclick="window.toggleMemDrawer('entry')">
                         <div class="mem-drawer-title"><i class="fa-solid fa-table-cells"></i> Student Mark Entry & Live Sheet</div>
                         <i class="fa-solid fa-chevron-right mem-drawer-arrow"></i>
                     </div>
                     <div class="mem-drawer-body">
+                        <!-- Filter Bar with Group/Section Added -->
                         <div class="mem-filter-bar">
                             <div class="mem-filter-group">
                                 <i class="fa-solid fa-file-pen" style="color: #64748b; font-size: 13px;"></i>
@@ -264,12 +266,21 @@
                                     <option value="">-- Choose Exam --</option>
                                 </select>
                             </div>
+
+                            <div class="mem-filter-group">
+                                <i class="fa-solid fa-users-rectangle" style="color: #64748b; font-size: 13px;"></i>
+                                <select id="memFilterGroup" onchange="window.loadMemMarksTable()">
+                                    <option value="ALL">All Groups / Sections</option>
+                                </select>
+                            </div>
+
                             <div class="mem-filter-group">
                                 <i class="fa-solid fa-book" style="color: #64748b; font-size: 13px;"></i>
                                 <select id="memFilterSubject" onchange="window.loadMemMarksTable()">
                                     <option value="">-- Select Subject --</option>
                                 </select>
                             </div>
+
                             <button type="button" class="mem-btn-pill mem-btn-primary" onclick="window.loadMemMarksTable()">
                                 <i class="fa-solid fa-arrows-rotate"></i> Load Sheet
                             </button>
@@ -280,7 +291,7 @@
 
                         <!-- Action bar & Table -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                            <input type="text" id="memSearchInput" placeholder="Search roll or name..." class="mem-mark-inp" style="width: 250px; text-align: left; padding: 9px 18px;" oninput="window.renderMemTableOnly(this.value)">
+                            <input type="text" id="memSearchInput" placeholder="Search roll, name or group..." class="mem-mark-inp" style="width: 260px; text-align: left; padding: 9px 18px;" oninput="window.renderMemTableOnly(this.value)">
                             <div style="display: flex; gap: 8px;">
                                 <button type="button" class="mem-btn-pill mem-btn-outline" onclick="window.fillZeroMarks()"><i class="fa-solid fa-wand-magic-sparkles"></i> Fill 0</button>
                                 <button type="button" class="mem-btn-pill mem-btn-outline" onclick="window.clearMarks()"><i class="fa-solid fa-trash-can"></i> Clear</button>
@@ -292,7 +303,7 @@
                             <table class="mem-table">
                                 <thead id="memTableThead"></thead>
                                 <tbody id="memStudentMarksTbody">
-                                    <tr><td colspan="6" style="text-align:center; padding:35px; color:#94a3b8;">Choose an Exam and Subject above to load the student list.</td></tr>
+                                    <tr><td colspan="7" style="text-align:center; padding:35px; color:#94a3b8;">Choose an Exam, Group, and Subject above to load the student list.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -402,7 +413,7 @@
         renderLogs();
     }
 
-    // ৬. ড্রয়ার টগল মেকানিজম (এক ক্লিকে ওপেন/ক্লোজ)
+    // ৬. ড্রয়ার টগল মেকানিজম
     window.toggleMemDrawer = function (drawerKey) {
         const drawer = document.getElementById(`drawer-${drawerKey}`);
         if (!drawer) return;
@@ -421,13 +432,20 @@
         window.renderMemTableOnly();
     };
 
-    // ৮. এক্সাম ও বিষয় নির্বাচন
+    // হেল্পার: শিক্ষার্থীর গ্রুপ অথবা শাখা বের করা
+    function getStudentGroupOrSec(s) {
+        return String(s.group || s.std_group || s.group_name || s.section || s.sec || s.batch || '').trim();
+    }
+
+    // ৮. এক্সাম নির্বাচন ও স্বয়ংক্রিয় গ্রুপ ড্রপডাউন পপুলেট করা
     window.onMemExamChange = function (examId) {
         currentExamId = examId;
         const exam = loadedExamsCache.find(x => x.id === examId);
         const subSelect = document.getElementById('memFilterSubject');
+        const grpSelect = document.getElementById('memFilterGroup');
         if (!subSelect) return;
 
+        // Populate Subjects
         subSelect.innerHTML = '<option value="">-- Select Subject --</option>';
         if (exam && exam.subjects) {
             Object.keys(exam.subjects).forEach(sub => {
@@ -438,17 +456,42 @@
                 subSelect.value = Object.keys(exam.subjects)[0];
             }
         }
+
+        // Populate Groups / Sections based on students of this exam class
+        if (grpSelect && exam) {
+            grpSelect.innerHTML = '<option value="ALL">All Groups / Sections</option>';
+            const allStudents = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
+            const classStudents = allStudents.filter(s => {
+                const cName = String(s.class_name || s.class || '').trim().toLowerCase();
+                const target = String(exam.class).trim().toLowerCase();
+                return cName === target || cName.includes(target) || target.includes(cName);
+            });
+
+            const uniqueGroups = new Set();
+            classStudents.forEach(st => {
+                const g = getStudentGroupOrSec(st);
+                if (g) uniqueGroups.add(g);
+            });
+
+            uniqueGroups.forEach(g => {
+                grpSelect.innerHTML += `<option value="${g}">${g}</option>`;
+            });
+        }
+
         window.loadMemMarksTable();
     };
 
-    // ৯. আসল ছাত্র ও সেভ করা মার্কস লোড করা
+    // ৯. গ্রুপ ও বিষয় ফিল্টার করে আসল শিক্ষার্থী ও নম্বর লোড করা
     window.loadMemMarksTable = async function () {
         const examSelect = document.getElementById('memFilterExam');
         const subSelect = document.getElementById('memFilterSubject');
+        const grpSelect = document.getElementById('memFilterGroup');
         if (!examSelect || !subSelect) return;
 
         const examId = examSelect.value;
         const subject = subSelect.value;
+        const selectedGroup = grpSelect ? grpSelect.value : 'ALL';
+
         currentExamId = examId;
         currentSubject = subject;
 
@@ -461,11 +504,22 @@
         currentSubjectFullMark = opt ? parseInt(opt.getAttribute('data-full')) || 30 : 30;
 
         let allStudents = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
-        currentStudentsList = allStudents.filter(s => {
+        
+        // Filter by class first
+        let filteredStudents = allStudents.filter(s => {
             const cName = String(s.class_name || s.class || '').trim().toLowerCase();
             const target = String(exam.class).trim().toLowerCase();
             return cName === target || cName.includes(target) || target.includes(cName);
         });
+
+        // Filter by Group/Section if not ALL
+        if (selectedGroup && selectedGroup !== 'ALL') {
+            filteredStudents = filteredStudents.filter(s => {
+                return getStudentGroupOrSec(s).toLowerCase() === selectedGroup.toLowerCase();
+            });
+        }
+
+        currentStudentsList = filteredStudents;
 
         currentStudentsList.sort((a, b) => {
             const rA = parseInt(a.roll_no || a.roll) || 0;
@@ -500,7 +554,7 @@
         window.renderMemTableOnly();
     };
 
-    // ১০. টেবিল ও লাইভ কাউন্টার
+    // ১০. টেবিল ও লাইভ কাউন্টার রেন্ডার
     window.renderMemTableOnly = function (searchQuery = '') {
         const thead = document.getElementById('memTableThead');
         const tbody = document.getElementById('memStudentMarksTbody');
@@ -513,11 +567,11 @@
 
         let thHtml = `<tr>
             <th style="width: 70px; text-align: center;">Roll</th>
-            <th>Student Name</th>
+            <th>Student Name & Group</th>
         `;
 
         if (isDirect) {
-            thHtml += `<th style="width: 140px; text-align: center;">Marks (Max ${currentSubjectFullMark})</th>`;
+            thHtml += `<th style="width: 150px; text-align: center;">Marks (Max ${currentSubjectFullMark})</th>`;
         } else {
             thHtml += `
                 <th style="width: 100px; text-align: center;">CQ</th>
@@ -542,11 +596,12 @@
         const filtered = currentStudentsList.filter(s => {
             const name = (s.student_name || s.name || '').toLowerCase();
             const roll = String(s.roll_no || s.roll || '');
-            return name.includes(q) || roll.includes(q);
+            const grp = getStudentGroupOrSec(s).toLowerCase();
+            return name.includes(q) || roll.includes(q) || grp.includes(q);
         });
 
         if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:35px; color:#94a3b8;">No student records found.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:35px; color:#94a3b8;">No student records found for the chosen criteria.</td></tr>`;
             return;
         }
 
@@ -559,6 +614,7 @@
             const stId = st.std_id || st.id;
             const roll = st.roll_no || st.roll || (idx + 1);
             const name = st.student_name || st.name || 'Student';
+            const grp = getStudentGroupOrSec(st);
 
             let lineMarkDisplay = '';
             let lineTotal = 0;
@@ -569,7 +625,13 @@
                 lineTotal = parseFloat(st.rawMark) || 0;
                 lineMarkDisplay = `
                     <td style="text-align: center;">
-                        <input type="number" min="0" max="${currentSubjectFullMark}" class="mem-mark-inp" value="${st.rawMark !== null ? st.rawMark : ''}" placeholder="0-${currentSubjectFullMark}" oninput="window.updateScoreDirect('${stId}', this.value)">
+                        <input type="number" 
+                               min="0" 
+                               max="${currentSubjectFullMark}" 
+                               class="mem-mark-inp ${st.rawMark > currentSubjectFullMark ? 'is-invalid' : ''}" 
+                               value="${st.rawMark !== null ? st.rawMark : ''}" 
+                               placeholder="0-${currentSubjectFullMark}" 
+                               oninput="window.updateScoreDirect('${stId}', this.value, this)">
                     </td>
                 `;
             } else {
@@ -579,9 +641,9 @@
                 lineTotal = cq + mcq + practical;
                 isEntered = (st.cq !== null || st.mcq !== null);
                 lineMarkDisplay = `
-                    <td style="text-align: center;"><input type="number" class="mem-mark-inp" value="${st.cq !== null ? st.cq : ''}" placeholder="CQ" oninput="window.updateScoreSplit('${stId}', 'cq', this.value)"></td>
-                    <td style="text-align: center;"><input type="number" class="mem-mark-inp" value="${st.mcq !== null ? st.mcq : ''}" placeholder="MCQ" oninput="window.updateScoreSplit('${stId}', 'mcq', this.value)"></td>
-                    <td style="text-align: center;"><input type="number" class="mem-mark-inp" value="${st.practical !== null ? st.practical : ''}" placeholder="Prac" oninput="window.updateScoreSplit('${stId}', 'practical', this.value)"></td>
+                    <td style="text-align: center;"><input type="number" min="0" class="mem-mark-inp" value="${st.cq !== null ? st.cq : ''}" placeholder="CQ" oninput="window.updateScoreSplit('${stId}', 'cq', this.value, this)"></td>
+                    <td style="text-align: center;"><input type="number" min="0" class="mem-mark-inp" value="${st.mcq !== null ? st.mcq : ''}" placeholder="MCQ" oninput="window.updateScoreSplit('${stId}', 'mcq', this.value, this)"></td>
+                    <td style="text-align: center;"><input type="number" min="0" class="mem-mark-inp" value="${st.practical !== null ? st.practical : ''}" placeholder="Prac" oninput="window.updateScoreSplit('${stId}', 'practical', this.value, this)"></td>
                     <td style="text-align: center; font-weight:800; color:#2563eb;">${isEntered ? lineTotal : '-'}</td>
                 `;
             }
@@ -622,7 +684,11 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="text-align: center; font-weight: 800; background: #f8fafc;">${roll}</td>
-                <td><strong>${name}</strong> <span style="font-size:0.75rem; color:#64748b;">(${stId})</span></td>
+                <td>
+                    <strong>${name}</strong>
+                    ${grp ? `<span class="mem-badge-pill" style="background: #f1f5f9; color: #475569; margin-left: 6px; font-size: 0.72rem;">${grp}</span>` : ''}
+                    <div style="font-size:0.75rem; color:#64748b;">ID: ${stId}</div>
+                </td>
                 ${lineMarkDisplay}
                 ${gradingDisplay}
                 <td>
@@ -634,58 +700,75 @@
 
         const pendingCount = (filtered.length - enteredCount);
         if (statsBox) {
-            if (!isGrading) {
-                statsBox.innerHTML = `
-                    <div class="mem-stat-card">
-                        <div><p>Total Students</p><h3>${filtered.length}</h3></div>
-                        <i class="fa-solid fa-users" style="color: #2563eb; font-size: 1.4rem;"></i>
-                    </div>
-                    <div class="mem-stat-card">
-                        <div><p>Marks Entered</p><h3 style="color: #10b981;">${enteredCount}</h3></div>
-                        <i class="fa-solid fa-circle-check" style="color: #10b981; font-size: 1.4rem;"></i>
-                    </div>
-                    <div class="mem-stat-card">
-                        <div><p>Pending / Remaining</p><h3 style="color: #f59e0b;">${pendingCount}</h3></div>
-                        <i class="fa-solid fa-clock" style="color: #f59e0b; font-size: 1.4rem;"></i>
-                    </div>
-                `;
-            } else {
-                const passRate = enteredCount > 0 ? Math.round((passCount / enteredCount) * 100) : 0;
-                statsBox.innerHTML = `
-                    <div class="mem-stat-card">
-                        <div><p>Total Students</p><h3>${filtered.length}</h3></div>
-                        <i class="fa-solid fa-users" style="color: #2563eb; font-size: 1.4rem;"></i>
-                    </div>
-                    <div class="mem-stat-card">
-                        <div><p>Marks Entered</p><h3 style="color: #10b981;">${enteredCount}</h3></div>
-                        <i class="fa-solid fa-circle-check" style="color: #10b981; font-size: 1.4rem;"></i>
-                    </div>
-                    <div class="mem-stat-card">
-                        <div><p>Pass Rate</p><h3 style="color: #2563eb;">${passRate}%</h3></div>
-                        <i class="fa-solid fa-chart-pie" style="color: #2563eb; font-size: 1.4rem;"></i>
-                    </div>
-                    <div class="mem-stat-card">
-                        <div><p>Failed</p><h3 style="color: #ef4444;">${failCount}</h3></div>
-                        <i class="fa-solid fa-circle-xmark" style="color: #ef4444; font-size: 1.4rem;"></i>
-                    </div>
-                `;
+            statsBox.innerHTML = `
+                <div class="mem-stat-card">
+                    <div><p>Total Students</p><h3>${filtered.length}</h3></div>
+                    <i class="fa-solid fa-users" style="color: #2563eb; font-size: 1.4rem;"></i>
+                </div>
+                <div class="mem-stat-card">
+                    <div><p>Marks Entered</p><h3 style="color: #10b981;">${enteredCount}</h3></div>
+                    <i class="fa-solid fa-circle-check" style="color: #10b981; font-size: 1.4rem;"></i>
+                </div>
+                <div class="mem-stat-card">
+                    <div><p>Pending / Remaining</p><h3 style="color: #f59e0b;">${pendingCount}</h3></div>
+                    <i class="fa-solid fa-clock" style="color: #f59e0b; font-size: 1.4rem;"></i>
+                </div>
+            `;
+        }
+    };
+
+    // ১১. কড়া নম্বর ভ্যালিডেশন হ্যান্ডলার (৩০ এর বেশি দেওয়া যাবে না)
+    window.updateScoreDirect = function (stId, val, inputEl) {
+        const student = currentStudentsList.find(s => (s.std_id || s.id) === stId);
+        if (!student) return;
+
+        if (val === '') {
+            student.rawMark = null;
+            student.cq = null;
+            if (inputEl) inputEl.classList.remove('is-invalid');
+            return;
+        }
+
+        let num = parseFloat(val);
+
+        // ভ্যালিডেশন: পূর্ণমানের বেশি হতে পারবে না
+        if (num > currentSubjectFullMark) {
+            alert(`সতর্কতা: এই বিষয়ের পূর্ণমান ${currentSubjectFullMark}! আপনি ${num} দিতে পারবেন না।`);
+            num = currentSubjectFullMark;
+            if (inputEl) {
+                inputEl.value = currentSubjectFullMark;
+                inputEl.classList.add('is-invalid');
+                setTimeout(() => inputEl.classList.remove('is-invalid'), 1200);
             }
+        } else if (num < 0) {
+            alert("সতর্কতা: নম্বর ০ এর কম হতে পারে না!");
+            num = 0;
+            if (inputEl) inputEl.value = 0;
         }
+
+        student.rawMark = num;
+        student.cq = num;
     };
 
-    // ১১. মার্কস হ্যান্ডলারস
-    window.updateScoreDirect = function (stId, val) {
+    window.updateScoreSplit = function (stId, field, val, inputEl) {
         const student = currentStudentsList.find(s => (s.std_id || s.id) === stId);
-        if (student) {
-            student.rawMark = (val === '' ? null : parseFloat(val));
-            student.cq = student.rawMark;
-        }
-    };
+        if (!student) return;
 
-    window.updateScoreSplit = function (stId, field, val) {
-        const student = currentStudentsList.find(s => (s.std_id || s.id) === stId);
-        if (student) {
-            student[field] = (val === '' ? null : parseFloat(val));
+        if (val === '') {
+            student[field] = null;
+            return;
+        }
+
+        let num = parseFloat(val);
+        if (num < 0) num = 0;
+        student[field] = num;
+
+        const total = (parseFloat(student.cq) || 0) + (parseFloat(student.mcq) || 0) + (parseFloat(student.practical) || 0);
+        if (total > currentSubjectFullMark) {
+            alert(`সতর্কতা: মোট নম্বর পূর্ণমান ${currentSubjectFullMark}-এর চেয়ে বেশি হয়ে গেছে!`);
+            if (inputEl) inputEl.classList.add('is-invalid');
+        } else {
+            if (inputEl) inputEl.classList.remove('is-invalid');
         }
     };
 
@@ -696,17 +779,33 @@
         }
     };
 
-    // ১২. ক্লাউডে সেভ
+    // ১২. ক্লাউডে সেভ (আগের অন্য গ্রুপের ডেটা না মুছে নির্ভুল সেভ)
     window.saveMarksToCloud = async function () {
         if (!currentExamId || !currentSubject) {
             alert("Please choose an Exam and Subject first!");
             return;
         }
 
-        const payload = {};
+        // চূড়ান্ত নিরাপত্তা চেক: কোনো শিক্ষার্থীর নম্বর পূর্ণমানের চেয়ে বেশি আছে কি না
+        for (let st of currentStudentsList) {
+            const mark = st.rawMark;
+            if (mark !== null && mark !== undefined && mark !== '') {
+                const num = parseFloat(mark);
+                if (num > currentSubjectFullMark) {
+                    const roll = st.roll_no || st.roll || 'N/A';
+                    const name = st.student_name || st.name || 'Student';
+                    alert(`ভুল হয়েছে! রোল: ${roll} (${name})-এর নম্বর পূর্ণমান ${currentSubjectFullMark}-এর বেশি (${num}) দেওয়া আছে। দয়া করে সংশোধন করুন, নয়তো সেভ হবে না।`);
+                    return; // সেভ বন্ধ!
+                }
+            }
+        }
+
+        // পূর্বের সেভ করা ডেটা লোড করে নেওয়া যাতে অন্য গ্রুপের ডেটা মুছে না যায়
+        let mergedMarks = JSON.parse(localStorage.getItem(`cpscl_marks_${currentExamId}_${currentSubject}`) || '{}');
+
         currentStudentsList.forEach(st => {
             const stId = st.std_id || st.id;
-            payload[stId] = {
+            mergedMarks[stId] = {
                 rawMark: st.rawMark,
                 cq: st.cq,
                 mcq: st.mcq,
@@ -715,11 +814,11 @@
             };
         });
 
-        localStorage.setItem(`cpscl_marks_${currentExamId}_${currentSubject}`, JSON.stringify(payload));
+        localStorage.setItem(`cpscl_marks_${currentExamId}_${currentSubject}`, JSON.stringify(mergedMarks));
 
         if (typeof window.writeToFirebase === 'function') {
             try {
-                await window.writeToFirebase(`cpscl_exam_marks/${currentExamId}_${currentSubject}`, payload);
+                await window.writeToFirebase(`cpscl_exam_marks/${currentExamId}_${currentSubject}`, mergedMarks);
             } catch(e) {
                 console.warn("Cloud save error:", e);
             }
@@ -745,7 +844,7 @@
     };
 
     window.clearMarks = function () {
-        if (!confirm("Are you sure you want to clear all entered marks?")) return;
+        if (!confirm("Are you sure you want to clear all entered marks in this current view?")) return;
         currentStudentsList.forEach(st => {
             st.rawMark = null;
             st.cq = null;
