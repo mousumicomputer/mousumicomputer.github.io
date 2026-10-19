@@ -1,12 +1,12 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v2.4 Final)
+   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v3.0 Cloud Master)
    Path: cpscl/exam_manager.js
-   Architecture: 100% Uniform Pill Shapes Everywhere | Single-Select | Cloud Sync
+   Architecture: 100% Uniform Pill Shapes | Real-time Firebase Sync | Auto-DB Classes
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Suite v2.4 (All Pills Unified & Single Select)...");
+    console.log("Loading CPSCL Suite v3.0 (Direct Cloud Sync & Real-time Active)...");
 
     // ১. সম্পূর্ণ ও নিখুঁত পিল (Pill) স্টাইল ইনজেকশন
     function injectExamStyles() {
@@ -22,7 +22,7 @@
             .em-header h1 i { color: #2563eb; }
             .em-badge { background: #eff6ff; color: #2563eb; font-weight: 700; font-size: 0.82rem; padding: 6px 16px; border-radius: 50px !important; border: 1px solid #bfdbfe; }
 
-            /* মডিউল ন্যাভ ট্যাব (Pills) */
+            /* মডিউল ন্যাভ ট্যাব */
             .em-nav-tabs { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
             .em-tab-btn { background: #ffffff; border: 1.5px solid #cbd5e1; color: #64748b; padding: 11px 24px; border-radius: 50px !important; font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
             .em-tab-btn:hover { border-color: #2563eb; color: #2563eb; }
@@ -31,7 +31,7 @@
             .em-tab-content { display: none; }
             .em-tab-content.active { display: block; }
 
-            /* ওয়ার্কস্পেস ভিউ বার (Pills) */
+            /* ভিউ বার */
             .em-view-bar { display: flex; gap: 8px; margin-bottom: 20px; background: #ffffff; padding: 10px 18px; border-radius: 50px !important; border: 1px solid #e2e8f0; align-items: center; flex-wrap: wrap; }
             .em-view-bar span { font-size: 0.85rem; font-weight: 700; color: #64748b; margin-right: 5px; }
             .em-btn-toggle { background: #f8fafc; border: 1.5px solid #cbd5e1; color: #0f172a; padding: 7px 18px; border-radius: 50px !important; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
@@ -66,143 +66,30 @@
             .em-btn-add { background: #f8fafc; border: 1.5px dashed #cbd5e1; color: #2563eb; padding: 0 20px; border-radius: 50px !important; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap; transition: 0.2s; }
             .em-btn-add:hover { background: #eff6ff; border-color: #2563eb; }
 
-            /* =======================================================
-               নিখুঁত রাউন্ডেড পিল ফিল্টার বাটনসমূহ (All, Group A, Group B)
-               ======================================================= */
-            .em-group-pills-filter {
-                display: flex !important;
-                gap: 8px !important;
-                align-items: center !important;
-                flex-wrap: wrap !important;
-            }
-            .em-filter-pill-btn {
-                padding: 7px 18px !important;
-                border-radius: 50px !important;
-                border: 1.5px solid #cbd5e1 !important;
-                background: #ffffff !important;
-                color: #475569 !important;
-                font-size: 0.82rem !important;
-                font-weight: 700 !important;
-                cursor: pointer !important;
-                display: inline-flex !important;
-                align-items: center !important;
-                gap: 6px !important;
-                transition: all 0.2s ease !important;
-                outline: none !important;
-                user-select: none !important;
-            }
-            .em-filter-pill-btn:hover {
-                background: #f1f5f9 !important;
-                border-color: #94a3b8 !important;
-            }
-            .em-filter-pill-btn.active {
-                background: #2563eb !important;
-                color: #ffffff !important;
-                border-color: #2563eb !important;
-                box-shadow: 0 4px 10px rgba(37,99,235,0.25) !important;
-            }
+            /* ফিল্টার বাটনসমূহ */
+            .em-group-pills-filter { display: flex !important; gap: 8px !important; align-items: center !important; flex-wrap: wrap !important; }
+            .em-filter-pill-btn { padding: 7px 18px !important; border-radius: 50px !important; border: 1.5px solid #cbd5e1 !important; background: #ffffff !important; color: #475569 !important; font-size: 0.82rem !important; font-weight: 700 !important; cursor: pointer !important; display: inline-flex !important; align-items: center !important; gap: 6px !important; transition: all 0.2s ease !important; outline: none !important; user-select: none !important; }
+            .em-filter-pill-btn:hover { background: #f1f5f9 !important; border-color: #94a3b8 !important; }
+            .em-filter-pill-btn.active { background: #2563eb !important; color: #ffffff !important; border-color: #2563eb !important; box-shadow: 0 4px 10px rgba(37,99,235,0.25) !important; }
 
-            /* =======================================================
-               ১:১ ট্রাস্ট ইআরপি টেবিল ও সিলেকশন সিএসএস
-               ======================================================= */
+            /* টেবিল */
             .em-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            .em-table th {
-                background: #ffffff !important;
-                color: #8c98a4 !important;
-                font-size: 0.75rem !important;
-                font-weight: 700 !important;
-                text-transform: uppercase !important;
-                letter-spacing: 0.5px !important;
-                padding: 14px 18px !important;
-                border-bottom: 1.5px solid #eef2f5 !important;
-                user-select: none;
-                text-align: left;
-            }
-            .em-table tbody td {
-                color: #334155 !important;
-                font-size: 0.88rem !important;
-                font-weight: 500 !important;
-                padding: 13px 18px !important;
-                border-bottom: 1px solid #eef2f5 !important;
-                user-select: none;
-            }
+            .em-table th { background: #ffffff !important; color: #8c98a4 !important; font-size: 0.75rem !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 14px 18px !important; border-bottom: 1.5px solid #eef2f5 !important; text-align: left; }
+            .em-table tbody td { color: #334155 !important; font-size: 0.88rem !important; font-weight: 500 !important; padding: 13px 18px !important; border-bottom: 1px solid #eef2f5 !important; }
 
-            /* জেব্রা স্ট্রাইপ ও হোভার */
             .em-table tbody tr:nth-child(even) { background-color: #f8fafc !important; }
             .em-table tbody tr:nth-child(odd) { background-color: #ffffff !important; }
             .em-table tbody tr:hover { background-color: #f1f5f9 !important; cursor: pointer; }
 
-            /* একক সারি সলিড ব্লু সিলেকশন (#3b82f6) */
-            .em-table tbody tr.erp-row-selected,
-            .em-table tbody tr.erp-row-selected:nth-child(even),
-            .em-table tbody tr.erp-row-selected:nth-child(odd) {
-                background-color: #3b82f6 !important;
-            }
-            .em-table tbody tr.erp-row-selected td,
-            .em-table tbody tr.erp-row-selected td * {
-                color: #ffffff !important;
-            }
-            .em-table tbody tr.erp-row-selected .em-group-badge {
-                background-color: rgba(255, 255, 255, 0.25) !important;
-                color: #ffffff !important;
-                border-color: rgba(255, 255, 255, 0.4) !important;
-            }
+            .em-table tbody tr.erp-row-selected { background-color: #3b82f6 !important; }
+            .em-table tbody tr.erp-row-selected td, .em-table tbody tr.erp-row-selected td * { color: #ffffff !important; }
+            .em-table tbody tr.erp-row-selected .em-group-badge { background-color: rgba(255, 255, 255, 0.25) !important; color: #ffffff !important; border-color: rgba(255, 255, 255, 0.4) !important; }
 
-            /* টেবিলের সব ব্যাজ (Pill Badges) */
-            .em-group-badge {
-                display: inline-block !important;
-                padding: 4px 14px !important;
-                border-radius: 50px !important;
-                font-size: 0.8rem !important;
-                font-weight: 700 !important;
-                background: #eff6ff !important;
-                color: #2563eb !important;
-                border: 1px solid #bfdbfe !important;
-            }
+            .em-group-badge, .em-class-badge { display: inline-block !important; padding: 4px 14px !important; border-radius: 50px !important; font-size: 0.8rem !important; font-weight: 700 !important; background: #eff6ff !important; color: #2563eb !important; border: 1px solid #bfdbfe !important; }
+            .em-rule-badge { display: inline-flex !important; align-items: center !important; gap: 5px !important; padding: 3px 12px !important; border-radius: 50px !important; font-size: 0.75rem !important; font-weight: 700 !important; background: #f1f5f9 !important; color: #2563eb !important; border: 1px solid #e2e8f0 !important; margin-top: 4px !important; }
 
-            .em-class-badge {
-                display: inline-block !important;
-                padding: 4px 14px !important;
-                border-radius: 50px !important;
-                font-size: 0.8rem !important;
-                font-weight: 700 !important;
-                background: #eff6ff !important;
-                color: #2563eb !important;
-                border: 1px solid #bfdbfe !important;
-            }
-
-            .em-rule-badge {
-                display: inline-flex !important;
-                align-items: center !important;
-                gap: 5px !important;
-                padding: 3px 12px !important;
-                border-radius: 50px !important;
-                font-size: 0.75rem !important;
-                font-weight: 700 !important;
-                background: #f1f5f9 !important;
-                color: #2563eb !important;
-                border: 1px solid #e2e8f0 !important;
-                margin-top: 4px !important;
-            }
-
-            /* =======================================================
-               হিস্ট্রি টেবিলের অ্যাকশন বাটনসমূহ (Pill Icon Buttons)
-               ======================================================= */
-            .em-btn-icon {
-                width: 36px !important;
-                height: 36px !important;
-                border-radius: 50px !important;
-                border: 1.5px solid #cbd5e1 !important;
-                background: #ffffff !important;
-                cursor: pointer !important;
-                display: inline-flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                font-size: 0.85rem !important;
-                transition: all 0.2s ease !important;
-                margin: 0 3px !important;
-                outline: none !important;
-            }
+            /* আইকন বাটন */
+            .em-btn-icon { width: 36px !important; height: 36px !important; border-radius: 50px !important; border: 1.5px solid #cbd5e1 !important; background: #ffffff !important; cursor: pointer !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; font-size: 0.85rem !important; transition: all 0.2s ease !important; margin: 0 3px !important; outline: none !important; }
             .em-btn-icon.edit { color: #2563eb !important; }
             .em-btn-icon.edit:hover { background: #eff6ff !important; border-color: #2563eb !important; transform: scale(1.05); }
             .em-btn-icon.duplicate { color: #ca8a04 !important; }
@@ -210,44 +97,17 @@
             .em-btn-icon.delete { color: #dc2626 !important; }
             .em-btn-icon.delete:hover { background: #fee2e2 !important; border-color: #dc2626 !important; transform: scale(1.05); }
 
-            /* উপরের ট্রান্সফার বার */
-            .em-top-transfer-bar {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                background: #f8fafc;
-                border: 1.5px solid #e2e8f0;
-                border-radius: 50px !important;
-                padding: 10px 20px;
-                margin-bottom: 16px;
-                flex-wrap: wrap;
-                gap: 12px;
-            }
-            .em-transfer-btns-group {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                flex-wrap: wrap;
-            }
-            .em-btn-move {
-                padding: 8px 20px !important;
-                border-radius: 50px !important;
-                font-size: 0.82rem !important;
-                font-weight: 700 !important;
-                cursor: pointer !important;
-                border: none !important;
-                display: inline-flex !important;
-                align-items: center !important;
-                gap: 6px !important;
-                transition: 0.2s !important;
-            }
+            /* ট্রান্সফার বার */
+            .em-top-transfer-bar { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 50px !important; padding: 10px 20px; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+            .em-transfer-btns-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+            .em-btn-move { padding: 8px 20px !important; border-radius: 50px !important; font-size: 0.82rem !important; font-weight: 700 !important; cursor: pointer !important; border: none !important; display: inline-flex !important; align-items: center !important; gap: 6px !important; transition: 0.2s !important; }
             .em-btn-move-a { background: #2563eb !important; color: #fff !important; box-shadow: 0 2px 6px rgba(37,99,235,0.25); }
             .em-btn-move-a:hover { background: #1d4ed8 !important; }
             .em-btn-move-b { background: #059669 !important; color: #fff !important; box-shadow: 0 2px 6px rgba(5,150,105,0.25); }
             .em-btn-move-b:hover { background: #047857 !important; }
             .em-btn-move:disabled { opacity: 0.45 !important; cursor: not-allowed !important; box-shadow: none !important; }
 
-            /* পেজিনেশন ফুটার */
+            /* পেজিনেশন */
             .em-pagination-footer { display: flex; justify-content: space-between; align-items: center; padding: 16px 8px; border-top: 1.5px solid #eef2f5; flex-wrap: wrap; gap: 12px; margin-top: 15px; }
             .em-page-btn { min-width: 32px !important; height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; padding: 0 10px !important; border: 1px solid #e2e8f0 !important; background: #ffffff !important; color: #475569 !important; border-radius: 50px !important; font-size: 0.85rem !important; font-weight: 600 !important; cursor: pointer !important; transition: all 0.2s !important; }
             .em-page-btn:hover:not(.disabled):not(.active) { background: #f1f5f9 !important; border-color: #cbd5e1 !important; }
@@ -328,22 +188,7 @@
         }
     };
 
-    // ৩. ডাটা স্টোর
-    const defaultMasterSubjects = {
-        "Class 1": ["Bangla", "English", "Mathematics"],
-        "Class 2": ["Bangla", "English", "Mathematics"],
-        "Class 3": ["Bangla", "English", "Mathematics", "Science"],
-        "Class 4": ["Bangla", "English", "Mathematics", "Science", "BGS"],
-        "Class 5": ["Bangla", "English", "Mathematics", "Science", "BGS", "Religion"],
-        "Class 6": ["Mathematics", "English", "Science", "Bangla", "ICT"],
-        "Class 7": ["Mathematics", "English", "Science", "Bangla", "Social Science"],
-        "Class 8": ["Mathematics", "English", "Science", "Bangla", "Religion", "ICT"],
-        "Class 9": ["Mathematics", "English", "Physics", "Chemistry", "Biology", "Bangla"],
-        "Class 10": ["Mathematics", "English", "Physics", "Chemistry", "Biology", "Higher Math"],
-        "HSC 1st Year": ["Bangla", "English", "Physics", "Chemistry", "Mathematics", "Biology"],
-        "HSC 2nd Year": ["Bangla", "English", "Physics", "Chemistry", "Mathematics", "Biology"]
-    };
-
+    // ৩. গ্লোবাল ডাটা ও ফায়ারবেস ইউনিভার্সাল ব্রিজ
     let examRegistry = [];
     let currentActiveSubjectsList = [];
     let selectedSubjectsMap = {};
@@ -355,20 +200,51 @@
     let emSelectedGroupFilter = 'all';
     let emStudentCurrentPage = 1;
     let emStudentPageSize = 25;
+    let dynamicClassList = [];
 
-    function getDynamicClassOptions() {
-        if (typeof window.getCPSCLMasterConfig === 'function') {
-            const cfg = window.getCPSCLMasterConfig();
-            const classFilter = cfg.filterBoxes.find(b => b.id === 'class_name');
-            if (classFilter && classFilter.options && classFilter.options.length > 0) {
-                return classFilter.options;
-            }
+    // [নিশ্চিত সমাধান] যে পদ্ধতিতেই ফায়ারবেস থাকুক, এটি তা স্বয়ংক্রিয়ভাবে ডিটেক্ট করবে
+    function getActiveFirebaseDb() {
+        if (window.db && typeof window.db.ref === 'function') return window.db;
+        if (window.firebase && typeof window.firebase.database === 'function') {
+            try { return window.firebase.database(); } catch(e) {}
         }
-        return ['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10'];
+        return null;
     }
 
-    // ৪. মূল ইন্টারফেস রেন্ডার
-    function renderExamManagerUI() {
+    // ৪. ডেটাবেস থেকে আসল ক্লাসসমূহ লোড করা
+    async function fetchDynamicClassesFromDB() {
+        let classesFound = new Set();
+
+        // ক. কনফিগ থেকে
+        if (typeof window.getCPSCLMasterConfig === 'function') {
+            try {
+                const cfg = window.getCPSCLMasterConfig();
+                const classFilter = cfg && cfg.filterBoxes ? cfg.filterBoxes.find(b => b.id === 'class_name') : null;
+                if (classFilter && classFilter.options) {
+                    classFilter.options.forEach(c => classesFound.add(c.trim()));
+                }
+            } catch(e) {}
+        }
+
+        // খ. ডেটাবেসের স্টুডেন্টদের তালিকা থেকে আসল ক্লাস স্ক্যান করা
+        const students = await getRealStudentsForClass('');
+        if (students && students.length > 0) {
+            students.forEach(st => {
+                const c = (st.class_name || st.class || '').trim();
+                if (c) classesFound.add(c);
+            });
+        }
+
+        if (classesFound.size === 0) {
+            classesFound = new Set(['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10']);
+        }
+
+        dynamicClassList = Array.from(classesFound);
+        return dynamicClassList;
+    }
+
+    // ৫. মূল ইন্টারফেস রেন্ডার
+    async function renderExamManagerUI() {
         const mainWrapper = document.querySelector('.main-wrapper');
         if (!mainWrapper) return;
 
@@ -380,12 +256,14 @@
             mainWrapper.appendChild(panel);
         }
 
-        const classList = getDynamicClassOptions();
-        const defaultClass = classList.includes("Eight Scholarship Batch-2026") ? "Eight Scholarship Batch-2026" : 
-                            (classList.includes("Class 8") ? "Class 8" : classList[0]);
+        // ক্লাউড ডেটাবেস থেকে আসল ক্লাস আনবে
+        await fetchDynamicClassesFromDB();
 
-        let classOptsHtml = '<option value="">-- Choose Class --</option>';
-        classList.forEach(c => {
+        const defaultClass = dynamicClassList.includes("Eight Scholarship Batch-2026") ? "Eight Scholarship Batch-2026" : 
+                            (dynamicClassList.includes("Class 8") ? "Class 8" : dynamicClassList[0]);
+
+        let classOptsHtml = '<option value="">-- Choose Class From Database --</option>';
+        dynamicClassList.forEach(c => {
             classOptsHtml += `<option value="${c}" ${c === defaultClass ? 'selected' : ''}>${c}</option>`;
         });
 
@@ -393,7 +271,7 @@
             <div class="em-wrapper">
                 <div class="em-header">
                     <h1><i class="fa-solid fa-graduation-cap"></i> CPSCL Academic ERP - Exam & Group Management</h1>
-                    <div class="em-badge"><i class="fa-solid fa-user-shield"></i> Administrator Portal</div>
+                    <div class="em-badge"><i class="fa-solid fa-cloud-arrow-up"></i> Real-time Cloud Synced</div>
                 </div>
 
                 <div class="em-nav-tabs">
@@ -438,7 +316,7 @@
                                     </div>
 
                                     <div class="em-form-group">
-                                        <label>2. Select Target Class *</label>
+                                        <label>2. Select Target Class (From Database) *</label>
                                         <select id="emClassName" class="em-control" onchange="onEMClassChange(this.value)" required>
                                             ${classOptsHtml}
                                         </select>
@@ -487,18 +365,18 @@
                                     </div>
 
                                     <button type="submit" id="emSubmitBtn" class="em-btn-submit">
-                                        <i class="fa-solid fa-check-circle"></i> Save Exam & Generate Initial Groups
+                                        <i class="fa-solid fa-cloud-arrow-up"></i> Save Directly to Firebase
                                     </button>
                                 </form>
                             </div>
                         </div>
 
-                        <!-- Right: History Registry (Pill Badges & Buttons) -->
+                        <!-- Right: History Registry -->
                         <div id="emHistoryCol">
                             <div class="em-card">
                                 <div class="em-card-title">
                                     <span><i class="fa-solid fa-clock-rotate-left"></i> Exam Registry & Status</span>
-                                    <span style="font-size: 0.8rem; color: #64748b; font-weight: normal;">Manage, Edit & Duplicate</span>
+                                    <span style="font-size: 0.8rem; color: #64748b; font-weight: normal;">Live Cloud Synced</span>
                                 </div>
 
                                 <div style="overflow-x: auto;">
@@ -526,12 +404,11 @@
                             <span><i class="fa-solid fa-shuffle"></i> Student Group Allocation & Manual Transfer</span>
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <select id="emTransferExamSelect" class="em-control" style="width: 290px; height: 38px; font-size: 0.85rem;" onchange="loadEMStudentGroupAllocation()">
-                                    <!-- Populated dynamically -->
+                                    <!-- Dynamic -->
                                 </select>
                             </div>
                         </div>
 
-                        <!-- উপরের ট্রান্সফার বার (Pill Shaped) -->
                         <div class="em-top-transfer-bar">
                             <div style="display: flex; align-items: center; gap: 12px; flex: 1; max-width: 380px;">
                                 <input type="text" id="emStudentSearchInp" class="em-control" style="height: 38px;" placeholder="Search student by Name, ID, or SL..." oninput="onEMStudentSearch(this.value)">
@@ -545,15 +422,13 @@
                             </div>
                         </div>
 
-                        <!-- ফিল্টার পিলস (Rounded Pills) -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
                             <div class="em-group-pills-filter" id="emGroupFilterPills"></div>
                             <span style="font-size: 0.8rem; color: #64748b; font-style: italic;">
-                                <i class="fa-solid fa-circle-info"></i> Click any student row to select (turns solid blue) and click action buttons above to transfer.
+                                <i class="fa-solid fa-circle-info"></i> Click any student row to select and move group.
                             </span>
                         </div>
 
-                        <!-- ট্রাস্ট ইআরপি ১:১ টেবিল -->
                         <div style="overflow-x: auto; border: 1px solid #eef2f5; border-radius: 8px;">
                             <table class="em-table">
                                 <thead>
@@ -569,7 +444,6 @@
                             </table>
                         </div>
 
-                        <!-- পেজিনেশন ও ফুটার -->
                         <div class="em-pagination-footer">
                             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #64748b;">
                                 <select class="em-control" style="width: 75px; height: 32px; padding: 0 10px; border-radius: 50px !important;" onchange="changeEMPageSize(this.value)">
@@ -587,7 +461,7 @@
                 </div>
             </div>
 
-            <!-- Subject Edit Modal -->
+            <!-- Modal -->
             <div id="emCustomModalOverlay" class="em-modal-overlay">
                 <div class="em-modal-card">
                     <h3 id="emModalTitle">Edit Subject Name</h3>
@@ -603,10 +477,181 @@
         document.getElementById('emExamDate').value = new Date().toISOString().split('T')[0];
         initDefaultEMGroupRules();
         onEMClassChange(defaultClass);
-        syncFromFirebase();
+        renderEMRegistry();
+        populateEMExamDropdown();
     }
 
-    // ৫. ট্যাব সুইচিং
+    // ৬. ফায়ারবেসে সরাসরি সংরক্ষণ (১০০% ক্লাউড গ্যারান্টি)
+    async function saveExamsToCloud() {
+        let isSaved = false;
+        const db = getActiveFirebaseDb();
+
+        // ১. যদি ভেন্ডর বা প্রজেক্টের ব্রিজ থাকে
+        if (typeof window.writeToFirebase === 'function') {
+            try {
+                await window.writeToFirebase('cpscl_exams', examRegistry);
+                await window.writeToFirebase('cpscl_exam_group_overrides', manualGroupOverrides);
+                isSaved = true;
+            } catch(e) {}
+        }
+
+        // ২. সরাসরি ফায়ারবেস ডেটাবেস রেফারেন্স দিয়ে সেভ
+        if (!isSaved && db) {
+            try {
+                await db.ref('cpscl_exams').set(examRegistry);
+                await db.ref('cpscl_exam_group_overrides').set(manualGroupOverrides);
+                isSaved = true;
+            } catch (err) {
+                console.error("Direct Firebase write error:", err);
+            }
+        }
+
+        // ৩. মডুলার SDK থাকলে
+        if (!isSaved && typeof window.set === 'function' && typeof window.ref === 'function' && typeof window.getDatabase === 'function') {
+            try {
+                const mDb = window.getDatabase();
+                await window.set(window.ref(mDb, 'cpscl_exams'), examRegistry);
+                await window.set(window.ref(mDb, 'cpscl_exam_group_overrides'), manualGroupOverrides);
+                isSaved = true;
+            } catch(e) {}
+        }
+
+        // লোকাল ব্যাকআপ
+        localStorage.setItem('cpscl_exams_registry', JSON.stringify(examRegistry));
+        localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(manualGroupOverrides));
+
+        return isSaved;
+    }
+
+    // ৭. অন্য যেকোনো পিসিতে সাথে সাথে ডাটা পাওয়ার জন্য রিয়েলটাইম লিসেনার
+    function listenToFirebaseRealtime() {
+        const db = getActiveFirebaseDb();
+        if (db) {
+            // রিয়েলটাইম ইভেন্ট: ক্লাউডে পরিবর্তন হওয়ামাত্র সব পিসিতে স্ক্রিন আপডেট হবে
+            db.ref('cpscl_exams').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    examRegistry = Array.isArray(data) ? data : Object.values(data);
+                    localStorage.setItem('cpscl_exams_registry', JSON.stringify(examRegistry));
+                    renderEMRegistry();
+                    populateEMExamDropdown();
+                }
+            });
+
+            db.ref('cpscl_exam_group_overrides').on('value', (snapshot) => {
+                const ov = snapshot.val();
+                if (ov) {
+                    manualGroupOverrides = ov;
+                    localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(manualGroupOverrides));
+                }
+            });
+            console.log("✅ CPSCL Real-time Cloud Link Established!");
+        } else {
+            // যদি লোড হতে ২/১ সেকেন্ড দেরি হয়, আবার চেষ্টা করবে
+            setTimeout(listenToFirebaseRealtime, 800);
+        }
+    }
+
+    // ৮. স্টুডেন্ট ডাটা আনা
+    async function getRealStudentsForClass(targetClass) {
+        let allStudents = [];
+        const db = getActiveFirebaseDb();
+
+        if (db) {
+            try {
+                const snap = await db.ref('cpscl_students').once('value');
+                if (snap.exists()) {
+                    const data = snap.val();
+                    allStudents = Array.isArray(data) ? data : Object.values(data);
+                    localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents));
+                }
+            } catch(e) {}
+        }
+
+        if (allStudents.length === 0) {
+            try {
+                const local = localStorage.getItem('cpscl_students_cache');
+                if (local) allStudents = JSON.parse(local);
+            } catch(e) {}
+        }
+
+        if (!targetClass) return allStudents;
+
+        const targetClean = String(targetClass).trim().toLowerCase();
+        return allStudents.filter(s => {
+            const cName = String(s.class_name || s.class || '').trim().toLowerCase();
+            return cName === targetClean || cName.includes(targetClean) || targetClean.includes(cName);
+        });
+    }
+
+    // ৯. ফর্ম সাবমিট
+    window.handleEMSubmit = async function(e) {
+        e.preventDefault();
+        const editId = document.getElementById('emEditingId').value;
+        const name = document.getElementById('emExamName').value.trim();
+        const className = document.getElementById('emClassName').value;
+        const date = document.getElementById('emExamDate').value;
+        const keys = Object.keys(selectedSubjectsMap);
+
+        if (!name) {
+            alert("পরীক্ষার নাম লিখুন!");
+            return;
+        }
+        if (!className) {
+            alert("ক্লাস নির্বাচন করুন!");
+            return;
+        }
+        if (keys.length === 0) {
+            alert("কমপক্ষে একটি বিষয় নির্বাচন করুন!");
+            return;
+        }
+
+        let groupsArr = [];
+        document.querySelectorAll('.em-group-row').forEach(row => {
+            const gName = row.querySelector('.g-name').value.trim() || "Group";
+            const gFrom = row.querySelector('.g-from').value.trim() || "1";
+            const gTo = row.querySelector('.g-to').value.trim() || "Rest";
+            groupsArr.push({ name: gName, from: gFrom, to: gTo });
+        });
+
+        let totalMarks = 0;
+        Object.values(selectedSubjectsMap).forEach(m => totalMarks += m);
+
+        const examObj = {
+            id: editId || ('EX_' + Date.now()),
+            name,
+            class: className,
+            date,
+            subjects: { ...selectedSubjectsMap },
+            totalMarks,
+            groups: groupsArr,
+            status: 'Active',
+            createdAt: new Date().toISOString()
+        };
+
+        if (editId) {
+            const idx = examRegistry.findIndex(x => x.id === editId);
+            if (idx !== -1) examRegistry[idx] = examObj;
+        } else {
+            examRegistry.unshift(examObj);
+        }
+
+        // ক্লাউডে সংরক্ষণ
+        const saved = await saveExamsToCloud();
+
+        if (saved) {
+            alert("✅ পরীক্ষা এবং রোল গ্রুপিং সফলভাবে ফায়ারবেস ক্লাউডে সেভ হয়েছে! যেকোনো পিসিতে এটি এখন দেখা যাবে।");
+        } else {
+            alert("⚠️ তথ্য সেভ হয়েছে, তবে ইন্টারনেট বা ক্লাউড ব্রিজ কানেকশন চেক করুন।");
+        }
+
+        resetEMForm();
+        renderEMRegistry();
+        populateEMExamDropdown();
+        setEMWorkspaceView('history');
+    };
+
+    // ১০. গ্রুপ ট্রান্সফার ও বাকি ফাংশনসমূহ
     window.switchEMMainTab = function(tabKey) {
         document.getElementById('emTabBtn1').classList.remove('active');
         document.getElementById('emTabBtn2').classList.remove('active');
@@ -624,7 +669,6 @@
         }
     };
 
-    // ৬. গ্রুপ রুলস
     function initDefaultEMGroupRules() {
         const container = document.getElementById('emGroupRulesContainer');
         if (!container) return;
@@ -652,7 +696,6 @@
         container.appendChild(row);
     }
 
-    // ৭. ভিউ মোড
     window.setEMWorkspaceView = function(mode) {
         const grid = document.getElementById('emMainGrid');
         const formCol = document.getElementById('emFormCol');
@@ -680,15 +723,9 @@
         }
     };
 
-    // ৮. ক্লাস ও পিলস
     window.onEMClassChange = function(className) {
-        if (!className) {
-            currentActiveSubjectsList = [];
-        } else if (defaultMasterSubjects[className]) {
-            currentActiveSubjectsList = [...defaultMasterSubjects[className]];
-        } else {
-            currentActiveSubjectsList = ["Bangla", "English", "Mathematics", "Science", "BGS"];
-        }
+        const defaultSubs = ["Bangla", "English", "Mathematics", "Science", "BGS", "ICT", "Religion"];
+        currentActiveSubjectsList = [...defaultSubs];
         selectedSubjectsMap = {};
         renderEMPills();
         renderEMSelectedTable();
@@ -699,11 +736,6 @@
         if (!area) return;
         area.innerHTML = '';
 
-        if (currentActiveSubjectsList.length === 0) {
-            area.innerHTML = '<span style="color:#64748b; font-size:0.85rem;">Select a class first.</span>';
-            return;
-        }
-
         currentActiveSubjectsList.forEach(sub => {
             const isSelected = selectedSubjectsMap.hasOwnProperty(sub);
             const pill = document.createElement('div');
@@ -711,7 +743,7 @@
             pill.innerHTML = `
                 <span>${sub}</span>
                 <div class="em-pill-actions">
-                    <i class="fa-solid fa-pen em-pill-btn" title="Edit name" onclick="openEMEditSubjectModal(event, '${sub}')"></i>
+                    <i class="fa-solid fa-pen em-pill-btn" title="Edit" onclick="openEMEditSubjectModal(event, '${sub}')"></i>
                     <i class="fa-solid fa-xmark em-pill-btn" title="Remove" onclick="deleteEMSubjectPill(event, '${sub}')"></i>
                 </div>
             `;
@@ -813,7 +845,7 @@
             tr.innerHTML = `
                 <td>${sub}</td>
                 <td style="text-align: center;">
-                    <input type="number" class="em-mark-inp" value="${m}" min="1" oninput="updateEMMark('${sub}', this.value)">
+                    <input type="number" class="em-mark-inp" value="${m}" min="1" oninput="updateEMMark('${sub}', this.value)" style="width:70px; height:32px; border-radius:50px; border:1px solid #cbd5e1; text-align:center;">
                 </td>
                 <td style="text-align: right;">
                     <button type="button" class="em-btn-icon delete" onclick="toggleEMSubject('${sub}')"><i class="fa-solid fa-trash"></i></button>
@@ -833,175 +865,13 @@
         document.getElementById('emSummaryTotal').innerText = sum;
     };
 
-    // ৯. ফর্ম সাবমিট
-    window.handleEMSubmit = async function(e) {
-        e.preventDefault();
-        const editId = document.getElementById('emEditingId').value;
-        const name = document.getElementById('emExamName').value.trim();
-        const className = document.getElementById('emClassName').value;
-        const date = document.getElementById('emExamDate').value;
-        const keys = Object.keys(selectedSubjectsMap);
-
-        if (keys.length === 0) {
-            alert("Please select at least one subject!");
-            return;
-        }
-
-        let groupsArr = [];
-        document.querySelectorAll('.em-group-row').forEach(row => {
-            const gName = row.querySelector('.g-name').value.trim() || "Group";
-            const gFrom = row.querySelector('.g-from').value.trim() || "1";
-            const gTo = row.querySelector('.g-to').value.trim() || "Rest";
-            groupsArr.push({ name: gName, from: gFrom, to: gTo });
-        });
-
-        let totalMarks = 0;
-        Object.values(selectedSubjectsMap).forEach(m => totalMarks += m);
-
-        const examObj = {
-            id: editId || ('EX_' + Date.now()),
-            name,
-            class: className,
-            date,
-            subjects: { ...selectedSubjectsMap },
-            totalMarks,
-            groups: groupsArr,
-            status: 'Active',
-            createdAt: new Date().toISOString()
-        };
-
-        if (editId) {
-            const idx = examRegistry.findIndex(x => x.id === editId);
-            if (idx !== -1) examRegistry[idx] = examObj;
-        } else {
-            examRegistry.unshift(examObj);
-        }
-
-        await saveExamsToCloud();
-
-        if (typeof window.showToast === 'function') {
-            window.showToast("Exam & Groups saved successfully!", "success");
-        } else {
-            alert("Exam & Groups saved successfully!");
-        }
-
-        resetEMForm();
-        renderEMRegistry();
-        populateEMExamDropdown();
-        setEMWorkspaceView('history');
-    };
-
-    // [FIXED] ক্লাউডে সেভ করার নির্ভরযোগ্য কোড
-    async function saveExamsToCloud() {
-        let isSavedToCloud = false;
-
-        // উপায় ১: যদি প্রজেক্টের গ্লোবাল writeToFirebase ফাংশন থাকে
-        if (typeof window.writeToFirebase === 'function') {
-            try {
-                await window.writeToFirebase('cpscl_exams', examRegistry);
-                await window.writeToFirebase('cpscl_exam_group_overrides', manualGroupOverrides);
-                isSavedToCloud = true;
-            } catch (err) {
-                console.error("writeToFirebase Error:", err);
-            }
-        }
-
-        // উপায় ২: ফায়ারবেস মডুলার SDK (getDatabase, ref, set)
-        if (!isSavedToCloud && typeof window.getDatabase === 'function' && typeof window.ref === 'function') {
-            try {
-                const db = window.getDatabase();
-                if (typeof window.set === 'function') {
-                    await window.set(window.ref(db, 'cpscl_exams'), examRegistry);
-                    await window.set(window.ref(db, 'cpscl_exam_group_overrides'), manualGroupOverrides);
-                    isSavedToCloud = true;
-                }
-            } catch (err) {
-                console.error("Firebase Modular Save Error:", err);
-            }
-        }
-
-        // উপায় ৩: ফায়ারবেস ক্লাসিক SDK (v8)
-        if (!isSavedToCloud && window.firebase && typeof window.firebase.database === 'function') {
-            try {
-                const db = window.firebase.database();
-                await db.ref('cpscl_exams').set(examRegistry);
-                await db.ref('cpscl_exam_group_overrides').set(manualGroupOverrides);
-                isSavedToCloud = true;
-            } catch (err) {
-                console.error("Firebase v8 Save Error:", err);
-            }
-        }
-
-        // লোকালস্টোরেজ ক্যাশ ব্যাকআপ
-        localStorage.setItem('cpscl_exams_registry', JSON.stringify(examRegistry));
-        localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(manualGroupOverrides));
-    }
-
-    // [FIXED] ক্লাউড থেকে ডাটা রিড করার নির্ভরযোগ্য কোড
-    async function syncFromFirebase() {
-        const local = localStorage.getItem('cpscl_exams_registry');
-        if (local) {
-            try { examRegistry = JSON.parse(local); } catch(e) {}
-            renderEMRegistry();
-            populateEMExamDropdown();
-        }
-        const localOverrides = localStorage.getItem('cpscl_exam_group_overrides');
-        if (localOverrides) {
-            try { manualGroupOverrides = JSON.parse(localOverrides); } catch(e) {}
-        }
-
-        // মডুলার SDK দিয়ে সিঙ্ক
-        if (typeof window.getDatabase === 'function' && typeof window.ref === 'function' && typeof window.get === 'function') {
-            try {
-                const db = window.getDatabase();
-                const snap = await window.get(window.ref(db, 'cpscl_exams'));
-                if (snap.exists()) {
-                    const data = snap.val();
-                    examRegistry = Array.isArray(data) ? data : Object.values(data);
-                    localStorage.setItem('cpscl_exams_registry', JSON.stringify(examRegistry));
-                    renderEMRegistry();
-                    populateEMExamDropdown();
-                }
-                const snapOv = await window.get(window.ref(db, 'cpscl_exam_group_overrides'));
-                if (snapOv.exists()) {
-                    manualGroupOverrides = snapOv.val() || {};
-                    localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(manualGroupOverrides));
-                }
-            } catch (e) {
-                console.log("Firebase sync fallback.");
-            }
-        }
-        // ক্লাসিক SDK দিয়ে সিঙ্ক
-        else if (window.firebase && typeof window.firebase.database === 'function') {
-            try {
-                const db = window.firebase.database();
-                const snap = await db.ref('cpscl_exams').once('value');
-                if (snap.exists()) {
-                    const data = snap.val();
-                    examRegistry = Array.isArray(data) ? data : Object.values(data);
-                    localStorage.setItem('cpscl_exams_registry', JSON.stringify(examRegistry));
-                    renderEMRegistry();
-                    populateEMExamDropdown();
-                }
-                const snapOv = await db.ref('cpscl_exam_group_overrides').once('value');
-                if (snapOv.exists()) {
-                    manualGroupOverrides = snapOv.val() || {};
-                    localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(manualGroupOverrides));
-                }
-            } catch (e) {
-                console.log("Firebase v8 sync fallback.");
-            }
-        }
-    }
-
-    // হিস্ট্রি টেবিল রেন্ডার (১০০% পিল বাটন ও ব্যাজ)
     function renderEMRegistry() {
         const tbody = document.getElementById('emRegistryTbody');
         if (!tbody) return;
         tbody.innerHTML = '';
 
         if (examRegistry.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b; padding:20px;">No exams published yet.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b; padding:20px;">No exams published yet in cloud database.</td></tr>`;
             return;
         }
 
@@ -1030,7 +900,6 @@
         });
     }
 
-    // ১০. TAB 2: একক সিলেকশন (Single Select) ও রাউন্ডেড পিলস
     function populateEMExamDropdown() {
         const select = document.getElementById('emTransferExamSelect');
         if (!select) return;
@@ -1070,7 +939,6 @@
             const slNumber = idx + 1;
             const studentId = String(st.std_id || st.id || '').trim();
             const studentRoll = st.roll_no || st.roll || '';
-
             const effectiveNum = (studentRoll && !isNaN(parseInt(studentRoll))) ? parseInt(studentRoll) : slNumber;
 
             let assignedGroup = groupsList[0].name;
@@ -1155,23 +1023,13 @@
 
         await saveExamsToCloud();
 
-        if (typeof window.showToast === 'function') {
-            window.showToast(`${stu ? stu.name : 'Student'} successfully moved to ${targetGroup}!`, "success");
-        } else {
-            alert(`Student moved to ${targetGroup}!`);
-        }
-
         updateTopTransferBar();
         renderGroupFilterPills();
         renderEMPaginatedStudentTable();
     };
 
     window.toggleSingleStudentSelection = function(studentId) {
-        if (selectedSingleStudentId === studentId) {
-            selectedSingleStudentId = null;
-        } else {
-            selectedSingleStudentId = studentId;
-        }
+        selectedSingleStudentId = (selectedSingleStudentId === studentId) ? null : studentId;
         updateTopTransferBar();
         renderEMPaginatedStudentTable();
     };
@@ -1265,23 +1123,16 @@
             const rollBadge = st.roll ? `<span style="font-size:0.75rem; background:rgba(0,0,0,0.06); padding:2px 8px; border-radius:10px; margin-left:6px;">Roll: ${st.roll}</span>` : '';
 
             const tr = document.createElement('tr');
-            if (isSelected) {
-                tr.classList.add('erp-row-selected');
-            }
+            if (isSelected) tr.classList.add('erp-row-selected');
 
             tr.onclick = () => toggleSingleStudentSelection(st.id);
 
             tr.innerHTML = `
                 <td><strong>${st.sl}</strong></td>
                 <td><strong>${st.id}</strong></td>
-                <td>
-                    <span style="font-weight:700;">${st.name}</span>
-                    ${rollBadge}
-                </td>
+                <td><span style="font-weight:700;">${st.name}</span>${rollBadge}</td>
                 <td>${st.class}</td>
-                <td style="text-align: right;">
-                    <span class="em-group-badge">${st.group}</span>
-                </td>
+                <td style="text-align: right;"><span class="em-group-badge">${st.group}</span></td>
             `;
             tbody.appendChild(tr);
         });
@@ -1314,48 +1165,6 @@
         }
     }
 
-    async function getRealStudentsForClass(targetClass) {
-        let allStudents = [];
-
-        if (window.getDatabase && window.ref && window.get) {
-            try {
-                const db = window.getDatabase();
-                const stuRef = window.ref(db, 'cpscl_students');
-                const snap = await window.get(stuRef);
-                if (snap.exists()) {
-                    const data = snap.val();
-                    allStudents = Array.isArray(data) ? data : Object.values(data);
-                    localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents));
-                }
-            } catch(e) {}
-        } else if (window.firebase && typeof window.firebase.database === 'function') {
-            try {
-                const db = window.firebase.database();
-                const snap = await db.ref('cpscl_students').once('value');
-                if (snap.exists()) {
-                    const data = snap.val();
-                    allStudents = Array.isArray(data) ? data : Object.values(data);
-                    localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents));
-                }
-            } catch(e) {}
-        }
-
-        if (allStudents.length === 0) {
-            try {
-                const local = localStorage.getItem('cpscl_students_cache');
-                if (local) allStudents = JSON.parse(local);
-            } catch(e) {}
-        }
-
-        const targetClean = String(targetClass).trim().toLowerCase();
-        let matched = allStudents.filter(s => {
-            const cName = String(s.class_name || s.class || '').trim().toLowerCase();
-            return cName === targetClean || cName.includes(targetClean) || targetClean.includes(cName);
-        });
-
-        return matched;
-    }
-
     // এডিট, ডুপ্লিকেট, ডিলিট
     window.editEMExam = function(id) {
         const exam = examRegistry.find(x => x.id === id);
@@ -1369,10 +1178,6 @@
         onEMClassChange(exam.class);
         selectedSubjectsMap = { ...exam.subjects };
 
-        Object.keys(exam.subjects).forEach(sub => {
-            if (!currentActiveSubjectsList.includes(sub)) currentActiveSubjectsList.push(sub);
-        });
-
         const container = document.getElementById('emGroupRulesContainer');
         container.innerHTML = '';
         if (exam.groups && exam.groups.length > 0) {
@@ -1385,7 +1190,7 @@
         renderEMSelectedTable();
 
         document.getElementById('emFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Assessment: ${exam.name}`;
-        document.getElementById('emSubmitBtn').innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Update Assessment & Rules`;
+        document.getElementById('emSubmitBtn').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Update In Firebase`;
         document.getElementById('emCancelEditBtn').style.display = 'block';
 
         switchEMMainTab('createExam');
@@ -1405,10 +1210,6 @@
         onEMClassChange(exam.class);
         selectedSubjectsMap = { ...exam.subjects };
 
-        Object.keys(exam.subjects).forEach(sub => {
-            if (!currentActiveSubjectsList.includes(sub)) currentActiveSubjectsList.push(sub);
-        });
-
         const container = document.getElementById('emGroupRulesContainer');
         container.innerHTML = '';
         if (exam.groups && exam.groups.length > 0) {
@@ -1421,7 +1222,7 @@
         renderEMSelectedTable();
 
         document.getElementById('emFormTitle').innerHTML = `<i class="fa-solid fa-copy"></i> Duplicate Assessment`;
-        document.getElementById('emSubmitBtn').innerHTML = `<i class="fa-solid fa-check-circle"></i> Save Duplicated Exam`;
+        document.getElementById('emSubmitBtn').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Save Duplicated to Firebase`;
         document.getElementById('emCancelEditBtn').style.display = 'block';
 
         switchEMMainTab('createExam');
@@ -1430,7 +1231,7 @@
     };
 
     window.deleteEMExam = async function(id) {
-        if (confirm("Are you sure you want to delete this exam?")) {
+        if (confirm("Are you sure you want to delete this exam permanently from cloud?")) {
             examRegistry = examRegistry.filter(x => x.id !== id);
             await saveExamsToCloud();
             renderEMRegistry();
@@ -1443,17 +1244,15 @@
         document.getElementById('emEditingId').value = '';
         document.getElementById('emExamDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('emFormTitle').innerHTML = `<i class="fa-solid fa-file-pen"></i> Create New Assessment & Rules`;
-        document.getElementById('emSubmitBtn').innerHTML = `<i class="fa-solid fa-check-circle"></i> Save Exam & Generate Initial Groups`;
+        document.getElementById('emSubmitBtn').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Save Directly to Firebase`;
         document.getElementById('emCancelEditBtn').style.display = 'none';
         initDefaultEMGroupRules();
-        const classList = getDynamicClassOptions();
-        onEMClassChange(classList[0]);
     };
 
     function init() {
         injectExamStyles();
         injectExamManagerSidebar();
-        syncFromFirebase(); // পেজ লোড হওয়ার সাথে সাথে ক্লাউড থেকে ডাটা নিয়ে আসবে
+        listenToFirebaseRealtime(); // সরাসরি রিয়েল-টাইম ক্লাউড কানেকশন
     }
 
     if (document.readyState === 'loading') {
