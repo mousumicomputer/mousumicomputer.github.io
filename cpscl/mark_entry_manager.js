@@ -1,13 +1,13 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Super Admin Mark Management Engine (v3.1 Filter & Strict Validation)
+   SUB-SECTION: Super Admin Mark Management Engine (v3.2 Dynamic Group & Center Toast)
    Path: cpscl/mark_entry_manager.js
-   Architecture: Clean White Corporate | Minimalist Drawer Accordion | Firebase Sync
+   Architecture: Clean White Corporate | Center Toast Modal | Exam Manager Synced
    Language: Pure English (Corporate ERP Standard)
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Super Admin Mark Management Engine (v3.1 with Group Filter & Validation)...");
+    console.log("Loading CPSCL Super Admin Mark Management Engine (v3.2 Center Toast & Dynamic Group Edition)...");
 
     // ১. সাইডবারে Exam Manager-এর নিচে "Mark Entry" সাব-মেনু ইনজেক্ট করা
     function injectMarkEntrySidebar() {
@@ -52,7 +52,7 @@
         }
     };
 
-    // ২. স্কোপড কর্পোরেট সিএসএস (ড্রয়ার স্টাইল)
+    // ২. স্কোপড কর্পোরেট সিএসএস (ড্রয়ার এবং আধুনিক সেন্টার টোস্ট)
     function injectMarkEntryStyles() {
         if (document.getElementById('cpscl-mark-entry-scoped-styles')) return;
         const style = document.createElement('style');
@@ -81,7 +81,7 @@
 
             /* Filter Controls Bar */
             .mem-filter-bar { background: #f8fafc; padding: 12px 18px; border-radius: 50px !important; border: 1.5px solid #e2e8f0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
-            .mem-filter-group { display: flex; align-items: center; gap: 8px; background: #ffffff; padding: 7px 16px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; flex: 1; min-width: 150px; }
+            .mem-filter-group { display: flex; align-items: center; gap: 8px; background: #ffffff; padding: 7px 16px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; flex: 1; min-width: 160px; }
             .mem-filter-group select { border: none; background: transparent; font-size: 0.86rem; font-weight: 700; color: #1e293b; outline: none; width: 100%; cursor: pointer; }
 
             /* Stats Overview Grid */
@@ -113,11 +113,65 @@
             .mem-btn-outline { background: #ffffff; border: 1.5px solid #cbd5e1; color: #475569; }
             .mem-btn-outline:hover { background: #f8fafc; border-color: #94a3b8; color: #1e293b; }
 
+            /* আধুনিক ফ্লোটিং সেন্টার টোস্ট (Center Toast Modal) */
+            .mem-center-toast-overlay {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(0.85);
+                z-index: 99999999;
+                pointer-events: none;
+                opacity: 0;
+                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+            .mem-center-toast-overlay.show {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            .mem-center-toast-box {
+                background: #0f172a;
+                color: #ffffff;
+                padding: 16px 32px;
+                border-radius: 50px !important;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 0.95rem;
+                font-weight: 700;
+                border: 2px solid #ef4444;
+            }
+
             /* Config Box */
             .mem-config-card { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 18px; margin-bottom: 14px; }
             .mem-config-title { font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
         `;
         document.head.appendChild(style);
+    }
+
+    // স্ক্রিনের সেন্টারে সুন্দর টোস্ট দেখানোর ফাংশন
+    function showCenterToast(message, type = 'error') {
+        let overlay = document.getElementById('mem-center-toast');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'mem-center-toast';
+            overlay.className = 'mem-center-toast-overlay';
+            overlay.innerHTML = `<div class="mem-center-toast-box" id="mem-center-toast-box"></div>`;
+            document.body.appendChild(overlay);
+        }
+        const box = document.getElementById('mem-center-toast-box');
+        const icon = (type === 'success') ? 'fa-circle-check' : 'fa-triangle-exclamation';
+        const borderColor = (type === 'success') ? '#22c55e' : '#ef4444';
+        const iconColor = (type === 'success') ? '#22c55e' : '#ef4444';
+
+        box.style.borderColor = borderColor;
+        box.innerHTML = `<i class="fa-solid ${icon}" style="color: ${iconColor}; font-size: 1.3rem;"></i> <span>${message}</span>`;
+        
+        overlay.classList.add('show');
+        if (window._memToastTimer) clearTimeout(window._memToastTimer);
+        window._memToastTimer = setTimeout(() => {
+            overlay.classList.remove('show');
+        }, 2200);
     }
 
     // ৩. মাস্টার সেটিংস
@@ -144,7 +198,7 @@
     let isFrozen = false;
 
     let auditLogs = [
-        { time: new Date().toLocaleTimeString(), user: "Root Admin", action: "System Ready", details: "Validation & Group Filtering Engine Initialized", type: "System" }
+        { time: new Date().toLocaleTimeString(), user: "Root Admin", action: "System Ready", details: "Exam Manager Synced Architecture Active", type: "System" }
     ];
 
     let gradeScales = [
@@ -189,6 +243,11 @@
                     const stuData = snapStu.val();
                     const stuArr = Array.isArray(stuData) ? stuData : Object.values(stuData);
                     localStorage.setItem('cpscl_students_cache', JSON.stringify(stuArr));
+                }
+
+                const snapOv = await window.get(window.ref(db, 'cpscl_exam_group_overrides'));
+                if (snapOv.exists()) {
+                    localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(snapOv.val() || {}));
                 }
             } catch (err) {
                 console.warn("Cloud Sync Note:", err);
@@ -258,7 +317,7 @@
                         <i class="fa-solid fa-chevron-right mem-drawer-arrow"></i>
                     </div>
                     <div class="mem-drawer-body">
-                        <!-- Filter Bar with Group/Section Added -->
+                        <!-- Filter Bar -->
                         <div class="mem-filter-bar">
                             <div class="mem-filter-group">
                                 <i class="fa-solid fa-file-pen" style="color: #64748b; font-size: 13px;"></i>
@@ -319,15 +378,7 @@
                     <div class="mem-drawer-body">
                         <table class="mem-table">
                             <thead>
-                                <tr>
-                                    <th>Teacher</th>
-                                    <th>Class</th>
-                                    <th>Subject</th>
-                                    <th>Students</th>
-                                    <th>Submitted</th>
-                                    <th>Status</th>
-                                    <th style="text-align: right;">Action</th>
-                                </tr>
+                                <tr><th>Teacher</th><th>Class</th><th>Subject</th><th>Students</th><th>Submitted</th><th>Status</th><th style="text-align: right;">Action</th></tr>
                             </thead>
                             <tbody id="memApprovalsTbody"></tbody>
                         </table>
@@ -379,9 +430,7 @@
                     </div>
                     <div class="mem-drawer-body">
                         <table class="mem-table">
-                            <thead>
-                                <tr><th>Grade</th><th>Min %</th><th>Max %</th><th>GPA</th><th>Status</th></tr>
-                            </thead>
+                            <thead><tr><th>Grade</th><th>Min %</th><th>Max %</th><th>GPA</th><th>Status</th></tr></thead>
                             <tbody id="memGradingTbody"></tbody>
                         </table>
                     </div>
@@ -398,9 +447,7 @@
                             <button type="button" class="mem-btn-pill mem-btn-outline" onclick="window.clearMemVisualLogs()">Clear Visual Trail</button>
                         </div>
                         <table class="mem-table">
-                            <thead>
-                                <tr><th>Timestamp</th><th>User</th><th>Action</th><th>Details</th><th>Type</th></tr>
-                            </thead>
+                            <thead><tr><th>Timestamp</th><th>User</th><th>Action</th><th>Details</th><th>Type</th></tr></thead>
                             <tbody id="memLogsTbody"></tbody>
                         </table>
                     </div>
@@ -425,19 +472,45 @@
         const cfg = getMemConfig();
         cfg[key] = value;
         saveMemConfig(cfg);
-        
-        if (typeof window.showToast === 'function') {
-            window.showToast("Settings updated successfully!", "info");
-        }
+        showCenterToast("Settings updated successfully!", "success");
         window.renderMemTableOnly();
     };
 
-    // হেল্পার: শিক্ষার্থীর গ্রুপ অথবা শাখা বের করা
-    function getStudentGroupOrSec(s) {
-        return String(s.group || s.std_group || s.group_name || s.section || s.sec || s.batch || '').trim();
+    // ৮. Exam Manager-এর সাথে মিল রেখে ছাত্রের ডাইনামিক গ্রুপ নির্ধারণের নিখুঁত ফাংশন
+    function getStudentDynamicGroup(st, slNumber, exam, manualOverrides) {
+        const studentId = String(st.std_id || st.id || '').trim();
+        const studentRoll = st.roll_no || st.roll || '';
+        const effectiveNum = (studentRoll && !isNaN(parseInt(studentRoll))) ? parseInt(studentRoll) : slNumber;
+
+        const groupsList = (exam && exam.groups && exam.groups.length > 0) ? exam.groups : [
+            { name: "Group A", from: 1, to: 40 },
+            { name: "Group B", from: 41, to: "Rest" }
+        ];
+
+        let assignedGroup = groupsList[0].name;
+        for (let g of groupsList) {
+            const fromNum = parseInt(g.from) || 1;
+            const toNum = (g.to && String(g.to).toLowerCase() === 'rest') ? 999999 : (parseInt(g.to) || 999999);
+            if (effectiveNum >= fromNum && effectiveNum <= toNum) {
+                assignedGroup = g.name;
+                break;
+            }
+        }
+
+        // Exam Manager-এর ট্রান্সফার চেক
+        if (manualOverrides && manualOverrides[exam.id] && manualOverrides[exam.id][studentId]) {
+            assignedGroup = manualOverrides[exam.id][studentId];
+        }
+
+        // রেজিস্ট্রেশন সেটাপ থেকে গ্রুপ/শাখা ব্যাকআপ
+        if (!assignedGroup && (st.group || st.section)) {
+            assignedGroup = st.group || st.section;
+        }
+
+        return assignedGroup || "Group A";
     }
 
-    // ৮. এক্সাম নির্বাচন ও স্বয়ংক্রিয় গ্রুপ ড্রপডাউন পপুলেট করা
+    // ৯. পরীক্ষা পরিবর্তনের সাথে সাথে গ্রুপ ড্রপডাউনে গ্রুপ লোড করা
     window.onMemExamChange = function (examId) {
         currentExamId = examId;
         const exam = loadedExamsCache.find(x => x.id === examId);
@@ -445,7 +518,7 @@
         const grpSelect = document.getElementById('memFilterGroup');
         if (!subSelect) return;
 
-        // Populate Subjects
+        // বিষয়গুলো পপুলেট
         subSelect.innerHTML = '<option value="">-- Select Subject --</option>';
         if (exam && exam.subjects) {
             Object.keys(exam.subjects).forEach(sub => {
@@ -457,31 +530,38 @@
             }
         }
 
-        // Populate Groups / Sections based on students of this exam class
+        // গ্রুপগুলো পপুলেট (Exam Manager-এর রুলস অনুযায়ী)
         if (grpSelect && exam) {
             grpSelect.innerHTML = '<option value="ALL">All Groups / Sections</option>';
-            const allStudents = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
-            const classStudents = allStudents.filter(s => {
-                const cName = String(s.class_name || s.class || '').trim().toLowerCase();
-                const target = String(exam.class).trim().toLowerCase();
-                return cName === target || cName.includes(target) || target.includes(cName);
-            });
+            const groupSet = new Set();
 
-            const uniqueGroups = new Set();
-            classStudents.forEach(st => {
-                const g = getStudentGroupOrSec(st);
-                if (g) uniqueGroups.add(g);
-            });
+            if (exam.groups && exam.groups.length > 0) {
+                exam.groups.forEach(g => {
+                    if (g.name) groupSet.add(g.name.trim());
+                });
+            } else {
+                groupSet.add("Group A");
+                groupSet.add("Group B");
+            }
 
-            uniqueGroups.forEach(g => {
-                grpSelect.innerHTML += `<option value="${g}">${g}</option>`;
+            // ম্যানুয়াল ওভাররাইড থেকে কোনো গ্রুপ থাকলে যুক্ত করা
+            let overrides = {};
+            try {
+                overrides = JSON.parse(localStorage.getItem('cpscl_exam_group_overrides') || '{}');
+                if (overrides[exam.id]) {
+                    Object.values(overrides[exam.id]).forEach(ovG => groupSet.add(ovG));
+                }
+            } catch(e) {}
+
+            groupSet.forEach(gName => {
+                grpSelect.innerHTML += `<option value="${gName}">${gName}</option>`;
             });
         }
 
         window.loadMemMarksTable();
     };
 
-    // ৯. গ্রুপ ও বিষয় ফিল্টার করে আসল শিক্ষার্থী ও নম্বর লোড করা
+    // ১০. গ্রুপ ও বিষয় ফিল্টার করে আসল শিক্ষার্থী ও নম্বর লোড করা
     window.loadMemMarksTable = async function () {
         const examSelect = document.getElementById('memFilterExam');
         const subSelect = document.getElementById('memFilterSubject');
@@ -504,29 +584,37 @@
         currentSubjectFullMark = opt ? parseInt(opt.getAttribute('data-full')) || 30 : 30;
 
         let allStudents = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
-        
-        // Filter by class first
-        let filteredStudents = allStudents.filter(s => {
+        let overrides = {};
+        try {
+            overrides = JSON.parse(localStorage.getItem('cpscl_exam_group_overrides') || '{}');
+        } catch(e) {}
+
+        // শুধু ক্লাসের শিক্ষার্থীদের ফিল্টার করা
+        let classStudents = allStudents.filter(s => {
             const cName = String(s.class_name || s.class || '').trim().toLowerCase();
             const target = String(exam.class).trim().toLowerCase();
             return cName === target || cName.includes(target) || target.includes(cName);
         });
 
-        // Filter by Group/Section if not ALL
-        if (selectedGroup && selectedGroup !== 'ALL') {
-            filteredStudents = filteredStudents.filter(s => {
-                return getStudentGroupOrSec(s).toLowerCase() === selectedGroup.toLowerCase();
-            });
-        }
-
-        currentStudentsList = filteredStudents;
-
-        currentStudentsList.sort((a, b) => {
+        // রোল অনুযায়ী সাজানো
+        classStudents.sort((a, b) => {
             const rA = parseInt(a.roll_no || a.roll) || 0;
             const rB = parseInt(b.roll_no || b.roll) || 0;
             if (rA && rB) return rA - rB;
             return String(a.std_id || a.id).localeCompare(String(b.std_id || b.id));
         });
+
+        // প্রতিটি শিক্ষার্থীর গ্রুপ নির্ধারণ করা
+        classStudents.forEach((st, idx) => {
+            st.computedGroup = getStudentDynamicGroup(st, idx + 1, exam, overrides);
+        });
+
+        // যদি কোনো নির্দিষ্ট গ্রুপ নির্বাচন করা থাকে, শুধু তাদের রাখা
+        if (selectedGroup && selectedGroup !== 'ALL') {
+            currentStudentsList = classStudents.filter(s => s.computedGroup === selectedGroup);
+        } else {
+            currentStudentsList = classStudents;
+        }
 
         let savedMarks = JSON.parse(localStorage.getItem(`cpscl_marks_${examId}_${subject}`) || '{}');
 
@@ -554,7 +642,7 @@
         window.renderMemTableOnly();
     };
 
-    // ১০. টেবিল ও লাইভ কাউন্টার রেন্ডার
+    // ১১. টেবিল ও লাইভ কাউন্টার রেন্ডার
     window.renderMemTableOnly = function (searchQuery = '') {
         const thead = document.getElementById('memTableThead');
         const tbody = document.getElementById('memStudentMarksTbody');
@@ -596,12 +684,12 @@
         const filtered = currentStudentsList.filter(s => {
             const name = (s.student_name || s.name || '').toLowerCase();
             const roll = String(s.roll_no || s.roll || '');
-            const grp = getStudentGroupOrSec(s).toLowerCase();
+            const grp = (s.computedGroup || '').toLowerCase();
             return name.includes(q) || roll.includes(q) || grp.includes(q);
         });
 
         if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:35px; color:#94a3b8;">No student records found for the chosen criteria.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:35px; color:#94a3b8;">No student records found.</td></tr>`;
             return;
         }
 
@@ -614,7 +702,7 @@
             const stId = st.std_id || st.id;
             const roll = st.roll_no || st.roll || (idx + 1);
             const name = st.student_name || st.name || 'Student';
-            const grp = getStudentGroupOrSec(st);
+            const grp = st.computedGroup || 'Group A';
 
             let lineMarkDisplay = '';
             let lineTotal = 0;
@@ -686,7 +774,7 @@
                 <td style="text-align: center; font-weight: 800; background: #f8fafc;">${roll}</td>
                 <td>
                     <strong>${name}</strong>
-                    ${grp ? `<span class="mem-badge-pill" style="background: #f1f5f9; color: #475569; margin-left: 6px; font-size: 0.72rem;">${grp}</span>` : ''}
+                    <span class="mem-badge-pill" style="background: #f1f5f9; color: #2563eb; margin-left: 6px; font-size: 0.72rem; border: 1px solid #e2e8f0;">${grp}</span>
                     <div style="font-size:0.75rem; color:#64748b;">ID: ${stId}</div>
                 </td>
                 ${lineMarkDisplay}
@@ -717,7 +805,7 @@
         }
     };
 
-    // ১১. কড়া নম্বর ভ্যালিডেশন হ্যান্ডলার (৩০ এর বেশি দেওয়া যাবে না)
+    // ১২. কড়া নম্বর ভ্যালিডেশন (সেন্টার টোস্ট সহ)
     window.updateScoreDirect = function (stId, val, inputEl) {
         const student = currentStudentsList.find(s => (s.std_id || s.id) === stId);
         if (!student) return;
@@ -731,9 +819,9 @@
 
         let num = parseFloat(val);
 
-        // ভ্যালিডেশন: পূর্ণমানের বেশি হতে পারবে না
+        // স্ক্রিনের সেন্টারে ওয়ার্নিং টোস্ট
         if (num > currentSubjectFullMark) {
-            alert(`সতর্কতা: এই বিষয়ের পূর্ণমান ${currentSubjectFullMark}! আপনি ${num} দিতে পারবেন না।`);
+            showCenterToast(`সতর্কতা: এই বিষয়ের পূর্ণমান ${currentSubjectFullMark}! আপনি ${num} দিতে পারবেন না।`, 'error');
             num = currentSubjectFullMark;
             if (inputEl) {
                 inputEl.value = currentSubjectFullMark;
@@ -741,7 +829,7 @@
                 setTimeout(() => inputEl.classList.remove('is-invalid'), 1200);
             }
         } else if (num < 0) {
-            alert("সতর্কতা: নম্বর ০ এর কম হতে পারে না!");
+            showCenterToast("সতর্কতা: নম্বর ০ এর কম হতে পারে না!", 'error');
             num = 0;
             if (inputEl) inputEl.value = 0;
         }
@@ -765,7 +853,7 @@
 
         const total = (parseFloat(student.cq) || 0) + (parseFloat(student.mcq) || 0) + (parseFloat(student.practical) || 0);
         if (total > currentSubjectFullMark) {
-            alert(`সতর্কতা: মোট নম্বর পূর্ণমান ${currentSubjectFullMark}-এর চেয়ে বেশি হয়ে গেছে!`);
+            showCenterToast(`সতর্কতা: মোট নম্বর পূর্ণমান ${currentSubjectFullMark}-এর চেয়ে বেশি হয়ে গেছে!`, 'error');
             if (inputEl) inputEl.classList.add('is-invalid');
         } else {
             if (inputEl) inputEl.classList.remove('is-invalid');
@@ -779,14 +867,14 @@
         }
     };
 
-    // ১২. ক্লাউডে সেভ (আগের অন্য গ্রুপের ডেটা না মুছে নির্ভুল সেভ)
+    // ১৩. ক্লাউডে নিরাপদ ও নিখুঁত সেভ
     window.saveMarksToCloud = async function () {
         if (!currentExamId || !currentSubject) {
-            alert("Please choose an Exam and Subject first!");
+            showCenterToast("Please choose an Exam and Subject first!", 'error');
             return;
         }
 
-        // চূড়ান্ত নিরাপত্তা চেক: কোনো শিক্ষার্থীর নম্বর পূর্ণমানের চেয়ে বেশি আছে কি না
+        // চূড়ান্ত চেক
         for (let st of currentStudentsList) {
             const mark = st.rawMark;
             if (mark !== null && mark !== undefined && mark !== '') {
@@ -794,13 +882,13 @@
                 if (num > currentSubjectFullMark) {
                     const roll = st.roll_no || st.roll || 'N/A';
                     const name = st.student_name || st.name || 'Student';
-                    alert(`ভুল হয়েছে! রোল: ${roll} (${name})-এর নম্বর পূর্ণমান ${currentSubjectFullMark}-এর বেশি (${num}) দেওয়া আছে। দয়া করে সংশোধন করুন, নয়তো সেভ হবে না।`);
-                    return; // সেভ বন্ধ!
+                    showCenterToast(`রোল ${roll} (${name})-এর নম্বর পূর্ণমান ${currentSubjectFullMark}-এর বেশি! সংশোধন করুন।`, 'error');
+                    return;
                 }
             }
         }
 
-        // পূর্বের সেভ করা ডেটা লোড করে নেওয়া যাতে অন্য গ্রুপের ডেটা মুছে না যায়
+        // আগের অন্য গ্রুপের ডেটার সাথে মার্জ করে সেভ যাতে কিছু মুছে না যায়
         let mergedMarks = JSON.parse(localStorage.getItem(`cpscl_marks_${currentExamId}_${currentSubject}`) || '{}');
 
         currentStudentsList.forEach(st => {
@@ -825,11 +913,7 @@
         }
 
         addAuditLog("Marks Saved", `Saved marks for Exam: ${currentExamId}, Subject: ${currentSubject}`);
-        if (typeof window.showToast === 'function') {
-            window.showToast("Marks successfully saved to Firebase Cloud!", "success");
-        } else {
-            alert("Marks successfully saved to Firebase Cloud!");
-        }
+        showCenterToast("Marks successfully saved to Firebase Cloud!", "success");
         window.renderMemTableOnly();
     };
 
@@ -950,11 +1034,7 @@
 
     window.publishMemResults = function () {
         addAuditLog("Results Published", "Published batch assessment results");
-        if (typeof window.showToast === 'function') {
-            window.showToast("Batch results successfully published!", "success");
-        } else {
-            alert("Batch results successfully published!");
-        }
+        showCenterToast("Batch results successfully published!", "success");
     };
 
     function init() {
