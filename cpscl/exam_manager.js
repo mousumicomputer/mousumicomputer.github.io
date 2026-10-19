@@ -1,12 +1,12 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v3.0 Cloud Master)
+   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v4.0 Pure Cloud)
    Path: cpscl/exam_manager.js
-   Architecture: 100% Uniform Pill Shapes | Real-time Firebase Sync | Auto-DB Classes
+   Architecture: 100% Uniform Pill Shapes | Pure Firebase Cloud | Live Loading Spinner
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Suite v3.0 (Direct Cloud Sync & Real-time Active)...");
+    console.log("Loading CPSCL Suite v4.0 (100% Pure Cloud Engine Active)...");
 
     // ১. সম্পূর্ণ ও নিখুঁত পিল (Pill) স্টাইল ইনজেকশন
     function injectExamStyles() {
@@ -188,8 +188,9 @@
         }
     };
 
-    // ৩. গ্লোবাল ডাটা ও ফায়ারবেস ইউনিভার্সাল ব্রিজ
+    // ৩. গ্লোবাল ডাটা (১০০% পিওর ক্লাউড)
     let examRegistry = [];
+    let isCloudDataLoaded = false; // ক্লাউড ডাটা পাওয়ার ফ্ল্যাগ
     let currentActiveSubjectsList = [];
     let selectedSubjectsMap = {};
     let manualGroupOverrides = {};
@@ -202,7 +203,7 @@
     let emStudentPageSize = 25;
     let dynamicClassList = [];
 
-    // [নিশ্চিত সমাধান] যে পদ্ধতিতেই ফায়ারবেস থাকুক, এটি তা স্বয়ংক্রিয়ভাবে ডিটেক্ট করবে
+    // ফায়ারবেস কানেকশন ডিটেকশন
     function getActiveFirebaseDb() {
         if (window.db && typeof window.db.ref === 'function') return window.db;
         if (window.firebase && typeof window.firebase.database === 'function') {
@@ -211,11 +212,10 @@
         return null;
     }
 
-    // ৪. ডেটাবেস থেকে আসল ক্লাসসমূহ লোড করা
+    // ৪. ডেটাবেস থেকে আসল ক্লাস লোড
     async function fetchDynamicClassesFromDB() {
         let classesFound = new Set();
 
-        // ক. কনফিগ থেকে
         if (typeof window.getCPSCLMasterConfig === 'function') {
             try {
                 const cfg = window.getCPSCLMasterConfig();
@@ -226,7 +226,6 @@
             } catch(e) {}
         }
 
-        // খ. ডেটাবেসের স্টুডেন্টদের তালিকা থেকে আসল ক্লাস স্ক্যান করা
         const students = await getRealStudentsForClass('');
         if (students && students.length > 0) {
             students.forEach(st => {
@@ -236,7 +235,7 @@
         }
 
         if (classesFound.size === 0) {
-            classesFound = new Set(['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10']);
+            classesFound = new Set(['Eight Scholarship Batch-2026', 'Class 8', 'Class 9', 'Class 10']);
         }
 
         dynamicClassList = Array.from(classesFound);
@@ -256,7 +255,6 @@
             mainWrapper.appendChild(panel);
         }
 
-        // ক্লাউড ডেটাবেস থেকে আসল ক্লাস আনবে
         await fetchDynamicClassesFromDB();
 
         const defaultClass = dynamicClassList.includes("Eight Scholarship Batch-2026") ? "Eight Scholarship Batch-2026" : 
@@ -271,7 +269,7 @@
             <div class="em-wrapper">
                 <div class="em-header">
                     <h1><i class="fa-solid fa-graduation-cap"></i> CPSCL Academic ERP - Exam & Group Management</h1>
-                    <div class="em-badge"><i class="fa-solid fa-cloud-arrow-up"></i> Real-time Cloud Synced</div>
+                    <div class="em-badge"><i class="fa-solid fa-cloud-arrow-up"></i> 100% Pure Cloud Synced</div>
                 </div>
 
                 <div class="em-nav-tabs">
@@ -312,11 +310,11 @@
 
                                     <div class="em-form-group">
                                         <label>1. Exam Name / Title *</label>
-                                        <input type="text" id="emExamName" class="em-control" placeholder="e.g., Daily Assessment - 01" required>
+                                        <input type="text" id="emExamName" class="em-control" placeholder="e.g., Model Test - 01" required>
                                     </div>
 
                                     <div class="em-form-group">
-                                        <label>2. Select Target Class (From Database) *</label>
+                                        <label>2. Select Target Class (From Cloud DB) *</label>
                                         <select id="emClassName" class="em-control" onchange="onEMClassChange(this.value)" required>
                                             ${classOptsHtml}
                                         </select>
@@ -477,16 +475,21 @@
         document.getElementById('emExamDate').value = new Date().toISOString().split('T')[0];
         initDefaultEMGroupRules();
         onEMClassChange(defaultClass);
-        renderEMRegistry();
-        populateEMExamDropdown();
+
+        // যদি ক্লাউড ডাটা এখনো লোড না হয়ে থাকে তবে স্পিনার দেখাবে
+        if (!isCloudDataLoaded) {
+            renderEMRegistry(true);
+        } else {
+            renderEMRegistry(false);
+            populateEMExamDropdown();
+        }
     }
 
-    // ৬. ফায়ারবেসে সরাসরি সংরক্ষণ (১০০% ক্লাউড গ্যারান্টি)
+    // ৬. ক্লাউডে সরাসরি সংরক্ষণ (১০০% ফায়ারবেস)
     async function saveExamsToCloud() {
         let isSaved = false;
         const db = getActiveFirebaseDb();
 
-        // ১. যদি ভেন্ডর বা প্রজেক্টের ব্রিজ থাকে
         if (typeof window.writeToFirebase === 'function') {
             try {
                 await window.writeToFirebase('cpscl_exams', examRegistry);
@@ -495,60 +498,44 @@
             } catch(e) {}
         }
 
-        // ২. সরাসরি ফায়ারবেস ডেটাবেস রেফারেন্স দিয়ে সেভ
         if (!isSaved && db) {
             try {
                 await db.ref('cpscl_exams').set(examRegistry);
                 await db.ref('cpscl_exam_group_overrides').set(manualGroupOverrides);
                 isSaved = true;
             } catch (err) {
-                console.error("Direct Firebase write error:", err);
+                console.error("Firebase save error:", err);
             }
         }
-
-        // ৩. মডুলার SDK থাকলে
-        if (!isSaved && typeof window.set === 'function' && typeof window.ref === 'function' && typeof window.getDatabase === 'function') {
-            try {
-                const mDb = window.getDatabase();
-                await window.set(window.ref(mDb, 'cpscl_exams'), examRegistry);
-                await window.set(window.ref(mDb, 'cpscl_exam_group_overrides'), manualGroupOverrides);
-                isSaved = true;
-            } catch(e) {}
-        }
-
-        // লোকাল ব্যাকআপ
-        localStorage.setItem('cpscl_exams_registry', JSON.stringify(examRegistry));
-        localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(manualGroupOverrides));
 
         return isSaved;
     }
 
-    // ৭. অন্য যেকোনো পিসিতে সাথে সাথে ডাটা পাওয়ার জন্য রিয়েলটাইম লিসেনার
+    // ৭. সরাসরি ফায়ারবেস থেকে লাইভ ডাটা লোড (লোডিং স্পিনার সহ)
     function listenToFirebaseRealtime() {
         const db = getActiveFirebaseDb();
+
         if (db) {
-            // রিয়েলটাইম ইভেন্ট: ক্লাউডে পরিবর্তন হওয়ামাত্র সব পিসিতে স্ক্রিন আপডেট হবে
             db.ref('cpscl_exams').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     examRegistry = Array.isArray(data) ? data : Object.values(data);
-                    localStorage.setItem('cpscl_exams_registry', JSON.stringify(examRegistry));
-                    renderEMRegistry();
-                    populateEMExamDropdown();
+                } else {
+                    examRegistry = [];
                 }
+                isCloudDataLoaded = true;
+                renderEMRegistry(false); // লোডিং শেষ করে আসল ডাটা দেখাবে
+                populateEMExamDropdown();
             });
 
             db.ref('cpscl_exam_group_overrides').on('value', (snapshot) => {
                 const ov = snapshot.val();
                 if (ov) {
                     manualGroupOverrides = ov;
-                    localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(manualGroupOverrides));
                 }
             });
-            console.log("✅ CPSCL Real-time Cloud Link Established!");
         } else {
-            // যদি লোড হতে ২/১ সেকেন্ড দেরি হয়, আবার চেষ্টা করবে
-            setTimeout(listenToFirebaseRealtime, 800);
+            setTimeout(listenToFirebaseRealtime, 600);
         }
     }
 
@@ -563,15 +550,7 @@
                 if (snap.exists()) {
                     const data = snap.val();
                     allStudents = Array.isArray(data) ? data : Object.values(data);
-                    localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents));
                 }
-            } catch(e) {}
-        }
-
-        if (allStudents.length === 0) {
-            try {
-                const local = localStorage.getItem('cpscl_students_cache');
-                if (local) allStudents = JSON.parse(local);
             } catch(e) {}
         }
 
@@ -584,7 +563,7 @@
         });
     }
 
-    // ৯. ফর্ম সাবমিট
+    // ৯. ফর্ম সাবমিট (সফল হলে পছন্দের শর্ট মেসেজ দেখাবে)
     window.handleEMSubmit = async function(e) {
         e.preventDefault();
         const editId = document.getElementById('emEditingId').value;
@@ -593,16 +572,8 @@
         const date = document.getElementById('emExamDate').value;
         const keys = Object.keys(selectedSubjectsMap);
 
-        if (!name) {
-            alert("পরীক্ষার নাম লিখুন!");
-            return;
-        }
-        if (!className) {
-            alert("ক্লাস নির্বাচন করুন!");
-            return;
-        }
-        if (keys.length === 0) {
-            alert("কমপক্ষে একটি বিষয় নির্বাচন করুন!");
+        if (!name || !className || keys.length === 0) {
+            alert("সবগুলো তথ্য সঠিকভাবে পূরণ করুন!");
             return;
         }
 
@@ -636,22 +607,70 @@
             examRegistry.unshift(examObj);
         }
 
-        // ক্লাউডে সংরক্ষণ
         const saved = await saveExamsToCloud();
 
         if (saved) {
-alert("✅ Success! সফল হয়েছে।");
+            alert("✅ Success! সফল হয়েছে।");
         } else {
-            alert("⚠️ তথ্য সেভ হয়েছে, তবে ইন্টারনেট বা ক্লাউড ব্রিজ কানেকশন চেক করুন।");
+            alert("⚠️ ক্লাউড ডেটাবেসে কানেক্ট হতে পারেনি। ইন্টারনেট চেক করুন।");
         }
 
         resetEMForm();
-        renderEMRegistry();
+        renderEMRegistry(false);
         populateEMExamDropdown();
         setEMWorkspaceView('history');
     };
 
-    // ১০. গ্রুপ ট্রান্সফার ও বাকি ফাংশনসমূহ
+    // ১০. হিস্ট্রি টেবিল ও লোডিং স্পিনার
+    function renderEMRegistry(isLoading = false) {
+        const tbody = document.getElementById('emRegistryTbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (isLoading) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" style="text-align:center; padding:35px;">
+                        <i class="fa-solid fa-circle-notch fa-spin" style="font-size:26px; color:#2563eb;"></i>
+                        <div style="color:#64748b; font-weight:700; margin-top:10px; font-size:0.9rem;">
+                            ক্লাউড ডেটাবেস থেকে পরীক্ষা লোড হচ্ছে...
+                        </div>
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        if (examRegistry.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b; padding:25px;">No exams published yet in cloud database.</td></tr>`;
+            return;
+        }
+
+        examRegistry.forEach(ex => {
+            const groupDesc = (ex.groups && ex.groups.length > 0)
+                ? ex.groups.map(g => `${g.name} (${g.from}-${g.to})`).join(', ')
+                : 'Default Groups';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <strong style="color: #0f172a; font-size: 0.95rem;">${ex.name}</strong><br>
+                    <span class="em-rule-badge">
+                        <i class="fa-solid fa-layer-group"></i> ${groupDesc}
+                    </span>
+                </td>
+                <td><span class="em-class-badge">${ex.class}</span></td>
+                <td style="font-weight: 600; color: #475569;">${ex.date}</td>
+                <td style="text-align: right; white-space: nowrap;">
+                    <button class="em-btn-icon edit" onclick="editEMExam('${ex.id}')" title="Edit Assessment"><i class="fa-solid fa-pen"></i></button>
+                    <button class="em-btn-icon duplicate" onclick="duplicateEMExam('${ex.id}')" title="Duplicate Assessment"><i class="fa-solid fa-copy"></i></button>
+                    <button class="em-btn-icon delete" onclick="deleteEMExam('${ex.id}')" title="Delete Assessment"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // ১১. গ্রুপ ট্রান্সফার ও বাকি ফাংশনসমূহ
     window.switchEMMainTab = function(tabKey) {
         document.getElementById('emTabBtn1').classList.remove('active');
         document.getElementById('emTabBtn2').classList.remove('active');
@@ -864,41 +883,6 @@ alert("✅ Success! সফল হয়েছে।");
         Object.values(selectedSubjectsMap).forEach(m => sum += m);
         document.getElementById('emSummaryTotal').innerText = sum;
     };
-
-    function renderEMRegistry() {
-        const tbody = document.getElementById('emRegistryTbody');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-
-        if (examRegistry.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b; padding:20px;">No exams published yet in cloud database.</td></tr>`;
-            return;
-        }
-
-        examRegistry.forEach(ex => {
-            const groupDesc = (ex.groups && ex.groups.length > 0)
-                ? ex.groups.map(g => `${g.name} (${g.from}-${g.to})`).join(', ')
-                : 'Default Groups';
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>
-                    <strong style="color: #0f172a; font-size: 0.95rem;">${ex.name}</strong><br>
-                    <span class="em-rule-badge">
-                        <i class="fa-solid fa-layer-group"></i> ${groupDesc}
-                    </span>
-                </td>
-                <td><span class="em-class-badge">${ex.class}</span></td>
-                <td style="font-weight: 600; color: #475569;">${ex.date}</td>
-                <td style="text-align: right; white-space: nowrap;">
-                    <button class="em-btn-icon edit" onclick="editEMExam('${ex.id}')" title="Edit Assessment"><i class="fa-solid fa-pen"></i></button>
-                    <button class="em-btn-icon duplicate" onclick="duplicateEMExam('${ex.id}')" title="Duplicate Assessment"><i class="fa-solid fa-copy"></i></button>
-                    <button class="em-btn-icon delete" onclick="deleteEMExam('${ex.id}')" title="Delete Assessment"><i class="fa-solid fa-trash"></i></button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
 
     function populateEMExamDropdown() {
         const select = document.getElementById('emTransferExamSelect');
@@ -1234,7 +1218,7 @@ alert("✅ Success! সফল হয়েছে।");
         if (confirm("Are you sure you want to delete this exam permanently from cloud?")) {
             examRegistry = examRegistry.filter(x => x.id !== id);
             await saveExamsToCloud();
-            renderEMRegistry();
+            renderEMRegistry(false);
             populateEMExamDropdown();
         }
     };
@@ -1252,7 +1236,7 @@ alert("✅ Success! সফল হয়েছে।");
     function init() {
         injectExamStyles();
         injectExamManagerSidebar();
-        listenToFirebaseRealtime(); // সরাসরি রিয়েল-টাইম ক্লাউড কানেকশন
+        listenToFirebaseRealtime(); // সরাসরি ফায়ারবেস ক্লাউড লিসেনার
     }
 
     if (document.readyState === 'loading') {
