@@ -1,14 +1,14 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v4.0 Pure Cloud)
+   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v4.5 Fast Cloud)
    Path: cpscl/exam_manager.js
-   Architecture: 100% Uniform Pill Shapes | Pure Firebase Cloud | Live Loading Spinner
+   Architecture: 100% Uniform Pill Shapes | Fast Cloud Sync | Clean Loading Spinner
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Suite v4.0 (100% Pure Cloud Engine Active)...");
+    console.log("Loading CPSCL Suite v4.5 (Fast Pure Cloud Active)...");
 
-    // ১. সম্পূর্ণ ও নিখুঁত পিল (Pill) স্টাইল ইনজেকশন
+    // ১. স্টাইল ইনজেকশন
     function injectExamStyles() {
         const oldStyle = document.getElementById('cpscl-exam-manager-style');
         if (oldStyle) oldStyle.remove();
@@ -22,7 +22,6 @@
             .em-header h1 i { color: #2563eb; }
             .em-badge { background: #eff6ff; color: #2563eb; font-weight: 700; font-size: 0.82rem; padding: 6px 16px; border-radius: 50px !important; border: 1px solid #bfdbfe; }
 
-            /* মডিউল ন্যাভ ট্যাব */
             .em-nav-tabs { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
             .em-tab-btn { background: #ffffff; border: 1.5px solid #cbd5e1; color: #64748b; padding: 11px 24px; border-radius: 50px !important; font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
             .em-tab-btn:hover { border-color: #2563eb; color: #2563eb; }
@@ -31,14 +30,12 @@
             .em-tab-content { display: none; }
             .em-tab-content.active { display: block; }
 
-            /* ভিউ বার */
             .em-view-bar { display: flex; gap: 8px; margin-bottom: 20px; background: #ffffff; padding: 10px 18px; border-radius: 50px !important; border: 1px solid #e2e8f0; align-items: center; flex-wrap: wrap; }
             .em-view-bar span { font-size: 0.85rem; font-weight: 700; color: #64748b; margin-right: 5px; }
             .em-btn-toggle { background: #f8fafc; border: 1.5px solid #cbd5e1; color: #0f172a; padding: 7px 18px; border-radius: 50px !important; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
             .em-btn-toggle:hover { border-color: #2563eb; color: #2563eb; }
             .em-btn-toggle.active { background: #2563eb !important; color: #ffffff !important; border-color: #2563eb !important; box-shadow: 0 4px 10px rgba(37,99,235,0.25); }
 
-            /* গ্রিড ও কার্ড */
             .em-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; transition: all 0.3s ease; }
             @media (max-width: 1024px) { .em-grid { grid-template-columns: 1fr !important; } }
 
@@ -53,7 +50,6 @@
             .em-control:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
             select.em-control { cursor: pointer; }
 
-            /* সাবজেক্ট পিলস */
             .em-pills-box { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; margin-bottom: 12px; }
             .em-pill { display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; color: #2563eb; border: 1.5px solid #bfdbfe; padding: 7px 16px; border-radius: 50px !important; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; user-select: none; }
             .em-pill:hover { background: #dbeafe; border-color: #2563eb; transform: translateY(-1px); }
@@ -66,13 +62,11 @@
             .em-btn-add { background: #f8fafc; border: 1.5px dashed #cbd5e1; color: #2563eb; padding: 0 20px; border-radius: 50px !important; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap; transition: 0.2s; }
             .em-btn-add:hover { background: #eff6ff; border-color: #2563eb; }
 
-            /* ফিল্টার বাটনসমূহ */
             .em-group-pills-filter { display: flex !important; gap: 8px !important; align-items: center !important; flex-wrap: wrap !important; }
             .em-filter-pill-btn { padding: 7px 18px !important; border-radius: 50px !important; border: 1.5px solid #cbd5e1 !important; background: #ffffff !important; color: #475569 !important; font-size: 0.82rem !important; font-weight: 700 !important; cursor: pointer !important; display: inline-flex !important; align-items: center !important; gap: 6px !important; transition: all 0.2s ease !important; outline: none !important; user-select: none !important; }
             .em-filter-pill-btn:hover { background: #f1f5f9 !important; border-color: #94a3b8 !important; }
             .em-filter-pill-btn.active { background: #2563eb !important; color: #ffffff !important; border-color: #2563eb !important; box-shadow: 0 4px 10px rgba(37,99,235,0.25) !important; }
 
-            /* টেবিল */
             .em-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
             .em-table th { background: #ffffff !important; color: #8c98a4 !important; font-size: 0.75rem !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 14px 18px !important; border-bottom: 1.5px solid #eef2f5 !important; text-align: left; }
             .em-table tbody td { color: #334155 !important; font-size: 0.88rem !important; font-weight: 500 !important; padding: 13px 18px !important; border-bottom: 1px solid #eef2f5 !important; }
@@ -88,7 +82,6 @@
             .em-group-badge, .em-class-badge { display: inline-block !important; padding: 4px 14px !important; border-radius: 50px !important; font-size: 0.8rem !important; font-weight: 700 !important; background: #eff6ff !important; color: #2563eb !important; border: 1px solid #bfdbfe !important; }
             .em-rule-badge { display: inline-flex !important; align-items: center !important; gap: 5px !important; padding: 3px 12px !important; border-radius: 50px !important; font-size: 0.75rem !important; font-weight: 700 !important; background: #f1f5f9 !important; color: #2563eb !important; border: 1px solid #e2e8f0 !important; margin-top: 4px !important; }
 
-            /* আইকন বাটন */
             .em-btn-icon { width: 36px !important; height: 36px !important; border-radius: 50px !important; border: 1.5px solid #cbd5e1 !important; background: #ffffff !important; cursor: pointer !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; font-size: 0.85rem !important; transition: all 0.2s ease !important; margin: 0 3px !important; outline: none !important; }
             .em-btn-icon.edit { color: #2563eb !important; }
             .em-btn-icon.edit:hover { background: #eff6ff !important; border-color: #2563eb !important; transform: scale(1.05); }
@@ -97,7 +90,6 @@
             .em-btn-icon.delete { color: #dc2626 !important; }
             .em-btn-icon.delete:hover { background: #fee2e2 !important; border-color: #dc2626 !important; transform: scale(1.05); }
 
-            /* ট্রান্সফার বার */
             .em-top-transfer-bar { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 50px !important; padding: 10px 20px; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
             .em-transfer-btns-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
             .em-btn-move { padding: 8px 20px !important; border-radius: 50px !important; font-size: 0.82rem !important; font-weight: 700 !important; cursor: pointer !important; border: none !important; display: inline-flex !important; align-items: center !important; gap: 6px !important; transition: 0.2s !important; }
@@ -107,7 +99,6 @@
             .em-btn-move-b:hover { background: #047857 !important; }
             .em-btn-move:disabled { opacity: 0.45 !important; cursor: not-allowed !important; box-shadow: none !important; }
 
-            /* পেজিনেশন */
             .em-pagination-footer { display: flex; justify-content: space-between; align-items: center; padding: 16px 8px; border-top: 1.5px solid #eef2f5; flex-wrap: wrap; gap: 12px; margin-top: 15px; }
             .em-page-btn { min-width: 32px !important; height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; padding: 0 10px !important; border: 1px solid #e2e8f0 !important; background: #ffffff !important; color: #475569 !important; border-radius: 50px !important; font-size: 0.85rem !important; font-weight: 600 !important; cursor: pointer !important; transition: all 0.2s !important; }
             .em-page-btn:hover:not(.disabled):not(.active) { background: #f1f5f9 !important; border-color: #cbd5e1 !important; }
@@ -119,7 +110,6 @@
             .em-group-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; background: #f8fafc; padding: 8px 14px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; }
             .em-group-row input { height: 34px; border-radius: 50px !important; border: 1px solid #cbd5e1; padding: 0 14px; font-size: 0.85rem; font-weight: 700; outline: none; background: #ffffff; }
 
-            /* মোডাল */
             .em-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 999999; }
             .em-modal-card { background: #ffffff; border: 2px solid #cbd5e1; padding: 25px; border-radius: 30px !important; width: 100%; max-width: 420px; box-shadow: 0 20px 35px rgba(0,0,0,0.2); text-align: center; }
             .em-modal-card h3 { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin-bottom: 14px; }
@@ -190,7 +180,7 @@
 
     // ৩. গ্লোবাল ডাটা (১০০% পিওর ক্লাউড)
     let examRegistry = [];
-    let isCloudDataLoaded = false; // ক্লাউড ডাটা পাওয়ার ফ্ল্যাগ
+    let isCloudDataLoaded = false;
     let currentActiveSubjectsList = [];
     let selectedSubjectsMap = {};
     let manualGroupOverrides = {};
@@ -203,7 +193,6 @@
     let emStudentPageSize = 25;
     let dynamicClassList = [];
 
-    // ফায়ারবেস কানেকশন ডিটেকশন
     function getActiveFirebaseDb() {
         if (window.db && typeof window.db.ref === 'function') return window.db;
         if (window.firebase && typeof window.firebase.database === 'function') {
@@ -476,19 +465,18 @@
         initDefaultEMGroupRules();
         onEMClassChange(defaultClass);
 
-        // যদি ক্লাউড ডাটা এখনো লোড না হয়ে থাকে তবে স্পিনার দেখাবে
         if (!isCloudDataLoaded) {
             renderEMRegistry(true);
+            loadCloudExamsFast();
         } else {
             renderEMRegistry(false);
             populateEMExamDropdown();
         }
     }
 
-    // ৬. ক্লাউডে সরাসরি সংরক্ষণ (১০০% ফায়ারবেস)
+    // ৬. ক্লাউডে সরাসরি সংরক্ষণ
     async function saveExamsToCloud() {
         let isSaved = false;
-        const db = getActiveFirebaseDb();
 
         if (typeof window.writeToFirebase === 'function') {
             try {
@@ -498,44 +486,90 @@
             } catch(e) {}
         }
 
-        if (!isSaved && db) {
+        const db = getActiveFirebaseDb();
+        if (!isSaved && db && typeof db.ref === 'function') {
             try {
                 await db.ref('cpscl_exams').set(examRegistry);
                 await db.ref('cpscl_exam_group_overrides').set(manualGroupOverrides);
                 isSaved = true;
-            } catch (err) {
-                console.error("Firebase save error:", err);
-            }
+            } catch (err) {}
+        }
+
+        if (!isSaved && typeof window.set === 'function' && typeof window.ref === 'function' && typeof window.getDatabase === 'function') {
+            try {
+                const mDb = window.getDatabase();
+                await window.set(window.ref(mDb, 'cpscl_exams'), examRegistry);
+                await window.set(window.ref(mDb, 'cpscl_exam_group_overrides'), manualGroupOverrides);
+                isSaved = true;
+            } catch(e) {}
         }
 
         return isSaved;
     }
 
-    // ৭. সরাসরি ফায়ারবেস থেকে লাইভ ডাটা লোড (লোডিং স্পিনার সহ)
-    function listenToFirebaseRealtime() {
-        const db = getActiveFirebaseDb();
+    // ৭. দ্রুত ক্লাউড লোডার (সর্বোচ্চ ১.৫ সেকেন্ড লোডিং থাকবে, কোনো লেখা থাকবে না)
+    let isFetchingDone = false;
 
-        if (db) {
-            db.ref('cpscl_exams').on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    examRegistry = Array.isArray(data) ? data : Object.values(data);
-                } else {
-                    examRegistry = [];
-                }
+    async function loadCloudExamsFast() {
+        if (isFetchingDone) return;
+
+        // টাইমআউট সেফগার্ড: কোনোভাবেই যেন ১.৫ সেকেন্ডের বেশি লোডার না ঘোরে
+        const timer = setTimeout(() => {
+            if (!isCloudDataLoaded) {
                 isCloudDataLoaded = true;
-                renderEMRegistry(false); // লোডিং শেষ করে আসল ডাটা দেখাবে
-                populateEMExamDropdown();
-            });
+                isFetchingDone = true;
+                renderEMRegistry(false);
+            }
+        }, 1500);
 
-            db.ref('cpscl_exam_group_overrides').on('value', (snapshot) => {
-                const ov = snapshot.val();
-                if (ov) {
-                    manualGroupOverrides = ov;
+        function applyCloudData(data) {
+            clearTimeout(timer);
+            isCloudDataLoaded = true;
+            isFetchingDone = true;
+            if (data) {
+                examRegistry = Array.isArray(data) ? data : Object.values(data);
+            } else {
+                examRegistry = [];
+            }
+            renderEMRegistry(false);
+            populateEMExamDropdown();
+        }
+
+        // পদ্ধতি ১: গ্লোবাল ব্রিজ রিডার
+        if (typeof window.readFromFirebase === 'function') {
+            try {
+                const d = await window.readFromFirebase('cpscl_exams');
+                if (d) { applyCloudData(d); return; }
+            } catch(e) {}
+        }
+
+        // পদ্ধতি ২: ফায়ারবেস v8 লিসেনার
+        const db = getActiveFirebaseDb();
+        if (db && typeof db.ref === 'function') {
+            try {
+                db.ref('cpscl_exams').on('value', (snap) => {
+                    applyCloudData(snap.val());
+                });
+                db.ref('cpscl_exam_group_overrides').on('value', (snap) => {
+                    if (snap.val()) manualGroupOverrides = snap.val();
+                });
+                return;
+            } catch(e) {}
+        }
+
+        // পদ্ধতি ৩: মডুলার SDK
+        if (typeof window.getDatabase === 'function' && typeof window.ref === 'function') {
+            try {
+                const mDb = window.getDatabase();
+                if (typeof window.onValue === 'function') {
+                    window.onValue(window.ref(mDb, 'cpscl_exams'), (snap) => {
+                        applyCloudData(snap.val());
+                    });
+                } else if (typeof window.get === 'function') {
+                    const snap = await window.get(window.ref(mDb, 'cpscl_exams'));
+                    applyCloudData(snap.exists() ? snap.val() : null);
                 }
-            });
-        } else {
-            setTimeout(listenToFirebaseRealtime, 600);
+            } catch(e) {}
         }
     }
 
@@ -563,7 +597,7 @@
         });
     }
 
-    // ৯. ফর্ম সাবমিট (সফল হলে পছন্দের শর্ট মেসেজ দেখাবে)
+    // ৯. ফর্ম সাবমিট
     window.handleEMSubmit = async function(e) {
         e.preventDefault();
         const editId = document.getElementById('emEditingId').value;
@@ -621,20 +655,18 @@
         setEMWorkspaceView('history');
     };
 
-    // ১০. হিস্ট্রি টেবিল ও লোডিং স্পিনার
+    // ১০. হিস্ট্রি টেবিল ও নিখুঁত স্পিনার (কোনো লেখা ছাড়া)
     function renderEMRegistry(isLoading = false) {
         const tbody = document.getElementById('emRegistryTbody');
         if (!tbody) return;
         tbody.innerHTML = '';
 
+        // কোনো লেখা থাকবে না, শুধু পরিচ্ছন্ন স্পিনার
         if (isLoading) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="4" style="text-align:center; padding:35px;">
-                        <i class="fa-solid fa-circle-notch fa-spin" style="font-size:26px; color:#2563eb;"></i>
-                        <div style="color:#64748b; font-weight:700; margin-top:10px; font-size:0.9rem;">
-                            ক্লাউড ডেটাবেস থেকে পরীক্ষা লোড হচ্ছে...
-                        </div>
+                    <td colspan="4" style="text-align:center; padding:50px 20px;">
+                        <i class="fa-solid fa-circle-notch fa-spin" style="font-size:32px; color:#2563eb;"></i>
                     </td>
                 </tr>`;
             return;
@@ -1236,7 +1268,7 @@
     function init() {
         injectExamStyles();
         injectExamManagerSidebar();
-        listenToFirebaseRealtime(); // সরাসরি ফায়ারবেস ক্লাউড লিসেনার
+        loadCloudExamsFast();
     }
 
     if (document.readyState === 'loading') {
