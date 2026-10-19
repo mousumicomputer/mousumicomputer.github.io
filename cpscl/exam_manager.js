@@ -1,14 +1,14 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v5.0 Enterprise)
+   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v6.0 Universal)
    Path: cpscl/exam_manager.js
-   Architecture: 100% Uniform Pill Shapes | Persistent Cloud Sync | Center Toast
+   Architecture: 100% Uniform Pill Shapes | Universal Student Cloud Link | Center Toast
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Suite v5.0 (Persistent Cloud & Modern Toast Engine)...");
+    console.log("Loading CPSCL Suite v6.0 (Universal Student Cloud Engine Active)...");
 
-    // ১. স্টাইল ইনজেকশন (সেন্টার টোস্ট ও পিল স্টাইল)
+    // ১. সম্পূর্ণ ও নিখুঁত পিল (Pill) স্টাইল ইনজেকশন
     function injectExamStyles() {
         const oldStyle = document.getElementById('cpscl-exam-manager-style');
         if (oldStyle) oldStyle.remove();
@@ -110,45 +110,15 @@
             .em-group-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; background: #f8fafc; padding: 8px 14px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; }
             .em-group-row input { height: 34px; border-radius: 50px !important; border: 1px solid #cbd5e1; padding: 0 14px; font-size: 0.85rem; font-weight: 700; outline: none; background: #ffffff; }
 
-            /* ========================================================
-               আধুনিক সেন্টার টোস্ট নোটিফিকেশন (Browser Alert Replacement)
-               ======================================================== */
-            .em-center-toast-wrap {
-                position: fixed;
-                top: 30px;
-                left: 50%;
-                transform: translate(-50%, -40px) scale(0.9);
-                z-index: 99999999;
-                pointer-events: none;
-                opacity: 0;
-                transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            }
-            .em-center-toast-wrap.show {
-                opacity: 1;
-                transform: translate(-50%, 0) scale(1);
-            }
-            .em-center-toast-card {
-                background: #0f172a;
-                color: #ffffff;
-                padding: 13px 28px;
-                border-radius: 50px !important;
-                box-shadow: 0 15px 35px rgba(0,0,0,0.25);
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                font-size: 0.92rem;
-                font-weight: 700;
-                border: 1.5px solid #22c55e;
-            }
-            .em-center-toast-card i {
-                color: #22c55e;
-                font-size: 1.2rem;
-            }
+            /* আধুনিক সেন্টার টোস্ট */
+            .em-center-toast-wrap { position: fixed; top: 30px; left: 50%; transform: translate(-50%, -40px) scale(0.9); z-index: 99999999; pointer-events: none; opacity: 0; transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+            .em-center-toast-wrap.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+            .em-center-toast-card { background: #0f172a; color: #ffffff; padding: 13px 28px; border-radius: 50px !important; box-shadow: 0 15px 35px rgba(0,0,0,0.25); display: flex; align-items: center; gap: 10px; font-size: 0.92rem; font-weight: 700; border: 1.5px solid #22c55e; }
+            .em-center-toast-card i { color: #22c55e; font-size: 1.2rem; }
         `;
         document.head.appendChild(style);
     }
 
-    // স্মার্ট সেন্টার টোস্ট ফাংশন (কোনো পপআপ ছাড়াই স্বয়ংক্রিয় ২ সেকেন্ড পর মিলিয়ে যাবে)
     function showCenterToast(message) {
         let wrap = document.getElementById('em-center-toast-wrap');
         if (!wrap) {
@@ -158,14 +128,10 @@
             wrap.innerHTML = `<div class="em-center-toast-card" id="em-center-toast-card"></div>`;
             document.body.appendChild(wrap);
         }
-
         const card = document.getElementById('em-center-toast-card');
         card.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${message}</span>`;
         wrap.classList.add('show');
-
-        setTimeout(() => {
-            wrap.classList.remove('show');
-        }, 2200);
+        setTimeout(() => { wrap.classList.remove('show'); }, 2200);
     }
 
     // ২. সাইডবার ইনজেকশন
@@ -238,7 +204,7 @@
     let emStudentPageSize = 25;
     let dynamicClassList = [];
 
-    // লোকাল ব্যাকআপ থেকে প্রাথমিক রিকভারি যাতে রিফ্রেশে ফাঁকা না হয়
+    // ক্যাশ থেকে প্রারম্ভিক ব্যাকআপ
     try {
         const cached = localStorage.getItem('cpscl_exams_registry');
         if (cached) examRegistry = JSON.parse(cached);
@@ -252,7 +218,7 @@
         return null;
     }
 
-    // ৪. ডেটাবেস থেকে আসল ক্লাস লোড
+    // ৪. ক্লাউড থেকে আসল ক্লাস লোড
     async function fetchDynamicClassesFromDB() {
         let classesFound = new Set();
 
@@ -504,19 +470,17 @@
         initDefaultEMGroupRules();
         onEMClassChange(defaultClass);
 
-        // টেবিল দেখানো ও ক্লাউড সিঙ্ক
         renderEMRegistry(false);
         populateEMExamDropdown();
         syncCloudExamsDirectly();
     }
 
-    // ৬. ক্লাউডে সরাসরি সংরক্ষণ (১০০% নির্ভরযোগ্য)
+    // ৬. ক্লাউডে সরাসরি সংরক্ষণ
     async function saveExamsToCloud() {
         let isSaved = false;
         const cleanRegistry = JSON.parse(JSON.stringify(examRegistry));
         const cleanOverrides = JSON.parse(JSON.stringify(manualGroupOverrides));
 
-        // ব্যাকআপ যাতে রিফ্রেশে মুহূর্তের জন্য উধাও না হয়
         localStorage.setItem('cpscl_exams_registry', JSON.stringify(cleanRegistry));
         localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(cleanOverrides));
 
@@ -552,11 +516,10 @@
         return true;
     }
 
-    // ৭. সরাসরি ক্লাউড ডাটা সিঙ্ক (কখনোই রিফ্রেশে উধাও হবে না)
+    // ৭. সরাসরি ক্লাউড ডাটা সিঙ্ক
     async function syncCloudExamsDirectly() {
         let cloudData = null;
 
-        // ১. মডুলার গেট
         if (typeof window.getDatabase === 'function' && typeof window.ref === 'function' && typeof window.get === 'function') {
             try {
                 const mDb = window.getDatabase();
@@ -568,7 +531,6 @@
             } catch(e) {}
         }
 
-        // ২. v8 লিসেনার
         const db = getActiveFirebaseDb();
         if (!cloudData && db && typeof db.ref === 'function') {
             try {
@@ -580,7 +542,6 @@
             } catch(e) {}
         }
 
-        // ৩. গ্লোবাল রিডার
         if (!cloudData && typeof window.readFromFirebase === 'function') {
             try {
                 cloudData = await window.readFromFirebase('cpscl_exams');
@@ -594,7 +555,6 @@
             populateEMExamDropdown();
         }
 
-        // লাইভ রিয়েলটাইম আপডেট
         if (db && typeof db.ref === 'function') {
             db.ref('cpscl_exams').on('value', (snap) => {
                 if (snap.exists()) {
@@ -607,18 +567,56 @@
         }
     }
 
-    // ৮. স্টুডেন্ট ডাটা আনা
+    // ৮. [আপডেটেড] ইউনিভার্সাল স্টুডেন্ট রিডার (সব ডিভাইস ও ইনকগনিটো সাপোর্টেড)
     async function getRealStudentsForClass(targetClass) {
         let allStudents = [];
-        const db = getActiveFirebaseDb();
 
-        if (db && typeof db.ref === 'function') {
+        // উপায় ১: মডুলার SDK
+        if (typeof window.getDatabase === 'function' && typeof window.ref === 'function' && typeof window.get === 'function') {
             try {
-                const snap = await db.ref('cpscl_students').once('value');
+                const mDb = window.getDatabase();
+                const snap = await window.get(window.ref(mDb, 'cpscl_students'));
                 if (snap.exists()) {
                     const data = snap.val();
                     allStudents = Array.isArray(data) ? data : Object.values(data);
                 }
+            } catch(e) {}
+        }
+
+        // উপায় ২: ক্লাসিক v8
+        if (allStudents.length === 0) {
+            const db = getActiveFirebaseDb();
+            if (db && typeof db.ref === 'function') {
+                try {
+                    const snap = await db.ref('cpscl_students').once('value');
+                    if (snap.exists()) {
+                        const data = snap.val();
+                        allStudents = Array.isArray(data) ? data : Object.values(data);
+                    }
+                } catch(e) {}
+            }
+        }
+
+        // উপায় ৩: গ্লোবাল ফাংশন
+        if (allStudents.length === 0 && typeof window.readFromFirebase === 'function') {
+            try {
+                const data = await window.readFromFirebase('cpscl_students');
+                if (data) allStudents = Array.isArray(data) ? data : Object.values(data);
+            } catch(e) {}
+        }
+
+        // উপায় ৪: উইন্ডো স্টোর
+        if (allStudents.length === 0 && window.cpscl_students_data) {
+            allStudents = window.cpscl_students_data;
+        }
+
+        // ব্যাকআপ লোকাল ক্যাশ
+        if (allStudents.length > 0) {
+            try { localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents)); } catch(e) {}
+        } else {
+            try {
+                const local = localStorage.getItem('cpscl_students_cache');
+                if (local) allStudents = JSON.parse(local);
             } catch(e) {}
         }
 
@@ -631,7 +629,7 @@
         });
     }
 
-    // ৯. ফর্ম সাবমিট (সেন্টার টোস্ট মেসেজ সহ)
+    // ৯. ফর্ম সাবমিট (সেন্টার টোস্ট সহ)
     window.handleEMSubmit = async function(e) {
         e.preventDefault();
         const editId = document.getElementById('emEditingId').value;
@@ -676,8 +674,6 @@
         }
 
         await saveExamsToCloud();
-
-        // স্ক্রিনের সেন্টারে মার্জিত নোটিফিকেশন দেখাবে (ব্রাউজারের ডিফল্ট অ্যালার্ট বন্ধ)
         showCenterToast("Success! সফল হয়েছে।");
 
         resetEMForm();
@@ -959,13 +955,20 @@
         });
     }
 
+    // স্টুডেন্ট টেবিল লোড করার ফাংশন
     window.loadEMStudentGroupAllocation = async function() {
         const select = document.getElementById('emTransferExamSelect');
+        const tbody = document.getElementById('emStudentAllocationTbody');
         if (!select) return;
 
         const examId = select.value;
         const exam = examRegistry.find(x => x.id === examId);
         if (!exam) return;
+
+        // লোডিং স্পিনার
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:35px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:26px; color:#2563eb;"></i></td></tr>`;
+        }
 
         const groupsList = (exam.groups && exam.groups.length > 0) ? exam.groups : [
             { name: "Group A", from: 1, to: 40 },
