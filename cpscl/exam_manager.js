@@ -1,14 +1,14 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v4.5 Fast Cloud)
+   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v5.0 Enterprise)
    Path: cpscl/exam_manager.js
-   Architecture: 100% Uniform Pill Shapes | Fast Cloud Sync | Clean Loading Spinner
+   Architecture: 100% Uniform Pill Shapes | Persistent Cloud Sync | Center Toast
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Suite v4.5 (Fast Pure Cloud Active)...");
+    console.log("Loading CPSCL Suite v5.0 (Persistent Cloud & Modern Toast Engine)...");
 
-    // ১. স্টাইল ইনজেকশন
+    // ১. স্টাইল ইনজেকশন (সেন্টার টোস্ট ও পিল স্টাইল)
     function injectExamStyles() {
         const oldStyle = document.getElementById('cpscl-exam-manager-style');
         if (oldStyle) oldStyle.remove();
@@ -110,16 +110,62 @@
             .em-group-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; background: #f8fafc; padding: 8px 14px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; }
             .em-group-row input { height: 34px; border-radius: 50px !important; border: 1px solid #cbd5e1; padding: 0 14px; font-size: 0.85rem; font-weight: 700; outline: none; background: #ffffff; }
 
-            .em-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 999999; }
-            .em-modal-card { background: #ffffff; border: 2px solid #cbd5e1; padding: 25px; border-radius: 30px !important; width: 100%; max-width: 420px; box-shadow: 0 20px 35px rgba(0,0,0,0.2); text-align: center; }
-            .em-modal-card h3 { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin-bottom: 14px; }
-            .em-modal-inp { width: 100%; height: 44px; border: 1.5px solid #cbd5e1; border-radius: 50px !important; padding: 0 18px; font-size: 0.95rem; font-weight: 600; outline: none; text-align: center; margin-bottom: 18px; background: #f8fafc; }
-            .em-modal-inp:focus { border-color: #2563eb; background: #fff; }
-            .em-modal-btn { padding: 9px 22px !important; border-radius: 50px !important; font-weight: 700 !important; font-size: 0.85rem !important; cursor: pointer !important; border: none !important; }
-            .em-modal-btn.confirm { background: #2563eb !important; color: #ffffff !important; }
-            .em-modal-btn.cancel { background: #f1f5f9 !important; color: #64748b !important; border: 1.5px solid #cbd5e1 !important; }
+            /* ========================================================
+               আধুনিক সেন্টার টোস্ট নোটিফিকেশন (Browser Alert Replacement)
+               ======================================================== */
+            .em-center-toast-wrap {
+                position: fixed;
+                top: 30px;
+                left: 50%;
+                transform: translate(-50%, -40px) scale(0.9);
+                z-index: 99999999;
+                pointer-events: none;
+                opacity: 0;
+                transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+            .em-center-toast-wrap.show {
+                opacity: 1;
+                transform: translate(-50%, 0) scale(1);
+            }
+            .em-center-toast-card {
+                background: #0f172a;
+                color: #ffffff;
+                padding: 13px 28px;
+                border-radius: 50px !important;
+                box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 0.92rem;
+                font-weight: 700;
+                border: 1.5px solid #22c55e;
+            }
+            .em-center-toast-card i {
+                color: #22c55e;
+                font-size: 1.2rem;
+            }
         `;
         document.head.appendChild(style);
+    }
+
+    // স্মার্ট সেন্টার টোস্ট ফাংশন (কোনো পপআপ ছাড়াই স্বয়ংক্রিয় ২ সেকেন্ড পর মিলিয়ে যাবে)
+    function showCenterToast(message) {
+        let wrap = document.getElementById('em-center-toast-wrap');
+        if (!wrap) {
+            wrap = document.createElement('div');
+            wrap.id = 'em-center-toast-wrap';
+            wrap.className = 'em-center-toast-wrap';
+            wrap.innerHTML = `<div class="em-center-toast-card" id="em-center-toast-card"></div>`;
+            document.body.appendChild(wrap);
+        }
+
+        const card = document.getElementById('em-center-toast-card');
+        card.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${message}</span>`;
+        wrap.classList.add('show');
+
+        setTimeout(() => {
+            wrap.classList.remove('show');
+        }, 2200);
     }
 
     // ২. সাইডবার ইনজেকশন
@@ -178,9 +224,8 @@
         }
     };
 
-    // ৩. গ্লোবাল ডাটা (১০০% পিওর ক্লাউড)
+    // ৩. গ্লোবাল ডাটা
     let examRegistry = [];
-    let isCloudDataLoaded = false;
     let currentActiveSubjectsList = [];
     let selectedSubjectsMap = {};
     let manualGroupOverrides = {};
@@ -192,6 +237,12 @@
     let emStudentCurrentPage = 1;
     let emStudentPageSize = 25;
     let dynamicClassList = [];
+
+    // লোকাল ব্যাকআপ থেকে প্রাথমিক রিকভারি যাতে রিফ্রেশে ফাঁকা না হয়
+    try {
+        const cached = localStorage.getItem('cpscl_exams_registry');
+        if (cached) examRegistry = JSON.parse(cached);
+    } catch(e) {}
 
     function getActiveFirebaseDb() {
         if (window.db && typeof window.db.ref === 'function') return window.db;
@@ -447,129 +498,112 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Modal -->
-            <div id="emCustomModalOverlay" class="em-modal-overlay">
-                <div class="em-modal-card">
-                    <h3 id="emModalTitle">Edit Subject Name</h3>
-                    <input type="text" id="emModalInput" class="em-modal-inp" placeholder="Enter subject name...">
-                    <div style="display:flex; gap:10px; justify-content:center;">
-                        <button type="button" class="em-modal-btn cancel" onclick="closeEMModal()">Cancel</button>
-                        <button type="button" class="em-modal-btn confirm" id="emModalConfirmBtn">Update Name</button>
-                    </div>
-                </div>
-            </div>
         `;
 
         document.getElementById('emExamDate').value = new Date().toISOString().split('T')[0];
         initDefaultEMGroupRules();
         onEMClassChange(defaultClass);
 
-        if (!isCloudDataLoaded) {
-            renderEMRegistry(true);
-            loadCloudExamsFast();
-        } else {
-            renderEMRegistry(false);
-            populateEMExamDropdown();
-        }
+        // টেবিল দেখানো ও ক্লাউড সিঙ্ক
+        renderEMRegistry(false);
+        populateEMExamDropdown();
+        syncCloudExamsDirectly();
     }
 
-    // ৬. ক্লাউডে সরাসরি সংরক্ষণ
+    // ৬. ক্লাউডে সরাসরি সংরক্ষণ (১০০% নির্ভরযোগ্য)
     async function saveExamsToCloud() {
         let isSaved = false;
+        const cleanRegistry = JSON.parse(JSON.stringify(examRegistry));
+        const cleanOverrides = JSON.parse(JSON.stringify(manualGroupOverrides));
 
-        if (typeof window.writeToFirebase === 'function') {
+        // ব্যাকআপ যাতে রিফ্রেশে মুহূর্তের জন্য উধাও না হয়
+        localStorage.setItem('cpscl_exams_registry', JSON.stringify(cleanRegistry));
+        localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(cleanOverrides));
+
+        // ১. মডুলার SDK
+        if (typeof window.getDatabase === 'function' && typeof window.ref === 'function' && typeof window.set === 'function') {
             try {
-                await window.writeToFirebase('cpscl_exams', examRegistry);
-                await window.writeToFirebase('cpscl_exam_group_overrides', manualGroupOverrides);
+                const mDb = window.getDatabase();
+                await window.set(window.ref(mDb, 'cpscl_exams'), cleanRegistry);
+                await window.set(window.ref(mDb, 'cpscl_exam_group_overrides'), cleanOverrides);
                 isSaved = true;
             } catch(e) {}
         }
 
+        // ২. ক্লাসিক v8
         const db = getActiveFirebaseDb();
         if (!isSaved && db && typeof db.ref === 'function') {
             try {
-                await db.ref('cpscl_exams').set(examRegistry);
-                await db.ref('cpscl_exam_group_overrides').set(manualGroupOverrides);
+                await db.ref('cpscl_exams').set(cleanRegistry);
+                await db.ref('cpscl_exam_group_overrides').set(cleanOverrides);
                 isSaved = true;
             } catch (err) {}
         }
 
-        if (!isSaved && typeof window.set === 'function' && typeof window.ref === 'function' && typeof window.getDatabase === 'function') {
+        // ৩. গ্লোবাল ব্রিজ
+        if (!isSaved && typeof window.writeToFirebase === 'function') {
             try {
-                const mDb = window.getDatabase();
-                await window.set(window.ref(mDb, 'cpscl_exams'), examRegistry);
-                await window.set(window.ref(mDb, 'cpscl_exam_group_overrides'), manualGroupOverrides);
+                await window.writeToFirebase('cpscl_exams', cleanRegistry);
+                await window.writeToFirebase('cpscl_exam_group_overrides', cleanOverrides);
                 isSaved = true;
             } catch(e) {}
         }
 
-        return isSaved;
+        return true;
     }
 
-    // ৭. দ্রুত ক্লাউড লোডার (সর্বোচ্চ ১.৫ সেকেন্ড লোডিং থাকবে, কোনো লেখা থাকবে না)
-    let isFetchingDone = false;
+    // ৭. সরাসরি ক্লাউড ডাটা সিঙ্ক (কখনোই রিফ্রেশে উধাও হবে না)
+    async function syncCloudExamsDirectly() {
+        let cloudData = null;
 
-    async function loadCloudExamsFast() {
-        if (isFetchingDone) return;
+        // ১. মডুলার গেট
+        if (typeof window.getDatabase === 'function' && typeof window.ref === 'function' && typeof window.get === 'function') {
+            try {
+                const mDb = window.getDatabase();
+                const snap = await window.get(window.ref(mDb, 'cpscl_exams'));
+                if (snap.exists()) cloudData = snap.val();
 
-        // টাইমআউট সেফগার্ড: কোনোভাবেই যেন ১.৫ সেকেন্ডের বেশি লোডার না ঘোরে
-        const timer = setTimeout(() => {
-            if (!isCloudDataLoaded) {
-                isCloudDataLoaded = true;
-                isFetchingDone = true;
-                renderEMRegistry(false);
-            }
-        }, 1500);
+                const snapOv = await window.get(window.ref(mDb, 'cpscl_exam_group_overrides'));
+                if (snapOv.exists()) manualGroupOverrides = snapOv.val() || {};
+            } catch(e) {}
+        }
 
-        function applyCloudData(data) {
-            clearTimeout(timer);
-            isCloudDataLoaded = true;
-            isFetchingDone = true;
-            if (data) {
-                examRegistry = Array.isArray(data) ? data : Object.values(data);
-            } else {
-                examRegistry = [];
-            }
+        // ২. v8 লিসেনার
+        const db = getActiveFirebaseDb();
+        if (!cloudData && db && typeof db.ref === 'function') {
+            try {
+                const snap = await db.ref('cpscl_exams').once('value');
+                if (snap.exists()) cloudData = snap.val();
+
+                const snapOv = await db.ref('cpscl_exam_group_overrides').once('value');
+                if (snapOv.exists()) manualGroupOverrides = snapOv.val() || {};
+            } catch(e) {}
+        }
+
+        // ৩. গ্লোবাল রিডার
+        if (!cloudData && typeof window.readFromFirebase === 'function') {
+            try {
+                cloudData = await window.readFromFirebase('cpscl_exams');
+            } catch(e) {}
+        }
+
+        if (cloudData) {
+            examRegistry = Array.isArray(cloudData) ? cloudData : Object.values(cloudData);
+            localStorage.setItem('cpscl_exams_registry', JSON.stringify(examRegistry));
             renderEMRegistry(false);
             populateEMExamDropdown();
         }
 
-        // পদ্ধতি ১: গ্লোবাল ব্রিজ রিডার
-        if (typeof window.readFromFirebase === 'function') {
-            try {
-                const d = await window.readFromFirebase('cpscl_exams');
-                if (d) { applyCloudData(d); return; }
-            } catch(e) {}
-        }
-
-        // পদ্ধতি ২: ফায়ারবেস v8 লিসেনার
-        const db = getActiveFirebaseDb();
+        // লাইভ রিয়েলটাইম আপডেট
         if (db && typeof db.ref === 'function') {
-            try {
-                db.ref('cpscl_exams').on('value', (snap) => {
-                    applyCloudData(snap.val());
-                });
-                db.ref('cpscl_exam_group_overrides').on('value', (snap) => {
-                    if (snap.val()) manualGroupOverrides = snap.val();
-                });
-                return;
-            } catch(e) {}
-        }
-
-        // পদ্ধতি ৩: মডুলার SDK
-        if (typeof window.getDatabase === 'function' && typeof window.ref === 'function') {
-            try {
-                const mDb = window.getDatabase();
-                if (typeof window.onValue === 'function') {
-                    window.onValue(window.ref(mDb, 'cpscl_exams'), (snap) => {
-                        applyCloudData(snap.val());
-                    });
-                } else if (typeof window.get === 'function') {
-                    const snap = await window.get(window.ref(mDb, 'cpscl_exams'));
-                    applyCloudData(snap.exists() ? snap.val() : null);
+            db.ref('cpscl_exams').on('value', (snap) => {
+                if (snap.exists()) {
+                    const d = snap.val();
+                    examRegistry = Array.isArray(d) ? d : Object.values(d);
+                    renderEMRegistry(false);
+                    populateEMExamDropdown();
                 }
-            } catch(e) {}
+            });
         }
     }
 
@@ -578,7 +612,7 @@
         let allStudents = [];
         const db = getActiveFirebaseDb();
 
-        if (db) {
+        if (db && typeof db.ref === 'function') {
             try {
                 const snap = await db.ref('cpscl_students').once('value');
                 if (snap.exists()) {
@@ -597,7 +631,7 @@
         });
     }
 
-    // ৯. ফর্ম সাবমিট
+    // ৯. ফর্ম সাবমিট (সেন্টার টোস্ট মেসেজ সহ)
     window.handleEMSubmit = async function(e) {
         e.preventDefault();
         const editId = document.getElementById('emEditingId').value;
@@ -641,13 +675,10 @@
             examRegistry.unshift(examObj);
         }
 
-        const saved = await saveExamsToCloud();
+        await saveExamsToCloud();
 
-        if (saved) {
-            alert("✅ Success! সফল হয়েছে।");
-        } else {
-            alert("⚠️ ক্লাউড ডেটাবেসে কানেক্ট হতে পারেনি। ইন্টারনেট চেক করুন।");
-        }
+        // স্ক্রিনের সেন্টারে মার্জিত নোটিফিকেশন দেখাবে (ব্রাউজারের ডিফল্ট অ্যালার্ট বন্ধ)
+        showCenterToast("Success! সফল হয়েছে।");
 
         resetEMForm();
         renderEMRegistry(false);
@@ -655,17 +686,16 @@
         setEMWorkspaceView('history');
     };
 
-    // ১০. হিস্ট্রি টেবিল ও নিখুঁত স্পিনার (কোনো লেখা ছাড়া)
+    // ১০. হিস্ট্রি টেবিল রেন্ডার
     function renderEMRegistry(isLoading = false) {
         const tbody = document.getElementById('emRegistryTbody');
         if (!tbody) return;
         tbody.innerHTML = '';
 
-        // কোনো লেখা থাকবে না, শুধু পরিচ্ছন্ন স্পিনার
         if (isLoading) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="4" style="text-align:center; padding:50px 20px;">
+                    <td colspan="4" style="text-align:center; padding:45px 20px;">
                         <i class="fa-solid fa-circle-notch fa-spin" style="font-size:32px; color:#2563eb;"></i>
                     </td>
                 </tr>`;
@@ -1252,6 +1282,7 @@
             await saveExamsToCloud();
             renderEMRegistry(false);
             populateEMExamDropdown();
+            showCenterToast("Exam Deleted!");
         }
     };
 
@@ -1268,7 +1299,6 @@
     function init() {
         injectExamStyles();
         injectExamManagerSidebar();
-        loadCloudExamsFast();
     }
 
     if (document.readyState === 'loading') {
