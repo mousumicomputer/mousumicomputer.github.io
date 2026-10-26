@@ -1,13 +1,13 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v7.0 Pro)
+   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v8.0 Pure Merit)
    Path: cpscl/exam_manager.js
-   Architecture: 100% Uniform Pill Shapes | Merit Auto-Grouping | Blank Sheet Print | Cloud Synced
+   Architecture: Zero Roll Dependency | Pure Merit Ordering | Blank Sheet Print | Cloud Synced
    Safety: ZERO Marks Modification | Read-Only Calculation | Decoupled Snapshots
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Suite v7.0 (Merit Auto-Grouping & Blank Sheet Print Active)...");
+    console.log("Loading CPSCL Suite v8.0 (Pure Merit & Zero Roll Architecture Active)...");
 
     // ১. সম্পূর্ণ ও নিখুঁত পিল (Pill) স্টাইল ইনজেকশন
     function injectExamStyles() {
@@ -55,18 +55,6 @@
             .em-pill { display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; color: #2563eb; border: 1.5px solid #bfdbfe; padding: 7px 16px; border-radius: 50px !important; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; user-select: none; }
             .em-pill:hover { background: #dbeafe; border-color: #2563eb; transform: translateY(-1px); }
             .em-pill.active { background: #2563eb !important; color: #ffffff !important; border-color: #2563eb !important; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25); }
-            .em-pill-actions { display: flex; gap: 5px; margin-left: 6px; align-items: center; }
-            .em-pill-btn { font-size: 0.72rem; opacity: 0.7; cursor: pointer; transition: 0.2s; padding: 2px; }
-            .em-pill-btn:hover { opacity: 1; }
-
-            .em-custom-sub-bar { display: flex; gap: 8px; margin-bottom: 15px; }
-            .em-btn-add { background: #f8fafc; border: 1.5px dashed #cbd5e1; color: #2563eb; padding: 0 20px; border-radius: 50px !important; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap; transition: 0.2s; }
-            .em-btn-add:hover { background: #eff6ff; border-color: #2563eb; }
-
-            .em-group-pills-filter { display: flex !important; gap: 8px !important; align-items: center !important; flex-wrap: wrap !important; }
-            .em-filter-pill-btn { padding: 7px 18px !important; border-radius: 50px !important; border: 1.5px solid #cbd5e1 !important; background: #ffffff !important; color: #475569 !important; font-size: 0.82rem !important; font-weight: 700 !important; cursor: pointer !important; display: inline-flex !important; align-items: center !important; gap: 6px !important; transition: all 0.2s ease !important; outline: none !important; user-select: none !important; }
-            .em-filter-pill-btn:hover { background: #f1f5f9 !important; border-color: #94a3b8 !important; }
-            .em-filter-pill-btn.active { background: #2563eb !important; color: #ffffff !important; border-color: #2563eb !important; box-shadow: 0 4px 10px rgba(37,99,235,0.25) !important; }
 
             .em-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
             .em-table th { background: #ffffff !important; color: #8c98a4 !important; font-size: 0.75rem !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 14px 18px !important; border-bottom: 1.5px solid #eef2f5 !important; text-align: left; }
@@ -78,51 +66,33 @@
 
             .em-table tbody tr.erp-row-selected { background-color: #3b82f6 !important; }
             .em-table tbody tr.erp-row-selected td, .em-table tbody tr.erp-row-selected td * { color: #ffffff !important; }
-            .em-table tbody tr.erp-row-selected .em-group-badge { background-color: rgba(255, 255, 255, 0.25) !important; color: #ffffff !important; border-color: rgba(255, 255, 255, 0.4) !important; }
 
-            .em-group-badge, .em-class-badge { display: inline-block !important; padding: 4px 14px !important; border-radius: 50px !important; font-size: 0.8rem !important; font-weight: 700 !important; background: #eff6ff !important; color: #2563eb !important; border: 1px solid #bfdbfe !important; }
-            .em-rule-badge { display: inline-flex !important; align-items: center !important; gap: 5px !important; padding: 3px 12px !important; border-radius: 50px !important; font-size: 0.75rem !important; font-weight: 700 !important; background: #f1f5f9 !important; color: #2563eb !important; border: 1px solid #e2e8f0 !important; margin-top: 4px !important; }
+            .em-group-badge, .em-class-badge { display: inline-block !important; padding: 4px 14px !important; border-radius: 50px !important; font-size: 0.8rem !important; font-weight: 700; background: #eff6ff !important; color: #2563eb !important; border: 1px solid #bfdbfe !important; }
             .em-status-badge { display: inline-block !important; padding: 3px 10px !important; border-radius: 50px !important; font-size: 0.72rem !important; font-weight: 800 !important; }
 
             .em-btn-icon { width: 36px !important; height: 36px !important; border-radius: 50px !important; border: 1.5px solid #cbd5e1 !important; background: #ffffff !important; cursor: pointer !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; font-size: 0.85rem !important; transition: all 0.2s ease !important; margin: 0 3px !important; outline: none !important; }
             .em-btn-icon.edit { color: #2563eb !important; }
-            .em-btn-icon.edit:hover { background: #eff6ff !important; border-color: #2563eb !important; transform: scale(1.05); }
-            .em-btn-icon.duplicate { color: #ca8a04 !important; }
-            .em-btn-icon.duplicate:hover { background: #fef9c3 !important; border-color: #ca8a04 !important; transform: scale(1.05); }
-            .em-btn-icon.delete { color: #dc2626 !important; }
-            .em-btn-icon.delete:hover { background: #fee2e2 !important; border-color: #dc2626 !important; transform: scale(1.05); }
             .em-btn-icon.lock { color: #dc2626 !important; }
-            .em-btn-icon.lock:hover { background: #fee2e2 !important; border-color: #dc2626 !important; transform: scale(1.05); }
             .em-btn-icon.unlock { color: #16a34a !important; }
-            .em-btn-icon.unlock:hover { background: #dcfce7 !important; border-color: #16a34a !important; transform: scale(1.05); }
+            .em-btn-icon.delete { color: #dc2626 !important; }
 
             .em-top-transfer-bar { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 50px !important; padding: 10px 20px; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
             .em-transfer-btns-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
             .em-btn-move { padding: 8px 20px !important; border-radius: 50px !important; font-size: 0.82rem !important; font-weight: 700 !important; cursor: pointer !important; border: none !important; display: inline-flex !important; align-items: center !important; gap: 6px !important; transition: 0.2s !important; }
             .em-btn-move-a { background: #2563eb !important; color: #fff !important; box-shadow: 0 2px 6px rgba(37,99,235,0.25); }
-            .em-btn-move-a:hover { background: #1d4ed8 !important; }
             .em-btn-move-b { background: #059669 !important; color: #fff !important; box-shadow: 0 2px 6px rgba(5,150,105,0.25); }
-            .em-btn-move-b:hover { background: #047857 !important; }
             .em-btn-move:disabled { opacity: 0.45 !important; cursor: not-allowed !important; box-shadow: none !important; }
 
             .em-auto-merit-box { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1.5px solid #bfdbfe; border-radius: 16px; padding: 14px 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
             .em-auto-merit-title { font-size: 0.9rem; font-weight: 800; color: #1e3a8a; display: flex; align-items: center; gap: 8px; }
 
-            .em-pagination-footer { display: flex; justify-content: space-between; align-items: center; padding: 16px 8px; border-top: 1.5px solid #eef2f5; flex-wrap: wrap; gap: 12px; margin-top: 15px; }
-            .em-page-btn { min-width: 32px !important; height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; padding: 0 10px !important; border: 1px solid #e2e8f0 !important; background: #ffffff !important; color: #475569 !important; border-radius: 50px !important; font-size: 0.85rem !important; font-weight: 600 !important; cursor: pointer !important; transition: all 0.2s !important; }
-            .em-page-btn:hover:not(.disabled):not(.active) { background: #f1f5f9 !important; border-color: #cbd5e1 !important; }
-            .em-page-btn.active { background: #3b82f6 !important; border-color: #3b82f6 !important; color: #ffffff !important; font-weight: 700 !important; }
-            .em-page-btn.disabled { opacity: 0.35 !important; cursor: not-allowed !important; }
-
             .em-btn-submit { background: #2563eb !important; color: #fff !important; border: none !important; width: 100% !important; height: 48px !important; border-radius: 50px !important; font-size: 0.95rem !important; font-weight: 700 !important; cursor: pointer !important; transition: 0.2s !important; display: flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; margin-top: 18px !important; box-shadow: 0 4px 12px rgba(37,99,235,0.25) !important; }
-            .em-btn-submit:hover { background: #1d4ed8 !important; }
             .em-group-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; background: #f8fafc; padding: 8px 14px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; }
             .em-group-row input { height: 34px; border-radius: 50px !important; border: 1px solid #cbd5e1; padding: 0 14px; font-size: 0.85rem; font-weight: 700; outline: none; background: #ffffff; }
 
             .em-center-toast-wrap { position: fixed; top: 30px; left: 50%; transform: translate(-50%, -40px) scale(0.9); z-index: 99999999; pointer-events: none; opacity: 0; transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
             .em-center-toast-wrap.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
             .em-center-toast-card { background: #0f172a; color: #ffffff; padding: 13px 28px; border-radius: 50px !important; box-shadow: 0 15px 35px rgba(0,0,0,0.25); display: flex; align-items: center; gap: 10px; font-size: 0.92rem; font-weight: 700; border: 1.5px solid #22c55e; }
-            .em-center-toast-card i { color: #22c55e; font-size: 1.2rem; }
         `;
         document.head.appendChild(style);
     }
@@ -214,7 +184,7 @@
     let emStudentSearchQuery = '';
     let emSelectedGroupFilter = 'all';
     let emStudentCurrentPage = 1;
-    let emStudentPageSize = 25;
+    let emStudentPageSize = 50;
     let dynamicClassList = [];
 
     try {
@@ -233,17 +203,6 @@
     // ৪. ক্লাউড থেকে আসল ক্লাস লোড
     async function fetchDynamicClassesFromDB() {
         let classesFound = new Set();
-
-        if (typeof window.getCPSCLMasterConfig === 'function') {
-            try {
-                const cfg = window.getCPSCLMasterConfig();
-                const classFilter = cfg && cfg.filterBoxes ? cfg.filterBoxes.find(b => b.id === 'class_name') : null;
-                if (classFilter && classFilter.options) {
-                    classFilter.options.forEach(c => classesFound.add(c.trim()));
-                }
-            } catch(e) {}
-        }
-
         const students = await getRealStudentsForClass('');
         if (students && students.length > 0) {
             students.forEach(st => {
@@ -251,11 +210,9 @@
                 if (c) classesFound.add(c);
             });
         }
-
         if (classesFound.size === 0) {
             classesFound = new Set(['Eight Scholarship Batch-2026', 'Class 8', 'Class 9', 'Class 10']);
         }
-
         dynamicClassList = Array.from(classesFound);
         return dynamicClassList;
     }
@@ -275,8 +232,7 @@
 
         await fetchDynamicClassesFromDB();
 
-        const defaultClass = dynamicClassList.includes("Eight Scholarship Batch-2026") ? "Eight Scholarship Batch-2026" : 
-                            (dynamicClassList.includes("Class 8") ? "Class 8" : dynamicClassList[0]);
+        const defaultClass = dynamicClassList.includes("Eight Scholarship Batch-2026") ? "Eight Scholarship Batch-2026" : dynamicClassList[0];
 
         let classOptsHtml = '<option value="">-- Choose Class From Database --</option>';
         dynamicClassList.forEach(c => {
@@ -287,31 +243,25 @@
             <div class="em-wrapper">
                 <div class="em-header">
                     <h1><i class="fa-solid fa-graduation-cap"></i> CPSCL Academic ERP - Exam & Group Management</h1>
-                    <div class="em-badge"><i class="fa-solid fa-cloud-arrow-up"></i> 100% Pure Cloud Synced</div>
+                    <div class="em-badge"><i class="fa-solid fa-cloud-arrow-up"></i> Pure Cloud Synced</div>
                 </div>
 
                 <div class="em-nav-tabs">
                     <button class="em-tab-btn active" id="emTabBtn1" onclick="switchEMMainTab('createExam')">
-                        <i class="fa-solid fa-file-pen"></i> 1. Exam & Dynamic Group Setup
+                        <i class="fa-solid fa-file-pen"></i> 1. Exam Setup
                     </button>
                     <button class="em-tab-btn" id="emTabBtn2" onclick="switchEMMainTab('transferModule')">
-                        <i class="fa-solid fa-shuffle"></i> 2. Student Group Allocation & Manual Transfer
+                        <i class="fa-solid fa-shuffle"></i> 2. Student Merit Grouping & Allocation
                     </button>
                 </div>
 
-                <!-- TAB 1: Exam & Dynamic Group Setup -->
+                <!-- TAB 1: Exam Setup -->
                 <div class="em-tab-content active" id="emTabContent1">
                     <div class="em-view-bar">
-                        <span><i class="fa-solid fa-eye"></i> Workspace View:</span>
-                        <button type="button" class="em-btn-toggle active" id="emBtnShowBoth" onclick="setEMWorkspaceView('both')">
-                            <i class="fa-solid fa-columns"></i> Split View (Both)
-                        </button>
-                        <button type="button" class="em-btn-toggle" id="emBtnShowForm" onclick="setEMWorkspaceView('form')">
-                            <i class="fa-solid fa-file-pen"></i> Form Only (Max)
-                        </button>
-                        <button type="button" class="em-btn-toggle" id="emBtnShowHistory" onclick="setEMWorkspaceView('history')">
-                            <i class="fa-solid fa-clock-rotate-left"></i> History Registry Only (Max)
-                        </button>
+                        <span><i class="fa-solid fa-eye"></i> View:</span>
+                        <button type="button" class="em-btn-toggle active" id="emBtnShowBoth" onclick="setEMWorkspaceView('both')">Split View</button>
+                        <button type="button" class="em-btn-toggle" id="emBtnShowForm" onclick="setEMWorkspaceView('form')">Form Only</button>
+                        <button type="button" class="em-btn-toggle" id="emBtnShowHistory" onclick="setEMWorkspaceView('history')">History Registry Only</button>
                     </div>
 
                     <div class="em-grid" id="emMainGrid">
@@ -319,7 +269,7 @@
                         <div id="emFormCol">
                             <div class="em-card">
                                 <div class="em-card-title">
-                                    <span id="emFormTitle"><i class="fa-solid fa-file-pen"></i> Create New Assessment & Rules</span>
+                                    <span id="emFormTitle"><i class="fa-solid fa-file-pen"></i> Create New Examination</span>
                                     <button type="button" id="emCancelEditBtn" style="display:none; background:none; border:none; color:#dc2626; font-size:0.8rem; font-weight:700; cursor:pointer;" onclick="resetEMForm()">Cancel Edit</button>
                                 </div>
 
@@ -327,30 +277,25 @@
                                     <input type="hidden" id="emEditingId" value="">
 
                                     <div class="em-form-group">
-                                        <label>1. Exam Name / Title *</label>
+                                        <label>Exam Name / Title *</label>
                                         <input type="text" id="emExamName" class="em-control" placeholder="e.g., Model Test - 02" required>
                                     </div>
 
                                     <div class="em-form-group">
-                                        <label>2. Select Target Class (From Cloud DB) *</label>
+                                        <label>Select Target Class *</label>
                                         <select id="emClassName" class="em-control" onchange="onEMClassChange(this.value)" required>
                                             ${classOptsHtml}
                                         </select>
                                     </div>
 
                                     <div class="em-form-group">
-                                        <label>3. Exam Date *</label>
+                                        <label>Exam Date *</label>
                                         <input type="date" id="emExamDate" class="em-control" required>
                                     </div>
 
                                     <div class="em-form-group" style="margin-top: 14px;">
-                                        <label>4. Select Subjects & Assign Marks *</label>
+                                        <label>Select Subjects & Assign Marks *</label>
                                         <div class="em-pills-box" id="emPillsArea"></div>
-
-                                        <div class="em-custom-sub-bar">
-                                            <input type="text" id="emCustomSubInput" class="em-control" placeholder="Add custom subject name...">
-                                            <button type="button" class="em-btn-add" onclick="addEMCustomSubject()"><i class="fa-solid fa-plus"></i> Add</button>
-                                        </div>
                                     </div>
 
                                     <div id="emSelectedSubContainer" style="display:none; margin-top:14px;">
@@ -371,12 +316,8 @@
                                     </div>
 
                                     <div class="em-form-group" style="margin-top: 25px; border-top: 2px solid #f1f5f9; padding-top: 18px;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                            <label style="margin: 0;"><i class="fa-solid fa-layer-group" style="color: #2563eb;"></i> 5. Initial Serial-based Grouping Rules</label>
-                                            <button type="button" class="em-btn-add" onclick="addEMGroupRuleRow()"><i class="fa-solid fa-plus"></i> Add Group</button>
-                                        </div>
-                                        <span style="font-size: 0.75rem; color: #64748b; margin-bottom: 12px;">Define how student serials are distributed: (e.g. 1 to 40 = Group A, 41 to Rest = Group B)</span>
-                                        
+                                        <label><i class="fa-solid fa-layer-group" style="color: #2563eb;"></i> Groups Structure</label>
+                                        <span style="font-size: 0.75rem; color: #64748b; margin-bottom: 12px;">Default groups: Group A (1-40) and Group B (41-Rest)</span>
                                         <div id="emGroupRulesContainer"></div>
                                     </div>
 
@@ -392,14 +333,12 @@
                             <div class="em-card">
                                 <div class="em-card-title">
                                     <span><i class="fa-solid fa-clock-rotate-left"></i> Exam Registry & Status</span>
-                                    <span style="font-size: 0.8rem; color: #64748b; font-weight: normal;">Live Cloud Synced</span>
                                 </div>
-
                                 <div style="overflow-x: auto;">
                                     <table class="em-table">
                                         <thead>
                                             <tr>
-                                                <th>EXAM TITLE & GROUP RULES</th>
+                                                <th>EXAM TITLE</th>
                                                 <th>CLASS</th>
                                                 <th>DATE</th>
                                                 <th style="text-align: right;">ACTIONS</th>
@@ -413,11 +352,11 @@
                     </div>
                 </div>
 
-                <!-- TAB 2: Student Group Allocation & Manual Transfer -->
+                <!-- TAB 2: Student Merit Grouping & Allocation -->
                 <div class="em-tab-content" id="emTabContent2">
                     <div class="em-card">
                         <div class="em-card-title">
-                            <span><i class="fa-solid fa-shuffle"></i> Student Group Allocation & Merit Grouping</span>
+                            <span><i class="fa-solid fa-shuffle"></i> Student Merit Grouping & Seat Plan Allocation</span>
                             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                                 <select id="emTransferExamSelect" class="em-control" style="width: 290px; height: 38px; font-size: 0.85rem;" onchange="loadEMStudentGroupAllocation()">
                                 </select>
@@ -427,14 +366,14 @@
                             </div>
                         </div>
 
-                        <!-- স্বয়ংক্রিয় মেরিট গ্রুপিং বার -->
+                        <!-- স্বয়ংক্রিয় মেধা গ্রুপিং বার -->
                         <div class="em-auto-merit-box">
                             <div>
                                 <div class="em-auto-merit-title">
                                     <i class="fa-solid fa-bolt"></i> Auto-Assign Groups from Previous Exam Merit
                                 </div>
-                                <span style="font-size: 11.5px; color: #3b82f6; font-weight: 600;">
-                                    পূর্ববর্তী পরীক্ষার মেধা অনুযায়ী স্বয়ংক্রিয়ভাবে ১-৪০ জন Group A এবং ৪১-৮১ জন Group B হবে।
+                                <span style="font-size: 11.5px; color: #1e3a8a; font-weight: 600;">
+                                    নির্বাচিত পূর্ববর্তী পরীক্ষার মেধা তালিকা অনুযায়ী ১-৪০ জন Group A এবং ৪১-৮১ জন Group B হিসেবে ক্রমিক ১ থেকে ৮১ সাজানো হবে।
                                 </span>
                             </div>
                             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
@@ -449,12 +388,12 @@
 
                         <div class="em-top-transfer-bar">
                             <div style="display: flex; align-items: center; gap: 12px; flex: 1; max-width: 380px;">
-                                <input type="text" id="emStudentSearchInp" class="em-control" style="height: 38px;" placeholder="Search student by Name, ID, or SL..." oninput="onEMStudentSearch(this.value)">
+                                <input type="text" id="emStudentSearchInp" class="em-control" style="height: 38px;" placeholder="Search student by Name or ID..." oninput="onEMStudentSearch(this.value)">
                             </div>
                             
                             <div class="em-transfer-btns-group">
                                 <span id="emSelectedCountBadge" style="font-size: 0.85rem; font-weight: 700; color: #64748b; padding: 0 8px;">
-                                    0 Row Selected (Click a row below)
+                                    0 Row Selected
                                 </span>
                                 <div id="emDynamicTransferBtns" style="display: inline-flex; gap: 8px;"></div>
                             </div>
@@ -485,9 +424,8 @@
                         <div class="em-pagination-footer">
                             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #64748b;">
                                 <select class="em-control" style="width: 75px; height: 32px; padding: 0 10px; border-radius: 50px !important;" onchange="changeEMPageSize(this.value)">
-                                    <option value="10">10</option>
-                                    <option value="25" selected>25</option>
-                                    <option value="50">50</option>
+                                    <option value="25">25</option>
+                                    <option value="50" selected>50</option>
                                     <option value="100">100</option>
                                 </select>
                                 <span>entries per page</span>
@@ -499,7 +437,7 @@
                 </div>
             </div>
 
-            <!-- ব্ল্যাঙ্ক শিট প্রিন্ট মোডাল -->
+            <!-- ব্ল্যাঙ্ক শিট প্রিন্ট মোডাল (রোলের ঘর ছাড়া সম্পূর্ণ অফিশিয়াল) -->
             <div id="emBlankSheetModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999999; display:none; align-items:center; justify-content:center;">
                 <div style="background:#fff; border-radius:20px; width:90%; max-width:440px; padding:24px; box-shadow:0 15px 35px rgba(0,0,0,0.25);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
@@ -533,7 +471,7 @@
         syncCloudExamsDirectly();
     }
 
-    // ৬. ক্লাউডে সরাসরি সংরক্ষণ (১০০% নিরাপদ: কোনো নম্বরে হাত দেয় না)
+    // ৬. ক্লাউডে সরাসরি সংরক্ষণ (১০০% নিরাপদ: কোনো নম্বর ডিলেট হবে না)
     async function saveExamsToCloud() {
         let isSaved = false;
         const cleanRegistry = JSON.parse(JSON.stringify(examRegistry));
@@ -611,7 +549,7 @@
         }
     }
 
-    // ৮. ইউনিভার্সাল স্টুডেন্ট রিডার
+    // ৮. স্টুডেন্ট রিডার
     async function getRealStudentsForClass(targetClass) {
         let allStudents = [];
 
@@ -637,13 +575,6 @@
                     }
                 } catch(e) {}
             }
-        }
-
-        if (allStudents.length === 0 && typeof window.readFromFirebase === 'function') {
-            try {
-                const data = await window.readFromFirebase('cpscl_students');
-                if (data) allStudents = Array.isArray(data) ? data : Object.values(data);
-            } catch(e) {}
         }
 
         if (allStudents.length === 0 && window.cpscl_students_data) {
@@ -682,13 +613,10 @@
             return;
         }
 
-        let groupsArr = [];
-        document.querySelectorAll('.em-group-row').forEach(row => {
-            const gName = row.querySelector('.g-name').value.trim() || "Group";
-            const gFrom = row.querySelector('.g-from').value.trim() || "1";
-            const gTo = row.querySelector('.g-to').value.trim() || "Rest";
-            groupsArr.push({ name: gName, from: gFrom, to: gTo });
-        });
+        let groupsArr = [
+            { name: "Group A", from: "1", to: "40" },
+            { name: "Group B", from: "41", to: "Rest" }
+        ];
 
         let totalMarks = 0;
         Object.values(selectedSubjectsMap).forEach(m => totalMarks += m);
@@ -724,21 +652,11 @@
         setEMWorkspaceView('history');
     };
 
-    // ১০. হিস্ট্রি টেবিল রেন্ডার (লক/আনলক বোতাম সহ)
+    // ১০. হিস্ট্রি টেবিল রেন্ডার
     function renderEMRegistry(isLoading = false) {
         const tbody = document.getElementById('emRegistryTbody');
         if (!tbody) return;
         tbody.innerHTML = '';
-
-        if (isLoading) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="4" style="text-align:center; padding:45px 20px;">
-                        <i class="fa-solid fa-circle-notch fa-spin" style="font-size:32px; color:#2563eb;"></i>
-                    </td>
-                </tr>`;
-            return;
-        }
 
         if (examRegistry.length === 0) {
             tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b; padding:25px;">No exams published yet in cloud database.</td></tr>`;
@@ -746,10 +664,6 @@
         }
 
         examRegistry.forEach(ex => {
-            const groupDesc = (ex.groups && ex.groups.length > 0)
-                ? ex.groups.map(g => `${g.name} (${g.from}-${g.to})`).join(', ')
-                : 'Default Groups';
-
             const isLocked = (ex.status === 'Locked' || ex.status === 'Closed');
             const statusBadge = isLocked 
                 ? `<span class="em-status-badge" style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5;">Locked (Hidden)</span>`
@@ -758,10 +672,7 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>
-                    <strong style="color: #0f172a; font-size: 0.95rem;">${ex.name}</strong> ${statusBadge}<br>
-                    <span class="em-rule-badge">
-                        <i class="fa-solid fa-layer-group"></i> ${groupDesc}
-                    </span>
+                    <strong style="color: #0f172a; font-size: 0.95rem;">${ex.name}</strong> ${statusBadge}
                 </td>
                 <td><span class="em-class-badge">${ex.class}</span></td>
                 <td style="font-weight: 600; color: #475569;">${ex.date}</td>
@@ -770,7 +681,6 @@
                         <i class="fa-solid ${isLocked ? 'fa-lock' : 'fa-lock-open'}"></i>
                     </button>
                     <button class="em-btn-icon edit" onclick="editEMExam('${ex.id}')" title="Edit Assessment"><i class="fa-solid fa-pen"></i></button>
-                    <button class="em-btn-icon duplicate" onclick="duplicateEMExam('${ex.id}')" title="Duplicate Assessment"><i class="fa-solid fa-copy"></i></button>
                     <button class="em-btn-icon delete" onclick="deleteEMExam('${ex.id}')" title="Delete Assessment"><i class="fa-solid fa-trash"></i></button>
                 </td>
             `;
@@ -796,7 +706,7 @@
         }
     };
 
-    // ১২. পূর্ববর্তী পরীক্ষার মেধা তালিকা পড়ে নতুন পরীক্ষার জন্য অটো-গ্রুপিং ইঞ্জিন (১০০% নিরাপদ)
+    // ১২. পূর্ববর্তী পরীক্ষার মেধা অনুযায়ী স্বয়ংক্রিয় গ্রুপ ও মেধা সর্টিং ইঞ্জিন (১০০% নিরাপদ ও নির্ভুল)
     window.autoAssignGroupsFromPreviousMerit = async function() {
         const targetSelect = document.getElementById('emTransferExamSelect');
         const sourceSelect = document.getElementById('emSourceMeritExamSelect');
@@ -821,12 +731,6 @@
 
         if (!targetExam || !sourceExam) return;
 
-        if (!confirm(`নিশ্চিত তো?\n'${sourceExam.name}'-এর মেধা তালিকা অনুযায়ী:\n• মেধা ১ থেকে ৪০ ➔ Group A\n• মেধা ৪১ থেকে বাকিরা ➔ Group B\nহিসেবে '${targetExam.name}'-এর জন্য লক করা হবে?`)) {
-            return;
-        }
-
-        showCenterToast("মেধা তালিকা বিশ্লেষণ করা হচ্ছে...", true);
-
         // ১. ক্লাসের শিক্ষার্থীদের তালিকা
         let students = await getRealStudentsForClass(targetExam.class);
         if (students.length === 0) {
@@ -834,7 +738,7 @@
             return;
         }
 
-        // ২. উৎস পরীক্ষার সব বিষয়ের নম্বর সংগ্রহ (Read-Only)
+        // ২. উৎস পরীক্ষার সব বিষয়ের প্রাপ্ত নম্বর যোগ করে মেধা বের করা (Read-Only)
         const sourceSubjects = Object.keys(sourceExam.subjects || {});
         const studentTotals = {};
 
@@ -856,407 +760,49 @@
 
                 const rec = marksMap[sId];
                 if (rec) {
-                    let val = (rec.rawMark !== null && rec.rawMark !== undefined) ? parseFloat(rec.rawMark) : (parseFloat(rec.cq) || 0);
-                    if (!isNaN(val)) studentTotals[sId] += val;
+                    let val = (rec.rawMark !== null && rec.rawMark !== undefined && rec.rawMark !== '') 
+                        ? parseFloat(rec.rawMark) 
+                        : (rec.cq !== null && rec.cq !== undefined ? (parseFloat(rec.cq) || 0) : null);
+                    if (val !== null && !isNaN(val)) studentTotals[sId] += val;
                 }
             });
         }
 
-        // ৩. মোট নম্বর অনুযায়ী সর্ট করে মেধা তালিকা তৈরি
+        // ৩. মেধা তালিকা অনুযায়ী শিক্ষার্থীদের ওপর থেকে নিচে সাজানো (Merit 1 to 81)
         students.sort((a, b) => {
             const idA = String(a.std_id || a.id || '').trim();
             const idB = String(b.std_id || b.id || '').trim();
             const totalA = studentTotals[idA] || 0;
             const totalB = studentTotals[idB] || 0;
             if (totalB !== totalA) return totalB - totalA;
-
-            const rA = parseInt(a.roll_no || a.roll) || 0;
-            const rB = parseInt(b.roll_no || b.roll) || 0;
-            return rA - rB;
+            return idA.localeCompare(idB);
         });
 
-        // ৪. মেধা ১-৪০ = Group A, বাকিরা = Group B (Target Exam-এর জন্য সেভ)
+        // ৪. নতুন পরীক্ষার জন্য স্থায়ী গ্রুপ এবং মেধা ক্রম সেভ করা
         if (!manualGroupOverrides[targetExamId]) {
             manualGroupOverrides[targetExamId] = {};
         }
 
+        const meritOrderedStudentIds = [];
         students.forEach((st, idx) => {
             const sId = String(st.std_id || st.id || '').trim();
             const meritRank = idx + 1;
             const assignedGroup = (meritRank <= 40) ? "Group A" : "Group B";
             manualGroupOverrides[targetExamId][sId] = assignedGroup;
+            meritOrderedStudentIds.push(sId);
         });
 
-        await saveExamsToCloud();
-        showCenterToast(`সফল হয়েছে! ${students.length} জন শিক্ষার্থীর গ্রুপ মেধা অনুযায়ী নির্ধারিত হয়েছে।`, true);
+        // এই মেধা অনুযায়ী সর্ট অর্ডারও সেভ করা হলো
+        manualGroupOverrides[targetExamId + '_merit_order'] = meritOrderedStudentIds;
 
+        await saveExamsToCloud();
+        showCenterToast(`সফল হয়েছে! মেধা অনুযায়ী ১-৪০ জন Group A এবং ৪১-৮১ জন Group B সাজানো হয়েছে।`, true);
+
+        // সাথে সাথে টেবিল রিফ্রেশ
         loadEMStudentGroupAllocation();
     };
 
-    // ১৩. ব্ল্যাঙ্ক শিট প্রিন্ট মোডাল ও ইঞ্জিন
-    window.openBlankSheetPrintModal = function() {
-        const select = document.getElementById('emTransferExamSelect');
-        const examId = select ? select.value : '';
-        const exam = examRegistry.find(x => x.id === examId);
-        if (!exam) {
-            alert("Please select an exam first!");
-            return;
-        }
-
-        const grpSelect = document.getElementById('modalBlankGroupSelect');
-        const subSelect = document.getElementById('modalBlankSubjectSelect');
-
-        grpSelect.innerHTML = '';
-        const groups = (exam.groups && exam.groups.length > 0) ? exam.groups : [{ name: 'Group A' }, { name: 'Group B' }];
-        groups.forEach(g => {
-            grpSelect.innerHTML += `<option value="${g.name}">${g.name}</option>`;
-        });
-
-        subSelect.innerHTML = '';
-        const subs = exam.subjects || {};
-        Object.keys(subs).forEach(s => {
-            subSelect.innerHTML += `<option value="${s}" data-full="${subs[s] || 30}">${s} (Full Marks: ${subs[s] || 30})</option>`;
-        });
-
-        document.getElementById('emBlankSheetModal').style.display = 'flex';
-    };
-
-    window.closeBlankSheetPrintModal = function() {
-        document.getElementById('emBlankSheetModal').style.display = 'none';
-    };
-
-    window.executeBlankSheetPrint = function() {
-        const select = document.getElementById('emTransferExamSelect');
-        const examId = select ? select.value : '';
-        const exam = examRegistry.find(x => x.id === examId);
-        if (!exam) return;
-
-        const grpName = document.getElementById('modalBlankGroupSelect').value;
-        const subSelect = document.getElementById('modalBlankSubjectSelect');
-        const subName = subSelect.value;
-        const opt = subSelect.options[subSelect.selectedIndex];
-        const fullMark = opt ? opt.getAttribute('data-full') : '30';
-
-        closeBlankSheetPrintModal();
-
-        // নির্বাচিত গ্রুপের শিক্ষার্থীদের ফিল্টার
-        let groupStudents = allocatedStudentsCache.filter(s => s.group === grpName);
-        if (groupStudents.length === 0) {
-            alert(`No students found in ${grpName}!`);
-            return;
-        }
-
-        // প্রিন্ট আইফ্রেম তৈরি
-        const oldIframe = document.getElementById('em-blank-print-frame');
-        if (oldIframe) oldIframe.remove();
-
-        const iframe = document.createElement('iframe');
-        iframe.id = 'em-blank-print-frame';
-        iframe.style.position = 'fixed';
-        iframe.style.left = '-9999px';
-        iframe.style.top = '-9999px';
-        iframe.style.width = '210mm';
-        iframe.style.height = '297mm';
-        iframe.style.border = 'none';
-        document.body.appendChild(iframe);
-
-        let rowsHtml = '';
-        groupStudents.forEach((st, idx) => {
-            rowsHtml += `
-                <tr>
-                    <td>${idx + 1}</td>
-                    <td>${st.roll || '-'}</td>
-                    <td><strong>${st.id}</strong></td>
-                    <td style="text-align:left; padding-left:10px; font-weight:600;">${st.name}</td>
-                    <td><div style="width:50px; height:24px; border:1px solid #555; margin:0 auto; border-radius:4px;"></div></td>
-                    <td></td>
-                </tr>
-            `;
-        });
-
-        const doc = iframe.contentWindow.document;
-        doc.open();
-        doc.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>Blank Evaluation Sheet - ${grpName}</title>
-                <style>
-                    @page { size: A4 portrait; margin: 8mm 8mm 12mm 8mm; }
-                    * { box-sizing: border-box; }
-                    body { font-family: Arial, sans-serif; color: #000; margin: 0; padding: 0; }
-                    .header { text-align: center; margin-bottom: 12px; }
-                    .header h2 { font-size: 15.5px; font-weight: bold; margin: 0 0 4px; text-transform: uppercase; }
-                    .header h3 { font-size: 13px; font-weight: bold; margin: 2px 0; color: #1e3a8a; }
-                    .meta-bar { display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; border: 1.2px solid #000; padding: 6px 12px; background: #f8fafc; margin-bottom: 12px; }
-                    table { width: 100%; border-collapse: collapse; }
-                    th, td { border: 1.2px solid #000; padding: 4.5px 4px; font-size: 10.5px; text-align: center; }
-                    th { background-color: #f1f5f9; font-weight: bold; }
-                    .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 55px; padding: 0 20px; font-size: 11px; font-weight: bold; page-break-inside: avoid; }
-                    .sig-line { width: 180px; border-top: 1.2px solid #000; margin-bottom: 4px; text-align: center; }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <h2>CANTONMENT PUBLIC SCHOOL AND COLLEGE LALMONIRHAT</h2>
-                    <h3>${exam.name} • Blank Evaluation Sheet</h3>
-                </div>
-                <div class="meta-bar">
-                    <div>Class: ${exam.class}</div>
-                    <div>Group: ${grpName}</div>
-                    <div>Subject: ${subName} (Full Marks: ${fullMark})</div>
-                    <div>Date: ${exam.date || ''}</div>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 7%;">SL</th>
-                            <th style="width: 10%;">Roll</th>
-                            <th style="width: 18%;">Student ID</th>
-                            <th style="text-align: left; padding-left: 10px;">Student Name</th>
-                            <th style="width: 18%;">Obtained Mark</th>
-                            <th style="width: 20%;">Signature</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rowsHtml}</tbody>
-                </table>
-                <div class="footer">
-                    <div>Printed: ${new Date().toLocaleDateString('en-GB')}</div>
-                    <div style="text-align:center;">
-                        <div class="sig-line"></div>
-                        Subject Teacher's Signature
-                    </div>
-                </div>
-            </body>
-            </html>
-        `);
-        doc.close();
-
-        setTimeout(() => {
-            iframe.contentWindow.focus();
-            iframe.contentWindow.print();
-        }, 400);
-    };
-
-    // ১৪. ট্যাব ও ওয়ার্কস্পেস ন্যাভিগেশন
-    window.switchEMMainTab = function(tabKey) {
-        document.getElementById('emTabBtn1').classList.remove('active');
-        document.getElementById('emTabBtn2').classList.remove('active');
-        document.getElementById('emTabContent1').classList.remove('active');
-        document.getElementById('emTabContent2').classList.remove('active');
-
-        if (tabKey === 'createExam') {
-            document.getElementById('emTabBtn1').classList.add('active');
-            document.getElementById('emTabContent1').classList.add('active');
-        } else if (tabKey === 'transferModule') {
-            document.getElementById('emTabBtn2').classList.add('active');
-            document.getElementById('emTabContent2').classList.add('active');
-            populateEMExamDropdown();
-            loadEMStudentGroupAllocation();
-        }
-    };
-
-    function initDefaultEMGroupRules() {
-        const container = document.getElementById('emGroupRulesContainer');
-        if (!container) return;
-        container.innerHTML = '';
-        addEMGroupRuleRowData("Group A", "1", "40");
-        addEMGroupRuleRowData("Group B", "41", "Rest");
-    }
-
-    window.addEMGroupRuleRow = function() {
-        addEMGroupRuleRowData("Group C", "", "");
-    };
-
-    function addEMGroupRuleRowData(name, fromVal, toVal) {
-        const container = document.getElementById('emGroupRulesContainer');
-        if (!container) return;
-        const row = document.createElement('div');
-        row.className = 'em-group-row';
-        row.innerHTML = `
-            <input type="text" class="g-name" value="${name}" placeholder="Group Name" style="width: 35%;">
-            <input type="text" class="g-from" value="${fromVal}" placeholder="From Serial" style="width: 25%; text-align: center;">
-            <span style="font-size:0.8rem; font-weight:700; color:#64748b;">to</span>
-            <input type="text" class="g-to" value="${toVal}" placeholder="To Serial / Rest" style="width: 25%; text-align: center;">
-            <button type="button" class="em-btn-icon delete" style="width: 32px; height: 32px; margin-left: auto;" onclick="this.closest('.em-group-row').remove()" title="Remove"><i class="fa-solid fa-trash"></i></button>
-        `;
-        container.appendChild(row);
-    }
-
-    window.setEMWorkspaceView = function(mode) {
-        const grid = document.getElementById('emMainGrid');
-        const formCol = document.getElementById('emFormCol');
-        const historyCol = document.getElementById('emHistoryCol');
-
-        document.getElementById('emBtnShowBoth').classList.remove('active');
-        document.getElementById('emBtnShowForm').classList.remove('active');
-        document.getElementById('emBtnShowHistory').classList.remove('active');
-
-        if (mode === 'both') {
-            grid.style.gridTemplateColumns = '1fr 1fr';
-            formCol.style.display = 'block';
-            historyCol.style.display = 'block';
-            document.getElementById('emBtnShowBoth').classList.add('active');
-        } else if (mode === 'form') {
-            grid.style.gridTemplateColumns = '1fr';
-            formCol.style.display = 'block';
-            historyCol.style.display = 'none';
-            document.getElementById('emBtnShowForm').classList.add('active');
-        } else if (mode === 'history') {
-            grid.style.gridTemplateColumns = '1fr';
-            formCol.style.display = 'none';
-            historyCol.style.display = 'block';
-            document.getElementById('emBtnShowHistory').classList.add('active');
-        }
-    };
-
-    window.onEMClassChange = function(className) {
-        const defaultSubs = ["Bangla", "English", "Mathematics", "Science", "BGS", "ICT", "Religion"];
-        currentActiveSubjectsList = [...defaultSubs];
-        selectedSubjectsMap = {};
-        renderEMPills();
-        renderEMSelectedTable();
-    };
-
-    function renderEMPills() {
-        const area = document.getElementById('emPillsArea');
-        if (!area) return;
-        area.innerHTML = '';
-
-        currentActiveSubjectsList.forEach(sub => {
-            const isSelected = selectedSubjectsMap.hasOwnProperty(sub);
-            const pill = document.createElement('div');
-            pill.className = `em-pill ${isSelected ? 'active' : ''}`;
-            pill.innerHTML = `
-                <span>${sub}</span>
-                <div class="em-pill-actions">
-                    <i class="fa-solid fa-pen em-pill-btn" title="Edit" onclick="openEMEditSubjectModal(event, '${sub}')"></i>
-                    <i class="fa-solid fa-xmark em-pill-btn" title="Remove" onclick="deleteEMSubjectPill(event, '${sub}')"></i>
-                </div>
-            `;
-            pill.onclick = (e) => {
-                if (!e.target.classList.contains('em-pill-btn')) {
-                    toggleEMSubject(sub);
-                }
-            };
-            area.appendChild(pill);
-        });
-    }
-
-    function toggleEMSubject(sub) {
-        if (selectedSubjectsMap[sub]) {
-            delete selectedSubjectsMap[sub];
-        } else {
-            selectedSubjectsMap[sub] = 30;
-        }
-        renderEMPills();
-        renderEMSelectedTable();
-    }
-
-    window.openEMEditSubjectModal = function(e, oldName) {
-        e.stopPropagation();
-        const newName = prompt(`Edit Subject Name for: '${oldName}'`, oldName);
-        if (!newName || newName.trim() === '') return;
-        const cleanNew = newName.trim();
-        const idx = currentActiveSubjectsList.indexOf(oldName);
-        if (idx !== -1) currentActiveSubjectsList[idx] = cleanNew;
-        if (selectedSubjectsMap.hasOwnProperty(oldName)) {
-            selectedSubjectsMap[cleanNew] = selectedSubjectsMap[oldName];
-            delete selectedSubjectsMap[oldName];
-        }
-        renderEMPills();
-        renderEMSelectedTable();
-    };
-
-    function deleteEMSubjectPill(e, sub) {
-        e.stopPropagation();
-        if (confirm(`Remove '${sub}' from active subject list?`)) {
-            currentActiveSubjectsList = currentActiveSubjectsList.filter(s => s !== sub);
-            delete selectedSubjectsMap[sub];
-            renderEMPills();
-            renderEMSelectedTable();
-        }
-    }
-
-    window.addEMCustomSubject = function() {
-        const inp = document.getElementById('emCustomSubInput');
-        const name = inp.value.trim();
-        if (!name) return;
-        if (currentActiveSubjectsList.includes(name)) {
-            alert("Subject already exists!");
-            return;
-        }
-        currentActiveSubjectsList.push(name);
-        selectedSubjectsMap[name] = 30;
-        inp.value = '';
-        renderEMPills();
-        renderEMSelectedTable();
-    };
-
-    function renderEMSelectedTable() {
-        const container = document.getElementById('emSelectedSubContainer');
-        const tbody = document.getElementById('emSelectedSubTbody');
-        const keys = Object.keys(selectedSubjectsMap);
-
-        if (!container || !tbody) return;
-
-        if (keys.length === 0) {
-            container.style.display = 'none';
-            return;
-        }
-
-        container.style.display = 'block';
-        tbody.innerHTML = '';
-        let totalMarks = 0;
-
-        keys.forEach(sub => {
-            const m = selectedSubjectsMap[sub];
-            totalMarks += Number(m) || 0;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${sub}</td>
-                <td style="text-align: center;">
-                    <input type="number" class="em-mark-inp" value="${m}" min="1" oninput="updateEMMark('${sub}', this.value)" style="width:70px; height:32px; border-radius:50px; border:1px solid #cbd5e1; text-align:center;">
-                </td>
-                <td style="text-align: right;">
-                    <button type="button" class="em-btn-icon delete" onclick="toggleEMSubject('${sub}')"><i class="fa-solid fa-trash"></i></button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        document.getElementById('emSummaryCount').innerText = keys.length;
-        document.getElementById('emSummaryTotal').innerText = totalMarks;
-    }
-
-    window.updateEMMark = function(sub, val) {
-        selectedSubjectsMap[sub] = Number(val) || 0;
-        let sum = 0;
-        Object.values(selectedSubjectsMap).forEach(m => sum += m);
-        document.getElementById('emSummaryTotal').innerText = sum;
-    };
-
-    function populateEMExamDropdown() {
-        const select = document.getElementById('emTransferExamSelect');
-        const sourceSelect = document.getElementById('emSourceMeritExamSelect');
-        if (!select) return;
-        select.innerHTML = '';
-        if (sourceSelect) sourceSelect.innerHTML = '<option value="">-- Choose Source Exam --</option>';
-
-        if (examRegistry.length === 0) {
-            select.innerHTML = '<option value="">No exams available</option>';
-            return;
-        }
-        examRegistry.forEach(ex => {
-            select.innerHTML += `<option value="${ex.id}">${ex.name} (${ex.class})</option>`;
-            if (sourceSelect) {
-                sourceSelect.innerHTML += `<option value="${ex.id}">${ex.name}</option>`;
-            }
-        });
-    }
-
-    // ১৫. স্টুডেন্ট টেবিল লোড করার ফাংশন
+    // ১৩. স্টুডেন্ট টেবিল লোড করার ফাংশন (মেধা অনুযায়ী ক্রমিক ১ থেকে ৮১ সাজানো)
     window.loadEMStudentGroupAllocation = async function() {
         const select = document.getElementById('emTransferExamSelect');
         const tbody = document.getElementById('emStudentAllocationTbody');
@@ -1270,35 +816,32 @@
             tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:35px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:26px; color:#2563eb;"></i></td></tr>`;
         }
 
-        const groupsList = (exam.groups && exam.groups.length > 0) ? exam.groups : [
-            { name: "Group A", from: 1, to: 40 },
-            { name: "Group B", from: 41, to: "Rest" }
-        ];
-
         let rawStudents = await getRealStudentsForClass(exam.class);
 
-        rawStudents.sort((a, b) => {
-            const rA = parseInt(a.roll_no || a.roll) || 0;
-            const rB = parseInt(b.roll_no || b.roll) || 0;
-            if (rA && rB) return rA - rB;
-            return String(a.std_id || a.id).localeCompare(String(b.std_id || b.id));
-        });
+        // মেধা অর্ডার থাকলে মেধা অনুযায়ী, না থাকলে আইডি অনুযায়ী সাজানো (কোনো রোল ব্যবহার হবে না)
+        const savedMeritOrder = (manualGroupOverrides && manualGroupOverrides[exam.id + '_merit_order']) ? manualGroupOverrides[exam.id + '_merit_order'] : [];
+
+        if (savedMeritOrder && savedMeritOrder.length > 0) {
+            rawStudents.sort((a, b) => {
+                const idA = String(a.std_id || a.id || '').trim();
+                const idB = String(b.std_id || b.id || '').trim();
+                let idxA = savedMeritOrder.indexOf(idA);
+                let idxB = savedMeritOrder.indexOf(idB);
+                if (idxA === -1) idxA = 99999;
+                if (idxB === -1) idxB = 99999;
+                return idxA - idxB;
+            });
+        } else {
+            rawStudents.sort((a, b) => {
+                return String(a.std_id || a.id).localeCompare(String(b.std_id || b.id));
+            });
+        }
 
         allocatedStudentsCache = rawStudents.map((st, idx) => {
             const slNumber = idx + 1;
             const studentId = String(st.std_id || st.id || '').trim();
-            const studentRoll = st.roll_no || st.roll || '';
-            const effectiveNum = (studentRoll && !isNaN(parseInt(studentRoll))) ? parseInt(studentRoll) : slNumber;
 
-            let assignedGroup = groupsList[0].name;
-            for (let g of groupsList) {
-                const fromNum = parseInt(g.from) || 1;
-                const toNum = (g.to && String(g.to).toLowerCase() === 'rest') ? 999999 : (parseInt(g.to) || 999999);
-                if (effectiveNum >= fromNum && effectiveNum <= toNum) {
-                    assignedGroup = g.name;
-                    break;
-                }
-            }
+            let assignedGroup = (slNumber <= 40) ? "Group A" : "Group B";
 
             if (manualGroupOverrides[exam.id] && manualGroupOverrides[exam.id][studentId]) {
                 assignedGroup = manualGroupOverrides[exam.id][studentId];
@@ -1309,19 +852,18 @@
                 id: studentId,
                 name: st.student_name || st.name || 'Student',
                 class: st.class_name || st.class || exam.class,
-                roll: studentRoll,
                 group: assignedGroup
             };
         });
 
         selectedSingleStudentId = null;
-        updateTopTransferBar(groupsList);
+        updateTopTransferBar();
         renderGroupFilterPills();
         emStudentCurrentPage = 1;
         renderEMPaginatedStudentTable();
     };
 
-    function updateTopTransferBar(groupsList) {
+    function updateTopTransferBar() {
         const btnsBox = document.getElementById('emDynamicTransferBtns');
         const countBadge = document.getElementById('emSelectedCountBadge');
         if (!btnsBox) return;
@@ -1330,31 +872,21 @@
 
         if (countBadge) {
             if (selectedStudent) {
-                countBadge.innerHTML = `<span style="color:#2563eb; font-weight:800;">1 Row Selected:</span> <span style="color:#0f172a;">${selectedStudent.name} (SL #${selectedStudent.sl})</span>`;
+                countBadge.innerHTML = `<span style="color:#2563eb; font-weight:800;">Selected:</span> <span style="color:#0f172a;">${selectedStudent.name} (SL #${selectedStudent.sl})</span>`;
             } else {
-                countBadge.innerText = '0 Row Selected (Click a row below)';
+                countBadge.innerText = '0 Row Selected';
                 countBadge.style.color = '#64748b';
             }
         }
 
-        const examSelect = document.getElementById('emTransferExamSelect');
-        const examId = examSelect ? examSelect.value : '';
-        const exam = examRegistry.find(x => x.id === examId);
-        const groups = (exam && exam.groups) ? exam.groups : (groupsList || [{ name: 'Group A' }, { name: 'Group B' }]);
-
-        let btnsHtml = '';
-        groups.forEach((g, idx) => {
-            const btnClass = idx % 2 === 0 ? 'em-btn-move-a' : 'em-btn-move-b';
-            const isCurrentGroup = selectedStudent && (selectedStudent.group === g.name);
-
-            btnsHtml += `
-                <button type="button" class="em-btn-move ${btnClass}" ${(!selectedStudent || isCurrentGroup) ? 'disabled' : ''} onclick="moveSingleSelectedStudent('${g.name}')">
-                    <i class="fa-solid fa-arrow-right-arrow-left"></i> Move to ${g.name}
-                </button>
-            `;
-        });
-
-        btnsBox.innerHTML = btnsHtml;
+        btnsBox.innerHTML = `
+            <button type="button" class="em-btn-move em-btn-move-a" ${(!selectedStudent || selectedStudent.group === 'Group A') ? 'disabled' : ''} onclick="moveSingleSelectedStudent('Group A')">
+                Move to Group A
+            </button>
+            <button type="button" class="em-btn-move em-btn-move-b" ${(!selectedStudent || selectedStudent.group === 'Group B') ? 'disabled' : ''} onclick="moveSingleSelectedStudent('Group B')">
+                Move to Group B
+            </button>
+        `;
     }
 
     window.moveSingleSelectedStudent = async function(targetGroup) {
@@ -1388,26 +920,20 @@
         if (!container) return;
 
         const total = allocatedStudentsCache.length;
-        const groupCounts = {};
-        allocatedStudentsCache.forEach(s => {
-            groupCounts[s.group] = (groupCounts[s.group] || 0) + 1;
-        });
+        const countA = allocatedStudentsCache.filter(s => s.group === 'Group A').length;
+        const countB = allocatedStudentsCache.filter(s => s.group === 'Group B').length;
 
-        let html = `
+        container.innerHTML = `
             <button type="button" class="em-filter-pill-btn ${emSelectedGroupFilter === 'all' ? 'active' : ''}" onclick="setEMGroupFilter('all')">
                 All Students (${total})
             </button>
+            <button type="button" class="em-filter-pill-btn ${emSelectedGroupFilter === 'Group A' ? 'active' : ''}" onclick="setEMGroupFilter('Group A')">
+                Group A (${countA})
+            </button>
+            <button type="button" class="em-filter-pill-btn ${emSelectedGroupFilter === 'Group B' ? 'active' : ''}" onclick="setEMGroupFilter('Group B')">
+                Group B (${countB})
+            </button>
         `;
-
-        Object.keys(groupCounts).forEach(gName => {
-            html += `
-                <button type="button" class="em-filter-pill-btn ${emSelectedGroupFilter === gName ? 'active' : ''}" onclick="setEMGroupFilter('${gName}')">
-                    ${gName} (${groupCounts[gName]})
-                </button>
-            `;
-        });
-
-        container.innerHTML = html;
     }
 
     window.setEMGroupFilter = function(groupName) {
@@ -1424,7 +950,7 @@
     };
 
     window.changeEMPageSize = function(size) {
-        emStudentPageSize = parseInt(size) || 25;
+        emStudentPageSize = parseInt(size) || 50;
         emStudentCurrentPage = 1;
         renderEMPaginatedStudentTable();
     };
@@ -1469,7 +995,6 @@
 
         pageStudents.forEach(st => {
             const isSelected = (selectedSingleStudentId === st.id);
-            const rollBadge = st.roll ? `<span style="font-size:0.75rem; background:rgba(0,0,0,0.06); padding:2px 8px; border-radius:10px; margin-left:6px;">Roll: ${st.roll}</span>` : '';
 
             const tr = document.createElement('tr');
             if (isSelected) tr.classList.add('erp-row-selected');
@@ -1479,7 +1004,7 @@
             tr.innerHTML = `
                 <td><strong>${st.sl}</strong></td>
                 <td><strong>${st.id}</strong></td>
-                <td><span style="font-weight:700;">${st.name}</span>${rollBadge}</td>
+                <td><span style="font-weight:700;">${st.name}</span></td>
                 <td>${st.class}</td>
                 <td style="text-align: right;"><span class="em-group-badge">${st.group}</span></td>
             `;
@@ -1488,8 +1013,7 @@
 
         const end = Math.min(startIndex + emStudentPageSize, totalFiltered);
         if (counterEl) {
-            const selText = selectedSingleStudentId ? ` (1 row selected)` : '';
-            counterEl.innerText = `Showing ${startIndex + 1} to ${end} of ${totalFiltered} entries ${selText}`;
+            counterEl.innerText = `Showing ${startIndex + 1} to ${end} of ${totalFiltered} entries`;
         }
 
         if (btnsContainer) {
@@ -1497,15 +1021,9 @@
                 <button type="button" class="em-page-btn ${emStudentCurrentPage === 1 ? 'disabled' : ''}" onclick="goToEMStudentPage(1)">«</button>
                 <button type="button" class="em-page-btn ${emStudentCurrentPage === 1 ? 'disabled' : ''}" onclick="goToEMStudentPage(${emStudentCurrentPage - 1})">&lt;</button>
             `;
-
-            let startP = Math.max(1, emStudentCurrentPage - 2);
-            let endP = Math.min(totalPages, startP + 4);
-            if (endP - startP < 4) startP = Math.max(1, endP - 4);
-
-            for (let p = startP; p <= endP; p++) {
+            for (let p = 1; p <= totalPages; p++) {
                 btnsHtml += `<button type="button" class="em-page-btn ${p === emStudentCurrentPage ? 'active' : ''}" onclick="goToEMStudentPage(${p})">${p}</button>`;
             }
-
             btnsHtml += `
                 <button type="button" class="em-page-btn ${emStudentCurrentPage === totalPages ? 'disabled' : ''}" onclick="goToEMStudentPage(${emStudentCurrentPage + 1})">&gt;</button>
                 <button type="button" class="em-page-btn ${emStudentCurrentPage === totalPages ? 'disabled' : ''}" onclick="goToEMStudentPage(${totalPages})">»</button>
@@ -1514,7 +1032,148 @@
         }
     }
 
-    // এডিট, ডুপ্লিকেট, ডিলিট
+    // ১৪. ব্ল্যাঙ্ক শিট প্রিন্ট মোডাল ও ইঞ্জিন (কোনো রোল নেই)
+    window.openBlankSheetPrintModal = function() {
+        const select = document.getElementById('emTransferExamSelect');
+        const examId = select ? select.value : '';
+        const exam = examRegistry.find(x => x.id === examId);
+        if (!exam) {
+            alert("Please select an exam first!");
+            return;
+        }
+
+        const grpSelect = document.getElementById('modalBlankGroupSelect');
+        const subSelect = document.getElementById('modalBlankSubjectSelect');
+
+        grpSelect.innerHTML = `
+            <option value="Group A">Group A (Top 40 Merit)</option>
+            <option value="Group B">Group B (41-Rest Merit)</option>
+        `;
+
+        subSelect.innerHTML = '';
+        const subs = exam.subjects || {};
+        Object.keys(subs).forEach(s => {
+            subSelect.innerHTML += `<option value="${s}" data-full="${subs[s] || 30}">${s} (Full Marks: ${subs[s] || 30})</option>`;
+        });
+
+        document.getElementById('emBlankSheetModal').style.display = 'flex';
+    };
+
+    window.closeBlankSheetPrintModal = function() {
+        document.getElementById('emBlankSheetModal').style.display = 'none';
+    };
+
+    window.executeBlankSheetPrint = function() {
+        const select = document.getElementById('emTransferExamSelect');
+        const examId = select ? select.value : '';
+        const exam = examRegistry.find(x => x.id === examId);
+        if (!exam) return;
+
+        const grpName = document.getElementById('modalBlankGroupSelect').value;
+        const subSelect = document.getElementById('modalBlankSubjectSelect');
+        const subName = subSelect.value;
+        const opt = subSelect.options[subSelect.selectedIndex];
+        const fullMark = opt ? opt.getAttribute('data-full') : '30';
+
+        closeBlankSheetPrintModal();
+
+        let groupStudents = allocatedStudentsCache.filter(s => s.group === grpName);
+        if (groupStudents.length === 0) {
+            alert(`No students found in ${grpName}!`);
+            return;
+        }
+
+        const oldIframe = document.getElementById('em-blank-print-frame');
+        if (oldIframe) oldIframe.remove();
+
+        const iframe = document.createElement('iframe');
+        iframe.id = 'em-blank-print-frame';
+        iframe.style.position = 'fixed';
+        iframe.style.left = '-9999px';
+        iframe.style.top = '-9999px';
+        iframe.style.width = '210mm';
+        iframe.style.height = '297mm';
+        iframe.style.border = 'none';
+        document.body.appendChild(iframe);
+
+        let rowsHtml = '';
+        groupStudents.forEach((st, idx) => {
+            rowsHtml += `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td><strong>${st.id}</strong></td>
+                    <td style="text-align:left; padding-left:10px; font-weight:600;">${st.name}</td>
+                    <td><div style="width:55px; height:24px; border:1px solid #444; margin:0 auto; border-radius:4px;"></div></td>
+                    <td></td>
+                </tr>
+            `;
+        });
+
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Blank Evaluation Sheet - ${grpName}</title>
+                <style>
+                    @page { size: A4 portrait; margin: 8mm 8mm 12mm 8mm; }
+                    * { box-sizing: border-box; }
+                    body { font-family: Arial, sans-serif; color: #000; margin: 0; padding: 0; }
+                    .header { text-align: center; margin-bottom: 12px; }
+                    .header h2 { font-size: 15.5px; font-weight: bold; margin: 0 0 4px; text-transform: uppercase; }
+                    .header h3 { font-size: 13px; font-weight: bold; margin: 2px 0; color: #1e3a8a; }
+                    .meta-bar { display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; border: 1.2px solid #000; padding: 6px 12px; background: #f8fafc; margin-bottom: 12px; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th, td { border: 1.2px solid #000; padding: 4.5px 4px; font-size: 10.5px; text-align: center; }
+                    th { background-color: #f1f5f9; font-weight: bold; }
+                    .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 55px; padding: 0 20px; font-size: 11px; font-weight: bold; page-break-inside: avoid; }
+                    .sig-line { width: 180px; border-top: 1.2px solid #000; margin-bottom: 4px; text-align: center; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h2>CANTONMENT PUBLIC SCHOOL AND COLLEGE LALMONIRHAT</h2>
+                    <h3>${exam.name} • Blank Evaluation Sheet</h3>
+                </div>
+                <div class="meta-bar">
+                    <div>Class: ${exam.class}</div>
+                    <div>Group: ${grpName}</div>
+                    <div>Subject: ${subName} (Full Marks: ${fullMark})</div>
+                    <div>Date: ${exam.date || ''}</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">SL</th>
+                            <th style="width: 22%;">Student ID</th>
+                            <th style="text-align: left; padding-left: 10px;">Student Name</th>
+                            <th style="width: 20%;">Obtained Mark</th>
+                            <th style="width: 25%;">Teacher's Signature</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+                <div class="footer">
+                    <div>Printed Date: ${new Date().toLocaleDateString('en-GB')}</div>
+                    <div style="text-align:center;">
+                        <div class="sig-line"></div>
+                        Subject Teacher's Signature
+                    </div>
+                </div>
+            </body>
+            </html>
+        `);
+        doc.close();
+
+        setTimeout(() => {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        }, 400);
+    };
+
+    // ১৫. এডিট ও ইনিট
     window.editEMExam = function(id) {
         const exam = examRegistry.find(x => x.id === id);
         if (!exam) return;
@@ -1527,51 +1186,11 @@
         onEMClassChange(exam.class);
         selectedSubjectsMap = { ...exam.subjects };
 
-        const container = document.getElementById('emGroupRulesContainer');
-        container.innerHTML = '';
-        if (exam.groups && exam.groups.length > 0) {
-            exam.groups.forEach(g => addEMGroupRuleRowData(g.name, g.from, g.to));
-        } else {
-            initDefaultEMGroupRules();
-        }
-
         renderEMPills();
         renderEMSelectedTable();
 
         document.getElementById('emFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Assessment: ${exam.name}`;
         document.getElementById('emSubmitBtn').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Update In Firebase`;
-        document.getElementById('emCancelEditBtn').style.display = 'block';
-
-        switchEMMainTab('createExam');
-        setEMWorkspaceView('form');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    window.duplicateEMExam = function(id) {
-        const exam = examRegistry.find(x => x.id === id);
-        if (!exam) return;
-
-        document.getElementById('emEditingId').value = '';
-        document.getElementById('emExamName').value = exam.name + " (Copy)";
-        document.getElementById('emClassName').value = exam.class;
-        document.getElementById('emExamDate').value = new Date().toISOString().split('T')[0];
-
-        onEMClassChange(exam.class);
-        selectedSubjectsMap = { ...exam.subjects };
-
-        const container = document.getElementById('emGroupRulesContainer');
-        container.innerHTML = '';
-        if (exam.groups && exam.groups.length > 0) {
-            exam.groups.forEach(g => addEMGroupRuleRowData(g.name, g.from, g.to));
-        } else {
-            initDefaultEMGroupRules();
-        }
-
-        renderEMPills();
-        renderEMSelectedTable();
-
-        document.getElementById('emFormTitle').innerHTML = `<i class="fa-solid fa-copy"></i> Duplicate Assessment`;
-        document.getElementById('emSubmitBtn').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Save Duplicated to Firebase`;
         document.getElementById('emCancelEditBtn').style.display = 'block';
 
         switchEMMainTab('createExam');
@@ -1593,11 +1212,124 @@
         document.getElementById('emAssessmentForm').reset();
         document.getElementById('emEditingId').value = '';
         document.getElementById('emExamDate').value = new Date().toISOString().split('T')[0];
-        document.getElementById('emFormTitle').innerHTML = `<i class="fa-solid fa-file-pen"></i> Create New Assessment & Rules`;
+        document.getElementById('emFormTitle').innerHTML = `<i class="fa-solid fa-file-pen"></i> Create New Examination`;
         document.getElementById('emSubmitBtn').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Save Directly to Firebase`;
         document.getElementById('emCancelEditBtn').style.display = 'none';
         initDefaultEMGroupRules();
     };
+
+    function initDefaultEMGroupRules() {
+        const container = document.getElementById('emGroupRulesContainer');
+        if (!container) return;
+        container.innerHTML = `
+            <div class="em-group-row">
+                <input type="text" class="g-name" value="Group A" style="width: 40%; font-weight:700;" readonly>
+                <span style="font-size:0.85rem; font-weight:700; color:#2563eb;">Merit Rank 1 to 40</span>
+            </div>
+            <div class="em-group-row">
+                <input type="text" class="g-name" value="Group B" style="width: 40%; font-weight:700;" readonly>
+                <span style="font-size:0.85rem; font-weight:700; color:#059669;">Merit Rank 41 to 81</span>
+            </div>
+        `;
+    }
+
+    function onEMClassChange(className) {
+        const defaultSubs = ["Bangla", "English", "Mathematics", "Science", "BGS"];
+        currentActiveSubjectsList = [...defaultSubs];
+        selectedSubjectsMap = { "Bangla": 30, "English": 30, "Mathematics": 30, "Science": 30, "BGS": 30 };
+        renderEMPills();
+        renderEMSelectedTable();
+    }
+
+    function renderEMPills() {
+        const area = document.getElementById('emPillsArea');
+        if (!area) return;
+        area.innerHTML = '';
+        currentActiveSubjectsList.forEach(sub => {
+            const isSelected = selectedSubjectsMap.hasOwnProperty(sub);
+            const pill = document.createElement('div');
+            pill.className = `em-pill ${isSelected ? 'active' : ''}`;
+            pill.innerHTML = `<span>${sub}</span>`;
+            pill.onclick = () => {
+                if (selectedSubjectsMap[sub]) {
+                    delete selectedSubjectsMap[sub];
+                } else {
+                    selectedSubjectsMap[sub] = 30;
+                }
+                renderEMPills();
+                renderEMSelectedTable();
+            };
+            area.appendChild(pill);
+        });
+    }
+
+    function renderEMSelectedTable() {
+        const container = document.getElementById('emSelectedSubContainer');
+        const tbody = document.getElementById('emSelectedSubTbody');
+        const keys = Object.keys(selectedSubjectsMap);
+
+        if (!container || !tbody) return;
+
+        if (keys.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+
+        container.style.display = 'block';
+        tbody.innerHTML = '';
+        let totalMarks = 0;
+
+        keys.forEach(sub => {
+            const m = selectedSubjectsMap[sub];
+            totalMarks += Number(m) || 0;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${sub}</strong></td>
+                <td style="text-align: center;">
+                    <input type="number" class="em-control" value="${m}" min="1" oninput="updateEMMark('${sub}', this.value)" style="width:75px; height:34px; text-align:center; font-weight:700;">
+                </td>
+                <td style="text-align: right;">
+                    <button type="button" class="em-btn-icon delete" onclick="toggleEMSubject('${sub}')"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('emSummaryCount').innerText = keys.length;
+        document.getElementById('emSummaryTotal').innerText = totalMarks;
+    }
+
+    window.toggleEMSubject = function(sub) {
+        delete selectedSubjectsMap[sub];
+        renderEMPills();
+        renderEMSelectedTable();
+    };
+
+    window.updateEMMark = function(sub, val) {
+        selectedSubjectsMap[sub] = Number(val) || 0;
+        let sum = 0;
+        Object.values(selectedSubjectsMap).forEach(m => sum += m);
+        document.getElementById('emSummaryTotal').innerText = sum;
+    };
+
+    function populateEMExamDropdown() {
+        const select = document.getElementById('emTransferExamSelect');
+        const sourceSelect = document.getElementById('emSourceMeritExamSelect');
+        if (!select) return;
+        select.innerHTML = '';
+        if (sourceSelect) sourceSelect.innerHTML = '<option value="">-- Choose Source Exam --</option>';
+
+        if (examRegistry.length === 0) {
+            select.innerHTML = '<option value="">No exams available</option>';
+            return;
+        }
+        examRegistry.forEach(ex => {
+            select.innerHTML += `<option value="${ex.id}">${ex.name} (${ex.class})</option>`;
+            if (sourceSelect) {
+                sourceSelect.innerHTML += `<option value="${ex.id}">${ex.name}</option>`;
+            }
+        });
+    }
 
     function init() {
         injectExamStyles();
