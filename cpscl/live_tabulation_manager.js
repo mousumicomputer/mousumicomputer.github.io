@@ -2,11 +2,11 @@
    MODULE: CPSCL
    SUB-SECTION: Live Tabulation & Result Sheet Engine (Portrait Print-Ready)
    Path: cpscl/live_tabulation_manager.js
-   Architecture: Real-time Cloud Synced | Isolated Iframe Print | Pure Dynamic
+   Architecture: Real-time Cloud Synced | Isolated Iframe Print | Auto-Fit Pages
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Live Tabulation Engine (Official Print & Cloud Synced)...");
+    console.log("Loading CPSCL Live Tabulation Engine (Auto-Fit Print & Cloud Synced)...");
 
     // ১. সাইডবারে Exam Manager ড্রপডাউনে "Live Tabulation" মেনু ইনজেক্ট করা
     function injectLiveTabulationSidebar() {
@@ -89,29 +89,26 @@
             .tab-sheet-panel { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
             .tab-sheet-topbar { padding: 14px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: #fcfdfe; }
             
-            /* অফিশিয়াল হেডার ডিজাইন */
-            .tab-heading-area { text-align: center; padding: 22px 20px 10px; color: #111; }
-            .tab-heading-area h2 { font-size: 18px; font-weight: 800; margin: 0 0 4px; text-transform: uppercase; letter-spacing: -0.2px; color: #000; }
+            .tab-heading-area { text-align: center; padding: 18px 20px 8px; color: #111; }
+            .tab-heading-area h2 { font-size: 17px; font-weight: 800; margin: 0 0 4px; text-transform: uppercase; color: #000; }
             .tab-heading-area h3.class-title { font-size: 14px; font-weight: 700; margin: 2px 0; color: #2563eb; }
-            .tab-heading-area h3.exam-title { font-size: 14px; font-weight: 700; margin: 2px 0; color: #111; }
-            .tab-heading-area h4.group-title { font-size: 13px; font-weight: 700; margin: 3px 0 0; color: #334155; }
-            .tab-heading-area .tab-date-line { text-align: right; margin-top: 8px; font-size: 12px; font-weight: 700; color: #222; }
+            .tab-heading-area h3.exam-title { font-size: 13.5px; font-weight: 700; margin: 2px 0; color: #111; }
+            .tab-heading-area h4.group-title { font-size: 13px; font-weight: 700; margin: 2px 0 0; color: #334155; }
+            .tab-heading-area .tab-date-line { text-align: right; margin-top: 6px; font-size: 12px; font-weight: 700; color: #222; }
 
             .tab-table-wrap { overflow-x: auto; padding: 0 15px 15px; }
             .tab-table { width: 100%; border-collapse: collapse; min-width: 760px; }
-            .tab-table th { background: #fbe7d9 !important; color: #111 !important; border: 1px solid #202020 !important; font-size: 12px; font-weight: 700; text-align: center; padding: 7px 6px; }
+            .tab-table th { background: #fbe7d9 !important; color: #111 !important; border: 1px solid #202020 !important; font-size: 12px; font-weight: 700; text-align: center; padding: 6px 4px; }
             .tab-table th small { font-size: 10px; font-weight: 600; color: #333; }
-            .tab-table td { border: 1px solid #202020 !important; padding: 6px 8px; font-size: 12px; text-align: center; color: #111; }
+            .tab-table td { border: 1px solid #202020 !important; padding: 5px 6px; font-size: 12px; text-align: center; color: #111; }
             .tab-table td.name-col { text-align: left; font-weight: 600; white-space: nowrap !important; padding-left: 10px; }
             .tab-table td.total-col { font-weight: 800; background: #fdfaf6; }
 
-            /* সিগনেচার ব্লক ডিজাইন */
-            .tab-signature-container { display: flex; justify-content: space-around; align-items: flex-end; margin-top: 60px; padding: 0 20px 25px; page-break-inside: avoid; }
+            .tab-signature-container { display: flex; justify-content: space-around; align-items: flex-end; margin-top: 35px; padding: 0 20px 20px; page-break-inside: avoid; }
             .tab-sig-item { text-align: center; min-width: 170px; }
-            .tab-sig-line { width: 100%; border-top: 1.5px solid #000; margin-bottom: 6px; }
+            .tab-sig-line { width: 100%; border-top: 1.5px solid #000; margin-bottom: 5px; }
             .tab-sig-label { font-size: 12px; font-weight: 700; color: #000; }
 
-            /* সিগনেচার সেটিংস মোডাল */
             .sig-modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100000; display: none; align-items: center; justify-content: center; }
             .sig-modal-box { background: #fff; border-radius: 16px; width: 90%; max-width: 460px; padding: 22px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); }
             .sig-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
@@ -122,7 +119,7 @@
         document.head.appendChild(style);
     }
 
-    // ৪. সিগনেচার লিস্ট ম্যানেজমেন্ট (স্বয়ংক্রিয় সেভ ব্যবস্থা)
+    // ৪. সিগনেচার লিস্ট ম্যানেজমেন্ট
     const DEFAULT_SIGNATURES = ["Course Coordinator", "Vice Principal", "Principal"];
 
     window.getSavedSignatures = function() {
@@ -151,7 +148,7 @@
         if (!container) return;
         container.innerHTML = '';
 
-        list.forEach((sigText, idx) => {
+        list.forEach((sigText) => {
             const row = document.createElement('div');
             row.className = 'sig-item-row';
             row.innerHTML = `
@@ -293,7 +290,6 @@
                             </table>
                         </div>
 
-                        <!-- সিগনেচার ব্লক প্লেসহোল্ডার -->
                         <div id="tabSignatureArea"></div>
                     </div>
                 </div>
@@ -429,7 +425,7 @@
         return assigned || st.group || "Group A";
     }
 
-    // ৯. লাইভ ট্যাবুলেশন ডাটা লোড ও গণনা ইঞ্জিন (১০০% ডাইনামিক)
+    // ৯. লাইভ ট্যাবুলেশন ডাটা লোড ও গণনা ইঞ্জিন
     window.loadLiveTabulationData = async function() {
         const examSelect = document.getElementById('tabSelectExam');
         const grpSelect = document.getElementById('tabSelectGroup');
@@ -450,7 +446,7 @@
         document.getElementById('tabHeadingExam').innerText = exam.name || '';
         document.getElementById('tabHeadingDate').innerText = exam.date || new Date().toISOString().split('T')[0];
 
-        // গ্রুপ হেডার লাইন ফরম্যাটিং (যেমন: Group: All অথবা Group: A)
+        // গ্রুপ হেডার লাইন ফরম্যাটিং
         let groupDisplayLabel = "Group: All";
         if (!isAllGroup) {
             groupDisplayLabel = `Group: ${selectedGroup.replace(/group\s*/i, '')}`;
@@ -484,7 +480,7 @@
             return cName === examC || cName.includes(examC) || examC.includes(cName);
         });
 
-        // রোল বা সিরিয়াল অনুযায়ী সর্ট
+        // রোল বা আইডি অনুযায়ী সর্ট
         targetStudents.sort((a, b) => {
             const rA = parseInt(a.roll_no || a.roll) || 0;
             const rB = parseInt(b.roll_no || b.roll) || 0;
@@ -527,23 +523,23 @@
             marksBySubject[sub] = subMarks;
         }
 
-        // টেবিল হেডার তৈরি (রোল বাদ দেওয়া হয়েছে, গ্রুপ শুধুমাত্র অল গ্রুপে থাকবে)
+        // টেবিল হেডার তৈরি
         let thHtml = `<tr>
-            <th style="width: 5.5%;">Merit</th>
+            <th style="width: 5%;">Merit</th>
             <th style="width: 10%;">Student ID</th>
-            <th style="text-align: left; padding-left: 10px;">Student Name</th>
+            <th style="text-align: left; padding-left: 8px;">Student Name</th>
         `;
 
         if (isAllGroup) {
-            thHtml += `<th style="width: 9%;">Group</th>`;
+            thHtml += `<th style="width: 8%;">Group</th>`;
         }
 
         subjectKeys.forEach(sub => {
             const fMark = subjects[sub] || 100;
-            thHtml += `<th style="min-width: 50px;">${sub}<br><small>(${fMark})</small></th>`;
+            thHtml += `<th style="min-width: 48px;">${sub}<br><small>(${fMark})</small></th>`;
         });
 
-        thHtml += `<th style="width: 9%;">Total<br><small>(${totalFullMarks})</small></th></tr>`;
+        thHtml += `<th style="width: 8%;">Total<br><small>(${totalFullMarks})</small></th></tr>`;
         thead.innerHTML = thHtml;
 
         // শিক্ষার্থীদের প্রাপ্ত নম্বর গণনা
@@ -622,7 +618,7 @@
         renderOnScreenSignatureBlock();
     };
 
-    // ১০. স্বাধীন আইফ্রেম প্রিন্ট ইঞ্জিন (Blank Page সমস্যা পুরোপুরি সমাধান)
+    // ১০. অটো-ফিট প্রিন্ট ইঞ্জিন (১ ও ২ পাতার পারফেক্ট ক্যালকুলেশন)
     window.printTabulationSheet = function() {
         const printArea = document.getElementById('tabPrintableArea');
         if (!printArea) {
@@ -630,11 +626,9 @@
             return;
         }
 
-        // বিদ্যমান কোনো প্রিন্ট ফ্রেম থাকলে মুছে ফেলা
         const oldFrame = document.getElementById('cpscl-print-iframe');
         if (oldFrame) oldFrame.remove();
 
-        // নতুন ব্যাকগ্রাউন্ড আইফ্রেম তৈরি
         const iframe = document.createElement('iframe');
         iframe.id = 'cpscl-print-iframe';
         iframe.style.position = 'fixed';
@@ -657,7 +651,7 @@
                 <style>
                     @page {
                         size: A4 portrait;
-                        margin: 8mm 8mm 12mm 8mm;
+                        margin: 6mm 7mm 6mm 7mm;
                     }
                     * {
                         box-sizing: border-box;
@@ -673,38 +667,38 @@
                     }
                     .tab-heading-area {
                         text-align: center;
-                        margin-bottom: 8px;
+                        margin-bottom: 4px;
                     }
                     .tab-heading-area h2 {
-                        font-size: 15.5px;
+                        font-size: 14.5px;
                         font-weight: 800;
-                        margin: 0 0 3px;
+                        margin: 0 0 2px;
                         text-transform: uppercase;
-                        letter-spacing: -0.2px;
+                        letter-spacing: 0.1px;
                         color: #000;
                     }
                     .tab-heading-area h3.class-title {
-                        font-size: 13px;
+                        font-size: 12px;
                         font-weight: 700;
-                        margin: 2px 0;
+                        margin: 1px 0;
                         color: #1e3a8a;
                     }
                     .tab-heading-area h3.exam-title {
-                        font-size: 12.5px;
+                        font-size: 11.5px;
                         font-weight: 700;
-                        margin: 2px 0;
+                        margin: 1px 0;
                         color: #111;
                     }
                     .tab-heading-area h4.group-title {
-                        font-size: 12px;
+                        font-size: 11px;
                         font-weight: 700;
-                        margin: 2px 0 0;
+                        margin: 1px 0 0;
                         color: #222;
                     }
                     .tab-heading-area .tab-date-line {
                         text-align: right;
-                        margin: 4px 0 6px 0;
-                        font-size: 11px;
+                        margin: 2px 0 3px 0;
+                        font-size: 10px;
                         font-weight: 700;
                         color: #111;
                     }
@@ -718,25 +712,26 @@
                     }
                     th, td {
                         border: 1px solid #111 !important;
-                        padding: 4.5px 4px !important;
-                        font-size: 10.5px;
+                        padding: 2.8px 3px !important;
+                        font-size: 9.8px !important;
                         text-align: center;
                         color: #000;
+                        line-height: 1.15;
                     }
                     th {
                         background-color: #fbe7d9 !important;
                         font-weight: 700;
-                        line-height: 1.15;
+                        padding: 3.5px 3px !important;
                     }
                     th small {
-                        font-size: 9px;
+                        font-size: 8.5px;
                         font-weight: 600;
                     }
                     td.name-col {
                         text-align: left !important;
-                        padding-left: 8px !important;
+                        padding-left: 6px !important;
                         font-weight: 600;
-                        white-space: nowrap !important; /* নাম ভাঙবে না */
+                        white-space: nowrap !important;
                     }
                     td.total-col {
                         font-weight: 800;
@@ -749,21 +744,21 @@
                         display: flex;
                         justify-content: space-around;
                         align-items: flex-end;
-                        margin-top: 55px;
-                        padding: 0 15px 10px;
+                        margin-top: 22px;
+                        padding: 0 10px 4px;
                         page-break-inside: avoid !important;
                     }
                     .tab-sig-item {
                         text-align: center;
-                        min-width: 160px;
+                        min-width: 140px;
                     }
                     .tab-sig-line {
                         width: 100%;
-                        border-top: 1.5px solid #000;
-                        margin-bottom: 5px;
+                        border-top: 1.2px solid #000;
+                        margin-bottom: 3px;
                     }
                     .tab-sig-label {
-                        font-size: 11.5px;
+                        font-size: 10.5px;
                         font-weight: 700;
                         color: #000;
                     }
