@@ -1,12 +1,13 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v6.0 Universal)
+   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v7.0 Pro)
    Path: cpscl/exam_manager.js
-   Architecture: 100% Uniform Pill Shapes | Universal Student Cloud Link | Center Toast
+   Architecture: 100% Uniform Pill Shapes | Merit Auto-Grouping | Blank Sheet Print | Cloud Synced
+   Safety: ZERO Marks Modification | Read-Only Calculation | Decoupled Snapshots
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Suite v6.0 (Universal Student Cloud Engine Active)...");
+    console.log("Loading CPSCL Suite v7.0 (Merit Auto-Grouping & Blank Sheet Print Active)...");
 
     // ১. সম্পূর্ণ ও নিখুঁত পিল (Pill) স্টাইল ইনজেকশন
     function injectExamStyles() {
@@ -81,6 +82,7 @@
 
             .em-group-badge, .em-class-badge { display: inline-block !important; padding: 4px 14px !important; border-radius: 50px !important; font-size: 0.8rem !important; font-weight: 700 !important; background: #eff6ff !important; color: #2563eb !important; border: 1px solid #bfdbfe !important; }
             .em-rule-badge { display: inline-flex !important; align-items: center !important; gap: 5px !important; padding: 3px 12px !important; border-radius: 50px !important; font-size: 0.75rem !important; font-weight: 700 !important; background: #f1f5f9 !important; color: #2563eb !important; border: 1px solid #e2e8f0 !important; margin-top: 4px !important; }
+            .em-status-badge { display: inline-block !important; padding: 3px 10px !important; border-radius: 50px !important; font-size: 0.72rem !important; font-weight: 800 !important; }
 
             .em-btn-icon { width: 36px !important; height: 36px !important; border-radius: 50px !important; border: 1.5px solid #cbd5e1 !important; background: #ffffff !important; cursor: pointer !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; font-size: 0.85rem !important; transition: all 0.2s ease !important; margin: 0 3px !important; outline: none !important; }
             .em-btn-icon.edit { color: #2563eb !important; }
@@ -89,6 +91,10 @@
             .em-btn-icon.duplicate:hover { background: #fef9c3 !important; border-color: #ca8a04 !important; transform: scale(1.05); }
             .em-btn-icon.delete { color: #dc2626 !important; }
             .em-btn-icon.delete:hover { background: #fee2e2 !important; border-color: #dc2626 !important; transform: scale(1.05); }
+            .em-btn-icon.lock { color: #dc2626 !important; }
+            .em-btn-icon.lock:hover { background: #fee2e2 !important; border-color: #dc2626 !important; transform: scale(1.05); }
+            .em-btn-icon.unlock { color: #16a34a !important; }
+            .em-btn-icon.unlock:hover { background: #dcfce7 !important; border-color: #16a34a !important; transform: scale(1.05); }
 
             .em-top-transfer-bar { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 50px !important; padding: 10px 20px; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
             .em-transfer-btns-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -98,6 +104,9 @@
             .em-btn-move-b { background: #059669 !important; color: #fff !important; box-shadow: 0 2px 6px rgba(5,150,105,0.25); }
             .em-btn-move-b:hover { background: #047857 !important; }
             .em-btn-move:disabled { opacity: 0.45 !important; cursor: not-allowed !important; box-shadow: none !important; }
+
+            .em-auto-merit-box { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1.5px solid #bfdbfe; border-radius: 16px; padding: 14px 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+            .em-auto-merit-title { font-size: 0.9rem; font-weight: 800; color: #1e3a8a; display: flex; align-items: center; gap: 8px; }
 
             .em-pagination-footer { display: flex; justify-content: space-between; align-items: center; padding: 16px 8px; border-top: 1.5px solid #eef2f5; flex-wrap: wrap; gap: 12px; margin-top: 15px; }
             .em-page-btn { min-width: 32px !important; height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; padding: 0 10px !important; border: 1px solid #e2e8f0 !important; background: #ffffff !important; color: #475569 !important; border-radius: 50px !important; font-size: 0.85rem !important; font-weight: 600 !important; cursor: pointer !important; transition: all 0.2s !important; }
@@ -110,7 +119,6 @@
             .em-group-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; background: #f8fafc; padding: 8px 14px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; }
             .em-group-row input { height: 34px; border-radius: 50px !important; border: 1px solid #cbd5e1; padding: 0 14px; font-size: 0.85rem; font-weight: 700; outline: none; background: #ffffff; }
 
-            /* আধুনিক সেন্টার টোস্ট */
             .em-center-toast-wrap { position: fixed; top: 30px; left: 50%; transform: translate(-50%, -40px) scale(0.9); z-index: 99999999; pointer-events: none; opacity: 0; transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
             .em-center-toast-wrap.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
             .em-center-toast-card { background: #0f172a; color: #ffffff; padding: 13px 28px; border-radius: 50px !important; box-shadow: 0 15px 35px rgba(0,0,0,0.25); display: flex; align-items: center; gap: 10px; font-size: 0.92rem; font-weight: 700; border: 1.5px solid #22c55e; }
@@ -119,7 +127,7 @@
         document.head.appendChild(style);
     }
 
-    function showCenterToast(message) {
+    function showCenterToast(message, isSuccess = true) {
         let wrap = document.getElementById('em-center-toast-wrap');
         if (!wrap) {
             wrap = document.createElement('div');
@@ -129,7 +137,12 @@
             document.body.appendChild(wrap);
         }
         const card = document.getElementById('em-center-toast-card');
-        card.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${message}</span>`;
+        const icon = isSuccess ? 'fa-circle-check' : 'fa-triangle-exclamation';
+        const borderColor = isSuccess ? '#22c55e' : '#ef4444';
+        const iconColor = isSuccess ? '#22c55e' : '#ef4444';
+
+        card.style.borderColor = borderColor;
+        card.innerHTML = `<i class="fa-solid ${icon}" style="color:${iconColor};"></i> <span>${message}</span>`;
         wrap.classList.add('show');
         setTimeout(() => { wrap.classList.remove('show'); }, 2200);
     }
@@ -204,7 +217,6 @@
     let emStudentPageSize = 25;
     let dynamicClassList = [];
 
-    // ক্যাশ থেকে প্রারম্ভিক ব্যাকআপ
     try {
         const cached = localStorage.getItem('cpscl_exams_registry');
         if (cached) examRegistry = JSON.parse(cached);
@@ -316,7 +328,7 @@
 
                                     <div class="em-form-group">
                                         <label>1. Exam Name / Title *</label>
-                                        <input type="text" id="emExamName" class="em-control" placeholder="e.g., Model Test - 01" required>
+                                        <input type="text" id="emExamName" class="em-control" placeholder="e.g., Model Test - 02" required>
                                     </div>
 
                                     <div class="em-form-group">
@@ -405,11 +417,33 @@
                 <div class="em-tab-content" id="emTabContent2">
                     <div class="em-card">
                         <div class="em-card-title">
-                            <span><i class="fa-solid fa-shuffle"></i> Student Group Allocation & Manual Transfer</span>
-                            <div style="display: flex; gap: 10px; align-items: center;">
+                            <span><i class="fa-solid fa-shuffle"></i> Student Group Allocation & Merit Grouping</span>
+                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                                 <select id="emTransferExamSelect" class="em-control" style="width: 290px; height: 38px; font-size: 0.85rem;" onchange="loadEMStudentGroupAllocation()">
-                                    <!-- Dynamic -->
                                 </select>
+                                <button type="button" class="em-btn-toggle" style="background:#059669; color:#fff; border-color:#059669;" onclick="openBlankSheetPrintModal()">
+                                    <i class="fa-solid fa-print"></i> Print Blank Sheet
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- স্বয়ংক্রিয় মেরিট গ্রুপিং বার -->
+                        <div class="em-auto-merit-box">
+                            <div>
+                                <div class="em-auto-merit-title">
+                                    <i class="fa-solid fa-bolt"></i> Auto-Assign Groups from Previous Exam Merit
+                                </div>
+                                <span style="font-size: 11.5px; color: #3b82f6; font-weight: 600;">
+                                    পূর্ববর্তী পরীক্ষার মেধা অনুযায়ী স্বয়ংক্রিয়ভাবে ১-৪০ জন Group A এবং ৪১-৮১ জন Group B হবে।
+                                </span>
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <select id="emSourceMeritExamSelect" class="em-control" style="width: 230px; height: 36px; font-size: 0.82rem; background:#fff;">
+                                    <option value="">-- Choose Source Exam --</option>
+                                </select>
+                                <button type="button" class="em-btn-move em-btn-move-a" style="height: 36px;" onclick="autoAssignGroupsFromPreviousMerit()">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Apply Merit Grouping
+                                </button>
                             </div>
                         </div>
 
@@ -429,7 +463,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
                             <div class="em-group-pills-filter" id="emGroupFilterPills"></div>
                             <span style="font-size: 0.8rem; color: #64748b; font-style: italic;">
-                                <i class="fa-solid fa-circle-info"></i> Click any student row to select and move group.
+                                <i class="fa-solid fa-circle-info"></i> Click any student row to select and move group manually.
                             </span>
                         </div>
 
@@ -464,6 +498,30 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ব্ল্যাঙ্ক শিট প্রিন্ট মোডাল -->
+            <div id="emBlankSheetModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999999; display:none; align-items:center; justify-content:center;">
+                <div style="background:#fff; border-radius:20px; width:90%; max-width:440px; padding:24px; box-shadow:0 15px 35px rgba(0,0,0,0.25);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
+                        <h4 style="margin:0; font-size:1.05rem; font-weight:800; color:#0f172a;"><i class="fa-solid fa-print" style="color:#2563eb;"></i> Print Blank Evaluation Sheet</h4>
+                        <button type="button" onclick="closeBlankSheetPrintModal()" style="border:none; background:none; font-size:1.3rem; cursor:pointer; color:#64748b;">✕</button>
+                    </div>
+                    <div class="em-form-group">
+                        <label>Select Group to Print</label>
+                        <select id="modalBlankGroupSelect" class="em-control"></select>
+                    </div>
+                    <div class="em-form-group">
+                        <label>Subject Name</label>
+                        <select id="modalBlankSubjectSelect" class="em-control"></select>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                        <button type="button" class="em-btn-toggle" onclick="closeBlankSheetPrintModal()">Cancel</button>
+                        <button type="button" class="em-btn-move em-btn-move-a" onclick="executeBlankSheetPrint()">
+                            <i class="fa-solid fa-print"></i> Print Now
+                        </button>
+                    </div>
+                </div>
+            </div>
         `;
 
         document.getElementById('emExamDate').value = new Date().toISOString().split('T')[0];
@@ -475,7 +533,7 @@
         syncCloudExamsDirectly();
     }
 
-    // ৬. ক্লাউডে সরাসরি সংরক্ষণ
+    // ৬. ক্লাউডে সরাসরি সংরক্ষণ (১০০% নিরাপদ: কোনো নম্বরে হাত দেয় না)
     async function saveExamsToCloud() {
         let isSaved = false;
         const cleanRegistry = JSON.parse(JSON.stringify(examRegistry));
@@ -484,7 +542,6 @@
         localStorage.setItem('cpscl_exams_registry', JSON.stringify(cleanRegistry));
         localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(cleanOverrides));
 
-        // ১. মডুলার SDK
         if (typeof window.getDatabase === 'function' && typeof window.ref === 'function' && typeof window.set === 'function') {
             try {
                 const mDb = window.getDatabase();
@@ -494,7 +551,6 @@
             } catch(e) {}
         }
 
-        // ২. ক্লাসিক v8
         const db = getActiveFirebaseDb();
         if (!isSaved && db && typeof db.ref === 'function') {
             try {
@@ -504,7 +560,6 @@
             } catch (err) {}
         }
 
-        // ৩. গ্লোবাল ব্রিজ
         if (!isSaved && typeof window.writeToFirebase === 'function') {
             try {
                 await window.writeToFirebase('cpscl_exams', cleanRegistry);
@@ -554,24 +609,12 @@
             renderEMRegistry(false);
             populateEMExamDropdown();
         }
-
-        if (db && typeof db.ref === 'function') {
-            db.ref('cpscl_exams').on('value', (snap) => {
-                if (snap.exists()) {
-                    const d = snap.val();
-                    examRegistry = Array.isArray(d) ? d : Object.values(d);
-                    renderEMRegistry(false);
-                    populateEMExamDropdown();
-                }
-            });
-        }
     }
 
-    // ৮. [আপডেটেড] ইউনিভার্সাল স্টুডেন্ট রিডার (সব ডিভাইস ও ইনকগনিটো সাপোর্টেড)
+    // ৮. ইউনিভার্সাল স্টুডেন্ট রিডার
     async function getRealStudentsForClass(targetClass) {
         let allStudents = [];
 
-        // উপায় ১: মডুলার SDK
         if (typeof window.getDatabase === 'function' && typeof window.ref === 'function' && typeof window.get === 'function') {
             try {
                 const mDb = window.getDatabase();
@@ -583,7 +626,6 @@
             } catch(e) {}
         }
 
-        // উপায় ২: ক্লাসিক v8
         if (allStudents.length === 0) {
             const db = getActiveFirebaseDb();
             if (db && typeof db.ref === 'function') {
@@ -597,7 +639,6 @@
             }
         }
 
-        // উপায় ৩: গ্লোবাল ফাংশন
         if (allStudents.length === 0 && typeof window.readFromFirebase === 'function') {
             try {
                 const data = await window.readFromFirebase('cpscl_students');
@@ -605,12 +646,10 @@
             } catch(e) {}
         }
 
-        // উপায় ৪: উইন্ডো স্টোর
         if (allStudents.length === 0 && window.cpscl_students_data) {
             allStudents = window.cpscl_students_data;
         }
 
-        // ব্যাকআপ লোকাল ক্যাশ
         if (allStudents.length > 0) {
             try { localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents)); } catch(e) {}
         } else {
@@ -629,7 +668,7 @@
         });
     }
 
-    // ৯. ফর্ম সাবমিট (সেন্টার টোস্ট সহ)
+    // ৯. ফর্ম সাবমিট
     window.handleEMSubmit = async function(e) {
         e.preventDefault();
         const editId = document.getElementById('emEditingId').value;
@@ -668,13 +707,16 @@
 
         if (editId) {
             const idx = examRegistry.findIndex(x => x.id === editId);
-            if (idx !== -1) examRegistry[idx] = examObj;
+            if (idx !== -1) {
+                examObj.status = examRegistry[idx].status || 'Active';
+                examRegistry[idx] = examObj;
+            }
         } else {
             examRegistry.unshift(examObj);
         }
 
         await saveExamsToCloud();
-        showCenterToast("Success! সফল হয়েছে।");
+        showCenterToast("সফলভাবে পরীক্ষা সংরক্ষিত হয়েছে!");
 
         resetEMForm();
         renderEMRegistry(false);
@@ -682,7 +724,7 @@
         setEMWorkspaceView('history');
     };
 
-    // ১০. হিস্ট্রি টেবিল রেন্ডার
+    // ১০. হিস্ট্রি টেবিল রেন্ডার (লক/আনলক বোতাম সহ)
     function renderEMRegistry(isLoading = false) {
         const tbody = document.getElementById('emRegistryTbody');
         if (!tbody) return;
@@ -708,10 +750,15 @@
                 ? ex.groups.map(g => `${g.name} (${g.from}-${g.to})`).join(', ')
                 : 'Default Groups';
 
+            const isLocked = (ex.status === 'Locked' || ex.status === 'Closed');
+            const statusBadge = isLocked 
+                ? `<span class="em-status-badge" style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5;">Locked (Hidden)</span>`
+                : `<span class="em-status-badge" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;">Active (Live)</span>`;
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>
-                    <strong style="color: #0f172a; font-size: 0.95rem;">${ex.name}</strong><br>
+                    <strong style="color: #0f172a; font-size: 0.95rem;">${ex.name}</strong> ${statusBadge}<br>
                     <span class="em-rule-badge">
                         <i class="fa-solid fa-layer-group"></i> ${groupDesc}
                     </span>
@@ -719,6 +766,9 @@
                 <td><span class="em-class-badge">${ex.class}</span></td>
                 <td style="font-weight: 600; color: #475569;">${ex.date}</td>
                 <td style="text-align: right; white-space: nowrap;">
+                    <button class="em-btn-icon ${isLocked ? 'unlock' : 'lock'}" onclick="toggleExamLockStatus('${ex.id}')" title="${isLocked ? 'Unlock Exam (Show to Teachers)' : 'Lock Exam (Hide from Teachers)'}">
+                        <i class="fa-solid ${isLocked ? 'fa-lock' : 'fa-lock-open'}"></i>
+                    </button>
                     <button class="em-btn-icon edit" onclick="editEMExam('${ex.id}')" title="Edit Assessment"><i class="fa-solid fa-pen"></i></button>
                     <button class="em-btn-icon duplicate" onclick="duplicateEMExam('${ex.id}')" title="Duplicate Assessment"><i class="fa-solid fa-copy"></i></button>
                     <button class="em-btn-icon delete" onclick="deleteEMExam('${ex.id}')" title="Delete Assessment"><i class="fa-solid fa-trash"></i></button>
@@ -728,7 +778,268 @@
         });
     }
 
-    // ১১. গ্রুপ ট্রান্সফার ও বাকি ফাংশনসমূহ
+    // ১১. শিক্ষকদের ফোন থেকে পরীক্ষা লক/হাইড করার টগল
+    window.toggleExamLockStatus = async function(examId) {
+        const exam = examRegistry.find(x => x.id === examId);
+        if (!exam) return;
+
+        const isCurrentlyLocked = (exam.status === 'Locked' || exam.status === 'Closed');
+        exam.status = isCurrentlyLocked ? 'Active' : 'Closed';
+
+        await saveExamsToCloud();
+        renderEMRegistry(false);
+
+        if (exam.status === 'Closed') {
+            showCenterToast(`'${exam.name}' লক করা হয়েছে (শিক্ষকদের ফোনে এটি আর দেখা যাবে না)!`);
+        } else {
+            showCenterToast(`'${exam.name}' আনলক করা হয়েছে (শিক্ষকরা দেখতে পাবেন)!`);
+        }
+    };
+
+    // ১২. পূর্ববর্তী পরীক্ষার মেধা তালিকা পড়ে নতুন পরীক্ষার জন্য অটো-গ্রুপিং ইঞ্জিন (১০০% নিরাপদ)
+    window.autoAssignGroupsFromPreviousMerit = async function() {
+        const targetSelect = document.getElementById('emTransferExamSelect');
+        const sourceSelect = document.getElementById('emSourceMeritExamSelect');
+
+        if (!targetSelect || !sourceSelect) return;
+
+        const targetExamId = targetSelect.value;
+        const sourceExamId = sourceSelect.value;
+
+        if (!targetExamId) {
+            alert("অনুগ্রহ করে যে পরীক্ষার জন্য গ্রুপ করবেন (Target Exam) তা নির্বাচন করুন!");
+            return;
+        }
+
+        if (!sourceExamId) {
+            alert("অনুগ্রহ করে যে পরীক্ষার রেজাল্ট অনুযায়ী গ্রুপ করবেন (Source Exam) তা নির্বাচন করুন!");
+            return;
+        }
+
+        const targetExam = examRegistry.find(x => x.id === targetExamId);
+        const sourceExam = examRegistry.find(x => x.id === sourceExamId);
+
+        if (!targetExam || !sourceExam) return;
+
+        if (!confirm(`নিশ্চিত তো?\n'${sourceExam.name}'-এর মেধা তালিকা অনুযায়ী:\n• মেধা ১ থেকে ৪০ ➔ Group A\n• মেধা ৪১ থেকে বাকিরা ➔ Group B\nহিসেবে '${targetExam.name}'-এর জন্য লক করা হবে?`)) {
+            return;
+        }
+
+        showCenterToast("মেধা তালিকা বিশ্লেষণ করা হচ্ছে...", true);
+
+        // ১. ক্লাসের শিক্ষার্থীদের তালিকা
+        let students = await getRealStudentsForClass(targetExam.class);
+        if (students.length === 0) {
+            alert("এই ক্লাসে কোনো শিক্ষার্থী পাওয়া যায়নি!");
+            return;
+        }
+
+        // ২. উৎস পরীক্ষার সব বিষয়ের নম্বর সংগ্রহ (Read-Only)
+        const sourceSubjects = Object.keys(sourceExam.subjects || {});
+        const studentTotals = {};
+
+        for (let sub of sourceSubjects) {
+            let marksMap = JSON.parse(localStorage.getItem(`cpscl_marks_${sourceExamId}_${sub}`) || '{}');
+
+            if (window.getDatabase && window.ref && window.get) {
+                try {
+                    const snap = await window.get(window.ref(window.getDatabase(), `cpscl_exam_marks/${sourceExamId}_${sub}`));
+                    if (snap.exists()) {
+                        marksMap = snap.val() || marksMap;
+                    }
+                } catch(e) {}
+            }
+
+            students.forEach(st => {
+                const sId = String(st.std_id || st.id || '').trim();
+                if (!studentTotals[sId]) studentTotals[sId] = 0;
+
+                const rec = marksMap[sId];
+                if (rec) {
+                    let val = (rec.rawMark !== null && rec.rawMark !== undefined) ? parseFloat(rec.rawMark) : (parseFloat(rec.cq) || 0);
+                    if (!isNaN(val)) studentTotals[sId] += val;
+                }
+            });
+        }
+
+        // ৩. মোট নম্বর অনুযায়ী সর্ট করে মেধা তালিকা তৈরি
+        students.sort((a, b) => {
+            const idA = String(a.std_id || a.id || '').trim();
+            const idB = String(b.std_id || b.id || '').trim();
+            const totalA = studentTotals[idA] || 0;
+            const totalB = studentTotals[idB] || 0;
+            if (totalB !== totalA) return totalB - totalA;
+
+            const rA = parseInt(a.roll_no || a.roll) || 0;
+            const rB = parseInt(b.roll_no || b.roll) || 0;
+            return rA - rB;
+        });
+
+        // ৪. মেধা ১-৪০ = Group A, বাকিরা = Group B (Target Exam-এর জন্য সেভ)
+        if (!manualGroupOverrides[targetExamId]) {
+            manualGroupOverrides[targetExamId] = {};
+        }
+
+        students.forEach((st, idx) => {
+            const sId = String(st.std_id || st.id || '').trim();
+            const meritRank = idx + 1;
+            const assignedGroup = (meritRank <= 40) ? "Group A" : "Group B";
+            manualGroupOverrides[targetExamId][sId] = assignedGroup;
+        });
+
+        await saveExamsToCloud();
+        showCenterToast(`সফল হয়েছে! ${students.length} জন শিক্ষার্থীর গ্রুপ মেধা অনুযায়ী নির্ধারিত হয়েছে।`, true);
+
+        loadEMStudentGroupAllocation();
+    };
+
+    // ১৩. ব্ল্যাঙ্ক শিট প্রিন্ট মোডাল ও ইঞ্জিন
+    window.openBlankSheetPrintModal = function() {
+        const select = document.getElementById('emTransferExamSelect');
+        const examId = select ? select.value : '';
+        const exam = examRegistry.find(x => x.id === examId);
+        if (!exam) {
+            alert("Please select an exam first!");
+            return;
+        }
+
+        const grpSelect = document.getElementById('modalBlankGroupSelect');
+        const subSelect = document.getElementById('modalBlankSubjectSelect');
+
+        grpSelect.innerHTML = '';
+        const groups = (exam.groups && exam.groups.length > 0) ? exam.groups : [{ name: 'Group A' }, { name: 'Group B' }];
+        groups.forEach(g => {
+            grpSelect.innerHTML += `<option value="${g.name}">${g.name}</option>`;
+        });
+
+        subSelect.innerHTML = '';
+        const subs = exam.subjects || {};
+        Object.keys(subs).forEach(s => {
+            subSelect.innerHTML += `<option value="${s}" data-full="${subs[s] || 30}">${s} (Full Marks: ${subs[s] || 30})</option>`;
+        });
+
+        document.getElementById('emBlankSheetModal').style.display = 'flex';
+    };
+
+    window.closeBlankSheetPrintModal = function() {
+        document.getElementById('emBlankSheetModal').style.display = 'none';
+    };
+
+    window.executeBlankSheetPrint = function() {
+        const select = document.getElementById('emTransferExamSelect');
+        const examId = select ? select.value : '';
+        const exam = examRegistry.find(x => x.id === examId);
+        if (!exam) return;
+
+        const grpName = document.getElementById('modalBlankGroupSelect').value;
+        const subSelect = document.getElementById('modalBlankSubjectSelect');
+        const subName = subSelect.value;
+        const opt = subSelect.options[subSelect.selectedIndex];
+        const fullMark = opt ? opt.getAttribute('data-full') : '30';
+
+        closeBlankSheetPrintModal();
+
+        // নির্বাচিত গ্রুপের শিক্ষার্থীদের ফিল্টার
+        let groupStudents = allocatedStudentsCache.filter(s => s.group === grpName);
+        if (groupStudents.length === 0) {
+            alert(`No students found in ${grpName}!`);
+            return;
+        }
+
+        // প্রিন্ট আইফ্রেম তৈরি
+        const oldIframe = document.getElementById('em-blank-print-frame');
+        if (oldIframe) oldIframe.remove();
+
+        const iframe = document.createElement('iframe');
+        iframe.id = 'em-blank-print-frame';
+        iframe.style.position = 'fixed';
+        iframe.style.left = '-9999px';
+        iframe.style.top = '-9999px';
+        iframe.style.width = '210mm';
+        iframe.style.height = '297mm';
+        iframe.style.border = 'none';
+        document.body.appendChild(iframe);
+
+        let rowsHtml = '';
+        groupStudents.forEach((st, idx) => {
+            rowsHtml += `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td>${st.roll || '-'}</td>
+                    <td><strong>${st.id}</strong></td>
+                    <td style="text-align:left; padding-left:10px; font-weight:600;">${st.name}</td>
+                    <td><div style="width:50px; height:24px; border:1px solid #555; margin:0 auto; border-radius:4px;"></div></td>
+                    <td></td>
+                </tr>
+            `;
+        });
+
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Blank Evaluation Sheet - ${grpName}</title>
+                <style>
+                    @page { size: A4 portrait; margin: 8mm 8mm 12mm 8mm; }
+                    * { box-sizing: border-box; }
+                    body { font-family: Arial, sans-serif; color: #000; margin: 0; padding: 0; }
+                    .header { text-align: center; margin-bottom: 12px; }
+                    .header h2 { font-size: 15.5px; font-weight: bold; margin: 0 0 4px; text-transform: uppercase; }
+                    .header h3 { font-size: 13px; font-weight: bold; margin: 2px 0; color: #1e3a8a; }
+                    .meta-bar { display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; border: 1.2px solid #000; padding: 6px 12px; background: #f8fafc; margin-bottom: 12px; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th, td { border: 1.2px solid #000; padding: 4.5px 4px; font-size: 10.5px; text-align: center; }
+                    th { background-color: #f1f5f9; font-weight: bold; }
+                    .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 55px; padding: 0 20px; font-size: 11px; font-weight: bold; page-break-inside: avoid; }
+                    .sig-line { width: 180px; border-top: 1.2px solid #000; margin-bottom: 4px; text-align: center; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h2>CANTONMENT PUBLIC SCHOOL AND COLLEGE LALMONIRHAT</h2>
+                    <h3>${exam.name} • Blank Evaluation Sheet</h3>
+                </div>
+                <div class="meta-bar">
+                    <div>Class: ${exam.class}</div>
+                    <div>Group: ${grpName}</div>
+                    <div>Subject: ${subName} (Full Marks: ${fullMark})</div>
+                    <div>Date: ${exam.date || ''}</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 7%;">SL</th>
+                            <th style="width: 10%;">Roll</th>
+                            <th style="width: 18%;">Student ID</th>
+                            <th style="text-align: left; padding-left: 10px;">Student Name</th>
+                            <th style="width: 18%;">Obtained Mark</th>
+                            <th style="width: 20%;">Signature</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+                <div class="footer">
+                    <div>Printed: ${new Date().toLocaleDateString('en-GB')}</div>
+                    <div style="text-align:center;">
+                        <div class="sig-line"></div>
+                        Subject Teacher's Signature
+                    </div>
+                </div>
+            </body>
+            </html>
+        `);
+        doc.close();
+
+        setTimeout(() => {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        }, 400);
+    };
+
+    // ১৪. ট্যাব ও ওয়ার্কস্পেস ন্যাভিগেশন
     window.switchEMMainTab = function(tabKey) {
         document.getElementById('emTabBtn1').classList.remove('active');
         document.getElementById('emTabBtn2').classList.remove('active');
@@ -837,7 +1148,7 @@
         if (selectedSubjectsMap[sub]) {
             delete selectedSubjectsMap[sub];
         } else {
-            selectedSubjectsMap[sub] = 50;
+            selectedSubjectsMap[sub] = 30;
         }
         renderEMPills();
         renderEMSelectedTable();
@@ -845,33 +1156,17 @@
 
     window.openEMEditSubjectModal = function(e, oldName) {
         e.stopPropagation();
-        const overlay = document.getElementById('emCustomModalOverlay');
-        const inputField = document.getElementById('emModalInput');
-        const confirmBtn = document.getElementById('emModalConfirmBtn');
-        const modalTitle = document.getElementById('emModalTitle');
-
-        modalTitle.innerText = `Edit Subject: '${oldName}'`;
-        inputField.value = oldName;
-        overlay.style.display = 'flex';
-        inputField.focus();
-
-        confirmBtn.onclick = () => {
-            const newName = inputField.value.trim();
-            if (!newName) return;
-            const idx = currentActiveSubjectsList.indexOf(oldName);
-            if (idx !== -1) currentActiveSubjectsList[idx] = newName;
-            if (selectedSubjectsMap.hasOwnProperty(oldName)) {
-                selectedSubjectsMap[newName] = selectedSubjectsMap[oldName];
-                delete selectedSubjectsMap[oldName];
-            }
-            renderEMPills();
-            renderEMSelectedTable();
-            closeEMModal();
-        };
-    };
-
-    window.closeEMModal = function() {
-        document.getElementById('emCustomModalOverlay').style.display = 'none';
+        const newName = prompt(`Edit Subject Name for: '${oldName}'`, oldName);
+        if (!newName || newName.trim() === '') return;
+        const cleanNew = newName.trim();
+        const idx = currentActiveSubjectsList.indexOf(oldName);
+        if (idx !== -1) currentActiveSubjectsList[idx] = cleanNew;
+        if (selectedSubjectsMap.hasOwnProperty(oldName)) {
+            selectedSubjectsMap[cleanNew] = selectedSubjectsMap[oldName];
+            delete selectedSubjectsMap[oldName];
+        }
+        renderEMPills();
+        renderEMSelectedTable();
     };
 
     function deleteEMSubjectPill(e, sub) {
@@ -893,7 +1188,7 @@
             return;
         }
         currentActiveSubjectsList.push(name);
-        selectedSubjectsMap[name] = 50;
+        selectedSubjectsMap[name] = 30;
         inp.value = '';
         renderEMPills();
         renderEMSelectedTable();
@@ -944,18 +1239,24 @@
 
     function populateEMExamDropdown() {
         const select = document.getElementById('emTransferExamSelect');
+        const sourceSelect = document.getElementById('emSourceMeritExamSelect');
         if (!select) return;
         select.innerHTML = '';
+        if (sourceSelect) sourceSelect.innerHTML = '<option value="">-- Choose Source Exam --</option>';
+
         if (examRegistry.length === 0) {
             select.innerHTML = '<option value="">No exams available</option>';
             return;
         }
         examRegistry.forEach(ex => {
             select.innerHTML += `<option value="${ex.id}">${ex.name} (${ex.class})</option>`;
+            if (sourceSelect) {
+                sourceSelect.innerHTML += `<option value="${ex.id}">${ex.name}</option>`;
+            }
         });
     }
 
-    // স্টুডেন্ট টেবিল লোড করার ফাংশন
+    // ১৫. স্টুডেন্ট টেবিল লোড করার ফাংশন
     window.loadEMStudentGroupAllocation = async function() {
         const select = document.getElementById('emTransferExamSelect');
         const tbody = document.getElementById('emStudentAllocationTbody');
@@ -965,7 +1266,6 @@
         const exam = examRegistry.find(x => x.id === examId);
         if (!exam) return;
 
-        // লোডিং স্পিনার
         if (tbody) {
             tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:35px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:26px; color:#2563eb;"></i></td></tr>`;
         }
