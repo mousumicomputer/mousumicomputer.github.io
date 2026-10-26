@@ -1,13 +1,12 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v9.0 Master)
+   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v10.0 Final Pro)
    Path: cpscl/exam_manager.js
-   Architecture: Zero Omission | Pure Merit Sorting | Blank Sheet Print | Cloud Synced
-   Safety: ZERO Marks Modification | Read-Only Calculation | Decoupled Snapshots
+   Architecture: All Buttons Working | Pure Merit Auto-Grouping | Blank Sheet Print | Cloud Synced
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Suite v9.0 (Full Master Edition Active)...");
+    console.log("Loading CPSCL Suite v10.0 (Tab Switch Fixed & Full Suite Active)...");
 
     // ১. সম্পূর্ণ ও নিখুঁত পিল (Pill) স্টাইল ইনজেকশন
     function injectExamStyles() {
@@ -160,7 +159,7 @@
         examLi.id = 'trust-cpscl-exam-module-root';
 
         examLi.innerHTML = `
-            <a class="trust-parent-btn" onclick="toggleCPSCLExamModule()">
+            <a class="trust-parent-btn" onclick="window.toggleCPSCLExamModule()">
                 <div class="trust-parent-left">
                     <i class="fa-solid fa-graduation-cap" style="color: #2563eb;"></i>
                     <span>Exam Manager</span>
@@ -170,7 +169,7 @@
 
             <ul class="trust-submenu-box" id="trust-exam-submenu-items">
                 <li>
-                    <a class="trust-sub-link active" id="sub-link-create-exam" onclick="switchCPSCLExamSubTab(this, 'create-exam')">
+                    <a class="trust-sub-link active" id="sub-link-create-exam" onclick="window.switchCPSCLExamSubTab(this, 'create-exam')">
                         <span class="trust-sub-indicator"></span>
                         <span>Create Exam</span>
                     </a>
@@ -275,10 +274,10 @@
                 </div>
 
                 <div class="em-nav-tabs">
-                    <button class="em-tab-btn active" id="emTabBtn1" onclick="window.switchEMMainTab('createExam')">
+                    <button type="button" class="em-tab-btn active" id="emTabBtn1" onclick="window.switchEMMainTab('createExam')">
                         <i class="fa-solid fa-file-pen"></i> 1. Exam Setup
                     </button>
-                    <button class="em-tab-btn" id="emTabBtn2" onclick="window.switchEMMainTab('transferModule')">
+                    <button type="button" class="em-tab-btn" id="emTabBtn2" onclick="window.switchEMMainTab('transferModule')">
                         <i class="fa-solid fa-shuffle"></i> 2. Student Merit Grouping & Allocation
                     </button>
                 </div>
@@ -485,7 +484,7 @@
                 </div>
             </div>
 
-            <!-- ব্ল্যাঙ্ক শিট প্রিন্ট মোডাল (রোলের ঘর ছাড়া সম্পূর্ণ অফিশিয়াল) -->
+            <!-- ব্ল্যাঙ্ক শিট প্রিন্ট মোডাল -->
             <div id="emBlankSheetModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999999; display:none; align-items:center; justify-content:center;">
                 <div style="background:#fff; border-radius:20px; width:90%; max-width:440px; padding:24px; box-shadow:0 15px 35px rgba(0,0,0,0.25);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
@@ -519,7 +518,7 @@
         syncCloudExamsDirectly();
     }
 
-    // ৬. ক্লাউডে সরাসরি সংরক্ষণ (১০০% নিরাপদ: কোনো নম্বর ডিলেট হবে না)
+    // ৬. ক্লাউডে সরাসরি সংরক্ষণ
     async function saveExamsToCloud() {
         let isSaved = false;
         const cleanRegistry = JSON.parse(JSON.stringify(examRegistry));
@@ -745,12 +744,12 @@
                 <td><span class="em-class-badge">${ex.class}</span></td>
                 <td style="font-weight: 600; color: #475569;">${ex.date}</td>
                 <td style="text-align: right; white-space: nowrap;">
-                    <button class="em-btn-icon ${isLocked ? 'unlock' : 'lock'}" onclick="window.toggleExamLockStatus('${ex.id}')" title="${isLocked ? 'Unlock Exam (Show to Teachers)' : 'Lock Exam (Hide from Teachers)'}">
+                    <button type="button" class="em-btn-icon ${isLocked ? 'unlock' : 'lock'}" onclick="window.toggleExamLockStatus('${ex.id}')" title="${isLocked ? 'Unlock Exam (Show to Teachers)' : 'Lock Exam (Hide from Teachers)'}">
                         <i class="fa-solid ${isLocked ? 'fa-lock' : 'fa-lock-open'}"></i>
                     </button>
-                    <button class="em-btn-icon edit" onclick="window.editEMExam('${ex.id}')" title="Edit Assessment"><i class="fa-solid fa-pen"></i></button>
-                    <button class="em-btn-icon duplicate" onclick="window.duplicateEMExam('${ex.id}')" title="Duplicate Assessment"><i class="fa-solid fa-copy"></i></button>
-                    <button class="em-btn-icon delete" onclick="window.deleteEMExam('${ex.id}')" title="Delete Assessment"><i class="fa-solid fa-trash"></i></button>
+                    <button type="button" class="em-btn-icon edit" onclick="window.editEMExam('${ex.id}')" title="Edit Assessment"><i class="fa-solid fa-pen"></i></button>
+                    <button type="button" class="em-btn-icon duplicate" onclick="window.duplicateEMExam('${ex.id}')" title="Duplicate Assessment"><i class="fa-solid fa-copy"></i></button>
+                    <button type="button" class="em-btn-icon delete" onclick="window.deleteEMExam('${ex.id}')" title="Delete Assessment"><i class="fa-solid fa-trash"></i></button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -800,7 +799,6 @@
 
         if (!targetExam || !sourceExam) return;
 
-        // ১. ক্লাসের শিক্ষার্থীদের তালিকা
         let students = await getRealStudentsForClass(targetExam.class);
         if (students.length === 0) {
             alert("এই ক্লাসে কোনো শিক্ষার্থী পাওয়া যায়নি!");
@@ -809,7 +807,6 @@
 
         showCenterToast("মেধা তালিকা বিশ্লেষণ করা হচ্ছে...", true);
 
-        // ২. উৎস পরীক্ষার সব বিষয়ের প্রাপ্ত নম্বর যোগ করে মেধা বের করা (Read-Only)
         const sourceSubjects = Object.keys(sourceExam.subjects || {});
         const studentTotals = {};
 
@@ -839,7 +836,6 @@
             });
         }
 
-        // ৩. মেধা তালিকা অনুযায়ী শিক্ষার্থীদের ওপর থেকে নিচে সাজানো (Merit 1 to 81)
         students.sort((a, b) => {
             const idA = String(a.std_id || a.id || '').trim();
             const idB = String(b.std_id || b.id || '').trim();
@@ -849,7 +845,6 @@
             return idA.localeCompare(idB);
         });
 
-        // ৪. নতুন পরীক্ষার জন্য স্থায়ী গ্রুপ এবং মেধা ক্রম সেভ করা
         if (!manualGroupOverrides[targetExamId]) {
             manualGroupOverrides[targetExamId] = {};
         }
@@ -863,13 +858,11 @@
             meritOrderedStudentIds.push(sId);
         });
 
-        // এই মেধা অনুযায়ী সর্ট অর্ডারও সেভ করা হলো
         manualGroupOverrides[targetExamId + '_merit_order'] = meritOrderedStudentIds;
 
         await saveExamsToCloud();
         showCenterToast(`সফল হয়েছে! মেধা অনুযায়ী ১-৪০ জন Group A এবং ৪১-৮১ জন Group B সাজানো হয়েছে।`, true);
 
-        // সাথে সাথে টেবিল রিফ্রেশ
         window.loadEMStudentGroupAllocation();
     };
 
@@ -889,7 +882,6 @@
 
         let rawStudents = await getRealStudentsForClass(exam.class);
 
-        // মেধা অর্ডার থাকলে মেধা অনুযায়ী, না থাকলে আইডি অনুযায়ী সাজানো (কোনো রোল ব্যবহার হবে না)
         const savedMeritOrder = (manualGroupOverrides && manualGroupOverrides[exam.id + '_merit_order']) ? manualGroupOverrides[exam.id + '_merit_order'] : [];
 
         if (savedMeritOrder && savedMeritOrder.length > 0) {
@@ -1103,7 +1095,7 @@
         }
     }
 
-    // ১৪. ব্ল্যাঙ্ক শিট প্রিন্ট মোডাল ও ইঞ্জিন (কোনো রোল নেই)
+    // ১৪. ব্ল্যাঙ্ক শিট প্রিন্ট মোডাল ও ইঞ্জিন
     window.openBlankSheetPrintModal = function() {
         const select = document.getElementById('emTransferExamSelect');
         const examId = select ? select.value : '';
@@ -1244,97 +1236,42 @@
         }, 400);
     };
 
-    // ১৫. এডিট, ডুপ্লিকেট, ডিলিট, গ্রুপ রুল ও কাস্টম সাবজেক্ট (১০০% অক্ষুণ্ণ)
-    window.editEMExam = function(id) {
-        const exam = examRegistry.find(x => x.id === id);
-        if (!exam) return;
+    // ১৫. ট্যাব ও ওয়ার্কস্পেস ন্যাভিগেশন (১০০% ফিক্সড)
+    window.switchEMMainTab = function(tabKey) {
+        const btn1 = document.getElementById('emTabBtn1');
+        const btn2 = document.getElementById('emTabBtn2');
+        const content1 = document.getElementById('emTabContent1');
+        const content2 = document.getElementById('emTabContent2');
 
-        document.getElementById('emEditingId').value = exam.id;
-        document.getElementById('emExamName').value = exam.name;
-        document.getElementById('emClassName').value = exam.class;
-        document.getElementById('emExamDate').value = exam.date;
+        if (btn1) btn1.classList.remove('active');
+        if (btn2) btn2.classList.remove('active');
+        if (content1) content1.classList.remove('active');
+        if (content2) content2.classList.remove('active');
 
-        window.onEMClassChange(exam.class);
-        selectedSubjectsMap = { ...exam.subjects };
-
-        const container = document.getElementById('emGroupRulesContainer');
-        container.innerHTML = '';
-        if (exam.groups && exam.groups.length > 0) {
-            exam.groups.forEach(g => addEMGroupRuleRowData(g.name, g.from, g.to));
-        } else {
-            initDefaultEMGroupRules();
-        }
-
-        renderEMPills();
-        renderEMSelectedTable();
-
-        document.getElementById('emFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Assessment: ${exam.name}`;
-        document.getElementById('emSubmitBtn').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Update In Firebase`;
-        document.getElementById('emCancelEditBtn').style.display = 'block';
-
-        window.switchEMMainTab('createExam');
-        window.setEMWorkspaceView('form');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    window.duplicateEMExam = function(id) {
-        const exam = examRegistry.find(x => x.id === id);
-        if (!exam) return;
-
-        document.getElementById('emEditingId').value = '';
-        document.getElementById('emExamName').value = exam.name + " (Copy)";
-        document.getElementById('emClassName').value = exam.class;
-        document.getElementById('emExamDate').value = new Date().toISOString().split('T')[0];
-
-        window.onEMClassChange(exam.class);
-        selectedSubjectsMap = { ...exam.subjects };
-
-        const container = document.getElementById('emGroupRulesContainer');
-        container.innerHTML = '';
-        if (exam.groups && exam.groups.length > 0) {
-            exam.groups.forEach(g => addEMGroupRuleRowData(g.name, g.from, g.to));
-        } else {
-            initDefaultEMGroupRules();
-        }
-
-        renderEMPills();
-        renderEMSelectedTable();
-
-        document.getElementById('emFormTitle').innerHTML = `<i class="fa-solid fa-copy"></i> Duplicate Assessment`;
-        document.getElementById('emSubmitBtn').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Save Duplicated to Firebase`;
-        document.getElementById('emCancelEditBtn').style.display = 'block';
-
-        window.switchEMMainTab('createExam');
-        window.setEMWorkspaceView('form');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    window.deleteEMExam = async function(id) {
-        if (confirm("Are you sure you want to delete this exam permanently from cloud?")) {
-            examRegistry = examRegistry.filter(x => x.id !== id);
-            await saveExamsToCloud();
-            renderEMRegistry(false);
+        if (tabKey === 'createExam') {
+            if (btn1) btn1.classList.add('active');
+            if (content1) content1.classList.add('active');
+        } else if (tabKey === 'transferModule') {
+            if (btn2) btn2.classList.add('active');
+            if (content2) content2.classList.add('active');
             populateEMExamDropdown();
-            showCenterToast("Exam Deleted!");
+            window.loadEMStudentGroupAllocation();
         }
-    };
-
-    window.resetEMForm = function() {
-        document.getElementById('emAssessmentForm').reset();
-        document.getElementById('emEditingId').value = '';
-        document.getElementById('emExamDate').value = new Date().toISOString().split('T')[0];
-        document.getElementById('emFormTitle').innerHTML = `<i class="fa-solid fa-file-pen"></i> Create New Examination`;
-        document.getElementById('emSubmitBtn').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Save Directly to Firebase`;
-        document.getElementById('emCancelEditBtn').style.display = 'none';
-        initDefaultEMGroupRules();
     };
 
     function initDefaultEMGroupRules() {
         const container = document.getElementById('emGroupRulesContainer');
         if (!container) return;
-        container.innerHTML = '';
-        addEMGroupRuleRowData("Group A", "1", "40");
-        addEMGroupRuleRowData("Group B", "41", "Rest");
+        container.innerHTML = `
+            <div class="em-group-row">
+                <input type="text" class="g-name" value="Group A" style="width: 40%; font-weight:700;" readonly>
+                <span style="font-size:0.85rem; font-weight:700; color:#2563eb;">Merit Rank 1 to 40</span>
+            </div>
+            <div class="em-group-row">
+                <input type="text" class="g-name" value="Group B" style="width: 40%; font-weight:700;" readonly>
+                <span style="font-size:0.85rem; font-weight:700; color:#059669;">Merit Rank 41 to 81</span>
+            </div>
+        `;
     }
 
     window.addEMGroupRuleRow = function() {
@@ -1348,9 +1285,9 @@
         row.className = 'em-group-row';
         row.innerHTML = `
             <input type="text" class="g-name" value="${name}" placeholder="Group Name" style="width: 35%;">
-            <input type="text" class="g-from" value="${fromVal}" placeholder="From Serial" style="width: 25%; text-align: center;">
+            <input type="text" class="g-from" value="${fromVal}" placeholder="From" style="width: 25%; text-align: center;">
             <span style="font-size:0.8rem; font-weight:700; color:#64748b;">to</span>
-            <input type="text" class="g-to" value="${toVal}" placeholder="To Serial / Rest" style="width: 25%; text-align: center;">
+            <input type="text" class="g-to" value="${toVal}" placeholder="To" style="width: 25%; text-align: center;">
             <button type="button" class="em-btn-icon delete" style="width: 32px; height: 32px; margin-left: auto;" onclick="this.closest('.em-group-row').remove()" title="Remove"><i class="fa-solid fa-trash"></i></button>
         `;
         container.appendChild(row);
@@ -1361,25 +1298,29 @@
         const formCol = document.getElementById('emFormCol');
         const historyCol = document.getElementById('emHistoryCol');
 
-        document.getElementById('emBtnShowBoth').classList.remove('active');
-        document.getElementById('emBtnShowForm').classList.remove('active');
-        document.getElementById('emBtnShowHistory').classList.remove('active');
+        const btnBoth = document.getElementById('emBtnShowBoth');
+        const btnForm = document.getElementById('emBtnShowForm');
+        const btnHistory = document.getElementById('emBtnShowHistory');
+
+        if (btnBoth) btnBoth.classList.remove('active');
+        if (btnForm) btnForm.classList.remove('active');
+        if (btnHistory) btnHistory.classList.remove('active');
 
         if (mode === 'both') {
-            grid.style.gridTemplateColumns = '1fr 1fr';
-            formCol.style.display = 'block';
-            historyCol.style.display = 'block';
-            document.getElementById('emBtnShowBoth').classList.add('active');
+            if (grid) grid.style.gridTemplateColumns = '1fr 1fr';
+            if (formCol) formCol.style.display = 'block';
+            if (historyCol) historyCol.style.display = 'block';
+            if (btnBoth) btnBoth.classList.add('active');
         } else if (mode === 'form') {
-            grid.style.gridTemplateColumns = '1fr';
-            formCol.style.display = 'block';
-            historyCol.style.display = 'none';
-            document.getElementById('emBtnShowForm').classList.add('active');
+            if (grid) grid.style.gridTemplateColumns = '1fr';
+            if (formCol) formCol.style.display = 'block';
+            if (historyCol) historyCol.style.display = 'none';
+            if (btnForm) btnForm.classList.add('active');
         } else if (mode === 'history') {
-            grid.style.gridTemplateColumns = '1fr';
-            formCol.style.display = 'none';
-            historyCol.style.display = 'block';
-            document.getElementById('emBtnShowHistory').classList.add('active');
+            if (grid) grid.style.gridTemplateColumns = '1fr';
+            if (formCol) formCol.style.display = 'none';
+            if (historyCol) historyCol.style.display = 'block';
+            if (btnHistory) btnHistory.classList.add('active');
         }
     };
 
@@ -1433,28 +1374,31 @@
         const confirmBtn = document.getElementById('emModalConfirmBtn');
         const modalTitle = document.getElementById('emModalTitle');
 
-        modalTitle.innerText = `Edit Subject: '${oldName}'`;
-        inputField.value = oldName;
-        overlay.style.display = 'flex';
-        inputField.focus();
+        if (modalTitle) modalTitle.innerText = `Edit Subject: '${oldName}'`;
+        if (inputField) inputField.value = oldName;
+        if (overlay) overlay.style.display = 'flex';
+        if (inputField) inputField.focus();
 
-        confirmBtn.onclick = () => {
-            const newName = inputField.value.trim();
-            if (!newName) return;
-            const idx = currentActiveSubjectsList.indexOf(oldName);
-            if (idx !== -1) currentActiveSubjectsList[idx] = newName;
-            if (selectedSubjectsMap.hasOwnProperty(oldName)) {
-                selectedSubjectsMap[newName] = selectedSubjectsMap[oldName];
-                delete selectedSubjectsMap[oldName];
-            }
-            renderEMPills();
-            renderEMSelectedTable();
-            window.closeEMModal();
-        };
+        if (confirmBtn) {
+            confirmBtn.onclick = () => {
+                const newName = inputField.value.trim();
+                if (!newName) return;
+                const idx = currentActiveSubjectsList.indexOf(oldName);
+                if (idx !== -1) currentActiveSubjectsList[idx] = newName;
+                if (selectedSubjectsMap.hasOwnProperty(oldName)) {
+                    selectedSubjectsMap[newName] = selectedSubjectsMap[oldName];
+                    delete selectedSubjectsMap[oldName];
+                }
+                renderEMPills();
+                renderEMSelectedTable();
+                window.closeEMModal();
+            };
+        }
     };
 
     window.closeEMModal = function() {
-        document.getElementById('emCustomModalOverlay').style.display = 'none';
+        const overlay = document.getElementById('emCustomModalOverlay');
+        if (overlay) overlay.style.display = 'none';
     };
 
     window.deleteEMSubjectPill = function(e, sub) {
@@ -1469,6 +1413,7 @@
 
     window.addEMCustomSubject = function() {
         const inp = document.getElementById('emCustomSubInput');
+        if (!inp) return;
         const name = inp.value.trim();
         if (!name) return;
         if (currentActiveSubjectsList.includes(name)) {
@@ -1543,6 +1488,75 @@
             }
         });
     }
+
+    // ১৬. এডিট, ডুপ্লিকেট, ডিলিট ও রিসেট
+    window.editEMExam = function(id) {
+        const exam = examRegistry.find(x => x.id === id);
+        if (!exam) return;
+
+        document.getElementById('emEditingId').value = exam.id;
+        document.getElementById('emExamName').value = exam.name;
+        document.getElementById('emClassName').value = exam.class;
+        document.getElementById('emExamDate').value = exam.date;
+
+        window.onEMClassChange(exam.class);
+        selectedSubjectsMap = { ...exam.subjects };
+
+        renderEMPills();
+        renderEMSelectedTable();
+
+        document.getElementById('emFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Assessment: ${exam.name}`;
+        document.getElementById('emSubmitBtn').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Update In Firebase`;
+        document.getElementById('emCancelEditBtn').style.display = 'block';
+
+        window.switchEMMainTab('createExam');
+        window.setEMWorkspaceView('form');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.duplicateEMExam = function(id) {
+        const exam = examRegistry.find(x => x.id === id);
+        if (!exam) return;
+
+        document.getElementById('emEditingId').value = '';
+        document.getElementById('emExamName').value = exam.name + " (Copy)";
+        document.getElementById('emClassName').value = exam.class;
+        document.getElementById('emExamDate').value = new Date().toISOString().split('T')[0];
+
+        window.onEMClassChange(exam.class);
+        selectedSubjectsMap = { ...exam.subjects };
+
+        renderEMPills();
+        renderEMSelectedTable();
+
+        document.getElementById('emFormTitle').innerHTML = `<i class="fa-solid fa-copy"></i> Duplicate Assessment`;
+        document.getElementById('emSubmitBtn').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Save Duplicated to Firebase`;
+        document.getElementById('emCancelEditBtn').style.display = 'block';
+
+        window.switchEMMainTab('createExam');
+        window.setEMWorkspaceView('form');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.deleteEMExam = async function(id) {
+        if (confirm("Are you sure you want to delete this exam permanently from cloud?")) {
+            examRegistry = examRegistry.filter(x => x.id !== id);
+            await saveExamsToCloud();
+            renderEMRegistry(false);
+            populateEMExamDropdown();
+            showCenterToast("Exam Deleted!");
+        }
+    };
+
+    window.resetEMForm = function() {
+        document.getElementById('emAssessmentForm').reset();
+        document.getElementById('emEditingId').value = '';
+        document.getElementById('emExamDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('emFormTitle').innerHTML = `<i class="fa-solid fa-file-pen"></i> Create New Examination`;
+        document.getElementById('emSubmitBtn').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Save Directly to Firebase`;
+        document.getElementById('emCancelEditBtn').style.display = 'none';
+        initDefaultEMGroupRules();
+    };
 
     function init() {
         injectExamStyles();
