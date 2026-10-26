@@ -1,12 +1,13 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Live Tabulation & Result Sheet Engine (Official Print-Ready)
+   SUB-SECTION: Live Tabulation & Result Sheet Engine (Full Master Pro)
    Path: cpscl/live_tabulation_manager.js
-   Architecture: Real-time Cloud Synced | True Vector Print | Ample Signature Area
+   Architecture: Zero Omission | Auto-Hide Unexamined Subjects | Dynamic Full Marks
+   Sorting: Pure Merit Ordering (Fallback to Source Merit) | Zero Roll Column
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Live Tabulation Engine (Official Crisp Vector & Cloud Synced)...");
+    console.log("Loading CPSCL Live Tabulation Master Engine (Pure Merit & Auto-Hide Active)...");
 
     // ১. সাইডবারে Exam Manager ড্রপডাউনে "Live Tabulation" মেনু ইনজেক্ট করা
     function injectLiveTabulationSidebar() {
@@ -20,7 +21,7 @@
 
         const li = document.createElement('li');
         li.innerHTML = `
-            <a class="trust-sub-link" id="sub-link-live-tabulation" onclick="switchCPSCLExamSubTab(this, 'live-tabulation')">
+            <a class="trust-sub-link" id="sub-link-live-tabulation" onclick="window.switchCPSCLExamSubTab(this, 'live-tabulation')">
                 <span class="trust-sub-indicator"></span>
                 <span>Live Tabulation</span>
             </a>
@@ -68,7 +69,7 @@
         const style = document.createElement('style');
         style.id = 'cpscl-tabulation-scoped-styles';
         style.innerHTML = `
-            .tab-wrapper { padding: 15px 5px; font-family: 'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif; color: #17233c; }
+            .tab-wrapper { padding: 15px 5px; font-family: 'Plus Jakarta Sans', Arial, sans-serif; color: #17233c; }
             .tab-head-card { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 50px !important; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); flex-wrap: wrap; gap: 12px; }
             .tab-head-card h1 { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 10px; }
             .tab-head-card h1 i { color: #2563eb; }
@@ -89,6 +90,7 @@
             .tab-sheet-panel { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
             .tab-sheet-topbar { padding: 14px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: #fcfdfe; }
             
+            /* অফিশিয়াল হেডার ডিজাইন */
             .tab-heading-area { text-align: center; padding: 18px 20px 8px; color: #111; }
             .tab-heading-area h2 { font-size: 17px; font-weight: 800; margin: 0 0 4px; text-transform: uppercase; color: #000; letter-spacing: 0.3px; }
             .tab-heading-area h3.class-title { font-size: 14px; font-weight: 700; margin: 2px 0; color: #2563eb; }
@@ -97,19 +99,21 @@
             .tab-heading-area .tab-date-line { text-align: right; margin-top: 6px; font-size: 12px; font-weight: 700; color: #222; }
 
             .tab-table-wrap { overflow-x: auto; padding: 0 15px 15px; }
-            .tab-table { width: 100%; border-collapse: collapse; min-width: 760px; }
+            .tab-table { width: 100%; border-collapse: collapse; min-width: 650px; }
             .tab-table th { background: #fbe7d9 !important; color: #111 !important; border: 1px solid #202020 !important; font-size: 12px; font-weight: 700; text-align: center; padding: 6px 4px; }
             .tab-table th small { font-size: 10px; font-weight: 600; color: #333; }
             .tab-table td { border: 1px solid #202020 !important; padding: 5px 6px; font-size: 12px; text-align: center; color: #111; }
             .tab-table td.name-col { text-align: left; font-weight: 600; white-space: nowrap !important; padding-left: 10px; }
             .tab-table td.total-col { font-weight: 800; background: #fdfaf6; }
 
+            /* সিগনেচার ব্লক ডিজাইন */
             .tab-signature-container { display: flex; justify-content: space-around; align-items: flex-end; margin-top: 50px; padding: 0 20px 20px; page-break-inside: avoid; }
             .tab-sig-item { text-align: center; min-width: 170px; }
             .tab-sig-space { height: 50px; }
             .tab-sig-line { width: 100%; border-top: 1.5px solid #000; margin-bottom: 5px; }
             .tab-sig-label { font-size: 12px; font-weight: 700; color: #000; }
 
+            /* সিগনেচার সেটিংস মোডাল */
             .sig-modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100000; display: none; align-items: center; justify-content: center; }
             .sig-modal-box { background: #fff; border-radius: 16px; width: 90%; max-width: 460px; padding: 22px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); }
             .sig-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
@@ -154,7 +158,7 @@
             row.className = 'sig-item-row';
             row.innerHTML = `
                 <input type="text" class="sig-input-val" value="${sigText}" placeholder="Enter designation (e.g. Principal)">
-                <button type="button" class="sig-del-btn" onclick="removeSigRow(this)"><i class="fa-solid fa-trash"></i></button>
+                <button type="button" class="sig-del-btn" onclick="window.removeSigRow(this)"><i class="fa-solid fa-trash"></i></button>
             `;
             container.appendChild(row);
         });
@@ -167,7 +171,7 @@
         row.className = 'sig-item-row';
         row.innerHTML = `
             <input type="text" class="sig-input-val" value="" placeholder="New designation (e.g. Class Teacher)">
-            <button type="button" class="sig-del-btn" onclick="removeSigRow(this)"><i class="fa-solid fa-trash"></i></button>
+            <button type="button" class="sig-del-btn" onclick="window.removeSigRow(this)"><i class="fa-solid fa-trash"></i></button>
         `;
         container.appendChild(row);
     };
@@ -185,7 +189,7 @@
         });
 
         localStorage.setItem('cpscl_tab_signatures', JSON.stringify(updated.length > 0 ? updated : DEFAULT_SIGNATURES));
-        closeSignatureConfigModal();
+        window.closeSignatureConfigModal();
         renderOnScreenSignatureBlock();
         if (window.showToast) window.showToast("সিগনেচার তালিকা সফলভাবে আপডেট হয়েছে!", "success");
     };
@@ -399,35 +403,20 @@
         window.loadLiveTabulationData();
     };
 
-    // ৮. গ্রুপ নির্ধারণের হেল্পার
+    // ৮. গ্রুপ নির্ধারণের হেল্পার (আগে ওভাররাইড চেক করবে)
     function determineStudentGroup(st, sl, exam, overrides) {
         const studentId = String(st.std_id || st.id || '').trim();
-        const studentRoll = st.roll_no || st.roll || '';
-        const effectiveNum = (studentRoll && !isNaN(parseInt(studentRoll))) ? parseInt(studentRoll) : sl;
 
-        const groupsList = (exam && exam.groups && exam.groups.length > 0) ? exam.groups : [
-            { name: "Group A", from: 1, to: 40 },
-            { name: "Group B", from: 41, to: "Rest" }
-        ];
-
-        let assigned = groupsList[0].name;
-        for (let g of groupsList) {
-            const fromNum = parseInt(g.from) || 1;
-            const toNum = (g.to && String(g.to).toLowerCase() === 'rest') ? 999999 : (parseInt(g.to) || 999999);
-            if (effectiveNum >= fromNum && effectiveNum <= toNum) {
-                assigned = g.name;
-                break;
-            }
-        }
-
+        // ১. ক্লাউডে মেধা অনুযায়ী নির্ধারিত গ্রুপ থাকলে সবার আগে সেটিই কার্যকর হবে
         if (overrides && overrides[exam.id] && overrides[exam.id][studentId]) {
-            assigned = overrides[exam.id][studentId];
+            return overrides[exam.id][studentId];
         }
 
-        return assigned || st.group || "Group A";
+        // ২. ফলব্যাক নিয়ম
+        return (sl <= 40) ? "Group A" : "Group B";
     }
 
-    // ৯. লাইভ ট্যাবুলেশন ডাটা লোড ও গণনা ইঞ্জিন
+    // ৯. লাইভ ট্যাবুলেশন ডাটা লোড ও গণনা ইঞ্জিন (১০০% মেধাভিত্তিক ও অটো-হাইড)
     window.loadLiveTabulationData = async function() {
         const examSelect = document.getElementById('tabSelectExam');
         const grpSelect = document.getElementById('tabSelectGroup');
@@ -448,7 +437,7 @@
         document.getElementById('tabHeadingExam').innerText = exam.name || '';
         document.getElementById('tabHeadingDate').innerText = exam.date || new Date().toISOString().split('T')[0];
 
-        // গ্রুপ হেডার লাইন ফরম্যাটিং
+        // গ্রুপ হেডার লাইন
         let groupDisplayLabel = "Group: All";
         if (!isAllGroup) {
             groupDisplayLabel = `Group: ${selectedGroup.replace(/group\s*/i, '')}`;
@@ -475,6 +464,16 @@
         let overrides = {};
         try { overrides = JSON.parse(localStorage.getItem('cpscl_exam_group_overrides') || '{}'); } catch(e){}
 
+        if (window.getDatabase && window.ref && window.get) {
+            try {
+                const snapOv = await window.get(window.ref(window.getDatabase(), 'cpscl_exam_group_overrides'));
+                if (snapOv.exists()) {
+                    overrides = snapOv.val() || overrides;
+                    localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(overrides));
+                }
+            } catch(e){}
+        }
+
         // ক্লাস অনুযায়ী ফিল্টার
         let targetStudents = allStudents.filter(s => {
             const cName = String(s.class_name || s.class || '').trim().toLowerCase();
@@ -482,36 +481,40 @@
             return cName === examC || cName.includes(examC) || examC.includes(cName);
         });
 
-        // রোল বা আইডি অনুযায়ী সর্ট
-        targetStudents.sort((a, b) => {
-            const rA = parseInt(a.roll_no || a.roll) || 0;
-            const rB = parseInt(b.roll_no || b.roll) || 0;
-            if (rA && rB) return rA - rB;
-            return String(a.std_id || a.id).localeCompare(String(b.std_id || b.id));
-        });
+        // মেধা সর্ট অর্ডার (যদি এক্সাম ম্যানেজারে সংরক্ষিত থাকে)
+        const savedMeritOrder = (overrides && overrides[exam.id + '_merit_order']) ? overrides[exam.id + '_merit_order'] : [];
 
-        // গ্রুপ নির্ধারণ
+        if (savedMeritOrder && savedMeritOrder.length > 0) {
+            targetStudents.sort((a, b) => {
+                const idA = String(a.std_id || a.id || '').trim();
+                const idB = String(b.std_id || b.id || '').trim();
+                let idxA = savedMeritOrder.indexOf(idA);
+                let idxB = savedMeritOrder.indexOf(idB);
+                if (idxA === -1) idxA = 99999;
+                if (idxB === -1) idxB = 99999;
+                return idxA - idxB;
+            });
+        }
+
+        // গ্রুপ অ্যাসাইন করা
         targetStudents.forEach((st, idx) => {
             st.computedGroup = determineStudentGroup(st, idx + 1, exam, overrides);
         });
 
+        // নির্বাচিত গ্রুপ অনুযায়ী ফিল্টার
         if (!isAllGroup) {
             targetStudents = targetStudents.filter(s => s.computedGroup === selectedGroup);
         }
 
-        const colSpanCount = 3 + (isAllGroup ? 1 : 0) + subjectKeys.length + 1;
-
         if (targetStudents.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="${colSpanCount}" style="padding:35px; color:#94a3b8; text-align:center;">কোনো শিক্ষার্থী পাওয়া যায়নি (No students found for this class/group).</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="padding:35px; color:#94a3b8; text-align:center;">কোনো শিক্ষার্থী পাওয়া যায়নি (No students found for this class/group).</td></tr>`;
             return;
         }
 
         // বিষয়ভিত্তিক নম্বর সংগ্রহ করা
         const marksBySubject = {};
-        let totalFullMarks = 0;
 
         for (let sub of subjectKeys) {
-            totalFullMarks += (parseInt(subjects[sub]) || 0);
             let subMarks = JSON.parse(localStorage.getItem(`cpscl_marks_${examId}_${sub}`) || '{}');
 
             if (window.getDatabase && window.ref && window.get) {
@@ -525,26 +528,7 @@
             marksBySubject[sub] = subMarks;
         }
 
-        // টেবিল হেডার তৈরি
-        let thHtml = `<tr>
-            <th style="width: 5%;">Merit</th>
-            <th style="width: 10%;">Student ID</th>
-            <th style="text-align: left; padding-left: 8px;">Student Name</th>
-        `;
-
-        if (isAllGroup) {
-            thHtml += `<th style="width: 8%;">Group</th>`;
-        }
-
-        subjectKeys.forEach(sub => {
-            const fMark = subjects[sub] || 100;
-            thHtml += `<th style="min-width: 48px;">${sub}<br><small>(${fMark})</small></th>`;
-        });
-
-        thHtml += `<th style="width: 8%;">Total<br><small>(${totalFullMarks})</small></th></tr>`;
-        thead.innerHTML = thHtml;
-
-        // শিক্ষার্থীদের প্রাপ্ত নম্বর গণনা
+        // শিক্ষার্থীদের নম্বর হিসাব করা
         const computedRows = targetStudents.map(st => {
             const stId = String(st.std_id || st.id || '').trim();
             const stName = st.student_name || st.name || 'Unnamed';
@@ -583,14 +567,61 @@
             };
         });
 
-        const anyEntryDone = computedRows.some(r => r.hasAnyMark);
-        if (!anyEntryDone) {
-            tbody.innerHTML = `<tr><td colspan="${colSpanCount}" style="padding:35px; color:#64748b; text-align:center;">এই পরীক্ষার জন্য কোনো নম্বর এখনো এন্ট্রি করা হয়নি (No marks entered yet).</td></tr>`;
-            return;
+        // 🌟 স্মার্ট অটো-হাইড: যে যে বিষয়ের পরীক্ষা হয়েছে শুধু সেই বিষয়গুলো দৃশ্যমান হবে
+        let activeSubjectsForView = [];
+        let totalFullMarks = 0;
+
+        const anyMarkEnteredInView = computedRows.some(r => r.hasAnyMark);
+
+        if (anyMarkEnteredInView) {
+            // যদি নম্বর এন্ট্রি শুরু হয়ে থাকে, তবে যে বিষয়ে অন্তত ১ জন পরীক্ষা দিয়েছে কেবল সেটাই থাকবে
+            activeSubjectsForView = subjectKeys.filter(sub => {
+                return computedRows.some(r => r.subjectScores[sub] !== '-');
+            });
+        } else {
+            // যদি এখনো কারও নম্বর এন্ট্রি না হয়ে থাকে (ব্ল্যাঙ্ক ভিউ)
+            activeSubjectsForView = [...subjectKeys];
         }
 
-        // মেধা অনুযায়ী সাজানো
-        computedRows.sort((a, b) => b.total - a.total);
+        activeSubjectsForView.forEach(sub => {
+            totalFullMarks += (parseInt(subjects[sub]) || 30);
+        });
+
+        // 🌟 মেধা সর্টিং লজিক:
+        // ১. যদি মোট নম্বর থাকে, তবে বেশি নম্বর পাওয়া শিক্ষার্থী উপরে থাকবে (Merit Order)
+        // ২. যদি সবার নম্বর ০ হয় (পরীক্ষার আগে), তবে পূর্ববর্তী মেধা ক্রমেই ১, ২, ৩ ... সাজানো থাকবে (মেহরাব ১ নম্বরে)
+        computedRows.sort((a, b) => {
+            if (b.total !== a.total) {
+                return b.total - a.total;
+            }
+            if (savedMeritOrder && savedMeritOrder.length > 0) {
+                let idxA = savedMeritOrder.indexOf(a.id);
+                let idxB = savedMeritOrder.indexOf(b.id);
+                if (idxA === -1) idxA = 99999;
+                if (idxB === -1) idxB = 99999;
+                return idxA - idxB;
+            }
+            return a.id.localeCompare(b.id);
+        });
+
+        // টেবিল হেডার তৈরি (কোনো রোল কলাম নেই, একক গ্রুপে গ্রুপ কলামও থাকবে না)
+        let thHtml = `<tr>
+            <th style="width: 6%;">Merit</th>
+            <th style="width: 14%;">Student ID</th>
+            <th style="text-align: left; padding-left: 10px;">Student Name</th>
+        `;
+
+        if (isAllGroup) {
+            thHtml += `<th style="width: 9%;">Group</th>`;
+        }
+
+        activeSubjectsForView.forEach(sub => {
+            const fMark = subjects[sub] || 30;
+            thHtml += `<th style="min-width: 50px;">${sub}<br><small>(${fMark})</small></th>`;
+        });
+
+        thHtml += `<th style="width: 10%;">Total<br><small>(${totalFullMarks})</small></th></tr>`;
+        thead.innerHTML = thHtml;
 
         // টেবিল বডিতে রো রেন্ডার করা
         tbody.innerHTML = '';
@@ -607,7 +638,7 @@
                 tdHtml += `<td>${row.group}</td>`;
             }
 
-            subjectKeys.forEach(sub => {
+            activeSubjectsForView.forEach(sub => {
                 const score = row.subjectScores[sub];
                 tdHtml += `<td>${score}</td>`;
             });
@@ -620,7 +651,7 @@
         renderOnScreenSignatureBlock();
     };
 
-    // ১০. আসল ভেক্টর অফিশিয়াল প্রিন্ট ইঞ্জিন (ধারালো লেখা ও সিগনেচার স্পেস)
+    // ১০. আসল ভেক্টর অফিশিয়াল প্রিন্ট ইঞ্জিন (কোনো রোল নেই, ধারালো লেখা)
     window.printTabulationSheet = function() {
         const printArea = document.getElementById('tabPrintableArea');
         if (!printArea) {
@@ -631,7 +662,6 @@
         const oldFrame = document.getElementById('cpscl-print-iframe');
         if (oldFrame) oldFrame.remove();
 
-        // পূর্ণাঙ্গ A4 সাইজের অফ-স্ক্রিন ফ্রেম (যাতে লেখা বিন্দুমাত্র ঝাপসা না হয়)
         const iframe = document.createElement('iframe');
         iframe.id = 'cpscl-print-iframe';
         iframe.style.position = 'fixed';
@@ -744,8 +774,6 @@
                     tr {
                         page-break-inside: avoid !important;
                     }
-                    
-                    /* সিগনেচার ব্লক: সই করার জন্য পর্যাপ্ত উঁচু ফাঁকা জায়গা */
                     .tab-signature-container {
                         display: flex;
                         justify-content: space-around;
@@ -759,7 +787,7 @@
                         min-width: 160px;
                     }
                     .tab-sig-space {
-                        height: 55px; /* কলম দিয়ে সই ও সিল মারার পর্যাপ্ত জায়গা */
+                        height: 55px;
                     }
                     .tab-sig-line {
                         width: 100%;
@@ -780,7 +808,6 @@
         `);
         doc.close();
 
-        // পূর্ণ রেন্ডারিং নিশ্চিত করে ক্রিস্টাল ক্লিয়ার প্রিন্ট কল
         setTimeout(() => {
             iframe.contentWindow.focus();
             iframe.contentWindow.print();
