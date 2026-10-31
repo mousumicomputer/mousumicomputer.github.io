@@ -3,11 +3,11 @@
    SUB-SECTION: Weekly Master Tabulation Suite (100% Pure English Corporate)
    Path: cpscl/weekly_tabulation_manager.js
    Architecture: Standalone Modular Engine | A4 Landscape Vector Print | Read-Only
-   Features: Multi-Exam Aggregation | Dynamic 100 Conversion | Latest Group Tracking
+   Features: Multi-Exam Aggregation | Dynamic 100 Conversion | Progressive Group Transfer
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Weekly Master Tabulation Suite (Standalone & 100% English)...");
+    console.log("Loading CPSCL Weekly Master Tabulation Suite (Cumulative Engine Active)...");
 
     // 1. Inject Sidebar Sub-menu under Exam Manager
     function injectWeeklySidebar() {
@@ -80,6 +80,9 @@
             .wm-checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 0.86rem; font-weight: 700; color: #334155; cursor: pointer; user-select: none; }
             .wm-checkbox-item input { width: 17px; height: 17px; accent-color: #2563eb; cursor: pointer; }
 
+            .wm-transfer-box { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1.5px solid #bfdbfe; border-radius: 14px; padding: 14px 18px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+            .wm-transfer-title { font-size: 0.88rem; font-weight: 800; color: #1e3a8a; display: flex; align-items: center; gap: 6px; }
+
             .wm-btn-pill { height: 40px; padding: 0 20px; border-radius: 50px !important; font-size: 13px; font-weight: 700; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; text-decoration: none; }
             .wm-btn-primary { background: #2563eb; color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
             .wm-btn-primary:hover { background: #1d4ed8; }
@@ -144,7 +147,7 @@
                         <i class="fa-solid fa-list-check"></i> Select Assessments for Weekly Grand Tabulation
                     </div>
                     <div style="font-size: 12px; color: #64748b; margin-bottom: 10px;">
-                        Check the assessments conducted this week to combine into the master sheet:
+                        Check all assessments conducted to combine into the progressive master sheet:
                     </div>
 
                     <div class="wm-exam-checkboxes-grid" id="wmExamsCheckboxContainer">
@@ -155,6 +158,26 @@
                         <button type="button" class="wm-btn-pill wm-btn-primary" onclick="window.generateWeeklyMasterTabulation()">
                             <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Master Tabulation
                         </button>
+                    </div>
+
+                    <!-- Progressive Group Transfer Box -->
+                    <div class="wm-transfer-box">
+                        <div>
+                            <div class="wm-transfer-title">
+                                <i class="fa-solid fa-bolt"></i> Apply Cumulative Merit to Target Exam
+                            </div>
+                            <span style="font-size: 11.5px; color: #1e3a8a; font-weight: 600;">
+                                Automatically allocate Rank 1-40 to Group A and 41-Rest to Group B for the selected target exam:
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <select id="wmTargetExamSelect" class="em-control" style="width: 240px; height: 38px; font-size: 0.85rem; background:#fff; border:1px solid #cbd5e1; border-radius:50px; padding:0 14px; font-weight:700;">
+                                <option value="">-- Choose Target Exam --</option>
+                            </select>
+                            <button type="button" class="wm-btn-pill wm-btn-success" style="height: 38px;" onclick="window.applyCumulativeMeritToTargetExam()">
+                                <i class="fa-solid fa-share-from-square"></i> Apply Grouping
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -227,11 +250,13 @@
         `;
     }
 
-    // 5. Load Registered Exams for Checkboxes
+    // 5. Load Registered Exams for Checkboxes and Target Dropdown
     let allWeeklyExams = [];
+    let lastGeneratedWeeklyMeritList = [];
 
     async function loadWeeklyAvailableExams() {
         const container = document.getElementById('wmExamsCheckboxContainer');
+        const targetSelect = document.getElementById('wmTargetExamSelect');
         if (!container) return;
 
         let examList = [];
@@ -257,12 +282,13 @@
             return;
         }
 
-        // Sort chronologically by date if available
+        // Sort chronologically by date
         allWeeklyExams.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
 
+        // Populate checkboxes
         let html = '';
         allWeeklyExams.forEach((ex, idx) => {
-            const isChecked = idx >= Math.max(0, allWeeklyExams.length - 4); // Default select last 4 tests
+            const isChecked = idx >= Math.max(0, allWeeklyExams.length - 4);
             html += `
                 <label class="wm-checkbox-item">
                     <input type="checkbox" class="wm-exam-chk" value="${ex.id}" ${isChecked ? 'checked' : ''}>
@@ -271,9 +297,22 @@
             `;
         });
         container.innerHTML = html;
+
+        // Populate Target Exam Dropdown
+        if (targetSelect) {
+            targetSelect.innerHTML = '<option value="">-- Choose Target Exam --</option>';
+            allWeeklyExams.forEach(ex => {
+                targetSelect.innerHTML += `<option value="${ex.id}">${ex.name} (${ex.class})</option>`;
+            });
+
+            // Default select the latest exam
+            if (allWeeklyExams.length > 0) {
+                targetSelect.value = allWeeklyExams[allWeeklyExams.length - 1].id;
+            }
+        }
     }
 
-    // 6. Master Generation Engine (100% Pure Dynamic, Math Verified & Safe)
+    // 6. Master Generation Engine (Multi-Exam, Converted 100, Math Safe)
     window.generateWeeklyMasterTabulation = async function () {
         const checkboxes = document.querySelectorAll('.wm-exam-chk:checked');
         const thead = document.getElementById('wmMasterThead');
@@ -287,10 +326,8 @@
         const selectedExamIds = Array.from(checkboxes).map(c => c.value);
         const selectedExams = allWeeklyExams.filter(x => selectedExamIds.includes(x.id));
 
-        // Sort selected exams chronologically
         selectedExams.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
 
-        // Update Date Range
         const firstDate = selectedExams[0].date || '';
         const lastDate = selectedExams[selectedExams.length - 1].date || '';
         document.getElementById('wmDisplayDateRange').innerText = `Assessment Period: ${firstDate} to ${lastDate}`;
@@ -324,7 +361,7 @@
             return;
         }
 
-        // 2. Fetch Group Overrides & Merit Order
+        // 2. Fetch Group Overrides
         let overrides = {};
         if (window.getDatabase && window.ref && window.get) {
             try {
@@ -333,11 +370,9 @@
             } catch(e){}
         }
 
-        // Identify the latest exam to read current group
         const latestExam = selectedExams[selectedExams.length - 1];
 
         // 3. Fetch Marks for All Selected Exams and All Subjects
-        // Structure: examMarksStore[examId][subName][studentId]
         const examMarksStore = {};
         for (let ex of selectedExams) {
             examMarksStore[ex.id] = {};
@@ -355,12 +390,10 @@
         }
 
         // 4. Calculate Exam-Wise & Grand Cumulative Scores
-        let cumulativeMaxScore = 0; // e.g. 60 + 60 + 60 + 60 = 240
+        let cumulativeMaxScore = 0;
 
-        // Compute active subject columns for each exam (only include subjects that were actually taken)
         const examMetaList = selectedExams.map(ex => {
             const subs = Object.keys(ex.subjects || {});
-            // Filter to subjects where at least one student has a mark
             let activeSubs = subs.filter(sub => {
                 const sMap = examMarksStore[ex.id][sub] || {};
                 return Object.keys(sMap).length > 0;
@@ -368,8 +401,7 @@
 
             if (activeSubs.length === 0) activeSubs = subs;
 
-            // Attempted full mark: each student took e.g. 2 subjects (60)
-            const examFullMark = 60; // Standard shift exam full mark
+            const examFullMark = 60; // Standard 2-subject shift exam full mark
             cumulativeMaxScore += examFullMark;
 
             return {
@@ -384,7 +416,6 @@
             const sId = String(st.std_id || st.id || '').trim();
             const sName = st.student_name || st.name || 'Unnamed';
 
-            // Determine latest group (from latest selected exam)
             let currentGroup = "Group A";
             if (overrides[latestExam.id] && overrides[latestExam.id][sId]) {
                 currentGroup = overrides[latestExam.id][sId];
@@ -426,7 +457,6 @@
                 grandTotal += testTotal;
             });
 
-            // Convert to 100
             const converted100 = cumulativeMaxScore > 0 ? ((grandTotal / cumulativeMaxScore) * 100) : 0;
 
             return {
@@ -439,11 +469,14 @@
             };
         });
 
-        // 6. Sort by Final Merit: Highest Converted / Grand Total First
+        // 6. Sort by Final Cumulative Merit: Highest Grand Total First
         computedStudents.sort((a, b) => {
             if (b.grandTotal !== a.grandTotal) return b.grandTotal - a.grandTotal;
             return a.id.localeCompare(b.id);
         });
+
+        // Cache for Target Exam Group Transfer
+        lastGeneratedWeeklyMeritList = computedStudents;
 
         // 7. Build Two-Tier Table Header
         let tr1 = `<tr>
@@ -459,7 +492,7 @@
 
         examMetaList.forEach((meta, idx) => {
             const colClass = examColorClasses[idx % examColorClasses.length];
-            const spanCount = meta.activeSubs.length + 1; // subjects + total
+            const spanCount = meta.activeSubs.length + 1;
             const exDate = meta.exam.date ? ` (${meta.exam.date.substring(5)})` : '';
 
             tr1 += `<th colspan="${spanCount}" class="${colClass}">${meta.exam.name.toUpperCase()}${exDate}</th>`;
@@ -472,8 +505,8 @@
 
         tr1 += `
             <th rowspan="2" class="th-grand" style="width: 5%;">Grand Total<br><small>(${cumulativeMaxScore})</small></th>
-            <th rowspan="2" class="th-conv" style="width: 6.5%;">Converted<br><small>(100)</small></th>
-            <th rowspan="2" class="th-conv" style="width: 4.5%;">Final<br>Rank</th>
+            <th rowspan="2" class="th-conv" style="width: 6%;">Converted<br><small>(100)</small></th>
+            <th rowspan="2" class="th-conv" style="width: 4%;">Final<br>Rank</th>
         </tr>`;
 
         tr2 += `</tr>`;
@@ -524,7 +557,78 @@
         return "th";
     }
 
-    // 7. Isolated Vector Print Engine (A4 Landscape Print-Ready)
+    // 7. 🌟 Apply Cumulative Merit to Target Exam Engine
+    window.applyCumulativeMeritToTargetExam = async function () {
+        const targetSelect = document.getElementById('wmTargetExamSelect');
+        if (!targetSelect || !targetSelect.value) {
+            alert("Please select a target examination to apply the cumulative merit grouping!");
+            return;
+        }
+
+        const targetExamId = targetSelect.value;
+        const targetExam = allWeeklyExams.find(x => x.id === targetExamId);
+        if (!targetExam) return;
+
+        if (!lastGeneratedWeeklyMeritList || lastGeneratedWeeklyMeritList.length === 0) {
+            alert("Please click 'Generate Master Tabulation' first before applying the grouping!");
+            return;
+        }
+
+        const confirmMsg = `Are you sure?\n\nApply this Cumulative Merit Ranking to '${targetExam.name}'?\n• Merit 1 to 40 ➔ Group A\n• Merit 41 to ${lastGeneratedWeeklyMeritList.length} ➔ Group B\n\nThis will lock the groups for ${targetExam.name}.`;
+        if (!confirm(confirmMsg)) return;
+
+        let manualGroupOverrides = {};
+        try {
+            const local = localStorage.getItem('cpscl_exam_group_overrides');
+            if (local) manualGroupOverrides = JSON.parse(local);
+        } catch(e){}
+
+        if (window.getDatabase && window.ref && window.get) {
+            try {
+                const snapOv = await window.get(window.ref(window.getDatabase(), 'cpscl_exam_group_overrides'));
+                if (snapOv.exists()) manualGroupOverrides = snapOv.val() || manualGroupOverrides;
+            } catch(e){}
+        }
+
+        if (!manualGroupOverrides[targetExamId]) {
+            manualGroupOverrides[targetExamId] = {};
+        }
+
+        const meritOrderedIds = [];
+        lastGeneratedWeeklyMeritList.forEach((st, idx) => {
+            const sId = st.id;
+            const rank = idx + 1;
+            const assignedGroup = (rank <= 40) ? "Group A" : "Group B";
+            manualGroupOverrides[targetExamId][sId] = assignedGroup;
+            meritOrderedIds.push(sId);
+        });
+
+        manualGroupOverrides[targetExamId + '_merit_order'] = meritOrderedIds;
+
+        // Save to LocalStorage
+        localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(manualGroupOverrides));
+
+        // Save to Firebase Cloud
+        let isSaved = false;
+        if (typeof window.getDatabase === 'function' && typeof window.ref === 'function' && typeof window.set === 'function') {
+            try {
+                const mDb = window.getDatabase();
+                await window.set(window.ref(mDb, 'cpscl_exam_group_overrides'), manualGroupOverrides);
+                isSaved = true;
+            } catch(e) {}
+        }
+
+        if (!isSaved && typeof window.writeToFirebase === 'function') {
+            try {
+                await window.writeToFirebase('cpscl_exam_group_overrides', manualGroupOverrides);
+                isSaved = true;
+            } catch(e) {}
+        }
+
+        alert(`Success! Cumulative Merit Grouping applied to '${targetExam.name}'.\nGroup A (1-40) and Group B (41-${lastGeneratedWeeklyMeritList.length}) are now successfully locked.`);
+    };
+
+    // 8. Isolated Vector Print Engine (A4 Landscape Print-Ready)
     window.printWeeklyMasterSheet = function () {
         const printArea = document.getElementById('wmPrintableContainer');
         if (!printArea) {
@@ -540,7 +644,7 @@
         iframe.style.position = 'fixed';
         iframe.style.left = '-9999px';
         iframe.style.top = '-9999px';
-        iframe.style.width = '297mm'; // A4 Landscape
+        iframe.style.width = '297mm';
         iframe.style.height = '210mm';
         iframe.style.border = 'none';
         document.body.appendChild(iframe);
@@ -635,7 +739,7 @@
         }, 500);
     };
 
-    // 8. Excel Export
+    // 9. Excel Export
     window.exportWeeklyExcel = function () {
         const table = document.getElementById('wmMasterTable');
         if (!table) return;
@@ -659,7 +763,7 @@
         }
     };
 
-    // 9. Initialize
+    // 10. Initialize
     function init() {
         injectWeeklyStyles();
         injectWeeklySidebar();
