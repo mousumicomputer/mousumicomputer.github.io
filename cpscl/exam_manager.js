@@ -1,14 +1,28 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v12.0 Final Bulletproof)
+   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v13.0 Bulletproof Frozen Snapshot)
    Path: cpscl/exam_manager.js
-   Architecture: Direct Display Tab Switch | Official Merit Tie-Breaking | Blank Sheet Print
+   Architecture: Permanent Snapshot Freezing | Official Tie-Breaking | Zero Shuffling
+   Safety: Restores Yesterday's Exact Paper Order for MT-07 | Future-Proof MT-08 Lock
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Suite v12.0 (Bulletproof Tab Switching Active)...");
+    console.log("Loading CPSCL Suite v13.0 (Permanent Snapshot Freezing Active)...");
 
-    // ১. স্টাইল ইনজেকশন
+    // গতকালকের প্রিন্ট হওয়া সিট প্ল্যানের হুবহু ৮১ জনের সংরক্ষিত তালিকা (Frozen Official Order for Model Test-7)
+    const FROZEN_MT07_ORDER = [
+        "802526", "100119", "101319", "300721", "703925", "703525", "801126", "500123", "704025", "703325",
+        "200220", "702125", "703625", "801626", "400322", "704725", "703825", "700525", "700625", "704625",
+        "401222", "501623", "500623", "805726", "805826", "200620", "603024", "500323", "301221", "702225",
+        "705325", "805626", "604724", "102119", "100619", "803826", "100419", "103119", "803426", "702025",
+        // Group B starts here (#41 to #81)
+        "700425", "102819", "602724", "703125", "600124", "700725", "101219", "704825", "500223", "602124",
+        "602324", "100219", "301821", "603924", "801026", "801226", "805426", "703725", "804526", "701825",
+        "400422", "301321", "400522", "200120", "101019", "800926", "802726", "501723", "800826", "600424",
+        "601224", "804826", "100919", "805326", "804126", "700225", "800326", "805526", "601524", "700325", "600724"
+    ];
+
+    // ১. সম্পূর্ণ ও নিখুঁত পিল (Pill) স্টাইল ইনজেকশন
     function injectExamStyles() {
         const oldStyle = document.getElementById('cpscl-exam-manager-style');
         if (oldStyle) oldStyle.remove();
@@ -210,6 +224,8 @@
     try {
         const cached = localStorage.getItem('cpscl_exams_registry');
         if (cached) examRegistry = JSON.parse(cached);
+        const cachedOv = localStorage.getItem('cpscl_exam_group_overrides');
+        if (cachedOv) manualGroupOverrides = JSON.parse(cachedOv);
     } catch(e) {}
 
     function getActiveFirebaseDb() {
@@ -237,7 +253,7 @@
         return dynamicClassList;
     }
 
-    // ৫. 🌟 বুলেটপ্রুফ ট্যাব সুইচিং ফাংশন (Direct Inline Display Override)
+    // ৫. বুলেটপ্রুফ ট্যাব সুইচিং ফাংশন (Direct Inline Display Override)
     window.switchEMMainTab = function(tabKey) {
         const btn1 = document.getElementById('emTabBtn1');
         const btn2 = document.getElementById('emTabBtn2');
@@ -322,7 +338,7 @@
 
                                     <div class="em-form-group">
                                         <label>Exam Name / Title *</label>
-                                        <input type="text" id="emExamName" class="em-control" placeholder="e.g., Model Test - 03" required>
+                                        <input type="text" id="emExamName" class="em-control" placeholder="e.g., Model Test - 08" required>
                                     </div>
 
                                     <div class="em-form-group">
@@ -425,7 +441,7 @@
                                     <i class="fa-solid fa-bolt"></i> Auto-Assign Groups from Previous Exam Merit
                                 </div>
                                 <span style="font-size: 11.5px; color: #1e3a8a; font-weight: 600;">
-                                    নির্বাচিত পূর্ববর্তী পরীক্ষার মেধা তালিকা অনুযায়ী ১-৪০ জন Group A এবং ৪১-৮১ জন Group B হিসেবে ক্রমানুসারে সাজানো হবে।
+                                    পূর্ববর্তী পরীক্ষার মেধা তালিকা স্ন্যাপশট অনুযায়ী ১-৪০ জন Group A এবং ৪১-৮১ জন Group B হিসেবে স্থায়ীভাবে লক হবে।
                                 </span>
                             </div>
                             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
@@ -526,7 +542,6 @@
             </div>
         `;
 
-        // সরাসরি বাটন দুটিতে ডাইরেক্ট ক্লিক ইভেন্ট বাইন্ড করা হলো (ক্লিক কখনোই মিস হবে না)
         const tabBtn1 = document.getElementById('emTabBtn1');
         const tabBtn2 = document.getElementById('emTabBtn2');
         if (tabBtn1) tabBtn1.onclick = function() { window.switchEMMainTab('createExam'); };
@@ -541,7 +556,7 @@
         syncCloudExamsDirectly();
     }
 
-    // ৭. ক্লাউডে সরাসরি সংরক্ষণ
+    // ৭. ক্লাউডে সরাসরি সংরক্ষণ (১০০% নিরাপদ: কোনো নম্বর ডিলেট হবে না)
     async function saveExamsToCloud() {
         let isSaved = false;
         const cleanRegistry = JSON.parse(JSON.stringify(examRegistry));
@@ -579,7 +594,7 @@
         return true;
     }
 
-    // ৮. ক্লাউড থেকে ডাটা সিঙ্ক
+    // ৮. ক্লাউড থেকে ডাটা সিঙ্ক (এবং Model Test-7 এর জন্য গতকালকের কাগজ অর্ডার স্থায়ী লক)
     async function syncCloudExamsDirectly() {
         let cloudData = null;
 
@@ -614,6 +629,18 @@
         if (cloudData) {
             examRegistry = Array.isArray(cloudData) ? cloudData : Object.values(cloudData);
             localStorage.setItem('cpscl_exams_registry', JSON.stringify(examRegistry));
+
+            // 🌟 অটো-হিল: Model Test-7 এর আইডি শনাক্ত করে গতকালের পেপারের হুবহু অর্ডার লক করা
+            const mt07Exam = examRegistry.find(x => x.name && (x.name.includes("Model Test-7") || x.name.includes("Model Test-07") || x.name.includes("Model Test 7")));
+            if (mt07Exam) {
+                if (!manualGroupOverrides[mt07Exam.id]) manualGroupOverrides[mt07Exam.id] = {};
+                FROZEN_MT07_ORDER.forEach((sId, idx) => {
+                    manualGroupOverrides[mt07Exam.id][sId] = (idx < 40) ? "Group A" : "Group B";
+                });
+                manualGroupOverrides[mt07Exam.id + '_merit_order'] = [...FROZEN_MT07_ORDER];
+                saveExamsToCloud();
+            }
+
             renderEMRegistry(false);
             populateEMExamDropdown();
         }
@@ -683,20 +710,10 @@
             return;
         }
 
-        let groupsArr = [];
-        document.querySelectorAll('.em-group-row').forEach(row => {
-            const gName = row.querySelector('.g-name').value.trim() || "Group";
-            const gFrom = row.querySelector('.g-from') ? row.querySelector('.g-from').value.trim() : "1";
-            const gTo = row.querySelector('.g-to') ? row.querySelector('.g-to').value.trim() : "Rest";
-            groupsArr.push({ name: gName, from: gFrom, to: gTo });
-        });
-
-        if (groupsArr.length === 0) {
-            groupsArr = [
-                { name: "Group A", from: "1", to: "40" },
-                { name: "Group B", from: "41", to: "Rest" }
-            ];
-        }
+        let groupsArr = [
+            { name: "Group A", from: "1", to: "40" },
+            { name: "Group B", from: "41", to: "Rest" }
+        ];
 
         let totalMarks = 0;
         Object.values(selectedSubjectsMap).forEach(m => totalMarks += m);
@@ -754,6 +771,10 @@
         }
 
         examRegistry.forEach(ex => {
+            const groupDesc = (ex.groups && ex.groups.length > 0)
+                ? ex.groups.map(g => `${g.name} (${g.from}-${g.to})`).join(', ')
+                : 'Default Groups';
+
             const isLocked = (ex.status === 'Locked' || ex.status === 'Closed');
             const statusBadge = isLocked 
                 ? `<span class="em-status-badge" style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5;">Locked (Hidden)</span>`
@@ -797,7 +818,7 @@
         }
     };
 
-    // ১৩. পূর্ববর্তী পরীক্ষার মেধা অনুযায়ী স্বয়ংক্রিয় গ্রুপ ইঞ্জিন (অফিশিয়াল টাই-ব্রেকিং সহ)
+    // ১৩. 🌟 পার্মানেন্ট স্ন্যাপশট গ্রুপিং ইঞ্জিন (ভবিষ্যতের সকল পরীক্ষার জন্য শাফলিং বন্ধ)
     window.autoAssignGroupsFromPreviousMerit = async function() {
         const targetSelect = document.getElementById('emTransferExamSelect');
         const sourceSelect = document.getElementById('emSourceMeritExamSelect');
@@ -808,12 +829,12 @@
         const sourceExamId = sourceSelect.value;
 
         if (!targetExamId) {
-            alert("অনুগ্রহ করে যে পরীক্ষার জন্য গ্রুপ করবেন (Target Exam) তা নির্বাচন করুন!");
+            alert("Please select the Target Exam to assign groups!");
             return;
         }
 
         if (!sourceExamId) {
-            alert("অনুগ্রহ করে যে পরীক্ষার রেজাল্ট অনুযায়ী গ্রুপ করবেন (Source Exam) তা নির্বাচন করুন!");
+            alert("Please select the Source Exam for merit rankings!");
             return;
         }
 
@@ -824,13 +845,13 @@
 
         let students = await getRealStudentsForClass(targetExam.class);
         if (students.length === 0) {
-            alert("এই ক্লাসে কোনো শিক্ষার্থী পাওয়া যায়নি!");
+            alert("No students found for this class!");
             return;
         }
 
-        showCenterToast("মেধা তালিকা বিশ্লেষণ করা হচ্ছে...", true);
+        showCenterToast("Analyzing merit rankings & freezing snapshot...", true);
 
-        // উৎস পরীক্ষার সব বিষয়ের প্রাপ্ত নম্বর সংগ্রহ
+        // ১. উৎস পরীক্ষার সব বিষয়ের প্রাপ্ত নম্বর সংগ্রহ
         const sourceSubjects = Object.keys(sourceExam.subjects || {});
         const studentTotals = {};
 
@@ -860,12 +881,12 @@
             });
         }
 
-        // উৎস পরীক্ষার আগের মেধা অর্ডার আনা (টাই-ব্রেকার হিসেবে কাজ করার জন্য)
+        // ২. পূর্ববর্তী মেধা তালিকা রিড করা (টাই-ব্রেকার হিসেবে কাজ করার জন্য)
         const sourceMeritOrder = (manualGroupOverrides && manualGroupOverrides[sourceExamId + '_merit_order']) 
             ? manualGroupOverrides[sourceExamId + '_merit_order'] 
             : [];
 
-        // 🌟 অফিশিয়াল মেধা সর্টিং: নম্বর সমান হলে আগের মেধা হুবহু বহাল থাকবে
+        // ৩. মেধা সর্টিং: বেশি নম্বর পেলে আগে বসবে, নম্বর সমান হলে আগের মেধা হুবহু বহাল থাকবে
         students.sort((a, b) => {
             const idA = String(a.std_id || a.id || '').trim();
             const idB = String(b.std_id || b.id || '').trim();
@@ -887,28 +908,30 @@
             return idA.localeCompare(idB);
         });
 
+        // ৪. 🌟 পার্মানেন্ট স্ন্যাপশট লক: ১ থেকে ৮১ জনের ক্রম চিরতরে ডাটাবেজে লক করে ফেলা
         if (!manualGroupOverrides[targetExamId]) {
             manualGroupOverrides[targetExamId] = {};
         }
 
-        const meritOrderedStudentIds = [];
+        const frozenMeritOrderedIds = [];
         students.forEach((st, idx) => {
             const sId = String(st.std_id || st.id || '').trim();
             const meritRank = idx + 1;
             const assignedGroup = (meritRank <= 40) ? "Group A" : "Group B";
             manualGroupOverrides[targetExamId][sId] = assignedGroup;
-            meritOrderedStudentIds.push(sId);
+            frozenMeritOrderedIds.push(sId);
         });
 
-        manualGroupOverrides[targetExamId + '_merit_order'] = meritOrderedStudentIds;
+        // ডাটাবেজে স্থায়ীভাবে স্ন্যাপশট সেভ
+        manualGroupOverrides[targetExamId + '_merit_order'] = frozenMeritOrderedIds;
 
         await saveExamsToCloud();
-        showCenterToast(`সফল হয়েছে! মেধা অনুযায়ী ১-৪০ জন Group A এবং ৪১-৮১ জন Group B সাজানো হয়েছে।`, true);
+        showCenterToast(`Success! Merit Snapshot frozen: 1-40 Group A, 41-Rest Group B.`, true);
 
         window.loadEMStudentGroupAllocation();
     };
 
-    // ১৪. স্টুডেন্ট টেবিল লোড করার ফাংশন
+    // ১৪. স্টুডেন্ট টেবিল লোড করার ফাংশন (স্থায়ী স্ন্যাপশট হুবহু পড়া)
     window.loadEMStudentGroupAllocation = async function() {
         const select = document.getElementById('emTransferExamSelect');
         const tbody = document.getElementById('emStudentAllocationTbody');
@@ -924,7 +947,12 @@
 
         let rawStudents = await getRealStudentsForClass(exam.class);
 
-        const savedMeritOrder = (manualGroupOverrides && manualGroupOverrides[exam.id + '_merit_order']) ? manualGroupOverrides[exam.id + '_merit_order'] : [];
+        // 🌟 যদি পরীক্ষাটি Model Test-7 হয়, তবে গতকালকের পেপার অর্ডার নিশ্চিত করা
+        let savedMeritOrder = (manualGroupOverrides && manualGroupOverrides[exam.id + '_merit_order']) ? manualGroupOverrides[exam.id + '_merit_order'] : [];
+
+        if (exam.name && (exam.name.includes("Model Test-7") || exam.name.includes("Model Test-07") || exam.name.includes("Model Test 7"))) {
+            savedMeritOrder = [...FROZEN_MT07_ORDER];
+        }
 
         if (savedMeritOrder && savedMeritOrder.length > 0) {
             rawStudents.sort((a, b) => {
@@ -1137,7 +1165,7 @@
         }
     }
 
-    // ১৫. ব্ল্যাঙ্ক শিট প্রিন্ট মোডাল ও ইঞ্জিন
+    // ১৫. ব্ল্যাঙ্ক শিট প্রিন্ট মোডাল ও ইঞ্জিন (কোনো রোল নেই)
     window.openBlankSheetPrintModal = function() {
         const select = document.getElementById('emTransferExamSelect');
         const examId = select ? select.value : '';
