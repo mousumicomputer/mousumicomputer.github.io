@@ -16,7 +16,7 @@
     let dbSetFunc = null;
 
     /* ==========================================================
-       1. SAFE FIREBASE SYNC (Permanent Cloud Storage, No Data Loss)
+       1. SAFE FIREBASE SYNC (Permanent Cloud Storage, Zero Data-Loss)
        ========================================================== */
     async function initSafeFirebase() {
         try {
@@ -44,11 +44,40 @@
                 const cloudData = snapshot.val();
                 if (cloudData) {
                     const rawList = Array.isArray(cloudData) ? cloudData : Object.values(cloudData);
-                    studentDB = rawList.map((st, idx) => ({
-                        ...st,
-                        _uid: st._uid || (String(st.roll || '') + '_' + String(st.reg || idx) + '_' + String(st.template || 'ssc'))
-                    }));
+                    let hasRepaired = false;
+
+                    // স্মার্ট পার্মানেন্ট গার্ড: শুধুমাত্র এইচএসসি-২৬ এর শিক্ষার্থীদের HSC ট্যাবে ট্রান্সফার করা
+                    studentDB = rawList.map((st, idx) => {
+                        let tpl = st.template || 'ssc_testimonial';
+                        const r = parseInt(st.roll, 10);
+
+                        // এইচএসসি রোল রেঞ্জ (সায়েন্স, মানবিক, কমার্স ও অনিয়মিত)
+                        const isHscRoll = (r >= 143962 && r <= 144122) ||
+                                          (r >= 301212 && r <= 301274) ||
+                                          (r >= 411144 && r <= 411159) ||
+                                          (r >= 608841 && r <= 608847) ||
+                                          (r === 950701 || r === 950702);
+
+                        if (isHscRoll && tpl !== 'hsc_testimonial') {
+                            tpl = 'hsc_testimonial';
+                            hasRepaired = true; // শুধু একবার পরিবর্তন শনাক্ত হলে ট্রু হবে
+                        }
+
+                        return {
+                            ...st,
+                            template: tpl,
+                            _uid: st._uid || (String(st.roll || '') + '_' + String(st.reg || idx) + '_' + String(tpl))
+                        };
+                    });
+
                     localStorage.setItem('cpscl_students_data', JSON.stringify(studentDB));
+
+                    // শুধুমাত্র পরিবর্তন হলে একবার ফায়ারবেসে পার্মানেন্ট সেভ হবে, এরপর আর কখনও চলবে না
+                    if (hasRepaired) {
+                        saveToCloud(studentDB);
+                        console.log("✔ HSC-26 students successfully moved to HSC Testimonial tab.");
+                    }
+
                     populateYearOptions();
                     renderProTable();
                 }
@@ -86,18 +115,10 @@
         const style = document.createElement('style');
         style.id = 'cpscl-pro-styles';
         style.innerHTML = `
-            /* Rounded Action Buttons */
             .pro-pill-btn {
-                border-radius: 25px !important;
-                padding: 7px 16px !important;
-                font-size: 0.84rem !important;
-                font-weight: 700 !important;
-                display: inline-flex !important;
-                align-items: center !important;
-                gap: 7px !important;
-                cursor: pointer !important;
-                border: none !important;
-                transition: all 0.2s ease !important;
+                border-radius: 25px !important; padding: 7px 16px !important; font-size: 0.84rem !important;
+                font-weight: 700 !important; display: inline-flex !important; align-items: center !important;
+                gap: 7px !important; cursor: pointer !important; border: none !important; transition: all 0.2s ease !important;
             }
             .pro-btn-upload { background: #f0fdf4 !important; border: 1.5px dashed #16a34a !important; color: #15803d !important; }
             .pro-btn-upload:hover { background: #dcfce7 !important; }
@@ -119,176 +140,89 @@
             }
             .pro-btn-export { background: #334155 !important; color: #ffffff !important; }
             .pro-btn-export:hover { background: #1e293b !important; }
-
-            .pro-pill-btn:disabled {
-                opacity: 0.35 !important;
-                cursor: not-allowed !important;
-            }
+            .pro-pill-btn:disabled { opacity: 0.35 !important; cursor: not-allowed !important; }
 
             .pro-pill-control {
-                border-radius: 20px !important;
-                border: 1.5px solid #cbd5e1 !important;
-                height: 36px !important;
-                padding: 0 14px !important;
-                font-size: 0.84rem !important;
-                font-weight: 600 !important;
-                outline: none !important;
-                background: #ffffff !important;
-                color: #334155 !important;
+                border-radius: 20px !important; border: 1.5px solid #cbd5e1 !important; height: 36px !important;
+                padding: 0 14px !important; font-size: 0.84rem !important; font-weight: 600 !important;
+                outline: none !important; background: #ffffff !important; color: #334155 !important;
             }
             .pro-pill-control:focus { border-color: #10b981 !important; }
 
-            /* Table Outer Container */
             .pro-table-wrapper {
-                width: 100%;
-                overflow-x: auto;
-                border: 1px solid #e2e8f0;
-                border-radius: 10px;
-                background: #ffffff;
+                width: 100%; overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 10px; background: #ffffff;
             }
-
-            /* Professional Zebra Flat Table */
-            .pro-flat-table {
-                width: 100% !important;
-                border-collapse: collapse !important;
-                border-spacing: 0 !important;
-            }
+            .pro-flat-table { width: 100% !important; border-collapse: collapse !important; border-spacing: 0 !important; }
             .pro-flat-table thead th {
-                background: #f8fafc !important;
-                color: #64748b !important;
-                font-size: 0.78rem !important;
-                font-weight: 800 !important;
-                letter-spacing: 0.5px !important;
-                padding: 11px 14px !important;
-                text-align: left !important;
-                white-space: nowrap !important;
-                border-bottom: 2px solid #e2e8f0 !important;
-                user-select: none !important;
+                background: #f8fafc !important; color: #64748b !important; font-size: 0.78rem !important;
+                font-weight: 800 !important; letter-spacing: 0.5px !important; padding: 11px 14px !important;
+                text-align: left !important; white-space: nowrap !important; border-bottom: 2px solid #e2e8f0 !important;
             }
-            .pro-sort-icon {
-                color: #94a3b8;
-                font-size: 0.75rem;
-                margin-right: 4px;
-            }
-
-            /* Alternating Zebra Rows */
-            .pro-flat-table tbody tr:nth-child(even) td {
-                background-color: #fcfdfe;
-            }
-            .pro-flat-table tbody tr:nth-child(odd) td {
-                background-color: #ffffff;
-            }
-
+            .pro-sort-icon { color: #94a3b8; font-size: 0.75rem; margin-right: 4px; }
+            .pro-flat-table tbody tr:nth-child(even) td { background-color: #fcfdfe; }
+            .pro-flat-table tbody tr:nth-child(odd) td { background-color: #ffffff; }
             .pro-flat-table tbody td {
-                padding: 10px 14px !important;
-                font-size: 0.86rem !important;
-                color: #1e293b !important;
-                white-space: nowrap !important;
-                border-bottom: 1px solid #f1f5f9 !important;
-                transition: background-color 0.15s ease !important;
+                padding: 10px 14px !important; font-size: 0.86rem !important; color: #1e293b !important;
+                white-space: nowrap !important; border-bottom: 1px solid #f1f5f9 !important; transition: background-color 0.15s ease !important;
             }
-
-            .pro-flat-table tbody tr {
-                cursor: pointer !important;
-            }
-            .pro-flat-table tbody tr:hover td {
-                background-color: #f0fdf4 !important; /* Gentle hover tint */
-            }
-
-            /* ========================================================
-               হালকা সবুজ (Soft Mint Green) সিলেকশন হাইলাইট
-               ======================================================== */
+            .pro-flat-table tbody tr { cursor: pointer !important; }
+            .pro-flat-table tbody tr:hover td { background-color: #f0fdf4 !important; }
             .pro-flat-table tbody tr.pro-row-active td {
-                background-color: #dcfce7 !important; /* Soft Mint Green */
-                color: #065f46 !important;           /* Deep Forest Green Text */
-                font-weight: 700 !important;
+                background-color: #dcfce7 !important; color: #065f46 !important; font-weight: 700 !important;
             }
-            .pro-flat-table tbody tr.pro-row-active td:first-child {
-                border-left: 3.5px solid #10b981 !important; /* Left Green Accent */
-            }
+            .pro-flat-table tbody tr.pro-row-active td:first-child { border-left: 3.5px solid #10b981 !important; }
 
-            /* Selection Badge */
             .pro-selected-pill {
-                background: #dcfce7;
-                color: #065f46;
-                font-size: 0.78rem;
-                font-weight: 800;
-                padding: 3px 10px;
-                border-radius: 12px;
-                border: 1px solid #bbf7d0;
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
+                background: #dcfce7; color: #065f46; font-size: 0.78rem; font-weight: 800; padding: 3px 10px;
+                border-radius: 12px; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; gap: 5px;
             }
-
-            /* Modal Overlay */
             .pro-modal-overlay {
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(15, 23, 42, 0.5); display: none; align-items: center; 
-                justify-content: center; z-index: 999999; backdrop-filter: blur(2px);
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5);
+                display: none; align-items: center; justify-content: center; z-index: 999999; backdrop-filter: blur(2px);
             }
             .pro-modal-card {
-                background: #ffffff; border-radius: 20px; width: 680px; max-width: 95%;
-                padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); box-sizing: border-box;
-                max-height: 90vh; overflow-y: auto;
+                background: #ffffff; border-radius: 20px; width: 680px; max-width: 95%; padding: 24px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.15); box-sizing: border-box; max-height: 90vh; overflow-y: auto;
             }
             .pro-modal-header {
-                font-size: 1.1rem; font-weight: 800; color: #0f172a; margin-bottom: 16px;
-                border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; display: flex;
-                justify-content: space-between; align-items: center;
+                font-size: 1.1rem; font-weight: 800; color: #0f172a; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9;
+                padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
             }
             .pro-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
             .pro-field label { display: block; font-size: 0.78rem; font-weight: 700; color: #64748b; margin-bottom: 5px; }
             .pro-field input, .pro-field select {
-                width: 100%; height: 38px; border: 1.5px solid #cbd5e1; border-radius: 18px;
-                padding: 0 14px; font-size: 0.85rem; font-weight: 600; outline: none; box-sizing: border-box;
+                width: 100%; height: 38px; border: 1.5px solid #cbd5e1; border-radius: 18px; padding: 0 14px;
+                font-size: 0.85rem; font-weight: 600; outline: none; box-sizing: border-box;
             }
             .pro-field input:focus, .pro-field select:focus { border-color: #10b981; }
 
-            /* Bulk Print / Save to PDF Container */
             #cpsclProBulkPrintWrapper { display: none; }
-
             @media print {
                 body.cpscl-bulk-mode * { visibility: hidden !important; }
                 body.cpscl-bulk-mode #cpsclProBulkPrintWrapper,
                 body.cpscl-bulk-mode #cpsclProBulkPrintWrapper * { visibility: visible !important; }
                 body.cpscl-bulk-mode #cpsclProBulkPrintWrapper {
-                    display: block !important;
-                    position: absolute !important;
-                    left: 0 !important;
-                    top: 0 !important;
-                    width: 297mm !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
+                    display: block !important; position: absolute !important; left: 0 !important; top: 0 !important;
+                    width: 297mm !important; margin: 0 !important; padding: 0 !important;
                 }
                 body.cpscl-bulk-mode .cpscl-a4-sheet {
-                    page-break-after: always !important;
-                    break-after: page !important;
-                    height: 210mm !important;
-                    max-height: 210mm !important;
-                    margin: 0 !important;
-                    box-shadow: none !important;
-                    overflow: hidden !important;
-                    box-sizing: border-box !important;
+                    page-break-after: always !important; break-after: page !important; height: 210mm !important;
+                    max-height: 210mm !important; margin: 0 !important; box-shadow: none !important; overflow: hidden !important; box-sizing: border-box !important;
                 }
-                body.cpscl-bulk-mode .cpscl-a4-sheet:last-child {
-                    page-break-after: avoid !important;
-                    break-after: avoid !important;
-                }
+                body.cpscl-bulk-mode .cpscl-a4-sheet:last-child { page-break-after: avoid !important; break-after: avoid !important; }
             }
         `;
         document.head.appendChild(style);
     }
 
     /* ==========================================================
-       3. UI STRUCTURE (100% English & Image 1/2 Match)
+       3. UI STRUCTURE
        ========================================================== */
     function setupProInterface() {
         const listView = document.getElementById('cpscl-list-view');
         if (!listView) return;
 
         listView.innerHTML = `
-            <!-- Top Action Header -->
             <div class="cpscl-card" style="padding: 16px 22px; margin-bottom: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                     <div>
@@ -325,9 +259,7 @@
                 </div>
             </div>
 
-            <!-- Filters & Flat Table Card -->
             <div class="cpscl-card" style="padding: 18px 22px;">
-                <!-- Template Tabs -->
                 <div class="cpscl-tabs-wrapper" style="margin-bottom: 16px;">
                     <button class="cpscl-tab-btn active" onclick="switchTemplateTab('all', this)"><i class="fa-solid fa-layer-group"></i> All Students</button>
                     <button class="cpscl-tab-btn" onclick="switchTemplateTab('ssc_testimonial', this)"><i class="fa-solid fa-graduation-cap"></i> SSC Testimonial</button>
@@ -336,7 +268,6 @@
                     <button class="cpscl-tab-btn" onclick="switchTemplateTab('character_cert', this)"><i class="fa-solid fa-award"></i> Character Certificate</button>
                 </div>
 
-                <!-- Controls Bar (Matches Image 1 & 2 Layout) -->
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
                     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                         <span id="proPaginationInfoTop" style="font-size: 0.85rem; color: #475569; font-weight: 600;">Showing 0 to 0 of 0 entries</span>
@@ -358,7 +289,6 @@
                             <option value="all">Show All</option>
                         </select>
 
-                        <!-- Clean Search Input (Right aligned like Image 1/2) -->
                         <div style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #64748b; font-weight: 700;">
                             <span>Search:</span>
                             <input type="text" id="proSearchInput" placeholder="" class="pro-pill-control" style="width: 170px;" oninput="onSearchChange()">
@@ -366,7 +296,6 @@
                     </div>
                 </div>
 
-                <!-- Slim Flat Table with Zebra Striping -->
                 <div class="pro-table-wrapper">
                     <table class="pro-flat-table">
                         <thead>
@@ -386,7 +315,6 @@
                     </table>
                 </div>
 
-                <!-- Bottom Pagination Bar -->
                 <div id="proPaginationWrapper" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 12px;">
                     <span id="proPaginationInfoBottom" style="font-size: 0.82rem; color: #64748b; font-weight: 600;"></span>
                     <div style="display: flex; gap: 6px;">
@@ -469,7 +397,6 @@
             return;
         }
 
-        // Selected Status Check
         const activeStudent = studentDB.find(s => s._uid === selectedStudentId);
         if (selectedBadge) {
             selectedBadge.style.display = activeStudent ? 'inline-flex' : 'none';
@@ -496,7 +423,6 @@
                 <td><strong style="color:#16a34a;">${s.gpa || '-'}</strong></td>
             `;
 
-            // Soft Mint Green Selection Toggle
             tr.onclick = () => {
                 if (selectedStudentId === s._uid) {
                     selectedStudentId = null;
@@ -524,7 +450,7 @@
     }
 
     /* ==========================================================
-       4. SMART EDIT & ENTRY MODAL (Guaranteed No Duplicates)
+       4. SMART EDIT & ENTRY MODAL
        ========================================================= */
     function injectModalHTML() {
         if (document.getElementById('proStudentModal')) return;
@@ -782,7 +708,7 @@
     };
 
     /* ==========================================================
-       6. BULK CERTIFICATE PRINT ENGINE (Save as PDF)
+       6. BULK CERTIFICATE PRINT ENGINE
        ========================================================== */
     function buildCertSheetHTML(st) {
         const isMale = (st.gender || 'Male').toLowerCase().startsWith('m');
