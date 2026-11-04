@@ -15,8 +15,67 @@
     let dbRefFunc = null;
     let dbSetFunc = null;
 
+    // বোর্ডের আসল রেজাল্ট শিট থেকে প্রতিটি রোলের সঠিক জিপিএ ডাটাবেজ
+    const OFFICIAL_HSC_GPA = {
+        "143962": "3.50", "143963": "3.75", "143964": "3.50", "143965": "3.42", "143966": "3.92",
+        "143967": "3.25", "143968": "3.67", "143969": "3.33", "143970": "3.33", "143971": "3.33",
+        "143972": "3.33", "143973": "4.00", "143974": "3.67", "143975": "3.58", "143976": "3.42",
+        "143977": "4.00", "143978": "5.00", "143979": "3.33", "143980": "3.17", "143981": "3.33",
+        "143982": "3.67", "143983": "3.92", "143984": "3.58", "143985": "3.17", "143986": "3.08",
+        "143987": "3.42", "143988": "3.83", "143989": "4.08", "143990": "4.92", "143991": "4.50",
+        "143992": "3.58", "143993": "4.08", "143994": "5.00", "143995": "3.75", "143996": "3.92",
+        "143997": "3.33", "143998": "3.75", "143999": "5.00", "144000": "4.17", "144001": "F1",
+        "144002": "4.08", "144003": "3.58", "144004": "5.00", "144005": "5.00", "144006": "4.67",
+        "144007": "5.00", "144008": "5.00", "144009": "3.83", "144010": "3.67", "144011": "4.08",
+        "144012": "3.92", "144013": "4.50", "144014": "3.58", "144015": "4.25", "144016": "3.83",
+        "144017": "3.42", "144018": "3.75", "144019": "4.25", "144020": "4.33", "144021": "5.00",
+        "144022": "4.25", "144023": "4.17", "144024": "4.17", "144025": "4.17", "144026": "4.42",
+        "144027": "4.58", "144028": "4.25", "144029": "4.17", "144030": "3.75", "144031": "4.42",
+        "144032": "5.00", "144033": "5.00", "144034": "4.92", "144035": "5.00", "144036": "4.42",
+        "144037": "F1", "144038": "ABS.", "144039": "4.33", "144040": "4.00", "144041": "3.92",
+        "144042": "4.33", "144043": "5.00", "144044": "4.00", "144045": "3.33", "144046": "4.08",
+        "144047": "4.92", "144048": "5.00", "144049": "3.33", "144050": "4.08", "144051": "3.42",
+        "144052": "3.75", "144053": "3.17", "144054": "3.67", "144055": "3.42", "144056": "4.00",
+        "144057": "4.83", "144058": "4.75", "144059": "F1", "144060": "4.42", "144061": "4.25",
+        "144062": "3.83", "144063": "4.33", "144064": "4.00", "144065": "4.92", "144066": "4.00",
+        "144067": "4.83", "144068": "4.58", "144069": "4.67", "144070": "4.75", "144071": "4.17",
+        "144072": "4.00", "144073": "4.50", "144074": "5.00", "144075": "4.17", "144076": "4.83",
+        "144077": "3.83", "144078": "3.67", "144079": "4.33", "144080": "3.08", "144081": "4.75",
+        "144082": "4.42", "144083": "4.75", "144084": "4.58", "144085": "5.00", "144086": "3.50",
+        "144087": "3.50", "144088": "3.17", "144089": "3.75", "144090": "4.08", "144091": "4.67",
+        "144092": "3.67", "144093": "4.67", "144094": "4.50", "144095": "4.17", "144096": "4.58",
+        "144097": "5.00", "144098": "5.00", "144099": "3.58", "144100": "5.00", "144101": "4.58",
+        "144102": "3.75", "144103": "4.25", "144104": "3.75", "144105": "4.08", "144106": "3.58",
+        "144107": "4.75", "144108": "4.25", "144109": "4.25", "144110": "4.17", "144111": "4.50",
+        "144112": "4.08", "144113": "4.08", "144114": "4.58", "144115": "3.83", "144116": "4.08",
+        "144117": "5.00", "144118": "4.00", "144119": "4.92", "144120": "3.00", "144121": "3.92",
+        "144122": "3.67",
+        // মানবিক বিভাগ
+        "301212": "4.50", "301213": "5.00", "301214": "2.25", "301215": "4.00", "301216": "4.58",
+        "301217": "3.25", "301218": "3.92", "301219": "3.83", "301220": "5.00", "301221": "3.00",
+        "301222": "3.58", "301223": "4.25", "301224": "3.83", "301225": "3.75", "301226": "3.92",
+        "301227": "4.75", "301228": "3.67", "301229": "3.25", "301230": "3.42", "301231": "3.58",
+        "301232": "4.08", "301233": "3.75", "301234": "3.67", "301235": "3.42", "301236": "3.67",
+        "301237": "4.25", "301238": "4.92", "301239": "3.67", "301240": "4.17", "301241": "4.42",
+        "301242": "4.75", "301243": "3.83", "301244": "5.00", "301245": "3.33", "301246": "4.58",
+        "301247": "3.92", "301248": "4.00", "301249": "4.75", "301250": "5.00", "301251": "3.75",
+        "301252": "5.00", "301253": "5.00", "301254": "4.00", "301255": "4.08", "301256": "4.83",
+        "301257": "5.00", "301258": "5.00", "301259": "3.58", "301260": "4.50", "301261": "4.58",
+        "301262": "4.75", "301263": "3.33", "301264": "4.92", "301265": "4.50", "301266": "3.25",
+        "301267": "4.50", "301268": "4.75", "301269": "3.92", "301270": "3.17", "301271": "4.17",
+        "301272": "4.83", "301273": "3.00", "301274": "3.67",
+        // ব্যবসায় শিক্ষা বিভাগ
+        "411144": "3.08", "411145": "4.50", "411146": "3.58", "411147": "4.50", "411148": "4.50",
+        "411149": "3.67", "411150": "2.75", "411151": "F1", "411152": "F1", "411153": "2.92",
+        "411154": "3.33", "411155": "2.58", "411156": "3.00", "411157": "3.50", "411158": "F1",
+        "411159": "3.25",
+        // অনিয়মিত
+        "608841": "3.75", "608842": "3.75", "608843": "3.75", "608844": "3.25", "608845": "3.83",
+        "608846": "3.58", "608847": "3.08", "950701": "3.92", "950702": "2.50"
+    };
+
     /* ==========================================================
-       1. SAFE FIREBASE SYNC (Permanent Cloud Storage, Zero Data-Loss)
+       1. SAFE FIREBASE SYNC (Auto-Repair Ref No. & Real Board GPA)
        ========================================================== */
     async function initSafeFirebase() {
         try {
@@ -46,36 +105,51 @@
                     const rawList = Array.isArray(cloudData) ? cloudData : Object.values(cloudData);
                     let hasRepaired = false;
 
-                    // স্মার্ট পার্মানেন্ট গার্ড: শুধুমাত্র এইচএসসি-২৬ এর শিক্ষার্থীদের HSC ট্যাবে ট্রান্সফার করা
+                    // অটোমেটিক মেরামত: HSC-26 এর টেমপ্লেট, রেফারেন্স ও আসল GPA বসানো
                     studentDB = rawList.map((st, idx) => {
                         let tpl = st.template || 'ssc_testimonial';
-                        const r = parseInt(st.roll, 10);
+                        let refNo = st.ref || '';
+                        let currentGpa = st.gpa;
+                        const rStr = String(st.roll || '').trim();
+                        const r = parseInt(rStr, 10);
 
-                        // এইচএসসি রোল রেঞ্জ (সায়েন্স, মানবিক, কমার্স ও অনিয়মিত)
-                        const isHscRoll = (r >= 143962 && r <= 144122) ||
-                                          (r >= 301212 && r <= 301274) ||
-                                          (r >= 411144 && r <= 411159) ||
-                                          (r >= 608841 && r <= 608847) ||
-                                          (r === 950701 || r === 950702);
+                        const isHsc = (r >= 143962 && r <= 144122) ||
+                                      (r >= 301212 && r <= 301274) ||
+                                      (r >= 411144 && r <= 411159) ||
+                                      (r >= 608841 && r <= 608847) ||
+                                      (r === 950701 || r === 950702);
 
-                        if (isHscRoll && tpl !== 'hsc_testimonial') {
-                            tpl = 'hsc_testimonial';
-                            hasRepaired = true; // শুধু একবার পরিবর্তন শনাক্ত হলে ট্রু হবে
+                        if (isHsc) {
+                            if (tpl !== 'hsc_testimonial') {
+                                tpl = 'hsc_testimonial';
+                                hasRepaired = true;
+                            }
+                            // ১. রেফারেন্স নম্বরে SSC থাকলে HSC দিয়ে ঠিক করা
+                            if (refNo.includes('SSC-26')) {
+                                refNo = refNo.replace('SSC-26', 'HSC-26');
+                                hasRepaired = true;
+                            }
+                            // ২. বোর্ড রেজাল্ট শিট থেকে আসল জিপিএ বসানো
+                            if (OFFICIAL_HSC_GPA[rStr] && currentGpa !== OFFICIAL_HSC_GPA[rStr]) {
+                                currentGpa = OFFICIAL_HSC_GPA[rStr];
+                                hasRepaired = true;
+                            }
                         }
 
                         return {
                             ...st,
                             template: tpl,
-                            _uid: st._uid || (String(st.roll || '') + '_' + String(st.reg || idx) + '_' + String(tpl))
+                            ref: refNo,
+                            gpa: currentGpa,
+                            _uid: st._uid || (rStr + '_' + String(st.reg || idx) + '_' + String(tpl))
                         };
                     });
 
                     localStorage.setItem('cpscl_students_data', JSON.stringify(studentDB));
 
-                    // শুধুমাত্র পরিবর্তন হলে একবার ফায়ারবেসে পার্মানেন্ট সেভ হবে, এরপর আর কখনও চলবে না
                     if (hasRepaired) {
                         saveToCloud(studentDB);
-                        console.log("✔ HSC-26 students successfully moved to HSC Testimonial tab.");
+                        console.log("✔ HSC-26 Data completely repaired: Ref No -> HSC-26, Real Board GPAs applied.");
                     }
 
                     populateYearOptions();
@@ -108,7 +182,7 @@
     }
 
     /* ==========================================================
-       2. STYLES (Soft Mint Green Selection & Clean Zebra Table)
+       2. STYLES
        ========================================================== */
     function injectProStyles() {
         if (document.getElementById('cpscl-pro-styles')) return;
@@ -417,7 +491,7 @@
                 <td><strong>${s.name || '-'}</strong></td>
                 <td>${s.father || '-'}</td>
                 <td>${genderBadge}</td>
-                <td><span style="font-size:0.8rem; font-weight:700; color:#475569;">${s.template || 'SSC'}</span></td>
+                <td><span style="font-size:0.8rem; font-weight:700; color:#475569;">${s.template === 'hsc_testimonial' ? 'HSC Testimonial' : (s.template || 'SSC Testimonial')}</span></td>
                 <td><span style="background:#eef2ff; color:#4f46e5; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; font-weight: 700;">${s.group || '-'}</span></td>
                 <td><strong>${s.year || '-'}</strong></td>
                 <td><strong style="color:#16a34a;">${s.gpa || '-'}</strong></td>
@@ -588,11 +662,11 @@
             submitBtn.className = "pro-pill-btn pro-btn-add";
             document.getElementById('proStudentForm').reset();
             document.getElementById('modalUid').value = '';
-            document.getElementById('modalRef').value = 'CPSCL/ 801023/SSC-26/001';
+            document.getElementById('modalRef').value = 'CPSCL/ 801023/HSC-26/001';
             document.getElementById('modalSession').value = '2024–2025';
             document.getElementById('modalYear').value = '2026';
             document.getElementById('modalBoard').value = 'Dinajpur';
-            document.getElementById('modalPubDate').value = '10 August 2026';
+            document.getElementById('modalPubDate').value = '31 October 2026';
         }
 
         modal.style.display = 'flex';
@@ -642,7 +716,7 @@
     };
 
     /* ==========================================================
-       5. DELETE & SINGLE PRINT
+       5. DELETE & SINGLE PRINT (HSC-26 Reference & GPA Fix)
        ========================================================== */
     window.deleteSelectedStudent = async function () {
         const st = studentDB.find(s => s._uid === selectedStudentId);
@@ -661,9 +735,16 @@
         const st = studentDB.find(s => s._uid === selectedStudentId);
         if (!st) return;
 
-        if (typeof window.onTemplateChange === 'function') window.onTemplateChange(st.template || 'ssc_testimonial');
+        const targetTpl = st.template || 'ssc_testimonial';
+        if (typeof window.onTemplateChange === 'function') window.onTemplateChange(targetTpl);
 
-        if (document.getElementById('inpRef')) document.getElementById('inpRef').value = st.ref || '';
+        // রেফারেন্স নম্বরে SSC থাকলে HSC দিয়ে ঠিক করে প্রিভিউতে দেওয়া
+        let cleanRef = st.ref || '';
+        if (targetTpl === 'hsc_testimonial' && cleanRef.includes('SSC')) {
+            cleanRef = cleanRef.replace(/SSC/g, 'HSC');
+        }
+
+        if (document.getElementById('inpRef')) document.getElementById('inpRef').value = cleanRef;
         if (document.getElementById('inpName')) document.getElementById('inpName').value = st.name || '';
         if (document.getElementById('inpGender')) document.getElementById('inpGender').value = st.gender || 'Male';
         if (document.getElementById('inpFather')) document.getElementById('inpFather').value = st.father || '';
@@ -721,9 +802,14 @@
             ? "Higher Secondary Certificate Examination"
             : "Secondary School Certificate Examination";
 
+        let cleanRef = st.ref || '';
+        if (st.template === 'hsc_testimonial' && cleanRef.includes('SSC')) {
+            cleanRef = cleanRef.replace(/SSC/g, 'HSC');
+        }
+
         return `
             <div class="cpscl-a4-sheet">
-                <div class="cert-ref">${st.ref || ''}</div>
+                <div class="cert-ref">${cleanRef}</div>
                 <div class="cert-body-block">
                     <p class="cert-paragraph">
                         This is to certify that <span class="cert-bold">${st.name || ''}</span>, 
