@@ -1,13 +1,13 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Weekly Master Tabulation Suite (100% Pure English Corporate)
+   SUB-SECTION: Weekly Master Tabulation Suite (Flexible Paper & Legal/A4 Landscape)
    Path: cpscl/weekly_tabulation_manager.js
-   Architecture: Standalone Modular Engine | A4 Landscape Vector Print | Read-Only
+   Architecture: Standalone Modular Engine | Unconstrained Landscape Print | Read-Only
    Features: Multi-Exam Aggregation | Dynamic 100 Conversion | Progressive Group Transfer
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Weekly Master Tabulation Suite (Cumulative Engine Active)...");
+    console.log("Loading CPSCL Weekly Master Tabulation Suite (Flexible Landscape Mode Active)...");
 
     // 1. Inject Sidebar Sub-menu under Exam Manager
     function injectWeeklySidebar() {
@@ -96,7 +96,7 @@
 
             .wm-table-wrap { overflow-x: auto; padding: 0 15px 15px; }
             .wm-table { width: 100%; border-collapse: collapse; min-width: 950px; }
-            .wm-table th, .wm-table td { border: 1px solid #111 !important; padding: 5px 3px; font-size: 10px; text-align: center; color: #000; line-height: 1.15; }
+            .wm-table th, .wm-table td { border: 1px solid #111 !important; padding: 4px 2px; font-size: 9.5px; text-align: center; color: #000; line-height: 1.15; }
             
             .wm-table th.th-main { background-color: #f8fafc !important; font-weight: 800; }
             .wm-table th.th-exam-1 { background-color: #e0f2fe !important; color: #0369a1 !important; font-weight: 800; }
@@ -108,10 +108,10 @@
             .wm-table th.th-grand { background-color: #f1f5f9 !important; color: #1e293b !important; font-weight: 800; }
             .wm-table th.th-conv { background-color: #fee2e2 !important; color: #991b1b !important; font-weight: 900; }
 
-            .wm-table th.sub-head { background-color: #f8fafc !important; font-weight: 700; font-size: 9px; }
-            .wm-table th.sub-total { background-color: #f1f5f9 !important; font-weight: 800; font-size: 9px; }
+            .wm-table th.sub-head { background-color: #f8fafc !important; font-weight: 700; font-size: 8.5px; }
+            .wm-table th.sub-total { background-color: #f1f5f9 !important; font-weight: 800; font-size: 8.5px; }
 
-            .wm-table td.name-col { text-align: left !important; padding-left: 8px !important; font-weight: 600; white-space: nowrap !important; }
+            .wm-table td.name-col { text-align: left !important; padding-left: 6px !important; font-weight: 600; white-space: nowrap !important; }
             .wm-table td.test-total { font-weight: 800; background-color: #f8fafc !important; }
             .wm-table td.grand-col { font-weight: 800; background-color: #f8fafc !important; }
             .wm-table td.conv-col { font-weight: 900; background-color: #fef2f2 !important; color: #991b1b; }
@@ -124,6 +124,20 @@
             .wm-sig-label { font-size: 11px; font-weight: 800; color: #000; }
         `;
         document.head.appendChild(style);
+    }
+
+    // Helper: Abbreviate subject names for clean horizontal fitting
+    function formatShortSubject(name) {
+        if (!name) return '';
+        const clean = name.trim();
+        if (/^math/i.test(clean)) return 'Math';
+        if (/^bang/i.test(clean)) return 'Ban';
+        if (/^eng/i.test(clean)) return 'Eng';
+        if (/^scien/i.test(clean)) return 'Sci';
+        if (/^bgs/i.test(clean)) return 'BGS';
+        if (/^rel/i.test(clean)) return 'Rel';
+        if (/^ict/i.test(clean)) return 'ICT';
+        return clean.length > 5 ? clean.substring(0, 4) : clean;
     }
 
     // 4. Render Main Layout Container
@@ -189,7 +203,7 @@
                         </div>
                         <div style="display: flex; gap: 8px;">
                             <button type="button" class="wm-btn-pill wm-btn-outline" onclick="window.printWeeklyMasterSheet()">
-                                <i class="fa-solid fa-print"></i> Print Sheet (A4 Landscape)
+                                <i class="fa-solid fa-print"></i> Print Sheet (Landscape)
                             </button>
                             <button type="button" class="wm-btn-pill wm-btn-outline" onclick="window.printWeeklyMasterSheet()">
                                 <i class="fa-solid fa-file-pdf"></i> Export PDF
@@ -282,10 +296,8 @@
             return;
         }
 
-        // Sort chronologically by date
         allWeeklyExams.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
 
-        // Populate checkboxes
         let html = '';
         allWeeklyExams.forEach((ex, idx) => {
             const isChecked = idx >= Math.max(0, allWeeklyExams.length - 4);
@@ -298,14 +310,12 @@
         });
         container.innerHTML = html;
 
-        // Populate Target Exam Dropdown
         if (targetSelect) {
             targetSelect.innerHTML = '<option value="">-- Choose Target Exam --</option>';
             allWeeklyExams.forEach(ex => {
                 targetSelect.innerHTML += `<option value="${ex.id}">${ex.name} (${ex.class})</option>`;
             });
 
-            // Default select the latest exam
             if (allWeeklyExams.length > 0) {
                 targetSelect.value = allWeeklyExams[allWeeklyExams.length - 1].id;
             }
@@ -475,15 +485,14 @@
             return a.id.localeCompare(b.id);
         });
 
-        // Cache for Target Exam Group Transfer
         lastGeneratedWeeklyMeritList = computedStudents;
 
-        // 7. Build Two-Tier Table Header
+        // 7. Build Two-Tier Table Header with Short Subject Names
         let tr1 = `<tr>
-            <th rowspan="2" class="th-main" style="width: 3.5%;">Serial</th>
-            <th rowspan="2" class="th-main" style="width: 7.5%;">Student ID</th>
-            <th rowspan="2" class="th-main" style="width: 14%; text-align: left; padding-left: 6px;">Student Name</th>
-            <th rowspan="2" class="th-main" style="width: 6.5%;">Group<br><small>(Latest)</small></th>
+            <th rowspan="2" class="th-main" style="width: 3%;">Serial</th>
+            <th rowspan="2" class="th-main" style="width: 6.5%;">Student ID</th>
+            <th rowspan="2" class="th-main" style="width: 13%; text-align: left; padding-left: 5px;">Student Name</th>
+            <th rowspan="2" class="th-main" style="width: 5%;">Group<br><small>(Latest)</small></th>
         `;
 
         let tr2 = `<tr>`;
@@ -498,15 +507,15 @@
             tr1 += `<th colspan="${spanCount}" class="${colClass}">${meta.exam.name.toUpperCase()}${exDate}</th>`;
 
             meta.activeSubs.forEach(sub => {
-                tr2 += `<th class="sub-head">${sub}</th>`;
+                tr2 += `<th class="sub-head">${formatShortSubject(sub)}</th>`;
             });
-            tr2 += `<th class="sub-total">Total (${meta.fullMark})</th>`;
+            tr2 += `<th class="sub-total">Tot (${meta.fullMark})</th>`;
         });
 
         tr1 += `
-            <th rowspan="2" class="th-grand" style="width: 5%;">Grand Total<br><small>(${cumulativeMaxScore})</small></th>
-            <th rowspan="2" class="th-conv" style="width: 6%;">Converted<br><small>(100)</small></th>
-            <th rowspan="2" class="th-conv" style="width: 4%;">Final<br>Rank</th>
+            <th rowspan="2" class="th-grand" style="width: 4.5%;">Grand<br><small>(${cumulativeMaxScore})</small></th>
+            <th rowspan="2" class="th-conv" style="width: 5.5%;">Conv.<br><small>(100)</small></th>
+            <th rowspan="2" class="th-conv" style="width: 4%;">Rank</th>
         </tr>`;
 
         tr2 += `</tr>`;
@@ -523,7 +532,7 @@
                 <td><strong>${idx + 1}</strong></td>
                 <td><strong>${row.id}</strong></td>
                 <td class="name-col">${row.name}</td>
-                <td style="font-weight:700; font-size:9px; color:${groupColor};">${row.group}</td>
+                <td style="font-weight:700; font-size:8.5px; color:${groupColor};">${row.group}</td>
             `;
 
             examMetaList.forEach(meta => {
@@ -557,7 +566,7 @@
         return "th";
     }
 
-    // 7. 🌟 Apply Cumulative Merit to Target Exam Engine
+    // 7. Apply Cumulative Merit to Target Exam Engine
     window.applyCumulativeMeritToTargetExam = async function () {
         const targetSelect = document.getElementById('wmTargetExamSelect');
         if (!targetSelect || !targetSelect.value) {
@@ -605,10 +614,8 @@
 
         manualGroupOverrides[targetExamId + '_merit_order'] = meritOrderedIds;
 
-        // Save to LocalStorage
         localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(manualGroupOverrides));
 
-        // Save to Firebase Cloud
         let isSaved = false;
         if (typeof window.getDatabase === 'function' && typeof window.ref === 'function' && typeof window.set === 'function') {
             try {
@@ -628,7 +635,7 @@
         alert(`Success! Cumulative Merit Grouping applied to '${targetExam.name}'.\nGroup A (1-40) and Group B (41-${lastGeneratedWeeklyMeritList.length}) are now successfully locked.`);
     };
 
-    // 8. Isolated Vector Print Engine (A4 Landscape Print-Ready)
+    // 8. Isolated Vector Print Engine (Flexible Landscape: Legal / A4 / A3 Compatible)
     window.printWeeklyMasterSheet = function () {
         const printArea = document.getElementById('wmPrintableContainer');
         if (!printArea) {
@@ -644,8 +651,8 @@
         iframe.style.position = 'fixed';
         iframe.style.left = '-9999px';
         iframe.style.top = '-9999px';
-        iframe.style.width = '297mm';
-        iframe.style.height = '210mm';
+        iframe.style.width = '100vw'; // Flexible width (no 297mm restriction)
+        iframe.style.height = '100vh';
         iframe.style.border = 'none';
         document.body.appendChild(iframe);
 
@@ -658,9 +665,10 @@
                 <meta charset="UTF-8">
                 <title>Weekly Master Tabulation Sheet - CPSCL</title>
                 <style>
+                    /* Flexible landscape: user can choose Legal (LG), A4, or A3 in printer dialog */
                     @page {
-                        size: A4 landscape;
-                        margin: 6mm 6mm 8mm 6mm;
+                        size: landscape;
+                        margin: 4mm 5mm 6mm 5mm;
                     }
                     * {
                         box-sizing: border-box;
@@ -682,8 +690,8 @@
                     }
                     th, td {
                         border: 1px solid #000 !important;
-                        padding: 3.5px 2px !important;
-                        font-size: 9px !important;
+                        padding: 2.5px 1.5px !important;
+                        font-size: 8px !important;
                         text-align: center;
                         color: #000;
                         line-height: 1.15;
@@ -696,12 +704,12 @@
                     th.th-grand { background-color: #f1f5f9 !important; font-weight: bold; }
                     th.th-conv { background-color: #fee2e2 !important; color: #991b1b !important; font-weight: bold; }
 
-                    th.sub-head { background-color: #f8fafc !important; font-size: 8px; font-weight: bold; }
-                    th.sub-total { background-color: #f1f5f9 !important; font-size: 8px; font-weight: bold; }
+                    th.sub-head { background-color: #f8fafc !important; font-size: 7.5px !important; font-weight: bold; }
+                    th.sub-total { background-color: #f1f5f9 !important; font-size: 7.5px !important; font-weight: bold; }
 
                     td.name-col {
                         text-align: left !important;
-                        padding-left: 6px !important;
+                        padding-left: 5px !important;
                         font-weight: bold;
                         white-space: nowrap !important;
                     }
@@ -716,14 +724,14 @@
                         display: flex;
                         justify-content: space-around;
                         align-items: flex-end;
-                        margin-top: 45px;
+                        margin-top: 40px;
                         padding: 0 20px 5px;
                         page-break-inside: avoid !important;
                     }
-                    .wm-sig-box { text-align: center; min-width: 170px; }
-                    .wm-sig-space { height: 50px; }
+                    .wm-sig-box { text-align: center; min-width: 160px; }
+                    .wm-sig-space { height: 45px; }
                     .wm-sig-line { width: 100%; border-top: 1.5px solid #000; margin-bottom: 4px; }
-                    .wm-sig-label { font-size: 10.5px; font-weight: bold; color: #000; }
+                    .wm-sig-label { font-size: 10px; font-weight: bold; color: #000; }
                 </style>
             </head>
             <body>
