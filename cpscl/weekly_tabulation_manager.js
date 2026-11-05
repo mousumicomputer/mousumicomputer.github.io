@@ -1,13 +1,13 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Weekly Master Tabulation Suite (Flexible Paper & Legal/A4 Landscape)
+   SUB-SECTION: Weekly Master Tabulation Suite (Clean 2-Tier Header Edition)
    Path: cpscl/weekly_tabulation_manager.js
    Architecture: Standalone Modular Engine | Unconstrained Landscape Print | Read-Only
    Features: Multi-Exam Aggregation | Dynamic 100 Conversion | Progressive Group Transfer
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Weekly Master Tabulation Suite (Flexible Landscape Mode Active)...");
+    console.log("Loading CPSCL Weekly Master Tabulation Suite (Clean 2-Tier Headers Active)...");
 
     // 1. Inject Sidebar Sub-menu under Exam Manager
     function injectWeeklySidebar() {
@@ -108,8 +108,8 @@
             .wm-table th.th-grand { background-color: #f1f5f9 !important; color: #1e293b !important; font-weight: 800; }
             .wm-table th.th-conv { background-color: #fee2e2 !important; color: #991b1b !important; font-weight: 900; }
 
-            .wm-table th.sub-head { background-color: #f8fafc !important; font-weight: 700; font-size: 8.5px; }
-            .wm-table th.sub-total { background-color: #f1f5f9 !important; font-weight: 800; font-size: 8.5px; }
+            .wm-table th.sub-head { background-color: #f8fafc !important; font-weight: 700; font-size: 8.5px; white-space: nowrap; }
+            .wm-table th.sub-total { background-color: #f1f5f9 !important; font-weight: 800; font-size: 8.5px; white-space: nowrap; }
 
             .wm-table td.name-col { text-align: left !important; padding-left: 6px !important; font-weight: 600; white-space: nowrap !important; }
             .wm-table td.test-total { font-weight: 800; background-color: #f8fafc !important; }
@@ -322,7 +322,7 @@
         }
     }
 
-    // 6. Master Generation Engine (Multi-Exam, Converted 100, Math Safe)
+    // 6. Master Generation Engine (Multi-Exam, Converted 100, Math Safe, Clean 2-Tier Header)
     window.generateWeeklyMasterTabulation = async function () {
         const checkboxes = document.querySelectorAll('.wm-exam-chk:checked');
         const thead = document.getElementById('wmMasterThead');
@@ -487,7 +487,7 @@
 
         lastGeneratedWeeklyMeritList = computedStudents;
 
-        // 7. Build Two-Tier Table Header with Short Subject Names
+        // 7. 🌟 Build Two-Tier Table Header with Clean 2-Line Exam Title & Full Date
         let tr1 = `<tr>
             <th rowspan="2" class="th-main" style="width: 3%;">Serial</th>
             <th rowspan="2" class="th-main" style="width: 6.5%;">Student ID</th>
@@ -502,20 +502,27 @@
         examMetaList.forEach((meta, idx) => {
             const colClass = examColorClasses[idx % examColorClasses.length];
             const spanCount = meta.activeSubs.length + 1;
-            const exDate = meta.exam.date ? ` (${meta.exam.date.substring(5)})` : '';
+            
+            // ২ লাইনে মডেল টেস্ট ও তারিখ: কোনো ব্র্যাকেট বা সংখ্যা ভাঙবে না
+            const dateDisplay = meta.exam.date ? `<div style="font-size: 8px; font-weight: 600; opacity: 0.9; margin-top: 1px;">${meta.exam.date}</div>` : '';
 
-            tr1 += `<th colspan="${spanCount}" class="${colClass}">${meta.exam.name.toUpperCase()}${exDate}</th>`;
+            tr1 += `<th colspan="${spanCount}" class="${colClass}" style="line-height: 1.15; padding: 4px 2px;">
+                        <div>${meta.exam.name.toUpperCase()}</div>
+                        ${dateDisplay}
+                    </th>`;
 
             meta.activeSubs.forEach(sub => {
                 tr2 += `<th class="sub-head">${formatShortSubject(sub)}</th>`;
             });
-            tr2 += `<th class="sub-total">Tot (${meta.fullMark})</th>`;
+            
+            // ২ লাইনে পরিচ্ছন্ন Total ও পূর্ণমান
+            tr2 += `<th class="sub-total" style="line-height: 1.1;">Total<br><small style="font-size: 7.5px;">(${meta.fullMark})</small></th>`;
         });
 
         tr1 += `
-            <th rowspan="2" class="th-grand" style="width: 4.5%;">Grand<br><small>(${cumulativeMaxScore})</small></th>
-            <th rowspan="2" class="th-conv" style="width: 5.5%;">Conv.<br><small>(100)</small></th>
-            <th rowspan="2" class="th-conv" style="width: 4%;">Rank</th>
+            <th rowspan="2" class="th-grand" style="width: 4.5%; line-height: 1.15;">Grand Total<br><small style="font-size: 7.5px;">(${cumulativeMaxScore})</small></th>
+            <th rowspan="2" class="th-conv" style="width: 5%; line-height: 1.15;">Converted<br><small style="font-size: 7.5px;">(100)</small></th>
+            <th rowspan="2" class="th-conv" style="width: 4%; line-height: 1.15;">Final<br>Rank</th>
         </tr>`;
 
         tr2 += `</tr>`;
@@ -651,7 +658,7 @@
         iframe.style.position = 'fixed';
         iframe.style.left = '-9999px';
         iframe.style.top = '-9999px';
-        iframe.style.width = '100vw'; // Flexible width (no 297mm restriction)
+        iframe.style.width = '100vw';
         iframe.style.height = '100vh';
         iframe.style.border = 'none';
         document.body.appendChild(iframe);
@@ -665,7 +672,6 @@
                 <meta charset="UTF-8">
                 <title>Weekly Master Tabulation Sheet - CPSCL</title>
                 <style>
-                    /* Flexible landscape: user can choose Legal (LG), A4, or A3 in printer dialog */
                     @page {
                         size: landscape;
                         margin: 4mm 5mm 6mm 5mm;
@@ -704,8 +710,8 @@
                     th.th-grand { background-color: #f1f5f9 !important; font-weight: bold; }
                     th.th-conv { background-color: #fee2e2 !important; color: #991b1b !important; font-weight: bold; }
 
-                    th.sub-head { background-color: #f8fafc !important; font-size: 7.5px !important; font-weight: bold; }
-                    th.sub-total { background-color: #f1f5f9 !important; font-size: 7.5px !important; font-weight: bold; }
+                    th.sub-head { background-color: #f8fafc !important; font-size: 7.5px !important; font-weight: bold; white-space: nowrap; }
+                    th.sub-total { background-color: #f1f5f9 !important; font-size: 7.5px !important; font-weight: bold; white-space: nowrap; }
 
                     td.name-col {
                         text-align: left !important;
