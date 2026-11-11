@@ -8,7 +8,7 @@
     let isMultiOnly = false;
     let isUpdatingLabel = false;
 
-    // Helper: Parse currency string to number (e.g., "৳ 1,200.00" -> 1200)
+    // Helper: Parse currency
     function parseAmount(text) {
         if (!text) return 0;
         const clean = text.replace(/[^0-9.]/g, '');
@@ -68,7 +68,7 @@
             if (isMultiOnly) {
                 if (counts[stdId] > 1) {
                     tr.style.display = '';
-                    tr.style.backgroundColor = '#fffbeb'; // Soft highlight
+                    tr.style.backgroundColor = '#fffbeb';
                 } else {
                     tr.style.display = 'none';
                     tr.style.backgroundColor = '';
@@ -85,7 +85,7 @@
     // 4. Inject Multi Button beside Filter button
     function injectMultiButton() {
         const trigger = document.getElementById('btnFilterAddTrigger');
-        if (!trigger || document.getElementById('btnToggleMultiPending')) return;
+        if (!trigger || document.getElementById('btnToggleMultiPending')) return false;
 
         const btn = document.createElement('button');
         btn.type = 'button';
@@ -100,6 +100,7 @@
         trigger.parentNode.insertBefore(btn, trigger.nextSibling);
 
         updateMultiButtonState();
+        return true;
     }
 
     // 5. Enhanced Selection Label (Cash + Tap calculation)
@@ -141,7 +142,6 @@
         const tbody = document.getElementById('pendingClearanceTableBody');
         const selectedLabel = document.getElementById('pendingSelectedLabel');
 
-        // Observer for Table updates (re-renders, searches, filter changes)
         if (tbody) {
             const tableObserver = new MutationObserver(() => {
                 if (isMultiOnly) applyMultiFilter();
@@ -151,7 +151,6 @@
             tableObserver.observe(tbody, { childList: true, subtree: true });
         }
 
-        // Observer for Selection Label changes
         if (selectedLabel) {
             const labelObserver = new MutationObserver(() => {
                 enhanceSelectedLabel();
@@ -159,7 +158,6 @@
             labelObserver.observe(selectedLabel, { childList: true, characterData: true });
         }
 
-        // Click / Change listener on checkboxes
         document.addEventListener('change', (e) => {
             if (e.target.classList.contains('edu-checkbox') || e.target.id === 'selectAllPendingCheckbox') {
                 setTimeout(enhanceSelectedLabel, 30);
@@ -167,15 +165,18 @@
         });
     }
 
-    // Auto-init
-    function init() {
-        injectMultiButton();
-        setupObservers();
-    }
+    // 7. Auto-detect & Wait for Main Module to load
+    let attempts = 0;
+    const waiter = setInterval(() => {
+        attempts++;
+        const injected = injectMultiButton();
+        if (injected) {
+            setupObservers();
+            clearInterval(waiter);
+        }
+        if (attempts > 50) { // 25 seconds timeout
+            clearInterval(waiter);
+        }
+    }, 500);
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
 })();
