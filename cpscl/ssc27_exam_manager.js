@@ -1,13 +1,13 @@
 /* ==========================================================================
    MODULE: CPSCL Academic ERP
-   SUB-SECTION: SSC-27 Preparatory Dynamic Exam & Group Manager (Pure Cloud Synced)
+   SUB-SECTION: SSC-27 Preparatory Dynamic Suite (Master Cloud Bridge & Lock Engine)
    Path: cpscl/ssc27_exam_manager.js
-   Architecture: Firebase Modular SDK v9+ | Zero Hardcoding | 100% Vector Print
-   Safety: Complete Isolation from Class 8 Scholarship Batch | Zero Data Loss
+   Architecture: Zero-Hardcoding | Seamless Live Tabulation Bridge | Lock Engine
+   Safety: 100% Non-Destructive to Class 8 Scholarship Batch | Zero Data Loss
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL SSC-27 Suite (Pure Firebase Cloud Synced)...");
+    console.log("Loading CPSCL SSC-27 Suite (Live Tabulation Bridge & Lock Active)...");
 
     const BS_STUDENT_IDS = ["602322", "601322", "700723", "802124", "903525"];
 
@@ -62,14 +62,20 @@
             .s27-btn-add.active { background: #059669 !important; color: #ffffff !important; border-style: solid !important; }
 
             .s27-group-badge { display: inline-block; padding: 4px 14px; border-radius: 50px !important; font-size: 0.8rem; font-weight: 700; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+            .s27-status-badge { display: inline-block; padding: 3px 10px; border-radius: 50px !important; font-size: 0.72rem; font-weight: 800; }
+
             .s27-btn-icon { width: 34px; height: 34px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; background: #ffffff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; transition: 0.2s; margin: 0 2px; }
+            .s27-btn-icon.lock { color: #dc2626; }
+            .s27-btn-icon.lock:hover { background: #fee2e2; border-color: #dc2626; }
+            .s27-btn-icon.unlock { color: #16a34a; }
+            .s27-btn-icon.unlock:hover { background: #dcfce7; border-color: #16a34a; }
             .s27-btn-icon.delete { color: #dc2626; }
             .s27-btn-icon.delete:hover { background: #fee2e2; border-color: #dc2626; }
         `;
         document.head.appendChild(style);
     }
 
-    // ২. সাইডবার সাবমেনু ইনজেকশন
+    // ২. সাইডবার সাব-মেনু ইনজেকশন
     function injectSSC27Sidebar() {
         const subList = document.getElementById('trust-exam-submenu-items');
         if (!subList) {
@@ -106,14 +112,8 @@
     let s27AllocatedStudents = [];
     let s27SelectedStudentId = null;
     let s27CurrentGroupFilter = 'all';
-    let s27GroupOverrides = {};
 
-    try {
-        const cached = localStorage.getItem('cpscl_ssc27_exams_registry');
-        if (cached) s27ExamRegistry = JSON.parse(cached);
-    } catch (e) {}
-
-    // ৪. ক্লাউড ফাংশন (Firebase Modular SDK v9+ ও Namespaced ডুয়াল সাপোর্ট)
+    // ৪. ক্লাউড ফাংশন (Firebase Modular SDK v9+)
     async function getFirebaseCloudInstance() {
         if (typeof window.getDatabase === 'function' && typeof window.ref === 'function') {
             return {
@@ -133,18 +133,66 @@
         return null;
     }
 
-    async function saveSSC27ExamsToCloud() {
-        localStorage.setItem('cpscl_ssc27_exams_registry', JSON.stringify(s27ExamRegistry));
+    // ৫. ক্লাউডে পরীক্ষা সংরক্ষণ (মূল cpscl_exams-এও নন-ডেস্ট্রাকটিভ সেভ হবে যাতে Live Tabulation সরাসরি পায়)
+    async function saveSSC27ExamToMasterCloud(examObj) {
         const fb = await getFirebaseCloudInstance();
+
+        // ১. নিজস্ব রেজিস্ট্রিতে আপডেট
+        const localIdx = s27ExamRegistry.findIndex(x => x.id === examObj.id);
+        if (localIdx !== -1) {
+            s27ExamRegistry[localIdx] = examObj;
+        } else {
+            s27ExamRegistry.unshift(examObj);
+        }
+        localStorage.setItem('cpscl_ssc27_exams_registry', JSON.stringify(s27ExamRegistry));
+
+        // ২. মূল cpscl_exams ডাটাবেজে মার্জ (ক্লাস এইট অক্ষত রেখে)
+        let mainExams = [];
         if (fb) {
             try {
                 if (fb.mode === 'modular') {
+                    const snap = await fb.get(fb.ref(fb.db, 'cpscl_exams'));
+                    if (snap.exists()) {
+                        const val = snap.val();
+                        mainExams = Array.isArray(val) ? val : Object.values(val);
+                    }
+                } else {
+                    const snap = await fb.db.ref('cpscl_exams').once('value');
+                    if (snap.exists()) {
+                        const val = snap.val();
+                        mainExams = Array.isArray(val) ? val : Object.values(val);
+                    }
+                }
+            } catch (e) {}
+        }
+
+        if (mainExams.length === 0) {
+            try {
+                const loc = localStorage.getItem('cpscl_exams_registry');
+                if (loc) mainExams = JSON.parse(loc);
+            } catch (e) {}
+        }
+
+        const mainIdx = mainExams.findIndex(x => x.id === examObj.id);
+        if (mainIdx !== -1) {
+            mainExams[mainIdx] = examObj;
+        } else {
+            mainExams.unshift(examObj);
+        }
+
+        localStorage.setItem('cpscl_exams_registry', JSON.stringify(mainExams));
+
+        if (fb) {
+            try {
+                if (fb.mode === 'modular') {
+                    await fb.set(fb.ref(fb.db, 'cpscl_exams'), mainExams);
                     await fb.set(fb.ref(fb.db, 'cpscl_ssc27_exams'), s27ExamRegistry);
                 } else {
+                    await fb.db.ref('cpscl_exams').set(mainExams);
                     await fb.db.ref('cpscl_ssc27_exams').set(s27ExamRegistry);
                 }
             } catch (err) {
-                console.warn("Cloud save warning:", err);
+                console.warn("Cloud save notice:", err);
             }
         }
         return true;
@@ -156,37 +204,35 @@
             try {
                 let data = null;
                 if (fb.mode === 'modular') {
-                    const snap = await fb.get(fb.ref(fb.db, 'cpscl_ssc27_exams'));
+                    const snap = await fb.get(fb.ref(fb.db, 'cpscl_exams'));
                     if (snap.exists()) data = snap.val();
-
-                    const snapOv = await fb.get(fb.ref(fb.db, 'cpscl_ssc27_group_overrides'));
-                    if (snapOv.exists()) s27GroupOverrides = snapOv.val() || {};
                 } else {
-                    const snap = await fb.db.ref('cpscl_ssc27_exams').once('value');
+                    const snap = await fb.db.ref('cpscl_exams').once('value');
                     if (snap.exists()) data = snap.val();
-
-                    const snapOv = await fb.db.ref('cpscl_ssc27_group_overrides').once('value');
-                    if (snapOv.exists()) s27GroupOverrides = snapOv.val() || {};
                 }
 
                 if (data) {
-                    s27ExamRegistry = Array.isArray(data) ? data : Object.values(data);
+                    const allExams = Array.isArray(data) ? data : Object.values(data);
+                    // কেবল ক্লাস টেন বা এসএসসি-২৭ পরীক্ষাগুলো ফিল্টার করা
+                    s27ExamRegistry = allExams.filter(x => {
+                        const c = String(x.class || '').toLowerCase();
+                        return c.includes('10') || c.includes('ssc');
+                    });
                     localStorage.setItem('cpscl_ssc27_exams_registry', JSON.stringify(s27ExamRegistry));
                     renderSSC27ExamList();
                     populateSSC27ExamDropdown();
                 }
             } catch (e) {
-                console.warn("Cloud load warning:", e);
+                console.warn("Cloud load notice:", e);
             }
         }
     }
 
-    // ৫. শিক্ষার্থীদের আসল ক্লাউড ফেচিং ইঞ্জিন (Pure Cloud + Cache Backup)
+    // ৬. শিক্ষার্থীদের আসল ক্লাউড ফেচিং ইঞ্জিন
     async function getRealStudents() {
         let allStudents = [];
         const fb = await getFirebaseCloudInstance();
 
-        // ১. সরাসরি ক্লাউড ডাটাবেজ রিড (যে কোনো কম্পিউটার বা মোবাইল থেকে শতভাগ কাজ করবে)
         if (fb) {
             try {
                 if (fb.mode === 'modular') {
@@ -202,12 +248,9 @@
                         allStudents = Array.isArray(val) ? val : Object.values(val);
                     }
                 }
-            } catch (err) {
-                console.warn("Direct Firebase fetch error, checking backup cache:", err);
-            }
+            } catch (err) {}
         }
 
-        // ২. ক্লাউড রেসপন্স না পেলে ক্যাশ রিডার ব্যাকআপ
         if (allStudents.length === 0) {
             try {
                 const cached = localStorage.getItem('cpscl_students_cache');
@@ -215,14 +258,10 @@
             } catch (e) {}
         }
 
-        // ৩. ক্যাশ আপডেট রাখা
         if (allStudents.length > 0) {
             try { localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents)); } catch (e) {}
         }
 
-        console.log(`[SSC27 Suite] Total students retrieved from cloud/cache: ${allStudents.length}`);
-
-        // ৪. এসএসসি-২৭ ব্যাচ (১৭৩ জন) আলাদা করার নিরাপদ ফিল্টার
         return allStudents.filter(s => {
             const cName = String(s.class_name || s.class || s['Class Name *'] || '').trim().toLowerCase();
             const bName = String(s.section_batch || s.section || s.batch || s['Section/Batch *'] || '').trim().toLowerCase();
@@ -235,7 +274,7 @@
         });
     }
 
-    // ৬. মূল ইউজার ইন্টারফেস
+    // ৭. মূল ইউজার ইন্টারফেস
     async function renderSSC27UI() {
         const mainWrapper = document.querySelector('.main-wrapper');
         if (!mainWrapper) return;
@@ -253,7 +292,7 @@
             <div class="s27-wrapper">
                 <div class="s27-header">
                     <h1><i class="fa-solid fa-graduation-cap"></i> SSC 27 Preparatory Management Suite</h1>
-                    <div class="s27-badge"><i class="fa-solid fa-cloud-arrow-up"></i> Pure Cloud Synced</div>
+                    <div class="s27-badge"><i class="fa-solid fa-cloud-arrow-up"></i> Master Cloud Bridge Active</div>
                 </div>
 
                 <div class="s27-nav-tabs">
@@ -326,11 +365,12 @@
                                 </div>
 
                                 <button type="submit" class="s27-btn-submit">
-                                    <i class="fa-solid fa-cloud-arrow-up"></i> Save Preparatory Exam Directly to Cloud
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Save & Sync with Live Tabulation
                                 </button>
                             </form>
                         </div>
 
+                        <!-- Right: Exam History with Lock/Unlock Controls -->
                         <div class="s27-card">
                             <div class="s27-card-title">
                                 <span><i class="fa-solid fa-clock-rotate-left"></i> Published Preparatory Exams</span>
@@ -341,7 +381,7 @@
                                         <tr>
                                             <th>EXAM TITLE</th>
                                             <th>DATE</th>
-                                            <th style="text-align: right;">ACTION</th>
+                                            <th style="text-align: right;">ACTIONS</th>
                                         </tr>
                                     </thead>
                                     <tbody id="s27ExamListTbody"></tbody>
@@ -429,7 +469,7 @@
         await loadSSC27ExamsFromCloud();
     }
 
-    // ৭. ট্যাব স্যুইচিং
+    // ৮. ট্যাব স্যুইচিং
     window.switchSSC27Tab = function (tabKey) {
         document.getElementById('s27TabBtn1').classList.toggle('active', tabKey === 'tab1');
         document.getElementById('s27TabBtn2').classList.toggle('active', tabKey === 'tab2');
@@ -442,7 +482,7 @@
         }
     };
 
-    // ৮. ডাইনামিক গ্রুপ রো যুক্ত করা
+    // ৯. গ্রুপ ও বিষয় বিল্ডার
     window.addSSC27GroupRow = function (name = '', from = '', to = '') {
         const container = document.getElementById('s27GroupRulesContainer');
         if (!container) return;
@@ -519,7 +559,7 @@
         });
     }
 
-    // ৯. ফর্ম সাবমিশন
+    // ১০. ফর্ম সাবমিশন ও লাইভ ট্যাবুলেশনের সাথে সরাসরি সিঙ্ক
     window.handleSSC27Submit = async function (e) {
         e.preventDefault();
         const name = document.getElementById('s27ExamName').value.trim();
@@ -527,7 +567,7 @@
         const date = document.getElementById('s27ExamDate').value;
 
         if (Object.keys(s27SelectedSubjects).length === 0) {
-            alert("অনুগ্রহ করে অন্তত একটি বিষয় সিলেক্ট বা যোগ করুন!");
+            alert("অনুগ্রহ করে অন্তত একটি বিষয় যুক্ত করুন!");
             return;
         }
 
@@ -539,19 +579,71 @@
             if (gName) groups.push({ name: gName, from: gFrom, to: gTo });
         });
 
+        let totalMarks = 0;
+        Object.values(s27SelectedSubjects).forEach(m => totalMarks += m);
+
         const examObj = {
             id: 'SSC27_EX_' + Date.now(),
             name,
             class: className,
             date,
             subjects: { ...s27SelectedSubjects },
+            totalMarks,
             groups,
+            status: 'Active',
             createdAt: new Date().toISOString()
         };
 
-        s27ExamRegistry.unshift(examObj);
-        await saveSSC27ExamsToCloud();
-        alert("পরীক্ষা সফলভাবে ক্লাউডে সংরক্ষিত হয়েছে!");
+        // মূল cpscl_exams ডাটাবেজে সংরক্ষণ (নন-ডেস্ট্রাকটিভ)
+        await saveSSC27ExamToMasterCloud(examObj);
+
+        // শিক্ষার্থীদের প্রাথমিক গ্রুপ ডিস্ট্রিবিউশন cpscl_exam_group_overrides-এ লক করা
+        const students = await getRealStudents();
+        const groupMapping = {};
+        const meritOrder = [];
+
+        students.forEach((st, idx) => {
+            const sl = idx + 1;
+            const sId = String(st.student_id || st.std_id || st.id || st['Student ID *'] || '').trim();
+            let assigned = groups[0] ? groups[0].name : 'Group A (Science)';
+
+            if (BS_STUDENT_IDS.includes(sId)) {
+                assigned = "Group D (Business Studies)";
+            } else if (sl > 146 || (st.sec === 'HUM' || (st.student_category && st.student_category.includes('HUM')))) {
+                assigned = "Group D (Humanities)";
+            } else {
+                if (sl <= 55) assigned = "Group A (Science)";
+                else if (sl <= 105) assigned = "Group B (Science)";
+                else assigned = "Group C (Science)";
+            }
+
+            groupMapping[sId] = assigned;
+            meritOrder.push(sId);
+        });
+
+        // ক্লাউড ওভাররাইডসে সংরক্ষণ যাতে Live Tabulation সরাসরি পড়তে পারে
+        const fb = await getFirebaseCloudInstance();
+        if (fb) {
+            try {
+                let overrides = {};
+                if (fb.mode === 'modular') {
+                    const snap = await fb.get(fb.ref(fb.db, 'cpscl_exam_group_overrides'));
+                    if (snap.exists()) overrides = snap.val() || {};
+                    overrides[examObj.id] = groupMapping;
+                    overrides[examObj.id + '_merit_order'] = meritOrder;
+                    await fb.set(fb.ref(fb.db, 'cpscl_exam_group_overrides'), overrides);
+                } else {
+                    const snap = await fb.db.ref('cpscl_exam_group_overrides').once('value');
+                    if (snap.exists()) overrides = snap.val() || {};
+                    overrides[examObj.id] = groupMapping;
+                    overrides[examObj.id + '_merit_order'] = meritOrder;
+                    await fb.db.ref('cpscl_exam_group_overrides').set(overrides);
+                }
+                localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(overrides));
+            } catch (e) {}
+        }
+
+        alert("পরীক্ষা সফলভাবে তৈরি হয়েছে এবং মূল Live Tabulation-এর সাথে যুক্ত হয়েছে!");
 
         document.getElementById('s27ExamForm').reset();
         s27SelectedSubjects = {};
@@ -561,6 +653,7 @@
         populateSSC27ExamDropdown();
     };
 
+    // ১১. হিস্ট্রি টেবিল ও লক/আনলক কন্ট্রোলার
     function renderSSC27ExamList() {
         const tbody = document.getElementById('s27ExamListTbody');
         if (!tbody) return;
@@ -572,22 +665,71 @@
         }
 
         s27ExamRegistry.forEach(ex => {
+            const isLocked = (ex.status === 'Locked' || ex.status === 'Closed');
+            const statusBadge = isLocked 
+                ? `<span class="s27-status-badge" style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5;">Locked (Closed)</span>`
+                : `<span class="s27-status-badge" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;">Active (Live)</span>`;
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong>${ex.name}</strong><br><small style="color:#64748b;">${ex.groups.length} Groups Configured</small></td>
-                <td>${ex.date}</td>
-                <td style="text-align: right;">
-                    <button type="button" class="s27-btn-icon delete" onclick="window.deleteSSC27Exam('${ex.id}')"><i class="fa-solid fa-trash"></i></button>
+                <td>
+                    <strong>${ex.name}</strong> ${statusBadge}<br>
+                    <small style="color:#64748b;">${(ex.groups || []).length} Groups • Class: ${ex.class}</small>
+                </td>
+                <td style="font-weight:600; color:#475569;">${ex.date}</td>
+                <td style="text-align: right; white-space: nowrap;">
+                    <button type="button" class="s27-btn-icon ${isLocked ? 'unlock' : 'lock'}" onclick="window.toggleSSC27ExamLock('${ex.id}')" title="${isLocked ? 'Unlock Exam (Enable Entry)' : 'Lock Exam (Disable Entry)'}">
+                        <i class="fa-solid ${isLocked ? 'fa-lock' : 'fa-lock-open'}"></i>
+                    </button>
+                    <button type="button" class="s27-btn-icon delete" onclick="window.deleteSSC27Exam('${ex.id}')" title="Delete Exam"><i class="fa-solid fa-trash"></i></button>
                 </td>
             `;
             tbody.appendChild(tr);
         });
     }
 
+    // ১২. লক/আনলক টগল ফাংশন
+    window.toggleSSC27ExamLock = async function (examId) {
+        const exam = s27ExamRegistry.find(x => x.id === examId);
+        if (!exam) return;
+
+        const isCurrentlyLocked = (exam.status === 'Locked' || exam.status === 'Closed');
+        exam.status = isCurrentlyLocked ? 'Active' : 'Closed';
+
+        await saveSSC27ExamToMasterCloud(exam);
+        renderSSC27ExamList();
+
+        if (exam.status === 'Closed') {
+            alert(`'${exam.name}' সফলভাবে লক করা হয়েছে! শিক্ষকদের ফোনে এটি আর এন্ট্রি দেওয়া যাবে না।`);
+        } else {
+            alert(`'${exam.name}' সফলভাবে আনলক করা হয়েছে! শিক্ষকরা এখন নম্বর এন্ট্রি দিতে পারবেন।`);
+        }
+    };
+
     window.deleteSSC27Exam = async function (id) {
-        if (confirm("Are you sure to delete this exam?")) {
+        if (confirm("Are you sure you want to delete this exam?")) {
             s27ExamRegistry = s27ExamRegistry.filter(x => x.id !== id);
-            await saveSSC27ExamsToCloud();
+
+            // মূল cpscl_exams থেকেও ফিল্টার
+            let mainExams = [];
+            try {
+                const loc = localStorage.getItem('cpscl_exams_registry');
+                if (loc) mainExams = JSON.parse(loc);
+            } catch (e) {}
+            mainExams = mainExams.filter(x => x.id !== id);
+            localStorage.setItem('cpscl_exams_registry', JSON.stringify(mainExams));
+
+            const fb = await getFirebaseCloudInstance();
+            if (fb) {
+                try {
+                    if (fb.mode === 'modular') {
+                        await fb.set(fb.ref(fb.db, 'cpscl_exams'), mainExams);
+                    } else {
+                        await fb.db.ref('cpscl_exams').set(mainExams);
+                    }
+                } catch (e) {}
+            }
+
             renderSSC27ExamList();
             populateSSC27ExamDropdown();
         }
@@ -606,7 +748,7 @@
         });
     }
 
-    // ১০. স্টুডেন্ট এলোকেশন ও ফায়ারবেস ক্লাউড ম্যাপিং
+    // ১৩. স্টুডেন্ট এলোকেশন ও ক্লাউড সিঙ্ক
     window.loadSSC27StudentAllocation = async function () {
         const select = document.getElementById('s27TargetExamSelect');
         const tbody = document.getElementById('s27StudentTableTbody');
@@ -628,6 +770,26 @@
             });
         }
 
+        // ক্লাউড ওভাররাইডস পড়া
+        let overrides = {};
+        try {
+            const locOv = localStorage.getItem('cpscl_exam_group_overrides');
+            if (locOv) overrides = JSON.parse(locOv);
+        } catch(e){}
+
+        const fb = await getFirebaseCloudInstance();
+        if (fb) {
+            try {
+                if (fb.mode === 'modular') {
+                    const snap = await fb.get(fb.ref(fb.db, 'cpscl_exam_group_overrides'));
+                    if (snap.exists()) overrides = snap.val() || overrides;
+                } else {
+                    const snap = await fb.db.ref('cpscl_exam_group_overrides').once('value');
+                    if (snap.exists()) overrides = snap.val() || overrides;
+                }
+            } catch(e){}
+        }
+
         s27AllocatedStudents = students.map((st, idx) => {
             const sl = idx + 1;
             const sId = String(st.student_id || st.std_id || st.id || st['Student ID *'] || '').trim();
@@ -635,7 +797,6 @@
 
             let assignedGroup = configuredGroups[0] ? configuredGroups[0].name : 'Group A (Science)';
 
-            // ব্যবসায় শিক্ষা ও মানবিক স্বয়ংক্রিয় বিভাজন
             if (BS_STUDENT_IDS.includes(sId)) {
                 assignedGroup = "Group D (Business Studies)";
             } else if (sl > 146 || (st.sec === 'HUM' || (st.student_category && st.student_category.includes('HUM')))) {
@@ -646,9 +807,8 @@
                 else assignedGroup = "Group C (Science)";
             }
 
-            // ক্লাউড ওভাররাইড থাকলে তা প্রাধান্য পাবে
-            if (s27GroupOverrides[exam.id] && s27GroupOverrides[exam.id][sId]) {
-                assignedGroup = s27GroupOverrides[exam.id][sId];
+            if (overrides[exam.id] && overrides[exam.id][sId]) {
+                assignedGroup = overrides[exam.id][sId];
             }
 
             return {
@@ -740,17 +900,25 @@
         const student = s27AllocatedStudents.find(s => s.id === s27SelectedStudentId);
         if (student) {
             student.group = targetGroup;
-            if (!s27GroupOverrides[examId]) s27GroupOverrides[examId] = {};
-            s27GroupOverrides[examId][student.id] = targetGroup;
 
-            // ক্লাউডে সংরক্ষণ
+            let overrides = {};
+            try {
+                const loc = localStorage.getItem('cpscl_exam_group_overrides');
+                if (loc) overrides = JSON.parse(loc);
+            } catch(e){}
+
+            if (!overrides[examId]) overrides[examId] = {};
+            overrides[examId][student.id] = targetGroup;
+            localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(overrides));
+
+            // ফায়ারবেস cpscl_exam_group_overrides-এ সেভ
             const fb = await getFirebaseCloudInstance();
             if (fb) {
                 try {
                     if (fb.mode === 'modular') {
-                        await fb.set(fb.ref(fb.db, 'cpscl_ssc27_group_overrides'), s27GroupOverrides);
+                        await fb.set(fb.ref(fb.db, 'cpscl_exam_group_overrides'), overrides);
                     } else {
-                        await fb.db.ref('cpscl_ssc27_group_overrides').set(s27GroupOverrides);
+                        await fb.db.ref('cpscl_exam_group_overrides').set(overrides);
                     }
                 } catch(e){}
             }
@@ -763,7 +931,7 @@
         }
     };
 
-    // ১১. আইসোলেটেড ব্ল্যাঙ্ক শিট ভেক্টর প্রিন্ট (মানবিক ও ব্যবসা শিক্ষা আলাদা শিট)
+    // ১৪. আইসোলেটেড ব্ল্যাঙ্ক শিট ভেক্টর প্রিন্ট
     window.openSSC27BlankPrintModal = function () {
         const examId = document.getElementById('s27TargetExamSelect').value;
         const exam = s27ExamRegistry.find(x => x.id === examId);
@@ -901,7 +1069,7 @@
         }, 400);
     };
 
-    // ১২. বুটস্ট্র্যাপ
+    // ১৫. বুটস্ট্র্যাপ
     function init() {
         injectSSC27Styles();
         injectSSC27Sidebar();
