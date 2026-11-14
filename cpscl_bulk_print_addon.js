@@ -6,6 +6,36 @@
 (function () {
     let currentFilter = 'all';
 
+    function formatExcelDate(value) {
+        if (value === null || value === undefined || value === '') return '';
+
+        let date;
+        if (value instanceof Date) {
+            date = value;
+        } else {
+            const text = String(value).trim();
+            if (!text) return '';
+            if (/^\d+(?:\.\d+)?$/.test(text)) {
+                const serial = Number(text);
+                if (!Number.isFinite(serial) || serial < 0 || serial > 2958465) return text;
+                date = new Date(Date.UTC(1899, 11, 30) + Math.floor(serial) * 86400000);
+            } else {
+                const dayFirst = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                if (dayFirst) {
+                    date = new Date(Date.UTC(Number(dayFirst[3]), Number(dayFirst[2]) - 1, Number(dayFirst[1])));
+                    if (date.getUTCDate() !== Number(dayFirst[1]) || date.getUTCMonth() !== Number(dayFirst[2]) - 1) return text;
+                } else {
+                    date = new Date(text);
+                }
+            }
+        }
+
+        if (Number.isNaN(date.getTime())) return String(value);
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        return `${day}/${month}/${date.getUTCFullYear()}`;
+    }
+
     // ১. প্রয়োজনীয় সিএসএস ও প্রিন্ট স্টাইল ইনজেক্ট করা
     function injectCustomStyles() {
         if (document.getElementById('cpscl-addon-styles')) return;
@@ -311,7 +341,7 @@
                     </p>
                 </div>
                 <div class="cert-footer-date">
-                    [Result Publication Date: <span>${st.pubDate || ''}</span>]
+                    [Result Publication Date: <span>${formatExcelDate(st.pubDate)}</span>]
                 </div>
             </div>
         `;
