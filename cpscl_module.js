@@ -11,6 +11,36 @@
     let dbRefFunc = null;
     let dbSetFunc = null;
 
+    function formatExcelDate(value) {
+        if (value === null || value === undefined || value === '') return '';
+
+        let date;
+        if (value instanceof Date) {
+            date = value;
+        } else {
+            const text = String(value).trim();
+            if (!text) return '';
+            if (/^\d+(?:\.\d+)?$/.test(text)) {
+                const serial = Number(text);
+                if (!Number.isFinite(serial) || serial < 0 || serial > 2958465) return text;
+                date = new Date(Date.UTC(1899, 11, 30) + Math.floor(serial) * 86400000);
+            } else {
+                const dayFirst = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                if (dayFirst) {
+                    date = new Date(Date.UTC(Number(dayFirst[3]), Number(dayFirst[2]) - 1, Number(dayFirst[1])));
+                    if (date.getUTCDate() !== Number(dayFirst[1]) || date.getUTCMonth() !== Number(dayFirst[2]) - 1) return text;
+                } else {
+                    date = new Date(text);
+                }
+            }
+        }
+
+        if (Number.isNaN(date.getTime())) return String(value);
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        return `${day}/${month}/${date.getUTCFullYear()}`;
+    }
+
     const TEMPLATE_NAMES = {
         'ssc_testimonial': 'SSC Testimonial',
         'hsc_testimonial': 'HSC Testimonial',
@@ -538,7 +568,7 @@
                             </div>
                             <div class="cpscl-input-group">
                                 <label>Date (Publication / Issue)</label>
-                                <input type="text" id="inpPubDate" class="cpscl-control" value="10 August 2026">
+                                <input type="text" id="inpPubDate" class="cpscl-control" value="10/08/2026">
                             </div>
                         </div>
 
@@ -593,7 +623,7 @@
                         </div>
 
                         <div class="cert-footer-date">
-                            [Result Publication Date: <span id="prevPubDate">10 August 2026</span>]
+                            [Result Publication Date: <span id="prevPubDate">10/08/2026</span>]
                         </div>
                     </div>
                 </div>
@@ -676,7 +706,7 @@
                         dob: row['Date of Birth'] || row['DOB'] || row['জন্ম তারিখ'] || '',
                         board: row['Board'] || row['বোর্ড'] || 'Dinajpur',
                         gpa: gpaVal,
-                        pubDate: row['Publication Date'] || row['Date'] || row['তারিখ'] || '10 August 2026'
+                        pubDate: formatExcelDate(row['Publication Date'] || row['Date'] || row['তারিখ'] || '10 August 2026')
                     };
                 });
 
@@ -782,7 +812,7 @@
         document.getElementById('inpGroup').value = s.group;
         document.getElementById('inpBoard').value = s.board;
         document.getElementById('inpGpa').value = s.gpa;
-        document.getElementById('inpPubDate').value = s.pubDate;
+        document.getElementById('inpPubDate').value = formatExcelDate(s.pubDate);
 
         switchCPSCLSubSection('preview');
     };
@@ -813,7 +843,7 @@
                 "Date of Birth": "30/04/2010",
                 "Session": "2024–2025",
                 "Passing Year": 2026,
-                "Publication Date": "10 August 2026"
+                "Publication Date": "10/08/2026"
             }
         ];
 
@@ -917,7 +947,7 @@
         document.getElementById('prevGroup').innerText = document.getElementById('inpGroup').value;
         document.getElementById('prevBoard').innerText = document.getElementById('inpBoard').value;
         document.getElementById('prevGpa').innerText = document.getElementById('inpGpa').value;
-        document.getElementById('prevPubDate').innerText = document.getElementById('inpPubDate').value;
+        document.getElementById('prevPubDate').innerText = formatExcelDate(document.getElementById('inpPubDate').value);
 
         document.getElementById('prevRelation').innerText = isMale ? "son of" : "daughter of";
         document.getElementById('prevPronoun').innerText = isMale ? "He" : "She";
