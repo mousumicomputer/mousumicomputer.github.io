@@ -1,24 +1,20 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Live Tabulation & Result Sheet Engine (Full Master Pro)
+   SUB-SECTION: Live Tabulation & Result Sheet Engine (Universal Firebase Sync)
    Path: cpscl/live_tabulation_manager.js
-   Architecture: Zero Omission | Auto-Hide Unexamined Subjects | Dynamic Full Marks
-   Sorting: Pure Merit Ordering (Fallback to Source Merit) | Zero Roll Column
+   Architecture: Zero Omission | Auto-Hide Unexamined Subjects | Dual Firebase Engine
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Live Tabulation Master Engine (Pure Merit & Auto-Hide Active)...");
+    console.log("Loading CPSCL Live Tabulation Master Engine (Universal Cloud Sync Active)...");
 
-    // ১. সাইডবারে Exam Manager ড্রপডাউনে "Live Tabulation" মেনু ইনজেক্ট করা
     function injectLiveTabulationSidebar() {
         const examSubmenu = document.getElementById('trust-exam-submenu-items');
         if (!examSubmenu) {
             setTimeout(injectLiveTabulationSidebar, 200);
             return;
         }
-
         if (document.getElementById('sub-link-live-tabulation')) return;
-
         const li = document.createElement('li');
         li.innerHTML = `
             <a class="trust-sub-link" id="sub-link-live-tabulation" onclick="window.switchCPSCLExamSubTab(this, 'live-tabulation')">
@@ -29,7 +25,6 @@
         examSubmenu.appendChild(li);
     }
 
-    // ২. switchCPSCLExamSubTab হুক করে Live Tabulation ভিউ লোড করা
     const prevSwitch = window.switchCPSCLExamSubTab;
     window.switchCPSCLExamSubTab = function (element, tabKey) {
         if (typeof prevSwitch === 'function') {
@@ -63,7 +58,6 @@
         }
     };
 
-    // ৩. স্ক্রিন ও স্টাইল ইনজেকশন
     function injectTabulationStyles() {
         if (document.getElementById('cpscl-tabulation-scoped-styles')) return;
         const style = document.createElement('style');
@@ -74,11 +68,9 @@
             .tab-head-card h1 { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 10px; }
             .tab-head-card h1 i { color: #2563eb; }
             .tab-badge-sync { font-size: 11px; font-weight: 700; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 5px 16px; border-radius: 50px !important; }
-
             .tab-filter-bar { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 20px; padding: 16px 20px; display: grid; grid-template-columns: 1.5fr 1fr 1fr auto; gap: 14px; margin-bottom: 20px; align-items: flex-end; }
             .tab-filter-group label { display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px; }
             .tab-filter-group select, .tab-filter-group input { width: 100%; height: 40px; border: 1.5px solid #cbd5e1; border-radius: 50px !important; padding: 0 16px; font-size: 13px; font-weight: 600; outline: none; background: #fff; color: #1e293b; }
-            
             .tab-btn-pill { height: 40px; padding: 0 18px; border-radius: 50px !important; font-size: 13px; font-weight: 700; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 7px; transition: all 0.2s; text-decoration: none; }
             .tab-btn-primary { background: #2563eb; color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
             .tab-btn-primary:hover { background: #1d4ed8; }
@@ -86,18 +78,14 @@
             .tab-btn-outline:hover { background: #f8fafc; border-color: #94a3b8; }
             .tab-btn-signature { background: #f1f5f9; border: 1.5px solid #cbd5e1; color: #475569; }
             .tab-btn-signature:hover { background: #e2e8f0; color: #0f172a; }
-
             .tab-sheet-panel { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
             .tab-sheet-topbar { padding: 14px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: #fcfdfe; }
-            
-            /* অফিশিয়াল হেডার ডিজাইন */
             .tab-heading-area { text-align: center; padding: 18px 20px 8px; color: #111; }
             .tab-heading-area h2 { font-size: 17px; font-weight: 800; margin: 0 0 4px; text-transform: uppercase; color: #000; letter-spacing: 0.3px; }
             .tab-heading-area h3.class-title { font-size: 14px; font-weight: 700; margin: 2px 0; color: #2563eb; }
             .tab-heading-area h3.exam-title { font-size: 13.5px; font-weight: 700; margin: 2px 0; color: #111; }
             .tab-heading-area h4.group-title { font-size: 13px; font-weight: 700; margin: 2px 0 0; color: #334155; }
             .tab-heading-area .tab-date-line { text-align: right; margin-top: 6px; font-size: 12px; font-weight: 700; color: #222; }
-
             .tab-table-wrap { overflow-x: auto; padding: 0 15px 15px; }
             .tab-table { width: 100%; border-collapse: collapse; min-width: 650px; }
             .tab-table th { background: #fbe7d9 !important; color: #111 !important; border: 1px solid #202020 !important; font-size: 12px; font-weight: 700; text-align: center; padding: 6px 4px; }
@@ -105,15 +93,11 @@
             .tab-table td { border: 1px solid #202020 !important; padding: 5px 6px; font-size: 12px; text-align: center; color: #111; }
             .tab-table td.name-col { text-align: left; font-weight: 600; white-space: nowrap !important; padding-left: 10px; }
             .tab-table td.total-col { font-weight: 800; background: #fdfaf6; }
-
-            /* সিগনেচার ব্লক ডিজাইন */
             .tab-signature-container { display: flex; justify-content: space-around; align-items: flex-end; margin-top: 50px; padding: 0 20px 20px; page-break-inside: avoid; }
             .tab-sig-item { text-align: center; min-width: 170px; }
             .tab-sig-space { height: 50px; }
             .tab-sig-line { width: 100%; border-top: 1.5px solid #000; margin-bottom: 5px; }
             .tab-sig-label { font-size: 12px; font-weight: 700; color: #000; }
-
-            /* সিগনেচার সেটিংস মোডাল */
             .sig-modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100000; display: none; align-items: center; justify-content: center; }
             .sig-modal-box { background: #fff; border-radius: 16px; width: 90%; max-width: 460px; padding: 22px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); }
             .sig-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
@@ -124,7 +108,6 @@
         document.head.appendChild(style);
     }
 
-    // ৪. সিগনেচার তালিকা ম্যানেজমেন্ট
     const DEFAULT_SIGNATURES = ["Course Coordinator", "Vice Principal", "Principal"];
 
     window.getSavedSignatures = function() {
@@ -152,12 +135,11 @@
         const container = document.getElementById('sig-items-list');
         if (!container) return;
         container.innerHTML = '';
-
         list.forEach((sigText) => {
             const row = document.createElement('div');
             row.className = 'sig-item-row';
             row.innerHTML = `
-                <input type="text" class="sig-input-val" value="${sigText}" placeholder="Enter designation (e.g. Principal)">
+                <input type="text" class="sig-input-val" value="${sigText}" placeholder="Enter designation">
                 <button type="button" class="sig-del-btn" onclick="window.removeSigRow(this)"><i class="fa-solid fa-trash"></i></button>
             `;
             container.appendChild(row);
@@ -170,15 +152,13 @@
         const row = document.createElement('div');
         row.className = 'sig-item-row';
         row.innerHTML = `
-            <input type="text" class="sig-input-val" value="" placeholder="New designation (e.g. Class Teacher)">
+            <input type="text" class="sig-input-val" value="" placeholder="New designation">
             <button type="button" class="sig-del-btn" onclick="window.removeSigRow(this)"><i class="fa-solid fa-trash"></i></button>
         `;
         container.appendChild(row);
     };
 
-    window.removeSigRow = function(btn) {
-        btn.closest('.sig-item-row').remove();
-    };
+    window.removeSigRow = function(btn) { btn.closest('.sig-item-row').remove(); };
 
     window.saveSignaturesFromModal = function() {
         const inputs = document.querySelectorAll('.sig-input-val');
@@ -187,18 +167,16 @@
             const val = inp.value.trim();
             if (val) updated.push(val);
         });
-
         localStorage.setItem('cpscl_tab_signatures', JSON.stringify(updated.length > 0 ? updated : DEFAULT_SIGNATURES));
         window.closeSignatureConfigModal();
         renderOnScreenSignatureBlock();
-        if (window.showToast) window.showToast("সিগনেচার তালিকা সফলভাবে আপডেট হয়েছে!", "success");
+        if (window.showToast) window.showToast("সিগনেচার তালিকা আপডেট হয়েছে!", "success");
     };
 
     function renderOnScreenSignatureBlock() {
         const sigContainer = document.getElementById('tabSignatureArea');
         if (!sigContainer) return;
         const list = window.getSavedSignatures();
-
         let sigHtml = '<div class="tab-signature-container">';
         list.forEach(sig => {
             sigHtml += `
@@ -213,7 +191,19 @@
         sigContainer.innerHTML = sigHtml;
     }
 
-    // ৫. মূল কন্টেইনার তৈরি
+    async function getFirebaseInstance() {
+        if (typeof window.getDatabase === 'function' && typeof window.ref === 'function') {
+            return { mode: 'modular', db: window.getDatabase(), ref: window.ref, get: window.get };
+        }
+        if (window.db && typeof window.db.ref === 'function') {
+            return { mode: 'compat', db: window.db };
+        }
+        if (window.firebase && typeof window.firebase.database === 'function') {
+            return { mode: 'compat', db: window.firebase.database() };
+        }
+        return null;
+    }
+
     function renderTabulationContainer() {
         const view = document.getElementById('cpscl-live-tabulation-main-view');
         if (!view) return;
@@ -228,7 +218,6 @@
                     <span class="tab-badge-sync"><i class="fa-solid fa-bolt"></i> Live Calculation Mode</span>
                 </div>
 
-                <!-- Filters -->
                 <div class="tab-filter-bar">
                     <div class="tab-filter-group">
                         <label>Select Examination</label>
@@ -253,7 +242,6 @@
                     </div>
                 </div>
 
-                <!-- Tabulation Sheet Panel -->
                 <div class="tab-sheet-panel">
                     <div class="tab-sheet-topbar">
                         <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem;">
@@ -266,16 +254,12 @@
                             <button type="button" class="tab-btn-pill tab-btn-outline" onclick="window.printTabulationSheet()">
                                 <i class="fa-solid fa-print"></i> Print
                             </button>
-                            <button type="button" class="tab-btn-pill tab-btn-outline" onclick="window.printTabulationSheet()">
-                                <i class="fa-solid fa-file-pdf"></i> Export PDF
-                            </button>
                             <button type="button" class="tab-btn-pill tab-btn-primary" onclick="window.exportTabulationExcel()">
                                 <i class="fa-solid fa-file-excel"></i> Export Excel
                             </button>
                         </div>
                     </div>
 
-                    <!-- Print Sheet Area -->
                     <div id="tabPrintableArea">
                         <div class="tab-heading-area">
                             <h2>CANTONMENT PUBLIC SCHOOL AND COLLEGE LALMONIRHAT</h2>
@@ -301,19 +285,15 @@
                 </div>
             </div>
 
-            <!-- সিগনেচার এডিট করার মোডাল -->
             <div id="cpscl-sig-modal" class="sig-modal-backdrop">
                 <div class="sig-modal-box">
                     <div class="sig-modal-header">
                         <h3 style="margin:0; font-size: 1.1rem; font-weight:800; color: #0f172a;"><i class="fa-solid fa-signature" style="color:#2563eb;"></i> Signature Settings</h3>
                         <button type="button" onclick="window.closeSignatureConfigModal()" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer; color:#64748b;">✕</button>
                     </div>
-                    <p style="font-size: 12px; color: #64748b; margin-bottom: 14px;">প্রতিটি পদবি নিজের মতো পরিবর্তন, ডিলিট বা নতুন যোগ করতে পারেন:</p>
                     <div id="sig-items-list" style="max-height: 250px; overflow-y:auto; margin-bottom: 14px;"></div>
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <button type="button" onclick="window.addSigRow()" style="background:#eff6ff; color:#2563eb; border:1px dashed #bfdbfe; padding:8px 14px; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer;">
-                            <i class="fa-solid fa-plus"></i> Add Signature
-                        </button>
+                        <button type="button" onclick="window.addSigRow()" style="background:#eff6ff; color:#2563eb; border:1px dashed #bfdbfe; padding:8px 14px; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer;"><i class="fa-solid fa-plus"></i> Add Signature</button>
                         <div style="display:flex; gap:8px;">
                             <button type="button" onclick="window.closeSignatureConfigModal()" style="background:#f1f5f9; border:none; padding:8px 14px; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer;">Cancel</button>
                             <button type="button" onclick="window.saveSignaturesFromModal()" style="background:#2563eb; color:#fff; border:none; padding:8px 18px; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer;">Save</button>
@@ -326,28 +306,42 @@
         renderOnScreenSignatureBlock();
     }
 
-    // ৬. পরীক্ষা ও ক্লাসের তালিকা ক্লাউড থেকে সিঙ্ক
     let cachedExams = [];
 
     async function syncDataAndPopulateExams() {
-        const localEx = localStorage.getItem('cpscl_exams_registry');
-        if (localEx) {
-            try { cachedExams = JSON.parse(localEx); } catch(e){}
-        }
+        let combined = new Map();
 
-        if (window.getDatabase && window.ref && window.get) {
+        // ১. লোকাল ক্যাশ থেকে পড়া
+        try {
+            const loc1 = localStorage.getItem('cpscl_exams_registry');
+            if (loc1) JSON.parse(loc1).forEach(x => { if (x && x.id) combined.set(x.id, x); });
+            const loc2 = localStorage.getItem('cpscl_ssc27_exams_registry');
+            if (loc2) JSON.parse(loc2).forEach(x => { if (x && x.id) combined.set(x.id, x); });
+        } catch(e){}
+
+        // ২. ফায়ারবেস থেকে পড়া (Modular + Compat ডুয়াল সাপোর্ট)
+        const fb = await getFirebaseInstance();
+        if (fb) {
             try {
-                const db = window.getDatabase();
-                const snap = await window.get(window.ref(db, 'cpscl_exams'));
-                if (snap.exists()) {
-                    const data = snap.val();
-                    cachedExams = Array.isArray(data) ? data : Object.values(data);
-                    localStorage.setItem('cpscl_exams_registry', JSON.stringify(cachedExams));
+                let data = null;
+                if (fb.mode === 'modular') {
+                    const snap = await fb.get(fb.ref(fb.db, 'cpscl_exams'));
+                    if (snap.exists()) data = snap.val();
+                } else {
+                    const snap = await fb.db.ref('cpscl_exams').once('value');
+                    if (snap.exists()) data = snap.val();
+                }
+                if (data) {
+                    const arr = Array.isArray(data) ? data : Object.values(data);
+                    arr.forEach(x => { if (x && x.id) combined.set(x.id, x); });
                 }
             } catch(e) {
-                console.warn("Exams sync note:", e);
+                console.warn("Live tab cloud exams sync note:", e);
             }
         }
+
+        cachedExams = Array.from(combined.values());
+        localStorage.setItem('cpscl_exams_registry', JSON.stringify(cachedExams));
 
         const examSelect = document.getElementById('tabSelectExam');
         if (!examSelect) return;
@@ -368,14 +362,12 @@
         }
     }
 
-    // ৭. পরীক্ষা পরিবর্তন হলে ক্লাস ও গ্রুপ ড্রপডাউন রিফ্রেশ
     window.onTabExamChange = function(examId) {
         const exam = cachedExams.find(x => x.id === examId);
         const classInp = document.getElementById('tabDisplayClass');
         const grpSelect = document.getElementById('tabSelectGroup');
 
         if (!exam) return;
-
         if (classInp) classInp.value = exam.class || 'N/A';
 
         if (grpSelect) {
@@ -403,20 +395,14 @@
         window.loadLiveTabulationData();
     };
 
-    // ৮. গ্রুপ নির্ধারণের হেল্পার (আগে ওভাররাইড চেক করবে)
     function determineStudentGroup(st, sl, exam, overrides) {
-        const studentId = String(st.std_id || st.id || '').trim();
-
-        // ১. ক্লাউডে মেধা অনুযায়ী নির্ধারিত গ্রুপ থাকলে সবার আগে সেটিই কার্যকর হবে
+        const studentId = String(st.std_id || st.student_id || st.id || st['Student ID *'] || '').trim();
         if (overrides && overrides[exam.id] && overrides[exam.id][studentId]) {
             return overrides[exam.id][studentId];
         }
-
-        // ২. ফলব্যাক নিয়ম
         return (sl <= 40) ? "Group A" : "Group B";
     }
 
-    // ৯. লাইভ ট্যাবুলেশন ডাটা লোড ও গণনা ইঞ্জিন (১০০% মেধাভিত্তিক ও অটো-হাইড)
     window.loadLiveTabulationData = async function() {
         const examSelect = document.getElementById('tabSelectExam');
         const grpSelect = document.getElementById('tabSelectGroup');
@@ -432,29 +418,35 @@
         const selectedGroup = grpSelect ? grpSelect.value : 'ALL';
         const isAllGroup = (selectedGroup === 'ALL');
 
-        // হেডারে পরীক্ষার তথ্য আপডেট
         document.getElementById('tabHeadingClass').innerText = exam.class || '';
         document.getElementById('tabHeadingExam').innerText = exam.name || '';
         document.getElementById('tabHeadingDate').innerText = exam.date || new Date().toISOString().split('T')[0];
 
-        // গ্রুপ হেডার লাইন
         let groupDisplayLabel = "Group: All";
-        if (!isAllGroup) {
-            groupDisplayLabel = `Group: ${selectedGroup.replace(/group\s*/i, '')}`;
-        }
+        if (!isAllGroup) groupDisplayLabel = `Group: ${selectedGroup.replace(/group\s*/i, '')}`;
         document.getElementById('tabHeadingGroup').innerText = groupDisplayLabel;
 
-        // বিষয়সমূহ লোড করা
         const subjects = exam.subjects || {};
         const subjectKeys = Object.keys(subjects);
 
-        // ক্লাসের শিক্ষার্থীদের লোড করা
-        let allStudents = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
-        if (allStudents.length === 0 && window.getDatabase && window.ref && window.get) {
+        // শিক্ষার্থীদের লোড করা
+        let allStudents = [];
+        try {
+            allStudents = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
+        } catch(e){}
+
+        const fb = await getFirebaseInstance();
+        if (allStudents.length === 0 && fb) {
             try {
-                const snap = await window.get(window.ref(window.getDatabase(), 'cpscl_students'));
-                if (snap.exists()) {
-                    const data = snap.val();
+                let data = null;
+                if (fb.mode === 'modular') {
+                    const snap = await fb.get(fb.ref(fb.db, 'cpscl_students'));
+                    if (snap.exists()) data = snap.val();
+                } else {
+                    const snap = await fb.db.ref('cpscl_students').once('value');
+                    if (snap.exists()) data = snap.val();
+                }
+                if (data) {
                     allStudents = Array.isArray(data) ? data : Object.values(data);
                     localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents));
                 }
@@ -463,31 +455,41 @@
 
         let overrides = {};
         try { overrides = JSON.parse(localStorage.getItem('cpscl_exam_group_overrides') || '{}'); } catch(e){}
-
-        if (window.getDatabase && window.ref && window.get) {
+        if (fb) {
             try {
-                const snapOv = await window.get(window.ref(window.getDatabase(), 'cpscl_exam_group_overrides'));
-                if (snapOv.exists()) {
-                    overrides = snapOv.val() || overrides;
+                let ovData = null;
+                if (fb.mode === 'modular') {
+                    const snapOv = await fb.get(fb.ref(fb.db, 'cpscl_exam_group_overrides'));
+                    if (snapOv.exists()) ovData = snapOv.val();
+                } else {
+                    const snapOv = await fb.db.ref('cpscl_exam_group_overrides').once('value');
+                    if (snapOv.exists()) ovData = snapOv.val();
+                }
+                if (ovData) {
+                    overrides = ovData;
                     localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(overrides));
                 }
             } catch(e){}
         }
 
-        // ক্লাস অনুযায়ী ফিল্টার
+        // ক্লাস অনুযায়ী সঠিক ফিল্টার
         let targetStudents = allStudents.filter(s => {
-            const cName = String(s.class_name || s.class || '').trim().toLowerCase();
-            const examC = String(exam.class).trim().toLowerCase();
-            return cName === examC || cName.includes(examC) || examC.includes(cName);
+            const cName = String(s.class_name || s.class || s['Class Name *'] || '').trim().toLowerCase();
+            const bName = String(s.section_batch || s.section || s.batch || s['Section/Batch *'] || '').trim().toLowerCase();
+            const examC = String(exam.class || '').trim().toLowerCase();
+
+            const isClassMatch = cName === examC || cName.includes(examC) || examC.includes(cName);
+            const isSSC27 = examC.includes('10') && (cName.includes('10') || cName.includes('ssc') || bName.includes('ssc') || bName.includes('27'));
+            const isClass8 = cName.includes('eight') || cName.includes('8') || bName.includes('scholarship');
+
+            return (isClassMatch || isSSC27) && !isClass8;
         });
 
-        // মেধা সর্ট অর্ডার (যদি এক্সাম ম্যানেজারে সংরক্ষিত থাকে)
         const savedMeritOrder = (overrides && overrides[exam.id + '_merit_order']) ? overrides[exam.id + '_merit_order'] : [];
-
         if (savedMeritOrder && savedMeritOrder.length > 0) {
             targetStudents.sort((a, b) => {
-                const idA = String(a.std_id || a.id || '').trim();
-                const idB = String(b.std_id || b.id || '').trim();
+                const idA = String(a.std_id || a.student_id || a.id || a['Student ID *'] || '').trim();
+                const idB = String(b.std_id || b.student_id || b.id || b['Student ID *'] || '').trim();
                 let idxA = savedMeritOrder.indexOf(idA);
                 let idxB = savedMeritOrder.indexOf(idB);
                 if (idxA === -1) idxA = 99999;
@@ -496,47 +498,46 @@
             });
         }
 
-        // গ্রুপ অ্যাসাইন করা
         targetStudents.forEach((st, idx) => {
             st.computedGroup = determineStudentGroup(st, idx + 1, exam, overrides);
         });
 
-        // নির্বাচিত গ্রুপ অনুযায়ী ফিল্টার
         if (!isAllGroup) {
             targetStudents = targetStudents.filter(s => s.computedGroup === selectedGroup);
         }
 
         if (targetStudents.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="padding:35px; color:#94a3b8; text-align:center;">কোনো শিক্ষার্থী পাওয়া যায়নি (No students found for this class/group).</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="padding:35px; color:#94a3b8; text-align:center;">কোনো শিক্ষার্থী পাওয়া যায়নি (No students found).</td></tr>`;
             return;
         }
 
-        // বিষয়ভিত্তিক নম্বর সংগ্রহ করা
+        // নম্বর লোড করা
         const marksBySubject = {};
-
         for (let sub of subjectKeys) {
             let subMarks = JSON.parse(localStorage.getItem(`cpscl_marks_${examId}_${sub}`) || '{}');
-
-            if (window.getDatabase && window.ref && window.get) {
+            if (fb) {
                 try {
-                    const snapM = await window.get(window.ref(window.getDatabase(), `cpscl_exam_marks/${examId}_${sub}`));
-                    if (snapM.exists()) {
-                        subMarks = snapM.val() || subMarks;
+                    let mData = null;
+                    if (fb.mode === 'modular') {
+                        const snapM = await fb.get(fb.ref(fb.db, `cpscl_exam_marks/${examId}_${sub}`));
+                        if (snapM.exists()) mData = snapM.val();
+                    } else {
+                        const snapM = await fb.db.ref(`cpscl_exam_marks/${examId}_${sub}`).once('value');
+                        if (snapM.exists()) mData = snapM.val();
                     }
+                    if (mData) subMarks = mData;
                 } catch(e){}
             }
             marksBySubject[sub] = subMarks;
         }
 
-        // শিক্ষার্থীদের নম্বর হিসাব করা
         const computedRows = targetStudents.map(st => {
-            const stId = String(st.std_id || st.id || '').trim();
-            const stName = st.student_name || st.name || 'Unnamed';
+            const stId = String(st.std_id || st.student_id || st.id || st['Student ID *'] || '').trim();
+            const stName = st.student_name || st.name_english || st.name || st['Name (English) *'] || 'Student';
             let studentTotal = 0;
             let hasAnyMark = false;
 
             const subjectScores = {};
-
             subjectKeys.forEach(sub => {
                 const rec = (marksBySubject[sub] && marksBySubject[sub][stId]) ? marksBySubject[sub][stId] : null;
                 let val = null;
@@ -547,7 +548,6 @@
                         val = (parseFloat(rec.cq) || 0) + (parseFloat(rec.mcq) || 0) + (parseFloat(rec.practical) || 0);
                     }
                 }
-
                 if (val !== null && !isNaN(val)) {
                     subjectScores[sub] = val;
                     studentTotal += val;
@@ -567,33 +567,24 @@
             };
         });
 
-        // 🌟 স্মার্ট অটো-হাইড: যে যে বিষয়ের পরীক্ষা হয়েছে শুধু সেই বিষয়গুলো দৃশ্যমান হবে
         let activeSubjectsForView = [];
         let totalFullMarks = 0;
+        const anyMarkEntered = computedRows.some(r => r.hasAnyMark);
 
-        const anyMarkEnteredInView = computedRows.some(r => r.hasAnyMark);
-
-        if (anyMarkEnteredInView) {
-            // যদি নম্বর এন্ট্রি শুরু হয়ে থাকে, তবে যে বিষয়ে অন্তত ১ জন পরীক্ষা দিয়েছে কেবল সেটাই থাকবে
+        if (anyMarkEntered) {
             activeSubjectsForView = subjectKeys.filter(sub => {
                 return computedRows.some(r => r.subjectScores[sub] !== '-');
             });
         } else {
-            // যদি এখনো কারও নম্বর এন্ট্রি না হয়ে থাকে (ব্ল্যাঙ্ক ভিউ)
             activeSubjectsForView = [...subjectKeys];
         }
 
         activeSubjectsForView.forEach(sub => {
-            totalFullMarks += (parseInt(subjects[sub]) || 30);
+            totalFullMarks += (parseInt(subjects[sub]) || 20);
         });
 
-        // 🌟 মেধা সর্টিং লজিক:
-        // ১. যদি মোট নম্বর থাকে, তবে বেশি নম্বর পাওয়া শিক্ষার্থী উপরে থাকবে (Merit Order)
-        // ২. যদি সবার নম্বর ০ হয় (পরীক্ষার আগে), তবে পূর্ববর্তী মেধা ক্রমেই ১, ২, ৩ ... সাজানো থাকবে (মেহরাব ১ নম্বরে)
         computedRows.sort((a, b) => {
-            if (b.total !== a.total) {
-                return b.total - a.total;
-            }
+            if (b.total !== a.total) return b.total - a.total;
             if (savedMeritOrder && savedMeritOrder.length > 0) {
                 let idxA = savedMeritOrder.indexOf(a.id);
                 let idxB = savedMeritOrder.indexOf(b.id);
@@ -604,39 +595,32 @@
             return a.id.localeCompare(b.id);
         });
 
-        // টেবিল হেডার তৈরি (কোনো রোল কলাম নেই, একক গ্রুপে গ্রুপ কলামও থাকবে না)
         let thHtml = `<tr>
             <th style="width: 6%;">Merit</th>
             <th style="width: 14%;">Student ID</th>
             <th style="text-align: left; padding-left: 10px;">Student Name</th>
         `;
 
-        if (isAllGroup) {
-            thHtml += `<th style="width: 9%;">Group</th>`;
-        }
+        if (isAllGroup) thHtml += `<th style="width: 9%;">Group</th>`;
 
         activeSubjectsForView.forEach(sub => {
-            const fMark = subjects[sub] || 30;
+            const fMark = subjects[sub] || 20;
             thHtml += `<th style="min-width: 50px;">${sub}<br><small>(${fMark})</small></th>`;
         });
 
         thHtml += `<th style="width: 10%;">Total<br><small>(${totalFullMarks})</small></th></tr>`;
         thead.innerHTML = thHtml;
 
-        // টেবিল বডিতে রো রেন্ডার করা
         tbody.innerHTML = '';
         computedRows.forEach((row, idx) => {
             const tr = document.createElement('tr');
-
             let tdHtml = `
                 <td>${idx + 1}</td>
                 <td>${row.id}</td>
                 <td class="name-col">${row.name}</td>
             `;
 
-            if (isAllGroup) {
-                tdHtml += `<td>${row.group}</td>`;
-            }
+            if (isAllGroup) tdHtml += `<td>${row.group}</td>`;
 
             activeSubjectsForView.forEach(sub => {
                 const score = row.subjectScores[sub];
@@ -651,7 +635,6 @@
         renderOnScreenSignatureBlock();
     };
 
-    // ১০. আসল ভেক্টর অফিশিয়াল প্রিন্ট ইঞ্জিন (কোনো রোল নেই, ধারালো লেখা)
     window.printTabulationSheet = function() {
         const printArea = document.getElementById('tabPrintableArea');
         if (!printArea) {
@@ -681,124 +664,25 @@
                 <meta charset="UTF-8">
                 <title>Tabulation Sheet - CPSCL</title>
                 <style>
-                    @page {
-                        size: A4 portrait;
-                        margin: 7mm 8mm 10mm 8mm;
-                    }
-                    * {
-                        box-sizing: border-box;
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
-                    body {
-                        font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
-                        color: #000;
-                        background: #fff;
-                        margin: 0;
-                        padding: 0;
-                        -webkit-font-smoothing: antialiased;
-                        text-rendering: optimizeLegibility;
-                    }
-                    .tab-heading-area {
-                        text-align: center;
-                        margin-bottom: 6px;
-                    }
-                    .tab-heading-area h2 {
-                        font-size: 15px;
-                        font-weight: bold;
-                        margin: 0 0 3px;
-                        text-transform: uppercase;
-                        letter-spacing: 0.4px;
-                        color: #000;
-                    }
-                    .tab-heading-area h3.class-title {
-                        font-size: 12.5px;
-                        font-weight: bold;
-                        margin: 2px 0;
-                        color: #0f3460;
-                    }
-                    .tab-heading-area h3.exam-title {
-                        font-size: 12px;
-                        font-weight: bold;
-                        margin: 2px 0;
-                        color: #111;
-                    }
-                    .tab-heading-area h4.group-title {
-                        font-size: 11.5px;
-                        font-weight: bold;
-                        margin: 2px 0 0;
-                        color: #222;
-                    }
-                    .tab-heading-area .tab-date-line {
-                        text-align: right;
-                        margin: 2px 0 4px 0;
-                        font-size: 10.5px;
-                        font-weight: bold;
-                        color: #111;
-                    }
-                    .tab-table-wrap {
-                        width: 100%;
-                    }
-                    table {
-                        width: 100%;
-                        border-collapse: collapse !important;
-                        table-layout: auto;
-                    }
-                    th, td {
-                        border: 1.2px solid #000 !important;
-                        padding: 3.2px 3px !important;
-                        font-size: 10px !important;
-                        text-align: center;
-                        color: #000;
-                        line-height: 1.15;
-                    }
-                    th {
-                        background-color: #fbe7d9 !important;
-                        font-weight: bold;
-                        padding: 4px 3px !important;
-                    }
-                    th small {
-                        font-size: 8.5px;
-                        font-weight: bold;
-                    }
-                    td.name-col {
-                        text-align: left !important;
-                        padding-left: 6px !important;
-                        font-weight: bold;
-                        white-space: nowrap !important;
-                    }
-                    td.total-col {
-                        font-weight: bold;
-                        background-color: #faf5ee !important;
-                    }
-                    tr {
-                        page-break-inside: avoid !important;
-                    }
-                    .tab-signature-container {
-                        display: flex;
-                        justify-content: space-around;
-                        align-items: flex-end;
-                        margin-top: 45px;
-                        padding: 0 15px 5px;
-                        page-break-inside: avoid !important;
-                    }
-                    .tab-sig-item {
-                        text-align: center;
-                        min-width: 160px;
-                    }
-                    .tab-sig-space {
-                        height: 55px;
-                    }
-                    .tab-sig-line {
-                        width: 100%;
-                        border-top: 1.5px solid #000;
-                        margin-bottom: 4px;
-                    }
-                    .tab-sig-label {
-                        font-size: 11px;
-                        font-weight: bold;
-                        color: #000;
-                    }
+                    @page { size: A4 portrait; margin: 7mm 8mm 10mm 8mm; }
+                    * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                    body { font-family: Arial, sans-serif; color: #000; background: #fff; margin: 0; padding: 0; }
+                    .tab-heading-area { text-align: center; margin-bottom: 6px; }
+                    .tab-heading-area h2 { font-size: 15px; font-weight: bold; margin: 0 0 3px; text-transform: uppercase; }
+                    .tab-heading-area h3.class-title { font-size: 12.5px; font-weight: bold; margin: 2px 0; color: #0f3460; }
+                    .tab-heading-area h3.exam-title { font-size: 12px; font-weight: bold; margin: 2px 0; color: #111; }
+                    .tab-heading-area h4.group-title { font-size: 11.5px; font-weight: bold; margin: 2px 0 0; color: #222; }
+                    .tab-heading-area .tab-date-line { text-align: right; margin: 2px 0 4px 0; font-size: 10.5px; font-weight: bold; }
+                    table { width: 100%; border-collapse: collapse !important; }
+                    th, td { border: 1.2px solid #000 !important; padding: 3.2px 3px !important; font-size: 10px !important; text-align: center; }
+                    th { background-color: #fbe7d9 !important; font-weight: bold; }
+                    td.name-col { text-align: left !important; padding-left: 6px !important; font-weight: bold; white-space: nowrap !important; }
+                    td.total-col { font-weight: bold; background-color: #faf5ee !important; }
+                    .tab-signature-container { display: flex; justify-content: space-around; align-items: flex-end; margin-top: 45px; padding: 0 15px 5px; page-break-inside: avoid !important; }
+                    .tab-sig-item { text-align: center; min-width: 160px; }
+                    .tab-sig-space { height: 55px; }
+                    .tab-sig-line { width: 100%; border-top: 1.5px solid #000; margin-bottom: 4px; }
+                    .tab-sig-label { font-size: 11px; font-weight: bold; }
                 </style>
             </head>
             <body>
@@ -814,7 +698,6 @@
         }, 500);
     };
 
-    // ১১. এক্সেল এক্সপোর্ট
     window.exportTabulationExcel = function() {
         const table = document.getElementById('tabMainTable');
         const examTitle = document.getElementById('tabHeadingExam').innerText || 'Tabulation';
@@ -839,7 +722,6 @@
         }
     };
 
-    // ১২. ইনিশিয়ালাইজেশন
     function init() {
         injectTabulationStyles();
         injectLiveTabulationSidebar();
