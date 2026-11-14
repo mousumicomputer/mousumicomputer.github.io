@@ -15,6 +15,36 @@
     let dbRefFunc = null;
     let dbSetFunc = null;
 
+    function formatExcelDate(value) {
+        if (value === null || value === undefined || value === '') return '';
+
+        let date;
+        if (value instanceof Date) {
+            date = value;
+        } else {
+            const text = String(value).trim();
+            if (!text) return '';
+            if (/^\d+(?:\.\d+)?$/.test(text)) {
+                const serial = Number(text);
+                if (!Number.isFinite(serial) || serial < 0 || serial > 2958465) return text;
+                date = new Date(Date.UTC(1899, 11, 30) + Math.floor(serial) * 86400000);
+            } else {
+                const dayFirst = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                if (dayFirst) {
+                    date = new Date(Date.UTC(Number(dayFirst[3]), Number(dayFirst[2]) - 1, Number(dayFirst[1])));
+                    if (date.getUTCDate() !== Number(dayFirst[1]) || date.getUTCMonth() !== Number(dayFirst[2]) - 1) return text;
+                } else {
+                    date = new Date(text);
+                }
+            }
+        }
+
+        if (Number.isNaN(date.getTime())) return String(value);
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        return `${day}/${month}/${date.getUTCFullYear()}`;
+    }
+
     // বোর্ডের আসল রেজাল্ট শিট থেকে প্রতিটি রোলের সঠিক জিপিএ ডাটাবেজ
     const OFFICIAL_HSC_GPA = {
         "143962": "3.50", "143963": "3.75", "143964": "3.50", "143965": "3.42", "143966": "3.92",
@@ -655,7 +685,7 @@
             document.getElementById('modalGroup').value = st.group || '';
             document.getElementById('modalBoard').value = st.board || 'Dinajpur';
             document.getElementById('modalGpa').value = st.gpa || '';
-            document.getElementById('modalPubDate').value = st.pubDate || '';
+            document.getElementById('modalPubDate').value = formatExcelDate(st.pubDate);
         } else {
             title.innerText = "Add New Student Record";
             submitBtn.innerText = "Save Student";
@@ -666,7 +696,7 @@
             document.getElementById('modalSession').value = '2024–2025';
             document.getElementById('modalYear').value = '2026';
             document.getElementById('modalBoard').value = 'Dinajpur';
-            document.getElementById('modalPubDate').value = '31 October 2026';
+            document.getElementById('modalPubDate').value = '31/10/2026';
         }
 
         modal.style.display = 'flex';
@@ -756,7 +786,7 @@
         if (document.getElementById('inpGroup')) document.getElementById('inpGroup').value = st.group || '';
         if (document.getElementById('inpBoard')) document.getElementById('inpBoard').value = st.board || '';
         if (document.getElementById('inpGpa')) document.getElementById('inpGpa').value = st.gpa || '';
-        if (document.getElementById('inpPubDate')) document.getElementById('inpPubDate').value = st.pubDate || '';
+        if (document.getElementById('inpPubDate')) document.getElementById('inpPubDate').value = formatExcelDate(st.pubDate);
 
         if (typeof window.switchCPSCLSubSection === 'function') {
             window.switchCPSCLSubSection('preview');
@@ -833,7 +863,7 @@
                     </p>
                 </div>
                 <div class="cert-footer-date">
-                    [Result Publication Date: <span>${st.pubDate || ''}</span>]
+                    [Result Publication Date: <span>${formatExcelDate(st.pubDate)}</span>]
                 </div>
             </div>
         `;
