@@ -329,30 +329,122 @@
     // ৬. পরীক্ষা ও ক্লাসের তালিকা ক্লাউড থেকে সিঙ্ক
     let cachedExams = [];
 
+    function normalizeExamRecord(exam, fallbackId) {
+        if (!exam || typeof exam !== 'object') return null;
+        const id = exam.id || exam.examId || exam.exam_id || fallbackId;
+        if (!id) return null;
+        return {
+            ...exam,
+            id: String(id),
+            name: exam.name || exam.examName || exam.exam_name || exam.title || '',
+            class: exam.class || exam.className || exam.class_name || exam.grade || '',
+            date: exam.date || exam.examDate || exam.exam_date || '',
+            status: exam.status || exam.examStatus || exam.exam_status || ''
+        };
+    }
+
+    function getExamRecords(data) {
+        if (Array.isArray(data)) {
+            return data.map(exam => normalizeExamRecord(exam)).filter(Boolean);
+        }
+        if (!data || typeof data !== 'object') return [];
+        if (data.id || data.examId || data.exam_id) {
+            const exam = normalizeExamRecord(data);
+            return exam ? [exam] : [];
+        }
+        return Object.entries(data)
+            .map(([key, exam]) => normalizeExamRecord(exam, key))
+            .filter(Boolean);
+    }
+
+    function isSSC27Exam(exam) {
+        const classInfo = String(exam && (exam.class || exam.className || exam.class_name || exam.grade) || '').toLowerCase();
+        const metadata = String(exam && (exam.id || exam.session || exam.batch || exam.category || '') || '').toLowerCase();
+        if (classInfo.includes('class 8') || classInfo.includes('eight scholarship')) return false;
+        return /\bclass\s*10\b/.test(classInfo) ||
+            /\bssc\b/.test(classInfo) ||
+            metadata.includes('ssc27') ||
+            metadata.includes('ssc 27');
+    }
+
+    function isClass8Exam(exam) {
+        const classInfo = String(exam && (exam.class || exam.className || exam.class_name || '')).trim().toLowerCase();
+        return !isSSC27Exam(exam) && (classInfo === 'eight scholarship batch-2026' ||
+            /\bclass\s*8\b/.test(classInfo) || /\beight\b/.test(classInfo));
+    }
+
+    function getStudentId(student) {
+        return String(student.std_id || student.student_id || student.id || '').trim();
+    }
+
+    function getStudentTrack(student) {
+        const info = [
+            student.department,
+            student.student_category,
+            student.studentCategory,
+            student.academic_group,
+            student.group,
+            student.group_name,
+            student.stream,
+            student.sec
+        ].filter(Boolean).join(' ').toLowerCase();
+        if (/business|commerce|b\.?\s*studies/.test(info)) return 'business';
+        if (/humanities|arts|\bhum\b/.test(info)) return 'humanities';
+        return 'science';
+    }
+
+    function getStudentMeritRank(student) {
+        const rank = Number(student.merit_rank || student.meritRank || student.overallRank || student.overall_rank || student.rank || student.merit_position);
+        return Number.isFinite(rank) && rank > 0 ? rank : Number.POSITIVE_INFINITY;
+    }
+
+    function getConfiguredGroup(track, rank, exam) {
+        const groups = Array.isArray(exam.groups) ? exam.groups : [];
+        const trackGroups = groups.filter(group => {
+            const name = String(group.name || '').toLowerCase();
+            return track === 'business'
+                ? /business|commerce|b\.?\s*studies/.test(name)
+                : track === 'humanities'
+                    ? /humanities|arts|\bhum\b/.test(name)
+                    : /science/.test(name);
+        });
+        const match = trackGroups.find(group => {
+            const from = Number.parseInt(group.from, 10);
+            const to = Number.parseInt(group.to, 10);
+            return Number.isFinite(from) && rank >= from && (!Number.isFinite(to) || rank <= to);
+        });
+        return match ? match.name : (trackGroups[0] ? trackGroups[0].name : 'Unassigned');
+    }
+
     async function syncDataAndPopulateExams() {
-        const localEx = localStorage.getItem('cpscl_exams_registry');
-        if (localEx) {
-            try { cachedExams = JSON.parse(localEx); } catch(e){}
+        try {
+            const localEx = localStorage.getItem('cpscl_exams_registry');
+            if (localEx) cachedExams = getExamRecords(JSON.parse(localEx));
+        } catch (error) {
+            console.warn("Local exam registry cache could not be read:", error);
         }
 
         if (window.getDatabase && window.ref && window.get) {
+            const db = window.getDatabase();
+            const cloudExams = new Map();
             try {
-                const db = window.getDatabase();
                 const snap = await window.get(window.ref(db, 'cpscl_exams'));
                 if (snap.exists()) {
-                    const data = snap.val();
-                    cachedExams = Array.isArray(data) ? data : Object.values(data);
-                    localStorage.setItem('cpscl_exams_registry', JSON.stringify(cachedExams));
+                    getExamRecords(snap.val()).forEach(exam => {
+                        cloudExams.set(String(exam.id), exam);
+                    });
                 }
-            } catch(e) {
-                console.warn("Exams sync note:", e);
+                cachedExams = Array.from(cloudExams.values());
+                localStorage.setItem('cpscl_exams_registry', JSON.stringify(cachedExams));
+            } catch (error) {
+                console.warn("Exam registry read failed for cpscl_exams:", error);
             }
         }
 
         const examSelect = document.getElementById('tabSelectExam');
         if (!examSelect) return;
 
-        examSelect.innerHTML = '';
+        examSelect.innerHTML = '<option value="">-- Select an Exam --</option>';
         if (cachedExams.length === 0) {
             examSelect.innerHTML = '<option value="">-- No Exams Configured --</option>';
             return;
@@ -362,9 +454,14 @@
             examSelect.innerHTML += `<option value="${ex.id}">${ex.name} (${ex.class})</option>`;
         });
 
-        if (cachedExams.length > 0) {
-            examSelect.value = cachedExams[0].id;
-            window.onTabExamChange(cachedExams[0].id);
+        const preferredExam = cachedExams.find(exam =>
+            isSSC27Exam(exam) && /^daily\s+test\s*[-–]?\s*0?1$/i.test(String(exam.name || '').trim())
+        ) || cachedExams.find(isSSC27Exam);
+        if (preferredExam) {
+            examSelect.value = preferredExam.id;
+            window.onTabExamChange(preferredExam.id);
+        } else {
+            examSelect.value = '';
         }
     }
 
@@ -383,14 +480,14 @@
             const groupSet = new Set();
             if (exam.groups && exam.groups.length > 0) {
                 exam.groups.forEach(g => { if (g.name) groupSet.add(g.name.trim()); });
-            } else {
+            } else if (isClass8Exam(exam)) {
                 groupSet.add("Group A");
                 groupSet.add("Group B");
             }
 
             try {
                 const overrides = JSON.parse(localStorage.getItem('cpscl_exam_group_overrides') || '{}');
-                if (overrides[exam.id]) {
+                if (groupSet.size === 0 && overrides[exam.id]) {
                     Object.values(overrides[exam.id]).forEach(ovG => groupSet.add(ovG));
                 }
             } catch(e){}
@@ -404,16 +501,23 @@
     };
 
     // ৮. গ্রুপ নির্ধারণের হেল্পার (আগে ওভাররাইড চেক করবে)
-    function determineStudentGroup(st, sl, exam, overrides) {
-        const studentId = String(st.std_id || st.id || '').trim();
+    function determineStudentGroup(st, meritRank, exam, overrides, trackRank) {
+        const studentId = getStudentId(st);
 
         // ১. ক্লাউডে মেধা অনুযায়ী নির্ধারিত গ্রুপ থাকলে সবার আগে সেটিই কার্যকর হবে
         if (overrides && overrides[exam.id] && overrides[exam.id][studentId]) {
             return overrides[exam.id][studentId];
         }
 
-        // ২. ফলব্যাক নিয়ম
-        return (sl <= 40) ? "Group A" : "Group B";
+        if (isSSC27Exam(exam)) {
+            return getConfiguredGroup(getStudentTrack(st), trackRank, exam);
+        }
+
+        if (isClass8Exam(exam)) {
+            return meritRank <= 40 ? "Group A" : "Group B";
+        }
+
+        return 'Unassigned';
     }
 
     // ৯. লাইভ ট্যাবুলেশন ডাটা লোড ও গণনা ইঞ্জিন (১০০% মেধাভিত্তিক ও অটো-হাইড)
@@ -483,22 +587,44 @@
 
         // মেধা সর্ট অর্ডার (যদি এক্সাম ম্যানেজারে সংরক্ষিত থাকে)
         const savedMeritOrder = (overrides && overrides[exam.id + '_merit_order']) ? overrides[exam.id + '_merit_order'] : [];
+        const isDailyTest01 = /^daily\s+test\s*[-–]?\s*0?1$/i.test(String(exam.name || '').trim());
 
-        if (savedMeritOrder && savedMeritOrder.length > 0) {
-            targetStudents.sort((a, b) => {
-                const idA = String(a.std_id || a.id || '').trim();
-                const idB = String(b.std_id || b.id || '').trim();
-                let idxA = savedMeritOrder.indexOf(idA);
-                let idxB = savedMeritOrder.indexOf(idB);
-                if (idxA === -1) idxA = 99999;
-                if (idxB === -1) idxB = 99999;
-                return idxA - idxB;
-            });
-        }
+        targetStudents = targetStudents.filter(st => {
+            const studentId = getStudentId(st);
+            return studentId && (!isDailyTest01 || savedMeritOrder.includes(studentId));
+        });
+        targetStudents.sort((a, b) => {
+            const idA = getStudentId(a);
+            const idB = getStudentId(b);
+            if (savedMeritOrder.length) {
+                const rankA = savedMeritOrder.indexOf(idA);
+                const rankB = savedMeritOrder.indexOf(idB);
+                const orderA = rankA === -1 ? Number.POSITIVE_INFINITY : rankA;
+                const orderB = rankB === -1 ? Number.POSITIVE_INFINITY : rankB;
+                if (orderA !== orderB) return orderA - orderB;
+            }
+            const meritA = getStudentMeritRank(a);
+            const meritB = getStudentMeritRank(b);
+            if (meritA !== meritB) return meritA - meritB;
+            return idA.localeCompare(idB);
+        });
 
         // গ্রুপ অ্যাসাইন করা
+        const trackRanks = new Map();
+        if (isSSC27Exam(exam)) {
+            ['science', 'humanities', 'business'].forEach(track => {
+                targetStudents.filter(student => getStudentTrack(student) === track)
+                    .forEach((student, idx) => trackRanks.set(getStudentId(student), idx + 1));
+            });
+        }
         targetStudents.forEach((st, idx) => {
-            st.computedGroup = determineStudentGroup(st, idx + 1, exam, overrides);
+            st.computedGroup = determineStudentGroup(
+                st,
+                idx + 1,
+                exam,
+                overrides,
+                trackRanks.get(getStudentId(st))
+            );
         });
 
         // নির্বাচিত গ্রুপ অনুযায়ী ফিল্টার
