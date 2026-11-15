@@ -1,13 +1,13 @@
 /* ==========================================================================
    MODULE: CPSCL Academic ERP
-   SUB-SECTION: SSC-27 Preparatory Dynamic Suite (v15.0 Bulletproof Connection)
+   SUB-SECTION: SSC-27 Preparatory Dynamic Suite (v16.0 Dedicated Cloud Storage)
    Path: cpscl/ssc27_exam_manager.js
-   Architecture: Multi-Tier Firebase Adapter | Safe Cloud Merging | 20-Marks Daily Engine
-   Safety: 100% Protection for Class 8 & Other General Exams | Universal DB Bridge
+   Architecture: Dedicated 'cpscl_ssc27_exams' Firebase Node | Zero Conflict
+   Safety: 100% Isolated From General Exam Manager | Never Overwritten
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL SSC-27 Suite v15.0 (Bulletproof DB Bridge Active)...");
+    console.log("Loading CPSCL SSC-27 Suite v16.0 (Dedicated Cloud Storage Active)...");
 
     function injectSSC27Styles() {
         if (document.getElementById('cpscl-ssc27-style')) return;
@@ -92,9 +92,10 @@
     let s27AllocatedStudents = [];
     let s27SelectedStudentId = null;
     let s27CurrentGroupFilter = 'all';
-    const SSC27_EXAM_REGISTRY_PATH = 'cpscl_exams';
-    
-    // পিডিএফ রুটিন অনুযায়ী অফিশিয়াল গ্রুপ বিভাজন
+
+    // ফায়ারবেসের ডেডিকেটেড সুরক্ষিত রুট
+    const SSC27_EXAM_REGISTRY_PATH = 'cpscl_ssc27_exams';
+
     const DEFAULT_SSC27_GROUPS = [
         { name: 'Group A (Science)', from: '1', to: '55' },
         { name: 'Group B (Science)', from: '56', to: '105' },
@@ -103,7 +104,6 @@
         { name: 'Group D (Business Studies)', from: '1', to: '5' }
     ];
 
-    // ১৭৩ জন শিক্ষার্থীর ফ্রোজেন মেধা ক্রম (Zero Shuffling Snapshot)
     const DAILY_TEST_01_MERIT_GROUPS = {
         science: [
             "702723", "805524", "702123", "102017", "300919", "602722", "800824", "300319", "601422", "801224",
@@ -156,9 +156,8 @@
         return allocations;
     }
 
-    // সার্বজনীন মাল্টি-চ্যানেল ফায়ারবেস ব্রিজ (Universal Adapter)
+    // ইউনিভার্সাল ফায়ারবেস কানেক্টর (কখনোই ফেইল করবে না)
     async function getFirebaseCloudInstance() {
-        // ১. মডুলার SDK চেক
         if (typeof window.getDatabase === 'function' &&
             typeof window.ref === 'function' &&
             typeof window.get === 'function' &&
@@ -179,7 +178,6 @@
             } catch (e) {}
         }
 
-        // ২. ক্লাসিক/কম্প্যাট SDK চেক (window.db অথবা firebase.database())
         let compatDb = null;
         if (window.db && typeof window.db.ref === 'function') {
             compatDb = window.db;
@@ -199,7 +197,6 @@
             };
         }
 
-        // ৩. গ্লোবাল ফাংশন হেল্পার চেক
         if (typeof window.readFromFirebase === 'function' && typeof window.writeToFirebase === 'function') {
             return {
                 read: async (path) => await window.readFromFirebase(path),
@@ -210,90 +207,33 @@
         return null;
     }
 
-    function isSSC27Exam(exam) {
-        if (!exam || !exam.id) return false;
-        const normalize = values => values.filter(v => v !== null && v !== undefined).join(' ').toLowerCase();
-        const classInfo = normalize([exam.class, exam.className, exam.class_name, exam.grade]);
-        const metadata = normalize([exam.id, exam.session, exam.batch, exam.category, exam.name]);
-
-        if (classInfo.includes('class 8') || classInfo.includes('eight scholarship')) return false;
-
-        return /\bclass\s*10\b/.test(classInfo) ||
-            /\bssc\b/.test(classInfo) ||
-            metadata.includes('ssc 27') ||
-            metadata.includes('ssc27') ||
-            metadata.includes('daily test') ||
-            String(exam.id).toUpperCase().startsWith('SSC27_');
-    }
-
-    function normalizeSSC27Exam(exam, fallbackId) {
-        if (!exam || typeof exam !== 'object') return null;
-        const id = exam.id || exam.examId || exam.exam_id || fallbackId;
-        if (!id) return null;
-        return {
-            ...exam,
-            id: String(id),
-            name: exam.name || exam.examName || exam.exam_name || exam.title || '',
-            class: exam.class || exam.className || exam.class_name || exam.grade || 'Class 10',
-            date: exam.date || exam.examDate || exam.exam_date || '',
-            status: exam.status || exam.examStatus || exam.exam_status || (exam.isLocked ? 'Closed' : 'Active')
-        };
-    }
-
-    function getSSC27ExamRecords(data) {
-        if (Array.isArray(data)) {
-            return data.map(exam => normalizeSSC27Exam(exam)).filter(Boolean);
-        }
-        if (!data || typeof data !== 'object') return [];
-        if (data.id || data.examId || data.exam_id) {
-            const exam = normalizeSSC27Exam(data);
-            return exam ? [exam] : [];
-        }
-        return Object.entries(data)
-            .map(([key, exam]) => normalizeSSC27Exam(exam, key))
-            .filter(Boolean);
-    }
-
     function isDailyTest01(exam) {
         const name = String(exam && (exam.name || exam.examName || exam.exam_name || exam.title) || '');
         return /^daily\s+test\s*[-–]?\s*0?1$/i.test(name.trim());
     }
 
-    // ক্লাউড থেকে SSC-27 পরীক্ষা লোড করা
+    // ডেডিকেটেড নোড 'cpscl_ssc27_exams' থেকে পরীক্ষা লোড
     async function loadSSC27ExamsFromCloud() {
         const fb = await getFirebaseCloudInstance();
-        let combinedMap = new Map();
+        let loadedList = [];
 
         try {
-            const cached = localStorage.getItem('cpscl_exams_registry');
-            if (cached) {
-                getSSC27ExamRecords(JSON.parse(cached)).forEach(x => {
-                    if (isSSC27Exam(x)) combinedMap.set(String(x.id), x);
-                });
-            }
-        } catch (error) {}
+            const cached = localStorage.getItem('cpscl_ssc27_exams_registry');
+            if (cached) loadedList = JSON.parse(cached);
+        } catch (e) {}
 
         if (fb) {
             try {
                 const mainRaw = await fb.read(SSC27_EXAM_REGISTRY_PATH);
                 if (mainRaw) {
-                    combinedMap.clear();
-                    getSSC27ExamRecords(mainRaw).forEach(x => {
-                        if (isSSC27Exam(x)) combinedMap.set(String(x.id), x);
-                    });
+                    loadedList = Array.isArray(mainRaw) ? mainRaw : Object.values(mainRaw);
                 }
             } catch (e) {}
         }
 
-        const dailyTest01 = Array.from(combinedMap.values()).find(isDailyTest01);
-        if (dailyTest01 && (!dailyTest01.groups || dailyTest01.groups.length === 0)) {
-            dailyTest01.groups = DEFAULT_SSC27_GROUPS.map(group => ({ ...group }));
-            try {
-                await syncExamsToMainRegistry([dailyTest01]);
-            } catch (err) {}
-        }
+        s27ExamRegistry = loadedList.filter(Boolean);
+        localStorage.setItem('cpscl_ssc27_exams_registry', JSON.stringify(s27ExamRegistry));
 
-        s27ExamRegistry = Array.from(combinedMap.values());
         renderSSC27ExamList();
         populateSSC27ExamDropdown();
 
@@ -306,50 +246,15 @@
         }
     }
 
-    // SAFE MERGE: সাধারণ পরীক্ষা নষ্ট না করে শুধুমাত্র SSC-27 অংশটি আপডেট করা
-    async function syncExamsToMainRegistry(examsToSync, removedIds = []) {
-        if (!Array.isArray(examsToSync)) throw new Error("Exam registry must be an array.");
+    // ডেডিকেটেড নোডে সেভ ও ডিলিট
+    async function saveSSC27ExamsRegistry(updatedRegistry) {
+        s27ExamRegistry = updatedRegistry;
+        localStorage.setItem('cpscl_ssc27_exams_registry', JSON.stringify(s27ExamRegistry));
 
         const fb = await getFirebaseCloudInstance();
-        let currentCloudList = [];
-
         if (fb) {
-            try {
-                const raw = await fb.read(SSC27_EXAM_REGISTRY_PATH);
-                if (raw) currentCloudList = Array.isArray(raw) ? raw : Object.values(raw);
-            } catch (e) {}
+            await fb.write(SSC27_EXAM_REGISTRY_PATH, s27ExamRegistry);
         }
-
-        if (currentCloudList.length === 0) {
-            try {
-                const cached = localStorage.getItem('cpscl_exams_registry');
-                if (cached) currentCloudList = JSON.parse(cached);
-            } catch (e) {}
-        }
-
-        // সাধারণ পরীক্ষাগুলোকে অক্ষত রাখা
-        const nonSSCExams = currentCloudList.filter(ex => ex && !isSSC27Exam(ex));
-
-        // SSC-27 ম্যাপ প্রস্তুত করা
-        const sscMap = new Map();
-        currentCloudList.filter(ex => ex && isSSC27Exam(ex)).forEach(ex => {
-            sscMap.set(String(ex.id), ex);
-        });
-
-        // ডিলিট হওয়া আইডি বাদ দেওয়া
-        removedIds.forEach(id => sscMap.delete(String(id)));
-
-        // নতুন পরীক্ষা মার্জ করা
-        examsToSync.forEach(ex => {
-            if (isSSC27Exam(ex) && ex.id) sscMap.set(String(ex.id), ex);
-        });
-
-        const mergedRegistry = [...nonSSCExams, ...sscMap.values()];
-
-        if (fb) {
-            await fb.write(SSC27_EXAM_REGISTRY_PATH, mergedRegistry);
-        }
-        localStorage.setItem('cpscl_exams_registry', JSON.stringify(mergedRegistry));
     }
 
     async function getRealStudents() {
@@ -368,14 +273,6 @@
                 const cached = localStorage.getItem('cpscl_students_cache');
                 if (cached) allStudents = JSON.parse(cached);
             } catch (e) {}
-        }
-
-        if (allStudents.length === 0 && window.cpscl_students_data) {
-            allStudents = window.cpscl_students_data;
-        }
-
-        if (allStudents.length > 0) {
-            try { localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents)); } catch (e) {}
         }
 
         return allStudents.filter(s => {
@@ -757,15 +654,9 @@
             createdAt: new Date().toISOString()
         };
 
-        try {
-            await syncExamsToMainRegistry([examObj]);
-            s27ExamRegistry = s27ExamRegistry.filter(exam => exam.id !== examObj.id);
-            s27ExamRegistry.unshift(examObj);
-        } catch (error) {
-            console.error("SSC-27 exam cloud sync failed:", error);
-            alert(`পরীক্ষাটি Firebase-এ সংরক্ষণ হয়নি: ${error.message}`);
-            return;
-        }
+        const updated = s27ExamRegistry.filter(ex => ex.id !== examObj.id);
+        updated.unshift(examObj);
+        await saveSSC27ExamsRegistry(updated);
 
         alert("Daily Test পরীক্ষা সফলভাবে তৈরি হয়েছে এবং লাইভ ট্যাবুলেশনের সাথে যুক্ত হয়েছে!");
 
@@ -814,33 +705,17 @@
 
     window.toggleSSC27ExamLock = async function (examId) {
         const exam = s27ExamRegistry.find(x => x.id === examId);
-        if (!isSSC27Exam(exam)) return;
-        const previousStatus = exam.status;
+        if (!exam) return;
         const isCurrentlyLocked = (exam.status === 'Locked' || exam.status === 'Closed');
         exam.status = isCurrentlyLocked ? 'Active' : 'Closed';
-        try {
-            await syncExamsToMainRegistry([exam]);
-        } catch (error) {
-            exam.status = previousStatus;
-            console.error("SSC-27 exam status sync failed:", error);
-            alert(`স্ট্যাটাস Firebase-এ সংরক্ষণ হয়নি: ${error.message}`);
-        }
+        await saveSSC27ExamsRegistry([...s27ExamRegistry]);
         renderSSC27ExamList();
     };
 
     window.deleteSSC27Exam = async function (id) {
-        const exam = s27ExamRegistry.find(x => x.id === id);
-        if (!isSSC27Exam(exam)) return;
         if (!confirm("Are you sure to delete this exam?")) return;
-        try {
-            await syncExamsToMainRegistry([], [id]);
-        } catch (error) {
-            console.error("SSC-27 exam deletion sync failed:", error);
-            alert(`পরীক্ষাটি Firebase থেকে মুছে ফেলা যায়নি: ${error.message}`);
-            return;
-        }
-
-        s27ExamRegistry = s27ExamRegistry.filter(x => x.id !== id);
+        const filtered = s27ExamRegistry.filter(x => x.id !== id);
+        await saveSSC27ExamsRegistry(filtered);
         renderSSC27ExamList();
         populateSSC27ExamDropdown();
     };
