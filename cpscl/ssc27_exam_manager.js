@@ -1,16 +1,15 @@
 /* ==========================================================================
    MODULE: CPSCL Academic ERP
-   SUB-SECTION: SSC-27 Preparatory Dynamic Suite (v18.0 Bulletproof Cloud Sync)
+   SUB-SECTION: SSC-27 Preparatory Suite (v19.0 Pure Firebase Direct Cloud)
    Path: cpscl/ssc27_exam_manager.js
-   Architecture: Dedicated 'cpscl_ssc27_exams' + REST Auto-Fallback Engine
-   Safety: 100% Isolated & Guaranteed Firebase Cloud Delivery
+   Architecture: 100% Direct Firebase Cloud REST | Zero LocalStorage
+   Safety: Guaranteed Realtime Cloud Persistence
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL SSC-27 Suite v18.0 (Bulletproof Cloud Sync Active)...");
+    console.log("Loading CPSCL SSC-27 Suite v19.0 (Pure Cloud Active - Zero LocalStorage)...");
 
-    const FIREBASE_DB_URL = "https://mousumi-computer-default-rtdb.firebaseio.com";
-    const SSC27_EXAM_REGISTRY_PATH = 'cpscl_ssc27_exams';
+    const FIREBASE_BASE_URL = "https://mousumi-computer-default-rtdb.firebaseio.com";
 
     function injectSSC27Styles() {
         if (document.getElementById('cpscl-ssc27-style')) return;
@@ -156,87 +155,25 @@
         return allocations;
     }
 
-    // ১টি সার্বজনীন ও অভেদ্য ফায়ারবেস ক্লাউড কানেক্টর (কখনোই মিস হবে না)
-    async function cloudDb() {
-        let dbInstance = null;
-        if (window.db && typeof window.db.ref === 'function') dbInstance = window.db;
-        else if (window.firebase && typeof window.firebase.database === 'function') {
-            try { dbInstance = window.firebase.database(); } catch(e){}
-        }
-
-        return {
-            read: async (path) => {
-                if (dbInstance) {
-                    try {
-                        const snap = await dbInstance.ref(path).once('value');
-                        if (snap.exists()) return snap.val();
-                    } catch(e){}
-                }
-                if (typeof window.getDatabase === 'function' && typeof window.ref === 'function' && typeof window.get === 'function') {
-                    try {
-                        const snap = await window.get(window.ref(window.getDatabase(), path));
-                        if (snap.exists()) return snap.val();
-                    } catch(e){}
-                }
-                // সরাসরি REST API দিয়ে ক্লাউড রিড (ব্যাকআপ ইঞ্জিন)
-                try {
-                    const res = await fetch(`${FIREBASE_DB_URL}/${path}.json`);
-                    if (res.ok) return await res.json();
-                } catch(e){}
-                return null;
-            },
-            write: async (path, val) => {
-                let written = false;
-                if (dbInstance) {
-                    try {
-                        await dbInstance.ref(path).set(val);
-                        written = true;
-                    } catch(e){}
-                }
-                if (!written && typeof window.getDatabase === 'function' && typeof window.ref === 'function' && typeof window.set === 'function') {
-                    try {
-                        await window.set(window.ref(window.getDatabase(), path), val);
-                        written = true;
-                    } catch(e){}
-                }
-                // ক্লাউড REST API পুশ (১০০% গ্যারান্টিড ক্লাউড সেভ)
-                try {
-                    await fetch(`${FIREBASE_DB_URL}/${path}.json`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(val)
-                    });
-                    written = true;
-                } catch(e){}
-                return written;
-            }
-        };
-    }
-
     function isDailyTest01(exam) {
         const name = String(exam && (exam.name || exam.examName || exam.exam_name || exam.title) || '');
         return /^daily\s+test\s*[-–]?\s*0?1$/i.test(name.trim());
     }
 
-    // ফায়ারবেস থেকে পরীক্ষা লোড
+    // সরাসরি ক্লাউড থেকে লোড (জিরো লোকাল স্টোরেজ)
     async function loadSSC27ExamsFromCloud() {
-        const fb = await cloudDb();
-        let loadedList = [];
-
+        s27ExamRegistry = [];
         try {
-            const cached = localStorage.getItem('cpscl_ssc27_exams_registry');
-            if (cached) loadedList = JSON.parse(cached);
-        } catch (e) {}
-
-        try {
-            const mainRaw = await fb.read(SSC27_EXAM_REGISTRY_PATH);
-            if (mainRaw) {
-                loadedList = Array.isArray(mainRaw) ? mainRaw : Object.values(mainRaw);
+            const res = await fetch(`${FIREBASE_BASE_URL}/cpscl_ssc27_exams.json`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data) {
+                    s27ExamRegistry = Array.isArray(data) ? data.filter(Boolean) : Object.values(data);
+                }
             }
-        } catch (e) {}
-
-        s27ExamRegistry = loadedList.filter(Boolean);
-        localStorage.setItem('cpscl_ssc27_exams_registry', JSON.stringify(s27ExamRegistry));
+        } catch (e) {
+            console.error("Firebase fetch error:", e);
+        }
 
         renderSSC27ExamList();
         populateSSC27ExamDropdown();
@@ -250,43 +187,16 @@
         }
     }
 
-    // ফায়ারবেসের উভয় পাথ (cpscl_ssc27_exams এবং cpscl_exams)-এ ডুয়াল সেভ
-    async function saveSSC27ExamsRegistry(updatedRegistry) {
-        s27ExamRegistry = updatedRegistry;
-        localStorage.setItem('cpscl_ssc27_exams_registry', JSON.stringify(s27ExamRegistry));
-
-        const fb = await cloudDb();
-        
-        // ১. ডেডিকেটেড অবজেক্ট আকারে সেভ (যাতে টিচার পোর্টালে সাথে সাথে পায়)
-        const examsObject = {};
-        s27ExamRegistry.forEach(ex => {
-            if (ex && ex.id) examsObject[ex.id] = ex;
-        });
-
-        await fb.write(SSC27_EXAM_REGISTRY_PATH, examsObject);
-
-        // ২. সাধারণ cpscl_exams এও পুশ করা (টিচার পোর্টাল যেন কোনো অবস্থাতেই মিস না করে)
-        try {
-            for (const ex of s27ExamRegistry) {
-                await fb.write(`cpscl_exams/${ex.id}`, ex);
-            }
-        } catch(e){}
-    }
-
     async function getRealStudents() {
         let allStudents = [];
-        const fb = await cloudDb();
-
         try {
-            const val = await fb.read('cpscl_students');
-            if (val) allStudents = Array.isArray(val) ? val : Object.values(val);
-        } catch (err) {}
-
-        if (allStudents.length === 0) {
-            try {
-                const cached = localStorage.getItem('cpscl_students_cache');
-                if (cached) allStudents = JSON.parse(cached);
-            } catch (e) {}
+            const res = await fetch(`${FIREBASE_BASE_URL}/cpscl_students.json`);
+            if (res.ok) {
+                const val = await res.json();
+                if (val) allStudents = Array.isArray(val) ? val : Object.values(val);
+            }
+        } catch (err) {
+            console.error("Firebase student fetch error:", err);
         }
 
         return allStudents.filter(s => {
@@ -343,34 +253,35 @@
 
     async function saveSSC27Overrides(examId, allocations, meritOrder, saveMeritOrder, replaceMeritOrder) {
         const path = `cpscl_exam_group_overrides/${examId}`;
-        const fb = await cloudDb();
-
-        let currentData = {};
         try {
-            const raw = await fb.read(path);
-            if (raw) currentData = raw;
-        } catch (e) {}
-
-        const mergedData = { ...currentData, ...allocations };
-        await fb.write(path, mergedData);
-
-        if (saveMeritOrder) {
-            const meritPath = `cpscl_exam_group_overrides/${examId}_merit_order`;
-            const currentMerit = await fb.read(meritPath);
-            if (!currentMerit || replaceMeritOrder) {
-                await fb.write(meritPath, meritOrder);
+            let currentData = {};
+            const res = await fetch(`${FIREBASE_BASE_URL}/${path}.json`);
+            if (res.ok) {
+                const raw = await res.json();
+                if (raw) currentData = raw;
             }
-        }
+            const mergedData = { ...currentData, ...allocations };
+            await fetch(`${FIREBASE_BASE_URL}/${path}.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(mergedData)
+            });
 
-        let cachedOverrides = {};
-        try {
-            cachedOverrides = JSON.parse(localStorage.getItem('cpscl_exam_group_overrides') || '{}');
-        } catch (error) {}
-        cachedOverrides[examId] = mergedData;
-        if (saveMeritOrder) {
-            cachedOverrides[`${examId}_merit_order`] = meritOrder;
+            if (saveMeritOrder) {
+                const meritPath = `cpscl_exam_group_overrides/${examId}_merit_order`;
+                const mRes = await fetch(`${FIREBASE_BASE_URL}/${meritPath}.json`);
+                const currentMerit = mRes.ok ? await mRes.json() : null;
+                if (!currentMerit || replaceMeritOrder) {
+                    await fetch(`${FIREBASE_BASE_URL}/${meritPath}.json`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(meritOrder)
+                    });
+                }
+            }
+        } catch (e) {
+            console.error("Overrides save error:", e);
         }
-        localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(cachedOverrides));
     }
 
     async function renderSSC27UI() {
@@ -390,7 +301,7 @@
             <div class="s27-wrapper">
                 <div class="s27-header">
                     <h1><i class="fa-solid fa-graduation-cap"></i> SSC 27 Preparatory Management Suite</h1>
-                    <div class="s27-badge"><i class="fa-solid fa-shield-halved"></i> 20-Marks Daily Engine Active</div>
+                    <div class="s27-badge"><i class="fa-solid fa-cloud-bolt"></i> 100% Direct Cloud Active</div>
                 </div>
 
                 <div class="s27-nav-tabs">
@@ -452,13 +363,13 @@
                                     <div id="s27GroupRulesContainer"></div>
                                 </div>
                                 <button type="submit" class="s27-btn-submit" id="s27SubmitBtn">
-                                    <i class="fa-solid fa-cloud-arrow-up"></i> Save & Sync with Live Tabulation
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Save Directly to Firebase Cloud
                                 </button>
                             </form>
                         </div>
                         <div class="s27-card">
                             <div class="s27-card-title">
-                                <span><i class="fa-solid fa-clock-rotate-left"></i> Published Preparatory Exams</span>
+                                <span><i class="fa-solid fa-cloud"></i> Firebase Cloud Registered Exams</span>
                             </div>
                             <div style="overflow-x: auto;">
                                 <table class="s27-table">
@@ -630,6 +541,7 @@
         });
     }
 
+    // ১০০% নিরাপদ ও ক্লাউড সেভ ইঞ্জিন
     window.handleSSC27Submit = async function (e) {
         e.preventDefault();
         const submitBtn = document.getElementById('s27SubmitBtn');
@@ -642,9 +554,6 @@
             return;
         }
 
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> ফায়ারবেসে সেভ হচ্ছে...`;
-
         const groups = [];
         document.querySelectorAll('#s27GroupRulesContainer .s27-group-row').forEach(row => {
             const gName = row.querySelector('.g-name').value.trim();
@@ -656,39 +565,57 @@
         let totalMarks = 0;
         Object.values(s27SelectedSubjects).forEach(m => totalMarks += m);
 
-        const existingExam = s27ExamRegistry.find(x => x.name === name);
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> সরাসরি ফায়ারবেস ক্লাউডে পাঠানো হচ্ছে...`;
+
         const examObj = {
-            id: existingExam ? existingExam.id : ('SSC27_EX_' + Date.now()),
+            id: 'SSC27_EX_' + Date.now(),
             name,
             class: className || 'Class 10',
             date,
             subjects: { ...s27SelectedSubjects },
             totalMarks,
             groups: groups.length > 0 ? groups : DEFAULT_SSC27_GROUPS,
-            status: existingExam ? existingExam.status : 'Active',
+            status: 'Active',
             createdAt: new Date().toISOString()
         };
 
-        const updated = s27ExamRegistry.filter(ex => ex.id !== examObj.id);
-        updated.unshift(examObj);
-
         try {
-            await saveSSC27ExamsRegistry(updated);
-            alert("অভিনন্দন! পরীক্ষা সফলভাবে ফায়ারবেসে সংরক্ষিত ও লাইভ হয়েছে!");
-        } catch(err) {
-            alert("সতর্কতা: ফায়ারবেসে সিঙ্ক হতে সমস্যা হয়েছে, তবে লোকাল মেমোরিতে রয়েছে।");
+            // ১. সরাসরি cpscl_ssc27_exams নোডে পাঠানো
+            const res1 = await fetch(`${FIREBASE_BASE_URL}/cpscl_ssc27_exams/${examObj.id}.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(examObj)
+            });
+
+            if (!res1.ok) {
+                throw new Error(`ফায়ারবেস সার্ভার এরর: ${res1.status}`);
+            }
+
+            // ২. সাথে সাথে cpscl_exams এও পুশ করা (যাতে শিক্ষক পোর্টালে ১০০% শো করে)
+            await fetch(`${FIREBASE_BASE_URL}/cpscl_exams/${examObj.id}.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(examObj)
+            });
+
+            alert("অভিনন্দন! পরীক্ষা সফলভাবে সরাসরি ফায়ারবেস ক্লাউডে সংরক্ষিত হয়েছে!");
+
+            document.getElementById('s27ExamForm').reset();
+            document.getElementById('s27ClassName').value = 'Class 10';
+            s27SelectedSubjects = {};
+            renderSSC27SelectedSubjects();
+            initSSC27DefaultForm();
+
+            // ফায়ারবেস থেকে ফ্রেশ তালিকা আনা
+            await loadSSC27ExamsFromCloud();
+
+        } catch (err) {
+            alert("সংরক্ষণ ব্যর্থ হয়েছে! কোনো ডাটা সেভ হয়নি। কারণ: " + err.message);
         } finally {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Save & Sync with Live Tabulation`;
+            submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Save Directly to Firebase Cloud`;
         }
-
-        document.getElementById('s27ExamForm').reset();
-        document.getElementById('s27ClassName').value = 'Class 10';
-        s27SelectedSubjects = {};
-        renderSSC27SelectedSubjects();
-        initSSC27DefaultForm();
-        renderSSC27ExamList();
-        populateSSC27ExamDropdown();
     };
 
     function renderSSC27ExamList() {
@@ -697,7 +624,7 @@
         tbody.innerHTML = '';
 
         if (s27ExamRegistry.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#94a3b8; padding:20px;">No SSC-27 exams found.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#94a3b8; padding:20px;">No SSC-27 exams found in Cloud.</td></tr>`;
             return;
         }
 
@@ -728,26 +655,33 @@
     window.toggleSSC27ExamLock = async function (examId) {
         const exam = s27ExamRegistry.find(x => x.id === examId);
         if (!exam) return;
-        const isCurrentlyLocked = (exam.status === 'Locked' || exam.status === 'Closed');
-        exam.status = isCurrentlyLocked ? 'Active' : 'Closed';
-        await saveSSC27ExamsRegistry([...s27ExamRegistry]);
-        renderSSC27ExamList();
+        const newStatus = (exam.status === 'Locked' || exam.status === 'Closed') ? 'Active' : 'Closed';
+        try {
+            await fetch(`${FIREBASE_BASE_URL}/cpscl_ssc27_exams/${examId}/status.json`, {
+                method: 'PUT',
+                body: JSON.stringify(newStatus)
+            });
+            await fetch(`${FIREBASE_BASE_URL}/cpscl_exams/${examId}/status.json`, {
+                method: 'PUT',
+                body: JSON.stringify(newStatus)
+            });
+            exam.status = newStatus;
+            renderSSC27ExamList();
+        } catch(e) {
+            alert("আপডেট ব্যর্থ হয়েছে: " + e.message);
+        }
     };
 
     window.deleteSSC27Exam = async function (id) {
-        if (!confirm("Are you sure to delete this exam?")) return;
-        const filtered = s27ExamRegistry.filter(x => x.id !== id);
-        
-        // ফায়ারবেসের পাথ থেকেও মুছে দেওয়া
-        const fb = await cloudDb();
+        if (!confirm("আপনি কি নিশ্চিত যে এই পরীক্ষাটি ক্লাউড থেকে সম্পূর্ণ মুছে ফেলবেন?")) return;
         try {
-            await fb.write(`${SSC27_EXAM_REGISTRY_PATH}/${id}`, null);
-            await fb.write(`cpscl_exams/${id}`, null);
-        } catch(e){}
-
-        await saveSSC27ExamsRegistry(filtered);
-        renderSSC27ExamList();
-        populateSSC27ExamDropdown();
+            await fetch(`${FIREBASE_BASE_URL}/cpscl_ssc27_exams/${id}.json`, { method: 'DELETE' });
+            await fetch(`${FIREBASE_BASE_URL}/cpscl_exams/${id}.json`, { method: 'DELETE' });
+            alert("পরীক্ষাটি ফায়ারবেস থেকে সফলভাবে মুছে ফেলা হয়েছে!");
+            await loadSSC27ExamsFromCloud();
+        } catch(e) {
+            alert("মুছতে সমস্যা হয়েছে: " + e.message);
+        }
     };
 
     function populateSSC27ExamDropdown() {
@@ -786,14 +720,11 @@
 
         let overrides = {};
         try {
-            const locOv = localStorage.getItem('cpscl_exam_group_overrides');
-            if (locOv) overrides = JSON.parse(locOv);
-        } catch (e) {}
-
-        const fb = await cloudDb();
-        try {
-            const snapVal = await fb.read('cpscl_exam_group_overrides');
-            if (snapVal) overrides = { ...overrides, ...snapVal };
+            const ovRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides.json`);
+            if (ovRes.ok) {
+                const snapVal = await ovRes.json();
+                if (snapVal) overrides = snapVal;
+            }
         } catch (e) {}
 
         const studentOverrides = overrides[exam.id] && typeof overrides[exam.id] === 'object'
@@ -974,16 +905,6 @@
         const student = s27AllocatedStudents.find(s => s.id === s27SelectedStudentId);
         if (student) {
             student.group = targetGroup;
-            let overrides = {};
-            try {
-                const loc = localStorage.getItem('cpscl_exam_group_overrides');
-                if (loc) overrides = JSON.parse(loc);
-            } catch (e) {}
-
-            if (!overrides[examId]) overrides[examId] = {};
-            overrides[examId][student.id] = targetGroup;
-            localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(overrides));
-
             try {
                 await saveSSC27Overrides(examId, { [student.id]: targetGroup }, null, false);
             } catch (error) {
