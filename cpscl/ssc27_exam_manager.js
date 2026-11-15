@@ -8,8 +8,6 @@
 (function () {
     console.log("Loading CPSCL SSC-27 Suite (Bulletproof Cloud Sync Active)...");
 
-    const BS_STUDENT_IDS = ["602322", "601322", "700723", "802124", "903525"];
-
     function injectSSC27Styles() {
         if (document.getElementById('cpscl-ssc27-style')) return;
         const style = document.createElement('style');
@@ -93,103 +91,206 @@
     let s27AllocatedStudents = [];
     let s27SelectedStudentId = null;
     let s27CurrentGroupFilter = 'all';
+    const SSC27_EXAM_REGISTRY_PATH = 'cpscl_exams';
+    const DEFAULT_SSC27_GROUPS = [
+        { name: 'Group A (Science)', from: '1', to: '55' },
+        { name: 'Group B (Science)', from: '56', to: '105' },
+        { name: 'Group C (Science)', from: '106', to: '146' },
+        { name: 'Group D (Humanities)', from: '1', to: '22' },
+        { name: 'Group D (Business Studies)', from: '1', to: '5' }
+    ];
+    const DAILY_TEST_01_MERIT_GROUPS = {
+        science: [
+            "702723", "805524", "702123", "102017", "300919", "602722", "800824", "300319", "601422", "801224",
+            "802624", "900525", "701423", "901425", "600822", "100917", "601722", "900625", "901125", "300219",
+            "602022", "700223", "900125", "800324", "400120", "803324", "801124", "804924", "805224", "702823",
+            "901625", "702523", "400620", "600222", "604422", "700523", "700623", "501021", "603522", "701823",
+            "903325", "100417", "200718", "903025", "100317", "803824", "600722", "604322", "802724", "700923",
+            "805724", "804124", "800924", "300719", "801424", "501921", "803424", "400220", "900225", "602822",
+            "600122", "500521", "501421", "601922", "603822", "803724", "804724", "801824", "101517", "501721",
+            "903125", "803224", "200518", "802024", "804324", "604022", "804424", "604222", "600522", "602922",
+            "805024", "803924", "701923", "800524", "300119", "104416", "101317", "602622", "300519", "800224",
+            "805824", "401220", "601222", "701123", "701723", "102117", "702023", "804024", "805324", "902525",
+            "700823", "701623", "900425", "902425", "801024", "801324", "802424", "804224", "400920", "803624",
+            "900825", "901325", "101017", "109516", "602522", "702223", "801924", "804624", "500921", "800424",
+            "900725", "802824", "902325", "902725", "700123", "701023", "104716", "700423", "901025", "702423",
+            "200218", "901525", "902625", "500821", "200818", "801524", "900325", "701523", "800624", "600422",
+            "500321", "702923", "802924", "900925", "804824", "601822"
+        ],
+        humanities: [
+            "601122", "603322", "901825", "604822", "805424", "902225", "902825", "603222", "603122", "500221",
+            "603422", "901725", "601022", "301319", "501121", "802324", "803124", "903225", "602222", "200618",
+            "802224", "501821"
+        ],
+        business: ["602322", "601322", "700723", "802124", "903525"]
+    };
+
+    function getDailyTest01Order() {
+        return [
+            ...DAILY_TEST_01_MERIT_GROUPS.science,
+            ...DAILY_TEST_01_MERIT_GROUPS.humanities,
+            ...DAILY_TEST_01_MERIT_GROUPS.business
+        ];
+    }
+
+    function getDailyTest01GroupAllocations() {
+        const allocations = {};
+        DAILY_TEST_01_MERIT_GROUPS.science.forEach((studentId, index) => {
+            allocations[studentId] = index < 55
+                ? 'Group A (Science)'
+                : index < 105
+                    ? 'Group B (Science)'
+                    : 'Group C (Science)';
+        });
+        DAILY_TEST_01_MERIT_GROUPS.humanities.forEach(studentId => {
+            allocations[studentId] = 'Group D (Humanities)';
+        });
+        DAILY_TEST_01_MERIT_GROUPS.business.forEach(studentId => {
+            allocations[studentId] = 'Group D (Business Studies)';
+        });
+        return allocations;
+    }
 
     async function getFirebaseCloudInstance() {
-        if (typeof window.getDatabase === 'function' && typeof window.ref === 'function') {
+        // Use the Admin Panel's initialized database; never fall back to another Firebase app.
+        if (typeof window.getDatabase === 'function' &&
+            typeof window.ref === 'function' &&
+            typeof window.get === 'function' &&
+            typeof window.set === 'function' &&
+            typeof window.runTransaction === 'function') {
+            const db = window.getDatabase();
+            if (!db) return null;
             return {
                 mode: 'modular',
-                db: window.getDatabase(),
+                db,
                 ref: window.ref,
                 get: window.get,
-                set: window.set
+                set: window.set,
+                runTransaction: window.runTransaction
             };
-        }
-        if (window.db && typeof window.db.ref === 'function') {
-            return { mode: 'compat', db: window.db };
-        }
-        if (window.firebase && typeof window.firebase.database === 'function') {
-            return { mode: 'compat', db: window.firebase.database() };
         }
         return null;
     }
 
-    // সুরক্ষিত লোডার: লোকাল ডাটা রক্ষা করে এবং ক্লাউডের সাথে যুক্ত করে
+    function isSSC27Exam(exam) {
+        if (!exam || !exam.id) return false;
+
+        const normalize = values => values
+            .filter(value => value !== null && value !== undefined)
+            .join(' ')
+            .toLowerCase();
+        const classInfo = normalize([exam.class, exam.className, exam.class_name, exam.grade]);
+        const metadata = normalize([
+            exam.id,
+            exam.session,
+            exam.batch,
+            exam.category,
+            exam.examType,
+            exam.exam_type,
+            exam.examCategory,
+            exam.exam_category
+        ]);
+        if (classInfo.includes('class 8') || classInfo.includes('eight scholarship')) return false;
+
+        return /\bclass\s*10\b/.test(classInfo) ||
+            /\bssc\b/.test(classInfo) ||
+            metadata.includes('ssc 27') ||
+            metadata.includes('ssc27') ||
+            String(exam.id).toUpperCase().startsWith('SSC27_');
+    }
+
+    function normalizeSSC27Exam(exam, fallbackId) {
+        if (!exam || typeof exam !== 'object') return null;
+        const id = exam.id || exam.examId || exam.exam_id || fallbackId;
+        if (!id) return null;
+        return {
+            ...exam,
+            id: String(id),
+            name: exam.name || exam.examName || exam.exam_name || exam.title || '',
+            class: exam.class || exam.className || exam.class_name || exam.grade || '',
+            date: exam.date || exam.examDate || exam.exam_date || '',
+            status: exam.status || exam.examStatus || exam.exam_status || (exam.isLocked ? 'Closed' : 'Active')
+        };
+    }
+
+    function getSSC27ExamRecords(data) {
+        if (Array.isArray(data)) {
+            return data.map(exam => normalizeSSC27Exam(exam)).filter(Boolean);
+        }
+        if (!data || typeof data !== 'object') return [];
+        if (data.id || data.examId || data.exam_id) {
+            const exam = normalizeSSC27Exam(data);
+            return exam ? [exam] : [];
+        }
+        return Object.entries(data)
+            .map(([key, exam]) => normalizeSSC27Exam(exam, key))
+            .filter(Boolean);
+    }
+
+    function isDailyTest01(exam) {
+        const name = String(exam && (exam.name || exam.examName || exam.exam_name || exam.title) || '');
+        return /^daily\s+test\s*[-–]?\s*0?1$/i.test(name.trim());
+    }
+
+    // Load the SSC-27 subset only from the shared exam registry.
     async function loadSSC27ExamsFromCloud() {
         const fb = await getFirebaseCloudInstance();
         let combinedMap = new Map();
 
-        // প্রথমে লোকাল ক্যাশ লোড করা (যাতে কোনো অবস্থায়ই আগের পরীক্ষা ডিলিট না হয়)
+        // The local cache is only a fallback while the shared cloud registry is unavailable.
         try {
-            const loc1 = localStorage.getItem('cpscl_ssc27_exams_registry');
-            if (loc1) {
-                const arr = JSON.parse(loc1);
-                arr.forEach(x => { if (x && x.id) combinedMap.set(x.id, x); });
-            }
-            const loc2 = localStorage.getItem('cpscl_exams_registry');
-            if (loc2) {
-                const arr = JSON.parse(loc2);
-                arr.forEach(x => {
-                    if (x && x.id) {
-                        const c = String(x.class || '').toLowerCase();
-                        const n = String(x.name || '').toLowerCase();
-                        if (c.includes('10') || c.includes('ssc') || n.includes('daily test') || n.includes('prep') || String(x.id).startsWith('SSC27_')) {
-                            combinedMap.set(x.id, x);
-                        }
-                    }
+            const cached = localStorage.getItem('cpscl_exams_registry');
+            if (cached) {
+                getSSC27ExamRecords(JSON.parse(cached)).forEach(x => {
+                    if (isSSC27Exam(x)) combinedMap.set(String(x.id), x);
                 });
             }
-        } catch(e){}
+        } catch (error) {
+            console.warn("Local SSC-27 exam cache could not be read:", error);
+        }
 
         // এরপর ক্লাউড থেকে ডাটা আনা
         if (fb) {
             try {
-                // ১. cpscl_exams থেকে পড়া
                 let mainRaw = null;
+                let cloudRegistryRead = false;
                 if (fb.mode === 'modular') {
-                    const snap = await fb.get(fb.ref(fb.db, 'cpscl_exams'));
-                    if (snap.exists()) mainRaw = snap.val();
-                } else {
-                    const snap = await fb.db.ref('cpscl_exams').once('value');
+                    const snap = await fb.get(fb.ref(fb.db, SSC27_EXAM_REGISTRY_PATH));
+                    cloudRegistryRead = true;
                     if (snap.exists()) mainRaw = snap.val();
                 }
+                if (cloudRegistryRead) combinedMap.clear();
                 if (mainRaw) {
-                    const arr = Array.isArray(mainRaw) ? mainRaw : Object.values(mainRaw);
-                    arr.forEach(x => {
-                        if (x && x.id) {
-                            const c = String(x.class || '').toLowerCase();
-                            const n = String(x.name || '').toLowerCase();
-                            if (c.includes('10') || c.includes('ssc') || n.includes('daily test') || n.includes('prep') || String(x.id).startsWith('SSC27_')) {
-                                combinedMap.set(x.id, x);
-                            }
-                        }
+                    getSSC27ExamRecords(mainRaw).forEach(x => {
+                        if (isSSC27Exam(x)) combinedMap.set(String(x.id), x);
                     });
                 }
             } catch (e) {
                 console.warn("Main cloud exams load note:", e);
             }
-
-            try {
-                // ২. cpscl_ssc27_exams থেকেও পড়া
-                let sscRaw = null;
-                if (fb.mode === 'modular') {
-                    const snap = await fb.get(fb.ref(fb.db, 'cpscl_ssc27_exams'));
-                    if (snap.exists()) sscRaw = snap.val();
-                } else {
-                    const snap = await fb.db.ref('cpscl_ssc27_exams').once('value');
-                    if (snap.exists()) sscRaw = snap.val();
-                }
-                if (sscRaw) {
-                    const arr = Array.isArray(sscRaw) ? sscRaw : Object.values(sscRaw);
-                    arr.forEach(x => { if (x && x.id) combinedMap.set(x.id, x); });
-                }
-            } catch (e) {
-                console.warn("SSC27 cloud load note:", e);
-            }
         }
 
+        const dailyTest01 = Array.from(combinedMap.values()).find(isDailyTest01);
+        const hasDailyTest01Groups = dailyTest01 &&
+            Array.isArray(dailyTest01.groups) &&
+            DEFAULT_SSC27_GROUPS.every((group, index) => {
+                const configured = dailyTest01.groups[index];
+                return configured &&
+                    configured.name === group.name &&
+                    String(configured.from) === group.from &&
+                    String(configured.to) === group.to;
+            }) &&
+            dailyTest01.groups.length === DEFAULT_SSC27_GROUPS.length;
+        if (dailyTest01 && !hasDailyTest01Groups) {
+            dailyTest01.groups = DEFAULT_SSC27_GROUPS.map(group => ({ ...group }));
+            try {
+                await syncExamsToMainRegistry([dailyTest01]);
+            } catch (error) {
+                console.error(`Daily Test-01 groups could not be saved to ${SSC27_EXAM_REGISTRY_PATH}:`, error);
+                alert(`Daily Test-01 groups are available in this browser but could not be saved to Firebase: ${error.message}`);
+            }
+        }
         s27ExamRegistry = Array.from(combinedMap.values());
-        localStorage.setItem('cpscl_ssc27_exams_registry', JSON.stringify(s27ExamRegistry));
-
         renderSSC27ExamList();
         populateSSC27ExamDropdown();
 
@@ -202,57 +303,33 @@
         }
     }
 
-    async function syncExamsToMainRegistry(examsToSync) {
-        if (!examsToSync || examsToSync.length === 0) return;
+    async function syncExamsToMainRegistry(examsToSync, removedIds = []) {
+        if (!Array.isArray(examsToSync)) throw new Error("Exam registry must be an array.");
+        const mergeRegistry = currentValue => {
+            const current = Array.isArray(currentValue)
+                ? currentValue
+                : Object.values(currentValue || {});
+            const registry = new Map(current.filter(ex => ex && ex.id).map(ex => [String(ex.id), ex]));
+            const recordsWithoutIds = current.filter(ex => !ex || !ex.id);
+            removedIds.forEach(id => {
+                const existing = registry.get(String(id));
+                if (isSSC27Exam(existing)) registry.delete(String(id));
+            });
+            examsToSync.forEach(ex => {
+                if (isSSC27Exam(ex) && ex.id) registry.set(String(ex.id), ex);
+            });
+            return [...recordsWithoutIds, ...registry.values()];
+        };
+
         const fb = await getFirebaseCloudInstance();
+        if (!fb) throw new Error("Firebase is unavailable; the exam was not saved.");
 
-        let mainExams = [];
-        try {
-            const loc = localStorage.getItem('cpscl_exams_registry');
-            if (loc) mainExams = JSON.parse(loc);
-        } catch(e){}
+        const result = await fb.runTransaction(fb.ref(fb.db, SSC27_EXAM_REGISTRY_PATH), mergeRegistry);
+        if (!result.committed) throw new Error("Firebase did not commit the exam registry update.");
+        const mainExams = result.snapshot.val() || [];
 
-        if (fb) {
-            try {
-                if (fb.mode === 'modular') {
-                    const snap = await fb.get(fb.ref(fb.db, 'cpscl_exams'));
-                    if (snap.exists()) {
-                        const val = snap.val();
-                        mainExams = Array.isArray(val) ? val : Object.values(val);
-                    }
-                } else {
-                    const snap = await fb.db.ref('cpscl_exams').once('value');
-                    if (snap.exists()) {
-                        const val = snap.val();
-                        mainExams = Array.isArray(val) ? val : Object.values(val);
-                    }
-                }
-            } catch (e) {}
-        }
-
-        examsToSync.forEach(ex => {
-            const idx = mainExams.findIndex(m => m.id === ex.id);
-            if (idx !== -1) {
-                mainExams[idx] = ex;
-            } else {
-                mainExams.unshift(ex);
-            }
-        });
-
-        localStorage.setItem('cpscl_exams_registry', JSON.stringify(mainExams));
-        localStorage.setItem('cpscl_ssc27_exams_registry', JSON.stringify(s27ExamRegistry));
-
-        if (fb) {
-            try {
-                if (fb.mode === 'modular') {
-                    await fb.set(fb.ref(fb.db, 'cpscl_exams'), mainExams);
-                    try { await fb.set(fb.ref(fb.db, 'cpscl_ssc27_exams'), s27ExamRegistry); } catch(e){}
-                } else {
-                    await fb.db.ref('cpscl_exams').set(mainExams);
-                    try { await fb.db.ref('cpscl_ssc27_exams').set(s27ExamRegistry); } catch(e){}
-                }
-            } catch(e){}
-        }
+        const mainList = Array.isArray(mainExams) ? mainExams : Object.values(mainExams);
+        localStorage.setItem('cpscl_exams_registry', JSON.stringify(mainList));
     }
 
     async function getRealStudents() {
@@ -296,6 +373,101 @@
             const isClass8 = cName.includes('eight') || cName.includes('8') || bName.includes('scholarship');
             return (isClass10 || isSSC27) && !isClass8;
         });
+    }
+
+    function getStudentId(student) {
+        return String(student.student_id || student.std_id || student.id || student['Student ID *'] || '').trim();
+    }
+
+    function getStudentTrack(student) {
+        const info = [
+            student.department,
+            student.student_category,
+            student.studentCategory,
+            student.academic_group,
+            student.group,
+            student.group_name,
+            student.stream,
+            student.sec
+        ].filter(Boolean).join(' ').toLowerCase();
+        if (/business|commerce|b\.?\s*studies/.test(info)) return 'business';
+        if (/humanities|arts|\bhum\b/.test(info)) return 'humanities';
+        return 'science';
+    }
+
+    function getStudentMeritRank(student) {
+        const rank = Number(student.merit_rank || student.meritRank || student.overallRank || student.overall_rank || student.rank || student.merit_position);
+        return Number.isFinite(rank) && rank > 0 ? rank : Number.POSITIVE_INFINITY;
+    }
+
+    function getConfiguredGroupForTrackRank(track, rank, groups) {
+        const trackGroups = (groups || []).filter(group => {
+            const name = String(group.name || '').toLowerCase();
+            return track === 'business'
+                ? /business|commerce|b\.?\s*studies/.test(name)
+                : track === 'humanities'
+                    ? /humanities|arts|\bhum\b/.test(name)
+                    : /science/.test(name);
+        });
+        const group = trackGroups.find(item => {
+            const from = Number.parseInt(item.from, 10);
+            const to = Number.parseInt(item.to, 10);
+            return Number.isFinite(from) && rank >= from && (!Number.isFinite(to) || rank <= to);
+        });
+        return group ? group.name : (trackGroups[0] ? trackGroups[0].name : 'Unassigned');
+    }
+
+    async function saveSSC27Overrides(examId, allocations, meritOrder, saveMeritOrder, replaceMeritOrder) {
+        const path = `cpscl_exam_group_overrides/${examId}`;
+        const fb = await getFirebaseCloudInstance();
+        if (!fb) throw new Error('Firebase is unavailable; group allocation was not synced.');
+
+        if (fb.mode === 'modular' && fb.runTransaction) {
+            const result = await fb.runTransaction(fb.ref(fb.db, path), current => ({
+                ...(current || {}),
+                ...allocations
+            }));
+            if (!result.committed) throw new Error('Firebase did not commit SSC-27 group allocations.');
+        } else if (fb.mode === 'compat') {
+            const result = await fb.db.ref(path).transaction(current => ({
+                ...(current || {}),
+                ...allocations
+            }));
+            if (!result.committed) throw new Error('Firebase did not commit SSC-27 group allocations.');
+        } else {
+            for (const [studentId, group] of Object.entries(allocations)) {
+                await fb.set(fb.ref(fb.db, `${path}/${studentId}`), group);
+            }
+        }
+
+        if (saveMeritOrder) {
+            const meritPath = `cpscl_exam_group_overrides/${examId}_merit_order`;
+            if (fb.mode === 'modular' && fb.runTransaction) {
+                const result = await fb.runTransaction(fb.ref(fb.db, meritPath), current =>
+                    replaceMeritOrder ? meritOrder : current || meritOrder
+                );
+                if (!result.committed) throw new Error('Firebase did not commit the SSC-27 merit order.');
+            } else if (fb.mode === 'compat') {
+                const result = await fb.db.ref(meritPath).transaction(current =>
+                    replaceMeritOrder ? meritOrder : current || meritOrder
+                );
+                if (!result.committed) throw new Error('Firebase did not commit the SSC-27 merit order.');
+            } else {
+                await fb.set(fb.ref(fb.db, meritPath), meritOrder);
+            }
+        }
+
+        let cachedOverrides = {};
+        try {
+            cachedOverrides = JSON.parse(localStorage.getItem('cpscl_exam_group_overrides') || '{}');
+        } catch (error) {
+            console.warn('Local group override cache could not be read:', error);
+        }
+        cachedOverrides[examId] = { ...(cachedOverrides[examId] || {}), ...allocations };
+        if (saveMeritOrder && (replaceMeritOrder || !cachedOverrides[`${examId}_merit_order`])) {
+            cachedOverrides[`${examId}_merit_order`] = meritOrder;
+        }
+        localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(cachedOverrides));
     }
 
     async function renderSSC27UI() {
@@ -427,7 +599,7 @@
                             <table class="s27-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 70px;">SL #</th>
+                                        <th style="width: 90px;">MERIT RANK</th>
                                         <th style="width: 140px;">STUDENT ID</th>
                                         <th>STUDENT NAME</th>
                                         <th style="text-align: right; width: 220px;">ASSIGNED TRACK / GROUP</th>
@@ -496,11 +668,9 @@
         const container = document.getElementById('s27GroupRulesContainer');
         if (container) {
             container.innerHTML = '';
-            window.addSSC27GroupRow("Group A (Science)", "1", "55");
-            window.addSSC27GroupRow("Group B (Science)", "56", "105");
-            window.addSSC27GroupRow("Group C (Science)", "106", "146");
-            window.addSSC27GroupRow("Group D (Humanities)", "1", "22");
-            window.addSSC27GroupRow("Group D (Business Studies)", "1", "5");
+            DEFAULT_SSC27_GROUPS.forEach(group => {
+                window.addSSC27GroupRow(group.name, group.from, group.to);
+            });
         }
 
         const defaultSubs = ["Physics", "Chemistry", "Biology", "Mathematics", "General Science", "Religion", "Accounting", "Geography", "Finance", "History", "Civics", "ICT"];
@@ -557,6 +727,11 @@
         const className = document.getElementById('s27ClassName').value.trim();
         const date = document.getElementById('s27ExamDate').value;
 
+        if (!/\bclass\s*10\b/i.test(className) && !/\bssc\b/i.test(className)) {
+            alert("SSC-27 Exam Manager can only create Class 10 exams.");
+            return;
+        }
+
         if (Object.keys(s27SelectedSubjects).length === 0) {
             alert("অনুগ্রহ করে অন্তত একটি বিষয় যুক্ত করুন!");
             return;
@@ -573,27 +748,28 @@
         let totalMarks = 0;
         Object.values(s27SelectedSubjects).forEach(m => totalMarks += m);
 
+        const existingExam = s27ExamRegistry.find(x => x.name === name);
         const examObj = {
-            id: 'SSC27_EX_' + Date.now(),
+            id: existingExam ? existingExam.id : 'SSC27_EX_' + Date.now(),
             name,
             class: className,
             date,
             subjects: { ...s27SelectedSubjects },
             totalMarks,
             groups,
-            status: 'Active',
+            status: existingExam ? existingExam.status : 'Active',
             createdAt: new Date().toISOString()
         };
 
-        const exIdx = s27ExamRegistry.findIndex(x => x.name === name);
-        if (exIdx !== -1) {
-            s27ExamRegistry[exIdx] = examObj;
-        } else {
+        try {
+            await syncExamsToMainRegistry([examObj]);
+            s27ExamRegistry = s27ExamRegistry.filter(exam => exam.id !== examObj.id);
             s27ExamRegistry.unshift(examObj);
+        } catch (error) {
+            console.error("SSC-27 exam cloud sync failed:", error);
+            alert(`পরীক্ষাটি Firebase-এ সংরক্ষণ হয়নি: ${error.message}`);
+            return;
         }
-
-        localStorage.setItem('cpscl_ssc27_exams_registry', JSON.stringify(s27ExamRegistry));
-        await syncExamsToMainRegistry(s27ExamRegistry);
 
         alert("পরীক্ষা সফলভাবে তৈরি হয়েছে এবং লাইভ ট্যাবুলেশনের সাথে যুক্ত হয়েছে!");
 
@@ -629,7 +805,7 @@
                 </td>
                 <td style="font-weight:600; color:#475569;">${ex.date}</td>
                 <td style="text-align: right; white-space: nowrap;">
-                    <button type="button" class="s27-btn-icon ${isLocked ? 'unlock' : 'lock'}" onclick="window.toggleSSC27ExamLock('${ex.id}')" title="${isLocked ? 'Unlock' : 'Lock'}">
+                    <button type="button" class="s27-btn-icon ${isLocked ? 'unlock' : 'lock'}" onclick="window.toggleSSC27ExamLock('${ex.id}')" title="${isLocked ? 'Unlock' : 'Lock'}" aria-label="${isLocked ? 'Unlock' : 'Lock'} ${ex.name}">
                         <i class="fa-solid ${isLocked ? 'fa-lock' : 'fa-lock-open'}"></i>
                     </button>
                     <button type="button" class="s27-btn-icon delete" onclick="window.deleteSSC27Exam('${ex.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
@@ -641,39 +817,33 @@
 
     window.toggleSSC27ExamLock = async function (examId) {
         const exam = s27ExamRegistry.find(x => x.id === examId);
-        if (!exam) return;
+        if (!isSSC27Exam(exam)) return;
+        const previousStatus = exam.status;
         const isCurrentlyLocked = (exam.status === 'Locked' || exam.status === 'Closed');
         exam.status = isCurrentlyLocked ? 'Active' : 'Closed';
-        await syncExamsToMainRegistry(s27ExamRegistry);
+        try {
+            await syncExamsToMainRegistry([exam]);
+        } catch (error) {
+            exam.status = previousStatus;
+            console.error("SSC-27 exam status sync failed:", error);
+            alert(`স্ট্যাটাস Firebase-এ সংরক্ষণ হয়নি: ${error.message}`);
+        }
         renderSSC27ExamList();
     };
 
     window.deleteSSC27Exam = async function (id) {
+        const exam = s27ExamRegistry.find(x => x.id === id);
+        if (!isSSC27Exam(exam)) return;
         if (!confirm("Are you sure to delete this exam?")) return;
-        s27ExamRegistry = s27ExamRegistry.filter(x => x.id !== id);
-        localStorage.setItem('cpscl_ssc27_exams_registry', JSON.stringify(s27ExamRegistry));
-
-        let mainExams = [];
         try {
-            const loc = localStorage.getItem('cpscl_exams_registry');
-            if (loc) mainExams = JSON.parse(loc);
-        } catch (e) {}
-        mainExams = mainExams.filter(x => x.id !== id);
-        localStorage.setItem('cpscl_exams_registry', JSON.stringify(mainExams));
-
-        const fb = await getFirebaseCloudInstance();
-        if (fb) {
-            try {
-                if (fb.mode === 'modular') {
-                    await fb.set(fb.ref(fb.db, 'cpscl_exams'), mainExams);
-                    try { await fb.set(fb.ref(fb.db, 'cpscl_ssc27_exams'), s27ExamRegistry); } catch(e){}
-                } else {
-                    await fb.db.ref('cpscl_exams').set(mainExams);
-                    try { await fb.db.ref('cpscl_ssc27_exams').set(s27ExamRegistry); } catch(e){}
-                }
-            } catch (e) {}
+            await syncExamsToMainRegistry([], [id]);
+        } catch (error) {
+            console.error("SSC-27 exam deletion sync failed:", error);
+            alert(`পরীক্ষাটি Firebase থেকে মুছে ফেলা যায়নি: ${error.message}`);
+            return;
         }
 
+        s27ExamRegistry = s27ExamRegistry.filter(x => x.id !== id);
         renderSSC27ExamList();
         populateSSC27ExamDropdown();
     };
@@ -731,49 +901,87 @@
             } catch(e){}
         }
 
-        const autoOverrides = overrides[exam.id] ? { ...overrides[exam.id] } : {};
-        const meritOrder = [];
-
-        s27AllocatedStudents = students.map((st, idx) => {
-            const sl = idx + 1;
-            const sId = String(st.student_id || st.std_id || st.id || st['Student ID *'] || '').trim();
-            const sName = String(st.name_english || st.student_name || st.name || st['Name (English) *'] || 'Student').trim();
-
-            let assignedGroup = configuredGroups[0] ? configuredGroups[0].name : 'Group A (Science)';
-
-            if (BS_STUDENT_IDS.includes(sId)) {
-                assignedGroup = configuredGroups.find(g => g.name.toLowerCase().includes('business')) ? configuredGroups.find(g => g.name.toLowerCase().includes('business')).name : "Group D (Business Studies)";
-            } else if (sl > 146 || (st.sec === 'HUM' || (st.student_category && st.student_category.includes('HUM')))) {
-                assignedGroup = configuredGroups.find(g => g.name.toLowerCase().includes('humanities')) ? configuredGroups.find(g => g.name.toLowerCase().includes('humanities')).name : "Group D (Humanities)";
-            } else {
-                if (sl <= 55) assignedGroup = configuredGroups[0] ? configuredGroups[0].name : "Group A (Science)";
-                else if (sl <= 105) assignedGroup = configuredGroups[1] ? configuredGroups[1].name : "Group B (Science)";
-                else assignedGroup = configuredGroups[2] ? configuredGroups[2].name : "Group C (Science)";
-            }
-
-            if (autoOverrides[sId]) {
-                assignedGroup = autoOverrides[sId];
-            } else {
-                autoOverrides[sId] = assignedGroup;
-            }
-
-            meritOrder.push(sId);
-
-            return { sl, id: sId, name: sName, group: assignedGroup };
+        const studentOverrides = overrides[exam.id] && typeof overrides[exam.id] === 'object'
+            ? overrides[exam.id]
+            : {};
+        const dailyTest01 = isDailyTest01(exam);
+        const dailyTest01Order = dailyTest01 ? getDailyTest01Order() : [];
+        const dailyTest01OrderIndex = new Map(dailyTest01Order.map((studentId, index) => [studentId, index]));
+        const dailyTest01RankByStudentId = new Map([
+            ...DAILY_TEST_01_MERIT_GROUPS.science.map((studentId, index) => [studentId, index + 1]),
+            ...DAILY_TEST_01_MERIT_GROUPS.humanities.map((studentId, index) => [studentId, index + 1]),
+            ...DAILY_TEST_01_MERIT_GROUPS.business.map((studentId, index) => [studentId, index + 1])
+        ]);
+        const dailyTest01Allocations = dailyTest01 ? getDailyTest01GroupAllocations() : {};
+        const savedMeritOrder = Array.isArray(overrides[`${exam.id}_merit_order`])
+            ? overrides[`${exam.id}_merit_order`]
+            : [];
+        const orderedStudents = students
+            .filter(student => {
+                const studentId = getStudentId(student);
+                return studentId && (!dailyTest01 || dailyTest01OrderIndex.has(studentId));
+            })
+            .sort((a, b) => {
+                const idA = getStudentId(a);
+                const idB = getStudentId(b);
+                if (dailyTest01) return dailyTest01OrderIndex.get(idA) - dailyTest01OrderIndex.get(idB);
+                const rankA = getStudentMeritRank(a);
+                const rankB = getStudentMeritRank(b);
+                if (savedMeritOrder.length) {
+                    const savedA = savedMeritOrder.indexOf(idA);
+                    const savedB = savedMeritOrder.indexOf(idB);
+                    const orderA = savedA === -1 ? Number.POSITIVE_INFINITY : savedA;
+                    const orderB = savedB === -1 ? Number.POSITIVE_INFINITY : savedB;
+                    if (orderA !== orderB) return orderA - orderB;
+                }
+                if (rankA !== rankB) return rankA - rankB;
+                return idA.localeCompare(idB);
+            });
+        const trackRanks = new Map();
+        ['science', 'humanities', 'business'].forEach(track => {
+            orderedStudents.filter(student => getStudentTrack(student) === track)
+                .forEach((student, index) => trackRanks.set(getStudentId(student), index + 1));
         });
 
-        if (!overrides[exam.id]) {
-            overrides[exam.id] = autoOverrides;
-            overrides[exam.id + '_merit_order'] = meritOrder;
-            localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(overrides));
-            if (fb) {
-                try {
-                    if (fb.mode === 'modular') {
-                        await fb.set(fb.ref(fb.db, 'cpscl_exam_group_overrides'), overrides);
-                    } else {
-                        await fb.db.ref('cpscl_exam_group_overrides').set(overrides);
-                    }
-                } catch(e){}
+        const newAllocations = {};
+        const meritOrder = dailyTest01 ? dailyTest01Order : orderedStudents.map(getStudentId);
+        if (dailyTest01) {
+            Object.entries(dailyTest01Allocations).forEach(([studentId, group]) => {
+                if (studentOverrides[studentId] !== group) newAllocations[studentId] = group;
+            });
+        }
+        const meritByStudentId = new Map(orderedStudents.map((student, index) => [getStudentId(student), index + 1]));
+        s27AllocatedStudents = orderedStudents.map(st => {
+            const sId = getStudentId(st);
+            const track = getStudentTrack(st);
+            const trackRank = trackRanks.get(sId);
+            const assignedGroup = (dailyTest01 ? dailyTest01Allocations[sId] : studentOverrides[sId]) ||
+                getConfiguredGroupForTrackRank(track, trackRank, configuredGroups);
+            if (!dailyTest01 && !studentOverrides[sId]) newAllocations[sId] = assignedGroup;
+
+            const savedRank = getStudentMeritRank(st);
+            return {
+                sl: dailyTest01
+                    ? dailyTest01RankByStudentId.get(sId)
+                    : Number.isFinite(savedRank) ? savedRank : meritByStudentId.get(sId),
+                id: sId,
+                name: String(st.name_english || st.student_name || st.name || st['Name (English) *'] || 'Student').trim(),
+                group: assignedGroup
+            };
+        });
+
+        const shouldSaveMeritOrder = dailyTest01
+            ? savedMeritOrder.length !== meritOrder.length || savedMeritOrder.some((studentId, index) => studentId !== meritOrder[index])
+            : savedMeritOrder.length === 0;
+        if (Object.keys(newAllocations).length || shouldSaveMeritOrder) {
+            try {
+                await saveSSC27Overrides(exam.id, newAllocations, meritOrder, shouldSaveMeritOrder, dailyTest01);
+                Object.assign(studentOverrides, newAllocations);
+                overrides[exam.id] = studentOverrides;
+                if (shouldSaveMeritOrder) overrides[`${exam.id}_merit_order`] = meritOrder;
+            } catch (error) {
+                console.error('SSC-27 group allocation could not be saved:', error);
+                alert(`গ্রুপ বরাদ্দ এই ব্রাউজারে দেখা যাচ্ছে, কিন্তু Firebase-এ সংরক্ষণ হয়নি: ${error.message}`);
             }
         }
 
@@ -790,13 +998,25 @@
                 All Students (${s27AllocatedStudents.length})
             </button>
         `;
+        const examSelect = document.getElementById('s27TargetExamSelect');
+        const exam = s27ExamRegistry.find(item => examSelect && item.id === examSelect.value);
+        const dailyTest01Labels = {
+            'Group A (Science)': 'A',
+            'Group B (Science)': 'B',
+            'Group C (Science)': 'C',
+            'Group D (Humanities)': 'D-Hum',
+            'Group D (Business Studies)': 'D-BS'
+        };
 
         configuredGroups.forEach(g => {
             const count = s27AllocatedStudents.filter(s => s.group === g.name).length;
             const isActive = s27CurrentGroupFilter === g.name;
+            const label = exam && isDailyTest01(exam)
+                ? dailyTest01Labels[g.name] || g.name
+                : g.name;
             html += `
                 <button type="button" class="s27-btn-add ${isActive ? 'active' : ''}" onclick="window.setSSC27Filter('${g.name}')">
-                    ${g.name} (${count})
+                    ${label} (${count})
                 </button>
             `;
         });
@@ -855,6 +1075,8 @@
         }
 
         const examId = document.getElementById('s27TargetExamSelect').value;
+        const exam = s27ExamRegistry.find(item => item.id === examId);
+        if (!isSSC27Exam(exam)) return;
         const student = s27AllocatedStudents.find(s => s.id === s27SelectedStudentId);
         if (student) {
             student.group = targetGroup;
@@ -867,16 +1089,11 @@
             if (!overrides[examId]) overrides[examId] = {};
             overrides[examId][student.id] = targetGroup;
             localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(overrides));
-
-            const fb = await getFirebaseCloudInstance();
-            if (fb) {
-                try {
-                    if (fb.mode === 'modular') {
-                        await fb.set(fb.ref(fb.db, 'cpscl_exam_group_overrides'), overrides);
-                    } else {
-                        await fb.db.ref('cpscl_exam_group_overrides').set(overrides);
-                    }
-                } catch(e){}
+            try {
+                await saveSSC27Overrides(examId, { [student.id]: targetGroup }, null, false);
+            } catch (error) {
+                console.error('SSC-27 student group override could not be saved:', error);
+                alert(`গ্রুপ পরিবর্তন Firebase-এ সংরক্ষণ হয়নি: ${error.message}`);
             }
 
             s27SelectedStudentId = null;
@@ -997,7 +1214,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 8%;">SL</th>
+                            <th style="width: 8%;">Merit Rank</th>
                             <th style="width: 22%;">Student ID</th>
                             <th style="text-align: left; padding-left: 14px;">Student Name</th>
                             <th style="width: 20%;">Obtained Mark</th>
