@@ -1,13 +1,13 @@
 /* ==========================================================================
    MODULE: CPSCL
-   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v13.0 Bulletproof Frozen Snapshot)
+   SUB-SECTION: Exam & Dynamic Student Group Management Suite (v14.0 Safe-Merge Shield)
    Path: cpscl/exam_manager.js
-   Architecture: Permanent Snapshot Freezing | Official Tie-Breaking | Zero Shuffling
-   Safety: Restores Yesterday's Exact Paper Order for MT-07 | Future-Proof MT-08 Lock
+   Architecture: Zero Overwrite | Permanent Snapshot Freezing | Dual Ecosystem Shield
+   Safety: 100% Data Preservation | Protects SSC-27 Data from Deletion
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Suite v13.0 (Permanent Snapshot Freezing Active)...");
+    console.log("Loading CPSCL Suite v14.0 (Safe-Merge Shield Active)...");
 
     // গতকালকের প্রিন্ট হওয়া সিট প্ল্যানের হুবহু ৮১ জনের সংরক্ষিত তালিকা (Frozen Official Order for Model Test-7)
     const FROZEN_MT07_ORDER = [
@@ -253,7 +253,7 @@
         return dynamicClassList;
     }
 
-    // ৫. বুলেটপ্রুফ ট্যাব সুইচিং ফাংশন (Direct Inline Display Override)
+    // ৫. বুলেটপ্রুফ ট্যাব সুইচিং ফাংশন
     window.switchEMMainTab = function(tabKey) {
         const btn1 = document.getElementById('emTabBtn1');
         const btn2 = document.getElementById('emTabBtn2');
@@ -303,7 +303,7 @@
             <div class="em-wrapper">
                 <div class="em-header">
                     <h1><i class="fa-solid fa-graduation-cap"></i> CPSCL Academic ERP - Exam & Group Management</h1>
-                    <div class="em-badge"><i class="fa-solid fa-cloud-arrow-up"></i> Pure Cloud Synced</div>
+                    <div class="em-badge"><i class="fa-solid fa-shield-halved"></i> Safe-Merge Shield Active</div>
                 </div>
 
                 <div class="em-nav-tabs">
@@ -556,7 +556,7 @@
         syncCloudExamsDirectly();
     }
 
-    // ৭. ক্লাউডে সরাসরি সংরক্ষণ (১০০% নিরাপদ: কোনো নম্বর ডিলেট হবে না)
+    // ৭. ক্লাউডে নিরাপদ সংরক্ষণ (SAFE MERGE: SSC-27 এর কোনো ডাটা মুছে যাবে না)
     async function saveExamsToCloud() {
         let isSaved = false;
         const cleanRegistry = JSON.parse(JSON.stringify(examRegistry));
@@ -565,36 +565,71 @@
         localStorage.setItem('cpscl_exams_registry', JSON.stringify(cleanRegistry));
         localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(cleanOverrides));
 
-        if (typeof window.getDatabase === 'function' && typeof window.ref === 'function' && typeof window.set === 'function') {
+        if (typeof window.getDatabase === 'function' && typeof window.ref === 'function') {
             try {
                 const mDb = window.getDatabase();
-                await window.set(window.ref(mDb, 'cpscl_exams'), cleanRegistry);
-                await window.set(window.ref(mDb, 'cpscl_exam_group_overrides'), cleanOverrides);
-                isSaved = true;
-            } catch(e) {}
+                
+                // ১. ক্লাউডে বর্তমানে থাকা সব পরীক্ষা পড়া
+                const snap = await window.get(window.ref(mDb, 'cpscl_exams'));
+                let currentCloudExams = snap.exists() ? (Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val())) : [];
+                
+                // ২. SSC-27 সম্পর্কিত পরীক্ষাসমূহ আলাদা করে সুরক্ষিত রাখা
+                const ssc27Exams = currentCloudExams.filter(x => 
+                    x && (
+                        String(x.id || '').toUpperCase().startsWith('SSC27_') || 
+                        String(x.class || '').toLowerCase().includes('10') ||
+                        String(x.name || '').toLowerCase().includes('ssc') ||
+                        String(x.name || '').toLowerCase().includes('daily test')
+                    )
+                );
+
+                // ৩. সাধারণ পরীক্ষাগুলো ফিল্টার করা
+                const nonSSCExams = cleanRegistry.filter(x => 
+                    x && !String(x.id || '').toUpperCase().startsWith('SSC27_') && !String(x.class || '').toLowerCase().includes('10')
+                );
+
+                // ৪. সাধারণ পরীক্ষা + অক্ষত SSC-27 পরীক্ষা মার্জ করা
+                const mergedRegistry = [...nonSSCExams, ...ssc27Exams];
+
+                // ৫. ক্লাউডে ওভাররাইড না করে নিরাপদভাবে সেট করা
+                if (typeof window.set === 'function') {
+                    await window.set(window.ref(mDb, 'cpscl_exams'), mergedRegistry);
+
+                    // Overrides মার্জ করা (যাতে কারো গ্রুপ তালিকা হারিয়ে না যায়)
+                    const snapOv = await window.get(window.ref(mDb, 'cpscl_exam_group_overrides'));
+                    let existingOv = snapOv.exists() ? snapOv.val() : {};
+                    const mergedOv = { ...existingOv, ...cleanOverrides };
+                    await window.set(window.ref(mDb, 'cpscl_exam_group_overrides'), mergedOv);
+
+                    isSaved = true;
+                }
+            } catch(e) {
+                console.error("Safe Merge Cloud Save failed:", e);
+            }
         }
 
         const db = getActiveFirebaseDb();
         if (!isSaved && db && typeof db.ref === 'function') {
             try {
-                await db.ref('cpscl_exams').set(cleanRegistry);
-                await db.ref('cpscl_exam_group_overrides').set(cleanOverrides);
+                const snap = await db.ref('cpscl_exams').once('value');
+                let currentCloudExams = snap.exists() ? (Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val())) : [];
+                const ssc27Exams = currentCloudExams.filter(x => x && (String(x.id || '').toUpperCase().startsWith('SSC27_') || String(x.class || '').toLowerCase().includes('10')));
+                const nonSSCExams = cleanRegistry.filter(x => x && !String(x.id || '').toUpperCase().startsWith('SSC27_') && !String(x.class || '').toLowerCase().includes('10'));
+
+                await db.ref('cpscl_exams').set([...nonSSCExams, ...ssc27Exams]);
+
+                const snapOv = await db.ref('cpscl_exam_group_overrides').once('value');
+                let existingOv = snapOv.exists() ? snapOv.val() : {};
+                await db.ref('cpscl_exam_group_overrides').set({ ...existingOv, ...cleanOverrides });
+
                 isSaved = true;
             } catch (err) {}
-        }
-
-        if (!isSaved && typeof window.writeToFirebase === 'function') {
-            try {
-                await window.writeToFirebase('cpscl_exams', cleanRegistry);
-                await window.writeToFirebase('cpscl_exam_group_overrides', cleanOverrides);
-                isSaved = true;
-            } catch(e) {}
         }
 
         return true;
     }
 
-    // ৮. ক্লাউড থেকে ডাটা সিঙ্ক (এবং Model Test-7 এর জন্য গতকালকের কাগজ অর্ডার স্থায়ী লক)
+    // ৮. ক্লাউড থেকে ডাটা সিঙ্ক (Model Test-7 এর জন্য পেপার অর্ডার ফ্রোজেন লক)
     async function syncCloudExamsDirectly() {
         let cloudData = null;
 
@@ -605,7 +640,9 @@
                 if (snap.exists()) cloudData = snap.val();
 
                 const snapOv = await window.get(window.ref(mDb, 'cpscl_exam_group_overrides'));
-                if (snapOv.exists()) manualGroupOverrides = snapOv.val() || {};
+                if (snapOv.exists()) {
+                    manualGroupOverrides = { ...manualGroupOverrides, ...(snapOv.val() || {}) };
+                }
             } catch(e) {}
         }
 
@@ -616,21 +653,22 @@
                 if (snap.exists()) cloudData = snap.val();
 
                 const snapOv = await db.ref('cpscl_exam_group_overrides').once('value');
-                if (snapOv.exists()) manualGroupOverrides = snapOv.val() || {};
-            } catch(e) {}
-        }
-
-        if (!cloudData && typeof window.readFromFirebase === 'function') {
-            try {
-                cloudData = await window.readFromFirebase('cpscl_exams');
+                if (snapOv.exists()) {
+                    manualGroupOverrides = { ...manualGroupOverrides, ...(snapOv.val() || {}) };
+                }
             } catch(e) {}
         }
 
         if (cloudData) {
-            examRegistry = Array.isArray(cloudData) ? cloudData : Object.values(cloudData);
-            localStorage.setItem('cpscl_exams_registry', JSON.stringify(examRegistry));
+            const rawList = Array.isArray(cloudData) ? cloudData : Object.values(cloudData);
+            
+            // শুধুমাত্র সাধারণ পরীক্ষাগুলো (Non-SSC27) এই এক্সাম ম্যানেজারের লোকাল তালিকায় দেখানো হবে
+            examRegistry = rawList.filter(ex => 
+                ex && !String(ex.id || '').toUpperCase().startsWith('SSC27_') && !String(ex.class || '').toLowerCase().includes('10')
+            );
+            localStorage.setItem('cpscl_exams_registry', JSON.stringify(rawList));
 
-            // 🌟 অটো-হিল: Model Test-7 এর আইডি শনাক্ত করে গতকালের পেপারের হুবহু অর্ডার লক করা
+            // Model Test-7 এর আইডি শনাক্ত করে গতকালের পেপারের হুবহু অর্ডার লক করা
             const mt07Exam = examRegistry.find(x => x.name && (x.name.includes("Model Test-7") || x.name.includes("Model Test-07") || x.name.includes("Model Test 7")));
             if (mt07Exam) {
                 if (!manualGroupOverrides[mt07Exam.id]) manualGroupOverrides[mt07Exam.id] = {};
@@ -771,10 +809,6 @@
         }
 
         examRegistry.forEach(ex => {
-            const groupDesc = (ex.groups && ex.groups.length > 0)
-                ? ex.groups.map(g => `${g.name} (${g.from}-${g.to})`).join(', ')
-                : 'Default Groups';
-
             const isLocked = (ex.status === 'Locked' || ex.status === 'Closed');
             const statusBadge = isLocked 
                 ? `<span class="em-status-badge" style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5;">Locked (Hidden)</span>`
@@ -818,7 +852,7 @@
         }
     };
 
-    // ১৩. 🌟 পার্মানেন্ট স্ন্যাপশট গ্রুপিং ইঞ্জিন (ভবিষ্যতের সকল পরীক্ষার জন্য শাফলিং বন্ধ)
+    // ১৩. অটো মেরিট গ্রুপিং ইঞ্জিন
     window.autoAssignGroupsFromPreviousMerit = async function() {
         const targetSelect = document.getElementById('emTransferExamSelect');
         const sourceSelect = document.getElementById('emSourceMeritExamSelect');
@@ -851,7 +885,6 @@
 
         showCenterToast("Analyzing merit rankings & freezing snapshot...", true);
 
-        // ১. উৎস পরীক্ষার সব বিষয়ের প্রাপ্ত নম্বর সংগ্রহ
         const sourceSubjects = Object.keys(sourceExam.subjects || {});
         const studentTotals = {};
 
@@ -881,12 +914,10 @@
             });
         }
 
-        // ২. পূর্ববর্তী মেধা তালিকা রিড করা (টাই-ব্রেকার হিসেবে কাজ করার জন্য)
         const sourceMeritOrder = (manualGroupOverrides && manualGroupOverrides[sourceExamId + '_merit_order']) 
             ? manualGroupOverrides[sourceExamId + '_merit_order'] 
             : [];
 
-        // ৩. মেধা সর্টিং: বেশি নম্বর পেলে আগে বসবে, নম্বর সমান হলে আগের মেধা হুবহু বহাল থাকবে
         students.sort((a, b) => {
             const idA = String(a.std_id || a.id || '').trim();
             const idB = String(b.std_id || b.id || '').trim();
@@ -908,7 +939,6 @@
             return idA.localeCompare(idB);
         });
 
-        // ৪. 🌟 পার্মানেন্ট স্ন্যাপশট লক: ১ থেকে ৮১ জনের ক্রম চিরতরে ডাটাবেজে লক করে ফেলা
         if (!manualGroupOverrides[targetExamId]) {
             manualGroupOverrides[targetExamId] = {};
         }
@@ -922,7 +952,6 @@
             frozenMeritOrderedIds.push(sId);
         });
 
-        // ডাটাবেজে স্থায়ীভাবে স্ন্যাপশট সেভ
         manualGroupOverrides[targetExamId + '_merit_order'] = frozenMeritOrderedIds;
 
         await saveExamsToCloud();
@@ -931,7 +960,7 @@
         window.loadEMStudentGroupAllocation();
     };
 
-    // ১৪. স্টুডেন্ট টেবিল লোড করার ফাংশন (স্থায়ী স্ন্যাপশট হুবহু পড়া)
+    // ১৪. স্টুডেন্ট টেবিল লোড করার ফাংশন
     window.loadEMStudentGroupAllocation = async function() {
         const select = document.getElementById('emTransferExamSelect');
         const tbody = document.getElementById('emStudentAllocationTbody');
@@ -946,8 +975,6 @@
         }
 
         let rawStudents = await getRealStudentsForClass(exam.class);
-
-        // 🌟 যদি পরীক্ষাটি Model Test-7 হয়, তবে গতকালকের পেপার অর্ডার নিশ্চিত করা
         let savedMeritOrder = (manualGroupOverrides && manualGroupOverrides[exam.id + '_merit_order']) ? manualGroupOverrides[exam.id + '_merit_order'] : [];
 
         if (exam.name && (exam.name.includes("Model Test-7") || exam.name.includes("Model Test-07") || exam.name.includes("Model Test 7"))) {
@@ -973,7 +1000,6 @@
         allocatedStudentsCache = rawStudents.map((st, idx) => {
             const slNumber = idx + 1;
             const studentId = String(st.std_id || st.id || '').trim();
-
             let assignedGroup = (slNumber <= 40) ? "Group A" : "Group B";
 
             if (manualGroupOverrides[exam.id] && manualGroupOverrides[exam.id][studentId]) {
@@ -1128,7 +1154,6 @@
 
         pageStudents.forEach(st => {
             const isSelected = (selectedSingleStudentId === st.id);
-
             const tr = document.createElement('tr');
             if (isSelected) tr.classList.add('erp-row-selected');
 
@@ -1165,7 +1190,7 @@
         }
     }
 
-    // ১৫. ব্ল্যাঙ্ক শিট প্রিন্ট মোডাল ও ইঞ্জিন (কোনো রোল নেই)
+    // ১৫. ব্ল্যাঙ্ক শিট প্রিন্ট মোডাল ও ইঞ্জিন
     window.openBlankSheetPrintModal = function() {
         const select = document.getElementById('emTransferExamSelect');
         const examId = select ? select.value : '';
