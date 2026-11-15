@@ -1,15 +1,19 @@
 /* ==========================================================================
    MODULE: CPSCL Academic ERP
-   SUB-SECTION: SSC-27 Preparatory Suite (v19.0 Pure Firebase Direct Cloud)
+   SUB-SECTION: SSC-27 Preparatory Suite (v20.0 Clean Cloud REST Engine)
    Path: cpscl/ssc27_exam_manager.js
-   Architecture: 100% Direct Firebase Cloud REST | Zero LocalStorage
-   Safety: Guaranteed Realtime Cloud Persistence
+   Architecture: 100% Direct Firebase Cloud REST | Auto-Sanitized Keys
+   Safety: 100% Zero LocalStorage | Permanent Realtime Cloud Sync
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL SSC-27 Suite v19.0 (Pure Cloud Active - Zero LocalStorage)...");
+    console.log("Loading CPSCL SSC-27 Suite v20.0 (Auto-Sanitized Cloud Engine Active)...");
 
     const FIREBASE_BASE_URL = "https://mousumi-computer-default-rtdb.firebaseio.com";
+
+    function cleanFirebaseKey(name) {
+        return String(name || '').replace(/[/#$\[\].]/g, '-').trim();
+    }
 
     function injectSSC27Styles() {
         if (document.getElementById('cpscl-ssc27-style')) return;
@@ -487,11 +491,12 @@
             });
         }
 
+        // সব বিষয়ের নাম ফায়ারবেস-বান্ধব এবং স্ল্যাশমুক্ত করা হলো
         const routineSubjects = [
             "Physics", "Chemistry", "Biology", "Math", 
             "Ban 1", "Ban 2", "Eng 1", "Eng 2", 
             "ICT", "Reli", "Sci", 
-            "Acc/Geo", "Fin/His", "B.En/Civ", "HM/Agri/HS"
+            "Acc-Geo", "Fin-His", "B-Ent-Civ", "HM-Agri-HS"
         ];
         
         const quickArea = document.getElementById('s27QuickPills');
@@ -502,7 +507,8 @@
                 p.className = 's27-pill';
                 p.innerHTML = `<span>${sub} (20)</span> <i class="fa-solid fa-plus" style="font-size:0.75rem;"></i>`;
                 p.onclick = () => {
-                    s27SelectedSubjects[sub] = 20;
+                    const safeKey = cleanFirebaseKey(sub);
+                    s27SelectedSubjects[safeKey] = 20;
                     renderSSC27SelectedSubjects();
                 };
                 quickArea.appendChild(p);
@@ -514,10 +520,11 @@
         const nameInput = document.getElementById('s27CustomSubInput');
         const markInput = document.getElementById('s27CustomSubMark');
         if (!nameInput) return;
-        const name = nameInput.value.trim();
+        const rawName = nameInput.value.trim();
+        const safeName = cleanFirebaseKey(rawName);
         const mark = parseInt(markInput.value) || 20;
-        if (!name) return;
-        s27SelectedSubjects[name] = mark;
+        if (!safeName) return;
+        s27SelectedSubjects[safeName] = mark;
         nameInput.value = '';
         renderSSC27SelectedSubjects();
     };
@@ -541,7 +548,7 @@
         });
     }
 
-    // ১০০% নিরাপদ ও ক্লাউড সেভ ইঞ্জিন
+    // ১০০% নিরাপদ ও ক্লাউড সেভ ইঞ্জিন (অটো-স্যানিটাইজড)
     window.handleSSC27Submit = async function (e) {
         e.preventDefault();
         const submitBtn = document.getElementById('s27SubmitBtn');
@@ -562,8 +569,15 @@
             if (gName) groups.push({ name: gName, from: gFrom, to: gTo });
         });
 
+        // বিষয়গুলোর কী থেকে স্ল্যাশ এবং ডট মুছে একদম নিরাপদ করা
+        const cleanSubjects = {};
         let totalMarks = 0;
-        Object.values(s27SelectedSubjects).forEach(m => totalMarks += m);
+        Object.keys(s27SelectedSubjects).forEach(sub => {
+            const safeSub = cleanFirebaseKey(sub);
+            const m = parseInt(s27SelectedSubjects[sub]) || 0;
+            cleanSubjects[safeSub] = m;
+            totalMarks += m;
+        });
 
         submitBtn.disabled = true;
         submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> সরাসরি ফায়ারবেস ক্লাউডে পাঠানো হচ্ছে...`;
@@ -573,7 +587,7 @@
             name,
             class: className || 'Class 10',
             date,
-            subjects: { ...s27SelectedSubjects },
+            subjects: cleanSubjects,
             totalMarks,
             groups: groups.length > 0 ? groups : DEFAULT_SSC27_GROUPS,
             status: 'Active',
@@ -589,10 +603,11 @@
             });
 
             if (!res1.ok) {
-                throw new Error(`ফায়ারবেস সার্ভার এরর: ${res1.status}`);
+                const errTxt = await res1.text();
+                throw new Error(`ফায়ারবেস সার্ভার এরর: ${res1.status} (${errTxt})`);
             }
 
-            // ২. সাথে সাথে cpscl_exams এও পুশ করা (যাতে শিক্ষক পোর্টালে ১০০% শো করে)
+            // ২. সাধারণ cpscl_exams এও পুশ করা (টিচার পোর্টালে পাওয়ার জন্য)
             await fetch(`${FIREBASE_BASE_URL}/cpscl_exams/${examObj.id}.json`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -611,7 +626,7 @@
             await loadSSC27ExamsFromCloud();
 
         } catch (err) {
-            alert("সংরক্ষণ ব্যর্থ হয়েছে! কোনো ডাটা সেভ হয়নি। কারণ: " + err.message);
+            alert("সংরক্ষণ ব্যর্থ হয়েছে! কারণ: " + err.message);
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Save Directly to Firebase Cloud`;
