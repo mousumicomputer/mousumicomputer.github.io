@@ -1,13 +1,13 @@
 /* ==========================================================================
    MODULE: CPSCL Academic ERP
-   SUB-SECTION: SSC-27 Preparatory Suite (v20.0 Clean Cloud REST Engine)
+   SUB-SECTION: SSC-27 Preparatory Suite (v20.2 Stable Cloud Engine)
    Path: cpscl/ssc27_exam_manager.js
    Architecture: 100% Direct Firebase Cloud REST | Auto-Sanitized Keys
    Safety: 100% Zero LocalStorage | Permanent Realtime Cloud Sync
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL SSC-27 Suite v20.0 (Auto-Sanitized Cloud Engine Active)...");
+    console.log("Loading CPSCL SSC-27 Suite v20.2 (Auto-Sanitized & Edit-Supported Active)...");
 
     const FIREBASE_BASE_URL = "https://mousumi-computer-default-rtdb.firebaseio.com";
 
@@ -57,6 +57,8 @@
             .s27-group-badge { display: inline-block; padding: 4px 14px; border-radius: 50px !important; font-size: 0.8rem; font-weight: 700; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
             .s27-status-badge { display: inline-block; padding: 3px 10px; border-radius: 50px !important; font-size: 0.72rem; font-weight: 800; }
             .s27-btn-icon { width: 34px; height: 34px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; background: #ffffff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; transition: 0.2s; margin: 0 2px; }
+            .s27-btn-icon.edit { color: #2563eb; }
+            .s27-btn-icon.edit:hover { background: #eff6ff; border-color: #2563eb; }
             .s27-btn-icon.lock { color: #dc2626; }
             .s27-btn-icon.lock:hover { background: #fee2e2; border-color: #dc2626; }
             .s27-btn-icon.unlock { color: #16a34a; }
@@ -98,6 +100,10 @@
     let s27AllocatedStudents = [];
     let s27SelectedStudentId = null;
     let s27CurrentGroupFilter = 'all';
+
+    // এডিট স্টেটের জন্য ভেরিয়েবল
+    let s27EditingExamId = null;
+    let s27EditingSubjects = {};
 
     const DEFAULT_SSC27_GROUPS = [
         { name: 'Group A (Science)', from: '1', to: '55' },
@@ -164,7 +170,6 @@
         return /^daily\s+test\s*[-–]?\s*0?1$/i.test(name.trim());
     }
 
-    // সরাসরি ক্লাউড থেকে লোড (জিরো লোকাল স্টোরেজ)
     async function loadSSC27ExamsFromCloud() {
         s27ExamRegistry = [];
         try {
@@ -430,6 +435,7 @@
                 </div>
             </div>
 
+            <!-- ব্ল্যাঙ্ক প্রিন্ট মোডাল -->
             <div id="s27BlankModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999999; display:none; align-items:center; justify-content:center;">
                 <div style="background:#fff; border-radius:20px; width:90%; max-width:440px; padding:24px; box-shadow:0 15px 35px rgba(0,0,0,0.25);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
@@ -447,6 +453,60 @@
                     <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
                         <button type="button" class="s27-btn-add" onclick="window.closeSSC27BlankModal()">Cancel</button>
                         <button type="button" class="s27-btn-add" style="background:#059669; color:#fff; border:none;" onclick="window.executeSSC27BlankPrint()"><i class="fa-solid fa-print"></i> Print Clean Vector Sheet</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- মিসিং সাবজেক্ট যুক্ত করার সংশোধিত মোডাল -->
+            <div id="s27EditModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999999; display:none; align-items:center; justify-content:center;">
+                <div style="background:#fff; border-radius:20px; width:95%; max-width:540px; padding:24px; box-shadow:0 15px 35px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
+                        <div>
+                            <h4 style="margin:0; font-size:1.1rem; font-weight:800; color:#0f172a;"><i class="fa-solid fa-pen-to-square" style="color:#2563eb;"></i> Add / Edit Exam Subjects</h4>
+                            <span id="s27EditModalExamName" style="font-size:0.85rem; font-weight:700; color:#059669;">Exam: Daily Test-01</span>
+                        </div>
+                        <button type="button" onclick="window.closeSSC27EditModal()" style="border:none; background:none; font-size:1.3rem; cursor:pointer; color:#64748b;">✕</button>
+                    </div>
+
+                    <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:10px 14px; border-radius:12px; margin-bottom:15px; font-size:0.82rem; color:#166534;">
+                        <i class="fa-solid fa-circle-check"></i> <strong>কোনো ভয় নেই:</strong> নতুন বিষয় যোগ করলে শিক্ষকদের এন্ট্রি দেওয়া আগের নম্বরের কোনো ক্ষতি হবে না।
+                    </div>
+
+                    <div class="s27-form-group">
+                        <label>Click to Add Missing Routine Subject (Full Mark: 20)</label>
+                        <div class="s27-pills-box" id="s27EditQuickPills"></div>
+                    </div>
+
+                    <div class="s27-form-group">
+                        <label>Or Add Custom Subject</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="s27EditCustomSubInput" class="s27-control" placeholder="Write subject name...">
+                            <input type="number" id="s27EditCustomSubMark" class="s27-control" style="width:100px; text-align:center;" value="20" placeholder="Marks">
+                            <button type="button" class="s27-btn-add" onclick="window.addSSC27CustomSubjectToEdit()"><i class="fa-solid fa-plus"></i> Add</button>
+                        </div>
+                    </div>
+
+                    <div class="s27-form-group" style="margin-top:15px;">
+                        <label>Currently Registered Subjects in This Exam</label>
+                        <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 10px; max-height: 200px; overflow-y:auto;">
+                            <table class="s27-table">
+                                <thead>
+                                    <tr>
+                                        <th>SUBJECT</th>
+                                        <th style="width: 100px; text-align: center;">FULL MARKS</th>
+                                        <th style="width: 60px; text-align: right;">ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="s27EditSelectedSubsTbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #e2e8f0; padding-top:14px;">
+                        <button type="button" class="s27-btn-add" onclick="window.closeSSC27EditModal()">Cancel</button>
+                        <button type="button" class="s27-btn-add" id="s27EditSaveBtn" style="background:#2563eb; color:#fff; border:none; padding: 9px 24px;" onclick="window.saveSSC27SubjectChanges()">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Save Changes to Cloud
+                        </button>
                     </div>
                 </div>
             </div>
@@ -482,6 +542,13 @@
         container.appendChild(row);
     };
 
+    const routineSubjectsList = [
+        "Physics", "Chemistry", "Biology", "Math", 
+        "Ban 1", "Ban 2", "Eng 1", "Eng 2", 
+        "ICT", "Reli", "Sci", 
+        "Acc-Geo", "Fin-His", "B-Ent-Civ", "HM-Agri-HS"
+    ];
+
     function initSSC27DefaultForm() {
         const container = document.getElementById('s27GroupRulesContainer');
         if (container) {
@@ -491,18 +558,10 @@
             });
         }
 
-        // সব বিষয়ের নাম ফায়ারবেস-বান্ধব এবং স্ল্যাশমুক্ত করা হলো
-        const routineSubjects = [
-            "Physics", "Chemistry", "Biology", "Math", 
-            "Ban 1", "Ban 2", "Eng 1", "Eng 2", 
-            "ICT", "Reli", "Sci", 
-            "Acc-Geo", "Fin-His", "B-Ent-Civ", "HM-Agri-HS"
-        ];
-        
         const quickArea = document.getElementById('s27QuickPills');
         if (quickArea) {
             quickArea.innerHTML = '';
-            routineSubjects.forEach(sub => {
+            routineSubjectsList.forEach(sub => {
                 const p = document.createElement('div');
                 p.className = 's27-pill';
                 p.innerHTML = `<span>${sub} (20)</span> <i class="fa-solid fa-plus" style="font-size:0.75rem;"></i>`;
@@ -548,7 +607,6 @@
         });
     }
 
-    // ১০০% নিরাপদ ও ক্লাউড সেভ ইঞ্জিন (অটো-স্যানিটাইজড)
     window.handleSSC27Submit = async function (e) {
         e.preventDefault();
         const submitBtn = document.getElementById('s27SubmitBtn');
@@ -569,7 +627,6 @@
             if (gName) groups.push({ name: gName, from: gFrom, to: gTo });
         });
 
-        // বিষয়গুলোর কী থেকে স্ল্যাশ এবং ডট মুছে একদম নিরাপদ করা
         const cleanSubjects = {};
         let totalMarks = 0;
         Object.keys(s27SelectedSubjects).forEach(sub => {
@@ -595,7 +652,6 @@
         };
 
         try {
-            // ১. সরাসরি cpscl_ssc27_exams নোডে পাঠানো
             const res1 = await fetch(`${FIREBASE_BASE_URL}/cpscl_ssc27_exams/${examObj.id}.json`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -607,7 +663,6 @@
                 throw new Error(`ফায়ারবেস সার্ভার এরর: ${res1.status} (${errTxt})`);
             }
 
-            // ২. সাধারণ cpscl_exams এও পুশ করা (টিচার পোর্টালে পাওয়ার জন্য)
             await fetch(`${FIREBASE_BASE_URL}/cpscl_exams/${examObj.id}.json`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -622,7 +677,6 @@
             renderSSC27SelectedSubjects();
             initSSC27DefaultForm();
 
-            // ফায়ারবেস থেকে ফ্রেশ তালিকা আনা
             await loadSSC27ExamsFromCloud();
 
         } catch (err) {
@@ -657,6 +711,10 @@
                 </td>
                 <td style="font-weight:600; color:#475569;">${ex.date}</td>
                 <td style="text-align: right; white-space: nowrap;">
+                    <!-- Edit Subject বাটন -->
+                    <button type="button" class="s27-btn-icon edit" onclick="window.openSSC27EditModal('${ex.id}')" title="Add / Edit Missing Subjects">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
                     <button type="button" class="s27-btn-icon ${isLocked ? 'unlock' : 'lock'}" onclick="window.toggleSSC27ExamLock('${ex.id}')" title="${isLocked ? 'Unlock' : 'Lock'}">
                         <i class="fa-solid ${isLocked ? 'fa-lock' : 'fa-lock-open'}"></i>
                     </button>
@@ -666,6 +724,154 @@
             tbody.appendChild(tr);
         });
     }
+
+    // ==========================================
+    // ১০০% বাগ-মুক্ত ও নিরাপদ মিসিং সাবজেক্ট মডিউল
+    // ==========================================
+    window.openSSC27EditModal = function (examId) {
+        const exam = s27ExamRegistry.find(x => x.id === examId);
+        if (!exam) return;
+
+        s27EditingExamId = examId;
+        // ডেটা শুধু উইন্ডো খোলার সময় একবারই ইনিশিয়ালাইজ হবে
+        s27EditingSubjects = { ...(exam.subjects || {}) };
+
+        document.getElementById('s27EditModalExamName').innerText = `Exam: ${exam.name} (${exam.date})`;
+
+        renderEditingPills();
+        renderEditingSubjectsTable();
+        document.getElementById('s27EditModal').style.display = 'flex';
+    };
+
+    // পিলস আলাদা রেন্ডার করা ফাংশন (ডাটা রিসেট প্রতিরোধক)
+    function renderEditingPills() {
+        const pillContainer = document.getElementById('s27EditQuickPills');
+        if (!pillContainer) return;
+        pillContainer.innerHTML = '';
+
+        routineSubjectsList.forEach(sub => {
+            const safeKey = cleanFirebaseKey(sub);
+            const isAlreadyAdded = !!s27EditingSubjects[safeKey];
+            const p = document.createElement('div');
+            p.className = 's27-pill';
+            p.style.opacity = isAlreadyAdded ? '0.4' : '1';
+            p.style.cursor = isAlreadyAdded ? 'default' : 'pointer';
+            p.innerHTML = `<span>${sub} (20)</span> <i class="fa-solid ${isAlreadyAdded ? 'fa-check' : 'fa-plus'}" style="font-size:0.75rem;"></i>`;
+            
+            p.onclick = () => {
+                if (!s27EditingSubjects[safeKey]) {
+                    s27EditingSubjects[safeKey] = 20;
+                    renderEditingSubjectsTable();
+                    renderEditingPills(); // শুধু পিলস রিফ্রেশ হবে, কোনো ডেটা রিসেট হবে না
+                }
+            };
+            pillContainer.appendChild(p);
+        });
+    }
+
+    function renderEditingSubjectsTable() {
+        const tbody = document.getElementById('s27EditSelectedSubsTbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        const subs = Object.keys(s27EditingSubjects);
+        if (subs.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#94a3b8; padding:15px;">No subjects added yet.</td></tr>`;
+            return;
+        }
+
+        subs.forEach(sub => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${sub}</strong></td>
+                <td style="text-align: center;">
+                    <input type="number" class="s27-control" value="${s27EditingSubjects[sub]}" min="1" style="width: 70px; height: 32px; text-align: center; font-weight: 700;" oninput="s27EditingSubjects['${sub}'] = parseInt(this.value) || 0;">
+                </td>
+                <td style="text-align: right;">
+                    <button type="button" class="s27-btn-icon delete" onclick="delete s27EditingSubjects['${sub}']; renderEditingSubjectsTable(); renderEditingPills();" title="Remove Subject"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    window.addSSC27CustomSubjectToEdit = function () {
+        const nameInput = document.getElementById('s27EditCustomSubInput');
+        const markInput = document.getElementById('s27EditCustomSubMark');
+        if (!nameInput) return;
+        const rawName = nameInput.value.trim();
+        const safeName = cleanFirebaseKey(rawName);
+        const mark = parseInt(markInput.value) || 20;
+        if (!safeName) return;
+        s27EditingSubjects[safeName] = mark;
+        nameInput.value = '';
+        renderEditingSubjectsTable();
+        renderEditingPills();
+    };
+
+    window.closeSSC27EditModal = function () {
+        document.getElementById('s27EditModal').style.display = 'none';
+        s27EditingExamId = null;
+        s27EditingSubjects = {};
+    };
+
+    window.saveSSC27SubjectChanges = async function () {
+        if (!s27EditingExamId) return;
+        const exam = s27ExamRegistry.find(x => x.id === s27EditingExamId);
+        if (!exam) return;
+
+        if (Object.keys(s27EditingSubjects).length === 0) {
+            alert("পরীক্ষায় অন্তত একটি বিষয় থাকতে হবে!");
+            return;
+        }
+
+        let totalMarks = 0;
+        Object.values(s27EditingSubjects).forEach(m => {
+            totalMarks += (parseInt(m) || 0);
+        });
+
+        const saveBtn = document.getElementById('s27EditSaveBtn');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> ক্লাউডে আপডেট হচ্ছে...`;
+
+        try {
+            // ১. cpscl_ssc27_exams আপডেট (নম্বর সুরক্ষিত রাখা নিশ্চিত করে)
+            await fetch(`${FIREBASE_BASE_URL}/cpscl_ssc27_exams/${s27EditingExamId}/subjects.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(s27EditingSubjects)
+            });
+            await fetch(`${FIREBASE_BASE_URL}/cpscl_ssc27_exams/${s27EditingExamId}/totalMarks.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(totalMarks)
+            });
+
+            // ২. cpscl_exams আপডেট (টিচার পোর্টাল সিঙ্ক)
+            await fetch(`${FIREBASE_BASE_URL}/cpscl_exams/${s27EditingExamId}/subjects.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(s27EditingSubjects)
+            });
+            await fetch(`${FIREBASE_BASE_URL}/cpscl_exams/${s27EditingExamId}/totalMarks.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(totalMarks)
+            });
+
+            // লোকাল মেমরিতে লাইভ আপডেট
+            exam.subjects = { ...s27EditingSubjects };
+            exam.totalMarks = totalMarks;
+
+            alert("অভিনন্দন! নতুন বিষয়টি সফলভাবে ক্লাউডে যুক্ত হয়েছে এবং পূর্বের নম্বরসমূহ সম্পূর্ণ অক্ষত রয়েছে!");
+            window.closeSSC27EditModal();
+            renderSSC27ExamList();
+        } catch (err) {
+            alert("আপডেট ব্যর্থ হয়েছে: " + err.message);
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Save Changes to Cloud`;
+        }
+    };
 
     window.toggleSSC27ExamLock = async function (examId) {
         const exam = s27ExamRegistry.find(x => x.id === examId);
