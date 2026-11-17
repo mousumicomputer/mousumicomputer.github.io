@@ -1,13 +1,14 @@
 /* ==========================================================================
    MODULE: CPSCL Academic ERP
-   SUB-SECTION: SSC-27 Preparatory Suite (v20.2 Stable Cloud Engine)
+   SUB-SECTION: SSC-27 Preparatory Suite (v20.3 Fully Responsive Engine)
    Path: cpscl/ssc27_exam_manager.js
    Architecture: 100% Direct Firebase Cloud REST | Auto-Sanitized Keys
+   Features: 100% Mobile & Desktop Responsive | Edit Subject Supported
    Safety: 100% Zero LocalStorage | Permanent Realtime Cloud Sync
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL SSC-27 Suite v20.2 (Auto-Sanitized & Edit-Supported Active)...");
+    console.log("Loading CPSCL SSC-27 Suite v20.3 (Fully Responsive Cloud Engine Active)...");
 
     const FIREBASE_BASE_URL = "https://mousumi-computer-default-rtdb.firebaseio.com";
 
@@ -65,6 +66,16 @@
             .s27-btn-icon.unlock:hover { background: #dcfce7; border-color: #16a34a; }
             .s27-btn-icon.delete { color: #dc2626; }
             .s27-btn-icon.delete:hover { background: #fee2e2; border-color: #dc2626; }
+
+            /* রেসপনসিভ গ্রিড সিএসএস (মোবাইল ও ট্যাবলেটের জন্য) */
+            .s27-main-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; }
+            @media (max-width: 1024px) {
+                .s27-main-grid { grid-template-columns: 1fr !important; }
+                .s27-header { border-radius: 20px !important; flex-direction: column; align-items: flex-start; gap: 12px; }
+                .s27-header h1 { font-size: 1.15rem; }
+                .s27-nav-tabs { flex-direction: column; }
+                .s27-tab-btn { width: 100%; justify-content: center; }
+            }
         `;
         document.head.appendChild(style);
     }
@@ -101,7 +112,6 @@
     let s27SelectedStudentId = null;
     let s27CurrentGroupFilter = 'all';
 
-    // এডিট স্টেটের জন্য ভেরিয়েবল
     let s27EditingExamId = null;
     let s27EditingSubjects = {};
 
@@ -323,7 +333,7 @@
                 </div>
 
                 <div class="s27-tab-content active" id="s27TabContent1">
-                    <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px;">
+                    <div class="s27-main-grid">
                         <div class="s27-card">
                             <div class="s27-card-title">
                                 <span><i class="fa-solid fa-file-pen"></i> Create Preparatory Daily Test</span>
@@ -346,12 +356,12 @@
                                 <div class="s27-form-group" style="margin-top: 14px;">
                                     <label>Routine Subjects (Click to Add • Default Full Mark: 20)</label>
                                     <div class="s27-pills-box" id="s27QuickPills"></div>
-                                    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                                        <input type="text" id="s27CustomSubInput" class="s27-control" placeholder="Write custom subject name...">
-                                        <input type="number" id="s27CustomSubMark" class="s27-control" style="width: 100px; text-align: center;" value="20" placeholder="Marks">
+                                    <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+                                        <input type="text" id="s27CustomSubInput" class="s27-control" style="flex: 1; min-width: 160px;" placeholder="Write custom subject name...">
+                                        <input type="number" id="s27CustomSubMark" class="s27-control" style="width: 90px; text-align: center;" value="20" placeholder="Marks">
                                         <button type="button" class="s27-btn-add" onclick="window.addSSC27CustomSubject()"><i class="fa-solid fa-plus"></i> Add</button>
                                     </div>
-                                    <div id="s27SelectedSubsBox" style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px;">
+                                    <div id="s27SelectedSubsBox" style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px; overflow-x: auto;">
                                         <table class="s27-table">
                                             <thead>
                                                 <tr>
@@ -365,7 +375,7 @@
                                     </div>
                                 </div>
                                 <div class="s27-form-group" style="margin-top: 20px; border-top: 2px solid #f1f5f9; padding-top: 15px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
                                         <label style="margin: 0;"><i class="fa-solid fa-layer-group" style="color: #059669;"></i> Routine Groups & Merit Cutoffs</label>
                                         <button type="button" class="s27-btn-add" onclick="window.addSSC27GroupRow('', '', '')"><i class="fa-solid fa-plus"></i> Add Group</button>
                                     </div>
@@ -380,7 +390,7 @@
                             <div class="s27-card-title">
                                 <span><i class="fa-solid fa-cloud"></i> Firebase Cloud Registered Exams</span>
                             </div>
-                            <div style="overflow-x: auto;">
+                            <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
                                 <table class="s27-table">
                                     <thead>
                                         <tr>
@@ -409,7 +419,7 @@
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 50px; padding: 10px 20px; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
                             <input type="text" id="s27StudentSearch" class="s27-control" style="max-width: 320px; height: 38px;" placeholder="Search student by Name or ID..." oninput="window.filterSSC27Students()">
-                            <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                                 <span id="s27SelectedLabel" style="font-size: 0.85rem; font-weight: 700; color: #64748b;">0 Selected</span>
                                 <select id="s27TransferGroupSelect" class="s27-control" style="width: 220px; height: 38px;">
                                     <option value="">-- Shift to Group --</option>
@@ -418,7 +428,7 @@
                             </div>
                         </div>
                         <div id="s27GroupFilterPills" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;"></div>
-                        <div style="overflow-x: auto; border: 1px solid #eef2f5; border-radius: 8px;">
+                        <div style="overflow-x: auto; border: 1px solid #eef2f5; border-radius: 8px; -webkit-overflow-scrolling: touch;">
                             <table class="s27-table">
                                 <thead>
                                     <tr>
@@ -436,8 +446,8 @@
             </div>
 
             <!-- ব্ল্যাঙ্ক প্রিন্ট মোডাল -->
-            <div id="s27BlankModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999999; display:none; align-items:center; justify-content:center;">
-                <div style="background:#fff; border-radius:20px; width:90%; max-width:440px; padding:24px; box-shadow:0 15px 35px rgba(0,0,0,0.25);">
+            <div id="s27BlankModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999999; display:none; align-items:center; justify-content:center; padding:10px;">
+                <div style="background:#fff; border-radius:20px; width:100%; max-width:440px; padding:24px; box-shadow:0 15px 35px rgba(0,0,0,0.25);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
                         <h4 style="margin:0; font-size:1.05rem; font-weight:800; color:#0f172a;"><i class="fa-solid fa-print" style="color:#059669;"></i> Print Isolated Blank Sheet</h4>
                         <button type="button" onclick="window.closeSSC27BlankModal()" style="border:none; background:none; font-size:1.3rem; cursor:pointer; color:#64748b;">✕</button>
@@ -457,9 +467,9 @@
                 </div>
             </div>
 
-            <!-- মিসিং সাবজেক্ট যুক্ত করার সংশোধিত মোডাল -->
-            <div id="s27EditModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999999; display:none; align-items:center; justify-content:center;">
-                <div style="background:#fff; border-radius:20px; width:95%; max-width:540px; padding:24px; box-shadow:0 15px 35px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;">
+            <!-- মিসিং সাবজেক্ট যুক্ত করার রেসপনসিভ মোডাল -->
+            <div id="s27EditModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999999; display:none; align-items:center; justify-content:center; padding:12px;">
+                <div style="background:#fff; border-radius:20px; width:100%; max-width:540px; padding:22px; box-shadow:0 15px 35px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
                         <div>
                             <h4 style="margin:0; font-size:1.1rem; font-weight:800; color:#0f172a;"><i class="fa-solid fa-pen-to-square" style="color:#2563eb;"></i> Add / Edit Exam Subjects</h4>
@@ -479,9 +489,9 @@
 
                     <div class="s27-form-group">
                         <label>Or Add Custom Subject</label>
-                        <div style="display:flex; gap:8px;">
-                            <input type="text" id="s27EditCustomSubInput" class="s27-control" placeholder="Write subject name...">
-                            <input type="number" id="s27EditCustomSubMark" class="s27-control" style="width:100px; text-align:center;" value="20" placeholder="Marks">
+                        <div style="display:flex; gap:8px; flex-wrap: wrap;">
+                            <input type="text" id="s27EditCustomSubInput" class="s27-control" style="flex:1; min-width:160px;" placeholder="Write subject name...">
+                            <input type="number" id="s27EditCustomSubMark" class="s27-control" style="width:90px; text-align:center;" value="20" placeholder="Marks">
                             <button type="button" class="s27-btn-add" onclick="window.addSSC27CustomSubjectToEdit()"><i class="fa-solid fa-plus"></i> Add</button>
                         </div>
                     </div>
@@ -726,14 +736,13 @@
     }
 
     // ==========================================
-    // ১০০% বাগ-মুক্ত ও নিরাপদ মিসিং সাবজেক্ট মডিউল
+    // সম্পূর্ণ বাগ-মুক্ত ও নিরাপদ মিসিং সাবজেক্ট মডিউল
     // ==========================================
     window.openSSC27EditModal = function (examId) {
         const exam = s27ExamRegistry.find(x => x.id === examId);
         if (!exam) return;
 
         s27EditingExamId = examId;
-        // ডেটা শুধু উইন্ডো খোলার সময় একবারই ইনিশিয়ালাইজ হবে
         s27EditingSubjects = { ...(exam.subjects || {}) };
 
         document.getElementById('s27EditModalExamName').innerText = `Exam: ${exam.name} (${exam.date})`;
@@ -743,7 +752,6 @@
         document.getElementById('s27EditModal').style.display = 'flex';
     };
 
-    // পিলস আলাদা রেন্ডার করা ফাংশন (ডাটা রিসেট প্রতিরোধক)
     function renderEditingPills() {
         const pillContainer = document.getElementById('s27EditQuickPills');
         if (!pillContainer) return;
@@ -762,7 +770,7 @@
                 if (!s27EditingSubjects[safeKey]) {
                     s27EditingSubjects[safeKey] = 20;
                     renderEditingSubjectsTable();
-                    renderEditingPills(); // শুধু পিলস রিফ্রেশ হবে, কোনো ডেটা রিসেট হবে না
+                    renderEditingPills();
                 }
             };
             pillContainer.appendChild(p);
@@ -834,7 +842,6 @@
         saveBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> ক্লাউডে আপডেট হচ্ছে...`;
 
         try {
-            // ১. cpscl_ssc27_exams আপডেট (নম্বর সুরক্ষিত রাখা নিশ্চিত করে)
             await fetch(`${FIREBASE_BASE_URL}/cpscl_ssc27_exams/${s27EditingExamId}/subjects.json`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -846,7 +853,6 @@
                 body: JSON.stringify(totalMarks)
             });
 
-            // ২. cpscl_exams আপডেট (টিচার পোর্টাল সিঙ্ক)
             await fetch(`${FIREBASE_BASE_URL}/cpscl_exams/${s27EditingExamId}/subjects.json`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -858,7 +864,6 @@
                 body: JSON.stringify(totalMarks)
             });
 
-            // লোকাল মেমরিতে লাইভ আপডেট
             exam.subjects = { ...s27EditingSubjects };
             exam.totalMarks = totalMarks;
 
