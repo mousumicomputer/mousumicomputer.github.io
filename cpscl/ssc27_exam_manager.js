@@ -185,6 +185,51 @@
         return /^daily\s+test\s*[-–]?\s*0?1$/i.test(name.trim());
     }
 
+    // পূর্ববর্তী পরীক্ষা শনাক্ত করার ফাংশন (যেমন: Daily Test-03 এর পূর্ববর্তী Daily Test-02)
+    function getImmediatelyPreviousExam(currentExam, examList) {
+        if (!currentExam || !Array.isArray(examList) || examList.length === 0) return null;
+
+        const currentName = String(currentExam.name || currentExam.examName || currentExam.exam_name || currentExam.title || '').trim();
+        const numMatch = currentName.match(/daily\s+test\s*[-–]?\s*0?(\d+)/i);
+
+        if (numMatch) {
+            const currentNum = parseInt(numMatch[1], 10);
+            if (currentNum > 1) {
+                const targetPrevNum = currentNum - 1;
+                const prevByNum = examList.find(x => {
+                    const xName = String(x.name || x.examName || x.exam_name || x.title || '').trim();
+                    const xm = xName.match(/daily\s+test\s*[-–]?\s*0?(\d+)/i);
+                    return xm && parseInt(xm[1], 10) === targetPrevNum;
+                });
+                if (prevByNum) return prevByNum;
+            } else if (currentNum === 1) {
+                return null;
+            }
+        }
+
+        const getExamTime = (ex) => {
+            if (ex.date) {
+                const d = new Date(ex.date).getTime();
+                if (!isNaN(d)) return d;
+            }
+            if (ex.createdAt) {
+                const c = new Date(ex.createdAt).getTime();
+                if (!isNaN(c)) return c;
+            }
+            const idMatch = String(ex.id || '').match(/(\d{10,})/);
+            if (idMatch) return parseInt(idMatch[1], 10);
+            return 0;
+        };
+
+        const sorted = [...examList].sort((a, b) => getExamTime(a) - getExamTime(b));
+        const currentIdx = sorted.findIndex(x => x.id === currentExam.id);
+        if (currentIdx > 0) {
+            return sorted[currentIdx - 1];
+        }
+
+        return null;
+    }
+
     // ==========================================
     // নিশ্চিত ও সঠিক rawMark সংগ্রহ করার ফাংশন
     // ==========================================
@@ -433,7 +478,7 @@
                         <div class="s27-card-title">
                             <div>
                                 <span><i class="fa-solid fa-users-viewfinder"></i> Student Group Allocation & Seating</span>
-                                <div style="font-size: 0.82rem; color: #059669; font-weight: 700; margin-top: 3px;">
+                                <div id="s27SeatingInfoBadge" style="font-size: 0.82rem; color: #059669; font-weight: 700; margin-top: 3px;">
                                     <i class="fa-solid fa-circle-check"></i> গ্রুপ অপরিবর্তিত থাকবে • প্রাপ্ত rawMark অনুযায়ী গ্রুপের ভেতরে অভ্যন্তরীণ সিটিং বিন্যস্ত
                                 </div>
                             </div>
@@ -1006,12 +1051,22 @@
             });
         });
 
-        // যদি টেস্ট-০১ না হয়, তবে পূর্ববর্তী টেস্টের rawMark নিয়ে আসা হবে
+        // পূর্ববর্তী টেস্টের মোট rawMark নিয়ে আসা হবে (যেমন: Daily Test-03 এর জন্য Daily Test-02)
         let studentScores = {};
+        let previousExamUsed = null;
         if (!dailyTest01) {
-            const prevExam = s27ExamRegistry.find(x => isDailyTest01(x)) || s27ExamRegistry[0];
-            if (prevExam) {
-                studentScores = await fetchExamStudentTotalMarks(prevExam.id);
+            previousExamUsed = getImmediatelyPreviousExam(exam, s27ExamRegistry);
+            if (previousExamUsed) {
+                studentScores = await fetchExamStudentTotalMarks(previousExamUsed.id);
+            }
+        }
+
+        const infoBadge = document.getElementById('s27SeatingInfoBadge');
+        if (infoBadge) {
+            if (previousExamUsed) {
+                infoBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> গ্রুপ অপরিবর্তিত • <strong>${previousExamUsed.name}</strong>-এর প্রাপ্ত নম্বরের ভিত্তিতে অভ্যন্তরীণ সিটিং (সর্বোচ্চ নম্বর = বেঞ্চ ১)`;
+            } else {
+                infoBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> গ্রুপ অপরিবর্তিত থাকবে • বেসলাইন মেধা তালিকা অনুযায়ী অভ্যন্তরীণ সিটিং`;
             }
         }
 
@@ -1028,13 +1083,13 @@
             // কেবল এই গ্রুপের ছাত্রদের ফিল্টার করা (গ্রুপ পরিবর্তন হবে না)
             const grpStudents = Array.from(studentMap.values()).filter(s => s.group === grpName);
 
-            if (dailyTest01) {
+            if (dailyTest01 || !previousExamUsed) {
                 grpStudents.sort((a, b) => a.originalRank - b.originalRank);
             } else {
                 // গ্রুপের ভেতরে প্রাপ্ত নম্বরের ভিত্তিতে সাজানো (সর্বোচ্চ নম্বর আগে)
                 grpStudents.sort((a, b) => {
-                    const scoreA = studentScores[a.id] !== undefined ? studentScores[a.id] : -1;
-                    const scoreB = studentScores[b.id] !== undefined ? studentScores[b.id] : -1;
+                    const scoreA = (studentScores[a.id] !== undefined && studentScores[a.id] !== null) ? studentScores[a.id] : -1;
+                    const scoreB = (studentScores[b.id] !== undefined && studentScores[b.id] !== null) ? studentScores[b.id] : -1;
                     if (scoreB !== scoreA) {
                         return scoreB - scoreA;
                     }
@@ -1049,7 +1104,8 @@
                     id: st.id,
                     name: st.name,
                     group: st.group,
-                    score: studentScores[st.id]
+                    score: (studentScores[st.id] !== undefined && studentScores[st.id] !== null) ? studentScores[st.id] : null,
+                    prevExamName: previousExamUsed ? previousExamUsed.name : null
                 });
             });
         });
@@ -1062,9 +1118,9 @@
             if (!studentOverrides[s.id]) newAllocations[s.id] = s.group;
         });
 
-        if (Object.keys(newAllocations).length > 0) {
+        if (Object.keys(newAllocations).length > 0 || (newMeritOrder && newMeritOrder.length > 0)) {
             try {
-                await saveSSC27Overrides(exam.id, newAllocations, newMeritOrder, true, false);
+                await saveSSC27Overrides(exam.id, newAllocations, newMeritOrder, true, true);
             } catch (err) {
                 console.error("Group note:", err);
             }
@@ -1135,7 +1191,9 @@
                 document.getElementById('s27SelectedLabel').innerText = s27SelectedStudentId ? `Selected: ${st.name}` : `0 Selected`;
                 renderSSC27StudentTable();
             };
-            const scoreTxt = (st.score !== undefined && st.score !== null) ? `<span class="s27-score-badge">Marks: ${st.score}</span>` : '';
+            const scoreTxt = (st.score !== undefined && st.score !== null) 
+                ? `<span class="s27-score-badge" title="Marks from ${st.prevExamName || 'Previous Exam'}">${st.prevExamName ? st.prevExamName + ' ' : ''}Marks: ${st.score}</span>` 
+                : (st.prevExamName ? `<span class="s27-score-badge" style="background:#fef2f2; color:#dc2626; border:1px solid #fca5a5;">No Marks</span>` : '');
             tr.innerHTML = `
                 <td><strong>#${st.sl}</strong></td>
                 <td><strong>${st.id}</strong></td>
