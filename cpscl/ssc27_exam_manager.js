@@ -1,14 +1,18 @@
 /* ==========================================================================
    MODULE: CPSCL Academic ERP
-   SUB-SECTION: SSC-27 Preparatory Suite (v20.3 Fully Responsive Engine)
+   SUB-SECTION: SSC-27 Preparatory Suite (v20.4 Intra-Group Rank Engine)
    Path: cpscl/ssc27_exam_manager.js
    Architecture: 100% Direct Firebase Cloud REST | Auto-Sanitized Keys
-   Features: 100% Mobile & Desktop Responsive | Edit Subject Supported
+   Features:
+     - Fixed Groups (Zero Inter-Group Promotion/Demotion as per Authority)
+     - Dynamic Intra-Group Re-ranking based on Previous Test Marks
+     - 100% Mobile & Desktop Fully Responsive UI
+     - Add / Edit Subjects Safe Modal
    Safety: 100% Zero LocalStorage | Permanent Realtime Cloud Sync
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL SSC-27 Suite v20.3 (Fully Responsive Cloud Engine Active)...");
+    console.log("Loading CPSCL SSC-27 Suite v20.4 (Intra-Group Re-Ranking & Cloud Sync Active)...");
 
     const FIREBASE_BASE_URL = "https://mousumi-computer-default-rtdb.firebaseio.com";
 
@@ -57,6 +61,7 @@
             .s27-btn-add.active { background: #059669 !important; color: #ffffff !important; border-style: solid !important; }
             .s27-group-badge { display: inline-block; padding: 4px 14px; border-radius: 50px !important; font-size: 0.8rem; font-weight: 700; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
             .s27-status-badge { display: inline-block; padding: 3px 10px; border-radius: 50px !important; font-size: 0.72rem; font-weight: 800; }
+            .s27-score-badge { display: inline-block; padding: 2px 8px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; margin-left: 6px; }
             .s27-btn-icon { width: 34px; height: 34px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; background: #ffffff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; transition: 0.2s; margin: 0 2px; }
             .s27-btn-icon.edit { color: #2563eb; }
             .s27-btn-icon.edit:hover { background: #eff6ff; border-color: #2563eb; }
@@ -67,7 +72,6 @@
             .s27-btn-icon.delete { color: #dc2626; }
             .s27-btn-icon.delete:hover { background: #fee2e2; border-color: #dc2626; }
 
-            /* রেসপনসিভ গ্রিড সিএসএস (মোবাইল ও ট্যাবলেটের জন্য) */
             .s27-main-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; }
             @media (max-width: 1024px) {
                 .s27-main-grid { grid-template-columns: 1fr !important; }
@@ -180,6 +184,49 @@
         return /^daily\s+test\s*[-–]?\s*0?1$/i.test(name.trim());
     }
 
+    // স্বয়ংক্রিয়ভাবে আগের পরীক্ষার প্রাপ্ত নম্বর আনা (র‍্যাংকিং নির্ধারণের জন্য)
+    async function fetchExamStudentTotalMarks(targetExamId) {
+        if (!targetExamId) return {};
+        const scores = {};
+        const endpoints = [
+            `${FIREBASE_BASE_URL}/cpscl_marks/${targetExamId}.json`,
+            `${FIREBASE_BASE_URL}/cpscl_exam_marks/${targetExamId}.json`,
+            `${FIREBASE_BASE_URL}/cpscl_ssc27_marks/${targetExamId}.json`
+        ];
+
+        for (const url of endpoints) {
+            try {
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && typeof data === 'object') {
+                        Object.keys(data).forEach(k1 => {
+                            const val1 = data[k1];
+                            if (!val1) return;
+                            if (typeof val1 === 'number') {
+                                if (/^\d{5,7}$/.test(k1)) scores[k1] = (scores[k1] || 0) + val1;
+                            } else if (typeof val1 === 'object') {
+                                Object.keys(val1).forEach(k2 => {
+                                    const val2 = val1[k2];
+                                    if (val2 === undefined || val2 === null) return;
+                                    const num = typeof val2 === 'number' ? val2 : (parseFloat(val2.mark || val2.obtained_mark || val2.score || val2) || 0);
+                                    if (/^\d{5,7}$/.test(k1)) {
+                                        scores[k1] = (scores[k1] || 0) + num;
+                                    } else if (/^\d{5,7}$/.test(k2)) {
+                                        scores[k2] = (scores[k2] || 0) + num;
+                                    }
+                                });
+                            }
+                        });
+                    }
+                }
+            } catch (e) {
+                console.warn("Marks note:", e);
+            }
+        }
+        return scores;
+    }
+
     async function loadSSC27ExamsFromCloud() {
         s27ExamRegistry = [];
         try {
@@ -253,23 +300,6 @@
         return Number.isFinite(rank) && rank > 0 ? rank : Number.POSITIVE_INFINITY;
     }
 
-    function getConfiguredGroupForTrackRank(track, rank, groups) {
-        const trackGroups = (groups || []).filter(group => {
-            const name = String(group.name || '').toLowerCase();
-            return track === 'business'
-                ? /business|commerce|b\.?\s*studies/.test(name)
-                : track === 'humanities'
-                    ? /humanities|arts|\bhum\b/.test(name)
-                    : /science/.test(name);
-        });
-        const group = trackGroups.find(item => {
-            const from = Number.parseInt(item.from, 10);
-            const to = Number.parseInt(item.to, 10);
-            return Number.isFinite(from) && rank >= from && (!Number.isFinite(to) || rank <= to);
-        });
-        return group ? group.name : (trackGroups[0] ? trackGroups[0].name : 'Unassigned');
-    }
-
     async function saveSSC27Overrides(examId, allocations, meritOrder, saveMeritOrder, replaceMeritOrder) {
         const path = `cpscl_exam_group_overrides/${examId}`;
         try {
@@ -341,7 +371,7 @@
                             <form id="s27ExamForm" onsubmit="window.handleSSC27Submit(event)">
                                 <div class="s27-form-group">
                                     <label>Exam Title *</label>
-                                    <input type="text" id="s27ExamName" class="s27-control" placeholder="e.g., Daily Test-01" required>
+                                    <input type="text" id="s27ExamName" class="s27-control" placeholder="e.g., Daily Test-02" required>
                                 </div>
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                     <div class="s27-form-group">
@@ -350,14 +380,14 @@
                                     </div>
                                     <div class="s27-form-group">
                                         <label>Exam Date *</label>
-                                        <input type="date" id="s27ExamDate" class="s27-control" value="2026-11-16" required>
+                                        <input type="date" id="s27ExamDate" class="s27-control" value="2026-11-17" required>
                                     </div>
                                 </div>
                                 <div class="s27-form-group" style="margin-top: 14px;">
                                     <label>Routine Subjects (Click to Add • Default Full Mark: 20)</label>
                                     <div class="s27-pills-box" id="s27QuickPills"></div>
                                     <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
-                                        <input type="text" id="s27CustomSubInput" class="s27-control" style="flex: 1; min-width: 160px;" placeholder="Write custom subject name...">
+                                        <input type="text" id="s27CustomSubInput" class="s27-control" style="flex: 1; min-width: 160px;" placeholder="Write custom subject (e.g. BGS)...">
                                         <input type="number" id="s27CustomSubMark" class="s27-control" style="width: 90px; text-align: center;" value="20" placeholder="Marks">
                                         <button type="button" class="s27-btn-add" onclick="window.addSSC27CustomSubject()"><i class="fa-solid fa-plus"></i> Add</button>
                                     </div>
@@ -409,7 +439,12 @@
                 <div class="s27-tab-content" id="s27TabContent2">
                     <div class="s27-card">
                         <div class="s27-card-title">
-                            <span><i class="fa-solid fa-users-viewfinder"></i> Student Group Allocation & Isolated Blank Print</span>
+                            <div>
+                                <span><i class="fa-solid fa-users-viewfinder"></i> Student Group Allocation & Seating</span>
+                                <div style="font-size: 0.82rem; color: #059669; font-weight: 700; margin-top: 3px;">
+                                    <i class="fa-solid fa-circle-check"></i> গ্রুপ ফিক্সড থাকবে • প্রাপ্ত নম্বরের ভিত্তিতে গ্রুপের ভেতরে সিটিং স্বয়ংক্রিয়ভাবে বিন্যস্ত
+                                </div>
+                            </div>
                             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                                 <select id="s27TargetExamSelect" class="s27-control" style="width: 310px; height: 38px; font-size: 0.85rem;" onchange="window.loadSSC27StudentAllocation()"></select>
                                 <button type="button" class="s27-btn-add" style="background:#059669; color:#fff; border:none; padding: 8px 20px;" onclick="window.openSSC27BlankPrintModal()">
@@ -432,10 +467,10 @@
                             <table class="s27-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 90px;">MERIT RANK</th>
+                                        <th style="width: 120px;">GROUP SEAT / RANK</th>
                                         <th style="width: 140px;">STUDENT ID</th>
                                         <th>STUDENT NAME</th>
-                                        <th style="text-align: right; width: 220px;">ASSIGNED TRACK / GROUP</th>
+                                        <th style="text-align: right; width: 220px;">ASSIGNED GROUP</th>
                                     </tr>
                                 </thead>
                                 <tbody id="s27StudentTableTbody"></tbody>
@@ -467,13 +502,13 @@
                 </div>
             </div>
 
-            <!-- মিসিং সাবজেক্ট যুক্ত করার রেসপনসিভ মোডাল -->
+            <!-- মিসিং সাবজেক্ট যুক্ত করার মোডাল -->
             <div id="s27EditModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999999; display:none; align-items:center; justify-content:center; padding:12px;">
                 <div style="background:#fff; border-radius:20px; width:100%; max-width:540px; padding:22px; box-shadow:0 15px 35px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
                         <div>
                             <h4 style="margin:0; font-size:1.1rem; font-weight:800; color:#0f172a;"><i class="fa-solid fa-pen-to-square" style="color:#2563eb;"></i> Add / Edit Exam Subjects</h4>
-                            <span id="s27EditModalExamName" style="font-size:0.85rem; font-weight:700; color:#059669;">Exam: Daily Test-01</span>
+                            <span id="s27EditModalExamName" style="font-size:0.85rem; font-weight:700; color:#059669;">Exam: Daily Test</span>
                         </div>
                         <button type="button" onclick="window.closeSSC27EditModal()" style="border:none; background:none; font-size:1.3rem; cursor:pointer; color:#64748b;">✕</button>
                     </div>
@@ -721,7 +756,6 @@
                 </td>
                 <td style="font-weight:600; color:#475569;">${ex.date}</td>
                 <td style="text-align: right; white-space: nowrap;">
-                    <!-- Edit Subject বাটন -->
                     <button type="button" class="s27-btn-icon edit" onclick="window.openSSC27EditModal('${ex.id}')" title="Add / Edit Missing Subjects">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
@@ -736,7 +770,7 @@
     }
 
     // ==========================================
-    // সম্পূর্ণ বাগ-মুক্ত ও নিরাপদ মিসিং সাবজেক্ট মডিউল
+    // এডিট ও মিসিং বিষয় যোগ করার মডিউল
     // ==========================================
     window.openSSC27EditModal = function (examId) {
         const exam = s27ExamRegistry.find(x => x.id === examId);
@@ -867,7 +901,7 @@
             exam.subjects = { ...s27EditingSubjects };
             exam.totalMarks = totalMarks;
 
-            alert("অভিনন্দন! নতুন বিষয়টি সফলভাবে ক্লাউডে যুক্ত হয়েছে এবং পূর্বের নম্বরসমূহ সম্পূর্ণ অক্ষত রয়েছে!");
+            alert("অভিনন্দন! বিষয়টি সফলভাবে ক্লাউডে সংরক্ষিত হয়েছে!");
             window.closeSSC27EditModal();
             renderSSC27ExamList();
         } catch (err) {
@@ -923,6 +957,9 @@
         });
     }
 
+    // ==========================================
+    // গ্রুপ ফিক্সড রেখে অভ্যন্তরীণ মেধা ও সিট বিন্যাস লজিক
+    // ==========================================
     window.loadSSC27StudentAllocation = async function () {
         const select = document.getElementById('s27TargetExamSelect');
         const tbody = document.getElementById('s27StudentTableTbody');
@@ -956,88 +993,91 @@
         const studentOverrides = overrides[exam.id] && typeof overrides[exam.id] === 'object'
             ? overrides[exam.id]
             : {};
-            
+
         const dailyTest01 = isDailyTest01(exam);
-        const dailyTest01Order = dailyTest01 ? getDailyTest01Order() : [];
+        const dailyTest01Allocations = getDailyTest01GroupAllocations();
+        const dailyTest01Order = getDailyTest01Order();
         const dailyTest01OrderIndex = new Map(dailyTest01Order.map((studentId, index) => [studentId, index]));
-        const dailyTest01RankByStudentId = new Map([
-            ...DAILY_TEST_01_MERIT_GROUPS.science.map((studentId, index) => [studentId, index + 1]),
-            ...DAILY_TEST_01_MERIT_GROUPS.humanities.map((studentId, index) => [studentId, index + 1]),
-            ...DAILY_TEST_01_MERIT_GROUPS.business.map((studentId, index) => [studentId, index + 1])
-        ]);
-        const dailyTest01Allocations = dailyTest01 ? getDailyTest01GroupAllocations() : {};
-        const savedMeritOrder = Array.isArray(overrides[`${exam.id}_merit_order`])
-            ? overrides[`${exam.id}_merit_order`]
-            : [];
-
-        const orderedStudents = students
-            .filter(student => {
-                const studentId = getStudentId(student);
-                return studentId && (!dailyTest01 || dailyTest01OrderIndex.has(studentId));
-            })
-            .sort((a, b) => {
-                const idA = getStudentId(a);
-                const idB = getStudentId(b);
-                if (dailyTest01) return dailyTest01OrderIndex.get(idA) - dailyTest01OrderIndex.get(idB);
-                const rankA = getStudentMeritRank(a);
-                const rankB = getStudentMeritRank(b);
-                if (savedMeritOrder.length) {
-                    const savedA = savedMeritOrder.indexOf(idA);
-                    const savedB = savedMeritOrder.indexOf(idB);
-                    const orderA = savedA === -1 ? Number.POSITIVE_INFINITY : savedA;
-                    const orderB = savedB === -1 ? Number.POSITIVE_INFINITY : savedB;
-                    if (orderA !== orderB) return orderA - orderB;
-                }
-                if (rankA !== rankB) return rankA - rankB;
-                return idA.localeCompare(idB);
-            });
-
-        const trackRanks = new Map();
-        ['science', 'humanities', 'business'].forEach(track => {
-            orderedStudents.filter(student => getStudentTrack(student) === track)
-                .forEach((student, index) => trackRanks.set(getStudentId(student), index + 1));
-        });
-
-        const newAllocations = {};
-        const meritOrder = dailyTest01 ? dailyTest01Order : orderedStudents.map(getStudentId);
-        if (dailyTest01) {
-            Object.entries(dailyTest01Allocations).forEach(([studentId, group]) => {
-                if (studentOverrides[studentId] !== group) newAllocations[studentId] = group;
-            });
-        }
-
-        const meritByStudentId = new Map(orderedStudents.map((student, index) => [getStudentId(student), index + 1]));
-        s27AllocatedStudents = orderedStudents.map(st => {
+        
+        // প্রতিটি শিক্ষার্থীর গ্রুপ বেস নির্ধারণ (গ্রুপ ফিক্সড রাখা হবে)
+        const studentMap = new Map();
+        students.forEach(st => {
             const sId = getStudentId(st);
-            const track = getStudentTrack(st);
-            const trackRank = trackRanks.get(sId);
-            const assignedGroup = (dailyTest01 ? dailyTest01Allocations[sId] : studentOverrides[sId]) ||
-                getConfiguredGroupForTrackRank(track, trackRank, configuredGroups);
-            if (!dailyTest01 && !studentOverrides[sId]) newAllocations[sId] = assignedGroup;
-
-            const savedRank = getStudentMeritRank(st);
-            return {
-                sl: dailyTest01
-                    ? dailyTest01RankByStudentId.get(sId)
-                    : Number.isFinite(savedRank) ? savedRank : meritByStudentId.get(sId),
+            if (!sId) return;
+            const assignedGroup = studentOverrides[sId] || dailyTest01Allocations[sId] || 'Group A (Science)';
+            studentMap.set(sId, {
+                raw: st,
                 id: sId,
                 name: String(st.name_english || st.student_name || st.name || st['Name (English) *'] || 'Student').trim(),
-                group: assignedGroup
-            };
+                group: assignedGroup,
+                originalRank: dailyTest01OrderIndex.has(sId) ? dailyTest01OrderIndex.get(sId) : 999
+            });
         });
 
-        const shouldSaveMeritOrder = dailyTest01
-            ? savedMeritOrder.length !== meritOrder.length || savedMeritOrder.some((studentId, index) => studentId !== meritOrder[index])
-            : savedMeritOrder.length === 0;
+        // যদি এটি Daily Test-01 না হয়, তবে পূর্বের পরীক্ষার নম্বর এনে প্রতিটি গ্রুপের ভেতর অভ্যন্তরীণ সিরিয়াল করা হবে
+        let studentScores = {};
+        if (!dailyTest01) {
+            const prevExam = s27ExamRegistry.find(x => isDailyTest01(x)) || s27ExamRegistry[0];
+            if (prevExam) {
+                studentScores = await fetchExamStudentTotalMarks(prevExam.id);
+            }
+        }
 
-        if (Object.keys(newAllocations).length || shouldSaveMeritOrder) {
+        // গ্রুপভিত্তিক ইন-গ্রুপ ফিল্টারিং ও সর্টিং
+        const allocated = [];
+        const groupNames = [
+            'Group A (Science)',
+            'Group B (Science)',
+            'Group C (Science)',
+            'Group D (Humanities)',
+            'Group D (Business Studies)'
+        ];
+
+        groupNames.forEach(grpName => {
+            // শুধুমাত্র এই গ্রুপের শিক্ষার্থীদের নেওয়া
+            const grpStudents = Array.from(studentMap.values()).filter(s => s.group === grpName);
+
+            if (dailyTest01) {
+                // টেস্ট-০১ এর জন্য মূল বেসলাইন অনুযায়ী সর্ট
+                grpStudents.sort((a, b) => a.originalRank - b.originalRank);
+            } else {
+                // টেস্ট-০২ বা পরবর্তী পরীক্ষার জন্য: গ্রুপের ভেতর প্রাপ্ত নম্বর অনুযায়ী সর্ট (সর্বোচ্চ নম্বর আগে)
+                grpStudents.sort((a, b) => {
+                    const scoreA = studentScores[a.id] !== undefined ? studentScores[a.id] : -1;
+                    const scoreB = studentScores[b.id] !== undefined ? studentScores[b.id] : -1;
+                    if (scoreB !== scoreA) {
+                        return scoreB - scoreA; // বেশি নম্বর প্রাপ্ত শিক্ষার্থী আগে আসবে
+                    }
+                    return a.originalRank - b.originalRank; // নম্বর সমান হলে পূর্বের সিরিয়াল
+                });
+            }
+
+            // প্রতিটি গ্রুপের ভেতরে ১ থেকে ক্রমানুসারে সিট/র‍্যাংক প্রদান
+            grpStudents.forEach((st, idx) => {
+                allocated.push({
+                    sl: idx + 1, // গ্রুপের ভেতরের মেধা ক্রম (১, ২, ৩...)
+                    id: st.id,
+                    name: st.name,
+                    group: st.group,
+                    score: studentScores[st.id]
+                });
+            });
+        });
+
+        s27AllocatedStudents = allocated;
+
+        // ক্লাউড ওভাররাইডে সেভ রাখা
+        const newMeritOrder = allocated.map(s => s.id);
+        const newAllocations = {};
+        allocated.forEach(s => {
+            if (!studentOverrides[s.id]) newAllocations[s.id] = s.group;
+        });
+
+        if (Object.keys(newAllocations).length > 0) {
             try {
-                await saveSSC27Overrides(exam.id, newAllocations, meritOrder, shouldSaveMeritOrder, dailyTest01);
-                Object.assign(studentOverrides, newAllocations);
-                overrides[exam.id] = studentOverrides;
-                if (shouldSaveMeritOrder) overrides[`${exam.id}_merit_order`] = meritOrder;
-            } catch (error) {
-                console.error('SSC-27 group allocation note:', error);
+                await saveSSC27Overrides(exam.id, newAllocations, newMeritOrder, true, false);
+            } catch (err) {
+                console.error("Group note:", err);
             }
         }
 
@@ -1106,10 +1146,11 @@
                 document.getElementById('s27SelectedLabel').innerText = s27SelectedStudentId ? `Selected: ${st.name}` : `0 Selected`;
                 renderSSC27StudentTable();
             };
+            const scoreTxt = st.score !== undefined ? `<span class="s27-score-badge">Marks: ${st.score}</span>` : '';
             tr.innerHTML = `
-                <td><strong>${st.sl}</strong></td>
+                <td><strong>#${st.sl}</strong></td>
                 <td><strong>${st.id}</strong></td>
-                <td><span style="font-weight:600;">${st.name}</span></td>
+                <td><span style="font-weight:600;">${st.name}</span> ${scoreTxt}</td>
                 <td style="text-align: right;"><span class="s27-group-badge">${st.group}</span></td>
             `;
             tbody.appendChild(tr);
@@ -1210,7 +1251,7 @@
         printStudents.forEach((st, idx) => {
             rowsHtml += `
                 <tr>
-                    <td>${idx + 1}</td>
+                    <td>${st.sl}</td>
                     <td><strong>${st.id}</strong></td>
                     <td style="text-align: left; padding-left: 14px; font-weight: 600;">${st.name}</td>
                     <td><div style="width: 60px; height: 24px; border: 1.2px solid #333; margin: 0 auto; border-radius: 4px;"></div></td>
@@ -1256,8 +1297,8 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 8%;">Merit Rank</th>
-                            <th style="width: 22%;">Student ID</th>
+                            <th style="width: 10%;">Group Seat</th>
+                            <th style="width: 20%;">Student ID</th>
                             <th style="text-align: left; padding-left: 14px;">Student Name</th>
                             <th style="width: 20%;">Obtained Mark</th>
                             <th style="width: 25%;">Teacher's Signature</th>
