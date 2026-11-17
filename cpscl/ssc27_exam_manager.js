@@ -1,9 +1,10 @@
 /* ==========================================================================
    MODULE: CPSCL Academic ERP
-   SUB-SECTION: SSC-27 Preparatory Suite (v20.4 Intra-Group Rank Engine)
+   SUB-SECTION: SSC-27 Preparatory Suite (v20.6 Auto-RawMark Intra-Group Rank)
    Path: cpscl/ssc27_exam_manager.js
    Architecture: 100% Direct Firebase Cloud REST | Auto-Sanitized Keys
    Features:
+     - Exact 'rawMark' & 'cq' Extraction from cpscl_exam_marks
      - Fixed Groups (Zero Inter-Group Promotion/Demotion as per Authority)
      - Dynamic Intra-Group Re-ranking based on Previous Test Marks
      - 100% Mobile & Desktop Fully Responsive UI
@@ -12,7 +13,7 @@
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL SSC-27 Suite v20.4 (Intra-Group Re-Ranking & Cloud Sync Active)...");
+    console.log("Loading CPSCL SSC-27 Suite v20.6 (Auto-RawMark Engine Active)...");
 
     const FIREBASE_BASE_URL = "https://mousumi-computer-default-rtdb.firebaseio.com";
 
@@ -61,7 +62,7 @@
             .s27-btn-add.active { background: #059669 !important; color: #ffffff !important; border-style: solid !important; }
             .s27-group-badge { display: inline-block; padding: 4px 14px; border-radius: 50px !important; font-size: 0.8rem; font-weight: 700; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
             .s27-status-badge { display: inline-block; padding: 3px 10px; border-radius: 50px !important; font-size: 0.72rem; font-weight: 800; }
-            .s27-score-badge { display: inline-block; padding: 2px 8px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; margin-left: 6px; }
+            .s27-score-badge { display: inline-block; padding: 2px 10px; border-radius: 50px; font-size: 0.78rem; font-weight: 800; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; margin-left: 8px; }
             .s27-btn-icon { width: 34px; height: 34px; border-radius: 50px !important; border: 1.5px solid #cbd5e1; background: #ffffff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; transition: 0.2s; margin: 0 2px; }
             .s27-btn-icon.edit { color: #2563eb; }
             .s27-btn-icon.edit:hover { background: #eff6ff; border-color: #2563eb; }
@@ -184,45 +185,57 @@
         return /^daily\s+test\s*[-–]?\s*0?1$/i.test(name.trim());
     }
 
-    // স্বয়ংক্রিয়ভাবে আগের পরীক্ষার প্রাপ্ত নম্বর আনা (র‍্যাংকিং নির্ধারণের জন্য)
+    // ==========================================
+    // নিশ্চিত ও সঠিক rawMark সংগ্রহ করার ফাংশন
+    // ==========================================
     async function fetchExamStudentTotalMarks(targetExamId) {
         if (!targetExamId) return {};
         const scores = {};
-        const endpoints = [
-            `${FIREBASE_BASE_URL}/cpscl_marks/${targetExamId}.json`,
-            `${FIREBASE_BASE_URL}/cpscl_exam_marks/${targetExamId}.json`,
-            `${FIREBASE_BASE_URL}/cpscl_ssc27_marks/${targetExamId}.json`
-        ];
+        try {
+            const shallowRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_marks.json?shallow=true`);
+            if (shallowRes.ok) {
+                const allKeys = await shallowRes.json();
+                if (allKeys && typeof allKeys === 'object') {
+                    // targetExamId দিয়ে শুরু হওয়া সব বিষয়ের নোড ফিল্টার করা
+                    const prefix = targetExamId + '_';
+                    const matchingKeys = Object.keys(allKeys).filter(k => k.startsWith(prefix));
 
-        for (const url of endpoints) {
-            try {
-                const res = await fetch(url);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && typeof data === 'object') {
-                        Object.keys(data).forEach(k1 => {
-                            const val1 = data[k1];
-                            if (!val1) return;
-                            if (typeof val1 === 'number') {
-                                if (/^\d{5,7}$/.test(k1)) scores[k1] = (scores[k1] || 0) + val1;
-                            } else if (typeof val1 === 'object') {
-                                Object.keys(val1).forEach(k2 => {
-                                    const val2 = val1[k2];
-                                    if (val2 === undefined || val2 === null) return;
-                                    const num = typeof val2 === 'number' ? val2 : (parseFloat(val2.mark || val2.obtained_mark || val2.score || val2) || 0);
-                                    if (/^\d{5,7}$/.test(k1)) {
-                                        scores[k1] = (scores[k1] || 0) + num;
-                                    } else if (/^\d{5,7}$/.test(k2)) {
-                                        scores[k2] = (scores[k2] || 0) + num;
-                                    }
-                                });
+                    const promises = matchingKeys.map(async key => {
+                        try {
+                            const res = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_marks/${encodeURIComponent(key)}.json`);
+                            if (res.ok) {
+                                const data = await res.json();
+                                if (data && typeof data === 'object') {
+                                    Object.keys(data).forEach(sId => {
+                                        const rec = data[sId];
+                                        if (!rec) return;
+                                        let mark = 0;
+                                        if (typeof rec === 'number') {
+                                            mark = rec;
+                                        } else if (typeof rec === 'object') {
+                                            // সরাসরি কনসোলে পাওয়া rawMark বা cq ফিল্ড
+                                            if (rec.rawMark !== undefined && rec.rawMark !== null && rec.rawMark !== '') {
+                                                mark = parseFloat(rec.rawMark) || 0;
+                                            } else if (rec.cq !== undefined && rec.cq !== null && rec.cq !== '') {
+                                                mark = parseFloat(rec.cq) || 0;
+                                            } else {
+                                                mark = parseFloat(rec.mark || rec.marks || rec.total || 0) || 0;
+                                            }
+                                        }
+                                        scores[sId] = (scores[sId] || 0) + mark;
+                                    });
+                                }
                             }
-                        });
-                    }
+                        } catch (e) {
+                            console.warn("Fetch subject marks error:", key, e);
+                        }
+                    });
+
+                    await Promise.all(promises);
                 }
-            } catch (e) {
-                console.warn("Marks note:", e);
             }
+        } catch (err) {
+            console.error("Marks fetch note:", err);
         }
         return scores;
     }
@@ -277,27 +290,6 @@
 
     function getStudentId(student) {
         return String(student.student_id || student.std_id || student.id || student['Student ID *'] || '').trim();
-    }
-
-    function getStudentTrack(student) {
-        const info = [
-            student.department,
-            student.student_category,
-            student.studentCategory,
-            student.academic_group,
-            student.group,
-            student.group_name,
-            student.stream,
-            student.sec
-        ].filter(Boolean).join(' ').toLowerCase();
-        if (/business|commerce|b\.?\s*studies/.test(info)) return 'business';
-        if (/humanities|arts|\bhum\b/.test(info)) return 'humanities';
-        return 'science';
-    }
-
-    function getStudentMeritRank(student) {
-        const rank = Number(student.merit_rank || student.meritRank || student.overallRank || student.overall_rank || student.rank || student.merit_position);
-        return Number.isFinite(rank) && rank > 0 ? rank : Number.POSITIVE_INFINITY;
     }
 
     async function saveSSC27Overrides(examId, allocations, meritOrder, saveMeritOrder, replaceMeritOrder) {
@@ -442,7 +434,7 @@
                             <div>
                                 <span><i class="fa-solid fa-users-viewfinder"></i> Student Group Allocation & Seating</span>
                                 <div style="font-size: 0.82rem; color: #059669; font-weight: 700; margin-top: 3px;">
-                                    <i class="fa-solid fa-circle-check"></i> গ্রুপ ফিক্সড থাকবে • প্রাপ্ত নম্বরের ভিত্তিতে গ্রুপের ভেতরে সিটিং স্বয়ংক্রিয়ভাবে বিন্যস্ত
+                                    <i class="fa-solid fa-circle-check"></i> গ্রুপ অপরিবর্তিত থাকবে • প্রাপ্ত rawMark অনুযায়ী গ্রুপের ভেতরে অভ্যন্তরীণ সিটিং বিন্যস্ত
                                 </div>
                             </div>
                             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
@@ -502,7 +494,7 @@
                 </div>
             </div>
 
-            <!-- মিসিং সাবজেক্ট যুক্ত করার মোডাল -->
+            <!-- এডিট মোডাল -->
             <div id="s27EditModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999999; display:none; align-items:center; justify-content:center; padding:12px;">
                 <div style="background:#fff; border-radius:20px; width:100%; max-width:540px; padding:22px; box-shadow:0 15px 35px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
@@ -514,7 +506,7 @@
                     </div>
 
                     <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:10px 14px; border-radius:12px; margin-bottom:15px; font-size:0.82rem; color:#166534;">
-                        <i class="fa-solid fa-circle-check"></i> <strong>কোনো ভয় নেই:</strong> নতুন বিষয় যোগ করলে শিক্ষকদের এন্ট্রি দেওয়া আগের নম্বরের কোনো ক্ষতি হবে না।
+                        <i class="fa-solid fa-circle-check"></i> <strong>কোনো ভয় নেই:</strong> নতুন বিষয় যোগ করলে শিক্ষকদের এন্ট্রি দেওয়া নম্বরের কোনো ক্ষতি হবে না।
                     </div>
 
                     <div class="s27-form-group">
@@ -957,9 +949,9 @@
         });
     }
 
-    // ==========================================
-    // গ্রুপ ফিক্সড রেখে অভ্যন্তরীণ মেধা ও সিট বিন্যাস লজিক
-    // ==========================================
+    // =========================================================================
+    // গ্রুপ ফিক্সড রেখে প্রাপ্ত rawMark অনুযায়ী অভ্যন্তরীণ মেধা ও সিট বিন্যাস
+    // =========================================================================
     window.loadSSC27StudentAllocation = async function () {
         const select = document.getElementById('s27TargetExamSelect');
         const tbody = document.getElementById('s27StudentTableTbody');
@@ -998,8 +990,8 @@
         const dailyTest01Allocations = getDailyTest01GroupAllocations();
         const dailyTest01Order = getDailyTest01Order();
         const dailyTest01OrderIndex = new Map(dailyTest01Order.map((studentId, index) => [studentId, index]));
-        
-        // প্রতিটি শিক্ষার্থীর গ্রুপ বেস নির্ধারণ (গ্রুপ ফিক্সড রাখা হবে)
+
+        // প্রতিটি শিক্ষার্থীর গ্রুপ বেস নির্ধারণ (গ্রুপ শতভাগ ফিক্সড থাকবে)
         const studentMap = new Map();
         students.forEach(st => {
             const sId = getStudentId(st);
@@ -1014,7 +1006,7 @@
             });
         });
 
-        // যদি এটি Daily Test-01 না হয়, তবে পূর্বের পরীক্ষার নম্বর এনে প্রতিটি গ্রুপের ভেতর অভ্যন্তরীণ সিরিয়াল করা হবে
+        // যদি টেস্ট-০১ না হয়, তবে পূর্ববর্তী টেস্টের rawMark নিয়ে আসা হবে
         let studentScores = {};
         if (!dailyTest01) {
             const prevExam = s27ExamRegistry.find(x => isDailyTest01(x)) || s27ExamRegistry[0];
@@ -1023,7 +1015,6 @@
             }
         }
 
-        // গ্রুপভিত্তিক ইন-গ্রুপ ফিল্টারিং ও সর্টিং
         const allocated = [];
         const groupNames = [
             'Group A (Science)',
@@ -1034,28 +1025,27 @@
         ];
 
         groupNames.forEach(grpName => {
-            // শুধুমাত্র এই গ্রুপের শিক্ষার্থীদের নেওয়া
+            // কেবল এই গ্রুপের ছাত্রদের ফিল্টার করা (গ্রুপ পরিবর্তন হবে না)
             const grpStudents = Array.from(studentMap.values()).filter(s => s.group === grpName);
 
             if (dailyTest01) {
-                // টেস্ট-০১ এর জন্য মূল বেসলাইন অনুযায়ী সর্ট
                 grpStudents.sort((a, b) => a.originalRank - b.originalRank);
             } else {
-                // টেস্ট-০২ বা পরবর্তী পরীক্ষার জন্য: গ্রুপের ভেতর প্রাপ্ত নম্বর অনুযায়ী সর্ট (সর্বোচ্চ নম্বর আগে)
+                // গ্রুপের ভেতরে প্রাপ্ত নম্বরের ভিত্তিতে সাজানো (সর্বোচ্চ নম্বর আগে)
                 grpStudents.sort((a, b) => {
                     const scoreA = studentScores[a.id] !== undefined ? studentScores[a.id] : -1;
                     const scoreB = studentScores[b.id] !== undefined ? studentScores[b.id] : -1;
                     if (scoreB !== scoreA) {
-                        return scoreB - scoreA; // বেশি নম্বর প্রাপ্ত শিক্ষার্থী আগে আসবে
+                        return scoreB - scoreA;
                     }
-                    return a.originalRank - b.originalRank; // নম্বর সমান হলে পূর্বের সিরিয়াল
+                    return a.originalRank - b.originalRank; // টাই হলে বেসলাইন র‍্যাংক
                 });
             }
 
-            // প্রতিটি গ্রুপের ভেতরে ১ থেকে ক্রমানুসারে সিট/র‍্যাংক প্রদান
+            // প্রতিটি গ্রুপের ভেতরে নিজস্ব ১ থেকে ক্রমানুসারে সিট/র‍্যাংক
             grpStudents.forEach((st, idx) => {
                 allocated.push({
-                    sl: idx + 1, // গ্রুপের ভেতরের মেধা ক্রম (১, ২, ৩...)
+                    sl: idx + 1,
                     id: st.id,
                     name: st.name,
                     group: st.group,
@@ -1066,7 +1056,6 @@
 
         s27AllocatedStudents = allocated;
 
-        // ক্লাউড ওভাররাইডে সেভ রাখা
         const newMeritOrder = allocated.map(s => s.id);
         const newAllocations = {};
         allocated.forEach(s => {
@@ -1146,7 +1135,7 @@
                 document.getElementById('s27SelectedLabel').innerText = s27SelectedStudentId ? `Selected: ${st.name}` : `0 Selected`;
                 renderSSC27StudentTable();
             };
-            const scoreTxt = st.score !== undefined ? `<span class="s27-score-badge">Marks: ${st.score}</span>` : '';
+            const scoreTxt = (st.score !== undefined && st.score !== null) ? `<span class="s27-score-badge">Marks: ${st.score}</span>` : '';
             tr.innerHTML = `
                 <td><strong>#${st.sl}</strong></td>
                 <td><strong>${st.id}</strong></td>
@@ -1248,7 +1237,7 @@
         document.body.appendChild(iframe);
 
         let rowsHtml = '';
-        printStudents.forEach((st, idx) => {
+        printStudents.forEach((st) => {
             rowsHtml += `
                 <tr>
                     <td>${st.sl}</td>
