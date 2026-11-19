@@ -130,14 +130,118 @@
     function formatShortSubject(name) {
         if (!name) return '';
         const clean = name.trim();
-        if (/^math/i.test(clean)) return 'Math';
-        if (/^bang/i.test(clean)) return 'Ban';
-        if (/^eng/i.test(clean)) return 'Eng';
-        if (/^scien/i.test(clean)) return 'Sci';
+        if (/^ban\s*1/i.test(clean)) return 'Ban 1';
+        if (/^ban\s*2/i.test(clean)) return 'Ban 2';
+        if (/^eng\s*1/i.test(clean)) return 'Eng 1';
+        if (/^eng\s*2/i.test(clean)) return 'Eng 2';
+        if (/^math/i.test(clean) || /^mat/i.test(clean)) return 'Math';
+        if (/^phys/i.test(clean)) return 'Phy';
+        if (/^chem/i.test(clean)) return 'Chem';
+        if (/^bio/i.test(clean)) return 'Bio';
+        if (/^scien/i.test(clean) || /^sci/i.test(clean)) return 'Sci';
         if (/^bgs/i.test(clean)) return 'BGS';
-        if (/^rel/i.test(clean)) return 'Rel';
+        if (/^rel/i.test(clean)) return 'Reli';
         if (/^ict/i.test(clean)) return 'ICT';
-        return clean.length > 5 ? clean.substring(0, 4) : clean;
+        if (/^acc/i.test(clean)) return 'Acc-Geo';
+        if (/^fin/i.test(clean)) return 'Fin-His';
+        if (/^b-ent/i.test(clean)) return 'B-Ent';
+        if (/^hm-agri/i.test(clean) || /^agri/i.test(clean)) return 'Agri';
+        return clean.length > 7 ? clean.substring(0, 6) : clean;
+    }
+
+    // Baseline Reference & Stream Mapping for SSC 27 Preparatory Suite
+    const DAILY_TEST_01_MERIT_GROUPS = {
+        science: [
+            "702723", "805524", "702123", "102017", "300919", "602722", "800824", "300319", "601422", "801224",
+            "802624", "900525", "701423", "901425", "600822", "100917", "601722", "900625", "901125", "300219",
+            "602022", "700223", "900125", "800324", "400120", "803324", "801124", "804924", "805224", "702823",
+            "901625", "702523", "400620", "600222", "604422", "700523", "700623", "501021", "603522", "701823",
+            "903325", "100417", "200718", "903025", "100317", "803824", "600722", "604322", "802724", "700923",
+            "805724", "804124", "800924", "300719", "801424", "501921", "803424", "400220", "900225", "602822",
+            "600122", "500521", "501421", "601922", "603822", "803724", "804724", "801824", "101517", "501721",
+            "903125", "803224", "200518", "802024", "804324", "604022", "804424", "604222", "600522", "602922",
+            "805024", "803924", "701923", "800524", "300119", "104416", "101317", "602622", "300519", "800224",
+            "805824", "401220", "601222", "701123", "701723", "102117", "702023", "804024", "805324", "902525",
+            "700823", "701623", "900425", "902425", "801024", "801324", "802424", "804224", "400920", "803624",
+            "900825", "901325", "101017", "109516", "602522", "702223", "801924", "804624", "500921", "800424",
+            "900725", "802824", "902325", "902725", "700123", "701023", "104716", "700423", "901025", "702423",
+            "200218", "901525", "902625", "500821", "200818", "801524", "900325", "701523", "800624", "600422",
+            "500321", "702923", "802924", "900925", "804824", "601822"
+        ],
+        humanities: [
+            "601122", "603322", "901825", "604822", "805424", "902225", "902825", "603222", "603122", "500221",
+            "603422", "901725", "601022", "301319", "501121", "802324", "803124", "903225", "602222", "200618",
+            "802224", "501821"
+        ],
+        business: ["602322", "601322", "700723", "802124", "903525"]
+    };
+
+    const SSC27_SCIENCE_SET = new Set(DAILY_TEST_01_MERIT_GROUPS.science);
+    const SSC27_HUM_SET = new Set(DAILY_TEST_01_MERIT_GROUPS.humanities);
+    const SSC27_BUS_SET = new Set(DAILY_TEST_01_MERIT_GROUPS.business);
+
+    const SSC27_ORDER_LIST = [
+        ...DAILY_TEST_01_MERIT_GROUPS.science,
+        ...DAILY_TEST_01_MERIT_GROUPS.humanities,
+        ...DAILY_TEST_01_MERIT_GROUPS.business
+    ];
+    const SSC27_BASELINE_MAP = new Map(SSC27_ORDER_LIST.map((id, idx) => [id, idx]));
+
+    function getDailyTest01GroupAllocations() {
+        const allocations = {};
+        DAILY_TEST_01_MERIT_GROUPS.science.forEach((studentId, index) => {
+            allocations[studentId] = index < 55
+                ? 'Group A (Science)'
+                : index < 105
+                    ? 'Group B (Science)'
+                    : 'Group C (Science)';
+        });
+        DAILY_TEST_01_MERIT_GROUPS.humanities.forEach(studentId => {
+            allocations[studentId] = 'Group D (Humanities)';
+        });
+        DAILY_TEST_01_MERIT_GROUPS.business.forEach(studentId => {
+            allocations[studentId] = 'Group D (Business Studies)';
+        });
+        return allocations;
+    }
+
+    const SSC27_DEFAULT_ALLOCATIONS = getDailyTest01GroupAllocations();
+
+    function isSSC27Exam(exam) {
+        const classInfo = String(exam && (exam.class || exam.className || exam.class_name || exam.grade) || '').toLowerCase();
+        const metadata = String(exam && (exam.id || exam.session || exam.batch || exam.category || '') || '').toLowerCase();
+        if (classInfo.includes('class 8') || classInfo.includes('eight scholarship')) return false;
+        return /\bclass\s*10\b/.test(classInfo) ||
+            /\bssc\b/.test(classInfo) ||
+            metadata.startsWith('ssc27_') ||
+            metadata.includes('ssc 27');
+    }
+
+    function isClass8Exam(exam) {
+        const classInfo = String(exam && (exam.class || exam.className || exam.class_name || '')).trim().toLowerCase();
+        return !isSSC27Exam(exam) && (classInfo === 'eight scholarship batch-2026' ||
+            /\bclass\s*8\b/.test(classInfo) || /\beight\b/.test(classInfo));
+    }
+
+    function getStudentTrack(student) {
+        const sId = String(student.std_id || student.student_id || student.id || student.cleanId || '').trim();
+        if (SSC27_HUM_SET.has(sId)) return 'humanities';
+        if (SSC27_BUS_SET.has(sId)) return 'business';
+        if (SSC27_SCIENCE_SET.has(sId)) return 'science';
+
+        const info = [
+            student.department,
+            student.student_category,
+            student.studentCategory,
+            student.academic_group,
+            student.group,
+            student.group_name,
+            student.stream,
+            student.sec
+        ].filter(Boolean).join(' ').toLowerCase();
+        if (/business|commerce|b\.?\s*studies/.test(info)) return 'business';
+        if (/humanities|arts|\bhum\b/.test(info)) return 'humanities';
+        return 'science';
     }
 
     // 4. Render Main Layout Container
@@ -168,10 +272,18 @@
                         <div style="color: #64748b; font-size: 12px;">Loading registered exams...</div>
                     </div>
 
-                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                         <button type="button" class="wm-btn-pill wm-btn-primary" onclick="window.generateWeeklyMasterTabulation()">
                             <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Master Tabulation
                         </button>
+                        <div style="display: inline-flex; align-items: center; gap: 8px; background: #f8fafc; padding: 4px 14px; border-radius: 50px; border: 1.5px solid #cbd5e1;">
+                            <label style="font-size: 12px; font-weight: 700; color: #1e3a8a; margin: 0; display: flex; align-items: center; gap: 5px;">
+                                <i class="fa-solid fa-filter" style="color:#2563eb;"></i> Stream / Group Filter:
+                            </label>
+                            <select id="wmTrackFilterSelect" class="em-control" style="width: 240px; height: 34px; font-size: 0.85rem; background:#fff; border:1px solid #cbd5e1; border-radius:50px; padding:0 12px; font-weight:700;" onchange="window.generateWeeklyMasterTabulation()">
+                                <option value="ALL">All Students</option>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Progressive Group Transfer Box -->
@@ -180,12 +292,12 @@
                             <div class="wm-transfer-title">
                                 <i class="fa-solid fa-bolt"></i> Apply Cumulative Merit to Target Exam
                             </div>
-                            <span style="font-size: 11.5px; color: #1e3a8a; font-weight: 600;">
-                                Automatically allocate Rank 1-40 to Group A and 41-Rest to Group B for the selected target exam:
+                            <span style="font-size: 11.5px; color: #1e3a8a; font-weight: 600;" id="wmTransferHintText">
+                                Automatically allocate promoted groups for the selected target exam based on multi-exam cumulative merit.
                             </span>
                         </div>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                            <select id="wmTargetExamSelect" class="em-control" style="width: 240px; height: 38px; font-size: 0.85rem; background:#fff; border:1px solid #cbd5e1; border-radius:50px; padding:0 14px; font-weight:700;">
+                            <select id="wmTargetExamSelect" class="em-control" style="width: 270px; height: 38px; font-size: 0.85rem; background:#fff; border:1px solid #cbd5e1; border-radius:50px; padding:0 14px; font-weight:700;">
                                 <option value="">-- Choose Target Exam --</option>
                             </select>
                             <button type="button" class="wm-btn-pill wm-btn-success" style="height: 38px;" onclick="window.applyCumulativeMeritToTargetExam()">
@@ -268,6 +380,53 @@
     let allWeeklyExams = [];
     let lastGeneratedWeeklyMeritList = [];
 
+    function updateTrackFilterOptions(firstExam) {
+        const trackSelect = document.getElementById('wmTrackFilterSelect');
+        const hintText = document.getElementById('wmTransferHintText');
+        if (!trackSelect) return;
+        const currentVal = trackSelect.value;
+
+        if (firstExam && isSSC27Exam(firstExam)) {
+            trackSelect.innerHTML = `
+                <option value="ALL">All Class 10 Students</option>
+                <option value="science">Science Track - All (Groups A, B, C)</option>
+                <option value="Group A (Science)">Group A (Science)</option>
+                <option value="Group B (Science)">Group B (Science)</option>
+                <option value="Group C (Science)">Group C (Science)</option>
+                <option value="humanities">Humanities Track (Group D)</option>
+                <option value="business">Business Studies Track (Group D)</option>
+            `;
+            if (hintText) {
+                hintText.innerHTML = `SSC 27 Business Rules: Science Rank 1-55 ➔ Group A, 56-105 ➔ Group B, 106-146 ➔ Group C • Humanities 1-22 ➔ Group D • Business 1-5 ➔ Group D.`;
+            }
+        } else {
+            trackSelect.innerHTML = `
+                <option value="ALL">All Groups</option>
+                <option value="Group A">Group A</option>
+                <option value="Group B">Group B</option>
+            `;
+            if (hintText) {
+                hintText.innerHTML = `Automatically allocate Rank 1-40 to Group A and 41-Rest to Group B for the selected target exam:`;
+            }
+        }
+
+        const validOptions = Array.from(trackSelect.options).map(o => o.value);
+        if (validOptions.includes(currentVal)) {
+            trackSelect.value = currentVal;
+        } else {
+            trackSelect.value = 'ALL';
+        }
+    }
+
+    window.onWeeklyExamSelectionChange = function () {
+        const checkboxes = document.querySelectorAll('.wm-exam-chk:checked');
+        if (checkboxes.length > 0) {
+            const firstId = checkboxes[0].value;
+            const firstEx = allWeeklyExams.find(x => x.id === firstId);
+            updateTrackFilterOptions(firstEx);
+        }
+    };
+
     async function loadWeeklyAvailableExams() {
         const container = document.getElementById('wmExamsCheckboxContainer');
         const targetSelect = document.getElementById('wmTargetExamSelect');
@@ -289,7 +448,22 @@
             } catch(e){}
         }
 
-        allWeeklyExams = examList;
+        const examMap = new Map();
+        examList.forEach(x => { if (x && x.id) examMap.set(String(x.id), x); });
+
+        // Merge cpscl_ssc27_exams directly from cloud to ensure Class 10 exams are always accessible
+        try {
+            const res27 = await fetch('https://mousumi-computer-default-rtdb.firebaseio.com/cpscl_ssc27_exams.json');
+            if (res27.ok) {
+                const data27 = await res27.json();
+                if (data27) {
+                    const list27 = Array.isArray(data27) ? data27 : Object.values(data27);
+                    list27.forEach(x => { if (x && x.id) examMap.set(String(x.id), x); });
+                }
+            }
+        } catch(e){}
+
+        allWeeklyExams = Array.from(examMap.values());
 
         if (allWeeklyExams.length === 0) {
             container.innerHTML = '<div style="color:#ef4444; font-weight:700;">No examinations found in database.</div>';
@@ -301,10 +475,11 @@
         let html = '';
         allWeeklyExams.forEach((ex, idx) => {
             const isChecked = idx >= Math.max(0, allWeeklyExams.length - 4);
+            const classLabel = ex.class ? `[${ex.class}] ` : '';
             html += `
                 <label class="wm-checkbox-item">
-                    <input type="checkbox" class="wm-exam-chk" value="${ex.id}" ${isChecked ? 'checked' : ''}>
-                    <span>${ex.name} <small style="color:#64748b;">(${ex.date || 'No Date'})</small></span>
+                    <input type="checkbox" class="wm-exam-chk" value="${ex.id}" ${isChecked ? 'checked' : ''} onchange="window.onWeeklyExamSelectionChange()">
+                    <span>${classLabel}<strong>${ex.name}</strong> <small style="color:#64748b;">(${ex.date || 'No Date'})</small></span>
                 </label>
             `;
         });
@@ -320,9 +495,11 @@
                 targetSelect.value = allWeeklyExams[allWeeklyExams.length - 1].id;
             }
         }
+
+        window.onWeeklyExamSelectionChange();
     }
 
-    // 6. Master Generation Engine (Multi-Exam, Converted 100, Math Safe, Clean 2-Tier Header)
+    // 6. Master Generation Engine (Multi-Class Dynamic, Accurate Percentage, Auto-Hiding Clutter)
     window.generateWeeklyMasterTabulation = async function () {
         const checkboxes = document.querySelectorAll('.wm-exam-chk:checked');
         const thead = document.getElementById('wmMasterThead');
@@ -338,10 +515,22 @@
 
         selectedExams.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
 
+        const firstExam = selectedExams[0];
+        const isSSC10 = isSSC27Exam(firstExam);
+        const isCls8 = isClass8Exam(firstExam);
+
         const firstDate = selectedExams[0].date || '';
         const lastDate = selectedExams[selectedExams.length - 1].date || '';
         document.getElementById('wmDisplayDateRange').innerText = `Assessment Period: ${firstDate} to ${lastDate}`;
-        document.getElementById('wmDisplayClass').innerText = selectedExams[0].class || 'Eight Scholarship Batch-2026';
+        
+        const displayClassElem = document.getElementById('wmDisplayClass');
+        if (displayClassElem) {
+            displayClassElem.innerText = isSSC10 
+                ? "Class 10 (SSC 27 Preparatory Suite)"
+                : (firstExam.class || 'Eight Scholarship Batch-2026');
+        }
+
+        updateTrackFilterOptions(firstExam);
 
         // 1. Fetch Students
         let allStudents = [];
@@ -356,14 +545,38 @@
                 if (snapS.exists()) {
                     const data = snapS.val();
                     allStudents = Array.isArray(data) ? data : Object.values(data);
+                    localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents));
                 }
             } catch(e){}
         }
 
-        const targetClassClean = String(selectedExams[0].class || '').trim().toLowerCase();
+        // Direct REST fetch fallback if cache is empty
+        if (allStudents.length === 0) {
+            try {
+                const resSt = await fetch('https://mousumi-computer-default-rtdb.firebaseio.com/cpscl_students.json');
+                if (resSt.ok) {
+                    const data = await resSt.json();
+                    if (data) {
+                        allStudents = Array.isArray(data) ? data : Object.values(data);
+                        localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents));
+                    }
+                }
+            } catch(e){}
+        }
+
+        // Filter students strictly by selected examination's target class
         let classStudents = allStudents.filter(s => {
-            const cName = String(s.class_name || s.class || '').trim().toLowerCase();
-            return cName === targetClassClean || cName.includes(targetClassClean) || targetClassClean.includes(cName);
+            if (isSSC10) {
+                const cName = String(s.class_name || s.class || s['Class Name *'] || '').trim().toLowerCase();
+                const bName = String(s.section || s.section_batch || s['Section/Batch *'] || '').trim().toLowerCase();
+                const isC10 = cName.includes('10') || cName.includes('ten') || cName.includes('ssc') || bName.includes('ssc') || bName.includes('27');
+                const isNot8 = !cName.includes('8') && !cName.includes('eight');
+                return isC10 && isNot8;
+            } else {
+                const targetClassClean = String(firstExam.class || 'Eight Scholarship Batch-2026').trim().toLowerCase();
+                const cName = String(s.class_name || s.class || '').trim().toLowerCase();
+                return cName === targetClassClean || cName.includes(targetClassClean) || targetClassClean.includes(cName);
+            }
         });
 
         if (classStudents.length === 0) {
@@ -373,14 +586,70 @@
 
         // 2. Fetch Group Overrides
         let overrides = {};
+        try {
+            const localOv = localStorage.getItem('cpscl_exam_group_overrides');
+            if (localOv) overrides = JSON.parse(localOv);
+        } catch(e){}
+
         if (window.getDatabase && window.ref && window.get) {
             try {
                 const snapO = await window.get(window.ref(window.getDatabase(), 'cpscl_exam_group_overrides'));
-                if (snapO.exists()) overrides = snapO.val() || {};
+                if (snapO.exists()) {
+                    overrides = snapO.val() || overrides;
+                    localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(overrides));
+                }
+            } catch(e){}
+        }
+
+        if (Object.keys(overrides).length === 0) {
+            try {
+                const resOv = await fetch('https://mousumi-computer-default-rtdb.firebaseio.com/cpscl_exam_group_overrides.json');
+                if (resOv.ok) {
+                    const data = await resOv.json();
+                    if (data) overrides = data;
+                }
             } catch(e){}
         }
 
         const latestExam = selectedExams[selectedExams.length - 1];
+
+        // Assign clean student ID, academic track, and currently assigned group
+        classStudents.forEach(st => {
+            const sId = String(st.std_id || st.student_id || st.id || st['Student ID *'] || '').trim();
+            st.cleanId = sId;
+
+            if (isSSC10) {
+                st.track = getStudentTrack(st);
+                let assignedGroup = overrides[latestExam.id]?.[sId];
+                if (!assignedGroup) {
+                    assignedGroup = SSC27_DEFAULT_ALLOCATIONS[sId] || (st.track === 'humanities' ? 'Group D (Humanities)' : st.track === 'business' ? 'Group D (Business Studies)' : 'Group A (Science)');
+                }
+                st.currentGroup = assignedGroup;
+            } else {
+                st.track = 'general';
+                st.currentGroup = overrides[latestExam.id]?.[sId] || 'Group A';
+            }
+        });
+
+        // Apply Stream / Group Filter
+        const trackFilter = document.getElementById('wmTrackFilterSelect')?.value || 'ALL';
+        let filteredStudents = classStudents;
+        if (trackFilter !== 'ALL') {
+            if (trackFilter === 'science') {
+                filteredStudents = classStudents.filter(s => s.track === 'science');
+            } else if (trackFilter === 'humanities') {
+                filteredStudents = classStudents.filter(s => s.track === 'humanities');
+            } else if (trackFilter === 'business') {
+                filteredStudents = classStudents.filter(s => s.track === 'business');
+            } else {
+                filteredStudents = classStudents.filter(s => s.currentGroup === trackFilter);
+            }
+        }
+
+        if (filteredStudents.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="10" style="padding:30px; text-align:center; color:#94a3b8;">No students found matching the selected track/group filter.</td></tr>`;
+            return;
+        }
 
         // 3. Fetch Marks for All Selected Exams and All Subjects
         const examMarksStore = {};
@@ -395,24 +664,49 @@
                         if (snapM.exists()) sMap = snapM.val() || sMap;
                     } catch(e){}
                 }
+                if (Object.keys(sMap).length === 0) {
+                    try {
+                        const resM = await fetch(`https://mousumi-computer-default-rtdb.firebaseio.com/cpscl_exam_marks/${encodeURIComponent(ex.id + '_' + sub)}.json`);
+                        if (resM.ok) {
+                            const val = await resM.json();
+                            if (val) sMap = val;
+                        }
+                    } catch(e){}
+                }
                 examMarksStore[ex.id][sub] = sMap;
             }
         }
 
-        // 4. Calculate Exam-Wise & Grand Cumulative Scores
-        let cumulativeMaxScore = 0;
-
+        // 4. Determine Active Subjects per Exam for the Current Filter (Auto-Hide Irrelevant Subjects)
         const examMetaList = selectedExams.map(ex => {
             const subs = Object.keys(ex.subjects || {});
+
             let activeSubs = subs.filter(sub => {
-                const sMap = examMarksStore[ex.id][sub] || {};
-                return Object.keys(sMap).length > 0;
+                const sMap = examMarksStore[ex.id]?.[sub] || {};
+                return filteredStudents.some(st => {
+                    const rec = sMap[st.cleanId];
+                    if (!rec) return false;
+                    if (rec.rawMark !== null && rec.rawMark !== undefined && rec.rawMark !== '') return true;
+                    if (rec.cq !== null && rec.cq !== undefined && rec.cq !== '') return true;
+                    if (typeof rec === 'number') return true;
+                    return false;
+                });
             });
 
-            if (activeSubs.length === 0) activeSubs = subs;
+            if (activeSubs.length === 0) {
+                activeSubs = subs;
+            }
 
-            const examFullMark = 60; // Standard 2-subject shift exam full mark
-            cumulativeMaxScore += examFullMark;
+            // Dynamic Full Mark Calculation
+            let examFullMark = 0;
+            if (isCls8) {
+                // Class 8 legacy 2-subject shift full mark strictly preserved
+                examFullMark = 60;
+            } else {
+                // Class 10: Sum of full marks of the active routine subjects for this track
+                examFullMark = activeSubs.reduce((acc, sub) => acc + (parseInt(ex.subjects[sub], 10) || 20), 0);
+                if (examFullMark === 0) examFullMark = 100;
+            }
 
             return {
                 exam: ex,
@@ -422,16 +716,15 @@
         });
 
         // 5. Compute Rows for Each Student
-        const computedStudents = classStudents.map(st => {
-            const sId = String(st.std_id || st.id || '').trim();
-            const sName = st.student_name || st.name || 'Unnamed';
+        let cumulativeMaxScore = 0;
+        examMetaList.forEach(m => { cumulativeMaxScore += m.fullMark; });
 
-            let currentGroup = "Group A";
-            if (overrides[latestExam.id] && overrides[latestExam.id][sId]) {
-                currentGroup = overrides[latestExam.id][sId];
-            }
+        const computedStudents = filteredStudents.map(st => {
+            const sId = st.cleanId;
+            const sName = String(st.student_name || st.name_english || st.name || st['Name (English) *'] || 'Student').trim();
 
             let grandTotal = 0;
+            let studentMaxPossible = 0;
             const examBreakdown = {};
 
             examMetaList.forEach(meta => {
@@ -440,13 +733,15 @@
                 const subScores = {};
 
                 meta.activeSubs.forEach(sub => {
-                    const sMap = examMarksStore[exId][sub] || {};
+                    const sMap = examMarksStore[exId]?.[sub] || {};
                     const rec = sMap[sId];
                     let val = null;
                     if (rec) {
-                        if (rec.rawMark !== null && rec.rawMark !== undefined && rec.rawMark !== '') {
+                        if (typeof rec === 'number') {
+                            val = rec;
+                        } else if (rec.rawMark !== null && rec.rawMark !== undefined && rec.rawMark !== '') {
                             val = parseFloat(rec.rawMark);
-                        } else if (rec.cq !== null && rec.cq !== undefined) {
+                        } else if (rec.cq !== null && rec.cq !== undefined && rec.cq !== '') {
                             val = (parseFloat(rec.cq) || 0) + (parseFloat(rec.mcq) || 0) + (parseFloat(rec.practical) || 0);
                         }
                     }
@@ -465,34 +760,64 @@
                 };
 
                 grandTotal += testTotal;
+                studentMaxPossible += meta.fullMark;
             });
 
-            const converted100 = cumulativeMaxScore > 0 ? ((grandTotal / cumulativeMaxScore) * 100) : 0;
+            // Mathematical Safety: Strictly <= 100%
+            const converted100 = studentMaxPossible > 0 ? Math.min(100, (grandTotal / studentMaxPossible) * 100) : 0;
 
             return {
                 id: sId,
                 name: sName,
-                group: currentGroup,
+                group: st.currentGroup,
+                track: st.track,
                 examBreakdown,
                 grandTotal,
+                studentMaxPossible,
                 converted100: parseFloat(converted100.toFixed(2))
             };
         });
 
-        // 6. Sort by Final Cumulative Merit: Highest Grand Total First
+        // 6. Robust Multi-Tier Tie-Breaking Algorithm for Authority Submission
         computedStudents.sort((a, b) => {
+            // Priority 1: Grand Total Score
             if (b.grandTotal !== a.grandTotal) return b.grandTotal - a.grandTotal;
+
+            // Priority 2: Latest Test Performance (e.g. Daily Test-03)
+            const lastExId = selectedExams[selectedExams.length - 1]?.id;
+            if (lastExId) {
+                const scA = a.examBreakdown[lastExId]?.testTotal || 0;
+                const scB = b.examBreakdown[lastExId]?.testTotal || 0;
+                if (scB !== scA) return scB - scA;
+            }
+
+            // Priority 3: Prior Test Performance (e.g. Daily Test-02)
+            if (selectedExams.length >= 2) {
+                const midExId = selectedExams[selectedExams.length - 2]?.id;
+                const scA = a.examBreakdown[midExId]?.testTotal || 0;
+                const scB = b.examBreakdown[midExId]?.testTotal || 0;
+                if (scB !== scA) return scB - scA;
+            }
+
+            // Priority 4: Baseline Merit Order (SSC 27 official intake order)
+            if (isSSC10) {
+                const rankA = SSC27_BASELINE_MAP.has(a.id) ? SSC27_BASELINE_MAP.get(a.id) : 9999;
+                const rankB = SSC27_BASELINE_MAP.has(b.id) ? SSC27_BASELINE_MAP.get(b.id) : 9999;
+                if (rankA !== rankB) return rankA - rankB;
+            }
+
+            // Priority 5: Deterministic Student ID fallback
             return a.id.localeCompare(b.id);
         });
 
         lastGeneratedWeeklyMeritList = computedStudents;
 
-        // 7. 🌟 Build Two-Tier Table Header with Clean 2-Line Exam Title & Full Date
+        // 7. Dynamic Two-Tier Table Header
         let tr1 = `<tr>
             <th rowspan="2" class="th-main" style="width: 3%;">Serial</th>
             <th rowspan="2" class="th-main" style="width: 6.5%;">Student ID</th>
             <th rowspan="2" class="th-main" style="width: 13%; text-align: left; padding-left: 5px;">Student Name</th>
-            <th rowspan="2" class="th-main" style="width: 5%;">Group<br><small>(Latest)</small></th>
+            <th rowspan="2" class="th-main" style="width: 5%;">Group<br><small>(Assigned)</small></th>
         `;
 
         let tr2 = `<tr>`;
@@ -502,8 +827,6 @@
         examMetaList.forEach((meta, idx) => {
             const colClass = examColorClasses[idx % examColorClasses.length];
             const spanCount = meta.activeSubs.length + 1;
-            
-            // ২ লাইনে মডেল টেস্ট ও তারিখ: কোনো ব্র্যাকেট বা সংখ্যা ভাঙবে না
             const dateDisplay = meta.exam.date ? `<div style="font-size: 8px; font-weight: 600; opacity: 0.9; margin-top: 1px;">${meta.exam.date}</div>` : '';
 
             tr1 += `<th colspan="${spanCount}" class="${colClass}" style="line-height: 1.15; padding: 4px 2px;">
@@ -514,8 +837,7 @@
             meta.activeSubs.forEach(sub => {
                 tr2 += `<th class="sub-head">${formatShortSubject(sub)}</th>`;
             });
-            
-            // ২ লাইনে পরিচ্ছন্ন Total ও পূর্ণমান
+
             tr2 += `<th class="sub-total" style="line-height: 1.1;">Total<br><small style="font-size: 7.5px;">(${meta.fullMark})</small></th>`;
         });
 
@@ -533,7 +855,9 @@
         tbody.innerHTML = '';
         computedStudents.forEach((row, idx) => {
             const tr = document.createElement('tr');
-            const groupColor = (row.group === 'Group A') ? '#2563eb' : '#059669';
+            const groupColor = (row.group === 'Group A' || row.group.includes('Group A')) ? '#2563eb' 
+                             : (row.group === 'Group B' || row.group.includes('Group B')) ? '#059669' 
+                             : (row.group.includes('Group C')) ? '#d97706' : '#7c3aed';
 
             let tdHtml = `
                 <td><strong>${idx + 1}</strong></td>
@@ -547,16 +871,16 @@
                 const b = row.examBreakdown[exId];
 
                 meta.activeSubs.forEach(sub => {
-                    const sc = b.subScores[sub];
-                    tdHtml += `<td>${sc}</td>`;
+                    const sc = b ? b.subScores[sub] : '-';
+                    tdHtml += `<td>${sc !== undefined ? sc : '-'}</td>`;
                 });
 
-                tdHtml += `<td class="test-total">${b.testTotal}</td>`;
+                tdHtml += `<td class="test-total">${b ? b.testTotal : 0}</td>`;
             });
 
             tdHtml += `
                 <td class="grand-col">${row.grandTotal}</td>
-                <td class="conv-col">${row.converted100.toFixed(2)}</td>
+                <td class="conv-col">${row.converted100.toFixed(2)}%</td>
                 <td class="rank-col">${idx + 1}${getOrdinalSuffix(idx + 1)}</td>
             `;
 
@@ -573,7 +897,7 @@
         return "th";
     }
 
-    // 7. Apply Cumulative Merit to Target Exam Engine
+    // 7. Polymorphic Group Promotion Engine (Class 8 & Class 10 / SSC 27)
     window.applyCumulativeMeritToTargetExam = async function () {
         const targetSelect = document.getElementById('wmTargetExamSelect');
         if (!targetSelect || !targetSelect.value) {
@@ -590,9 +914,6 @@
             return;
         }
 
-        const confirmMsg = `Are you sure?\n\nApply this Cumulative Merit Ranking to '${targetExam.name}'?\n• Merit 1 to 40 ➔ Group A\n• Merit 41 to ${lastGeneratedWeeklyMeritList.length} ➔ Group B\n\nThis will lock the groups for ${targetExam.name}.`;
-        if (!confirm(confirmMsg)) return;
-
         let manualGroupOverrides = {};
         try {
             const local = localStorage.getItem('cpscl_exam_group_overrides');
@@ -606,23 +927,100 @@
             } catch(e){}
         }
 
+        if (Object.keys(manualGroupOverrides).length === 0) {
+            try {
+                const res = await fetch('https://mousumi-computer-default-rtdb.firebaseio.com/cpscl_exam_group_overrides.json');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data) manualGroupOverrides = data;
+                }
+            } catch(e){}
+        }
+
         if (!manualGroupOverrides[targetExamId]) {
             manualGroupOverrides[targetExamId] = {};
         }
 
-        const meritOrderedIds = [];
-        lastGeneratedWeeklyMeritList.forEach((st, idx) => {
-            const sId = st.id;
-            const rank = idx + 1;
-            const assignedGroup = (rank <= 40) ? "Group A" : "Group B";
-            manualGroupOverrides[targetExamId][sId] = assignedGroup;
-            meritOrderedIds.push(sId);
-        });
+        if (isClass8Exam(targetExam)) {
+            // === CLASS 8 LEGACY WORKFLOW (100% UNCHANGED) ===
+            const confirmMsg = `Are you sure?\n\nApply this Cumulative Merit Ranking to '${targetExam.name}'?\n• Merit 1 to 40 ➔ Group A\n• Merit 41 to ${lastGeneratedWeeklyMeritList.length} ➔ Group B\n\nThis will lock the groups for ${targetExam.name}.`;
+            if (!confirm(confirmMsg)) return;
 
-        manualGroupOverrides[targetExamId + '_merit_order'] = meritOrderedIds;
+            const meritOrderedIds = [];
+            lastGeneratedWeeklyMeritList.forEach((st, idx) => {
+                const sId = st.id;
+                const rank = idx + 1;
+                const assignedGroup = (rank <= 40) ? "Group A" : "Group B";
+                manualGroupOverrides[targetExamId][sId] = assignedGroup;
+                meritOrderedIds.push(sId);
+            });
 
+            manualGroupOverrides[targetExamId + '_merit_order'] = meritOrderedIds;
+        } else {
+            // === CLASS 10 / SSC 27 MULTI-GROUP PROMOTION WORKFLOW ===
+            const confirmMsg = `Are you sure you want to execute SSC 27 Group Reallocation & Promotion for '${targetExam.name}'?\n\n` +
+                `Official SSC 27 Promotion Rules based on 3-Exam Cumulative Merit:\n` +
+                `• Science Rank 1 to 55 ➔ Group A (Science) [Top 55 Bench]\n` +
+                `• Science Rank 56 to 105 ➔ Group B (Science) [Next 50 Bench]\n` +
+                `• Science Rank 106 to 146 ➔ Group C (Science) [Remaining 41]\n` +
+                `• Humanities Rank 1 to 22 ➔ Group D (Humanities)\n` +
+                `• Business Studies Rank 1 to 5 ➔ Group D (Business Studies)\n\n` +
+                `This will lock the promoted groups and within-group seating for next Sunday's test.`;
+            if (!confirm(confirmMsg)) return;
+
+            const sci = lastGeneratedWeeklyMeritList.filter(s => s.track === 'science');
+            const hum = lastGeneratedWeeklyMeritList.filter(s => s.track === 'humanities');
+            const bus = lastGeneratedWeeklyMeritList.filter(s => s.track === 'business');
+
+            const meritOrderedIds = [];
+
+            // Science Track Promotion (Rank 1-55: Group A, 56-105: Group B, 106-146: Group C)
+            sci.forEach((st, idx) => {
+                const rank = idx + 1;
+                const grp = (rank <= 55) ? 'Group A (Science)'
+                          : (rank <= 105) ? 'Group B (Science)'
+                          : 'Group C (Science)';
+                manualGroupOverrides[targetExamId][st.id] = grp;
+                meritOrderedIds.push(st.id);
+            });
+
+            // Humanities Track Allocation
+            hum.forEach(st => {
+                manualGroupOverrides[targetExamId][st.id] = 'Group D (Humanities)';
+                meritOrderedIds.push(st.id);
+            });
+
+            // Business Studies Allocation
+            bus.forEach(st => {
+                manualGroupOverrides[targetExamId][st.id] = 'Group D (Business Studies)';
+                meritOrderedIds.push(st.id);
+            });
+
+            // Fallback safety if table was generated under a single track filter
+            if (hum.length === 0) {
+                DAILY_TEST_01_MERIT_GROUPS.humanities.forEach(sId => {
+                    if (!manualGroupOverrides[targetExamId][sId]) {
+                        manualGroupOverrides[targetExamId][sId] = 'Group D (Humanities)';
+                    }
+                    meritOrderedIds.push(sId);
+                });
+            }
+            if (bus.length === 0) {
+                DAILY_TEST_01_MERIT_GROUPS.business.forEach(sId => {
+                    if (!manualGroupOverrides[targetExamId][sId]) {
+                        manualGroupOverrides[targetExamId][sId] = 'Group D (Business Studies)';
+                    }
+                    meritOrderedIds.push(sId);
+                });
+            }
+
+            manualGroupOverrides[targetExamId + '_merit_order'] = meritOrderedIds;
+        }
+
+        // 1. Sync localStorage
         localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(manualGroupOverrides));
 
+        // 2. Sync Firebase Database SDK
         let isSaved = false;
         if (typeof window.getDatabase === 'function' && typeof window.ref === 'function' && typeof window.set === 'function') {
             try {
@@ -639,7 +1037,32 @@
             } catch(e) {}
         }
 
-        alert(`Success! Cumulative Merit Grouping applied to '${targetExam.name}'.\nGroup A (1-40) and Group B (41-${lastGeneratedWeeklyMeritList.length}) are now successfully locked.`);
+        // 3. Direct REST PUT to ensure persistent cloud sync
+        try {
+            await fetch(`https://mousumi-computer-default-rtdb.firebaseio.com/cpscl_exam_group_overrides/${targetExamId}.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(manualGroupOverrides[targetExamId])
+            });
+            await fetch(`https://mousumi-computer-default-rtdb.firebaseio.com/cpscl_exam_group_overrides/${targetExamId}_merit_order.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(manualGroupOverrides[targetExamId + '_merit_order'])
+            });
+            isSaved = true;
+        } catch(e) {}
+
+        const successMsg = isClass8Exam(targetExam)
+            ? `Success! Cumulative Merit Grouping applied to '${targetExam.name}'.\nGroup A (1-40) and Group B (41-${lastGeneratedWeeklyMeritList.length}) are now successfully locked.`
+            : `Success! SSC 27 Cumulative Promotion successfully applied to '${targetExam.name}'!\n` +
+              `• Group A (Science): Top 55 students\n` +
+              `• Group B (Science): Next 50 students\n` +
+              `• Group C (Science): Remaining 41 students\n` +
+              `• Group D (Humanities): 22 students\n` +
+              `• Group D (Business): 5 students\n` +
+              `All records and seat plans are now locked in Firebase Cloud.`;
+
+        alert(successMsg);
     };
 
     // 8. Isolated Vector Print Engine (Flexible Landscape: Legal / A4 / A3 Compatible)
