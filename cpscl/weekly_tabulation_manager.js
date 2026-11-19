@@ -105,17 +105,18 @@
             .wm-table th.th-exam-4 { background-color: #f3e8ff !important; color: #7e22ce !important; font-weight: 800; }
             .wm-table th.th-exam-default { background-color: #f1f5f9 !important; color: #334155 !important; font-weight: 800; }
 
-            .wm-table th.th-grand { background-color: #f1f5f9 !important; color: #1e293b !important; font-weight: 800; }
+            .wm-table th.th-grand { background-color: #f1f5f9 !important; color: #1e293b !important; font-weight: 800; border-left: 1.5px solid #0f172a !important; border-right: 1.5px solid #0f172a !important; }
             .wm-table th.th-conv { background-color: #fee2e2 !important; color: #991b1b !important; font-weight: 900; }
+            .wm-table th.th-rank { background-color: #ecfdf5 !important; color: #047857 !important; font-weight: 900; }
 
             .wm-table th.sub-head { background-color: #f8fafc !important; font-weight: 700; font-size: 8.5px; white-space: nowrap; }
-            .wm-table th.sub-total { background-color: #f1f5f9 !important; font-weight: 800; font-size: 8.5px; white-space: nowrap; }
+            .wm-table th.sub-total { background-color: #dbeafe !important; color: #1e3a8a !important; font-weight: 900 !important; font-size: 8.5px !important; white-space: nowrap; border-left: 1.5px solid #1e3a8a !important; border-right: 1.5px solid #1e3a8a !important; }
 
             .wm-table td.name-col { text-align: left !important; padding-left: 6px !important; font-weight: 600; white-space: nowrap !important; }
-            .wm-table td.test-total { font-weight: 800; background-color: #f8fafc !important; }
-            .wm-table td.grand-col { font-weight: 800; background-color: #f8fafc !important; }
-            .wm-table td.conv-col { font-weight: 900; background-color: #fef2f2 !important; color: #991b1b; }
-            .wm-table td.rank-col { font-weight: 900; background-color: #eff6ff !important; color: #1d4ed8; }
+            .wm-table td.test-total { font-weight: 900 !important; font-size: 9.5px !important; background-color: #eff6ff !important; color: #1e3a8a !important; border-left: 1.5px solid #1e3a8a !important; border-right: 1.5px solid #1e3a8a !important; }
+            .wm-table td.grand-col { font-weight: 900 !important; background-color: #f1f5f9 !important; color: #0f172a !important; border-left: 1.5px solid #0f172a !important; border-right: 1.5px solid #0f172a !important; }
+            .wm-table td.conv-col { font-weight: 900 !important; background-color: #fef2f2 !important; color: #991b1b !important; }
+            .wm-table td.rank-col { font-weight: 900 !important; background-color: #ecfdf5 !important; color: #059669 !important; }
 
             .wm-sig-container { display: flex; justify-content: space-around; align-items: flex-end; margin-top: 50px; padding: 0 20px 20px; page-break-inside: avoid; }
             .wm-sig-box { text-align: center; min-width: 170px; }
@@ -697,16 +698,66 @@
                 activeSubs = subs;
             }
 
-            // Dynamic Full Mark Calculation
-            let examFullMark = 0;
+            // ── Fully Dynamic Full Mark Calculation ──────────────────────────────────
+            // Class 8 legacy (60/exam) is strictly preserved for backward compatibility.
+            // All other classes (Class 10 / SSC 27 and ANY future class) are 100% data-driven:
+            //
+            //   Step 1: Read each active subject's configured full mark from ex.subjects
+            //           (Firebase stores per-subject marks, e.g. { Math: 20, Biology: 20, ... }).
+            //   Step 2: For each filtered student count how many activeSubs they actually sat.
+            //   Step 3: Take the MEDIAN subject count across students → multiply by per-subject mark.
+            //
+            //   Why median?  When "All Students" is selected, activeSubs is the UNION of all
+            //   stream subjects (e.g. 9 subjects for DT-01).  Each student only sat 4 of them.
+            //   The median of per-student counts correctly returns 4 (not 9), giving 4×20 = 80.
+            //   This is robust to outliers (e.g. one student who sat extra subjects).
+            //
+            //   Daily Test-04, 05, ... any future test: automatically correct, zero code changes.
+            // ─────────────────────────────────────────────────────────────────────────────────
+            let examFullMark;
             if (isCls8) {
-                // Class 8 legacy 2-subject shift full mark strictly preserved
+                // Class 8 legacy: 2-subject rotation, 30 marks each = 60 per exam. Strictly unchanged.
                 examFullMark = 60;
             } else {
-                // Class 10: Sum of full marks of the active routine subjects for this track
-                examFullMark = activeSubs.reduce((acc, sub) => acc + (parseInt(ex.subjects[sub], 10) || 20), 0);
-                if (examFullMark === 0) examFullMark = 100;
+                // ── Step 1: Average per-subject full mark for this exam (typically 20) ──────
+                const subjectValues = Object.values(ex.subjects || {}).map(v => Number(v) || 20);
+                const perSubjectMark = subjectValues.length > 0
+                    ? subjectValues.reduce((s, v) => s + v, 0) / subjectValues.length
+                    : 20;
+
+                // ── Step 2: Count, per filtered student, how many activeSubs they sat ───────
+                const perStudentSubCounts = filteredStudents.map(st => {
+                    let cnt = 0;
+                    activeSubs.forEach(sub => {
+                        const rec = examMarksStore[ex.id]?.[sub]?.[st.cleanId];
+                        if (rec === null || rec === undefined || rec === '') return;
+                        if (typeof rec === 'number' ||
+                            (rec.rawMark !== null && rec.rawMark !== undefined && rec.rawMark !== '') ||
+                            (rec.cq   !== null && rec.cq   !== undefined && rec.cq   !== '')) {
+                            cnt++;
+                        }
+                    });
+                    return cnt;
+                }).filter(c => c > 0); // exclude students with no marks (absent / not yet entered)
+
+                // ── Step 3: Median subject count → exam full mark ──────────────────────────
+                let typicalSubCount;
+                if (perStudentSubCounts.length > 0) {
+                    const sorted = [...perStudentSubCounts].sort((a, b) => a - b);
+                    typicalSubCount = sorted[Math.floor(sorted.length / 2)]; // median
+                } else {
+                    // No marks entered yet — exam not started; use activeSubs count as placeholder
+                    typicalSubCount = activeSubs.length;
+                }
+
+                examFullMark = Math.round(typicalSubCount * perSubjectMark);
+
+                // Safety net: guard against zero (empty exam with no subjects configured)
+                if (examFullMark <= 0) {
+                    examFullMark = Number(ex.totalMarks) > 0 ? Number(ex.totalMarks) : 100;
+                }
             }
+            // ─────────────────────────────────────────────────────────────────────────────
 
             return {
                 exam: ex,
@@ -716,6 +767,8 @@
         });
 
         // 5. Compute Rows for Each Student
+        // cumulativeMaxScore: grand denominator = sum of each selected exam's dynamically-computed fullMark.
+        // Automatically scales with any number of exams (1, 3, 4, 10 …) the admin checks in the UI.
         let cumulativeMaxScore = 0;
         examMetaList.forEach(m => { cumulativeMaxScore += m.fullMark; });
 
@@ -724,7 +777,6 @@
             const sName = String(st.student_name || st.name_english || st.name || st['Name (English) *'] || 'Student').trim();
 
             let grandTotal = 0;
-            let studentMaxPossible = 0;
             const examBreakdown = {};
 
             examMetaList.forEach(meta => {
@@ -760,8 +812,16 @@
                 };
 
                 grandTotal += testTotal;
-                studentMaxPossible += meta.fullMark;
             });
+
+            // studentMaxPossible: cumulative full mark across ALL selected exams for this student.
+            // cumulativeMaxScore is now 100% dynamic — computed from live per-student subject
+            // counts (median) × per-subject mark per exam.  Adding or removing any exam from the
+            // checkbox list automatically adjusts this denominator.  Examples:
+            //   DT-01 + DT-02 + DT-03 selected  →  80 + 100 + 100 = 280
+            //   DT-01 + DT-02 + DT-03 + DT-04   →  80 + 100 + 100 + 100 = 380  (auto-scaled)
+            //   Class 8, 3 exams selected        →  60 + 60 + 60 = 180  (backward-compat)
+            const studentMaxPossible = cumulativeMaxScore;
 
             // Mathematical Safety: Strictly <= 100%
             const converted100 = studentMaxPossible > 0 ? Math.min(100, (grandTotal / studentMaxPossible) * 100) : 0;
@@ -844,7 +904,7 @@
         tr1 += `
             <th rowspan="2" class="th-grand" style="width: 4.5%; line-height: 1.15;">Grand Total<br><small style="font-size: 7.5px;">(${cumulativeMaxScore})</small></th>
             <th rowspan="2" class="th-conv" style="width: 5%; line-height: 1.15;">Converted<br><small style="font-size: 7.5px;">(100)</small></th>
-            <th rowspan="2" class="th-conv" style="width: 4%; line-height: 1.15;">Final<br>Rank</th>
+            <th rowspan="2" class="th-rank" style="width: 4%; line-height: 1.15;">Final<br>Rank</th>
         </tr>`;
 
         tr2 += `</tr>`;
@@ -1130,11 +1190,12 @@
                     th.th-exam-2 { background-color: #fef3c7 !important; color: #b45309 !important; font-weight: bold; }
                     th.th-exam-3 { background-color: #dcfce7 !important; color: #15803d !important; font-weight: bold; }
                     th.th-exam-4 { background-color: #f3e8ff !important; color: #7e22ce !important; font-weight: bold; }
-                    th.th-grand { background-color: #f1f5f9 !important; font-weight: bold; }
+                    th.th-grand { background-color: #f1f5f9 !important; font-weight: bold; border-left: 1.5px solid #000 !important; border-right: 1.5px solid #000 !important; }
                     th.th-conv { background-color: #fee2e2 !important; color: #991b1b !important; font-weight: bold; }
+                    th.th-rank { background-color: #ecfdf5 !important; color: #047857 !important; font-weight: bold; }
 
                     th.sub-head { background-color: #f8fafc !important; font-size: 7.5px !important; font-weight: bold; white-space: nowrap; }
-                    th.sub-total { background-color: #f1f5f9 !important; font-size: 7.5px !important; font-weight: bold; white-space: nowrap; }
+                    th.sub-total { background-color: #dbeafe !important; color: #1e3a8a !important; font-size: 7.5px !important; font-weight: bold; white-space: nowrap; border-left: 1.5px solid #1e3a8a !important; border-right: 1.5px solid #1e3a8a !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
                     td.name-col {
                         text-align: left !important;
@@ -1142,10 +1203,10 @@
                         font-weight: bold;
                         white-space: nowrap !important;
                     }
-                    td.test-total { font-weight: bold; background-color: #f8fafc !important; }
-                    td.grand-col { font-weight: bold; background-color: #f8fafc !important; }
-                    td.conv-col { font-weight: bold; background-color: #fef2f2 !important; color: #991b1b; }
-                    td.rank-col { font-weight: bold; background-color: #eff6ff !important; color: #1d4ed8; }
+                    td.test-total { font-weight: bold !important; font-size: 8px !important; background-color: #eff6ff !important; color: #1e3a8a !important; border-left: 1.5px solid #1e3a8a !important; border-right: 1.5px solid #1e3a8a !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                    td.grand-col { font-weight: bold !important; background-color: #f1f5f9 !important; color: #000 !important; border-left: 1.5px solid #000 !important; border-right: 1.5px solid #000 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                    td.conv-col { font-weight: bold !important; background-color: #fef2f2 !important; color: #991b1b !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                    td.rank-col { font-weight: bold !important; background-color: #ecfdf5 !important; color: #047857 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
                     tr { page-break-inside: avoid !important; }
 
