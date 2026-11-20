@@ -327,6 +327,36 @@
                 color: #0f172a;
             }
             .btn-table-report:hover { background: #0f172a; color: #fff; }
+
+            /* COPY YESTERDAY BALANCE BADGE */
+            .btn-prev-balance {
+                display: inline-flex;
+                align-items: center;
+                gap: 3px;
+                background: #eef2ff;
+                border: 1px solid #c7d2fe;
+                color: #4338ca;
+                font-size: 10.5px;
+                font-weight: 800;
+                padding: 2px 7px;
+                border-radius: 4px;
+                cursor: pointer;
+                white-space: nowrap;
+                line-height: 1.5;
+                transition: background 0.15s, border-color 0.15s;
+                font-family: 'Tiro Bangla', serif;
+            }
+            .btn-prev-balance:hover {
+                background: #e0e7ff;
+                border-color: #818cf8;
+                color: #3730a3;
+            }
+            .btn-prev-balance .prev-arrow { font-size: 11px; }
+            .hub-strip-item .hub-strip-label-wrap {
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+            }
         </style>
     `;
     document.head.insertAdjacentHTML('beforeend', moduleStyles);
@@ -607,6 +637,23 @@
                 currentCards = {};
             }
 
+            // ── SAFE: Fetch yesterday's snapshot (read-only, no state modification) ──
+            window.yesterdayAssetData = {};
+            try {
+                const yesterday = new Date(d);
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yd = yesterday.toISOString().split('T')[0];
+                if (window.getDatabase && window.ref && window.get) {
+                    const ySnap = await window.get(window.ref(window.getDatabase(), `erp/daily_balance_snapshots/${yd}`));
+                    if (ySnap.exists()) {
+                        const yVal = ySnap.val();
+                        window.yesterdayAssetData = { ...(yVal.balances || {}) };
+                    }
+                }
+            } catch (ye) {
+                console.warn("Yesterday fetch (non-critical):", ye);
+            }
+
             window.renderWizardUI();
         } catch (e) {
             console.error("Fetch Error:", e);
@@ -657,9 +704,22 @@
                     .trim();
                 if (!cleanName) cleanName = acc.name;
 
+                // ── Yesterday's balance badge (read-only, safe) ──
+                const ydBal = parseFloat((window.yesterdayAssetData || {})[acc.id]) || 0;
+                const ydBadgeHTML = ydBal > 0
+                    ? `<button type="button" class="btn-prev-balance"
+                            title="Copy yesterday's balance: ৳ ${fmt(ydBal)}"
+                            onclick="window.copyYesterdayBalance(this, '${acc.id}', ${ydBal}, 'cat-sub-${cat.id}')">
+                           <span class="prev-arrow">↺</span> ৳ <span class="prev-amount">${fmt(ydBal)}</span>
+                       </button>`
+                    : '';
+
                 stripsHTML += `
                     <div class="hub-strip-item">
-                        <span class="hub-strip-label">${cleanName}</span>
+                        <div class="hub-strip-label-wrap">
+                            <span class="hub-strip-label">${cleanName}</span>
+                            ${ydBadgeHTML}
+                        </div>
                         <div class="hub-input-wrap">
                             <span>৳</span>
                             <input type="number" step="any" class="hub-inp-text" value="${bal === 0 ? '' : bal}" placeholder="0.00"
@@ -846,6 +906,28 @@
             }
         }
         window.recalculateGrandLiveTotal();
+    };
+
+    // ── Copy Yesterday's Balance (safe, read-only action) ──
+    window.copyYesterdayBalance = function (btnEl, accId, ydBal, catSubId) {
+        // Find the sibling input inside the same hub-strip-item
+        const stripItem = btnEl.closest('.hub-strip-item');
+        if (!stripItem) return;
+        const inp = stripItem.querySelector('.hub-inp-text');
+        if (!inp) return;
+
+        inp.value = ydBal;
+        window.updateHubBalance(accId, ydBal, catSubId);
+
+        // Brief visual confirmation on the badge
+        btnEl.style.background = '#c7f7c7';
+        btnEl.style.borderColor = '#4ade80';
+        btnEl.style.color = '#15803d';
+        setTimeout(() => {
+            btnEl.style.background = '';
+            btnEl.style.borderColor = '';
+            btnEl.style.color = '';
+        }, 900);
     };
 
     function updateCashHeaderDisplay() {
