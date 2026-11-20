@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    MODULE: CPSCL Academic ERP
    SUB-SECTION: SSC-27 Preparatory Suite (v20.6 Auto-RawMark Intra-Group Rank)
    Path: cpscl/ssc27_exam_manager.js
@@ -997,6 +997,10 @@
     // =========================================================================
     // গ্রুপ ফিক্সড রেখে প্রাপ্ত rawMark অনুযায়ী অভ্যন্তরীণ মেধা ও সিট বিন্যাস
     // =========================================================================
+    // স্মার্ট ডুয়াল-মোড: সাপ্তাহিক সামষ্টিক গ্রুপ প্রমোশন অথবা দৈনন্দিন অভ্যন্তরীণ সিটিং
+    // Mode 1 (Weekly Cumulative Promotion): cpscl_exam_group_overrides/${examId}_merit_order বিদ্যমান থাকলে
+    // Mode 2 (Daily Intra-Group Seating):   _merit_order না থাকলে, গ্রুপ অপরিবর্তিত রেখে পূর্ববর্তী টেস্টের নম্বরে সিটিং
+    // =========================================================================
     window.loadSSC27StudentAllocation = async function () {
         const select = document.getElementById('s27TargetExamSelect');
         const tbody = document.getElementById('s27StudentTableTbody');
@@ -1004,9 +1008,11 @@
 
         const exam = s27ExamRegistry.find(x => x.id === select.value);
         if (!exam) return;
+        const examId = exam.id;
 
         tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:30px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:24px; color:#059669;"></i></td></tr>`;
 
+        // Class 8 students are already excluded in getRealStudents() — 100% isolation preserved
         const students = await getRealStudents();
         const configuredGroups = (exam.groups && exam.groups.length > 0) ? exam.groups : DEFAULT_SSC27_GROUPS;
 
@@ -1018,25 +1024,40 @@
             });
         }
 
-        let overrides = {};
+        // ── Step 1: Fetch per-exam student→group overrides ────────────────────────
+        let studentOverrides = {};
         try {
-            const ovRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides.json`);
+            const ovRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${examId}.json`);
             if (ovRes.ok) {
-                const snapVal = await ovRes.json();
-                if (snapVal) overrides = snapVal;
+                const raw = await ovRes.json();
+                if (raw && typeof raw === 'object') studentOverrides = raw;
             }
         } catch (e) {}
 
-        const studentOverrides = overrides[exam.id] && typeof overrides[exam.id] === 'object'
-            ? overrides[exam.id]
-            : {};
+        // ── Step 2: Detect Mode via _merit_order saved by Weekly Master Tabulation ─
+        // Presence of a non-empty _merit_order array → Mode 1 (Weekly Cumulative Promotion)
+        // Absence → Mode 2 (Daily Intra-Group Seating, groups locked)
+        let weeklyMeritOrder = null;
+        try {
+            const moRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${examId}_merit_order.json`);
+            if (moRes.ok) {
+                const moRaw = await moRes.json();
+                if (Array.isArray(moRaw) && moRaw.length > 0) weeklyMeritOrder = moRaw;
+            }
+        } catch (e) {}
 
+        // isWeeklyPromotionMode: true only when BOTH promoted groups AND merit order exist
+        const isWeeklyPromotionMode = weeklyMeritOrder !== null && Object.keys(studentOverrides).length > 0;
+
+        // ── Baseline (Daily Test-01 hardcoded) — tiebreaker for both modes ────────
         const dailyTest01 = isDailyTest01(exam);
         const dailyTest01Allocations = getDailyTest01GroupAllocations();
         const dailyTest01Order = getDailyTest01Order();
-        const dailyTest01OrderIndex = new Map(dailyTest01Order.map((studentId, index) => [studentId, index]));
+        const dailyTest01OrderIndex = new Map(dailyTest01Order.map((sid, idx) => [sid, idx]));
 
-        // প্রতিটি শিক্ষার্থীর গ্রুপ বেস নির্ধারণ (গ্রুপ শতভাগ ফিক্সড থাকবে)
+        // ── Step 3: Build studentMap with correct promoted/locked group per student ─
+        // studentOverrides[sId] carries the weekly-promoted group (Mode 1) or a manual
+        // admin transfer; dailyTest01Allocations is the baseline fallback.
         const studentMap = new Map();
         students.forEach(st => {
             const sId = getStudentId(st);
@@ -1051,25 +1072,42 @@
             });
         });
 
-        // পূর্ববর্তী টেস্টের মোট rawMark নিয়ে আসা হবে (যেমন: Daily Test-03 এর জন্য Daily Test-02)
+        // ── Step 4: Mode-specific score/rank resolution ───────────────────────────
         let studentScores = {};
         let previousExamUsed = null;
-        if (!dailyTest01) {
-            previousExamUsed = getImmediatelyPreviousExam(exam, s27ExamRegistry);
-            if (previousExamUsed) {
-                studentScores = await fetchExamStudentTotalMarks(previousExamUsed.id);
+
+        if (isWeeklyPromotionMode) {
+            // MODE 1 — Weekly Cumulative Promotion
+            // Bench order comes from the saved _merit_order (cumulative Science rank).
+            // Build a position index from weeklyMeritOrder for O(1) lookup.
+            const meritIndex = new Map(weeklyMeritOrder.map((sid, idx) => [sid, idx]));
+            studentMap.forEach(stu => {
+                stu.weeklyMeritPos = meritIndex.has(stu.id) ? meritIndex.get(stu.id) : 99999;
+            });
+        } else {
+            // MODE 2 — Daily Intra-Group Seating
+            // Groups remain locked; bench order = marks from immediately preceding single exam.
+            if (!dailyTest01) {
+                previousExamUsed = getImmediatelyPreviousExam(exam, s27ExamRegistry);
+                if (previousExamUsed) {
+                    studentScores = await fetchExamStudentTotalMarks(previousExamUsed.id);
+                }
             }
         }
 
+        // ── Step 5: Update info badge ─────────────────────────────────────────────
         const infoBadge = document.getElementById('s27SeatingInfoBadge');
         if (infoBadge) {
-            if (previousExamUsed) {
+            if (isWeeklyPromotionMode) {
+                infoBadge.innerHTML = `<i class="fa-solid fa-trophy" style="color:#f59e0b;"></i> <span style="color:#b45309; font-weight:800;">সাপ্তাহিক সামষ্টিক মেধার ভিত্তিতে গ্রুপ প্রমোশন ও সিটিং কার্যকর</span>`;
+            } else if (previousExamUsed) {
                 infoBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> গ্রুপ অপরিবর্তিত • <strong>${previousExamUsed.name}</strong>-এর প্রাপ্ত নম্বরের ভিত্তিতে অভ্যন্তরীণ সিটিং (সর্বোচ্চ নম্বর = বেঞ্চ ১)`;
             } else {
-                infoBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> গ্রুপ অপরিবর্তিত থাকবে • বেসলাইন মেধা তালিকা অনুযায়ী অভ্যন্তরীণ সিটিং`;
+                infoBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> গ্রুপ অপরিবর্তিত থাকবে • বেসলাইন মেধা তালিকা অনুযায়ী অভ্যন্তরীণ সিটিং`;
             }
         }
 
+        // ── Step 6: Allocate seats per group ─────────────────────────────────────
         const allocated = [];
         const groupNames = [
             'Group A (Science)',
@@ -1080,24 +1118,28 @@
         ];
 
         groupNames.forEach(grpName => {
-            // কেবল এই গ্রুপের ছাত্রদের ফিল্টার করা (গ্রুপ পরিবর্তন হবে না)
             const grpStudents = Array.from(studentMap.values()).filter(s => s.group === grpName);
 
-            if (dailyTest01 || !previousExamUsed) {
+            if (isWeeklyPromotionMode) {
+                // MODE 1: Sort by cumulative merit position from Weekly Tabulation
+                grpStudents.sort((a, b) => {
+                    if (a.weeklyMeritPos !== b.weeklyMeritPos) return a.weeklyMeritPos - b.weeklyMeritPos;
+                    return a.originalRank - b.originalRank; // tiebreaker: Daily Test-01 baseline
+                });
+            } else if (dailyTest01 || !previousExamUsed) {
+                // MODE 2 baseline: sort by Daily Test-01 baseline order
                 grpStudents.sort((a, b) => a.originalRank - b.originalRank);
             } else {
-                // গ্রুপের ভেতরে প্রাপ্ত নম্বরের ভিত্তিতে সাজানো (সর্বোচ্চ নম্বর আগে)
+                // MODE 2 intra-group: sort by marks from previous exam (highest = bench #1)
                 grpStudents.sort((a, b) => {
                     const scoreA = (studentScores[a.id] !== undefined && studentScores[a.id] !== null) ? studentScores[a.id] : -1;
                     const scoreB = (studentScores[b.id] !== undefined && studentScores[b.id] !== null) ? studentScores[b.id] : -1;
-                    if (scoreB !== scoreA) {
-                        return scoreB - scoreA;
-                    }
-                    return a.originalRank - b.originalRank; // টাই হলে বেসলাইন র‍্যাংক
+                    if (scoreB !== scoreA) return scoreB - scoreA;
+                    return a.originalRank - b.originalRank; // tiebreaker
                 });
             }
 
-            // প্রতিটি গ্রুপের ভেতরে নিজস্ব ১ থেকে ক্রমানুসারে সিট/র‍্যাংক
+            // Assign sequential bench numbers within each group
             grpStudents.forEach((st, idx) => {
                 allocated.push({
                     sl: idx + 1,
@@ -1105,24 +1147,29 @@
                     name: st.name,
                     group: st.group,
                     score: (studentScores[st.id] !== undefined && studentScores[st.id] !== null) ? studentScores[st.id] : null,
-                    prevExamName: previousExamUsed ? previousExamUsed.name : null
+                    prevExamName: previousExamUsed ? previousExamUsed.name : null,
+                    isWeeklyMode: isWeeklyPromotionMode
                 });
             });
         });
 
         s27AllocatedStudents = allocated;
 
-        const newMeritOrder = allocated.map(s => s.id);
-        const newAllocations = {};
-        allocated.forEach(s => {
-            if (!studentOverrides[s.id]) newAllocations[s.id] = s.group;
-        });
-
-        if (Object.keys(newAllocations).length > 0 || (newMeritOrder && newMeritOrder.length > 0)) {
-            try {
-                await saveSSC27Overrides(exam.id, newAllocations, newMeritOrder, true, true);
-            } catch (err) {
-                console.error("Group note:", err);
+        // ── Step 7: Persist — Mode 2 only ────────────────────────────────────────
+        // In Mode 1, the weekly-promoted groups and merit order written by Weekly Master
+        // Tabulation must NOT be overwritten by this view load.
+        if (!isWeeklyPromotionMode) {
+            const newMeritOrder = allocated.map(s => s.id);
+            const newAllocations = {};
+            allocated.forEach(s => {
+                if (!studentOverrides[s.id]) newAllocations[s.id] = s.group;
+            });
+            if (Object.keys(newAllocations).length > 0 || (newMeritOrder && newMeritOrder.length > 0)) {
+                try {
+                    await saveSSC27Overrides(examId, newAllocations, newMeritOrder, true, true);
+                } catch (err) {
+                    console.error("Group note:", err);
+                }
             }
         }
 
