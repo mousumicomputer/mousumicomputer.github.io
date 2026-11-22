@@ -1109,6 +1109,18 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(manualGroupOverrides[targetExamId + '_merit_order'])
             });
+
+            // ── Weekly Promotion Mode stamp ─────────────────────────────────────────
+            // Write an explicit boolean so loadSSC27StudentAllocation() can
+            // reliably distinguish Weekly Promotion Mode from Daily Seating Mode.
+            // This flag is the AUTHORITATIVE signal — the daily seating reload must
+            // never overwrite group assignments when this flag is present and true.
+            await fetch(`https://mousumi-computer-default-rtdb.firebaseio.com/cpscl_exam_group_overrides/${targetExamId}_is_weekly.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(true)
+            });
+
             isSaved = true;
         } catch(e) {}
 

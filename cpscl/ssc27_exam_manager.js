@@ -337,7 +337,10 @@
         return String(student.student_id || student.std_id || student.id || student['Student ID *'] || '').trim();
     }
 
-    async function saveSSC27Overrides(examId, allocations, meritOrder, saveMeritOrder, replaceMeritOrder) {
+    // isWeeklyPromotion: when true, also stamps {examId}_is_weekly = true in Firebase.
+    // This flag is the authoritative signal for Weekly Promotion Mode so that the
+    // daily seating reload can never accidentally be mistaken for a weekly promotion.
+    async function saveSSC27Overrides(examId, allocations, meritOrder, saveMeritOrder, replaceMeritOrder, isWeeklyPromotion) {
         const path = `cpscl_exam_group_overrides/${examId}`;
         try {
             let currentData = {};
@@ -364,6 +367,18 @@
                         body: JSON.stringify(meritOrder)
                     });
                 }
+            }
+
+            // ── Weekly Promotion stamp ──────────────────────────────────────────────
+            // Write an explicit boolean flag so loadSSC27StudentAllocation() can
+            // distinguish Mode 1 (weekly promotion) from Mode 2 (daily intra-group
+            // seating) without relying on the ambiguous presence of _merit_order.
+            if (isWeeklyPromotion) {
+                await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${examId}_is_weekly.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(true)
+                });
             }
         } catch (e) {
             console.error("Overrides save error:", e);
@@ -1034,35 +1049,131 @@
             }
         } catch (e) {}
 
-        // ── Step 2: Detect Mode via _merit_order saved by Weekly Master Tabulation ─
-        // Presence of a non-empty _merit_order array → Mode 1 (Weekly Cumulative Promotion)
-        // Absence → Mode 2 (Daily Intra-Group Seating, groups locked)
+        // ── Step 2: Detect Mode via explicit _is_weekly flag (authoritative signal) ─
+        //
+        // ┌──────────────────────────────────────────────────────────────────────────┐
+        // │ DUAL-MODE DETECTION LOGIC                                                │
+        // │                                                                          │
+        // │ Mode 1 — Weekly Cumulative Promotion:                                    │
+        // │   Triggered ONLY when cpscl_exam_group_overrides/{examId}_is_weekly      │
+        // │   equals `true` in Firebase (written by applyCumulativeMeritToTarget-    │
+        // │   Exam() after Thursday's Weekly Master Tabulation).                     │
+        // │   • Group promotion/demotion is applied.                                 │
+        // │   • Bench order comes from the saved cumulative merit order.             │
+        // │                                                                          │
+        // │ Mode 2 — Daily Intra-Group Seating (DT-02 through DT-05, etc.):         │
+        // │   Active whenever _is_weekly is absent/false.                            │
+        // │   • Groups are strictly LOCKED — no promotion occurs.                   │
+        // │   • Bench order = marks from the immediately preceding single exam.      │
+        // │                                                                          │
+        // │ Note: _merit_order alone is NOT a reliable mode signal because Mode 2    │
+        // │ also writes an intra-group bench order (without promoting anyone).        │
+        // └──────────────────────────────────────────────────────────────────────────┘
+        let isWeeklyPromotionMode = false;
         let weeklyMeritOrder = null;
         try {
-            const moRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${examId}_merit_order.json`);
-            if (moRes.ok) {
-                const moRaw = await moRes.json();
-                if (Array.isArray(moRaw) && moRaw.length > 0) weeklyMeritOrder = moRaw;
+            // Primary signal: explicit weekly-promotion stamp
+            const flagRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${examId}_is_weekly.json`);
+            if (flagRes.ok) {
+                const flagVal = await flagRes.json();
+                if (flagVal === true) {
+                    isWeeklyPromotionMode = true;
+                }
             }
         } catch (e) {}
 
-        // isWeeklyPromotionMode: true only when BOTH promoted groups AND merit order exist
-        const isWeeklyPromotionMode = weeklyMeritOrder !== null && Object.keys(studentOverrides).length > 0;
+        // Only fetch merit order when in weekly promotion mode (reduces network round-trips)
+        if (isWeeklyPromotionMode) {
+            try {
+                const moRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${examId}_merit_order.json`);
+                if (moRes.ok) {
+                    const moRaw = await moRes.json();
+                    if (Array.isArray(moRaw) && moRaw.length > 0) weeklyMeritOrder = moRaw;
+                }
+            } catch (e) {}
+            // If _is_weekly is true but _merit_order is missing, fall back gracefully to Mode 2
+            if (!weeklyMeritOrder) {
+                console.warn(`[CPSCL] _is_weekly flag is set for ${examId} but _merit_order is missing. Falling back to Daily Seating Mode.`);
+                isWeeklyPromotionMode = false;
+            }
+        }
 
-        // ── Baseline (Daily Test-01 hardcoded) — tiebreaker for both modes ────────
+        // ── Step 3: Mode-specific context resolution ──────────────────────────────
         const dailyTest01 = isDailyTest01(exam);
         const dailyTest01Allocations = getDailyTest01GroupAllocations();
         const dailyTest01Order = getDailyTest01Order();
         const dailyTest01OrderIndex = new Map(dailyTest01Order.map((sid, idx) => [sid, idx]));
 
-        // ── Step 3: Build studentMap with correct promoted/locked group per student ─
-        // studentOverrides[sId] carries the weekly-promoted group (Mode 1) or a manual
-        // admin transfer; dailyTest01Allocations is the baseline fallback.
+        let studentScores = {};
+        let previousExamUsed = null;
+        let previousExamGroups = null;
+        let prevMeritIndex = new Map();
+        let manualTransfers = {};
+
+        if (!isWeeklyPromotionMode && !dailyTest01) {
+            // MODE 2 — Daily Intra-Group Seating (e.g. DT-02 through DT-05)
+            // NO group promotion occurs. Students remain strictly inside their existing groups.
+            // Inherit student group membership directly from the immediately previous exam!
+            previousExamUsed = getImmediatelyPreviousExam(exam, s27ExamRegistry);
+            if (previousExamUsed) {
+                // 1. Inherit groups from previous exam
+                try {
+                    const pegRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${previousExamUsed.id}.json`);
+                    if (pegRes.ok) {
+                        const peg = await pegRes.json();
+                        if (peg && typeof peg === 'object') previousExamGroups = peg;
+                    }
+                } catch (e) {
+                    console.warn("Previous exam groups fetch error:", e);
+                }
+
+                // 2. Fetch marks from previous exam (for intra-group bench order)
+                studentScores = await fetchExamStudentTotalMarks(previousExamUsed.id);
+
+                // 3. Fetch previous exam's live tabulation merit order (for tie-breaking)
+                try {
+                    const pmoRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${previousExamUsed.id}_merit_order.json`);
+                    if (pmoRes.ok) {
+                        const pmo = await pmoRes.json();
+                        if (Array.isArray(pmo) && pmo.length > 0) {
+                            pmo.forEach((sid, idx) => prevMeritIndex.set(String(sid).trim(), idx));
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Previous exam merit order fetch error:", e);
+                }
+            }
+
+            // Fetch any manual transfers explicitly executed on this exam
+            try {
+                const mtRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${examId}_manual_transfers.json`);
+                if (mtRes.ok) {
+                    const mt = await mtRes.json();
+                    if (mt && typeof mt === 'object') manualTransfers = mt;
+                }
+            } catch (e) {}
+        }
+
+        // ── Step 4: Build studentMap with correct group membership ────────────────
+        // Mode 1: Driven by weekly promotion overrides.
+        // Mode 2: Inherited directly from previous exam (strictly NO promotion).
         const studentMap = new Map();
         students.forEach(st => {
             const sId = getStudentId(st);
             if (!sId) return;
-            const assignedGroup = studentOverrides[sId] || dailyTest01Allocations[sId] || 'Group A (Science)';
+
+            let assignedGroup;
+            if (isWeeklyPromotionMode) {
+                // Mode 1: Weekly promotion determines group
+                assignedGroup = studentOverrides[sId] || dailyTest01Allocations[sId] || 'Group A (Science)';
+            } else if (previousExamGroups && previousExamGroups[sId]) {
+                // Mode 2: Strictly inherit group membership from the immediately previous exam
+                assignedGroup = (manualTransfers && manualTransfers[sId]) || previousExamGroups[sId];
+            } else {
+                // Baseline fallback (Daily Test-01 or if no previous exam available)
+                assignedGroup = (manualTransfers && manualTransfers[sId]) || studentOverrides[sId] || dailyTest01Allocations[sId] || 'Group A (Science)';
+            }
+
             studentMap.set(sId, {
                 raw: st,
                 id: sId,
@@ -1072,10 +1183,6 @@
             });
         });
 
-        // ── Step 4: Mode-specific score/rank resolution ───────────────────────────
-        let studentScores = {};
-        let previousExamUsed = null;
-
         if (isWeeklyPromotionMode) {
             // MODE 1 — Weekly Cumulative Promotion
             // Bench order comes from the saved _merit_order (cumulative Science rank).
@@ -1084,15 +1191,6 @@
             studentMap.forEach(stu => {
                 stu.weeklyMeritPos = meritIndex.has(stu.id) ? meritIndex.get(stu.id) : 99999;
             });
-        } else {
-            // MODE 2 — Daily Intra-Group Seating
-            // Groups remain locked; bench order = marks from immediately preceding single exam.
-            if (!dailyTest01) {
-                previousExamUsed = getImmediatelyPreviousExam(exam, s27ExamRegistry);
-                if (previousExamUsed) {
-                    studentScores = await fetchExamStudentTotalMarks(previousExamUsed.id);
-                }
-            }
         }
 
         // ── Step 5: Update info badge ─────────────────────────────────────────────
@@ -1130,12 +1228,31 @@
                 // MODE 2 baseline: sort by Daily Test-01 baseline order
                 grpStudents.sort((a, b) => a.originalRank - b.originalRank);
             } else {
-                // MODE 2 intra-group: sort by marks from previous exam (highest = bench #1)
+                // MODE 2 intra-group: sort by marks from the immediately preceding daily
+                // test (highest score = bench #1).
+                //
+                // TIE-BREAKING RULE (preserves exact Live Tabulation merit/row order):
+                //   When two or more students have identical scores in the previous daily
+                //   test, maintain the exact merit/row order as resolved in that previous
+                //   exam's Live Tabulation (via prevMeritIndex).
+                //   This ensures that for ANY daily test (DT-02 through DT-05, DT-06, etc.),
+                //   ties are broken dynamically and identically to Live Tabulation without
+                //   hardcoding any test names or student IDs.
                 grpStudents.sort((a, b) => {
                     const scoreA = (studentScores[a.id] !== undefined && studentScores[a.id] !== null) ? studentScores[a.id] : -1;
                     const scoreB = (studentScores[b.id] !== undefined && studentScores[b.id] !== null) ? studentScores[b.id] : -1;
                     if (scoreB !== scoreA) return scoreB - scoreA;
-                    return a.originalRank - b.originalRank; // tiebreaker
+
+                    // Identical score → tiebreak using previous exam's Live Tabulation merit order
+                    if (prevMeritIndex.size > 0) {
+                        const idxA = prevMeritIndex.has(a.id) ? prevMeritIndex.get(a.id) : 99999;
+                        const idxB = prevMeritIndex.has(b.id) ? prevMeritIndex.get(b.id) : 99999;
+                        if (idxA !== idxB) return idxA - idxB;
+                    }
+
+                    // Fallback tiebreak if previous merit order doesn't differentiate
+                    if (a.originalRank !== b.originalRank) return a.originalRank - b.originalRank;
+                    return a.id.localeCompare(b.id);
                 });
             }
 
@@ -1155,9 +1272,18 @@
 
         s27AllocatedStudents = allocated;
 
-        // ── Step 7: Persist — Mode 2 only ────────────────────────────────────────
-        // In Mode 1, the weekly-promoted groups and merit order written by Weekly Master
-        // Tabulation must NOT be overwritten by this view load.
+        // ── Step 7: Persist — Mode 2 (Daily Seating) only ───────────────────────
+        //
+        // In Mode 1 (Weekly Promotion), the weekly-promoted groups and merit order
+        // were written by applyCumulativeMeritToTargetExam() and must NOT be touched
+        // here.  Overwriting them on every page reload would corrupt the official
+        // Sunday seating plan.
+        //
+        // In Mode 2 (Daily Seating), we:
+        //   • Write group assignments only for students who have no manual override yet.
+        //   • Write the intra-group bench order (_merit_order) so the Live Tabulation
+        //     can display the correct seating sequence.
+        //   • Never write _is_weekly = true (that is exclusively Mode 1's stamp).
         if (!isWeeklyPromotionMode) {
             const newMeritOrder = allocated.map(s => s.id);
             const newAllocations = {};
@@ -1166,7 +1292,8 @@
             });
             if (Object.keys(newAllocations).length > 0 || (newMeritOrder && newMeritOrder.length > 0)) {
                 try {
-                    await saveSSC27Overrides(examId, newAllocations, newMeritOrder, true, true);
+                    // isWeeklyPromotion = false → no _is_weekly stamp written
+                    await saveSSC27Overrides(examId, newAllocations, newMeritOrder, true, true, false);
                 } catch (err) {
                     console.error("Group note:", err);
                 }
@@ -1267,6 +1394,11 @@
         if (student) {
             student.group = targetGroup;
             try {
+                await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${examId}_manual_transfers/${student.id}.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(targetGroup)
+                });
                 await saveSSC27Overrides(examId, { [student.id]: targetGroup }, null, false);
             } catch (error) {
                 console.error('SSC-27 student group override note:', error);
