@@ -1,24 +1,43 @@
 ﻿/* ==========================================================================
    MODULE: CPSCL Academic ERP
-   SUB-SECTION: SSC-27 Preparatory Suite (v20.6 Auto-RawMark Intra-Group Rank)
+   SUB-SECTION: SSC-27 Preparatory Suite (v21.0 Central Master Data Edition)
    Path: cpscl/ssc27_exam_manager.js
-   Architecture: 100% Direct Firebase Cloud REST | Auto-Sanitized Keys
+   Architecture: 100% Direct Firebase Cloud REST | Linked with CPSCL_MASTER
    Features:
+     - 22 Individual Master Subjects Dynamic Pills (Zero Combined Slots)
      - Exact 'rawMark' & 'cq' Extraction from cpscl_exam_marks
-     - Fixed Groups (Zero Inter-Group Promotion/Demotion as per Authority)
-     - Dynamic Intra-Group Re-ranking based on Previous Test Marks
+     - Protected Mode 1 (Weekly Cumulative Promotion) & Mode 2 (Daily Intra-Group Seating)
      - 100% Mobile & Desktop Fully Responsive UI
      - Add / Edit Subjects Safe Modal
+   Language: 100% Pure Corporate English (Zero Bengali Everywhere)
    Safety: 100% Zero LocalStorage | Permanent Realtime Cloud Sync
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL SSC-27 Suite v20.6 (Auto-RawMark Engine Active)...");
+    "use strict";
+
+    console.log("Loading CPSCL SSC-27 Suite v21.0 (Master Subjects Active)...");
 
     const FIREBASE_BASE_URL = "https://mousumi-computer-default-rtdb.firebaseio.com";
 
     function cleanFirebaseKey(name) {
         return String(name || '').replace(/[/#$\[\].]/g, '-').trim();
+    }
+
+    // Dynamic Master Subject List Resolver
+    function getMasterSubjectList() {
+        if (window.CPSCL_MASTER && Array.isArray(window.CPSCL_MASTER.SUBJECTS)) {
+            return window.CPSCL_MASTER.SUBJECTS.map(s => s.name);
+        }
+        return [
+            "Bangla 1st Paper", "Bangla 2nd Paper", "English 1st Paper", "English 2nd Paper",
+            "Mathematics", "Information & Communication Technology", "Islam & Moral Education",
+            "Hindu Religion & Moral Education", "Physics", "Chemistry", "Biology",
+            "Higher Mathematics", "Bangladesh & Global Studies", "General Science",
+            "Accounting", "Finance & Banking", "Business Entrepreneurship",
+            "History of Bangladesh & World Civilization", "Geography & Environment",
+            "Civics & Citizenship", "Agriculture Studies", "Home Science"
+        ];
     }
 
     function injectSSC27Styles() {
@@ -27,7 +46,7 @@
         style.id = 'cpscl-ssc27-style';
         style.innerHTML = `
             .s27-wrapper { padding: 15px 5px; font-family: 'Plus Jakarta Sans', sans-serif; }
-            .s27-header { background: #ffffff; border: 1px solid #e2e8f0; padding: 18px 25px; border-radius: 50px !important; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+            .s27-header { background: #ffffff; border: 1.5px solid #e2e8f0; padding: 18px 25px; border-radius: 50px !important; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
             .s27-header h1 { font-size: 1.3rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 10px; margin: 0; }
             .s27-header h1 i { color: #059669; }
             .s27-badge { background: #ecfdf5; color: #059669; font-weight: 700; font-size: 0.82rem; padding: 6px 16px; border-radius: 50px !important; border: 1px solid #a7f3d0; }
@@ -37,8 +56,8 @@
             .s27-tab-btn.active { background: #059669 !important; color: #ffffff !important; border-color: #059669 !important; box-shadow: 0 4px 12px rgba(5,150,105,0.25); }
             .s27-tab-content { display: none; }
             .s27-tab-content.active { display: block; }
-            .s27-card { background: #ffffff; border-radius: 16px; border: 1px solid #cbd5e1; padding: 22px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
-            .s27-card-title { font-size: 1.05rem; font-weight: 700; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+            .s27-card { background: #ffffff; border-radius: 16px; border: 1.5px solid #cbd5e1; padding: 22px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+            .s27-card-title { font-size: 1.05rem; font-weight: 800; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
             .s27-card-title span { display: flex; align-items: center; gap: 8px; }
             .s27-card-title i { color: #059669; }
             .s27-form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
@@ -46,18 +65,18 @@
             .s27-control { width: 100%; height: 42px; border: 1.5px solid #cbd5e1; border-radius: 50px !important; padding: 0 18px; font-size: 0.9rem; outline: none; background: #ffffff; color: #0f172a; transition: 0.2s; }
             .s27-control:focus { border-color: #059669; box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1); }
             .s27-pills-box { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; margin-bottom: 12px; }
-            .s27-pill { display: inline-flex; align-items: center; gap: 8px; background: #f0fdf4; color: #059669; border: 1.5px solid #bbf7d0; padding: 7px 16px; border-radius: 50px !important; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; user-select: none; }
+            .s27-pill { display: inline-flex; align-items: center; gap: 8px; background: #f0fdf4; color: #059669; border: 1.5px solid #bbf7d0; padding: 7px 16px; border-radius: 50px !important; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; user-select: none; }
             .s27-pill:hover { background: #dcfce7; border-color: #059669; }
             .s27-group-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; background: #f8fafc; padding: 8px 14px; border-radius: 50px !important; border: 1.5px solid #e2e8f0; }
             .s27-group-row input { height: 34px; border-radius: 50px !important; border: 1px solid #cbd5e1; padding: 0 14px; font-size: 0.85rem; font-weight: 700; outline: none; background: #ffffff; }
             .s27-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            .s27-table th { background: #ffffff; color: #64748b; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 12px 16px; border-bottom: 1.5px solid #eef2f5; text-align: left; }
+            .s27-table th { background: #ffffff; color: #64748b; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; padding: 12px 16px; border-bottom: 1.5px solid #eef2f5; text-align: left; }
             .s27-table tbody td { color: #334155; font-size: 0.88rem; font-weight: 500; padding: 12px 16px; border-bottom: 1px solid #eef2f5; }
             .s27-table tbody tr:hover { background-color: #f8fafc; cursor: pointer; }
             .s27-table tbody tr.selected { background-color: #ecfdf5 !important; border-left: 4px solid #059669; }
-            .s27-btn-submit { background: #059669 !important; color: #fff !important; border: none; width: 100%; height: 46px; border-radius: 50px !important; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 18px; box-shadow: 0 4px 12px rgba(5,150,105,0.25); }
+            .s27-btn-submit { background: #059669 !important; color: #fff !important; border: none; width: 100%; height: 46px; border-radius: 50px !important; font-size: 0.95rem; font-weight: 800; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 18px; box-shadow: 0 4px 12px rgba(5,150,105,0.25); }
             .s27-btn-submit:hover { background: #047857 !important; }
-            .s27-btn-add { background: #f8fafc; border: 1.5px dashed #cbd5e1; color: #059669; padding: 6px 18px; border-radius: 50px !important; font-weight: 700; font-size: 0.82rem; cursor: pointer; transition: 0.2s; }
+            .s27-btn-add { background: #f8fafc; border: 1.5px dashed #cbd5e1; color: #059669; padding: 7px 18px; border-radius: 50px !important; font-weight: 700; font-size: 0.82rem; cursor: pointer; transition: 0.2s; }
             .s27-btn-add:hover { background: #ecfdf5; border-color: #059669; }
             .s27-btn-add.active { background: #059669 !important; color: #ffffff !important; border-style: solid !important; }
             .s27-group-badge { display: inline-block; padding: 4px 14px; border-radius: 50px !important; font-size: 0.8rem; font-weight: 700; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
@@ -185,7 +204,6 @@
         return /^daily\s+test\s*[-–]?\s*0?1$/i.test(name.trim());
     }
 
-    // পূর্ববর্তী পরীক্ষা শনাক্ত করার ফাংশন (যেমন: Daily Test-03 এর পূর্ববর্তী Daily Test-02)
     function getImmediatelyPreviousExam(currentExam, examList) {
         if (!currentExam || !Array.isArray(examList) || examList.length === 0) return null;
 
@@ -230,9 +248,6 @@
         return null;
     }
 
-    // ==========================================
-    // নিশ্চিত ও সঠিক rawMark সংগ্রহ করার ফাংশন
-    // ==========================================
     async function fetchExamStudentTotalMarks(targetExamId) {
         if (!targetExamId) return {};
         const scores = {};
@@ -241,7 +256,6 @@
             if (shallowRes.ok) {
                 const allKeys = await shallowRes.json();
                 if (allKeys && typeof allKeys === 'object') {
-                    // targetExamId দিয়ে শুরু হওয়া সব বিষয়ের নোড ফিল্টার করা
                     const prefix = targetExamId + '_';
                     const matchingKeys = Object.keys(allKeys).filter(k => k.startsWith(prefix));
 
@@ -258,7 +272,6 @@
                                         if (typeof rec === 'number') {
                                             mark = rec;
                                         } else if (typeof rec === 'object') {
-                                            // সরাসরি কনসোলে পাওয়া rawMark বা cq ফিল্ড
                                             if (rec.rawMark !== undefined && rec.rawMark !== null && rec.rawMark !== '') {
                                                 mark = parseFloat(rec.rawMark) || 0;
                                             } else if (rec.cq !== undefined && rec.cq !== null && rec.cq !== '') {
@@ -280,7 +293,7 @@
                 }
             }
         } catch (err) {
-            console.error("Marks fetch note:", err);
+            console.error("Marks fetch error:", err);
         }
         return scores;
     }
@@ -337,9 +350,6 @@
         return String(student.student_id || student.std_id || student.id || student['Student ID *'] || '').trim();
     }
 
-    // isWeeklyPromotion: when true, also stamps {examId}_is_weekly = true in Firebase.
-    // This flag is the authoritative signal for Weekly Promotion Mode so that the
-    // daily seating reload can never accidentally be mistaken for a weekly promotion.
     async function saveSSC27Overrides(examId, allocations, meritOrder, saveMeritOrder, replaceMeritOrder, isWeeklyPromotion) {
         const path = `cpscl_exam_group_overrides/${examId}`;
         try {
@@ -369,10 +379,6 @@
                 }
             }
 
-            // ── Weekly Promotion stamp ──────────────────────────────────────────────
-            // Write an explicit boolean flag so loadSSC27StudentAllocation() can
-            // distinguish Mode 1 (weekly promotion) from Mode 2 (daily intra-group
-            // seating) without relying on the ambiguous presence of _merit_order.
             if (isWeeklyPromotion) {
                 await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${examId}_is_weekly.json`, {
                     method: 'PUT',
@@ -423,7 +429,7 @@
                             <form id="s27ExamForm" onsubmit="window.handleSSC27Submit(event)">
                                 <div class="s27-form-group">
                                     <label>Exam Title *</label>
-                                    <input type="text" id="s27ExamName" class="s27-control" placeholder="e.g., Daily Test-02" required>
+                                    <input type="text" id="s27ExamName" class="s27-control" placeholder="e.g., Daily Test-08" required>
                                 </div>
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                     <div class="s27-form-group">
@@ -432,14 +438,14 @@
                                     </div>
                                     <div class="s27-form-group">
                                         <label>Exam Date *</label>
-                                        <input type="date" id="s27ExamDate" class="s27-control" value="2026-11-17" required>
+                                        <input type="date" id="s27ExamDate" class="s27-control" value="${new Date().toISOString().split('T')[0]}" required>
                                     </div>
                                 </div>
                                 <div class="s27-form-group" style="margin-top: 14px;">
-                                    <label>Routine Subjects (Click to Add • Default Full Mark: 20)</label>
+                                    <label>Master Individual Subjects (Click to Add • Default Full Mark: 20)</label>
                                     <div class="s27-pills-box" id="s27QuickPills"></div>
                                     <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
-                                        <input type="text" id="s27CustomSubInput" class="s27-control" style="flex: 1; min-width: 160px;" placeholder="Write custom subject (e.g. BGS)...">
+                                        <input type="text" id="s27CustomSubInput" class="s27-control" style="flex: 1; min-width: 160px;" placeholder="Write custom subject...">
                                         <input type="number" id="s27CustomSubMark" class="s27-control" style="width: 90px; text-align: center;" value="20" placeholder="Marks">
                                         <button type="button" class="s27-btn-add" onclick="window.addSSC27CustomSubject()"><i class="fa-solid fa-plus"></i> Add</button>
                                     </div>
@@ -447,7 +453,7 @@
                                         <table class="s27-table">
                                             <thead>
                                                 <tr>
-                                                    <th>SUBJECT</th>
+                                                    <th>SUBJECT NAME</th>
                                                     <th style="width: 110px; text-align: center;">FULL MARKS</th>
                                                     <th style="width: 60px; text-align: right;">ACTION</th>
                                                 </tr>
@@ -494,7 +500,7 @@
                             <div>
                                 <span><i class="fa-solid fa-users-viewfinder"></i> Student Group Allocation & Seating</span>
                                 <div id="s27SeatingInfoBadge" style="font-size: 0.82rem; color: #059669; font-weight: 700; margin-top: 3px;">
-                                    <i class="fa-solid fa-circle-check"></i> গ্রুপ অপরিবর্তিত থাকবে • প্রাপ্ত rawMark অনুযায়ী গ্রুপের ভেতরে অভ্যন্তরীণ সিটিং বিন্যস্ত
+                                    <i class="fa-solid fa-circle-check"></i> Groups Locked • Bench seating arranged by rawMark within each group
                                 </div>
                             </div>
                             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
@@ -532,7 +538,7 @@
                 </div>
             </div>
 
-            <!-- ব্ল্যাঙ্ক প্রিন্ট মোডাল -->
+            <!-- Blank Print Modal -->
             <div id="s27BlankModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999999; display:none; align-items:center; justify-content:center; padding:10px;">
                 <div style="background:#fff; border-radius:20px; width:100%; max-width:440px; padding:24px; box-shadow:0 15px 35px rgba(0,0,0,0.25);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
@@ -554,7 +560,7 @@
                 </div>
             </div>
 
-            <!-- এডিট মোডাল -->
+            <!-- Safe Edit Modal -->
             <div id="s27EditModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999999; display:none; align-items:center; justify-content:center; padding:12px;">
                 <div style="background:#fff; border-radius:20px; width:100%; max-width:540px; padding:22px; box-shadow:0 15px 35px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
@@ -566,7 +572,7 @@
                     </div>
 
                     <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:10px 14px; border-radius:12px; margin-bottom:15px; font-size:0.82rem; color:#166534;">
-                        <i class="fa-solid fa-circle-check"></i> <strong>কোনো ভয় নেই:</strong> নতুন বিষয় যোগ করলে শিক্ষকদের এন্ট্রি দেওয়া নম্বরের কোনো ক্ষতি হবে না।
+                        <i class="fa-solid fa-circle-check"></i> <strong>Safe Action:</strong> Adding new subjects will not affect or overwrite marks already entered by teachers.
                     </div>
 
                     <div class="s27-form-group">
@@ -639,13 +645,6 @@
         container.appendChild(row);
     };
 
-    const routineSubjectsList = [
-        "Physics", "Chemistry", "Biology", "Math", 
-        "Ban 1", "Ban 2", "Eng 1", "Eng 2", 
-        "ICT", "Reli", "Sci", 
-        "Acc-Geo", "Fin-His", "B-Ent-Civ", "HM-Agri-HS"
-    ];
-
     function initSSC27DefaultForm() {
         const container = document.getElementById('s27GroupRulesContainer');
         if (container) {
@@ -658,7 +657,8 @@
         const quickArea = document.getElementById('s27QuickPills');
         if (quickArea) {
             quickArea.innerHTML = '';
-            routineSubjectsList.forEach(sub => {
+            const masterList = getMasterSubjectList();
+            masterList.forEach(sub => {
                 const p = document.createElement('div');
                 p.className = 's27-pill';
                 p.innerHTML = `<span>${sub} (20)</span> <i class="fa-solid fa-plus" style="font-size:0.75rem;"></i>`;
@@ -712,7 +712,7 @@
         const date = document.getElementById('s27ExamDate').value;
 
         if (Object.keys(s27SelectedSubjects).length === 0) {
-            alert("অনুগ্রহ করে অন্তত একটি বিষয় যুক্ত করুন!");
+            alert("Please add at least one subject for the exam!");
             return;
         }
 
@@ -734,7 +734,7 @@
         });
 
         submitBtn.disabled = true;
-        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> সরাসরি ফায়ারবেস ক্লাউডে পাঠানো হচ্ছে...`;
+        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Saving directly to Firebase Cloud...`;
 
         const examObj = {
             id: 'SSC27_EX_' + Date.now(),
@@ -757,7 +757,7 @@
 
             if (!res1.ok) {
                 const errTxt = await res1.text();
-                throw new Error(`ফায়ারবেস সার্ভার এরর: ${res1.status} (${errTxt})`);
+                throw new Error(`Firebase Server Error: ${res1.status} (${errTxt})`);
             }
 
             await fetch(`${FIREBASE_BASE_URL}/cpscl_exams/${examObj.id}.json`, {
@@ -766,7 +766,7 @@
                 body: JSON.stringify(examObj)
             });
 
-            alert("অভিনন্দন! পরীক্ষা সফলভাবে সরাসরি ফায়ারবেস ক্লাউডে সংরক্ষিত হয়েছে!");
+            alert("Congratulations! Exam saved directly to Firebase Cloud successfully.");
 
             document.getElementById('s27ExamForm').reset();
             document.getElementById('s27ClassName').value = 'Class 10';
@@ -777,7 +777,7 @@
             await loadSSC27ExamsFromCloud();
 
         } catch (err) {
-            alert("সংরক্ষণ ব্যর্থ হয়েছে! কারণ: " + err.message);
+            alert("Save failed! Reason: " + err.message);
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Save Directly to Firebase Cloud`;
@@ -821,9 +821,7 @@
         });
     }
 
-    // ==========================================
-    // এডিট ও মিসিং বিষয় যোগ করার মডিউল
-    // ==========================================
+    // Add / Edit Missing Subjects Modal
     window.openSSC27EditModal = function (examId) {
         const exam = s27ExamRegistry.find(x => x.id === examId);
         if (!exam) return;
@@ -843,7 +841,8 @@
         if (!pillContainer) return;
         pillContainer.innerHTML = '';
 
-        routineSubjectsList.forEach(sub => {
+        const masterList = getMasterSubjectList();
+        masterList.forEach(sub => {
             const safeKey = cleanFirebaseKey(sub);
             const isAlreadyAdded = !!s27EditingSubjects[safeKey];
             const p = document.createElement('div');
@@ -914,7 +913,7 @@
         if (!exam) return;
 
         if (Object.keys(s27EditingSubjects).length === 0) {
-            alert("পরীক্ষায় অন্তত একটি বিষয় থাকতে হবে!");
+            alert("Exam must have at least one subject!");
             return;
         }
 
@@ -925,7 +924,7 @@
 
         const saveBtn = document.getElementById('s27EditSaveBtn');
         saveBtn.disabled = true;
-        saveBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> ক্লাউডে আপডেট হচ্ছে...`;
+        saveBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Updating in Cloud...`;
 
         try {
             await fetch(`${FIREBASE_BASE_URL}/cpscl_ssc27_exams/${s27EditingExamId}/subjects.json`, {
@@ -953,11 +952,11 @@
             exam.subjects = { ...s27EditingSubjects };
             exam.totalMarks = totalMarks;
 
-            alert("অভিনন্দন! বিষয়টি সফলভাবে ক্লাউডে সংরক্ষিত হয়েছে!");
+            alert("Success! Subjects have been saved to Cloud successfully.");
             window.closeSSC27EditModal();
             renderSSC27ExamList();
         } catch (err) {
-            alert("আপডেট ব্যর্থ হয়েছে: " + err.message);
+            alert("Update failed: " + err.message);
         } finally {
             saveBtn.disabled = false;
             saveBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Save Changes to Cloud`;
@@ -980,19 +979,19 @@
             exam.status = newStatus;
             renderSSC27ExamList();
         } catch(e) {
-            alert("আপডেট ব্যর্থ হয়েছে: " + e.message);
+            alert("Status update failed: " + e.message);
         }
     };
 
     window.deleteSSC27Exam = async function (id) {
-        if (!confirm("আপনি কি নিশ্চিত যে এই পরীক্ষাটি ক্লাউড থেকে সম্পূর্ণ মুছে ফেলবেন?")) return;
+        if (!confirm("Are you sure you want to permanently delete this exam from Cloud?")) return;
         try {
             await fetch(`${FIREBASE_BASE_URL}/cpscl_ssc27_exams/${id}.json`, { method: 'DELETE' });
             await fetch(`${FIREBASE_BASE_URL}/cpscl_exams/${id}.json`, { method: 'DELETE' });
-            alert("পরীক্ষাটি ফায়ারবেস থেকে সফলভাবে মুছে ফেলা হয়েছে!");
+            alert("Exam deleted successfully from Firebase Cloud!");
             await loadSSC27ExamsFromCloud();
         } catch(e) {
-            alert("মুছতে সমস্যা হয়েছে: " + e.message);
+            alert("Delete failed: " + e.message);
         }
     };
 
@@ -1010,11 +1009,8 @@
     }
 
     // =========================================================================
-    // গ্রুপ ফিক্সড রেখে প্রাপ্ত rawMark অনুযায়ী অভ্যন্তরীণ মেধা ও সিট বিন্যাস
-    // =========================================================================
-    // স্মার্ট ডুয়াল-মোড: সাপ্তাহিক সামষ্টিক গ্রুপ প্রমোশন অথবা দৈনন্দিন অভ্যন্তরীণ সিটিং
-    // Mode 1 (Weekly Cumulative Promotion): cpscl_exam_group_overrides/${examId}_merit_order বিদ্যমান থাকলে
-    // Mode 2 (Daily Intra-Group Seating):   _merit_order না থাকলে, গ্রুপ অপরিবর্তিত রেখে পূর্ববর্তী টেস্টের নম্বরে সিটিং
+    // PROTECTED ZONE: Dual-Mode Seating & Promotion (Mode 1 & Mode 2)
+    // 100% UNTOUCHED LOGIC
     // =========================================================================
     window.loadSSC27StudentAllocation = async function () {
         const select = document.getElementById('s27TargetExamSelect');
@@ -1027,7 +1023,6 @@
 
         tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:30px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:24px; color:#059669;"></i></td></tr>`;
 
-        // Class 8 students are already excluded in getRealStudents() — 100% isolation preserved
         const students = await getRealStudents();
         const configuredGroups = (exam.groups && exam.groups.length > 0) ? exam.groups : DEFAULT_SSC27_GROUPS;
 
@@ -1039,7 +1034,7 @@
             });
         }
 
-        // ── Step 1: Fetch per-exam student→group overrides ────────────────────────
+        // Step 1: Fetch per-exam overrides
         let studentOverrides = {};
         try {
             const ovRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${examId}.json`);
@@ -1049,30 +1044,10 @@
             }
         } catch (e) {}
 
-        // ── Step 2: Detect Mode via explicit _is_weekly flag (authoritative signal) ─
-        //
-        // ┌──────────────────────────────────────────────────────────────────────────┐
-        // │ DUAL-MODE DETECTION LOGIC                                                │
-        // │                                                                          │
-        // │ Mode 1 — Weekly Cumulative Promotion:                                    │
-        // │   Triggered ONLY when cpscl_exam_group_overrides/{examId}_is_weekly      │
-        // │   equals `true` in Firebase (written by applyCumulativeMeritToTarget-    │
-        // │   Exam() after Thursday's Weekly Master Tabulation).                     │
-        // │   • Group promotion/demotion is applied.                                 │
-        // │   • Bench order comes from the saved cumulative merit order.             │
-        // │                                                                          │
-        // │ Mode 2 — Daily Intra-Group Seating (DT-02 through DT-05, etc.):         │
-        // │   Active whenever _is_weekly is absent/false.                            │
-        // │   • Groups are strictly LOCKED — no promotion occurs.                   │
-        // │   • Bench order = marks from the immediately preceding single exam.      │
-        // │                                                                          │
-        // │ Note: _merit_order alone is NOT a reliable mode signal because Mode 2    │
-        // │ also writes an intra-group bench order (without promoting anyone).        │
-        // └──────────────────────────────────────────────────────────────────────────┘
+        // Step 2: Detect Mode via explicit _is_weekly flag
         let isWeeklyPromotionMode = false;
         let weeklyMeritOrder = null;
         try {
-            // Primary signal: explicit weekly-promotion stamp
             const flagRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${examId}_is_weekly.json`);
             if (flagRes.ok) {
                 const flagVal = await flagRes.json();
@@ -1082,7 +1057,6 @@
             }
         } catch (e) {}
 
-        // Only fetch merit order when in weekly promotion mode (reduces network round-trips)
         if (isWeeklyPromotionMode) {
             try {
                 const moRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${examId}_merit_order.json`);
@@ -1091,14 +1065,13 @@
                     if (Array.isArray(moRaw) && moRaw.length > 0) weeklyMeritOrder = moRaw;
                 }
             } catch (e) {}
-            // If _is_weekly is true but _merit_order is missing, fall back gracefully to Mode 2
             if (!weeklyMeritOrder) {
                 console.warn(`[CPSCL] _is_weekly flag is set for ${examId} but _merit_order is missing. Falling back to Daily Seating Mode.`);
                 isWeeklyPromotionMode = false;
             }
         }
 
-        // ── Step 3: Mode-specific context resolution ──────────────────────────────
+        // Step 3: Mode-specific context resolution
         const dailyTest01 = isDailyTest01(exam);
         const dailyTest01Allocations = getDailyTest01GroupAllocations();
         const dailyTest01Order = getDailyTest01Order();
@@ -1111,12 +1084,8 @@
         let manualTransfers = {};
 
         if (!isWeeklyPromotionMode && !dailyTest01) {
-            // MODE 2 — Daily Intra-Group Seating (e.g. DT-02 through DT-05)
-            // NO group promotion occurs. Students remain strictly inside their existing groups.
-            // Inherit student group membership directly from the immediately previous exam!
             previousExamUsed = getImmediatelyPreviousExam(exam, s27ExamRegistry);
             if (previousExamUsed) {
-                // 1. Inherit groups from previous exam
                 try {
                     const pegRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${previousExamUsed.id}.json`);
                     if (pegRes.ok) {
@@ -1127,10 +1096,8 @@
                     console.warn("Previous exam groups fetch error:", e);
                 }
 
-                // 2. Fetch marks from previous exam (for intra-group bench order)
                 studentScores = await fetchExamStudentTotalMarks(previousExamUsed.id);
 
-                // 3. Fetch previous exam's live tabulation merit order (for tie-breaking)
                 try {
                     const pmoRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${previousExamUsed.id}_merit_order.json`);
                     if (pmoRes.ok) {
@@ -1144,7 +1111,6 @@
                 }
             }
 
-            // Fetch any manual transfers explicitly executed on this exam
             try {
                 const mtRes = await fetch(`${FIREBASE_BASE_URL}/cpscl_exam_group_overrides/${examId}_manual_transfers.json`);
                 if (mtRes.ok) {
@@ -1154,9 +1120,7 @@
             } catch (e) {}
         }
 
-        // ── Step 4: Build studentMap with correct group membership ────────────────
-        // Mode 1: Driven by weekly promotion overrides.
-        // Mode 2: Inherited directly from previous exam (strictly NO promotion).
+        // Step 4: Build studentMap
         const studentMap = new Map();
         students.forEach(st => {
             const sId = getStudentId(st);
@@ -1164,13 +1128,10 @@
 
             let assignedGroup;
             if (isWeeklyPromotionMode) {
-                // Mode 1: Weekly promotion determines group
                 assignedGroup = studentOverrides[sId] || dailyTest01Allocations[sId] || 'Group A (Science)';
             } else if (previousExamGroups && previousExamGroups[sId]) {
-                // Mode 2: Strictly inherit group membership from the immediately previous exam
                 assignedGroup = (manualTransfers && manualTransfers[sId]) || previousExamGroups[sId];
             } else {
-                // Baseline fallback (Daily Test-01 or if no previous exam available)
                 assignedGroup = (manualTransfers && manualTransfers[sId]) || studentOverrides[sId] || dailyTest01Allocations[sId] || 'Group A (Science)';
             }
 
@@ -1184,28 +1145,25 @@
         });
 
         if (isWeeklyPromotionMode) {
-            // MODE 1 — Weekly Cumulative Promotion
-            // Bench order comes from the saved _merit_order (cumulative Science rank).
-            // Build a position index from weeklyMeritOrder for O(1) lookup.
             const meritIndex = new Map(weeklyMeritOrder.map((sid, idx) => [sid, idx]));
             studentMap.forEach(stu => {
                 stu.weeklyMeritPos = meritIndex.has(stu.id) ? meritIndex.get(stu.id) : 99999;
             });
         }
 
-        // ── Step 5: Update info badge ─────────────────────────────────────────────
+        // Step 5: Update info badge in English
         const infoBadge = document.getElementById('s27SeatingInfoBadge');
         if (infoBadge) {
             if (isWeeklyPromotionMode) {
-                infoBadge.innerHTML = `<i class="fa-solid fa-trophy" style="color:#f59e0b;"></i> <span style="color:#b45309; font-weight:800;">সাপ্তাহিক সামষ্টিক মেধার ভিত্তিতে গ্রুপ প্রমোশন ও সিটিং কার্যকর</span>`;
+                infoBadge.innerHTML = `<i class="fa-solid fa-trophy" style="color:#f59e0b;"></i> <span style="color:#b45309; font-weight:800;">Weekly Cumulative Merit Group Promotion & Seating Active</span>`;
             } else if (previousExamUsed) {
-                infoBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> গ্রুপ অপরিবর্তিত • <strong>${previousExamUsed.name}</strong>-এর প্রাপ্ত নম্বরের ভিত্তিতে অভ্যন্তরীণ সিটিং (সর্বোচ্চ নম্বর = বেঞ্চ ১)`;
+                infoBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> Groups Locked • Bench seating by <strong>${previousExamUsed.name}</strong> marks (Highest Score = Bench #1)`;
             } else {
-                infoBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> গ্রুপ অপরিবর্তিত থাকবে • বেসলাইন মেধা তালিকা অনুযায়ী অভ্যন্তরীণ সিটিং`;
+                infoBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> Groups Locked • Internal seating according to Baseline Merit List`;
             }
         }
 
-        // ── Step 6: Allocate seats per group ─────────────────────────────────────
+        // Step 6: Allocate seats per group
         const allocated = [];
         const groupNames = [
             'Group A (Science)',
@@ -1219,44 +1177,29 @@
             const grpStudents = Array.from(studentMap.values()).filter(s => s.group === grpName);
 
             if (isWeeklyPromotionMode) {
-                // MODE 1: Sort by cumulative merit position from Weekly Tabulation
                 grpStudents.sort((a, b) => {
                     if (a.weeklyMeritPos !== b.weeklyMeritPos) return a.weeklyMeritPos - b.weeklyMeritPos;
-                    return a.originalRank - b.originalRank; // tiebreaker: Daily Test-01 baseline
+                    return a.originalRank - b.originalRank;
                 });
             } else if (dailyTest01 || !previousExamUsed) {
-                // MODE 2 baseline: sort by Daily Test-01 baseline order
                 grpStudents.sort((a, b) => a.originalRank - b.originalRank);
             } else {
-                // MODE 2 intra-group: sort by marks from the immediately preceding daily
-                // test (highest score = bench #1).
-                //
-                // TIE-BREAKING RULE (preserves exact Live Tabulation merit/row order):
-                //   When two or more students have identical scores in the previous daily
-                //   test, maintain the exact merit/row order as resolved in that previous
-                //   exam's Live Tabulation (via prevMeritIndex).
-                //   This ensures that for ANY daily test (DT-02 through DT-05, DT-06, etc.),
-                //   ties are broken dynamically and identically to Live Tabulation without
-                //   hardcoding any test names or student IDs.
                 grpStudents.sort((a, b) => {
                     const scoreA = (studentScores[a.id] !== undefined && studentScores[a.id] !== null) ? studentScores[a.id] : -1;
                     const scoreB = (studentScores[b.id] !== undefined && studentScores[b.id] !== null) ? studentScores[b.id] : -1;
                     if (scoreB !== scoreA) return scoreB - scoreA;
 
-                    // Identical score → tiebreak using previous exam's Live Tabulation merit order
                     if (prevMeritIndex.size > 0) {
                         const idxA = prevMeritIndex.has(a.id) ? prevMeritIndex.get(a.id) : 99999;
                         const idxB = prevMeritIndex.has(b.id) ? prevMeritIndex.get(b.id) : 99999;
                         if (idxA !== idxB) return idxA - idxB;
                     }
 
-                    // Fallback tiebreak if previous merit order doesn't differentiate
                     if (a.originalRank !== b.originalRank) return a.originalRank - b.originalRank;
                     return a.id.localeCompare(b.id);
                 });
             }
 
-            // Assign sequential bench numbers within each group
             grpStudents.forEach((st, idx) => {
                 allocated.push({
                     sl: idx + 1,
@@ -1272,18 +1215,7 @@
 
         s27AllocatedStudents = allocated;
 
-        // ── Step 7: Persist — Mode 2 (Daily Seating) only ───────────────────────
-        //
-        // In Mode 1 (Weekly Promotion), the weekly-promoted groups and merit order
-        // were written by applyCumulativeMeritToTargetExam() and must NOT be touched
-        // here.  Overwriting them on every page reload would corrupt the official
-        // Sunday seating plan.
-        //
-        // In Mode 2 (Daily Seating), we:
-        //   • Write group assignments only for students who have no manual override yet.
-        //   • Write the intra-group bench order (_merit_order) so the Live Tabulation
-        //     can display the correct seating sequence.
-        //   • Never write _is_weekly = true (that is exclusively Mode 1's stamp).
+        // Step 7: Persist Mode 2 (Daily Seating)
         if (!isWeeklyPromotionMode) {
             const newMeritOrder = allocated.map(s => s.id);
             const newAllocations = {};
@@ -1292,7 +1224,6 @@
             });
             if (Object.keys(newAllocations).length > 0 || (newMeritOrder && newMeritOrder.length > 0)) {
                 try {
-                    // isWeeklyPromotion = false → no _is_weekly stamp written
                     await saveSSC27Overrides(examId, newAllocations, newMeritOrder, true, true, false);
                 } catch (err) {
                     console.error("Group note:", err);
@@ -1380,12 +1311,12 @@
 
     window.moveSelectedStudentToGroup = async function () {
         if (!s27SelectedStudentId) {
-            alert("প্রথমে তালিকা থেকে একজন শিক্ষার্থী সিলেক্ট করুন!");
+            alert("Please select a student from the table first!");
             return;
         }
         const targetGroup = document.getElementById('s27TransferGroupSelect').value;
         if (!targetGroup) {
-            alert("কোন গ্রুপে ট্রান্সফার করবেন তা সিলেক্ট করুন!");
+            alert("Please select a target group to transfer!");
             return;
         }
 
@@ -1401,7 +1332,7 @@
                 });
                 await saveSSC27Overrides(examId, { [student.id]: targetGroup }, null, false);
             } catch (error) {
-                console.error('SSC-27 student group override note:', error);
+                console.error('SSC-27 student group override error:', error);
             }
 
             s27SelectedStudentId = null;
