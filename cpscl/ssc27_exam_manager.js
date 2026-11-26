@@ -575,6 +575,17 @@
                         <i class="fa-solid fa-circle-check"></i> <strong>Safe Action:</strong> Adding new subjects will not affect or overwrite marks already entered by teachers.
                     </div>
 
+                    <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:10px; margin-bottom:14px;">
+                        <div class="s27-form-group" style="margin:0;">
+                            <label>Exam Title *</label>
+                            <input type="text" id="s27EditExamTitle" class="s27-control" placeholder="Exam Title" required>
+                        </div>
+                        <div class="s27-form-group" style="margin:0;">
+                            <label>Exam Date *</label>
+                            <input type="date" id="s27EditExamDate" class="s27-control" required>
+                        </div>
+                    </div>
+
                     <div class="s27-form-group">
                         <label>Click to Add Missing Routine Subject (Full Mark: 20)</label>
                         <div class="s27-pills-box" id="s27EditQuickPills"></div>
@@ -829,7 +840,11 @@
         s27EditingExamId = examId;
         s27EditingSubjects = { ...(exam.subjects || {}) };
 
-        document.getElementById('s27EditModalExamName').innerText = `Exam: ${exam.name} (${exam.date})`;
+        document.getElementById('s27EditModalExamName').innerText = `ID: ${exam.id}`;
+        const titleInput = document.getElementById('s27EditExamTitle');
+        const dateInput = document.getElementById('s27EditExamDate');
+        if (titleInput) titleInput.value = exam.name || '';
+        if (dateInput) dateInput.value = exam.date || '';
 
         renderEditingPills();
         renderEditingSubjectsTable();
@@ -912,6 +927,20 @@
         const exam = s27ExamRegistry.find(x => x.id === s27EditingExamId);
         if (!exam) return;
 
+        const titleInput = document.getElementById('s27EditExamTitle');
+        const dateInput = document.getElementById('s27EditExamDate');
+        const newTitle = titleInput ? titleInput.value.trim() : (exam.name || '');
+        const newDate = dateInput ? dateInput.value.trim() : (exam.date || '');
+
+        if (!newTitle) {
+            alert("Exam Title cannot be empty!");
+            return;
+        }
+        if (!newDate) {
+            alert("Exam Date cannot be empty!");
+            return;
+        }
+
         if (Object.keys(s27EditingSubjects).length === 0) {
             alert("Exam must have at least one subject!");
             return;
@@ -926,35 +955,35 @@
         saveBtn.disabled = true;
         saveBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Updating in Cloud...`;
 
+        const updatePayload = {
+            name: newTitle,
+            date: newDate,
+            subjects: s27EditingSubjects,
+            totalMarks: totalMarks
+        };
+
         try {
-            await fetch(`${FIREBASE_BASE_URL}/cpscl_ssc27_exams/${s27EditingExamId}/subjects.json`, {
-                method: 'PUT',
+            await fetch(`${FIREBASE_BASE_URL}/cpscl_ssc27_exams/${s27EditingExamId}.json`, {
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(s27EditingSubjects)
-            });
-            await fetch(`${FIREBASE_BASE_URL}/cpscl_ssc27_exams/${s27EditingExamId}/totalMarks.json`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(totalMarks)
+                body: JSON.stringify(updatePayload)
             });
 
-            await fetch(`${FIREBASE_BASE_URL}/cpscl_exams/${s27EditingExamId}/subjects.json`, {
-                method: 'PUT',
+            await fetch(`${FIREBASE_BASE_URL}/cpscl_exams/${s27EditingExamId}.json`, {
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(s27EditingSubjects)
-            });
-            await fetch(`${FIREBASE_BASE_URL}/cpscl_exams/${s27EditingExamId}/totalMarks.json`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(totalMarks)
+                body: JSON.stringify(updatePayload)
             });
 
+            exam.name = newTitle;
+            exam.date = newDate;
             exam.subjects = { ...s27EditingSubjects };
             exam.totalMarks = totalMarks;
 
-            alert("Success! Subjects have been saved to Cloud successfully.");
+            alert("Success! Exam details and subjects updated successfully.");
             window.closeSSC27EditModal();
             renderSSC27ExamList();
+            populateSSC27ExamDropdown();
         } catch (err) {
             alert("Update failed: " + err.message);
         } finally {

@@ -2,14 +2,142 @@
    MODULE: CPSCL
    SUB-SECTION: Live Tabulation & Result Sheet Engine (Full Master Pro)
    Path: cpscl/live_tabulation_manager.js
-   Architecture: Zero Omission | Auto-Hide Unexamined Subjects | Dynamic Full Marks
-   Sorting: Pure Merit Ordering (Fallback to Source Merit) | Zero Roll Column
+   Architecture: Zero Hardcoding | Dynamic Subject Merging | Color Badges
+   Sorting: Pure Merit Ordering | Dynamic Accurate Totals | In-Memory Cache
    ========================================================================== */
 
 (function () {
-    console.log("Loading CPSCL Live Tabulation Master Engine (Pure Merit & Auto-Hide Active)...");
+    console.log("Loading CPSCL Live Tabulation Master Engine (Merged Mutually Exclusive Subjects & Dynamic Totals Active)...");
 
-    // ১. সাইডবারে Exam Manager ড্রপডাউনে "Live Tabulation" মেনু ইনজেক্ট করা
+    // In-Memory Fast Caches for Smooth Switching
+    let memoryExamsCache = [];
+    let memoryStudentsCache = null;
+    let memoryOverridesCache = null;
+    let memoryMarksCache = {}; // Key: `${examId}_${subKey}`
+
+    // 1. Dynamic Short Code Resolver (Strict Zero-Hardcoding)
+    function resolveDynamicShortCode(subName) {
+        if (!subName) return '';
+        if (window.CPSCL_MASTER && typeof window.CPSCL_MASTER.getSubject === 'function') {
+            const item = window.CPSCL_MASTER.getSubject(subName);
+            if (item && item.code) return item.code;
+        }
+        // Dynamic fallback for any unknown/custom subject without hardcoding
+        const words = subName.trim().split(/\s+/);
+        if (words.length > 1) {
+            return words.map(w => w[0]).join('').toUpperCase().substring(0, 4);
+        }
+        return subName.substring(0, 4);
+    }
+
+    // 2. Dynamic Subject Classification for Mutually Exclusive Slots
+    function getSubjectClassification(subName) {
+        const meta = (window.CPSCL_MASTER && typeof window.CPSCL_MASTER.getSubject === 'function')
+            ? window.CPSCL_MASTER.getSubject(subName)
+            : null;
+
+        const code = (meta && meta.code) ? meta.code : resolveDynamicShortCode(subName);
+        const subLower = String(subName || '').toLowerCase();
+        const typeLower = String(meta?.type || meta?.category || meta?.group || meta?.subjectType || '').toLowerCase();
+        const audience = String(meta?.audience || meta?.religion || '').toLowerCase();
+
+        // Check Religion slot
+        const isReligion = typeLower === 'religion' ||
+            ['muslim', 'islam', 'hindu', 'hinduism', 'christian', 'buddhist'].includes(audience) ||
+            /\b(religion|islam|hindu|hinduism|buddhist|christian|moral\s*edu)\b/i.test(subLower) ||
+            /\b(ime|hme|bme|cme)\b/i.test(code);
+
+        // Check Elective / 4th Subject slot
+        const isElective = typeLower === 'elective' ||
+            typeLower === 'optional' ||
+            typeLower === '4th_subject' ||
+            meta?.isElective === true ||
+            meta?.isOptional === true ||
+            /\b(higher\s*math|agriculture|home\s*sc|optional|elective|4th\s*sub)\b/i.test(subLower) ||
+            /\b(hm|agri|ag|hs)\b/i.test(code);
+
+        let groupKey = 'common_' + subName;
+        let groupLabel = code;
+        let groupType = 'common';
+
+        if (isReligion) {
+            groupKey = 'group_religion';
+            groupLabel = 'IME / HME';
+            groupType = 'religion';
+        } else if (isElective) {
+            groupKey = 'group_elective';
+            groupLabel = 'HM / Agri';
+            groupType = 'elective';
+        }
+
+        return {
+            name: subName,
+            code,
+            groupKey,
+            groupLabel,
+            groupType,
+            meta
+        };
+    }
+
+    // 3. Dynamic Cell Badge Generator for Mutually Exclusive Subjects (Color Only, No Text Suffix)
+    function getSubjectBadge(score, code, subName) {
+        if (score === '-' || score === null || score === undefined) return '-';
+
+        const codeUpper = String(code || '').toUpperCase().trim();
+        const nameLower = String(subName || '').toLowerCase().trim();
+
+        let mainColor = '#0f172a';
+
+        if (codeUpper === 'HM' || nameLower.includes('higher math')) {
+            mainColor = '#2563eb'; // Blue for Higher Mathematics
+        } else if (codeUpper === 'AGRI' || codeUpper === 'AG' || nameLower.includes('agriculture')) {
+            mainColor = '#059669'; // Emerald Green for Agriculture Studies
+        } else if (codeUpper === 'IME' || nameLower.includes('islam')) {
+            mainColor = '#059669'; // Emerald Green for Islam & Moral Education
+        } else if (codeUpper === 'HME' || nameLower.includes('hindu')) {
+            mainColor = '#d97706'; // Orange / Saffron for Hindu Religion
+        } else if (codeUpper === 'HS' || nameLower.includes('home sc')) {
+            mainColor = '#d97706';
+        } else {
+            const colors = ['#7c3aed', '#0891b2', '#db2777'];
+            let hash = 0;
+            for (let i = 0; i < codeUpper.length; i++) hash = (hash * 31 + codeUpper.charCodeAt(i)) % colors.length;
+            mainColor = colors[hash];
+        }
+
+        return `<span style="color:${mainColor}; font-weight:800;">${score}</span>`;
+    }
+
+    // 4. Extract Raw Score from Multi-Format Cloud Data Without Double Summing
+    function extractStudentRawScore(rec) {
+        if (rec === null || rec === undefined) return null;
+        if (typeof rec === 'number') return rec;
+        if (typeof rec === 'string' && rec.trim() !== '' && !isNaN(Number(rec))) return parseFloat(rec);
+        if (typeof rec === 'object') {
+            if (rec.rawMark !== null && rec.rawMark !== undefined && String(rec.rawMark).trim() !== '') {
+                return parseFloat(rec.rawMark);
+            }
+            if (rec.total !== null && rec.total !== undefined && String(rec.total).trim() !== '') {
+                return parseFloat(rec.total);
+            }
+            let partSum = 0;
+            let hasPart = false;
+            ['cq', 'mcq', 'practical'].forEach(field => {
+                if (rec[field] !== null && rec[field] !== undefined && String(rec[field]).trim() !== '') {
+                    const parsed = parseFloat(rec[field]);
+                    if (!isNaN(parsed)) {
+                        partSum += parsed;
+                        hasPart = true;
+                    }
+                }
+            });
+            if (hasPart) return partSum;
+        }
+        return null;
+    }
+
+    // 5. সাইডবারে Exam Manager ড্রপডাউনে "Live Tabulation" মেনু ইনজেক্ট করা
     function injectLiveTabulationSidebar() {
         const examSubmenu = document.getElementById('trust-exam-submenu-items');
         if (!examSubmenu) {
@@ -29,7 +157,7 @@
         examSubmenu.appendChild(li);
     }
 
-    // ২. switchCPSCLExamSubTab হুক করে Live Tabulation ভিউ লোড করা
+    // 6. switchCPSCLExamSubTab হুক করে Live Tabulation ভিউ লোড করা
     const prevSwitch = window.switchCPSCLExamSubTab;
     window.switchCPSCLExamSubTab = function (element, tabKey) {
         if (typeof prevSwitch === 'function') {
@@ -63,7 +191,7 @@
         }
     };
 
-    // ৩. স্ক্রিন ও স্টাইল ইনজেকশন
+    // 7. স্ক্রিন ও স্টাইল ইনজেকশন
     function injectTabulationStyles() {
         if (document.getElementById('cpscl-tabulation-scoped-styles')) return;
         const style = document.createElement('style');
@@ -100,7 +228,7 @@
 
             .tab-table-wrap { overflow-x: auto; padding: 0 15px 15px; }
             .tab-table { width: 100%; border-collapse: collapse; min-width: 650px; }
-            .tab-table th { background: #fbe7d9 !important; color: #111 !important; border: 1px solid #202020 !important; font-size: 12px; font-weight: 700; text-align: center; padding: 6px 4px; }
+            .tab-table th { background: #fbe7d9 !important; color: #111 !important; border: 1px solid #202020 !important; font-size: 12px; font-weight: 700; text-align: center; padding: 6px 4px; white-space: nowrap; }
             .tab-table th small { font-size: 10px; font-weight: 600; color: #333; }
             .tab-table td { border: 1px solid #202020 !important; padding: 5px 6px; font-size: 12px; text-align: center; color: #111; }
             .tab-table td.name-col { text-align: left; font-weight: 600; white-space: nowrap !important; padding-left: 10px; }
@@ -124,7 +252,7 @@
         document.head.appendChild(style);
     }
 
-    // ৪. সিগনেচার তালিকা ম্যানেজমেন্ট
+    // 8. সিগনেচার তালিকা ম্যানেজমেন্ট
     const DEFAULT_SIGNATURES = ["Course Coordinator", "Vice Principal", "Principal"];
 
     window.getSavedSignatures = function() {
@@ -213,7 +341,7 @@
         sigContainer.innerHTML = sigHtml;
     }
 
-    // ৫. মূল কন্টেইনার তৈরি
+    // 9. মূল কন্টেইনার তৈরি
     function renderTabulationContainer() {
         const view = document.getElementById('cpscl-live-tabulation-main-view');
         if (!view) return;
@@ -242,7 +370,7 @@
                     </div>
                     <div class="tab-filter-group">
                         <label>Group / Section</label>
-                        <select id="tabSelectGroup" onchange="window.loadLiveTabulationData()">
+                        <select id="tabSelectGroup" onchange="window.onTabGroupChange()">
                             <option value="ALL">All Groups</option>
                         </select>
                     </div>
@@ -326,9 +454,7 @@
         renderOnScreenSignatureBlock();
     }
 
-    // ৬. পরীক্ষা ও ক্লাসের তালিকা ক্লাউড থেকে সিঙ্ক
-    let cachedExams = [];
-
+    // 10. পরীক্ষা ও ক্লাসের তালিকা ক্লাউড থেকে সিঙ্ক
     function normalizeExamRecord(exam, fallbackId) {
         if (!exam || typeof exam !== 'object') return null;
         const id = exam.id || exam.examId || exam.exam_id || fallbackId;
@@ -419,7 +545,7 @@
     async function syncDataAndPopulateExams() {
         try {
             const localEx = localStorage.getItem('cpscl_exams_registry');
-            if (localEx) cachedExams = getExamRecords(JSON.parse(localEx));
+            if (localEx) memoryExamsCache = getExamRecords(JSON.parse(localEx));
         } catch (error) {
             console.warn("Local exam registry cache could not be read:", error);
         }
@@ -434,8 +560,8 @@
                         cloudExams.set(String(exam.id), exam);
                     });
                 }
-                cachedExams = Array.from(cloudExams.values());
-                localStorage.setItem('cpscl_exams_registry', JSON.stringify(cachedExams));
+                memoryExamsCache = Array.from(cloudExams.values());
+                localStorage.setItem('cpscl_exams_registry', JSON.stringify(memoryExamsCache));
             } catch (error) {
                 console.warn("Exam registry read failed for cpscl_exams:", error);
             }
@@ -445,18 +571,18 @@
         if (!examSelect) return;
 
         examSelect.innerHTML = '<option value="">-- Select an Exam --</option>';
-        if (cachedExams.length === 0) {
+        if (memoryExamsCache.length === 0) {
             examSelect.innerHTML = '<option value="">-- No Exams Configured --</option>';
             return;
         }
 
-        cachedExams.forEach(ex => {
+        memoryExamsCache.forEach(ex => {
             examSelect.innerHTML += `<option value="${ex.id}">${ex.name} (${ex.class})</option>`;
         });
 
-        const preferredExam = cachedExams.find(exam =>
+        const preferredExam = memoryExamsCache.find(exam =>
             isSSC27Exam(exam) && /^daily\s+test\s*[-–]?\s*0?1$/i.test(String(exam.name || '').trim())
-        ) || cachedExams.find(isSSC27Exam);
+        ) || memoryExamsCache.find(isSSC27Exam);
         if (preferredExam) {
             examSelect.value = preferredExam.id;
             window.onTabExamChange(preferredExam.id);
@@ -465,9 +591,20 @@
         }
     }
 
-    // ৭. পরীক্ষা পরিবর্তন হলে ক্লাস ও গ্রুপ ড্রপডাউন রিফ্রেশ
+    // 11. গ্রুপ ড্রপডাউন পরিবর্তন হ্যান্ডলার (Instant Smooth Spinner Feedback)
+    window.onTabGroupChange = function() {
+        const tbody = document.getElementById('tabTableTbody');
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; padding:35px; color:#64748b; font-weight:700;"><i class="fa-solid fa-circle-notch fa-spin" style="color:#2563eb; margin-right:8px; font-size:1.3rem;"></i> Loading Group Students &amp; Marks...</td></tr>`;
+        }
+        setTimeout(() => {
+            window.loadLiveTabulationData();
+        }, 15);
+    };
+
+    // 12. পরীক্ষা পরিবর্তন হলে ক্লাস ও গ্রুপ ড্রপডাউন রিফ্রেশ
     window.onTabExamChange = function(examId) {
-        const exam = cachedExams.find(x => x.id === examId);
+        const exam = memoryExamsCache.find(x => x.id === examId);
         const classInp = document.getElementById('tabDisplayClass');
         const grpSelect = document.getElementById('tabSelectGroup');
 
@@ -500,11 +637,10 @@
         window.loadLiveTabulationData();
     };
 
-    // ৮. গ্রুপ নির্ধারণের হেল্পার (আগে ওভাররাইড চেক করবে)
+    // 13. গ্রুপ নির্ধারণের হেল্পার
     function determineStudentGroup(st, meritRank, exam, overrides, trackRank) {
         const studentId = getStudentId(st);
 
-        // ১. ক্লাউডে মেধা অনুযায়ী নির্ধারিত গ্রুপ থাকলে সবার আগে সেটিই কার্যকর হবে
         if (overrides && overrides[exam.id] && overrides[exam.id][studentId]) {
             return overrides[exam.id][studentId];
         }
@@ -520,7 +656,7 @@
         return 'Unassigned';
     }
 
-    // ৯. লাইভ ট্যাবুলেশন ডাটা লোড ও গণনা ইঞ্জিন (১০০% মেধাভিত্তিক ও অটো-হাইড)
+    // 14. লাইভ ট্যাবুলেশন ডাটা লোড ও গণনা ইঞ্জিন (Merged Mutually Exclusive Subjects & Dynamic Totals)
     window.loadLiveTabulationData = async function() {
         const examSelect = document.getElementById('tabSelectExam');
         const grpSelect = document.getElementById('tabSelectGroup');
@@ -529,8 +665,16 @@
 
         if (!examSelect || !examSelect.value) return;
 
+        // Instant Visual Feedback
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; padding:35px; color:#64748b; font-weight:700;"><i class="fa-solid fa-circle-notch fa-spin" style="color:#2563eb; margin-right:8px; font-size:1.3rem;"></i> Loading Group Students &amp; Marks...</td></tr>`;
+        }
+
+        // Allow microtask repaint
+        await new Promise(r => setTimeout(r, 10));
+
         const examId = examSelect.value;
-        const exam = cachedExams.find(x => x.id === examId);
+        const exam = memoryExamsCache.find(x => x.id === examId);
         if (!exam) return;
 
         const selectedGroup = grpSelect ? grpSelect.value : 'ALL';
@@ -548,44 +692,50 @@
         }
         document.getElementById('tabHeadingGroup').innerText = groupDisplayLabel;
 
-        // বিষয়সমূহ লোড করা
+        // বিষয়সমূহ লোড ও শ্রেণীবিভাগ
         const subjects = exam.subjects || {};
         const subjectKeys = Object.keys(subjects);
 
-        // ক্লাসের শিক্ষার্থীদের লোড করা
-        let allStudents = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
-        if (allStudents.length === 0 && window.getDatabase && window.ref && window.get) {
-            try {
-                const snap = await window.get(window.ref(window.getDatabase(), 'cpscl_students'));
-                if (snap.exists()) {
-                    const data = snap.val();
-                    allStudents = Array.isArray(data) ? data : Object.values(data);
-                    localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents));
-                }
-            } catch(e){}
+        // শিক্ষার্থীদের লোড করা (In-Memory + Cloud Sync)
+        let allStudents = memoryStudentsCache;
+        if (!allStudents || allStudents.length === 0) {
+            allStudents = JSON.parse(localStorage.getItem('cpscl_students_cache') || '[]');
+            if (allStudents.length === 0 && window.getDatabase && window.ref && window.get) {
+                try {
+                    const snap = await window.get(window.ref(window.getDatabase(), 'cpscl_students'));
+                    if (snap.exists()) {
+                        const data = snap.val();
+                        allStudents = Array.isArray(data) ? data : Object.values(data);
+                        localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents));
+                    }
+                } catch(e){}
+            }
+            memoryStudentsCache = allStudents;
         }
 
-        let overrides = {};
-        try { overrides = JSON.parse(localStorage.getItem('cpscl_exam_group_overrides') || '{}'); } catch(e){}
-
-        if (window.getDatabase && window.ref && window.get) {
-            try {
-                const snapOv = await window.get(window.ref(window.getDatabase(), 'cpscl_exam_group_overrides'));
-                if (snapOv.exists()) {
-                    overrides = snapOv.val() || overrides;
-                    localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(overrides));
-                }
-            } catch(e){}
+        let overrides = memoryOverridesCache;
+        if (!overrides) {
+            try { overrides = JSON.parse(localStorage.getItem('cpscl_exam_group_overrides') || '{}'); } catch(e){}
+            if (window.getDatabase && window.ref && window.get) {
+                try {
+                    const snapOv = await window.get(window.ref(window.getDatabase(), 'cpscl_exam_group_overrides'));
+                    if (snapOv.exists()) {
+                        overrides = snapOv.val() || overrides;
+                        localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(overrides));
+                    }
+                } catch(e){}
+            }
+            memoryOverridesCache = overrides || {};
         }
 
         // ক্লাস অনুযায়ী ফিল্টার
-        let targetStudents = allStudents.filter(s => {
+        let targetStudents = (allStudents || []).filter(s => {
             const cName = String(s.class_name || s.class || '').trim().toLowerCase();
             const examC = String(exam.class).trim().toLowerCase();
             return cName === examC || cName.includes(examC) || examC.includes(cName);
         });
 
-        // মেধা সর্ট অর্ডার (যদি এক্সাম ম্যানেজারে সংরক্ষিত থাকে)
+        // মেধা সর্ট অর্ডার
         const savedMeritOrder = (overrides && overrides[exam.id + '_merit_order']) ? overrides[exam.id + '_merit_order'] : [];
         const isDailyTest01 = /^daily\s+test\s*[-–]?\s*0?1$/i.test(String(exam.name || '').trim());
 
@@ -633,26 +783,69 @@
         }
 
         if (targetStudents.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="padding:35px; color:#94a3b8; text-align:center;">কোনো শিক্ষার্থী পাওয়া যায়নি (No students found for this class/group).</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="12" style="padding:35px; color:#94a3b8; text-align:center;">কোনো শিক্ষার্থী পাওয়া যায়নি (No students found for this class/group).</td></tr>`;
             return;
         }
 
-        // বিষয়ভিত্তিক নম্বর সংগ্রহ করা
+        // বিষয়ভিত্তিক নম্বর সংগ্রহ করা (In-Memory + Cloud)
         const marksBySubject = {};
 
         for (let sub of subjectKeys) {
-            let subMarks = JSON.parse(localStorage.getItem(`cpscl_marks_${examId}_${sub}`) || '{}');
+            const cacheKey = `${examId}_${sub}`;
+            let subMarks = memoryMarksCache[cacheKey];
 
-            if (window.getDatabase && window.ref && window.get) {
-                try {
-                    const snapM = await window.get(window.ref(window.getDatabase(), `cpscl_exam_marks/${examId}_${sub}`));
-                    if (snapM.exists()) {
-                        subMarks = snapM.val() || subMarks;
-                    }
-                } catch(e){}
+            if (!subMarks) {
+                subMarks = JSON.parse(localStorage.getItem(`cpscl_marks_${examId}_${sub}`) || '{}');
+
+                if (window.getDatabase && window.ref && window.get) {
+                    try {
+                        const cleanSub = sub.replace(/[/#$\[\].]/g, '-').trim();
+                        const underKey = cleanSub.replace(/\s+/g, '_');
+
+                        const snapM = await window.get(window.ref(window.getDatabase(), `cpscl_exam_marks/${examId}_${cleanSub}`));
+                        if (snapM.exists()) {
+                            subMarks = { ...subMarks, ...(snapM.val() || {}) };
+                        }
+                        if (underKey !== cleanSub) {
+                            const snapUnder = await window.get(window.ref(window.getDatabase(), `cpscl_exam_marks/${examId}_${underKey}`));
+                            if (snapUnder.exists()) {
+                                subMarks = { ...(snapUnder.val() || {}), ...subMarks };
+                            }
+                        }
+                    } catch(e){}
+                }
+                memoryMarksCache[cacheKey] = subMarks;
             }
             marksBySubject[sub] = subMarks;
         }
+
+        // 🌟 ডায়নামিক কলাম গ্রুপিং (Merging Mutually Exclusive Subjects)
+        const columnGroups = [];
+        const groupMap = new Map();
+
+        subjectKeys.forEach(sub => {
+            const info = getSubjectClassification(sub);
+            const key = info.groupKey;
+            const fullMark = Number(subjects[sub]) || 20;
+
+            if (!groupMap.has(key)) {
+                const colDef = {
+                    key: key,
+                    type: info.groupType,
+                    label: info.groupLabel,
+                    subjects: [sub],
+                    fullMark: fullMark,
+                    isMerged: false
+                };
+                groupMap.set(key, colDef);
+                columnGroups.push(colDef);
+            } else {
+                const colDef = groupMap.get(key);
+                colDef.subjects.push(sub);
+                colDef.fullMark = Math.max(colDef.fullMark, fullMark);
+                colDef.isMerged = true;
+            }
+        });
 
         // শিক্ষার্থীদের নম্বর হিসাব করা
         const computedRows = targetStudents.map(st => {
@@ -661,25 +854,42 @@
             let studentTotal = 0;
             let hasAnyMark = false;
 
-            const subjectScores = {};
+            const columnScores = {};
+            const columnDisplayHtml = {};
 
-            subjectKeys.forEach(sub => {
-                const rec = (marksBySubject[sub] && marksBySubject[sub][stId]) ? marksBySubject[sub][stId] : null;
-                let val = null;
-                if (rec) {
-                    if (rec.rawMark !== null && rec.rawMark !== undefined && rec.rawMark !== '') {
-                        val = parseFloat(rec.rawMark);
-                    } else if (rec.cq !== null && rec.cq !== undefined) {
-                        val = (parseFloat(rec.cq) || 0) + (parseFloat(rec.mcq) || 0) + (parseFloat(rec.practical) || 0);
+            columnGroups.forEach(colDef => {
+                let colScore = null;
+                let matchedSubjectName = '';
+                let matchedSubjectCode = '';
+
+                colDef.subjects.forEach(sub => {
+                    const fullMark = Number(subjects[sub]) || colDef.fullMark || 20;
+                    const rec = (marksBySubject[sub] && marksBySubject[sub][stId] !== undefined) ? marksBySubject[sub][stId] : null;
+                    const rawVal = extractStudentRawScore(rec);
+
+                    if (rawVal !== null && !isNaN(rawVal)) {
+                        const capped = Math.min(Math.max(0, rawVal), fullMark);
+                        if (colScore === null || capped > colScore) {
+                            colScore = capped;
+                            matchedSubjectName = sub;
+                            matchedSubjectCode = resolveDynamicShortCode(sub);
+                        }
                     }
-                }
+                });
 
-                if (val !== null && !isNaN(val)) {
-                    subjectScores[sub] = val;
-                    studentTotal += val;
+                if (colScore !== null) {
+                    columnScores[colDef.key] = colScore;
+                    studentTotal += colScore;
                     hasAnyMark = true;
+
+                    if (colDef.isMerged) {
+                        columnDisplayHtml[colDef.key] = getSubjectBadge(colScore, matchedSubjectCode, matchedSubjectName);
+                    } else {
+                        columnDisplayHtml[colDef.key] = colScore;
+                    }
                 } else {
-                    subjectScores[sub] = '-';
+                    columnScores[colDef.key] = '-';
+                    columnDisplayHtml[colDef.key] = '-';
                 }
             });
 
@@ -687,35 +897,31 @@
                 id: stId,
                 name: stName,
                 group: st.computedGroup || 'Group A',
-                subjectScores,
-                total: studentTotal,
+                columnScores,
+                columnDisplayHtml,
+                total: Math.round(studentTotal * 100) / 100,
                 hasAnyMark
             };
         });
 
-        // 🌟 স্মার্ট অটো-হাইড: যে যে বিষয়ের পরীক্ষা হয়েছে শুধু সেই বিষয়গুলো দৃশ্যমান হবে
-        let activeSubjectsForView = [];
-        let totalFullMarks = 0;
-
+        // 🌟 স্মার্ট অটো-হাইড ও যথার্থ ডায়নামিক টোটাল গণনা (Fix for Total: 120 -> 80)
+        let activeColDefs = [];
         const anyMarkEnteredInView = computedRows.some(r => r.hasAnyMark);
 
         if (anyMarkEnteredInView) {
-            // যদি নম্বর এন্ট্রি শুরু হয়ে থাকে, তবে যে বিষয়ে অন্তত ১ জন পরীক্ষা দিয়েছে কেবল সেটাই থাকবে
-            activeSubjectsForView = subjectKeys.filter(sub => {
-                return computedRows.some(r => r.subjectScores[sub] !== '-');
+            activeColDefs = columnGroups.filter(col => {
+                return computedRows.some(r => r.columnScores[col.key] !== '-');
             });
         } else {
-            // যদি এখনো কারও নম্বর এন্ট্রি না হয়ে থাকে (ব্ল্যাঙ্ক ভিউ)
-            activeSubjectsForView = [...subjectKeys];
+            activeColDefs = [...columnGroups];
         }
 
-        activeSubjectsForView.forEach(sub => {
-            totalFullMarks += (parseInt(subjects[sub]) || 30);
+        let totalValidFullMarks = 0;
+        activeColDefs.forEach(col => {
+            totalValidFullMarks += (Number(col.fullMark) || 20);
         });
 
-        // 🌟 মেধা সর্টিং লজিক:
-        // ১. যদি মোট নম্বর থাকে, তবে বেশি নম্বর পাওয়া শিক্ষার্থী উপরে থাকবে (Merit Order)
-        // ২. যদি সবার নম্বর ০ হয় (পরীক্ষার আগে), তবে পূর্ববর্তী মেধা ক্রমেই ১, ২, ৩ ... সাজানো থাকবে (মেহরাব ১ নম্বরে)
+        // 🌟 মেধা সর্টিং লজিক
         computedRows.sort((a, b) => {
             if (b.total !== a.total) {
                 return b.total - a.total;
@@ -730,7 +936,7 @@
             return a.id.localeCompare(b.id);
         });
 
-        // টেবিল হেডার তৈরি (কোনো রোল কলাম নেই, একক গ্রুপে গ্রুপ কলামও থাকবে না)
+        // টেবিল হেডার তৈরি (Merged Headers & Accurate Valid Total)
         let thHtml = `<tr>
             <th style="width: 6%;">Merit</th>
             <th style="width: 14%;">Student ID</th>
@@ -741,12 +947,13 @@
             thHtml += `<th style="width: 9%;">Group</th>`;
         }
 
-        activeSubjectsForView.forEach(sub => {
-            const fMark = subjects[sub] || 30;
-            thHtml += `<th style="min-width: 50px;">${sub}<br><small>(${fMark})</small></th>`;
+        activeColDefs.forEach(col => {
+            const fMark = col.fullMark || 20;
+            const subTitle = col.isMerged ? col.subjects.join(' / ') : col.label;
+            thHtml += `<th style="min-width: 65px;" title="${subTitle}">${col.label}<br><small>(${fMark})</small></th>`;
         });
 
-        thHtml += `<th style="width: 10%;">Total<br><small>(${totalFullMarks})</small></th></tr>`;
+        thHtml += `<th style="width: 10%;">Total<br><small>(${totalValidFullMarks})</small></th></tr>`;
         thead.innerHTML = thHtml;
 
         // টেবিল বডিতে রো রেন্ডার করা
@@ -764,12 +971,13 @@
                 tdHtml += `<td>${row.group}</td>`;
             }
 
-            activeSubjectsForView.forEach(sub => {
-                const score = row.subjectScores[sub];
-                tdHtml += `<td>${score}</td>`;
+            activeColDefs.forEach(col => {
+                const displayVal = row.columnDisplayHtml[col.key];
+                tdHtml += `<td>${displayVal}</td>`;
             });
 
-            tdHtml += `<td class="total-col">${row.total}</td>`;
+            const pct = totalValidFullMarks > 0 ? ((row.total / totalValidFullMarks) * 100).toFixed(1) : 0;
+            tdHtml += `<td class="total-col" title="${pct}%">${row.total}</td>`;
             tr.innerHTML = tdHtml;
             tbody.appendChild(tr);
         });
@@ -777,7 +985,7 @@
         renderOnScreenSignatureBlock();
     };
 
-    // ১০. আসল ভেক্টর অফিশিয়াল প্রিন্ট ইঞ্জিন (কোনো রোল নেই, ধারালো লেখা)
+    // 15. আসল ভেক্টর অফিশিয়াল প্রিন্ট ইঞ্জিন
     window.printTabulationSheet = function() {
         const printArea = document.getElementById('tabPrintableArea');
         if (!printArea) {
@@ -940,7 +1148,7 @@
         }, 500);
     };
 
-    // ১১. এক্সেল এক্সপোর্ট
+    // 16. এক্সেল এক্সপোর্ট
     window.exportTabulationExcel = function() {
         const table = document.getElementById('tabMainTable');
         const examTitle = document.getElementById('tabHeadingExam').innerText || 'Tabulation';
@@ -965,7 +1173,7 @@
         }
     };
 
-    // ১২. ইনিশিয়ালাইজেশন
+    // 17. ইনিশিয়ালাইজেশন
     function init() {
         injectTabulationStyles();
         injectLiveTabulationSidebar();

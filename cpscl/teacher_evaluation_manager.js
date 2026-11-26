@@ -46,7 +46,11 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
-        if (!r.ok) throw new Error(`Firebase write error (${r.status})`);
+        if (!r.ok) {
+            let detail = '';
+            try { const errObj = await r.json(); detail = errObj.error || JSON.stringify(errObj); } catch (_) { detail = await r.text(); }
+            throw new Error(`Firebase write error (${r.status}): ${detail}`);
+        }
     }
 
     async function putJSON(path, body) {
@@ -55,7 +59,22 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
-        if (!r.ok) throw new Error(`Firebase write error (${r.status})`);
+        if (!r.ok) {
+            let detail = '';
+            try { const errObj = await r.json(); detail = errObj.error || JSON.stringify(errObj); } catch (_) { detail = await r.text(); }
+            throw new Error(`Firebase write error (${r.status}): ${detail}`);
+        }
+    }
+
+    async function deleteJSON(path) {
+        const r = await fetch(`${DB}/${path}.json`, {
+            method: 'DELETE'
+        });
+        if (!r.ok) {
+            let detail = '';
+            try { const errObj = await r.json(); detail = errObj.error || JSON.stringify(errObj); } catch (_) { detail = await r.text(); }
+            throw new Error(`Firebase delete error (${r.status}): ${detail}`);
+        }
     }
 
     function teacherId(t) { return String(t.emp_id || t.empId || t.EMP_ID || t['EMP ID'] || t.teacher_id || t.id || '').trim(); }
@@ -72,6 +91,8 @@
     let modalTeacher = null;
     let modalRows = {};        // subject -> Set(group)
     let dutyPlan = [];
+    let isDataLoaded = false;
+    let revealedPins = new Set();
 
     // Inject Styles
     function injectStyles() {
@@ -202,8 +223,8 @@
         });
     }
 
-    // Main Open View
-    window.openTeacherEval = async function (tab, el) {
+    // Main Open View (Instant Tab Switching & Cloud Refresh)
+    window.openTeacherEval = async function (tab, el, forceRefresh = false) {
         document.querySelectorAll('.trust-sub-link').forEach(l => l.classList.remove('active'));
         if (el) el.classList.add('active');
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
@@ -220,8 +241,13 @@
             mw.appendChild(view);
         }
         view.classList.add('active');
-        view.innerHTML = `<div class="te-wrap"><div style="padding:40px;text-align:center;color:#64748b;"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading data from Cloud...</div></div>`;
-        await loadAll();
+
+        if (!isDataLoaded || forceRefresh) {
+            view.innerHTML = `<div class="te-wrap"><div style="padding:40px;text-align:center;color:#64748b;"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading data from Cloud...</div></div>`;
+            await loadAll();
+            isDataLoaded = true;
+        }
+
         renderShell(tab || 'dir');
     };
 
@@ -231,7 +257,12 @@
         <div class="te-wrap">
             <div class="te-head">
                 <h1><i class="fa-solid fa-chalkboard-user"></i> Teacher Evaluation &amp; Duty Suite</h1>
-                <span class="te-badge">${teachers.length} Active Teachers • ${Object.keys(assignments).length} Assignments</span>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="te-badge">${teachers.length} Active Teachers • ${Object.keys(assignments).length} Assignments</span>
+                    <button class="te-btn ghost" style="height:32px;padding:0 12px;font-size:0.75rem;" onclick="window.openTeacherEval('${tab}', null, true)" title="Refresh data from Cloud">
+                        <i class="fa-solid fa-arrows-rotate"></i> Refresh Data
+                    </button>
+                </div>
             </div>
             <div class="te-tabs">
                 <button class="te-tab ${tab === 'dir' ? 'active' : ''}" onclick="window.openTeacherEval('dir')">
@@ -263,7 +294,13 @@
     function renderDirectory() {
         const body = document.getElementById('te-body');
         if (!teachers.length) {
-            body.innerHTML = `<div class="te-card" style="color:#b45309;font-weight:700;">No teachers found in collections: ${TEACHER_PATHS.join(', ')}.</div>`;
+            body.innerHTML = `
+            <div class="te-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <span style="color:#b45309;font-weight:700;">No teachers found in collections: ${TEACHER_PATHS.join(', ')}.</span>
+                    <button class="te-btn green" onclick="window.teOpenAddTeacherModal()"><i class="fa-solid fa-user-plus"></i> + Add Teacher</button>
+                </div>
+            </div>`;
             return;
         }
 
@@ -280,9 +317,22 @@
             const chips = Object.keys(bySub).map(s => `<span class="te-chip">${esc(s)}: ${esc(bySub[s].join(', '))}</span>`).join('') || '<span style="color:#94a3b8; font-weight:600;">Not assigned</span>';
 
             const isPinDefault = t.must_change_pin !== false;
-            const pinBadge = isPinDefault
-                ? `<span class="te-pin-badge te-pin-default"><i class="fa-solid fa-key"></i> Default PIN (2212)</span>`
-                : `<span class="te-pin-badge te-pin-custom"><i class="fa-solid fa-shield-check"></i> Customized</span>`;
+            const currentPin = String(t.pin || '2212');
+            const isRevealed = revealedPins.has(tid);
+            const pinDisplay = isRevealed ? currentPin : '••••';
+            const eyeIcon = isRevealed ? 'fa-eye-slash' : 'fa-eye';
+
+            const pinBadge = `
+                <div style="display:inline-flex;align-items:center;gap:6px;">
+                    <span class="te-pin-badge ${isPinDefault ? 'te-pin-default' : 'te-pin-custom'}">
+                        <i class="fa-solid ${isPinDefault ? 'fa-key' : 'fa-shield-check'}"></i>
+                        <span>PIN: <strong style="letter-spacing:1px;">${esc(pinDisplay)}</strong></span>
+                        <small style="opacity:0.75;">(${isPinDefault ? 'Default' : 'Custom'})</small>
+                    </span>
+                    <button type="button" class="te-btn ghost" style="height:26px;width:26px;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;" onclick="window.teTogglePinVisibility('${esc(tid)}')" title="${isRevealed ? 'Hide PIN' : 'Reveal PIN'}">
+                        <i class="fa-solid ${eyeIcon}" style="font-size:11px;"></i>
+                    </button>
+                </div>`;
 
             return `
             <tr>
@@ -294,8 +344,11 @@
                     <button class="te-btn ghost" style="margin-right:6px;" onclick="window.teResetTeacherPin('${esc(tid)}')" title="Reset PIN back to 2212">
                         <i class="fa-solid fa-rotate-left" style="color:#ea580c;"></i> Reset PIN
                     </button>
-                    <button class="te-btn" onclick="window.teOpenAssign('${esc(tid)}')">
+                    <button class="te-btn" style="margin-right:6px;" onclick="window.teOpenAssign('${esc(tid)}')">
                         <i class="fa-solid fa-list-check"></i> Assign Subjects
+                    </button>
+                    <button class="te-btn ghost" style="color:#dc2626;" onclick="window.teDeleteTeacher('${esc(tid)}')" title="Delete Teacher">
+                        <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </td>
             </tr>`;
@@ -305,7 +358,10 @@
         <div class="te-card">
             <div class="te-title">
                 <span>Teacher Directory &amp; Security PINs</span>
-                <input class="te-ctl" style="width:280px;" placeholder="Search by name, ID or mobile..." oninput="document.querySelectorAll('#te-dir-tbody tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(this.value.toLowerCase())?'':'none')">
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                    <input class="te-ctl" style="width:260px;" placeholder="Search by name, ID or mobile..." oninput="document.querySelectorAll('#te-dir-tbody tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(this.value.toLowerCase())?'':'none')">
+                    <button class="te-btn green" onclick="window.teOpenAddTeacherModal()"><i class="fa-solid fa-user-plus"></i> + Add Teacher</button>
+                </div>
             </div>
             <div style="overflow-x:auto">
                 <table class="te-table">
@@ -313,7 +369,7 @@
                         <tr>
                             <th>EMP ID</th>
                             <th>Teacher Name &amp; Mobile</th>
-                            <th>PIN Status</th>
+                            <th>PIN Status &amp; Value</th>
                             <th>Teaching (Subject: Groups)</th>
                             <th style="text-align:right;">Actions</th>
                         </tr>
@@ -324,7 +380,14 @@
         </div>`;
     }
 
-    // Reset PIN action
+    // Toggle PIN Visibility
+    window.teTogglePinVisibility = function (tid) {
+        if (revealedPins.has(tid)) revealedPins.delete(tid);
+        else revealedPins.add(tid);
+        renderDirectory();
+    };
+
+    // Reset PIN action with Cloud Validation
     window.teResetTeacherPin = async function (tid) {
         const teacher = teachers.find(t => teacherId(t) === tid);
         if (!teacher) return;
@@ -347,6 +410,112 @@
             renderDirectory();
         } catch (e) {
             alert("Reset failed: " + e.message);
+        }
+    };
+
+    // Add Teacher Modal
+    window.teOpenAddTeacherModal = function () {
+        document.getElementById('te-modal-box').innerHTML = `
+            <div class="te-title">
+                <span><i class="fa-solid fa-user-plus" style="color:#059669;"></i> Add New Teacher</span>
+                <button class="te-btn ghost" onclick="window.teCloseModal()">✕</button>
+            </div>
+            <form onsubmit="window.teSaveNewTeacher(event)" style="display:flex;flex-direction:column;gap:12px;margin-top:10px;">
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                    <label style="font-size:0.8rem;font-weight:700;color:#475569;">EMP ID *</label>
+                    <input id="te-add-id" class="te-ctl" placeholder="e.g. EMP1024 or 101" required>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                    <label style="font-size:0.8rem;font-weight:700;color:#475569;">Teacher Full Name *</label>
+                    <input id="te-add-name" class="te-ctl" placeholder="e.g. Md. Rafiqul Islam" required>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                    <label style="font-size:0.8rem;font-weight:700;color:#475569;">Mobile Number * (11-digit username)</label>
+                    <input id="te-add-mob" class="te-ctl" type="tel" placeholder="01XXXXXXXXX" pattern="[0-9]{11}" required>
+                </div>
+                <div style="background:#f8fafc;padding:10px 14px;border-radius:10px;border:1px solid #e2e8f0;font-size:0.78rem;color:#64748b;">
+                    <i class="fa-solid fa-shield-halved" style="color:#7c3aed;"></i> Initial PIN will default to <strong>2212</strong> (forced password change on first login).
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px;">
+                    <button type="button" class="te-btn ghost" onclick="window.teCloseModal()">Cancel</button>
+                    <button type="submit" class="te-btn green" id="te-add-save-btn"><i class="fa-solid fa-check"></i> Save Teacher</button>
+                </div>
+            </form>`;
+        document.getElementById('te-modal').style.display = 'flex';
+    };
+
+    // Save New Teacher
+    window.teSaveNewTeacher = async function (e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const emp_id = document.getElementById('te-add-id').value.trim();
+        const name = document.getElementById('te-add-name').value.trim();
+        const mobile = document.getElementById('te-add-mob').value.trim();
+        const btn = document.getElementById('te-add-save-btn');
+
+        if (!emp_id || !name || !mobile) {
+            alert("All fields are required.");
+            return;
+        }
+
+        if (teachers.some(t => teacherId(t) === emp_id)) {
+            alert(`A teacher with EMP ID '${emp_id}' already exists.`);
+            return;
+        }
+
+        const newTeacher = {
+            emp_id,
+            name,
+            mobile,
+            pin: "2212",
+            must_change_pin: true,
+            session_epoch: Date.now(),
+            createdAt: new Date().toISOString()
+        };
+
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Saving...`;
+
+        try {
+            await putJSON(`${teacherPathUsed}/${emp_id}`, newTeacher);
+            teachers.push(newTeacher);
+            teachers.sort((a, b) => teacherName(a).localeCompare(teacherName(b)));
+            window.teCloseModal();
+            renderDirectory();
+            alert(`Teacher '${name}' added successfully with default PIN 2212.`);
+        } catch (err) {
+            alert("Failed to add teacher: " + err.message);
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-check"></i> Save Teacher`;
+        }
+    };
+
+    // Delete Teacher
+    window.teDeleteTeacher = async function (tid) {
+        const teacher = teachers.find(t => teacherId(t) === tid);
+        if (!teacher) return;
+
+        if (!confirm(`Are you sure you want to permanently delete ${teacherName(teacher)} (${tid})?\n\nThis will remove the teacher and clear any associated subject assignments.`)) return;
+
+        try {
+            await deleteJSON(`${teacherPathUsed}/${tid}`);
+
+            // Remove assignments associated with this teacher
+            const patch = {};
+            Object.entries(assignments).forEach(([k, a]) => {
+                if (a && a.teacherId === tid) patch[k] = null;
+            });
+            if (Object.keys(patch).length) {
+                await patchJSON('teaching_assignments', patch);
+                Object.keys(patch).forEach(k => delete assignments[k]);
+            }
+
+            // Remove from local teachers array
+            teachers = teachers.filter(t => teacherId(t) !== tid);
+            revealedPins.delete(tid);
+            renderDirectory();
+            alert(`Teacher ${teacherName(teacher)} deleted successfully.`);
+        } catch (err) {
+            alert("Failed to delete teacher: " + err.message);
         }
     };
 
@@ -570,6 +739,7 @@
         const student = allStudents.find(s => String(s.student_id || s.std_id || s.id || '').trim() === sId);
         if (!student) return;
 
+        const prevRel = student.religion;
         const newRel = makeHindu ? "hinduism" : "islam";
         student.religion = newRel;
 
@@ -577,7 +747,9 @@
             await patchJSON(`cpscl_students/${sId}`, { religion: newRel });
             renderReligionSetup();
         } catch (e) {
+            student.religion = prevRel;
             alert("Religion update failed: " + e.message);
+            renderReligionSetup();
         }
     };
 
