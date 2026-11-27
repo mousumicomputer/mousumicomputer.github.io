@@ -96,6 +96,14 @@
 
             .spc-preview-container { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 20px; padding: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
 
+            /* Modern Corporate Progress Pill Bar */
+            .spc-progress-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 50px 20px; }
+            .spc-progress-card { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 24px; padding: 26px 32px; width: 100%; max-width: 440px; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05); text-align: center; }
+            .spc-progress-track { width: 100%; height: 10px; background: #f1f5f9; border-radius: 50px; overflow: hidden; position: relative; margin: 16px 0 10px; }
+            .spc-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #2563eb, #3b82f6); border-radius: 50px; transition: width 0.25s ease; box-shadow: 0 0 10px rgba(37,99,235,0.3); }
+            .spc-progress-title { font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+            .spc-progress-text { font-size: 11.5px; font-weight: 700; color: #64748b; min-height: 16px; }
+
             /* Student Slip Card Design */
             .student-slip-card {
                 position: relative;
@@ -277,6 +285,82 @@
         await window.generateProgressCardsData();
     }
 
+    // Canonical Subject Normalizer (Eliminates duplication, aliasing, and prefix-clash)
+    function normalizeCanonicalSubject(rawName) {
+        if (!rawName) return '';
+        const s = String(rawName).trim().toLowerCase();
+
+        // 1. Bangladesh & Global Studies (Must be checked BEFORE Bangla to prevent "Bangla" collision)
+        if (s.includes('bangladesh') || s === 'bgs' || s.includes('global')) return 'BGS';
+
+        // 2. ICT / Information & Communication Technology
+        if (s.includes('information') || s.includes('ict') || s.includes('communication') || s.startsWith('inform')) return 'ICT';
+
+        // 3. Bangla Papers
+        if (s.includes('ban') && (s.includes('2nd') || s.includes('2') || s.includes('ii'))) return 'Ban 2';
+        if (s.includes('ban') && (s.includes('1st') || s.includes('1') || s.includes('i'))) return 'Ban 1';
+        if (s === 'bangla' || s === 'ban') return 'Bangla';
+
+        // 4. English Papers
+        if (s.includes('eng') && (s.includes('2nd') || s.includes('2') || s.includes('ii'))) return 'Eng 2';
+        if (s.includes('eng') && (s.includes('1st') || s.includes('1') || s.includes('i'))) return 'Eng 1';
+        if (s === 'english' || s === 'eng') return 'English';
+
+        // 5. Mathematics
+        if (s.includes('higher') || s === 'hm' || s.includes('h.math') || s.includes('h-math')) return 'HM';
+        if (s.includes('math') || s.includes('mat')) return 'Math';
+
+        // 6. Natural Sciences
+        if (s.includes('phys') || s === 'phy') return 'Phy';
+        if (s.includes('chem') || s === 'chm') return 'Chem';
+        if (s.includes('bio')) return 'Bio';
+        if (s.includes('scien') || s === 'sci') return 'Sci';
+
+        // 7. Religion & Moral Education
+        if (s.includes('islam') || s === 'ime' || s.includes('islamic')) return 'Islam';
+        if (s.includes('hindu') || s === 'hme') return 'Hindu';
+        if (s.includes('relig') || s.includes('rel')) return 'Religion';
+
+        // 8. Agriculture & Commerce
+        if (s.includes('agri')) return 'Agri';
+        if (s.includes('acc') || s.includes('account')) return 'Acc';
+        if (s.includes('fin') || s.includes('finance')) return 'Fin';
+        if (s.includes('ent') || s.includes('business ent')) return 'B-Ent';
+
+        // Capitalized fallback
+        return rawName.trim().length > 7 ? rawName.trim().substring(0, 7) : rawName.trim();
+    }
+
+    // Helper: Update Animated Loading Progress Pill
+    function setProgressCardLoading(percent, text) {
+        const preview = document.getElementById('spcSinglePreviewArea');
+        if (!preview) return;
+
+        let wrap = document.getElementById('spcProgressWrapper');
+        if (!wrap) {
+            preview.innerHTML = `
+                <div class="spc-progress-wrapper" id="spcProgressWrapper">
+                    <div class="spc-progress-card">
+                        <div class="spc-progress-title">
+                            <i class="fa-solid fa-spinner fa-spin" style="color: #2563eb;"></i>
+                            <span>Compiling Progress Cards</span>
+                        </div>
+                        <div class="spc-progress-track">
+                            <div class="spc-progress-fill" id="spcProgressFill" style="width: 0%;"></div>
+                        </div>
+                        <div class="spc-progress-text" id="spcProgressStatus">Initializing data engine...</div>
+                    </div>
+                </div>
+            `;
+            wrap = document.getElementById('spcProgressWrapper');
+        }
+
+        const fill = document.getElementById('spcProgressFill');
+        const status = document.getElementById('spcProgressStatus');
+        if (fill) fill.style.width = `${percent}%`;
+        if (status) status.innerText = text;
+    }
+
     // 6. Comprehensive Calculation Engine
     window.generateProgressCardsData = async function () {
         const checkboxes = document.querySelectorAll('.spc-exam-chk:checked');
@@ -284,6 +368,8 @@
             alert("Please select at least one assessment!");
             return;
         }
+
+        setProgressCardLoading(10, "Fetching registered assessments & students...");
 
         const selectedExamIds = Array.from(checkboxes).map(c => c.value);
         const selectedExams = allExamsList.filter(x => selectedExamIds.includes(x.id));
@@ -324,6 +410,8 @@
 
         const latestExam = selectedExams[selectedExams.length - 1];
 
+        setProgressCardLoading(30, "Fetching assessment marks from cloud storage...");
+
         // 3. Fetch Marks for All Selected Exams and All Subjects
         const examMarksStore = {};
         for (let ex of selectedExams) {
@@ -340,6 +428,8 @@
                 examMarksStore[ex.id][sub] = sMap;
             }
         }
+
+        setProgressCardLoading(60, "Normalizing canonical subjects & merging exam marks...");
 
         // 4. Precompute Ranks for Each Exam
         const examStudentRanks = {};
@@ -369,10 +459,9 @@
             });
         });
 
-        // 5. Compute Grand Totals & Cumulative Ranking
-        const standardSubjects = ["Bangla", "English", "Mathematics", "Science", "BGS"];
-        let cumulativeMaxScore = selectedExams.length * 60; // Standard 60 per test
+        setProgressCardLoading(85, "Calculating cumulative ranks & percentage metrics...");
 
+        // 5. Compute Grand Totals & Cumulative Ranking (Dynamic Active Subjects & Accurate Denominator)
         computedCardStudents = classStudents.map(st => {
             const sId = String(st.std_id || st.id || '').trim();
             const sName = st.student_name || st.name || 'Unnamed';
@@ -383,50 +472,78 @@
             }
 
             let grandTotal = 0;
-            const subjectTotals = { Bangla: 0, English: 0, Mathematics: 0, Science: 0, BGS: 0 };
-            const subjectMaxPossibles = { Bangla: 0, English: 0, Mathematics: 0, Science: 0, BGS: 0 };
+            let studentMaxPossible = 0;
+            const subjectTotals = {};
+            const subjectMaxPossibles = {};
+            const activeSubjectsSet = new Set();
             const examRows = [];
 
             selectedExams.forEach(ex => {
                 const exId = ex.id;
                 const subs = Object.keys(ex.subjects || {});
                 let testScore = 0;
+                let testMaxMarks = 0;
                 const scores = {};
+                let studentSatAnyInExam = false;
 
-                standardSubjects.forEach(subName => {
-                    let markVal = '-';
-                    // Match subject flexibly (e.g. Math vs Mathematics)
-                    const matchingKey = subs.find(k => k.toLowerCase().startsWith(subName.substring(0, 3).toLowerCase()));
-                    if (matchingKey && examMarksStore[exId][matchingKey]) {
-                        const rec = examMarksStore[exId][matchingKey][sId];
-                        if (rec) {
-                            const val = (rec.rawMark !== null && rec.rawMark !== undefined && rec.rawMark !== '')
-                                ? parseFloat(rec.rawMark)
-                                : (parseFloat(rec.cq) || 0) + (parseFloat(rec.mcq) || 0) + (parseFloat(rec.practical) || 0);
-                            if (!isNaN(val)) {
-                                markVal = val;
-                                testScore += val;
-                                subjectTotals[subName] += val;
-                                subjectMaxPossibles[subName] += (ex.subjects[matchingKey] || 30);
-                            }
+                subs.forEach(rawSub => {
+                    const normSub = normalizeCanonicalSubject(rawSub);
+                    const rec = examMarksStore[exId]?.[rawSub]?.[sId];
+                    let val = null;
+
+                    if (rec) {
+                        const parsed = (rec.rawMark !== null && rec.rawMark !== undefined && rec.rawMark !== '')
+                            ? parseFloat(rec.rawMark)
+                            : (parseFloat(rec.cq) || 0) + (parseFloat(rec.mcq) || 0) + (parseFloat(rec.practical) || 0);
+                        if (!isNaN(parsed)) {
+                            val = parsed;
+                            testScore += parsed;
+                            studentSatAnyInExam = true;
+
+                            activeSubjectsSet.add(normSub);
+                            subjectTotals[normSub] = (subjectTotals[normSub] || 0) + parsed;
+                            const configuredFull = Number(ex.subjects[rawSub]) || 20;
+                            subjectMaxPossibles[normSub] = (subjectMaxPossibles[normSub] || 0) + configuredFull;
+                            testMaxMarks += configuredFull;
                         }
                     }
-                    scores[subName] = markVal;
+
+                    if (val !== null) {
+                        scores[normSub] = (scores[normSub] !== undefined && scores[normSub] !== '-')
+                            ? (scores[normSub] + val)
+                            : val;
+                    } else if (scores[normSub] === undefined) {
+                        scores[normSub] = '-';
+                    }
                 });
+
+                if (studentSatAnyInExam) {
+                    studentMaxPossible += testMaxMarks;
+                } else {
+                    const fallbackExamTotal = Number(ex.totalMarks) || (subs.length > 0 ? subs.reduce((sum, s) => sum + (Number(ex.subjects[s]) || 20), 0) : 60);
+                    studentMaxPossible += fallbackExamTotal;
+                }
 
                 grandTotal += testScore;
                 const examRank = examStudentRanks[exId] ? examStudentRanks[exId][sId] : '-';
 
                 examRows.push({
+                    examId: ex.id,
                     examName: ex.name,
                     date: ex.date || '',
                     scores,
                     testScore,
+                    testMaxMarks: testMaxMarks || (Number(ex.totalMarks) || 60),
                     examRank
                 });
             });
 
-            const convertedScore = cumulativeMaxScore > 0 ? ((grandTotal / cumulativeMaxScore) * 100) : 0;
+            if (studentMaxPossible === 0) {
+                studentMaxPossible = selectedExams.length * 60;
+            }
+
+            const activeSubjectsList = Array.from(activeSubjectsSet);
+            const convertedScore = studentMaxPossible > 0 ? ((grandTotal / studentMaxPossible) * 100) : 0;
 
             return {
                 id: sId,
@@ -436,29 +553,34 @@
                 range: `${selectedExams[0].name} to ${latestExam.name}`,
                 date: new Date().toISOString().split('T')[0],
                 examRows,
+                activeSubjectsList,
                 subjectTotals,
                 subjectMaxPossibles,
                 grandTotal,
-                maxPossible: cumulativeMaxScore,
+                maxPossible: studentMaxPossible,
                 convertedScore: parseFloat(convertedScore.toFixed(2))
             };
         });
 
-        // Sort by Grand Total descending
-        computedCardStudents.sort((a, b) => b.grandTotal - a.grandTotal);
+        // Robust Sort: Higher Converted Score first, then higher Grand Total
+        computedCardStudents.sort((a, b) => (b.convertedScore || 0) - (a.convertedScore || 0) || b.grandTotal - a.grandTotal);
         computedCardStudents.forEach((st, idx) => {
             st.cumulativeRank = idx + 1;
         });
 
+        setProgressCardLoading(100, "Progress Cards Ready!");
+
         populateStudentDropdown();
 
-        // If a student was previously selected, re-render their card
-        if (activeSelectedStudentId) {
-            renderSingleStudentCardOnScreen(activeSelectedStudentId);
-        } else if (computedCardStudents.length > 0) {
-            activeSelectedStudentId = computedCardStudents[0].id;
-            renderSingleStudentCardOnScreen(activeSelectedStudentId);
-        }
+        // Smooth transition from progress pill to rendered student card
+        setTimeout(() => {
+            if (activeSelectedStudentId) {
+                renderSingleStudentCardOnScreen(activeSelectedStudentId);
+            } else if (computedCardStudents.length > 0) {
+                activeSelectedStudentId = computedCardStudents[0].id;
+                renderSingleStudentCardOnScreen(activeSelectedStudentId);
+            }
+        }, 220);
     };
 
     function populateStudentDropdown() {
@@ -498,41 +620,54 @@
         renderSingleStudentCardOnScreen(studentId);
     };
 
-    // Helper: Build a Student Slip HTML (Exact Compact Fit)
+    // Helper: Build a Student Slip HTML (Exact Compact Fit with Dynamic Canonical Subjects)
     function buildStudentCardHTML(st) {
         const ordinal = (n) => {
             const s = ["th", "st", "nd", "rd"], v = n % 100;
             return n + (s[(v - 20) % 10] || s[v] || s[0]);
         };
 
+        const activeSubs = (st.activeSubjectsList && st.activeSubjectsList.length > 0)
+            ? st.activeSubjectsList
+            : ["Bangla", "English", "Math", "Sci", "BGS"];
+
+        let thSubsHtml = '';
+        activeSubs.forEach(sub => {
+            thSubsHtml += `<th>${sub}</th>`;
+        });
+
         let rowsHtml = '';
         st.examRows.forEach(row => {
+            let scoreCells = '';
+            activeSubs.forEach(sub => {
+                const val = row.scores[sub];
+                scoreCells += `<td>${val !== undefined ? val : '-'}</td>`;
+            });
+
             rowsHtml += `
                 <tr>
                     <td class="exam-name">${row.examName}</td>
                     <td>${row.date}</td>
-                    <td>${row.scores.Bangla}</td>
-                    <td>${row.scores.English}</td>
-                    <td>${row.scores.Mathematics}</td>
-                    <td>${row.scores.Science}</td>
-                    <td>${row.scores.BGS}</td>
+                    ${scoreCells}
                     <td class="score-total">${row.testScore}</td>
                     <td style="font-weight:700;">${row.examRank !== '-' ? ordinal(row.examRank) : '-'}</td>
                 </tr>
             `;
         });
 
-        const subTot = (sub) => {
+        let tdTotalsHtml = '';
+        activeSubs.forEach(sub => {
             const got = st.subjectTotals[sub];
             const max = st.subjectMaxPossibles[sub];
-            return max > 0 ? `${got}/${max}` : '-';
-        };
+            tdTotalsHtml += `<td>${(got !== undefined && max) ? `${got}/${max}` : (got !== undefined ? got : '-')}</td>`;
+        });
 
+        const grp = st.group || 'Assigned Group';
         const remarksText = (st.cumulativeRank <= 10) 
-            ? "Outstanding academic excellence and consistency. Maintained top-tier performance in Group A."
-            : (st.cumulativeRank <= 40)
-            ? "Good performance and steady improvement. Maintained position in Group A."
-            : "Needs focused preparation and extra effort in key subjects to advance into Group A.";
+            ? `Outstanding academic excellence and consistency. Maintained top-tier performance in ${grp}.`
+            : (st.cumulativeRank <= 55)
+            ? `Good performance and steady improvement. Maintained position in ${grp}.`
+            : `Needs focused preparation and extra effort in key subjects to advance further in ${grp}.`;
 
         return `
             <div class="student-slip-card">
@@ -552,7 +687,7 @@
                         <div class="bio-item"><span class="bio-label">Name:</span> <span class="bio-val">${st.name}</span></div>
                         <div class="bio-item"><span class="bio-label">ID:</span> <span class="bio-val">${st.id}</span></div>
                         <div class="bio-item"><span class="bio-label">Group:</span> <span class="badge-grp">${st.group}</span></div>
-                        <div class="bio-item"><span class="bio-label">Program:</span> <span class="bio-val">Scholarship Batch</span></div>
+                        <div class="bio-item"><span class="bio-label">Program:</span> <span class="bio-val">Academic Batch</span></div>
                         <div class="bio-item"><span class="bio-label">Evaluation:</span> <span class="bio-val">${st.range}</span></div>
                         <div class="bio-item"><span class="bio-label">Date:</span> <span class="bio-val">${st.date}</span></div>
                     </div>
@@ -560,14 +695,10 @@
                     <table class="matrix-table">
                         <thead>
                             <tr>
-                                <th style="width: 25%;">Assessment</th>
-                                <th style="width: 14%;">Date</th>
-                                <th style="width: 9%;">Bangla<br><small>(30)</small></th>
-                                <th style="width: 9%;">English<br><small>(30)</small></th>
-                                <th style="width: 9%;">Math<br><small>(30)</small></th>
-                                <th style="width: 9%;">Science<br><small>(30)</small></th>
-                                <th style="width: 9%;">BGS<br><small>(30)</small></th>
-                                <th style="width: 8%;">Score<br><small>(60)</small></th>
+                                <th style="width: 24%;">Assessment</th>
+                                <th style="width: 13%;">Date</th>
+                                ${thSubsHtml}
+                                <th style="width: 9%;">Score<br><small>(Total)</small></th>
                                 <th style="width: 8%;">Rank</th>
                             </tr>
                         </thead>
@@ -576,11 +707,7 @@
                             <tr class="total-row">
                                 <td class="exam-name">Total Marks</td>
                                 <td>${st.examRows.length} Tests</td>
-                                <td>${subTot('Bangla')}</td>
-                                <td>${subTot('English')}</td>
-                                <td>${subTot('Mathematics')}</td>
-                                <td>${subTot('Science')}</td>
-                                <td>${subTot('BGS')}</td>
+                                ${tdTotalsHtml}
                                 <td class="score-total">${st.grandTotal}/${st.maxPossible}</td>
                                 <td>${ordinal(st.cumulativeRank)}</td>
                             </tr>
