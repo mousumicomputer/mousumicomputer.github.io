@@ -123,31 +123,190 @@
             .wm-sig-space { height: 50px; }
             .wm-sig-line { width: 100%; border-top: 1.5px solid #000; margin-bottom: 5px; }
             .wm-sig-label { font-size: 11px; font-weight: 800; color: #000; }
+
+            /* Processing Pill Overlay */
+            .wm-progress-overlay {
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(4px);
+                display: flex; align-items: center; justify-content: center; z-index: 999999;
+            }
+            .wm-progress-card {
+                background: #ffffff; border-radius: 50px; padding: 18px 30px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.2); display: flex; flex-direction: column;
+                align-items: center; gap: 10px; min-width: 340px; border: 2px solid #3b82f6;
+            }
+            .wm-progress-title { font-size: 13px; font-weight: 800; color: #1e3a8a; display: flex; align-items: center; gap: 8px; }
+            .wm-progress-bar-wrap { width: 100%; height: 10px; background: #e2e8f0; border-radius: 50px; overflow: hidden; position: relative; }
+            .wm-progress-bar-fill { height: 100%; background: linear-gradient(90deg, #2563eb, #3b82f6); border-radius: 50px; width: 0%; transition: width 0.25s ease; }
+            .wm-progress-pct { font-size: 12px; font-weight: 800; color: #2563eb; }
         `;
         document.head.appendChild(style);
     }
 
-    // Helper: Abbreviate subject names for clean horizontal fitting
+    // Helper: Dynamic Progress Pill Modal
+    function showWeeklyProgressPill(pct = 0, titleText = 'Processing Master Tabulation...') {
+        let overlay = document.getElementById('wm-progress-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'wm-progress-overlay';
+            overlay.className = 'wm-progress-overlay';
+            overlay.innerHTML = `
+                <div class="wm-progress-card">
+                    <div class="wm-progress-title" id="wm-progress-title">
+                        <i class="fa-solid fa-spinner fa-spin"></i> <span>${titleText}</span>
+                    </div>
+                    <div class="wm-progress-bar-wrap">
+                        <div class="wm-progress-bar-fill" id="wm-progress-bar-fill" style="width: ${pct}%;"></div>
+                    </div>
+                    <div class="wm-progress-pct" id="wm-progress-pct">${Math.round(pct)}%</div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        } else {
+            overlay.style.display = 'flex';
+            const fill = document.getElementById('wm-progress-bar-fill');
+            const text = document.getElementById('wm-progress-pct');
+            const title = document.getElementById('wm-progress-title');
+            if (fill) fill.style.width = pct + '%';
+            if (text) text.innerText = Math.round(pct) + '%';
+            if (title && titleText) title.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${titleText}</span>`;
+        }
+    }
+
+    async function updateWeeklyProgressPill(pct, titleText) {
+        showWeeklyProgressPill(pct, titleText);
+        await new Promise(r => setTimeout(r, 25));
+    }
+
+    function hideWeeklyProgressPill() {
+        const overlay = document.getElementById('wm-progress-overlay');
+        if (overlay) {
+            setTimeout(() => {
+                if (overlay && overlay.parentNode) {
+                    overlay.parentNode.removeChild(overlay);
+                }
+            }, 350);
+        }
+    }
+
+    // Helper: Abbreviate & Normalize Subject Names for Clean Horizontal Fitting
     function formatShortSubject(name) {
         if (!name) return '';
-        const clean = name.trim();
-        if (/^ban\s*1/i.test(clean)) return 'Ban 1';
-        if (/^ban\s*2/i.test(clean)) return 'Ban 2';
-        if (/^eng\s*1/i.test(clean)) return 'Eng 1';
-        if (/^eng\s*2/i.test(clean)) return 'Eng 2';
-        if (/^math/i.test(clean) || /^mat/i.test(clean)) return 'Math';
+        const clean = String(name).trim();
+
+        // 1. Bangladesh and Global Studies (strictly BGS, checked before Bangla to avoid truncation)
+        if (/^bangladesh\s*(and|&)?\s*global/i.test(clean) || /\bbgs\b/i.test(clean) || /^bangladesh/i.test(clean)) {
+            return 'BGS';
+        }
+
+        // 2. Bangla 1st & 2nd Paper (Ban 1 / Ban 2)
+        if (/(?:bangla|ban|bengali)[\s\-_]*(?:1st|1|first|\(1st\b|\(1\b)/i.test(clean)) {
+            return 'Ban 1';
+        }
+        if (/(?:bangla|ban|bengali)[\s\-_]*(?:2nd|2|second|\(2nd\b|\(2\b)/i.test(clean)) {
+            return 'Ban 2';
+        }
+
+        // 3. English 1st & 2nd Paper (Eng 1 / Eng 2)
+        if (/(?:english|eng)[\s\-_]*(?:1st|1|first|\(1st\b|\(1\b)/i.test(clean)) {
+            return 'Eng 1';
+        }
+        if (/(?:english|eng)[\s\-_]*(?:2nd|2|second|\(2nd\b|\(2\b)/i.test(clean)) {
+            return 'Eng 2';
+        }
+
+        // 4. Religion Slot
+        if (/religion|islam|hindu|buddhis|christian|moral\s*edu|\bime\b|\bhme\b/i.test(clean)) {
+            return 'Reli';
+        }
+
+        // 5. Elective / 4th Subject
+        if (/higher\s*math|\bhm\b/i.test(clean) && /agri/i.test(clean)) return 'HM / Agri';
+        if (/higher\s*math|\bhm\b/i.test(clean)) return 'H.Math';
+        if (/agri/i.test(clean)) return 'Agri';
+
+        // 6. Common Core & Departmental Subjects
+        if (/^general\s*math|^math/i.test(clean) || /^mat\b/i.test(clean)) return 'Math';
         if (/^phys/i.test(clean)) return 'Phy';
-        if (/^chem/i.test(clean)) return 'Chem';
+        if (/^chem/i.test(clean) || /^che\b/i.test(clean)) return 'Chem';
         if (/^bio/i.test(clean)) return 'Bio';
-        if (/^scien/i.test(clean) || /^sci/i.test(clean)) return 'Sci';
-        if (/^bgs/i.test(clean)) return 'BGS';
-        if (/^rel/i.test(clean)) return 'Reli';
-        if (/^ict/i.test(clean)) return 'ICT';
+        if (/^scien/i.test(clean) || /^sci\b/i.test(clean)) return 'Sci';
+        if (/^ict/i.test(clean) || /information\s*(&|and)\s*comm/i.test(clean)) return 'ICT';
         if (/^acc/i.test(clean)) return 'Acc-Geo';
         if (/^fin/i.test(clean)) return 'Fin-His';
-        if (/^b-ent/i.test(clean)) return 'B-Ent';
-        if (/^hm-agri/i.test(clean) || /^agri/i.test(clean)) return 'Agri';
+        if (/^b-?ent/i.test(clean)) return 'B-Ent';
+        if (/^geo/i.test(clean)) return 'Geo';
+        if (/^his/i.test(clean)) return 'His';
+        if (/^civ/i.test(clean)) return 'Civ';
+
         return clean.length > 7 ? clean.substring(0, 6) : clean;
+    }
+
+    // Helper: Slot classification for Religion & Elective column merging
+    function classifySubjectSlot(subName) {
+        const s = String(subName || '').trim();
+
+        // Religion Slot (Islam & Moral Education, Hindu Religion, Buddhist, Christian -> 'Reli')
+        if (/religion|islam|hindu|buddhis|christian|moral\s*edu|\bime\b|\bhme\b/i.test(s)) {
+            return {
+                slotKey: 'slot_religion',
+                slotLabel: 'Reli',
+                type: 'religion'
+            };
+        }
+
+        // Optional / Elective Slot (Higher Math and Agriculture / Agri Studies -> 'HM / Agri')
+        if (/higher\s*math|\bhm\b|agriculture|agri/i.test(s)) {
+            return {
+                slotKey: 'slot_elective',
+                slotLabel: 'HM / Agri',
+                type: 'elective'
+            };
+        }
+
+        // Standard individual subject slot
+        return {
+            slotKey: 'sub_' + s,
+            slotLabel: formatShortSubject(s),
+            type: 'standard'
+        };
+    }
+
+    // Helper: Extract valid numeric mark from multi-format storage records
+    function extractStudentScore(rec) {
+        if (rec === null || rec === undefined || rec === '') return null;
+        if (typeof rec === 'number') return isNaN(rec) ? null : rec;
+        if (typeof rec === 'string' && rec.trim() !== '' && !isNaN(Number(rec))) return parseFloat(rec);
+        if (typeof rec === 'object') {
+            if (rec.rawMark !== null && rec.rawMark !== undefined && String(rec.rawMark).trim() !== '' && !isNaN(Number(rec.rawMark))) {
+                return parseFloat(rec.rawMark);
+            }
+            if (rec.total !== null && rec.total !== undefined && String(rec.total).trim() !== '' && !isNaN(Number(rec.total))) {
+                return parseFloat(rec.total);
+            }
+            let partSum = 0;
+            let hasPart = false;
+            ['cq', 'mcq', 'practical'].forEach(field => {
+                if (rec[field] !== null && rec[field] !== undefined && String(rec[field]).trim() !== '' && !isNaN(Number(rec[field]))) {
+                    partSum += parseFloat(rec[field]);
+                    hasPart = true;
+                }
+            });
+            if (hasPart) return partSum;
+        }
+        return null;
+    }
+
+    // Helper: Determine if two students are completely tied across grand total and all exam breakdowns
+    function areStudentsTied(a, b, exams) {
+        if (a.grandTotal !== b.grandTotal) return false;
+        for (let i = exams.length - 1; i >= 0; i--) {
+            const exId = exams[i].id;
+            const scA = a.examBreakdown[exId]?.testTotal || 0;
+            const scB = b.examBreakdown[exId]?.testTotal || 0;
+            if (scA !== scB) return false;
+        }
+        return true;
     }
 
     // Baseline Reference & Stream Mapping for SSC 27 Preparatory Suite
@@ -475,7 +634,7 @@
 
         let html = '';
         allWeeklyExams.forEach((ex, idx) => {
-            const isChecked = idx >= Math.max(0, allWeeklyExams.length - 4);
+            const isChecked = false; // All assessments unchecked by default
             const classLabel = ex.class ? `[${ex.class}] ` : '';
             html += `
                 <label class="wm-checkbox-item">
@@ -511,382 +670,411 @@
             return;
         }
 
-        const selectedExamIds = Array.from(checkboxes).map(c => c.value);
-        const selectedExams = allWeeklyExams.filter(x => selectedExamIds.includes(x.id));
-
-        selectedExams.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
-
-        const firstExam = selectedExams[0];
-        const isSSC10 = isSSC27Exam(firstExam);
-        const isCls8 = isClass8Exam(firstExam);
-
-        const firstDate = selectedExams[0].date || '';
-        const lastDate = selectedExams[selectedExams.length - 1].date || '';
-        document.getElementById('wmDisplayDateRange').innerText = `Assessment Period: ${firstDate} to ${lastDate}`;
-        
-        const displayClassElem = document.getElementById('wmDisplayClass');
-        if (displayClassElem) {
-            displayClassElem.innerText = isSSC10 
-                ? "Class 10 (SSC 27 Preparatory Suite)"
-                : (firstExam.class || 'Eight Scholarship Batch-2026');
-        }
-
-        updateTrackFilterOptions(firstExam);
-
-        // 1. Fetch Students
-        let allStudents = [];
         try {
-            const local = localStorage.getItem('cpscl_students_cache');
-            if (local) allStudents = JSON.parse(local);
-        } catch(e){}
+            await updateWeeklyProgressPill(5, "Initializing Master Tabulation...");
 
-        if (window.getDatabase && window.ref && window.get) {
+            const selectedExamIds = Array.from(checkboxes).map(c => c.value);
+            const selectedExams = allWeeklyExams.filter(x => selectedExamIds.includes(x.id));
+
+            selectedExams.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+
+            const firstExam = selectedExams[0];
+            const isSSC10 = isSSC27Exam(firstExam);
+            const isCls8 = isClass8Exam(firstExam);
+
+            const firstDate = selectedExams[0].date || '';
+            const lastDate = selectedExams[selectedExams.length - 1].date || '';
+            const dateRangeElem = document.getElementById('wmDisplayDateRange');
+            if (dateRangeElem) {
+                dateRangeElem.innerText = `Assessment Period: ${firstDate} to ${lastDate}`;
+            }
+            
+            const displayClassElem = document.getElementById('wmDisplayClass');
+            if (displayClassElem) {
+                displayClassElem.innerText = isSSC10 
+                    ? "Class 10 (SSC 27 Preparatory Suite)"
+                    : (firstExam.class || 'Eight Scholarship Batch-2026');
+            }
+
+            updateTrackFilterOptions(firstExam);
+
+            await updateWeeklyProgressPill(15, "Fetching student roster...");
+
+            // 1. Fetch Students
+            let allStudents = [];
             try {
-                const snapS = await window.get(window.ref(window.getDatabase(), 'cpscl_students'));
-                if (snapS.exists()) {
-                    const data = snapS.val();
-                    allStudents = Array.isArray(data) ? data : Object.values(data);
-                    localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents));
-                }
+                const local = localStorage.getItem('cpscl_students_cache');
+                if (local) allStudents = JSON.parse(local);
             } catch(e){}
-        }
 
-        // Direct REST fetch fallback if cache is empty
-        if (allStudents.length === 0) {
-            try {
-                const resSt = await fetch('https://mousumi-computer-default-rtdb.firebaseio.com/cpscl_students.json');
-                if (resSt.ok) {
-                    const data = await resSt.json();
-                    if (data) {
+            if (window.getDatabase && window.ref && window.get) {
+                try {
+                    const snapS = await window.get(window.ref(window.getDatabase(), 'cpscl_students'));
+                    if (snapS.exists()) {
+                        const data = snapS.val();
                         allStudents = Array.isArray(data) ? data : Object.values(data);
                         localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents));
                     }
-                }
-            } catch(e){}
-        }
-
-        // Filter students strictly by selected examination's target class
-        let classStudents = allStudents.filter(s => {
-            if (isSSC10) {
-                const cName = String(s.class_name || s.class || s['Class Name *'] || '').trim().toLowerCase();
-                const bName = String(s.section || s.section_batch || s['Section/Batch *'] || '').trim().toLowerCase();
-                const isC10 = cName.includes('10') || cName.includes('ten') || cName.includes('ssc') || bName.includes('ssc') || bName.includes('27');
-                const isNot8 = !cName.includes('8') && !cName.includes('eight');
-                return isC10 && isNot8;
-            } else {
-                const targetClassClean = String(firstExam.class || 'Eight Scholarship Batch-2026').trim().toLowerCase();
-                const cName = String(s.class_name || s.class || '').trim().toLowerCase();
-                return cName === targetClassClean || cName.includes(targetClassClean) || targetClassClean.includes(cName);
+                } catch(e){}
             }
-        });
 
-        if (classStudents.length === 0) {
-            alert("No students registered for this class!");
-            return;
-        }
-
-        // 2. Fetch Group Overrides
-        let overrides = {};
-        try {
-            const localOv = localStorage.getItem('cpscl_exam_group_overrides');
-            if (localOv) overrides = JSON.parse(localOv);
-        } catch(e){}
-
-        if (window.getDatabase && window.ref && window.get) {
-            try {
-                const snapO = await window.get(window.ref(window.getDatabase(), 'cpscl_exam_group_overrides'));
-                if (snapO.exists()) {
-                    overrides = snapO.val() || overrides;
-                    localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(overrides));
-                }
-            } catch(e){}
-        }
-
-        if (Object.keys(overrides).length === 0) {
-            try {
-                const resOv = await fetch('https://mousumi-computer-default-rtdb.firebaseio.com/cpscl_exam_group_overrides.json');
-                if (resOv.ok) {
-                    const data = await resOv.json();
-                    if (data) overrides = data;
-                }
-            } catch(e){}
-        }
-
-        const latestExam = selectedExams[selectedExams.length - 1];
-
-        // Assign clean student ID, academic track, and currently assigned group
-        classStudents.forEach(st => {
-            const sId = String(st.std_id || st.student_id || st.id || st['Student ID *'] || '').trim();
-            st.cleanId = sId;
-
-            if (isSSC10) {
-                st.track = getStudentTrack(st);
-                let assignedGroup = overrides[latestExam.id]?.[sId];
-                if (!assignedGroup) {
-                    assignedGroup = SSC27_DEFAULT_ALLOCATIONS[sId] || (st.track === 'humanities' ? 'Group D (Humanities)' : st.track === 'business' ? 'Group D (Business Studies)' : 'Group A (Science)');
-                }
-                st.currentGroup = assignedGroup;
-            } else {
-                st.track = 'general';
-                st.currentGroup = overrides[latestExam.id]?.[sId] || 'Group A';
-            }
-        });
-
-        // Apply Stream / Group Filter
-        const trackFilter = document.getElementById('wmTrackFilterSelect')?.value || 'ALL';
-        let filteredStudents = classStudents;
-        if (trackFilter !== 'ALL') {
-            if (trackFilter === 'science') {
-                filteredStudents = classStudents.filter(s => s.track === 'science');
-            } else if (trackFilter === 'humanities') {
-                filteredStudents = classStudents.filter(s => s.track === 'humanities');
-            } else if (trackFilter === 'business') {
-                filteredStudents = classStudents.filter(s => s.track === 'business');
-            } else {
-                filteredStudents = classStudents.filter(s => s.currentGroup === trackFilter);
-            }
-        }
-
-        if (filteredStudents.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="10" style="padding:30px; text-align:center; color:#94a3b8;">No students found matching the selected track/group filter.</td></tr>`;
-            return;
-        }
-
-        // 3. Fetch Marks for All Selected Exams and All Subjects
-        const examMarksStore = {};
-        for (let ex of selectedExams) {
-            examMarksStore[ex.id] = {};
-            const subs = Object.keys(ex.subjects || {});
-            for (let sub of subs) {
-                let sMap = JSON.parse(localStorage.getItem(`cpscl_marks_${ex.id}_${sub}`) || '{}');
-                if (window.getDatabase && window.ref && window.get) {
-                    try {
-                        const snapM = await window.get(window.ref(window.getDatabase(), `cpscl_exam_marks/${ex.id}_${sub}`));
-                        if (snapM.exists()) sMap = snapM.val() || sMap;
-                    } catch(e){}
-                }
-                if (Object.keys(sMap).length === 0) {
-                    try {
-                        const resM = await fetch(`https://mousumi-computer-default-rtdb.firebaseio.com/cpscl_exam_marks/${encodeURIComponent(ex.id + '_' + sub)}.json`);
-                        if (resM.ok) {
-                            const val = await resM.json();
-                            if (val) sMap = val;
+            // Direct REST fetch fallback if cache is empty
+            if (allStudents.length === 0) {
+                try {
+                    const resSt = await fetch('https://mousumi-computer-default-rtdb.firebaseio.com/cpscl_students.json');
+                    if (resSt.ok) {
+                        const data = await resSt.json();
+                        if (data) {
+                            allStudents = Array.isArray(data) ? data : Object.values(data);
+                            localStorage.setItem('cpscl_students_cache', JSON.stringify(allStudents));
                         }
-                    } catch(e){}
-                }
-                examMarksStore[ex.id][sub] = sMap;
+                    }
+                } catch(e){}
             }
-        }
 
-        // 4. Determine Active Subjects per Exam for the Current Filter (Auto-Hide Irrelevant Subjects)
-        const examMetaList = selectedExams.map(ex => {
-            const subs = Object.keys(ex.subjects || {});
-
-            let activeSubs = subs.filter(sub => {
-                const sMap = examMarksStore[ex.id]?.[sub] || {};
-                return filteredStudents.some(st => {
-                    const rec = sMap[st.cleanId];
-                    if (!rec) return false;
-                    if (rec.rawMark !== null && rec.rawMark !== undefined && rec.rawMark !== '') return true;
-                    if (rec.cq !== null && rec.cq !== undefined && rec.cq !== '') return true;
-                    if (typeof rec === 'number') return true;
-                    return false;
-                });
+            // Filter students strictly by selected examination's target class
+            let classStudents = allStudents.filter(s => {
+                if (isSSC10) {
+                    const cName = String(s.class_name || s.class || s['Class Name *'] || '').trim().toLowerCase();
+                    const bName = String(s.section || s.section_batch || s['Section/Batch *'] || '').trim().toLowerCase();
+                    const isC10 = cName.includes('10') || cName.includes('ten') || cName.includes('ssc') || bName.includes('ssc') || bName.includes('27');
+                    const isNot8 = !cName.includes('8') && !cName.includes('eight');
+                    return isC10 && isNot8;
+                } else {
+                    const targetClassClean = String(firstExam.class || 'Eight Scholarship Batch-2026').trim().toLowerCase();
+                    const cName = String(s.class_name || s.class || '').trim().toLowerCase();
+                    return cName === targetClassClean || cName.includes(targetClassClean) || targetClassClean.includes(cName);
+                }
             });
 
-            if (activeSubs.length === 0) {
-                activeSubs = subs;
+            if (classStudents.length === 0) {
+                alert("No students registered for this class!");
+                return;
             }
 
-            // ── Fully Dynamic Full Mark Calculation ──────────────────────────────────
-            // Class 8 legacy (60/exam) is strictly preserved for backward compatibility.
-            // All other classes (Class 10 / SSC 27 and ANY future class) are 100% data-driven:
-            //
-            //   Step 1: Read each active subject's configured full mark from ex.subjects
-            //           (Firebase stores per-subject marks, e.g. { Math: 20, Biology: 20, ... }).
-            //   Step 2: For each filtered student count how many activeSubs they actually sat.
-            //   Step 3: Take the MEDIAN subject count across students → multiply by per-subject mark.
-            //
-            //   Why median?  When "All Students" is selected, activeSubs is the UNION of all
-            //   stream subjects (e.g. 9 subjects for DT-01).  Each student only sat 4 of them.
-            //   The median of per-student counts correctly returns 4 (not 9), giving 4×20 = 80.
-            //   This is robust to outliers (e.g. one student who sat extra subjects).
-            //
-            //   Daily Test-04, 05, ... any future test: automatically correct, zero code changes.
-            // ─────────────────────────────────────────────────────────────────────────────────
-            let examFullMark;
-            if (isCls8) {
-                // Class 8 legacy: 2-subject rotation, 30 marks each = 60 per exam. Strictly unchanged.
-                examFullMark = 60;
-            } else {
-                // ── Step 1: Average per-subject full mark for this exam (typically 20) ──────
-                const subjectValues = Object.values(ex.subjects || {}).map(v => Number(v) || 20);
-                const perSubjectMark = subjectValues.length > 0
-                    ? subjectValues.reduce((s, v) => s + v, 0) / subjectValues.length
-                    : 20;
+            await updateWeeklyProgressPill(25, "Loading group allocations...");
 
-                // ── Step 2: Count, per filtered student, how many activeSubs they sat ───────
-                const perStudentSubCounts = filteredStudents.map(st => {
-                    let cnt = 0;
-                    activeSubs.forEach(sub => {
-                        const rec = examMarksStore[ex.id]?.[sub]?.[st.cleanId];
-                        if (rec === null || rec === undefined || rec === '') return;
-                        if (typeof rec === 'number' ||
-                            (rec.rawMark !== null && rec.rawMark !== undefined && rec.rawMark !== '') ||
-                            (rec.cq   !== null && rec.cq   !== undefined && rec.cq   !== '')) {
-                            cnt++;
+            // 2. Fetch Group Overrides
+            let overrides = {};
+            try {
+                const localOv = localStorage.getItem('cpscl_exam_group_overrides');
+                if (localOv) overrides = JSON.parse(localOv);
+            } catch(e){}
+
+            if (window.getDatabase && window.ref && window.get) {
+                try {
+                    const snapO = await window.get(window.ref(window.getDatabase(), 'cpscl_exam_group_overrides'));
+                    if (snapO.exists()) {
+                        overrides = snapO.val() || overrides;
+                        localStorage.setItem('cpscl_exam_group_overrides', JSON.stringify(overrides));
+                    }
+                } catch(e){}
+            }
+
+            if (Object.keys(overrides).length === 0) {
+                try {
+                    const resOv = await fetch('https://mousumi-computer-default-rtdb.firebaseio.com/cpscl_exam_group_overrides.json');
+                    if (resOv.ok) {
+                        const data = await resOv.json();
+                        if (data) overrides = data;
+                    }
+                } catch(e){}
+            }
+
+            const latestExam = selectedExams[selectedExams.length - 1];
+
+            // Assign clean student ID, academic track, and currently assigned group
+            classStudents.forEach(st => {
+                const sId = String(st.std_id || st.student_id || st.id || st['Student ID *'] || '').trim();
+                st.cleanId = sId;
+
+                if (isSSC10) {
+                    st.track = getStudentTrack(st);
+                    let assignedGroup = overrides[latestExam.id]?.[sId];
+                    if (!assignedGroup) {
+                        assignedGroup = SSC27_DEFAULT_ALLOCATIONS[sId] || (st.track === 'humanities' ? 'Group D (Humanities)' : st.track === 'business' ? 'Group D (Business Studies)' : 'Group A (Science)');
+                    }
+                    st.currentGroup = assignedGroup;
+                } else {
+                    st.track = 'general';
+                    st.currentGroup = overrides[latestExam.id]?.[sId] || 'Group A';
+                }
+            });
+
+            // Apply Stream / Group Filter
+            const trackFilter = document.getElementById('wmTrackFilterSelect')?.value || 'ALL';
+            let filteredStudents = classStudents;
+            if (trackFilter !== 'ALL') {
+                if (trackFilter === 'science') {
+                    filteredStudents = classStudents.filter(s => s.track === 'science');
+                } else if (trackFilter === 'humanities') {
+                    filteredStudents = classStudents.filter(s => s.track === 'humanities');
+                } else if (trackFilter === 'business') {
+                    filteredStudents = classStudents.filter(s => s.track === 'business');
+                } else {
+                    filteredStudents = classStudents.filter(s => s.currentGroup === trackFilter);
+                }
+            }
+
+            if (filteredStudents.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" style="padding:30px; text-align:center; color:#94a3b8;">No students found matching the selected track/group filter.</td></tr>`;
+                return;
+            }
+
+            // 3. Fetch Marks for All Selected Exams and All Subjects
+            const examMarksStore = {};
+            for (let i = 0; i < selectedExams.length; i++) {
+                const ex = selectedExams[i];
+                const pct = 30 + Math.round((i / selectedExams.length) * 35);
+                await updateWeeklyProgressPill(pct, `Loading marks: ${ex.name}...`);
+
+                examMarksStore[ex.id] = {};
+                const subs = Object.keys(ex.subjects || {});
+                for (let sub of subs) {
+                    let sMap = JSON.parse(localStorage.getItem(`cpscl_marks_${ex.id}_${sub}`) || '{}');
+                    if (window.getDatabase && window.ref && window.get) {
+                        try {
+                            const snapM = await window.get(window.ref(window.getDatabase(), `cpscl_exam_marks/${ex.id}_${sub}`));
+                            if (snapM.exists()) sMap = snapM.val() || sMap;
+                        } catch(e){}
+                    }
+                    if (Object.keys(sMap).length === 0) {
+                        try {
+                            const resM = await fetch(`https://mousumi-computer-default-rtdb.firebaseio.com/cpscl_exam_marks/${encodeURIComponent(ex.id + '_' + sub)}.json`);
+                            if (resM.ok) {
+                                const val = await resM.json();
+                                if (val) sMap = val;
+                            }
+                        } catch(e){}
+                    }
+                    examMarksStore[ex.id][sub] = sMap;
+                }
+            }
+
+            await updateWeeklyProgressPill(70, "Optimizing subject slots & merging columns...");
+
+            // 4. Construct Subject Slots per Exam with Slot Merging Engine (Reli & HM / Agri)
+            const examMetaList = selectedExams.map(ex => {
+                const subs = Object.keys(ex.subjects || {});
+
+                // Check if any mark exists for this exam among filtered students
+                let examHasMarks = false;
+                for (const sub of subs) {
+                    const sMap = examMarksStore[ex.id]?.[sub] || {};
+                    if (filteredStudents.some(st => extractStudentScore(sMap[st.cleanId]) !== null)) {
+                        examHasMarks = true;
+                        break;
+                    }
+                }
+
+                const slotMap = new Map();
+                const examSlots = [];
+
+                subs.forEach(sub => {
+                    const sMap = examMarksStore[ex.id]?.[sub] || {};
+                    const subHasMarks = filteredStudents.some(st => extractStudentScore(sMap[st.cleanId]) !== null);
+
+                    if (examHasMarks && !subHasMarks) {
+                        return; // Auto-hide subject with no entered marks for current filter
+                    }
+
+                    const info = classifySubjectSlot(sub);
+                    const subFullMark = Number(ex.subjects?.[sub]) || (isCls8 ? 30 : 20);
+
+                    if (slotMap.has(info.slotKey)) {
+                        const slot = slotMap.get(info.slotKey);
+                        if (!slot.subjects.includes(sub)) {
+                            slot.subjects.push(sub);
+                        }
+                        if (subFullMark > slot.fullMark) {
+                            slot.fullMark = subFullMark;
+                        }
+                    } else {
+                        const slot = {
+                            id: info.slotKey,
+                            label: info.slotLabel,
+                            type: info.type,
+                            subjects: [sub],
+                            fullMark: subFullMark
+                        };
+                        slotMap.set(info.slotKey, slot);
+                        examSlots.push(slot);
+                    }
+                });
+
+                // Fallback: If no slots active, preserve all configured
+                if (examSlots.length === 0) {
+                    subs.forEach(sub => {
+                        const info = classifySubjectSlot(sub);
+                        const subFullMark = Number(ex.subjects?.[sub]) || (isCls8 ? 30 : 20);
+                        if (slotMap.has(info.slotKey)) {
+                            const slot = slotMap.get(info.slotKey);
+                            if (!slot.subjects.includes(sub)) slot.subjects.push(sub);
+                        } else {
+                            const slot = {
+                                id: info.slotKey,
+                                label: info.slotLabel,
+                                type: info.type,
+                                subjects: [sub],
+                                fullMark: subFullMark
+                            };
+                            slotMap.set(info.slotKey, slot);
+                            examSlots.push(slot);
                         }
                     });
-                    return cnt;
-                }).filter(c => c > 0); // exclude students with no marks (absent / not yet entered)
-
-                // ── Step 3: Median subject count → exam full mark ──────────────────────────
-                let typicalSubCount;
-                if (perStudentSubCounts.length > 0) {
-                    const sorted = [...perStudentSubCounts].sort((a, b) => a - b);
-                    typicalSubCount = sorted[Math.floor(sorted.length / 2)]; // median
-                } else {
-                    // No marks entered yet — exam not started; use activeSubs count as placeholder
-                    typicalSubCount = activeSubs.length;
                 }
 
-                examFullMark = Math.round(typicalSubCount * perSubjectMark);
-
-                // Safety net: guard against zero (empty exam with no subjects configured)
-                if (examFullMark <= 0) {
-                    examFullMark = Number(ex.totalMarks) > 0 ? Number(ex.totalMarks) : 100;
+                // Default representative full mark for this exam header
+                let defaultFullMark = isCls8 ? 60 : 0;
+                if (!isCls8) {
+                    examSlots.forEach(s => { defaultFullMark += s.fullMark; });
                 }
-            }
-            // ─────────────────────────────────────────────────────────────────────────────
 
-            return {
-                exam: ex,
-                activeSubs,
-                fullMark: examFullMark
-            };
-        });
-
-        // 5. Compute Rows for Each Student
-        // cumulativeMaxScore: grand denominator = sum of each selected exam's dynamically-computed fullMark.
-        // Automatically scales with any number of exams (1, 3, 4, 10 …) the admin checks in the UI.
-        let cumulativeMaxScore = 0;
-        examMetaList.forEach(m => { cumulativeMaxScore += m.fullMark; });
-
-        const computedStudents = filteredStudents.map(st => {
-            const sId = st.cleanId;
-            const sName = String(st.student_name || st.name_english || st.name || st['Name (English) *'] || 'Student').trim();
-
-            let grandTotal = 0;
-            const examBreakdown = {};
-
-            examMetaList.forEach(meta => {
-                const exId = meta.exam.id;
-                let testTotal = 0;
-                const subScores = {};
-
-                meta.activeSubs.forEach(sub => {
-                    const sMap = examMarksStore[exId]?.[sub] || {};
-                    const rec = sMap[sId];
-                    let val = null;
-                    if (rec) {
-                        if (typeof rec === 'number') {
-                            val = rec;
-                        } else if (rec.rawMark !== null && rec.rawMark !== undefined && rec.rawMark !== '') {
-                            val = parseFloat(rec.rawMark);
-                        } else if (rec.cq !== null && rec.cq !== undefined && rec.cq !== '') {
-                            val = (parseFloat(rec.cq) || 0) + (parseFloat(rec.mcq) || 0) + (parseFloat(rec.practical) || 0);
-                        }
-                    }
-
-                    if (val !== null && !isNaN(val)) {
-                        subScores[sub] = val;
-                        testTotal += val;
-                    } else {
-                        subScores[sub] = '-';
-                    }
-                });
-
-                examBreakdown[exId] = {
-                    subScores,
-                    testTotal
+                return {
+                    exam: ex,
+                    slots: examSlots,
+                    fullMark: defaultFullMark
                 };
-
-                grandTotal += testTotal;
             });
 
-            // studentMaxPossible: cumulative full mark across ALL selected exams for this student.
-            // cumulativeMaxScore is now 100% dynamic — computed from live per-student subject
-            // counts (median) × per-subject mark per exam.  Adding or removing any exam from the
-            // checkbox list automatically adjusts this denominator.  Examples:
-            //   DT-01 + DT-02 + DT-03 selected  →  80 + 100 + 100 = 280
-            //   DT-01 + DT-02 + DT-03 + DT-04   →  80 + 100 + 100 + 100 = 380  (auto-scaled)
-            //   Class 8, 3 exams selected        →  60 + 60 + 60 = 180  (backward-compat)
-            const studentMaxPossible = cumulativeMaxScore;
+            await updateWeeklyProgressPill(80, "Calculating student scores & dynamic full marks...");
 
-            // Mathematical Safety: Strictly <= 100%
-            const converted100 = studentMaxPossible > 0 ? Math.min(100, (grandTotal / studentMaxPossible) * 100) : 0;
+            // 5. Compute Rows for Each Student (Personalized studentMaxPossible)
+            const computedStudents = filteredStudents.map(st => {
+                const sId = st.cleanId;
+                const sName = String(st.student_name || st.name_english || st.name || st['Name (English) *'] || 'Student').trim();
 
-            return {
-                id: sId,
-                name: sName,
-                group: st.currentGroup,
-                track: st.track,
-                examBreakdown,
-                grandTotal,
-                studentMaxPossible,
-                converted100: parseFloat(converted100.toFixed(2))
-            };
-        });
+                let grandTotal = 0;
+                let studentMaxPossible = 0;
+                const examBreakdown = {};
 
-        // 6. Robust Multi-Tier Tie-Breaking Algorithm for Authority Submission
+                examMetaList.forEach(meta => {
+                    const exId = meta.exam.id;
+                    let testTotal = 0;
+                    let examSatMax = 0;
+                    const slotScores = {};
+
+                    meta.slots.forEach(slot => {
+                        let score = null;
+                        let satSubName = null;
+
+                        for (const sub of slot.subjects) {
+                            const sMap = examMarksStore[exId]?.[sub] || {};
+                            const val = extractStudentScore(sMap[sId]);
+                            if (val !== null) {
+                                score = val;
+                                satSubName = sub;
+                                break;
+                            }
+                        }
+
+                        slotScores[slot.id] = score;
+
+                        if (score !== null) {
+                            testTotal += score;
+                            const subFullMark = Number(meta.exam.subjects?.[satSubName]) || slot.fullMark || (isCls8 ? 30 : 20);
+                            examSatMax += subFullMark;
+                        }
+                    });
+
+                    examBreakdown[exId] = {
+                        slotScores,
+                        testTotal,
+                        examSatMax
+                    };
+
+                    grandTotal += testTotal;
+                    studentMaxPossible += examSatMax;
+                });
+
+                // Accurate Per-Student Converted 100 Percentage
+                const converted100 = studentMaxPossible > 0 ? (grandTotal / studentMaxPossible) * 100 : 0;
+
+                return {
+                    id: sId,
+                    name: sName,
+                    group: st.currentGroup,
+                    track: st.track,
+                    examBreakdown,
+                    grandTotal,
+                    studentMaxPossible,
+                    converted100: parseFloat(converted100.toFixed(2))
+                };
+            });
+
+            // Update meta.fullMark in headers to reflect actual maximum score possible in that exam
+            examMetaList.forEach(meta => {
+                const exId = meta.exam.id;
+                const maxExamSat = Math.max(...computedStudents.map(s => s.examBreakdown[exId]?.examSatMax || 0), 0);
+                if (maxExamSat > 0) {
+                    meta.fullMark = maxExamSat;
+                }
+            });
+
+            const grandMaxPossible = Math.max(...computedStudents.map(s => s.studentMaxPossible), 0);
+
+            await updateWeeklyProgressPill(88, "Applying multi-exam tie-breaking & fair merit ranks...");
+
+        // Priority 1: Fair Normalized Percentage (Converted 100%) - STRICT PRIMARY METRIC
         computedStudents.sort((a, b) => {
-            // Priority 1: Grand Total Score
-            if (b.grandTotal !== a.grandTotal) return b.grandTotal - a.grandTotal;
+            const diffPct = b.converted100 - a.converted100;
+            if (Math.abs(diffPct) > 0.001) {
+                return diffPct;
+            }
 
-            // Priority 2: Latest Test Performance (e.g. Daily Test-03)
-            const lastExId = selectedExams[selectedExams.length - 1]?.id;
-            if (lastExId) {
-                const scA = a.examBreakdown[lastExId]?.testTotal || 0;
-                const scB = b.examBreakdown[lastExId]?.testTotal || 0;
+            // Priority 2: Raw Grand Total (if percentages are genuinely identical)
+            if (b.grandTotal !== a.grandTotal) {
+                return b.grandTotal - a.grandTotal;
+            }
+
+            // Priority 3: Sequential Recency across selected exams (Newest test down to oldest)
+            for (let i = selectedExams.length - 1; i >= 0; i--) {
+                const exId = selectedExams[i].id;
+                const scA = a.examBreakdown[exId]?.testTotal || 0;
+                const scB = b.examBreakdown[exId]?.testTotal || 0;
                 if (scB !== scA) return scB - scA;
             }
 
-            // Priority 3: Prior Test Performance (e.g. Daily Test-02)
-            if (selectedExams.length >= 2) {
-                const midExId = selectedExams[selectedExams.length - 2]?.id;
-                const scA = a.examBreakdown[midExId]?.testTotal || 0;
-                const scB = b.examBreakdown[midExId]?.testTotal || 0;
-                if (scB !== scA) return scB - scA;
-            }
-
-            // Priority 4: Baseline Merit Order (SSC 27 official intake order)
+            // Priority 4: SSC 27 Baseline Intake Rank fallback
             if (isSSC10) {
-                const rankA = SSC27_BASELINE_MAP.has(a.id) ? SSC27_BASELINE_MAP.get(a.id) : 9999;
-                const rankB = SSC27_BASELINE_MAP.has(b.id) ? SSC27_BASELINE_MAP.get(b.id) : 9999;
-                if (rankA !== rankB) return rankA - rankB;
+                const rA = SSC27_BASELINE_MAP.has(a.id) ? SSC27_BASELINE_MAP.get(a.id) : 9999;
+                const rB = SSC27_BASELINE_MAP.has(b.id) ? SSC27_BASELINE_MAP.get(b.id) : 9999;
+                if (rA !== rB) return rA - rB;
             }
 
-            // Priority 5: Deterministic Student ID fallback
+            // Priority 5: Deterministic Student ID
             return a.id.localeCompare(b.id);
         });
 
-        lastGeneratedWeeklyMeritList = computedStudents;
+        // Compute Fair Standard Competition Tied Ranks based on converted100
+        computedStudents.forEach((st, idx) => {
+            if (idx > 0) {
+                const prev = computedStudents[idx - 1];
+                const isExactTie = (Math.abs(st.converted100 - prev.converted100) <= 0.001 && st.grandTotal === prev.grandTotal);
+                st.meritRank = isExactTie ? prev.meritRank : (idx + 1);
+            } else {
+                st.meritRank = 1;
+            }
+            st.rank = st.meritRank;
+        });
 
-        // 7. Dynamic Two-Tier Table Header
+            lastGeneratedWeeklyMeritList = computedStudents;
+
+            await updateWeeklyProgressPill(94, "Rendering master tabulation table...");
+
+        // Render Clean Two-Tier Table Header (No misleading static numbers in headers)
         let tr1 = `<tr>
-            <th rowspan="2" class="th-main" style="width: 3%;">Serial</th>
+            <th rowspan="2" class="th-main" style="width: 3%;">SL</th>
             <th rowspan="2" class="th-main" style="width: 6.5%;">Student ID</th>
-            <th rowspan="2" class="th-main" style="width: 13%; text-align: left; padding-left: 5px;">Student Name</th>
-            <th rowspan="2" class="th-main" style="width: 5%;">Group<br><small>(Assigned)</small></th>
+            <th rowspan="2" class="th-main" style="width: 14%; text-align: left; padding-left: 5px;">Student Name</th>
+            <th rowspan="2" class="th-main" style="width: 5.5%;">Group<br><small>(Assigned)</small></th>
         `;
-
         let tr2 = `<tr>`;
 
         const examColorClasses = ['th-exam-1', 'th-exam-2', 'th-exam-3', 'th-exam-4'];
-
         examMetaList.forEach((meta, idx) => {
             const colClass = examColorClasses[idx % examColorClasses.length];
-            const spanCount = meta.activeSubs.length + 1;
+            const spanCount = meta.slots.length + 1;
             const dateDisplay = meta.exam.date ? `<div style="font-size: 8px; font-weight: 600; opacity: 0.9; margin-top: 1px;">${meta.exam.date}</div>` : '';
 
             tr1 += `<th colspan="${spanCount}" class="${colClass}" style="line-height: 1.15; padding: 4px 2px;">
@@ -894,59 +1082,68 @@
                         ${dateDisplay}
                     </th>`;
 
-            meta.activeSubs.forEach(sub => {
-                tr2 += `<th class="sub-head">${formatShortSubject(sub)}</th>`;
+            meta.slots.forEach(slot => {
+                tr2 += `<th class="sub-head">${slot.label}</th>`;
             });
 
-            tr2 += `<th class="sub-total" style="line-height: 1.1;">Total<br><small style="font-size: 7.5px;">(${meta.fullMark})</small></th>`;
+            // Clean Exam Total without misleading fixed numbers
+            tr2 += `<th class="sub-total" style="line-height: 1.1;">Total</th>`;
         });
 
+        // Clean Grand Total, Converted %, and Merit Rank
         tr1 += `
-            <th rowspan="2" class="th-grand" style="width: 4.5%; line-height: 1.15;">Grand Total<br><small style="font-size: 7.5px;">(${cumulativeMaxScore})</small></th>
-            <th rowspan="2" class="th-conv" style="width: 5%; line-height: 1.15;">Converted<br><small style="font-size: 7.5px;">(100)</small></th>
-            <th rowspan="2" class="th-rank" style="width: 4%; line-height: 1.15;">Final<br>Rank</th>
+            <th rowspan="2" class="th-grand" style="width: 5.5%; line-height: 1.15;">Grand<br>Total</th>
+            <th rowspan="2" class="th-conv" style="width: 6%; line-height: 1.15;">Converted<br><small style="font-size: 7.5px;">(100%)</small></th>
+            <th rowspan="2" class="th-rank" style="width: 4.5%; line-height: 1.15;">Merit<br>Rank</th>
         </tr>`;
-
         tr2 += `</tr>`;
 
         thead.innerHTML = tr1 + tr2;
 
-        // 8. Build Table Body
-        tbody.innerHTML = '';
-        computedStudents.forEach((row, idx) => {
-            const tr = document.createElement('tr');
-            const groupColor = (row.group === 'Group A' || row.group.includes('Group A')) ? '#2563eb' 
-                             : (row.group === 'Group B' || row.group.includes('Group B')) ? '#059669' 
-                             : (row.group.includes('Group C')) ? '#d97706' : '#7c3aed';
+            // 8. Build Table Body
+            tbody.innerHTML = '';
+            computedStudents.forEach((row, idx) => {
+                const tr = document.createElement('tr');
+                const groupColor = (row.group === 'Group A' || row.group.includes('Group A')) ? '#2563eb' 
+                                 : (row.group === 'Group B' || row.group.includes('Group B')) ? '#059669' 
+                                 : (row.group.includes('Group C')) ? '#d97706' : '#7c3aed';
 
-            let tdHtml = `
-                <td><strong>${idx + 1}</strong></td>
-                <td><strong>${row.id}</strong></td>
-                <td class="name-col">${row.name}</td>
-                <td style="font-weight:700; font-size:8.5px; color:${groupColor};">${row.group}</td>
-            `;
+                let tdHtml = `
+                    <td><strong>${idx + 1}</strong></td>
+                    <td><strong>${row.id}</strong></td>
+                    <td class="name-col">${row.name}</td>
+                    <td style="font-weight:700; font-size:8.5px; color:${groupColor};">${row.group}</td>
+                `;
 
-            examMetaList.forEach(meta => {
-                const exId = meta.exam.id;
-                const b = row.examBreakdown[exId];
+                examMetaList.forEach(meta => {
+                    const exId = meta.exam.id;
+                    const b = row.examBreakdown[exId];
 
-                meta.activeSubs.forEach(sub => {
-                    const sc = b ? b.subScores[sub] : '-';
-                    tdHtml += `<td>${sc !== undefined ? sc : '-'}</td>`;
+                    meta.slots.forEach(slot => {
+                        const sc = b ? b.slotScores[slot.id] : null;
+                        tdHtml += `<td>${sc !== null && sc !== undefined ? sc : '-'}</td>`;
+                    });
+
+                    tdHtml += `<td class="test-total">${b ? b.testTotal : 0}</td>`;
                 });
 
-                tdHtml += `<td class="test-total">${b ? b.testTotal : 0}</td>`;
+                tdHtml += `
+                    <td class="grand-col">${row.grandTotal}</td>
+                    <td class="conv-col">${row.converted100.toFixed(2)}%</td>
+                    <td class="rank-col">${(row.meritRank || row.rank)}${getOrdinalSuffix(row.meritRank || row.rank)}</td>
+                `;
+
+                tr.innerHTML = tdHtml;
+                tbody.appendChild(tr);
             });
 
-            tdHtml += `
-                <td class="grand-col">${row.grandTotal}</td>
-                <td class="conv-col">${row.converted100.toFixed(2)}%</td>
-                <td class="rank-col">${idx + 1}${getOrdinalSuffix(idx + 1)}</td>
-            `;
-
-            tr.innerHTML = tdHtml;
-            tbody.appendChild(tr);
-        });
+            await updateWeeklyProgressPill(100, "Tabulation complete!");
+        } catch (err) {
+            console.error("Error generating master tabulation:", err);
+            alert("Error generating master tabulation: " + (err.message || err));
+        } finally {
+            hideWeeklyProgressPill();
+        }
     };
 
     function getOrdinalSuffix(i) {
@@ -1009,7 +1206,7 @@
             const meritOrderedIds = [];
             lastGeneratedWeeklyMeritList.forEach((st, idx) => {
                 const sId = st.id;
-                const rank = idx + 1;
+                const rank = st.rank || (idx + 1);
                 const assignedGroup = (rank <= 40) ? "Group A" : "Group B";
                 manualGroupOverrides[targetExamId][sId] = assignedGroup;
                 meritOrderedIds.push(sId);
@@ -1034,7 +1231,7 @@
 
             const meritOrderedIds = [];
 
-            // Science Track Promotion (Rank 1-55: Group A, 56-105: Group B, 106-146: Group C)
+            // Science Track Promotion strictly on Fair Converted % Merit Order
             sci.forEach((st, idx) => {
                 const rank = idx + 1;
                 const grp = (rank <= 55) ? 'Group A (Science)'
@@ -1137,6 +1334,69 @@
         alert(successMsg);
     };
 
+    // Helper: Build dynamic filename with auto-incrementing version (_v2, _v3...)
+    if (!window.cpsclPdfVersionMap) window.cpsclPdfVersionMap = {};
+
+    function generateSmartTabulationFileName(extension = 'pdf') {
+        const classEl = document.getElementById('wmDisplayClass');
+        const trackSelect = document.getElementById('wmTrackFilterSelect');
+
+        // 1. Clean Class
+        let cleanClass = 'Class_10';
+        if (classEl && classEl.innerText) {
+            const raw = classEl.innerText;
+            if (/10|ten|ssc/i.test(raw)) cleanClass = 'Class_10';
+            else if (/8|eight/i.test(raw)) cleanClass = 'Class_8';
+            else cleanClass = raw.split('(')[0].trim().replace(/[^a-zA-Z0-9]/g, '_');
+        }
+
+        // 2. Clean Track / Filter
+        let cleanTrack = 'All_Groups';
+        const filterVal = trackSelect ? trackSelect.value : 'ALL';
+        if (filterVal === 'ALL') cleanTrack = 'All_Groups';
+        else if (filterVal === 'science') cleanTrack = 'Science';
+        else if (filterVal === 'humanities') cleanTrack = 'Humanities';
+        else if (filterVal === 'business') cleanTrack = 'Business_Studies';
+        else if (filterVal.includes('Group A')) cleanTrack = 'Group_A';
+        else if (filterVal.includes('Group B')) cleanTrack = 'Group_B';
+        else if (filterVal.includes('Group C')) cleanTrack = 'Group_C';
+        else if (filterVal.includes('Group D')) cleanTrack = 'Group_D';
+        else cleanTrack = filterVal.replace(/[^a-zA-Z0-9]/g, '_');
+
+        // 3. Clean Exam Range (e.g. DT-04_to_DT-08)
+        const checkedBoxes = Array.from(document.querySelectorAll('.wm-exam-chk:checked'));
+        let examRange = 'Result';
+        if (checkedBoxes.length > 0) {
+            const getShortExName = (id) => {
+                const ex = allWeeklyExams.find(x => x.id === id);
+                if (!ex || !ex.name) return 'Exam';
+                const m = ex.name.match(/(?:daily\s*test|dt)[\s-_]*0*(\d+)/i);
+                if (m) return `DT-${m[1].padStart(2, '0')}`;
+                return ex.name.trim().replace(/[^a-zA-Z0-9]/g, '_').substring(0, 8);
+            };
+
+            const firstEx = getShortExName(checkedBoxes[0].value);
+            const lastEx = getShortExName(checkedBoxes[checkedBoxes.length - 1].value);
+
+            if (checkedBoxes.length === 1 || firstEx === lastEx) {
+                examRange = firstEx;
+            } else {
+                examRange = `${firstEx}_to_${lastEx}`;
+            }
+        }
+
+        // 4. Construct Base Name
+        const baseName = `${cleanClass}_${cleanTrack}_Weekly_Result_${examRange}`;
+
+        // 5. Version Tracker (_v2, _v3, _v4...)
+        const prevCount = window.cpsclPdfVersionMap[baseName] || 0;
+        const newCount = prevCount + 1;
+        window.cpsclPdfVersionMap[baseName] = newCount;
+
+        const versionSuffix = newCount > 1 ? `_v${newCount}` : '';
+        return `${baseName}${versionSuffix}`;
+    }
+
     // 8. Isolated Vector Print Engine (Flexible Landscape: Legal / A4 / A3 Compatible)
     window.printWeeklyMasterSheet = function () {
         const printArea = document.getElementById('wmPrintableContainer');
@@ -1144,6 +1404,8 @@
             alert("No weekly tabulation data available to print!");
             return;
         }
+
+        const dynamicFileName = generateSmartTabulationFileName('pdf');
 
         const oldFrame = document.getElementById('wm-print-iframe');
         if (oldFrame) oldFrame.remove();
@@ -1165,38 +1427,13 @@
             <html>
             <head>
                 <meta charset="UTF-8">
-                <title>Weekly Master Tabulation Sheet - CPSCL</title>
+                <title>${dynamicFileName}</title>
                 <style>
-                    @page {
-                        size: landscape;
-                        margin: 4mm 5mm 6mm 5mm;
-                    }
-                    * {
-                        box-sizing: border-box;
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
-                    body {
-                        font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
-                        color: #000;
-                        background: #fff;
-                        margin: 0;
-                        padding: 0;
-                        -webkit-font-smoothing: antialiased;
-                    }
-                    table {
-                        width: 100%;
-                        border-collapse: collapse !important;
-                        table-layout: auto;
-                    }
-                    th, td {
-                        border: 1px solid #000 !important;
-                        padding: 2.5px 1.5px !important;
-                        font-size: 8px !important;
-                        text-align: center;
-                        color: #000;
-                        line-height: 1.15;
-                    }
+                    @page { size: landscape; margin: 4mm 5mm 6mm 5mm; }
+                    * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                    body { font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; color: #000; background: #fff; margin: 0; padding: 0; }
+                    table { width: 100%; border-collapse: collapse !important; table-layout: auto; }
+                    th, td { border: 1px solid #000 !important; padding: 2.5px 1.5px !important; font-size: 8px !important; text-align: center; color: #000; line-height: 1.15; }
                     th.th-main { background-color: #f8fafc !important; font-weight: bold; }
                     th.th-exam-1 { background-color: #e0f2fe !important; color: #0369a1 !important; font-weight: bold; }
                     th.th-exam-2 { background-color: #fef3c7 !important; color: #b45309 !important; font-weight: bold; }
@@ -1205,47 +1442,33 @@
                     th.th-grand { background-color: #f1f5f9 !important; font-weight: bold; border-left: 1.5px solid #000 !important; border-right: 1.5px solid #000 !important; }
                     th.th-conv { background-color: #fee2e2 !important; color: #991b1b !important; font-weight: bold; }
                     th.th-rank { background-color: #ecfdf5 !important; color: #047857 !important; font-weight: bold; }
-
                     th.sub-head { background-color: #f8fafc !important; font-size: 7.5px !important; font-weight: bold; white-space: nowrap; }
-                    th.sub-total { background-color: #dbeafe !important; color: #1e3a8a !important; font-size: 7.5px !important; font-weight: bold; white-space: nowrap; border-left: 1.5px solid #1e3a8a !important; border-right: 1.5px solid #1e3a8a !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-
-                    td.name-col {
-                        text-align: left !important;
-                        padding-left: 5px !important;
-                        font-weight: bold;
-                        white-space: nowrap !important;
-                    }
-                    td.test-total { font-weight: bold !important; font-size: 8px !important; background-color: #eff6ff !important; color: #1e3a8a !important; border-left: 1.5px solid #1e3a8a !important; border-right: 1.5px solid #1e3a8a !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-                    td.grand-col { font-weight: bold !important; background-color: #f1f5f9 !important; color: #000 !important; border-left: 1.5px solid #000 !important; border-right: 1.5px solid #000 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-                    td.conv-col { font-weight: bold !important; background-color: #fef2f2 !important; color: #991b1b !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-                    td.rank-col { font-weight: bold !important; background-color: #ecfdf5 !important; color: #047857 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-
+                    th.sub-total { background-color: #dbeafe !important; color: #1e3a8a !important; font-size: 7.5px !important; font-weight: bold; white-space: nowrap; border-left: 1.5px solid #1e3a8a !important; border-right: 1.5px solid #1e3a8a !important; }
+                    td.name-col { text-align: left !important; padding-left: 5px !important; font-weight: bold; white-space: nowrap !important; }
+                    td.test-total { font-weight: bold !important; font-size: 8px !important; background-color: #eff6ff !important; color: #1e3a8a !important; border-left: 1.5px solid #1e3a8a !important; border-right: 1.5px solid #1e3a8a !important; }
+                    td.grand-col { font-weight: bold !important; background-color: #f1f5f9 !important; color: #000 !important; border-left: 1.5px solid #000 !important; border-right: 1.5px solid #000 !important; }
+                    td.conv-col { font-weight: bold !important; background-color: #fef2f2 !important; color: #991b1b !important; }
+                    td.rank-col { font-weight: bold !important; background-color: #ecfdf5 !important; color: #047857 !important; }
                     tr { page-break-inside: avoid !important; }
-
-                    .wm-sig-container {
-                        display: flex;
-                        justify-content: space-around;
-                        align-items: flex-end;
-                        margin-top: 40px;
-                        padding: 0 20px 5px;
-                        page-break-inside: avoid !important;
-                    }
+                    .wm-sig-container { display: flex; justify-content: space-around; align-items: flex-end; margin-top: 40px; padding: 0 20px 5px; page-break-inside: avoid !important; }
                     .wm-sig-box { text-align: center; min-width: 160px; }
                     .wm-sig-space { height: 45px; }
                     .wm-sig-line { width: 100%; border-top: 1.5px solid #000; margin-bottom: 4px; }
                     .wm-sig-label { font-size: 10px; font-weight: bold; color: #000; }
                 </style>
             </head>
-            <body>
-                ${printArea.innerHTML}
-            </body>
+            <body>${printArea.innerHTML}</body>
             </html>
         `);
         doc.close();
 
+        const originalDocTitle = document.title;
+        document.title = dynamicFileName;
+
         setTimeout(() => {
             iframe.contentWindow.focus();
             iframe.contentWindow.print();
+            setTimeout(() => { document.title = originalDocTitle; }, 2000);
         }, 500);
     };
 
@@ -1254,18 +1477,20 @@
         const table = document.getElementById('wmMasterTable');
         if (!table) return;
 
+        const dynamicFileName = generateSmartTabulationFileName('xlsx');
+
         if (typeof XLSX !== 'undefined') {
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.table_to_sheet(table);
             XLSX.utils.book_append_sheet(wb, ws, "Weekly Master Tabulation");
-            XLSX.writeFile(wb, "Weekly_Master_Tabulation_CPSCL.xlsx");
+            XLSX.writeFile(wb, `${dynamicFileName}.xlsx`);
         } else {
             const html = document.getElementById('wmPrintableContainer').outerHTML;
             const blob = new Blob(['\ufeff', html], { type: 'application/vnd.ms-excel' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "Weekly_Master_Tabulation_CPSCL.xls";
+            a.download = `${dynamicFileName}.xls`;
             document.body.appendChild(a);
             a.click();
             a.remove();

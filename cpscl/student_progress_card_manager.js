@@ -209,7 +209,7 @@
                         </select>
 
                         <button type="button" class="spc-btn-pill spc-btn-primary" onclick="window.generateProgressCardsData()">
-                            <i class="fa-solid fa-arrows-rotate"></i> Refresh Data
+                            <i class="fa-solid fa-play"></i> Generate Progress Cards
                         </button>
 
                         <button type="button" class="spc-btn-pill spc-btn-outline" onclick="window.printSingleSelectedStudentCard()">
@@ -271,18 +271,16 @@
         }
 
         let html = '';
-        allExamsList.forEach((ex, idx) => {
-            const isChecked = idx >= Math.max(0, allExamsList.length - 4); // Default select last 4
+        allExamsList.forEach((ex) => {
             html += `
                 <label class="spc-chk-item">
-                    <input type="checkbox" class="spc-exam-chk" value="${ex.id}" ${isChecked ? 'checked' : ''} onchange="window.generateProgressCardsData()">
+                    <input type="checkbox" class="spc-exam-chk" value="${ex.id}">
                     <span>${ex.name} <small style="color:#64748b;">(${ex.date ? ex.date.substring(5) : ''})</small></span>
                 </label>
             `;
         });
         container.innerHTML = html;
-
-        await window.generateProgressCardsData();
+        // Auto-run removed. User selects exams and triggers generation via button click.
     }
 
     // Canonical Subject Normalizer (Eliminates duplication, aliasing, and prefix-clash)
@@ -306,23 +304,20 @@
         if (s.includes('eng') && (s.includes('1st') || s.includes('1') || s.includes('i'))) return 'Eng 1';
         if (s === 'english' || s === 'eng') return 'English';
 
-        // 5. Mathematics
-        if (s.includes('higher') || s === 'hm' || s.includes('h.math') || s.includes('h-math')) return 'HM';
+        // 5. Optional / 4th Subject: Higher Mathematics & Agriculture (Unified Column)
+        if (s.includes('higher') || s.includes('h.math') || s.includes('h-math') || s === 'hm' || s.includes('agri') || s.includes('hm / agri') || s.includes('hm/agri')) return 'HM/Agri';
+
+        // 6. General Mathematics
         if (s.includes('math') || s.includes('mat')) return 'Math';
 
-        // 6. Natural Sciences
+        // 7. Natural Sciences
         if (s.includes('phys') || s === 'phy') return 'Phy';
         if (s.includes('chem') || s === 'chm') return 'Chem';
         if (s.includes('bio')) return 'Bio';
         if (s.includes('scien') || s === 'sci') return 'Sci';
 
-        // 7. Religion & Moral Education
-        if (s.includes('islam') || s === 'ime' || s.includes('islamic')) return 'Islam';
-        if (s.includes('hindu') || s === 'hme') return 'Hindu';
-        if (s.includes('relig') || s.includes('rel')) return 'Religion';
-
-        // 8. Agriculture & Commerce
-        if (s.includes('agri')) return 'Agri';
+        // 8. Religion & Moral Education (Unified Islam, Hindu, Religion Column)
+        if (s.includes('islam') || s.includes('hindu') || s.includes('relig') || s === 'rel' || s === 'ime' || s === 'hme') return 'Religion';
         if (s.includes('acc') || s.includes('account')) return 'Acc';
         if (s.includes('fin') || s.includes('finance')) return 'Fin';
         if (s.includes('ent') || s.includes('business ent')) return 'B-Ent';
